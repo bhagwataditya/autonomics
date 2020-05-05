@@ -1,0 +1,25 @@
+Package: autonomics
+Type: Package
+Title: Generify and intuify omics data analysis
+Version: 0.99.0
+Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.de",    role = c("aut", "cre")), 
+             person("Johannes", "Graumann",  email = "johannes.graumann@mpi-bn.mpg.de", role = c('aut', 'sad', 'rth')),
+             person("Shahina",  "Hayat",     email = "shh2026@qatar-med.cornell.edu",   role = "aut"), 
+             person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",   role = "ctb"), 
+             person("Richard",  "Cotton",    email = "richierocks@gmail.com",           role = "ctb"), 
+             person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",   role = "sad"))
+Description: This package aims to make omics data analysis generic and intuitive, by implementing cross-platform
+             analysis steps generically, and translating design information into relevant biological questions intuitively.
+             It contains functions for data import, preprocessing, and analysis and currently offers support 
+             for Microarray, RNAseq, LCMSMS Proteomics, Metabolon, and SOMAscan platforms.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+VignetteBuilder: knitr
+biocViews: Software, Workflow, GeneExpression, Transcription, DifferentialExpression, 
+           PrincipalComponent, RNAseq, MassSpectrometry
+BugReports: https://bitbucket.org/graumannlabtools/autonomics 
+URL: https://bitbucket.org/graumannlabtools/autonomics
+RoxygenNote: 7.0.2
+Imports: assertive, magrittr, Rsubread, rtracklayer, S4Vectors, SummarizedExperiment
+Suggests: testthat
