@@ -2,7 +2,6 @@
 % Please edit documentation in R/read_omics.R
 \name{read_metabolon}
 \alias{read_metabolon}
-\alias{load_metabolon}
 \title{Read metabolon}
 \usage{
 read_metabolon(
@@ -13,8 +12,6 @@ read_metabolon(
   subgroup_var = "Group",
   fname_var = "BIOCHEMICAL"
 )
-
-load_metabolon(file, sheet = 2, ...)
 }
 \arguments{
 \item{file}{string: path to metabolon xlsx file}
@@ -35,10 +32,6 @@ load_metabolon(file, sheet = 2, ...)
 Read metabolon
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   file <- 'extdata/glutaminase/glutaminase.xlsx' \%>\%
-            system.file(package = 'autonomics.data')
-   file \%>\% read_metabolon()
-}
+file <- download_autonomics_data('hypo_metab.xlsx')
+read_metabolon(file)
 }

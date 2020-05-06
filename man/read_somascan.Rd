@@ -2,7 +2,6 @@
 % Please edit documentation in R/read_omics.R
 \name{read_somascan}
 \alias{read_somascan}
-\alias{load_soma}
 \title{Read somascan}
 \usage{
 read_somascan(
@@ -12,8 +11,6 @@ read_somascan(
   subgroup_var = "SampleGroup",
   fname_var = "EntrezGeneSymbol"
 )
-
-load_soma(file, ...)
 }
 \arguments{
 \item{file}{string: path to *.adat file}
@@ -35,11 +32,8 @@ Summarizedexperiment
 Read data from somascan adat file
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   file <- system.file('extdata/stemcomp/soma/stemcomp.adat', package = 'autonomics.data')
-   file \%>\% read_somascan()
-}
+file <- download_autonomics_data('hypo_soma.adat')
+read_somascan(file)
 }
 \seealso{
 prepare_somascan

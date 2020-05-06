@@ -21,5 +21,5 @@ biocViews: Software, Workflow, GeneExpression, Transcription, DifferentialExpres
 BugReports: https://bitbucket.org/graumannlabtools/autonomics 
 URL: https://bitbucket.org/graumannlabtools/autonomics
 RoxygenNote: 7.0.2
-Imports: assertive, magrittr, Rsubread, rtracklayer, S4Vectors, SummarizedExperiment
+Imports: assertive, magrittr, BiocManager, Rsubread, rtracklayer, S4Vectors, SummarizedExperiment
 Suggests: testthat

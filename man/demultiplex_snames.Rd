@@ -20,38 +20,35 @@ demultiplex_snames(x, ...)
 \item{verbose}{logical}
 }
 \description{
-For charactervector or SummarizedExperiment
+Demultiplex sample names
 }
 \examples{
-require(magrittr)
-
 # character vector
-    # Alternate multiplexing forms supported
-     demultiplex_snames("STD(L)_EM00(M)_EM01(H)_R1{M/L}")     # Label Ratio
-     demultiplex_snames('A(0)_B(1)_C(2)_D(3)_R1{0}'     )     # Reporter intensity
-     demultiplex_snames('STD(L)_EM00(M)_EM01(H)_R1{L}')       # Label Intensity
+
+   # Alternate multiplexing forms supported
+   demultiplex_snames("STD(L)_EM00(M)_EM01(H)_R1{M/L}") # Label Ratio
+   demultiplex_snames('A(0)_B(1)_C(2)_D(3)_R1{0}'     ) # Reporter intensity
+   demultiplex_snames('STD(L)_EM00(M)_EM01(H)_R1{L}')   # Label Intensity
 
    # Alternate separators supported
-     demultiplex_snames('STD(L)_EM00(M)_EM01(H)_R1{L}')       # underscore
-     demultiplex_snames('STD(L).EM00(M).EM01(H).R1{L}')       # dot
-     demultiplex_snames('STD(L)EM00(M)EM01(H).R1{L}')         # no separator
+   demultiplex_snames('STD(L)_EM00(M)_EM01(H)_R1{L}')   # underscore
+   demultiplex_snames('STD(L).EM00(M).EM01(H).R1{L}')   # dot
+   demultiplex_snames('STD(L)EM00(M)EM01(H).R1{L}')     # no separator
 
    # Composite snames supported
-     demultiplex_snames("WT.t0(L)_WT.t1(M)_WT.t2(H)_R1{H/L}") # composite snames
+   demultiplex_snames("WT.t0(L)_WT.t1(M)_WT.t2(H)_R1{H/L}")
 
    # Uniqueness ensured by appending labels when necessary
-     demultiplex_snames(c("STD(L).BM00(M).BM00(H).R10{M/L}",  # implicit uniquification
-                                         "STD(L).BM00(M).BM00(H).R10{H/L}"))
+   demultiplex_snames(c("STD(L).BM00(M).BM00(H).R10{M/L}",
+                       "STD(L).BM00(M).BM00(H).R10{H/L}"))
+
    # Uniplexed snames are returned unchanged
-     demultiplex_snames(c('STD_R1', 'EM0_R1'))
+   demultiplex_snames(c('STD_R1', 'EM0_R1'))
 
 # SummarizedExperiment
-  if (require(autonomics.data)){
-     x <- 'extdata/stemdiff/maxquant/proteinGroups.txt' \%>\%
-           system.file(package = 'autonomics.data')     \%>\%
-           read_proteingroups(standardize_snames = FALSE, demultiplex_snames = FALSE) \%>\%
-           standardize_maxquant_snames()
-     x \%>\% demultiplex_snames(verbose = TRUE)
-  }
-
+   file <- download_autonomics_data('stemcells_proteinGroups.txt')
+   x <- read_proteingroups(
+           file, standardize_snames = FALSE, demultiplex_snames = FALSE)
+   x \%<>\% standardize_maxquant_snames()
+   demultiplex_snames(x, verbose = TRUE)
 }

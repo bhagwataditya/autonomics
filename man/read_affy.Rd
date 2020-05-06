@@ -9,22 +9,20 @@ read_affy(celfiles)
 \arguments{
 \item{celfiles}{string vector: CEL file paths}
 }
+\value{
+SummarizedExperiment
+}
 \description{
 Read affymetrix microarray
 }
 \examples{
-\dontrun{ # since it requires to be online
-   if (require(autonomics.data)){
-
-      # download cel files
-      require(magrittr)
-      url <- 'http://www.bioconductor.org/help/publications/2003/Chiaretti/chiaretti2/T33.tgz'
-      download.file(url, destfile = file.path(tempdir(), basename(url)))
-      untar(file.path(tempdir(), 'T33.gz'), exdir = tempdir())
-      unlink('T33.gz')
-
-      # read
-      read_affy(celfiles = list.files(file.path(tempdir(), 'T33'), full.names = TRUE))
-   }
+url <- paste0('http://www.bioconductor.org/help/publications/2003/',
+                'Chiaretti/chiaretti2/T33.tgz')
+localfile <- file.path('~/autonomicscache', basename(url))
+if (!file.exists(localfile)){
+    download.file(url, destfile = localfile)
+    untar(localfile, exdir = path.expand('~/autonomicscache'))
 }
+localfile \%<>\% substr(1, nchar(.)-4)
+read_affy(celfiles = list.files(localfile, full.names = TRUE))
 }

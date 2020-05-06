@@ -32,28 +32,34 @@ standardize_maxquant_snames(x, ...)
 \item{verbose}{logical(1)}
 }
 \description{
-For charactervector or SummarizedExperiment
+Standardize maxquant sample names
 }
 \details{
-Drop "Ratio normalized", "LFQ intensity" etc from maxquant snames & sample_id values
+Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 }
 \examples{
-require(magrittr)
-
 # character vector
-    standardize_maxquant_snames("Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1")
-    standardize_maxquant_snames("Ratio M/L STD(L)_EM00(M)_EM01(H)_R1")
-    standardize_maxquant_snames('LFQ intensity STD_R1')
-    standardize_maxquant_snames('LFQ intensity L STD(L)_EM00(M)_EM01(H)_R1')
-    standardize_maxquant_snames('Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1')
-    standardize_maxquant_snames('Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1')
+   x <- "Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"
+   standardize_maxquant_snames(x)
+
+   x <- "Ratio M/L STD(L)_EM00(M)_EM01(H)_R1"
+   standardize_maxquant_snames(x)
+
+   x <-'LFQ intensity STD_R1'
+   standardize_maxquant_snames(x)
+
+   x <- 'LFQ intensity L STD(L)_EM00(M)_EM01(H)_R1'
+   standardize_maxquant_snames(x)
+
+   x <-'Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
+   standardize_maxquant_snames(x)
+
+   x <- 'Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
+   standardize_maxquant_snames(x)
 
 # SummarizedExperiment
-if (require(autonomics.data)){
-     x <- 'extdata/stemdiff/maxquant/proteinGroups.txt' \%>\%
-           system.file(package = 'autonomics.data')     \%>\%
-           read_proteingroups(standardize_snames = FALSE,
-                              demultiplex_snames = FALSE)
-     x \%>\% standardize_maxquant_snames(verbose = TRUE)
-}
+   file <- download_autonomics_data('stemcells_proteinGroups.txt')
+   x <- read_proteingroups(
+           file, standardize_snames = FALSE, demultiplex_snames = FALSE)
+   standardize_maxquant_snames(x)
 }

@@ -641,6 +641,39 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
 
 }
 
+#' Pull columns in a dataframe to the front
+#' @param df         data.frame
+#' @param first_cols character vector: columns to be pulled to the front
+#' @param verbose    TRUE (default) or FALSE
+#' @return dataframe with re-ordered columns
+#' @examples
+#' require(magrittr)
+#' df <- data.frame(
+#'    symbol = c('A1BG', 'A2M'),
+#'    id     = c('1',    '2'),
+#'    name   = c('alpha-1-B glycoprotein', 'alpha-2-macroglobulin'),
+#'    type   = c('proteincoding', 'proteincoding'))
+#' first_cols <- c('id', 'symbol', 'location', 'uniprot')
+#' df %>% autonomics.support::pull_columns(first_cols)
+#' @noRd
+pull_columns <- function(df, first_cols, verbose = TRUE){
+
+    assertive.types::assert_is_data.frame(df)
+    assertive.types::assert_is_character(first_cols)
+    extract <- magrittr::extract
+
+    idx <- first_cols %in% names(df)
+    if (any(!idx)){
+        if (verbose) cmessage(
+            'pull_columns: ignore absent columns %s',
+            paste0(sprintf("'%s'", first_cols[!idx]), collapse = ', '))
+        first_cols %<>% magrittr::extract(idx)
+    }
+
+  df %>% extract(, c(first_cols, setdiff(names(df), first_cols)), drop = FALSE)
+}
+
+
 #' Read rnaseq counts
 #'
 #' Read tsv file with rnaseq counts into SummarizedExperiment
@@ -653,42 +686,41 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
 #' @param fid_var   string or number: feature id variable
 #' @param fname_var string or number: feature name variable
 #' @examples
-#' if (require(autonomics.data)){
-#'    require(magrittr)
-#'    file <- 'extdata/stemcomp/rnaseq/gene_counts.txt' %>%
-#'             system.file(package = 'autonomics.data')
-#'    file %>% read_counts(fid_var = 'gene_id', fname_var = 'gene_name')
-#' }
+#' file <- download_autonomics_data('stemcells_rna.txt')
+#' read_counts(file, fid_var = 'gene_id', fname_var = 'gene_name')
 #' @seealso merge_sdata, merge_fdata
-#' @importFrom magrittr %>%
 #' @export
 read_counts <- function(
     file,
     fid_var,
     fname_var = character(0)
 ){
+    assert_all_are_existing_files(file)
+    dt <- fread(file, integer64='numeric')
 
-    assertive.files::assert_all_are_existing_files(file)
-    dt <- data.table::fread(file, integer64='numeric')
-
-    assertive.sets::assert_is_subset(fid_var, names(dt))
+    assert_is_subset(fid_var, names(dt))
     fid_col <- which(names(dt)==fid_var)
-    expr_cols   <- dt %>% vapply(is.integer, logical(1)) %>% unname() %>% which()
-    fdata_cols  <- dt[, -fid_col, with = FALSE] %>% vapply(is.integer, logical(1)) %>% magrittr::not() %>% unname() %>% which() %>% magrittr::add(1) %>% c(fid_col, .)
+    expr_cols   <- which(unname(vapply(dt, is.integer, logical(1))))
+    fdata_cols  <- c(fid_col,
+                     1 + which(unname(!vapply(
+                                        dt[, -fid_col, with = FALSE],
+                                        is.integer,
+                                        logical(1)))))
+    object <- read_omics(
+                file,
+                fid_rows   = 2:nrow(dt),   fid_cols   = fid_col,
+                sid_rows   = 1,            sid_cols   = expr_cols,
+                expr_rows  = 2:nrow(dt),   expr_cols  = expr_cols,
+                fvar_rows  = 1,            fvar_cols  = fdata_cols,
+                fdata_rows = 2:nrow(dt),   fdata_cols = fdata_cols,
+                transpose  = FALSE,
+                verbose    = TRUE)
 
-    object <- file %>% read_omics(fid_rows   = 2:nrow(dt),   fid_cols   = fid_col,
-                                  sid_rows   = 1,            sid_cols   = expr_cols,
-                                  expr_rows  = 2:nrow(dt),   expr_cols  = expr_cols,
-                                  fvar_rows  = 1,            fvar_cols  = fdata_cols,
-                                  fdata_rows = 2:nrow(dt),   fdata_cols = fdata_cols,
-                                  transpose  = FALSE,
-                                  verbose    = TRUE)
-
-    sdata(object)$subgroup  <- object %>% guess_subgroup_values(verbose = TRUE)
+    sdata(object)$subgroup  <- guess_subgroup_values(object, verbose = TRUE)
     if (length(fname_var)>0){
-        assertive.sets::assert_is_subset(fname_var, fvars(object))
-        fdata(object) %<>% (function(x){x$feature_name <- x[[fname_var]];
-        x %>% autonomics.support::pull_columns(c('feature_id', 'feature_name'))})
+        assert_is_subset(fname_var, fvars(object))
+        fdata(object)$feature_name <- fdata(object)[[fname_var]]
+        fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     }
 
     object
@@ -699,85 +731,97 @@ read_counts <- function(
 # AFFYMETRIX MICROARRAYS
 #========================
 
+# https://stackoverflow.com/a/4090208
+install_if_required <- function(pkgs){
+    pkgs %<>% extract(!(pkgs %in% installed.packages()[,"Package"]))
+    if(length(pkgs)) BiocManager::install(pkgs)
+}
+
+
+add_affy_fdata <- function(object){
+
+    # Extract entrez identifiers
+    entrezgs <- vapply(
+      stri_split_fixed(fnames(object), '_'), extract, character(1), 1)
+
+    # Get annotation db
+    pkgname <- paste0(metadata(object)$annotation, '.db')
+    install_if_required(pkgname)
+    db <- getFromNamespace(pkgname, pkgname)
+
+    # Map
+    rowData(object) <- DataFrame(
+        feature_id    = fnames(object),
+        feature_name  = suppressMessages(mapIds(
+                    db, entrezgs, column = 'SYMBOL',   keytype = 'ENTREZID')),
+        feature_descr = suppressMessages(mapIds(
+                    db, entrezgs, column = 'GENENAME', keytype = 'ENTREZID')),
+        row.names     = fnames(object)
+    )
+
+    # Return
+    object
+
+}
+
 #' Read affymetrix microarray
 #' @param celfiles string vector: CEL file paths
-#' @export
+#' @return SummarizedExperiment
 #' @examples
-#' \dontrun{ # since it requires to be online
-#'    if (require(autonomics.data)){
-#'
-#'       # download cel files
-#'       require(magrittr)
-#'       url <- 'http://www.bioconductor.org/help/publications/2003/Chiaretti/chiaretti2/T33.tgz'
-#'       download.file(url, destfile = file.path(tempdir(), basename(url)))
-#'       untar(file.path(tempdir(), 'T33.gz'), exdir = tempdir())
-#'       unlink('T33.gz')
-#'
-#'       # read
-#'       read_affy(celfiles = list.files(file.path(tempdir(), 'T33'), full.names = TRUE))
-#'    }
+#' url <- paste0('http://www.bioconductor.org/help/publications/2003/',
+#'                 'Chiaretti/chiaretti2/T33.tgz')
+#' localfile <- file.path('~/autonomicscache', basename(url))
+#' if (!file.exists(localfile)){
+#'     download.file(url, destfile = localfile)
+#'     untar(localfile, exdir = path.expand('~/autonomicscache'))
 #' }
-#' @importFrom magrittr %>%
+#' localfile %<>% substr(1, nchar(.)-4)
+#' read_affy(celfiles = list.files(localfile, full.names = TRUE))
 #' @export
 read_affy <- function(celfiles){
 
     # read
-    autonomics.support::cmessage('Read affymetrix CEL files: %s, etc.', celfiles[1])
-    suppressWarnings(eset1 <- affy::just.rma(filenames = celfiles))
+    message('Read Affymetrix CEL files: ', basename(celfiles)[1], ', ...')
+    suppressWarnings(eset1 <- just.rma(filenames = celfiles))
+    object <- makeSummarizedExperimentFromExpressionSet(eset1)
 
     # sdata
-    autonomics.import::snames(eset1) %<>% stringi::stri_replace_first_fixed('.CEL', '')
-    autonomics.import::sdata(eset1) <- data.frame(sample_id = autonomics.import::snames(eset1),
-                                                  row.names = autonomics.import::snames(eset1),
-                                                  stringsAsFactors = FALSE)
+    snames(object) %<>% stri_replace_first_fixed('.CEL', '')
+    sdata(object) <- data.frame(sample_id = snames(object),
+                                row.names = snames(object),
+                                stringsAsFactors = FALSE)
     # fdata
-    autonomics.import::fdata(eset1)$feature_id   <- autonomics.import::fnames(eset1)
-    pkgname <- paste0(Biobase::annotation(eset1), '.db')
-    db <- utils::getFromNamespace(pkgname, pkgname)
-    autonomics.import::fdata(eset1)$feature_entrezg <- autonomics.import::fnames(eset1)  %>%
-        stringi::stri_split_fixed('_')    %>%
-        vapply(extract, character(1), 1)
-    autonomics.import::fdata(eset1)$feature_name <- suppressMessages(AnnotationDbi::mapIds(db,
-                                                                                           keys    = autonomics.import::fdata(eset1)$feature_entrezg,
-                                                                                           keytype = 'ENTREZID',
-                                                                                           column  = 'SYMBOL')) %>%
-        unname()
-    autonomics.import::fdata(eset1)$feature_descr <- suppressMessages(AnnotationDbi::mapIds(db,
-                                                                                            keys    = autonomics.import::fdata(eset1)$feature_entrezg,
-                                                                                            keytype = 'ENTREZID',
-                                                                                            column  = 'GENENAME')) %>%
-        unname()
+    object %<>% add_affy_fdata()
 
-    # sumexp
-    sumexp1 <- eset1 %>% SummarizedExperiment::makeSummarizedExperimentFromExpressionSet()
-    class(sumexp1) <- 'SummarizedExperiment'
-    return(sumexp1)
+    # return
+    return(object)
 
 }
 
 
 
 #==========================================================
-# EXIQON
+# GENEX
 #==========================================================
 
-#' Read exiqon
+#' Read genex file
 #' @param file string: path to exiqon genex file
-#' @importFrom magrittr %>%
 #' @export
-read_exiqon <- function(file){
-    assertive.files::assert_all_are_existing_files(file)
+read_genex <- function(file){
+    assert_all_are_existing_files(file)
     dt <- extract_rectangle(file, sheet=1)
-    file %>% read_omics(sheet      = 1,
-                        fid_rows   = 1,                       fid_cols   = 2:(ncol(dt)-2),
-                        sid_rows   = 2:(nrow(dt)-3),          sid_cols   = 1,
-                        expr_rows  = 2:(nrow(dt)-3),          expr_cols  = 2:(ncol(dt)-2),
-                        fvar_rows  = (nrow(dt)-2):nrow(dt),   fvar_cols  = 1,
-                        svar_rows  = 1,                       svar_cols  = (ncol(dt)-1):ncol(dt),
-                        fdata_rows = (nrow(dt)-2):nrow(dt),   fdata_cols = 2:(ncol(dt)-2),
-                        sdata_rows = 2:(nrow(dt)-3),          sdata_cols = (ncol(dt)-1):ncol(dt),
-                        transpose  = TRUE,
-                        verbose    = TRUE)
+    read_omics(
+        file,
+        sheet = 1,
+        fid_rows   = 1,                       fid_cols   = 2:(ncol(dt)-2),
+        sid_rows   = 2:(nrow(dt)-3),          sid_cols   = 1,
+        expr_rows  = 2:(nrow(dt)-3),          expr_cols  = 2:(ncol(dt)-2),
+        fvar_rows  = (nrow(dt)-2):nrow(dt),   fvar_cols  = 1,
+        svar_rows  = 1,                       svar_cols  = (ncol(dt)-1):ncol(dt),
+        fdata_rows = (nrow(dt)-2):nrow(dt),   fdata_cols = 2:(ncol(dt)-2),
+        sdata_rows = 2:(nrow(dt)-3),          sdata_cols = (ncol(dt)-1):ncol(dt),
+        transpose  = TRUE,
+        verbose    = TRUE)
 }
 
 
@@ -798,89 +842,57 @@ read_exiqon <- function(file){
 #' @return Summarizedexperiment
 #' @seealso prepare_somascan
 #' @examples
-#' if (require(autonomics.data)){
-#'    require(magrittr)
-#'    file <- system.file('extdata/stemcomp/soma/stemcomp.adat', package = 'autonomics.data')
-#'    file %>% read_somascan()
-#' }
-#' @importFrom magrittr %>%
+#' file <- download_autonomics_data('hypo_soma.adat')
+#' read_somascan(file)
 #' @export
-read_somascan <- function(
-    file,
-    fid_var      = 'SeqId',
-    sid_var      = 'SampleId',
-    subgroup_var = 'SampleGroup',
-    fname_var    = 'EntrezGeneSymbol'
+read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
+    subgroup_var = 'SampleGroup', fname_var    = 'EntrezGeneSymbol'
 ){
     # Assert
-    assertive.files::assert_all_are_existing_files(file)
-    assertive.types::assert_is_a_string(fid_var)
-    assertive.types::assert_is_a_string(sid_var)
+    assert_all_are_existing_files(file)
+    assert_is_a_string(fid_var)
+    assert_is_a_string(sid_var)
 
     # Understand file structure
     content <- readLines(file)
     n_row <- length(content)
-    n_col <- utils::count.fields(file, quote='', sep='\t') %>% max()
-
-    f_row <- 1 + which(stringi::stri_detect_fixed(content, '^TABLE_BEGIN'))
-
-    s_row <- content                                 %>%
-        magrittr::extract(f_row:length(.)) %>%
-        purrr::detect_index(function(y) stringi::stri_detect_regex(y, '^\t+', negate=TRUE)) %>%
-        magrittr::add(f_row-1)
-
-    f_col <- content                                    %>%
-        magrittr::extract(f_row)                   %>%
-        stringi::stri_extract_first_regex('^\\t+') %>%
-        stringi::stri_count_fixed('\t')            %>%
-        magrittr::add(1)
-
+    n_col <- max(count.fields(file, quote='', sep='\t'))
+    f_row <- 1 + which(stri_detect_fixed(content, '^TABLE_BEGIN'))
+    s_row <- content %>% extract(f_row:length(.)) %>%
+        detect_index(function(y) stri_detect_regex(y, '^\t+', negate=TRUE)) %>%
+        add(f_row-1)
+    f_col <- content %>% extract(f_row) %>%
+        stri_extract_first_regex('^\\t+') %>% stri_count_fixed('\t') %>% add(1)
     fid_cols <- (1+f_col):n_col
-    fid_rows <- content                             %>%
-        magrittr::extract(f_row:(s_row-1))  %>%
-        stringi::stri_extract_first_words() %>%
-        magrittr::equals(fid_var)           %>%
-        which()                             %>%
-        magrittr::add(f_row-1)
-
+    fid_rows <- content %>% extract(f_row:(s_row-1)) %>%
+        stri_extract_first_words() %>% equals(fid_var) %>% which() %>%
+        add(f_row-1)
     sid_rows <- (1+s_row):n_row
-    sid_cols <- content                           %>%
-        magrittr::extract(s_row)          %>%
-        stringi::stri_extract_all_words() %>%
-        unlist()                          %>%
-        magrittr::equals(sid_var)         %>%
-        which()
-
+    sid_cols <- content %>% extract(s_row) %>% stri_extract_all_words() %>%
+                unlist() %>% equals(sid_var) %>% which()
     # Read
-    object <- file %>% read_omics(fid_rows   =  fid_rows,         fid_cols   =  fid_cols,
-                                  sid_rows   =  sid_rows,         sid_cols   =  sid_cols,
-                                  expr_rows  = (s_row+1):n_row,   expr_cols  = (f_col+1):n_col,
-                                  fvar_rows  =  f_row:(s_row-1),  fvar_cols  =  f_col,
-                                  fdata_rows =  f_row:(s_row-1),  fdata_cols  = (f_col+1):n_col,
-                                  svar_rows  =  s_row,            svar_cols  = 1:(f_col-1),
-                                  sdata_rows = (s_row+1):n_row,   sdata_cols = 1:(f_col-1),
-                                  transpose  = TRUE,
-                                  verbose    = TRUE)
+    object <- read_omics(
+        file,
+        fid_rows   =  fid_rows,         fid_cols   =  fid_cols,
+        sid_rows   =  sid_rows,         sid_cols   =  sid_cols,
+        expr_rows  = (s_row+1):n_row,   expr_cols  = (f_col+1):n_col,
+        fvar_rows  =  f_row:(s_row-1),  fvar_cols  =  f_col,
+        fdata_rows =  f_row:(s_row-1),  fdata_cols  = (f_col+1):n_col,
+        svar_rows  =  s_row,            svar_cols  = 1:(f_col-1),
+        sdata_rows = (s_row+1):n_row,   sdata_cols = 1:(f_col-1),
+        transpose  = TRUE,
+        verbose    = TRUE)
 
-    # sdata
+    # Add sdata/fdata
     sdata(object) %<>% (function(y){ y$subgroup <- y[[subgroup_var]]
-    y %>% autonomics.support::pull_columns(c('sample_id', 'subgroup'))})
+    y %>% pull_columns(c('sample_id', 'subgroup'))})
 
-    # fdata
-    assertive.sets::assert_is_subset(fname_var, fvars(object))
+    assert_is_subset(fname_var, fvars(object))
     fdata(object) %<>% (function(y){ y$feature_name <- y[[fname_var]]
-    y %>% autonomics.support::pull_columns(c('feature_id', 'feature_name'))})
+    y %>% pull_columns(c('feature_id', 'feature_name'))})
 
     # Return
     object
-
-}
-
-#' @export
-#' @rdname read_somascan
-load_soma <- function(file, ...){
-    .Deprecated('read_somascan')
-    read_somascan(file = file)
 }
 
 
@@ -904,41 +916,31 @@ find_origscale_sheet <- function(file){
 #' @param fname_var     string: feature_name variable
 #' @param ...           enable backward compatibility to deprecated load_metabolon
 #' @examples
-#' if (require(autonomics.data)){
-#'    require(magrittr)
-#'    file <- 'extdata/glutaminase/glutaminase.xlsx' %>%
-#'             system.file(package = 'autonomics.data')
-#'    file %>% read_metabolon()
-#' }
-#' @importFrom magrittr %>%
+#' file <- download_autonomics_data('hypo_metab.xlsx')
+#' read_metabolon(file)
 #' @export
-read_metabolon <- function(
-    file,
-    sheet        = find_origscale_sheet(file),
-    fid_var      = '(COMP|COMP_ID)', #'COMP_ID',
-    sid_var      = '(CLIENT_IDENTIFIER|Client ID)', #'CLIENT_IDENTIFIER',
-    subgroup_var = 'Group',
-    fname_var    = 'BIOCHEMICAL'
+read_metabolon <- function(file, sheet = find_origscale_sheet(file),
+    fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
+    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL'
 ){
-
     assertive.files::assert_all_are_existing_files(file)
 
-    d_f <- readxl::read_excel(file, sheet, col_names = FALSE, .name_repair = 'minimal')
+    d_f <- read_excel(file, sheet, col_names = FALSE, .name_repair = 'minimal')
 
-    fvar_rows <- which(!is.na(d_f %>% extract_dt_col(1))) %>% magrittr::extract(1)
-    svar_cols <- which(!is.na(d_f %>% extract_dt_row(1))) %>% magrittr::extract(1)
+    fvar_rows <- which(!is.na(d_f %>% extract_dt_col(1))) %>% extract(1)
+    svar_cols <- which(!is.na(d_f %>% extract_dt_row(1))) %>% extract(1)
     fvar_cols <- fdata_cols <- 1:svar_cols
     svar_rows <- sdata_rows <- 1:fvar_rows
-    fvar_names <- d_f %>% extract_dt_row(fvar_rows) %>% magrittr::extract(1:svar_cols)
-    svar_names <- d_f %>% extract_dt_col(svar_cols) %>% magrittr::extract(1:fvar_rows)
+    fvar_names <- d_f %>% extract_dt_row(fvar_rows) %>% extract(1:svar_cols)
+    svar_names <- d_f %>% extract_dt_col(svar_cols) %>% extract(1:fvar_rows)
 
-    fid_var <- fvar_names %>% extract(stringi::stri_detect_regex(., fid_var))
-    sid_var <- svar_names %>% extract(stringi::stri_detect_regex(., sid_var))
+    fid_var <- fvar_names %>% extract(stri_detect_regex(., fid_var))
+    sid_var <- svar_names %>% extract(stri_detect_regex(., sid_var))
     fid_rows  <- fdata_rows <- expr_rows <- (fvar_rows+1):nrow(d_f)
-    sid_cols  <- sdata_cols <- expr_cols <- (svar_cols+1):ncol(d_f) # fid_var <- 'COMP'
+    sid_cols  <- sdata_cols <- expr_cols <- (svar_cols+1):ncol(d_f)
 
-    fid_cols  <-  fvar_names %>% magrittr::equals(fid_var) %>% which()
-    sid_rows  <-  svar_names %>% magrittr::is_in(sid_var) %>% which() %>% magrittr::extract(1)
+    fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
+    sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
 
     object <- read_omics(file,
                         sheet      = sheet,
@@ -958,21 +960,14 @@ read_metabolon <- function(
                     } else {                    sid_var }
     sdata(object) %<>% (function(y){
                             y$subgroup <- y[[subgroup_var]]
-                            y %>% autonomics.support::pull_columns(c('sample_id', 'subgroup'))})
+                            y %>% pull_columns(c('sample_id', 'subgroup'))})
     # fdata
     assertive.sets::assert_is_subset(fname_var, fvars(object))
     fdata(object) %<>% (function(y){ y$feature_name <- y[[fname_var]]
-    y %>% autonomics.support::pull_columns(c('feature_id', 'feature_name'))})
+    y %>% pull_columns(c('feature_id', 'feature_name'))})
 
     # return
     object
-}
-
-#' @rdname read_metabolon
-#' @export
-load_metabolon <- function(file, sheet=2, ...){
-    .Deprecated('read_metabolon')
-    read_metabolon(file = file, sheet=sheet)
 }
 
 #====================================
@@ -981,52 +976,64 @@ load_metabolon <- function(file, sheet=2, ...){
 
 #' maxquant patterns
 #' @export
-maxquant_patterns <- c(`Ratio normalized`             =  '^Ratio ([HM]/[ML]) normalized (.+)$',
-                       `Ratio`                        =  '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
-                       `LFQ intensity`                =  '^LFQ intensity ([HML])? ?(.+)$',
-                       `Reporter intensity corrected` =  '^Reporter intensity corrected ([0-9]+) (.+)$',
-                       `Reporter intensity`           =  '^Reporter intensity ([0-9]+) (.+)$',
-                       `Intensity labeled`            =  '^Intensity ([HML]) (.+)$',
-                       `Intensity`                    =  '^Intensity (.+)$')
+maxquant_patterns <- c(
+    `Ratio normalized`             =
+      '^Ratio ([HM]/[ML]) normalized (.+)$',
+    `Ratio`                        =
+      '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
+    `LFQ intensity`                =
+      '^LFQ intensity ([HML])? ?(.+)$',
+    `Reporter intensity corrected` =
+      '^Reporter intensity corrected ([0-9]+) (.+)$',
+    `Reporter intensity`           =
+      '^Reporter intensity ([0-9]+) (.+)$',
+    `Intensity labeled`            =
+      '^Intensity ([HML]) (.+)$',
+    `Intensity`                    =
+      '^Intensity (.+)$')
 
 
 #' Guess maxquant quantity from snames
 #'
-#' charactervector, dataframe, or SummarizedExperiment.
+#' character vector, dataframe, or SummarizedExperiment.
 #'
-#' @param x charactervector, dataframe, or SummarizedExperiment
+#' @param x character vector, dataframe, or SummarizedExperiment
 #' @param ... used for proper S3 method dispatch
-#' @return  character(1): value from names(maxquant_patterns)
+#' @return  string: value from names(maxquant_patterns)
 #' @examples
-#' if (require(autonomics.data)){
-#'    require(magrittr)
+#' # file
+#'     x <- download_autonomics_data('stemcells_proteinGroups.txt')
+#'     guess_maxquant_quantity(x)
 #'
-#'    # file
-#'       x <- 'extdata/stemcomp/maxquant/proteinGroups.txt' %>%
-#'             system.file(package = 'autonomics.data')
-#'       guess_maxquant_quantity(x)
+#' # character vector
+#'     x <- "Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"
+#'     guess_maxquant_quantity(x)
 #'
-#'    # charactervector
-#'        guess_maxquant_quantity("Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1")
-#'        guess_maxquant_quantity("Ratio M/L STD(L)_EM00(M)_EM01(H)_R1")
-#'        guess_maxquant_quantity("LFQ intensity EM00.R1")
-#'        guess_maxquant_quantity("Reporter intensity corrected 0 STD(0)EM00(1)EM01(2)_R1")
-#'        guess_maxquant_quantity("Reporter intensity 0 STD(0)EM00(1)EM01(2)_R1")
-#'        guess_maxquant_quantity("Intensity H STD(L)_EM00(M)_EM01(H)_R1")
+#'     x <- "Ratio M/L STD(L)_EM00(M)_EM01(H)_R1"
+#'     guess_maxquant_quantity(x)
 #'
-#'    # dataframe
-#'        x <- 'extdata/stemcomp/maxquant/proteinGroups.txt' %>%
-#'              system.file(package = 'autonomics.data') %>%
-#'              data.table::fread()
-#'        guess_maxquant_quantity(x)
+#'     x <- "LFQ intensity EM00.R1"
+#'     guess_maxquant_quantity(x)
 #'
-#'    # SummarizedExperiment
-#'       x <- 'extdata/stemcomp/maxquant/proteinGroups.txt' %>%
-#'             system.file(package = 'autonomics.data') %>%
-#'             read_proteingroups(standardize_snames = FALSE,
-#'                                demultiplex_snames = FALSE)
-#'       guess_maxquant_quantity(x)
-#' }
+#'     x <- "Reporter intensity corrected 0 STD(0)EM00(1)EM01(2)_R1"
+#'     guess_maxquant_quantity(x)
+#'
+#'     x <- "Reporter intensity 0 STD(0)EM00(1)EM01(2)_R1"
+#'     guess_maxquant_quantity(x)
+#'
+#'     x <- "Intensity H STD(L)_EM00(M)_EM01(H)_R1"
+#'     guess_maxquant_quantity(x)
+#'
+#' # dataframe
+#'     file <- download_autonomics_data( 'stemcells_proteinGroups.txt')
+#'     x <- data.table::fread(file)
+#'     guess_maxquant_quantity(x)
+#'
+#' # SummarizedExperiment
+#'      file <-download_autonomics_data( 'stemcells_proteinGroups.txt'))
+#'      x <- read_proteingroups(
+#'              x, standardize_snames = FALSE, demultiplex_snames = FALSE)
+#'      guess_maxquant_quantity(x)
 #' @export
 guess_maxquant_quantity <- function(x, ...){
     UseMethod("guess_maxquant_quantity", x)
@@ -1034,17 +1041,17 @@ guess_maxquant_quantity <- function(x, ...){
 
 #' @rdname guess_maxquant_quantity
 #' @export
-guess_maxquant_quantity.character <- function(x, ...){      # x = character vector of maxquant colnames
+guess_maxquant_quantity.character <- function(x, ...){
 
     # read if x is filename
-    if (assertive.files::is_existing_file(x)){
-        x %<>% data.table::fread(header = TRUE, nrows = 1) %>% names()
+    if (is_existing_file(x)){
+        x <- names(fread(x, header = TRUE, nrows = 1))
     }
 
     # guess from character vector
     for (quantity in names(maxquant_patterns)){
-        pattern <- maxquant_patterns %>% magrittr::extract2(quantity)
-        if (any(stringi::stri_detect_regex(x, pattern)))   return(quantity)
+        pattern <- maxquant_patterns[[quantity]]
+        if (any(stri_detect_regex(x, pattern)))   return(quantity)
     }
     stop('quantity could not be infered')
 }
@@ -1052,70 +1059,76 @@ guess_maxquant_quantity.character <- function(x, ...){      # x = character vect
 
 #' @rdname guess_maxquant_quantity
 #' @export
-guess_maxquant_quantity.data.frame <- function(x, ...){     # x = maxquant dataframe
+guess_maxquant_quantity.data.frame <- function(x, ...){
     x <- names(x)
     for (quantity in names(maxquant_patterns)){
-        pattern <- maxquant_patterns %>% magrittr::extract2(quantity)
-        if (any(stringi::stri_detect_regex(x, pattern)))   return(quantity)
+        pattern <- maxquant_patterns[[quantity]]
+        if (any(stri_detect_regex(x, pattern)))   return(quantity)
     }
     stop('quantity could not be infered')
 }
+
 
 #' @rdname guess_maxquant_quantity
 #' @export
-guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){     # x = SummarizedExperiment
+guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
     x <- snames(x)
     for (quantity in names(maxquant_patterns)){
-        pattern <- maxquant_patterns %>% magrittr::extract2(quantity)
-        if (any(stringi::stri_detect_regex(x, pattern)))   return(quantity)
+        pattern <- maxquant_patterns[[quantity]]
+        if (any(stri_detect_regex(x, pattern)))   return(quantity)
     }
     stop('quantity could not be infered')
 }
-
-
 
 
 #' proteingroups fvars
 #' @export
-proteingroups_fvars <- c(c('id', 'Majority protein IDs', 'Protein names', 'Gene names', 'Contaminant', 'Potential contaminant', 'Reverse', 'Phospho (STY) site IDs'))
+proteingroups_fvars <- c(
+    'id', 'Majority protein IDs', 'Protein names', 'Gene names',
+    'Contaminant', 'Potential contaminant', 'Reverse', 'Phospho (STY) site IDs')
+
 
 #' Standardize maxquant snames
 #'
-#' For charactervector or SummarizedExperiment
+#' Standardize maxquant sample names
 #'
-#' Drop "Ratio normalized", "LFQ intensity" etc from maxquant snames & sample_id values
+#' Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 #'
 #' @param x        character(.) or SummarizedExperiment
 #' @param quantity maxquant quantity
 #' @param verbose  logical(1)
 #' @param ...      allow for proper S3 method dispatch
 #' @examples
-#' require(magrittr)
-#'
 #' # character vector
-#'     standardize_maxquant_snames("Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1")
-#'     standardize_maxquant_snames("Ratio M/L STD(L)_EM00(M)_EM01(H)_R1")
-#'     standardize_maxquant_snames('LFQ intensity STD_R1')
-#'     standardize_maxquant_snames('LFQ intensity L STD(L)_EM00(M)_EM01(H)_R1')
-#'     standardize_maxquant_snames('Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1')
-#'     standardize_maxquant_snames('Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1')
+#'    x <- "Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"
+#'    standardize_maxquant_snames(x)
+#'
+#'    x <- "Ratio M/L STD(L)_EM00(M)_EM01(H)_R1"
+#'    standardize_maxquant_snames(x)
+#'
+#'    x <-'LFQ intensity STD_R1'
+#'    standardize_maxquant_snames(x)
+#'
+#'    x <- 'LFQ intensity L STD(L)_EM00(M)_EM01(H)_R1'
+#'    standardize_maxquant_snames(x)
+#'
+#'    x <-'Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
+#'    standardize_maxquant_snames(x)
+#'
+#'    x <- 'Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
+#'    standardize_maxquant_snames(x)
 #'
 #' # SummarizedExperiment
-#' if (require(autonomics.data)){
-#'      x <- 'extdata/stemdiff/maxquant/proteinGroups.txt' %>%
-#'            system.file(package = 'autonomics.data')     %>%
-#'            read_proteingroups(standardize_snames = FALSE,
-#'                               demultiplex_snames = FALSE)
-#'      x %>% standardize_maxquant_snames(verbose = TRUE)
-#' }
-#' @importFrom magrittr %>%
+#'    file <- download_autonomics_data('stemcells_proteinGroups.txt')
+#'    x <- read_proteingroups(
+#'            file, standardize_snames = FALSE, demultiplex_snames = FALSE)
+#'    standardize_maxquant_snames(x)
 #' @export
 standardize_maxquant_snames <- function (x, ...) {
     UseMethod("standardize_maxquant_snames", x)
 }
 
 
-#' @importFrom magrittr %>%
 #' @export
 #' @rdname standardize_maxquant_snames
 standardize_maxquant_snames.character <- function(
@@ -1128,21 +1141,24 @@ standardize_maxquant_snames.character <- function(
     pattern <- maxquant_patterns %>% magrittr::extract2(quantity)
 
     # Decompose mix and channel
-    if (quantity == 'Intensity'){ mix     <- x %>% stringi::stri_replace_first_regex(pattern, '$1')
-    channel <- rep('', length(mix))
-    } else {                      mix     <- x %>% stringi::stri_replace_first_regex(pattern, '$2')
-    channel <- x %>% stringi::stri_replace_first_regex(pattern, '$1')
+    if (quantity == 'Intensity'){
+        mix     <- stri_replace_first_regex(x, pattern, '$1')
+        channel <- rep('', length(mix))
+    } else {
+        mix     <- stri_replace_first_regex(x, pattern, '$2')
+        channel <- stri_replace_first_regex(x, pattern, '$1')
     }
 
     # Standardize
-    if (all(channel=='')){ cleanx <- mix
-    } else               { cleanx <- sprintf('%s{%s}', mix, channel)
+    if (all(channel=='')){
+        cleanx <- mix
+    } else {
+        cleanx <- sprintf('%s{%s}', mix, channel)
     }
-    autonomics.support::cmessage('\t\tStandardize snames: %s  ->  %s', x[1], cleanx[1])
+    message('\t\tStandardize snames: ', x[1], '  ->  ', cleanx[1])
     return(cleanx)
 }
 
-#' @importFrom magrittr %>%
 #' @export
 #' @rdname standardize_maxquant_snames
 standardize_maxquant_snames.SummarizedExperiment <- function(
@@ -1151,7 +1167,8 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
     verbose  = FALSE,
     ...
 ){
-    newsnames <- snames(x) %>% standardize_maxquant_snames(quantity = quantity, verbose=verbose)
+    newsnames <- standardize_maxquant_snames(
+                    snames(x), quantity = quantity, verbose=verbose)
     snames(x) <- sdata(x)$sample_id <- newsnames
     x
 }
@@ -1159,43 +1176,40 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 
 #' Demultiplex snames
 #'
-#' For charactervector or SummarizedExperiment
+#' Demultiplex sample names
 #'
 #' @param x        character vector or SummarizedExperiment
 #' @param verbose  logical
 #' @param ...      allow for S3 dispatch
 #' @examples
-#' require(magrittr)
-#'
 #' # character vector
-#'     # Alternate multiplexing forms supported
-#'      demultiplex_snames("STD(L)_EM00(M)_EM01(H)_R1{M/L}")     # Label Ratio
-#'      demultiplex_snames('A(0)_B(1)_C(2)_D(3)_R1{0}'     )     # Reporter intensity
-#'      demultiplex_snames('STD(L)_EM00(M)_EM01(H)_R1{L}')       # Label Intensity
+#'
+#'    # Alternate multiplexing forms supported
+#'    demultiplex_snames("STD(L)_EM00(M)_EM01(H)_R1{M/L}") # Label Ratio
+#'    demultiplex_snames('A(0)_B(1)_C(2)_D(3)_R1{0}'     ) # Reporter intensity
+#'    demultiplex_snames('STD(L)_EM00(M)_EM01(H)_R1{L}')   # Label Intensity
 #'
 #'    # Alternate separators supported
-#'      demultiplex_snames('STD(L)_EM00(M)_EM01(H)_R1{L}')       # underscore
-#'      demultiplex_snames('STD(L).EM00(M).EM01(H).R1{L}')       # dot
-#'      demultiplex_snames('STD(L)EM00(M)EM01(H).R1{L}')         # no separator
+#'    demultiplex_snames('STD(L)_EM00(M)_EM01(H)_R1{L}')   # underscore
+#'    demultiplex_snames('STD(L).EM00(M).EM01(H).R1{L}')   # dot
+#'    demultiplex_snames('STD(L)EM00(M)EM01(H).R1{L}')     # no separator
 #'
 #'    # Composite snames supported
-#'      demultiplex_snames("WT.t0(L)_WT.t1(M)_WT.t2(H)_R1{H/L}") # composite snames
+#'    demultiplex_snames("WT.t0(L)_WT.t1(M)_WT.t2(H)_R1{H/L}")
 #'
 #'    # Uniqueness ensured by appending labels when necessary
-#'      demultiplex_snames(c("STD(L).BM00(M).BM00(H).R10{M/L}",  # implicit uniquification
-#'                                          "STD(L).BM00(M).BM00(H).R10{H/L}"))
+#'    demultiplex_snames(c("STD(L).BM00(M).BM00(H).R10{M/L}",
+#'                        "STD(L).BM00(M).BM00(H).R10{H/L}"))
+#'
 #'    # Uniplexed snames are returned unchanged
-#'      demultiplex_snames(c('STD_R1', 'EM0_R1'))
+#'    demultiplex_snames(c('STD_R1', 'EM0_R1'))
 #'
 #' # SummarizedExperiment
-#'   if (require(autonomics.data)){
-#'      x <- 'extdata/stemdiff/maxquant/proteinGroups.txt' %>%
-#'            system.file(package = 'autonomics.data')     %>%
-#'            read_proteingroups(standardize_snames = FALSE, demultiplex_snames = FALSE) %>%
-#'            standardize_maxquant_snames()
-#'      x %>% demultiplex_snames(verbose = TRUE)
-#'   }
-#'
+#'    file <- download_autonomics_data('stemcells_proteinGroups.txt')
+#'    x <- read_proteingroups(
+#'            file, standardize_snames = FALSE, demultiplex_snames = FALSE)
+#'    x %<>% standardize_maxquant_snames()
+#'    demultiplex_snames(x, verbose = TRUE)
 #' @export
 demultiplex_snames <- function (x, ...) {
     UseMethod("demultiplex_snames", x)

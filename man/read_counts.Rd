@@ -22,12 +22,8 @@ File format: header row
              feature counts      in next columns
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   file <- 'extdata/stemcomp/rnaseq/gene_counts.txt' \%>\%
-            system.file(package = 'autonomics.data')
-   file \%>\% read_counts(fid_var = 'gene_id', fname_var = 'gene_name')
-}
+file <- download_autonomics_data('stemcells_rna.txt')
+read_counts(file, fid_var = 'gene_id', fname_var = 'gene_name')
 }
 \seealso{
 merge_sdata, merge_fdata
