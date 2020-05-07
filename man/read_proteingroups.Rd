@@ -8,33 +8,25 @@ read_proteingroups(
   file,
   quantity = guess_maxquant_quantity(file),
   fvars = proteingroups_fvars,
-  standardize_snames = TRUE,
   demultiplex_snames = TRUE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{file}{character(1). Path to 'proteinGroups.txt'}
+\item{file}{string: path to 'proteinGroups.txt'}
 
-\item{quantity}{character(1). Expression columns to extract from proteinGroups file: 'Ratio normalized', 'Ratio', 'LFQ intensity',
-'LFQ intensity', 'Reporter intensity corrected', 'Reporter intensity', 'Intensity labeled', or 'Intensity'.}
+\item{quantity}{string: any value in \code{maxquant_patterns}}
 
-\item{fvars}{character(n). Annotation columns to extract from proteinGroups file.}
+\item{fvars}{character vector: annotation columns to extract from proteinGroups file.}
 
-\item{standardize_snames}{logical(1).   Standardize maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> WT(L).KD(H).R1{H/L} ?}
+\item{demultiplex_snames}{TRUE (default) or FALSE: whether to demultiplex maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
 
-\item{demultiplex_snames}{logical(1).   Demultiplex (standardized) maxquant snames: WT(L).KD(H).R1{H/L} -> KD(H)_WT(L).R1 ?}
-
-\item{verbose}{logical(1).   Message progress?}
+\item{verbose}{TRUE (default) or FALSE}
 }
 \description{
 Read proteingroups
 }
 \examples{
-require(magrittr)
-if (require(autonomics.data)){
-   file <- 'extdata/stemcomp/maxquant/proteinGroups.txt' \%>\%
-            system.file(package = 'autonomics.data')
-   file \%>\% read_proteingroups()
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+read_proteingroups(file)
 }

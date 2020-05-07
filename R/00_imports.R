@@ -1,7 +1,7 @@
 #' @importFrom AnnotationDbi mapIds
 #' @importFrom affy          just.rma
-#' @importFrom assertive     assert_all_are_existing_files
-#' @importFrom assertive     assert_is_a_bool assert_is_a_number
+#' @importFrom assertive     assert_all_are_existing_files   assert_is_a_bool
+#' @importFrom assertive     assert_is_character  assert_is_a_number
 #' @importFrom assertive     assert_is_a_string   assert_is_subset
 #' @importFrom assertive     is_existing_file
 #' @importFrom assertive     has_no_duplicates

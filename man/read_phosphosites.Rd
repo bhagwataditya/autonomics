@@ -5,25 +5,22 @@
 \title{Read phosphosites}
 \usage{
 read_phosphosites(
-  file,
-  proteingroups_file = dirname(file) \%>\% paste0("/phospho (STY)Sites.txt"),
-  quantity = guess_maxquant_quantity(file),
+  phosphofile,
+  proteinfile = paste0(dirname(phosphofile), "/proteinGroups.txt"),
+  quantity = guess_maxquant_quantity(phosphofile),
   fvars = phosphosite_fvars,
-  standardize_snames = TRUE,
   demultiplex_snames = TRUE,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
-\item{file}{string: phosphosites filepath}
+\item{phosphofile}{string: phosphosites filepath}
 
-\item{proteingroups_file}{string: proteingroups filepath}
+\item{proteinfile}{string: proteingroups filepath}
 
 \item{quantity}{NULL or value in names(maxquant_patterns)}
 
 \item{fvars}{string vector}
-
-\item{standardize_snames}{logical}
 
 \item{demultiplex_snames}{logical}
 
@@ -33,12 +30,7 @@ read_phosphosites(
 Read phosphosites
 }
 \examples{
-\dontrun{
-if (require(autonomics.data)){
-   require(magrittr)
-   file <- 'extdata/stemdiff/maxquant/phospho (STY)Sites.txt' \%>\%
-            system.file(package = 'autonomics.data')
-   file \%>\% read_phosphosites()
-}
-}
+phosphofile <- download_autonomics_data('diff_phosphoSites.txt')
+proteinfile <- download_autonomics_data('diff_proteinGroups.txt')
+read_phosphosites(phophofile, proteinfile)
 }

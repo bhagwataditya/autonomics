@@ -57,7 +57,6 @@ character vector, dataframe, or SummarizedExperiment.
 
 # SummarizedExperiment
      file <-download_autonomics_data( 'stemcells_proteinGroups.txt'))
-     x <- read_proteingroups(
-             x, standardize_snames = FALSE, demultiplex_snames = FALSE)
+     x <- read_proteingroups(x, demultiplex_snames = FALSE)
      guess_maxquant_quantity(x)
 }
