@@ -1,3 +1,26 @@
+#' Conveniently message dataframe
+#'
+#' Conveniently message dataframe using sprintf syntax.
+#' Use place holder '%s' for data.frame.
+#'
+#' @param format_string sprintf style format string
+#' @param x data.frame
+#' @return NULL
+#' @examples
+#' x <- data.frame(feature_id = c('F001', 'F002'), symbol = c('FEAT1', 'FEAT2'))
+#' cmessage_df('\t%s', x)
+#'
+#' x <- c(rep('PASS', 25), rep('FAIL', 25))
+#' cmessage_df(format_string = '%s', table(x))
+#' @noRd
+cmessage_df <- function(format_string, x){
+    format_string %>%
+    sprintf(capture.output(print(x))) %>%
+    paste0(collapse = '\n') %>%
+    enc2utf8() %>%
+    message()
+}
+
 #' Make vector components unique by appending spaces
 #' @param x character or factor vector
 #' @param method 'make.unique' or 'make.unique.spaces'
@@ -15,7 +38,7 @@ uniquify <- function(x, method = 'make.unique.spaces', verbose = TRUE){
         uniquefun <- get(method)
         uniquex <- uniquefun(x)
         if (verbose){
-            cmessage(   '\t\tUniquify ( %s -> %s ) duplicates of',
+            message(   '\t\tUniquify ( %s -> %s ) duplicates of',
                         x[idx][1], uniquefun(x[idx][c(1, 1)])[2])
             cmessage_df("\t\t\t  %s", table(x[idx]) %>% as.list() %>% unlist)
                 # unlist(as.list(.)) is to prevent empty line
@@ -34,7 +57,7 @@ uniquify <- function(x, method = 'make.unique.spaces', verbose = TRUE){
 #' c(1,2,3,4,5,2) %>% cduplicated()
 #' @noRd
 cduplicated <- function(x){
-  duplicated(x) | duplicated(x, fromLast = TRUE)
+    duplicated(x) | duplicated(x, fromLast = TRUE)
 }
 
 
@@ -43,13 +66,13 @@ cduplicated <- function(x){
 #=================================================
 
 is_excel_file <- function(file){
-    stringi::stri_detect_fixed(
-            tools::file_ext(file), 'xls', case_insensitive = TRUE)
+    stri_detect_fixed(
+            file_ext(file), 'xls', case_insensitive = TRUE)
 }
 
 nrows <- function(x, sheet=1){
     if (is_excel_file(x)){
-        nrow(readxl::read_excel(
+        nrow(read_excel(
                 x, sheet = sheet, .name_repair = 'minimal', col_names = FALSE))
     } else {
         length(readLines(x, warn=FALSE))
@@ -59,17 +82,17 @@ nrows <- function(x, sheet=1){
 
 ncols <- function(x, sheet=1){
     if (is_excel_file(x)){
-        ncol(readxl::read_excel(
+        ncol(read_excel(
             x, sheet=sheet, .name_repair = 'minimal', col_names = FALSE))
     } else {
-        max(utils::count.fields(x, quote = "", sep = '\t'))
+        max(count.fields(x, quote = "", sep = '\t'))
     }
 }
 
 #' Available autonomics datasets
-#' @export
+#' @noRd
 AUTONOMICS_DATASETS <-
- c( 'stemcells_rna.txt', 'stemcells_proteinGroups.txt', 'stemcells_soma.adat',
+c( 'stemcells_rna.txt', 'stemcells_proteinGroups.txt', 'stemcells_soma.adat',
     'stemcells.bam.zip',
     'diff_rna.txt', 'diff_proteinGroups.txt', 'diff_phosphoSites.txt',
     'hypo_soma.adat', 'hypo_metab.xlsx',
@@ -86,7 +109,7 @@ AUTONOMICS_DATASETS <-
 download_autonomics_data <- function(
     file, localdir = '~/autonomicscache', unzip = TRUE
 ){
-    assertive::assert_is_subset(file, AUTONOMICS_DATASETS)
+    assert_is_subset(file, AUTONOMICS_DATASETS)
     dir.create(localdir, showWarnings = FALSE, recursive = TRUE)
 
     bitbucket <- 'https://bitbucket.org/graumannlabtools/autonomics/downloads'
@@ -97,8 +120,8 @@ download_autonomics_data <- function(
         download.file(paste0(bitbucket, '/', file), localfile, mode = 'wb')
     }
 
-    if (tools::file_ext(file) == 'zip'){
-        utils::unzip(localfile, exdir = dirname(localfile))
+    if (file_ext(file) == 'zip'){
+        unzip(localfile, exdir = dirname(localfile))
         localfile %<>% substr(1, nchar(.)-4)
     }
 
@@ -124,7 +147,7 @@ download_autonomics_data <- function(
 is_fixed_col_file <- function(file){
     if (is_excel_file(file)){ TRUE
     } else {
-        fields <- utils::count.fields(file, quote = "", sep = '\t')
+        fields <- count.fields(file, quote = "", sep = '\t')
         all(fields==fields[1])
     }
 }
@@ -199,14 +222,14 @@ extract_rectangle <- function(x, ...){
 }
 
 
-extract_rectangle.character <- function(
-    x, rows = 1:nrows(x, sheet=sheet), cols = 1:ncols(x, sheet=sheet),
-    verbose = FALSE, transpose = FALSE, drop = FALSE, sheet = 1, ...
+extract_rectangle.character <- function(x, rows=seq_len(nrows(x, sheet=sheet)),
+    cols = seq_len(ncols(x, sheet=sheet)), verbose = FALSE, transpose = FALSE,
+    drop = FALSE, sheet = 1, ...
 ){
     # Assert
-    assertive.files::assert_all_are_existing_files(x)
-    assertive.types::assert_is_numeric(rows)
-    assertive.types::assert_is_numeric(cols)
+    assert_all_are_existing_files(x)
+    assert_is_numeric(rows)
+    assert_is_numeric(cols)
     row1 <- min(rows); rown <- max(rows)
     col1 <- min(cols); coln <- max(cols)
 
@@ -214,20 +237,20 @@ extract_rectangle.character <- function(
     if (verbose) message('\t\tRead ',
                 if (sheet==1) '' else paste0("sheet '", sheet, "' of"), file)
     dt <- if (is_excel_file(x)){
-            data.table::data.table(readxl::read_excel(
+            data.table(read_excel(
                 x,
                 sheet       = sheet,
                 col_names   = FALSE,
                 range       = sprintf('R%dC%d:R%dC%d', row1, col1, rown, coln),
                 .name_repair = 'minimal'))
         } else {
-            data.table::fread(
+            fread(
                 x,
                 na.strings = "",
                 header     = FALSE,
                 integer64  = 'numeric',
                 skip       = row1-1,
-                nrow       = 1+rown-row1,
+                nrows      = 1+rown-row1,
                 select     = col1:coln) }
 
     # Extract rectangle
@@ -242,13 +265,13 @@ extract_dt_col <- function(dt, i) dt[[i]]
 
 extract_rectangle.data.table <- function(
     x,
-    rows = 1:nrow(x),
-    cols = 1:ncol(x),
+    rows = seq_len(nrow(x)),
+    cols = seq_len(ncol(x)),
     transpose = FALSE,
     drop = FALSE,
     ...
 ){
-    magrittr::extract(x, rows, cols, with = FALSE) %>%
+    extract(x, rows, cols, with = FALSE) %>%
     as.matrix() %>%
     extract_rectangle.matrix(transpose = transpose, drop = drop)
 }
@@ -256,8 +279,8 @@ extract_rectangle.data.table <- function(
 
 extract_rectangle.matrix <- function(
     x,
-    rows      = 1:nrow(x),
-    cols      = 1:ncol(x),
+    rows      = seq_len(nrow(x)),
+    cols      = seq_len(ncol(x)),
     transpose = FALSE,
     drop      = FALSE,
     ...
@@ -351,6 +374,7 @@ extract_sdata <- function(
 #' @param sdata_cols numeric vector: sdata cols
 #' @param transpose  TRUE or FALSE (default)
 #' @param verbose    TRUE (default) or FALSE
+#' @return SummarizedExperiment
 #' @examples
 #' # RNASEQ
 #'    file <- download_autonomics_data('stemcells_rna.txt')
@@ -473,8 +497,8 @@ release_to_build <- function(release, organism){
 make_gtf_url <- function(organism, release){
     sprintf('ftp://ftp.ensembl.org/pub/release-%s/gtf/%s/%s.%s.%s.gtf.gz',
             release,
-            stringi::stri_replace_first_fixed(tolower(organism), ' ', '_'),
-            stringi::stri_replace_first_fixed(        organism,  ' ', '_'),
+            stri_replace_first_fixed(tolower(organism), ' ', '_'),
+            stri_replace_first_fixed(        organism,  ' ', '_'),
             release_to_build(release, organism),
             release)
 }
@@ -501,7 +525,7 @@ download_gtf <- function(
         basename(make_gtf_url(organism, release) %>% substr(1, nchar(.)-3)))
 ){
     assert_is_subset(organism,
-                     c('Homo sapiens', 'Mus musculus', 'Rattus norvegicus'))
+                    c('Homo sapiens', 'Mus musculus', 'Rattus norvegicus'))
     . <- NULL
     remote <- make_gtf_url(organism, release)
 
@@ -511,15 +535,14 @@ download_gtf <- function(
         message(sprintf("download   %s'" , remote))
         message(sprintf("to         %s", gtffile ))
         dir.create(dirname(gtffile), showWarnings = FALSE, recursive = TRUE)
-        tryCatch(expr = { utils::download.file(
+        tryCatch(expr = { download.file(
                                 url = remote, destfile = gtffile, quiet = TRUE)
-                            R.utils::gunzip(
-                                gtffile,  remove = TRUE, overwrite = TRUE)},
+                            gunzip(gtffile,  remove = TRUE, overwrite = TRUE)},
                 error = function(cond){
                     message('failed     repeat manually using browser\n');
                     message(cond)})
     }
-    gtffile %<>% stringi::stri_replace_last_fixed('.gz', '')
+    gtffile %<>% stri_replace_last_fixed('.gz', '')
     invisible(gtffile)
 }
 
@@ -538,7 +561,6 @@ download_gtf <- function(
 #'    gtffile <- download_gtf(organism = 'Homo sapiens', release = 95)
 #'    gtfdt <- read_gtf(gtffile, var = 'gene_id', values = 'ENSG00000198947')
 #' }
-#' @importFrom magrittr %>%
 #' @noRd
 read_gtf <- function(
     gtffile,
@@ -552,19 +574,20 @@ read_gtf <- function(
     assert_is_a_string(var)
 
     # Read
-    dt <- rtracklayer::import(gtffile) %>% GenomicRanges::as.data.frame() %>% data.table::data.table()
+    dt <- rtracklayer::import(gtffile) %>%
+          GenomicRanges::as.data.frame() %>% data.table()
 
     # Filter
     if (!is.null(values)){
-        dt %>% data.table::setkeyv(var)
-        dt %<>% magrittr::extract(values)
+        dt %>% setkeyv(var)
+        dt %<>% extract(values)
     }
 
     # Write
     if (!is.null(writefile)){
         message(sprintf("\t\tWrite   %s", writefile))
         dir.create(dirname(writefile), recursive = TRUE, showWarnings = FALSE)
-        data.table::fwrite(dt, writefile)
+        fwrite(dt, writefile)
     }
 
     # Return
@@ -582,21 +605,20 @@ read_gtf <- function(
 #' @param gtffile      NULL (use Rsubread's default human/mouse annotations) or
 #'                     string (path to GTF file)
 #' @param fvars        character vector: GTF variables to include in object.
-#' @param sumexpfile   string: file which object is saved to (with saveRDS)
 #' @param nthreads     number of cores to be used by Rsubread::featureCounts()
 #' @param ...          passed to Rsubread::featureCounts
+#' @return SummarizedExperiment
 #' @examples
 #' bamdir <- download_autonomics_data("stemcells.bam.zip")
 #' read_bam(bamdir, ispaired = TRUE)
 #' @export
 read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
-    fvars = character(0), nthreads   = parallel::detectCores(), ...
+    fvars = character(0), nthreads   = detectCores(), ...
 ){
     # Assert
     assert_all_are_existing_files(bamdir)
     assert_is_a_bool(ispaired)
     if (!is.null(gtffile))   assert_all_are_existing_files(gtffile)
-    if (!is.null(sumexpfile))    assert_all_are_existing_files(sumexpfile)
     assert_is_a_number(nthreads)
 
     # Count reads
@@ -612,7 +634,7 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
                     ...)
 
     # Forge SummarizedExperiment
-    filenames   <- basename(tools::file_path_sans_ext(files))
+    filenames   <- basename(file_path_sans_ext(files))
     subdirnames <- basename(dirname(files))
     sample_names <- if (has_no_duplicates(filenames)){
                         filenames
@@ -647,27 +669,25 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
 #' @param verbose    TRUE (default) or FALSE
 #' @return dataframe with re-ordered columns
 #' @examples
-#' require(magrittr)
 #' df <- data.frame(
 #'    symbol = c('A1BG', 'A2M'),
 #'    id     = c('1',    '2'),
 #'    name   = c('alpha-1-B glycoprotein', 'alpha-2-macroglobulin'),
 #'    type   = c('proteincoding', 'proteincoding'))
 #' first_cols <- c('id', 'symbol', 'location', 'uniprot')
-#' df %>% autonomics.support::pull_columns(first_cols)
+#' pull_columns(df, first_cols)
 #' @noRd
 pull_columns <- function(df, first_cols, verbose = TRUE){
 
-    assertive.types::assert_is_data.frame(df)
-    assertive.types::assert_is_character(first_cols)
-    extract <- magrittr::extract
+    assert_is_data.frame(df)
+    assert_is_character(first_cols)
 
     idx <- first_cols %in% names(df)
     if (any(!idx)){
-        if (verbose) cmessage(
-            'pull_columns: ignore absent columns %s',
+        if (verbose) message(
+            'pull_columns: ignore absent columns ',
             paste0(sprintf("'%s'", first_cols[!idx]), collapse = ', '))
-        first_cols %<>% magrittr::extract(idx)
+        first_cols %<>% extract(idx)
     }
 
   df %>% extract(, c(first_cols, setdiff(names(df), first_cols)), drop = FALSE)
@@ -685,6 +705,7 @@ pull_columns <- function(df, first_cols, verbose = TRUE){
 #' @param file      string: path to rnaseq counts file
 #' @param fid_var   string or number: feature id variable
 #' @param fname_var string or number: feature name variable
+#' @return SummarizedExperiment
 #' @examples
 #' file <- download_autonomics_data('stemcells_rna.txt')
 #' read_counts(file, fid_var = 'gene_id', fname_var = 'gene_name')
@@ -732,10 +753,10 @@ read_counts <- function(
 #========================
 
 # https://stackoverflow.com/a/4090208
-install_if_required <- function(pkgs){
-    pkgs %<>% extract(!(pkgs %in% installed.packages()[,"Package"]))
-    if(length(pkgs)) BiocManager::install(pkgs)
-}
+# install_if_required <- function(pkgs){
+#     pkgs %<>% extract(!(pkgs %in% installed.packages()[,"Package"]))
+#     if(length(pkgs)) BiocManager::install(pkgs)
+# }
 
 
 add_affy_fdata <- function(object){
@@ -746,7 +767,7 @@ add_affy_fdata <- function(object){
 
     # Get annotation db
     pkgname <- paste0(metadata(object)$annotation, '.db')
-    install_if_required(pkgname)
+    #install_if_required(pkgname)
     db <- getFromNamespace(pkgname, pkgname)
 
     # Map
@@ -766,8 +787,9 @@ add_affy_fdata <- function(object){
 
 #' Read affymetrix microarray
 #' @param celfiles string vector: CEL file paths
-#' @return SummarizedExperiment
+#' @return RangedSummarizedExperiment
 #' @examples
+#' require(magrittr)
 #' url <- paste0('http://www.bioconductor.org/help/publications/2003/',
 #'                 'Chiaretti/chiaretti2/T33.tgz')
 #' localfile <- file.path('~/autonomicscache', basename(url))
@@ -776,9 +798,9 @@ add_affy_fdata <- function(object){
 #'     untar(localfile, exdir = path.expand('~/autonomicscache'))
 #' }
 #' localfile %<>% substr(1, nchar(.)-4)
-#' read_affy(celfiles = list.files(localfile, full.names = TRUE))
+#' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 #' @export
-read_affy <- function(celfiles){
+read_affymetrix <- function(celfiles){
 
     # read
     message('Read Affymetrix CEL files: ', basename(celfiles)[1], ', ...')
@@ -806,20 +828,21 @@ read_affy <- function(celfiles){
 
 #' Read genex file
 #' @param file string: path to exiqon genex file
-#' @export
+#' @return SummarizedExperiment
+#' @noRd
 read_genex <- function(file){
     assert_all_are_existing_files(file)
     dt <- extract_rectangle(file, sheet=1)
     read_omics(
         file,
         sheet = 1,
-        fid_rows   = 1,                       fid_cols   = 2:(ncol(dt)-2),
-        sid_rows   = 2:(nrow(dt)-3),          sid_cols   = 1,
-        expr_rows  = 2:(nrow(dt)-3),          expr_cols  = 2:(ncol(dt)-2),
-        fvar_rows  = (nrow(dt)-2):nrow(dt),   fvar_cols  = 1,
-        svar_rows  = 1,                       svar_cols  = (ncol(dt)-1):ncol(dt),
-        fdata_rows = (nrow(dt)-2):nrow(dt),   fdata_cols = 2:(ncol(dt)-2),
-        sdata_rows = 2:(nrow(dt)-3),          sdata_cols = (ncol(dt)-1):ncol(dt),
+        fid_rows   = 1,                     fid_cols   = 2:(ncol(dt)-2),
+        sid_rows   = 2:(nrow(dt)-3),        sid_cols   = 1,
+        expr_rows  = 2:(nrow(dt)-3),        expr_cols  = 2:(ncol(dt)-2),
+        fvar_rows  = (nrow(dt)-2):nrow(dt), fvar_cols  = 1,
+        svar_rows  = 1,                     svar_cols  = (ncol(dt)-1):ncol(dt),
+        fdata_rows = (nrow(dt)-2):nrow(dt), fdata_cols = 2:(ncol(dt)-2),
+        sdata_rows = 2:(nrow(dt)-3),        sdata_cols = (ncol(dt)-1):ncol(dt),
         transpose  = TRUE,
         verbose    = TRUE)
 }
@@ -838,7 +861,6 @@ read_genex <- function(file){
 #' @param sid_var      string: sample_id    variable
 #' @param subgroup_var string: subgroup     variable
 #' @param fname_var    string: feature_name variable
-#' @param ...          provide backward compatibility to deprecated function load_soma
 #' @return Summarizedexperiment
 #' @seealso prepare_somascan
 #' @examples
@@ -878,8 +900,8 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
         expr_rows  = (s_row+1):n_row,   expr_cols  = (f_col+1):n_col,
         fvar_rows  =  f_row:(s_row-1),  fvar_cols  =  f_col,
         fdata_rows =  f_row:(s_row-1),  fdata_cols  = (f_col+1):n_col,
-        svar_rows  =  s_row,            svar_cols  = 1:(f_col-1),
-        sdata_rows = (s_row+1):n_row,   sdata_cols = 1:(f_col-1),
+        svar_rows  =  s_row,            svar_cols  = seq_len(f_col-1),
+        sdata_rows = (s_row+1):n_row,   sdata_cols = seq_len(f_col-1),
         transpose  = TRUE,
         verbose    = TRUE)
 
@@ -902,38 +924,39 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
 
 find_origscale_sheet <- function(file){
     readxl::excel_sheets(file) %>%
-    magrittr::extract(stringi::stri_detect_fixed(., 'OrigScale')) %>%
-    magrittr::extract2(1)
+    extract(stringi::stri_detect_fixed(., 'OrigScale')) %>%
+    extract2(1)
 }
 
 
 #' Read metabolon
-#' @param file          string: path to metabolon xlsx file
-#' @param sheet         number/string: xls sheet number or name
-#' @param fid_var       string: feature_id variable (ideally transcends dataset)
-#' @param sid_var       string: sample_id variable
-#' @param subgroup_var  string: subgroup variable (human comprehensible)
-#' @param fname_var     string: feature_name variable
-#' @param ...           enable backward compatibility to deprecated load_metabolon
+#' @param file         string: path to metabolon xlsx file
+#' @param sheet        number/string: xls sheet number or name
+#' @param fid_var      string: feature_id variable (ideally transcends dataset)
+#' @param sid_var      string: sample_id variable
+#' @param subgroup_var string: subgroup variable (human comprehensible)
+#' @param fname_var    string: feature_name variable
+#' @return SummarizedExperiment
 #' @examples
 #' file <- download_autonomics_data('hypo_metab.xlsx')
 #' read_metabolon(file)
 #' @export
 read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL'
-){
-    assertive.files::assert_all_are_existing_files(file)
-
+    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL'){
+# Assert
+    assert_all_are_existing_files(file)
+# Initial read
     d_f <- read_excel(file, sheet, col_names = FALSE, .name_repair = 'minimal')
 
     fvar_rows <- which(!is.na(d_f %>% extract_dt_col(1))) %>% extract(1)
     svar_cols <- which(!is.na(d_f %>% extract_dt_row(1))) %>% extract(1)
-    fvar_cols <- fdata_cols <- 1:svar_cols
-    svar_rows <- sdata_rows <- 1:fvar_rows
-    fvar_names <- d_f %>% extract_dt_row(fvar_rows) %>% extract(1:svar_cols)
-    svar_names <- d_f %>% extract_dt_col(svar_cols) %>% extract(1:fvar_rows)
-
+    fvar_cols <- fdata_cols <- seq_len(svar_cols)
+    svar_rows <- sdata_rows <- seq_len(fvar_rows)
+    fvar_names <- d_f  %>%  extract_dt_row(fvar_rows)   %>%
+                            extract(seq_len(svar_cols))
+    svar_names <- d_f  %>%  extract_dt_col(svar_cols)   %>%
+                            extract(seq_len(fvar_rows))
     fid_var <- fvar_names %>% extract(stri_detect_regex(., fid_var))
     sid_var <- svar_names %>% extract(stri_detect_regex(., sid_var))
     fid_rows  <- fdata_rows <- expr_rows <- (fvar_rows+1):nrow(d_f)
@@ -941,7 +964,7 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
 
     fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
     sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
-
+# Systematic read
     object <- read_omics(file,
                         sheet      = sheet,
                         fid_rows   = fid_rows,      fid_cols   = fid_cols,
@@ -953,20 +976,18 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
                         sdata_rows = svar_rows,     sdata_cols = sdata_cols,
                         transpose  = FALSE,
                         verbose    = TRUE)
-
-    # sdata
-    is_subgroup_col <- stringi::stri_detect_regex(svars(object), subgroup_var)
+# Add sdata
+    is_subgroup_col <- stri_detect_regex(svars(object), subgroup_var)
     subgroup_var <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
                     } else {                    sid_var }
     sdata(object) %<>% (function(y){
                             y$subgroup <- y[[subgroup_var]]
                             y %>% pull_columns(c('sample_id', 'subgroup'))})
-    # fdata
-    assertive.sets::assert_is_subset(fname_var, fvars(object))
+# Add fdata
+    assert_is_subset(fname_var, fvars(object))
     fdata(object) %<>% (function(y){ y$feature_name <- y[[fname_var]]
     y %>% pull_columns(c('feature_id', 'feature_name'))})
-
-    # return
+# return
     object
 }
 
@@ -975,6 +996,8 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
 #====================================
 
 #' maxquant patterns
+#' @examples
+#' maxquant_patterns
 #' @export
 maxquant_patterns <- c(
     `Ratio normalized`             =
@@ -1030,8 +1053,8 @@ maxquant_patterns <- c(
 #'     guess_maxquant_quantity(x)
 #'
 #' # SummarizedExperiment
-#'      file <-download_autonomics_data( 'stemcells_proteinGroups.txt'))
-#'      x <- read_proteingroups(x, demultiplex_snames = FALSE)
+#'      file <-download_autonomics_data( 'stemcells_proteinGroups.txt')
+#'      x <- read_proteingroups(file, demultiplex_snames = FALSE)
 #'      guess_maxquant_quantity(x)
 #' @export
 guess_maxquant_quantity <- function(x, ...){
@@ -1081,7 +1104,7 @@ guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
 
 
 #' proteingroups fvars
-#' @export
+#' @noRd
 proteingroups_fvars <- c(
     'id', 'Majority protein IDs', 'Protein names', 'Gene names',
     'Contaminant', 'Potential contaminant', 'Reverse', 'Phospho (STY) site IDs')
@@ -1093,10 +1116,11 @@ proteingroups_fvars <- c(
 #'
 #' Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 #'
-#' @param x        character(.) or SummarizedExperiment
+#' @param x        character vector or SummarizedExperiment
 #' @param quantity maxquant quantity
-#' @param verbose  logical(1)
+#' @param verbose  TRUE (default) or FALSE
 #' @param ...      allow for proper S3 method dispatch
+#' @return character vector or SummarizedExperiment
 #' @examples
 #' # character vector
 #'    x <- "Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"
@@ -1179,9 +1203,9 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #' @param x        character vector or SummarizedExperiment
 #' @param verbose  logical
 #' @param ...      allow for S3 dispatch
+#' @return character vector or SummarizedExperiment
 #' @examples
 #' # character vector
-#'
 #'    # Alternate multiplexing forms supported
 #'    demultiplex("STD(L)_EM00(M)_EM01(H)_R1{M/L}") # Label Ratio
 #'    demultiplex('A(0)_B(1)_C(2)_D(3)_R1{0}'     ) # Reporter intensity
@@ -1203,6 +1227,7 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #'    demultiplex(c('STD_R1', 'EM0_R1'))
 #'
 #' # SummarizedExperiment
+#'    require(magrittr)
 #'    file <- download_autonomics_data('stemcells_proteinGroups.txt')
 #'    x <- read_proteingroups(file, demultiplex = FALSE)
 #'    x %<>% standardize_maxquant_snames()
@@ -1251,6 +1276,7 @@ extract_channels <- function(x){
 #' x <- "STD(L)_EM00(M)_EM01(H)_R1"
 #' extract_labels(x)
 #' extract_samples(x)
+#' @noRd
 extract_labels <- function(multiplexes){
     pattern <- '\\(.+?\\)'
     stri_extract_all_regex(multiplexes, pattern)       %>%
@@ -1261,7 +1287,7 @@ extract_biosamples <- function(multiplexes, labels){
     pattern <- '\\(.+?\\)'
     stri_split_regex(multiplexes, pattern) %>%
     lapply(function(y){
-            y[1:length(labels[[1]])] %<>%
+            y[seq_len(length(labels[[1]]))] %<>%
             stri_replace_first_regex('^[_. ]', ''); y})
     # rm sep from samples (but not from replicate - needed to glue back later!)
 }
@@ -1312,7 +1338,7 @@ drop_replicates <- function(biosamples, labels){
     n_samples <- unique(vapply(biosamples, length, integer(1)))
     n_labels  <- unique(vapply(labels,  length, integer(1)))
     if (n_samples > n_labels){
-        biosamples %<>% lapply(extract, 1:(n_samples-1))
+        biosamples %<>% lapply(extract, seq_len(n_samples-1))
     }
     biosamples
 }
@@ -1417,9 +1443,11 @@ demultiplex.SummarizedExperiment <- function(x,verbose  = FALSE, ...){
 #' Read proteingroups
 #' @param file        string: path to 'proteinGroups.txt'
 #' @param quantity    string: any value in \code{maxquant_patterns}
-#' @param fvars       character vector: annotation columns to extract from proteinGroups file.
-#' @param demultiplex_snames TRUE (default) or FALSE: whether to demultiplex maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?
+#' @param fvars       character vector: annotation columns to extract
+#' @param demultiplex_snames  TRUE (default) or FALSE: whether to demultiplex
+#'    maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?
 #' @param verbose     TRUE (default) or FALSE
+#' @return SummarizedExperiment
 #' @examples
 #' file <- download_autonomics_data('stemcells_proteinGroups.txt')
 #' read_proteingroups(file)
@@ -1476,11 +1504,12 @@ read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file),
 
 
 #' phosphosites fvars
-#' @export
+#' @noRd
 phosphosite_fvars <- c(
   'id', 'Protein group IDs', 'Positions within proteins', 'Localization prob')
 
-phospho_expr_columns <- function(x){
+phospho_expr_columns <- function(x, quantity){
+    pattern <- maxquant_patterns[[quantity]]
     which(stri_detect_regex(x,pattern) & !stri_detect_regex(x, '___[1-3]'))
 }
 
@@ -1495,11 +1524,9 @@ filter_single_proteingroup <- function(phosphosites, verbose){
     phosphosites
 }
 
-add_occupancies <- function(phosphosites, proteinfile, verbose){
+add_occupancies <- function(phosphosites, proteingroups, verbose){
     #if (verbose)  message("\t\tRead: ", proteinfile)
-    proteingroups <- read_proteingroups(proteinfile, quantity = quantity,
-                                        verbose = FALSE)
-    proteingroups %<>% extract(rowData(phosphosites)$`Protein group IDs`, )
+  proteingroups %<>% extract(rowData(phosphosites)$`Protein group IDs`, )
     if (verbose) message(
         '\t\tCalculate occupancies(phospho) = exprs(phospho) - exprs(proteins)')
     occupancies(phosphosites) <- exprs(phosphosites) - exprs(proteingroups)
@@ -1511,12 +1538,13 @@ add_occupancies <- function(phosphosites, proteinfile, verbose){
 #' @param proteinfile         string: proteingroups filepath
 #' @param quantity            NULL or value in names(maxquant_patterns)
 #' @param fvars               string vector
-#' @param demultiplex_snames  logical
-#' @param verbose             logical
+#' @param demultiplex_snames  TRUE (default) or FALSE
+#' @param verbose             TRUE (default) or FALSE
+#' @return SummarizedExperiment
 #' @examples
 #' phosphofile <- download_autonomics_data('diff_phosphoSites.txt')
 #' proteinfile <- download_autonomics_data('diff_proteinGroups.txt')
-#' read_phosphosites(phophofile, proteinfile)
+#' read_phosphosites(phosphofile, proteinfile)
 #' @export
 read_phosphosites <- function(
     phosphofile,
@@ -1533,8 +1561,7 @@ read_phosphosites <- function(
     assert_is_character(fvars)
 # Initial Read
     dt <- fread(phosphofile, integer64 = 'numeric', header = TRUE)
-    pattern <- maxquant_patterns[[quantity]]
-    value_cols <- phospho_expr_columns(names(dt))
+    value_cols <- phospho_expr_columns(names(dt), quantity)
     fvar_cols  <- which(names(dt) %in% fvars)
 # Read phosphosites
     fid_rows   <- 2:nrow(dt);     fid_cols   <- which(names(dt) == 'id')
@@ -1552,7 +1579,9 @@ read_phosphosites <- function(
                                 transpose  = FALSE, verbose = verbose)
     phosphosites %<>% filter_single_proteingroup(verbose = verbose)
 # Add occupancies
-    phosphosites %<>% add_occupancies(proteinfile, verbose = verbose)
+    proteingroups <- read_proteingroups(proteinfile, quantity = quantity,
+                                        verbose = FALSE)
+    phosphosites %<>% add_occupancies(proteingroups, verbose = verbose)
 # Demultiplex snames and return
     if (demultiplex_snames){
         phosphosites %<>% standardize_maxquant_snames(verbose = verbose)

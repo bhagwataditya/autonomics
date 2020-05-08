@@ -11,4 +11,7 @@ maxquant_patterns
 \description{
 maxquant patterns
 }
+\examples{
+maxquant_patterns
+}
 \keyword{datasets}

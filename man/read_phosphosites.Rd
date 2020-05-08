@@ -22,9 +22,12 @@ read_phosphosites(
 
 \item{fvars}{string vector}
 
-\item{demultiplex_snames}{logical}
+\item{demultiplex_snames}{TRUE (default) or FALSE}
 
-\item{verbose}{logical}
+\item{verbose}{TRUE (default) or FALSE}
+}
+\value{
+SummarizedExperiment
 }
 \description{
 Read phosphosites
@@ -32,5 +35,5 @@ Read phosphosites
 \examples{
 phosphofile <- download_autonomics_data('diff_phosphoSites.txt')
 proteinfile <- download_autonomics_data('diff_proteinGroups.txt')
-read_phosphosites(phophofile, proteinfile)
+read_phosphosites(phosphofile, proteinfile)
 }

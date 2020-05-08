@@ -23,13 +23,16 @@ standardize_maxquant_snames(x, ...)
 )
 }
 \arguments{
-\item{x}{character(.) or SummarizedExperiment}
+\item{x}{character vector or SummarizedExperiment}
 
 \item{...}{allow for proper S3 method dispatch}
 
 \item{quantity}{maxquant quantity}
 
-\item{verbose}{logical(1)}
+\item{verbose}{TRUE (default) or FALSE}
+}
+\value{
+character vector or SummarizedExperiment
 }
 \description{
 Standardize maxquant sample names

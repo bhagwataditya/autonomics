@@ -33,12 +33,11 @@ updated SummarizedExperiment
 Get/Set contrast definitions
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   object <- autonomics.data::stemcomp.proteinratios
-   contrastdefs1 <- c(EM_E = 'EM_E', BM_E = 'BM_E', BM_EM = 'BM_EM')
-   contrastdefs(object) <-     contrastdefs1   # conventional setter
-   object \%>\% set_contrastdefs(contrastdefs1)  # piping       setter
-   contrastdefs(object)                        # getter
-}
+require(magrittr)
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+contrastdefs1 <- c(EM_E = 'EM_E', BM_E = 'BM_E', BM_EM = 'BM_EM')
+contrastdefs(object) <-     contrastdefs1   # conventional setter
+object \%>\% set_contrastdefs(contrastdefs1)  # piping       setter
+contrastdefs(object)                        # getter
 }

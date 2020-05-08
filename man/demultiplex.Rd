@@ -19,12 +19,14 @@ demultiplex(x, ...)
 
 \item{verbose}{logical}
 }
+\value{
+character vector or SummarizedExperiment
+}
 \description{
 Demultiplex sample names
 }
 \examples{
 # character vector
-
    # Alternate multiplexing forms supported
    demultiplex("STD(L)_EM00(M)_EM01(H)_R1{M/L}") # Label Ratio
    demultiplex('A(0)_B(1)_C(2)_D(3)_R1{0}'     ) # Reporter intensity
@@ -46,6 +48,7 @@ Demultiplex sample names
    demultiplex(c('STD_R1', 'EM0_R1'))
 
 # SummarizedExperiment
+   require(magrittr)
    file <- download_autonomics_data('stemcells_proteinGroups.txt')
    x <- read_proteingroups(file, demultiplex = FALSE)
    x \%<>\% standardize_maxquant_snames()

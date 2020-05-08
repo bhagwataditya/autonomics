@@ -18,8 +18,7 @@ fvar values
 Get fvar levels
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   autonomics.data::stemcomp.proteinratios \%>\% flevels('Gene names') \%>\% head()
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+head(flevels(object, 'Gene names'))
 }

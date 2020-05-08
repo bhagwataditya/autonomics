@@ -27,10 +27,9 @@ feature name vector (get) or updated object (set)
 Get/Set feature names
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   object <- autonomics.data::stemcomp.proteinratios
-   fnames(object) \%<>\% paste0('PG', .)
-   object
-}
+require(magrittr)
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+fnames(object) \%<>\% paste0('PG', .)
+object
 }

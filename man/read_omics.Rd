@@ -63,6 +63,9 @@ excel (xls, xlsx) file}
 
 \item{verbose}{TRUE (default) or FALSE}
 }
+\value{
+SummarizedExperiment
+}
 \description{
 Read omics data from rectangular file
 }

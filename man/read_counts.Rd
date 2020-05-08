@@ -13,6 +13,9 @@ read_counts(file, fid_var, fname_var = character(0))
 
 \item{fname_var}{string or number: feature name variable}
 }
+\value{
+SummarizedExperiment
+}
 \description{
 Read tsv file with rnaseq counts into SummarizedExperiment
 }

@@ -26,3 +26,8 @@ analysis details (get) or updated object (set)
 \description{
 Get/set analysis
 }
+\examples{
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+analysis(object)
+}

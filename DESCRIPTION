@@ -1,6 +1,6 @@
-Package: autonomics
+Package: importomics
 Type: Package
-Title: Generify and intuify omics data analysis
+Title: Import data from rectangular omics files into ready-to-analyze SummarizedExperiment
 Version: 0.99.0
 Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.de",    role = c("aut", "cre")), 
              person("Johannes", "Graumann",  email = "johannes.graumann@mpi-bn.mpg.de", role = c('aut', 'sad', 'rth')),
@@ -8,18 +8,49 @@ Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.
              person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",   role = "ctb"), 
              person("Richard",  "Cotton",    email = "richierocks@gmail.com",           role = "ctb"), 
              person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",   role = "sad"))
-Description: This package aims to make omics data analysis generic and intuitive, by implementing cross-platform
-             analysis steps generically, and translating design information into relevant biological questions intuitively.
-             It contains functions for data import, preprocessing, and analysis and currently offers support 
-             for Microarray, RNAseq, LCMSMS Proteomics, Metabolon, and SOMAscan platforms.
+Description: 
+  Many powerful platforms for molecular profiling have emerged in recent years: NGS, qPCR, MS, Microarrays, ...
+  They all use different technologies and produce different raw files.
+  These raw files are preprocessed, often resulting in an intermediate data file. 
+  Format and arrangement of this intermediate data file differs between platforms.
+  Yet, the backbone structure is identical, containing three rectangles of information: 
+  (1) feature quantifications, (2) feature annotations, and (3) sample design.
+  Building on this genericity, importomics provides a generic importer for any rectangular omics data file.
+  The importer reads the data directly into a SummarizedExperiment. 
+  Additionally, when sample names are chosen consistently, it also automatically extracts sample design from sample names. 
+  This makes the imported SummarizedExperiment directly ready for subsequent statistical analysis.
+  For a number of commonly used platforms (LCMS Proteomics/MaxQuant, RNAseq, SOMAscan, Metabolon), we additionally provide
+  dedicated importers, based on the generic backend. These additional importers take care of additonal, platform-specific 
+  taks required prior to analysis. 
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
-biocViews: Software, Workflow, GeneExpression, Transcription, DifferentialExpression, 
-           PrincipalComponent, RNAseq, MassSpectrometry
+biocViews: Software, DataImport, GeneExpression, Transcription, 
+           RNASeq, MassSpectrometry
 BugReports: https://bitbucket.org/graumannlabtools/autonomics 
 URL: https://bitbucket.org/graumannlabtools/autonomics
 RoxygenNote: 7.0.2
-Imports: assertive, magrittr, BiocManager, Rsubread, rtracklayer, S4Vectors, SummarizedExperiment
-Suggests: testthat
+Imports: 
+  affy,
+  AnnotationDbi, 
+  assertive, 
+  data.table,
+  GenomicRanges,
+  magrittr, 
+  methods,
+  parallel,
+  purrr,
+  R.utils,
+  readxl,
+  Rsubread, 
+  rtracklayer, 
+  S4Vectors, 
+  stringi,
+  SummarizedExperiment,
+  tools,
+  utils
+Suggests: 
+  hgu95av2cdf,
+  knitr,
+  testthat

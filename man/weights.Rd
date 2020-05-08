@@ -32,10 +32,8 @@ weight matrix (get) or updated object (set)
 Get/Set weight matrix
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   object <- autonomics.data::stemcomp.proteinratios
-   weights(object)
-   weights(object) <- 1; weights(object) \%>\% str()
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+weights(object)[1:3, 1:2]
+weights(object) <- 1; weights(object)[1:3, 1:2]
 }

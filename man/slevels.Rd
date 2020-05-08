@@ -21,9 +21,8 @@ svar values (character)
 Get svar levels
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   autonomics.data::stemcomp.proteinratios \%>\% slevels('subgroup')
-   autonomics.data::stemcomp.proteinratios \%>\% subgroup_levels()
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+slevels(object, 'subgroup')
+subgroup_levels(object)
 }

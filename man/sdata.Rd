@@ -28,9 +28,8 @@ Get/Set sample data
 }
 \examples{
 require(magrittr)
-if (require(autonomics.data)){
-   object <- autonomics.data::stemcomp.proteinratios
-   sdata(object) \%<>\% cbind(z=1)
-   object
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+head(sdata(object))
+head(sdata(object) \%<>\% cbind(z=1))
 }

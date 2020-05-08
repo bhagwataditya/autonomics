@@ -28,10 +28,9 @@ Get/Set feature data
 }
 \examples{
 require(magrittr)
-if (require(autonomics.data)){
-   object <- autonomics.data::stemcomp.proteinratios
-   object \%>\% fdata() \%>\% head()
-   fdata(object) \%<>\% cbind(z=1)
-   object
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+head(fdata(object)) # Getter
+fdata(object) \%<>\% cbind(z=1)
+head(fdata(object)) # Setter
 }

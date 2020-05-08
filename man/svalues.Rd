@@ -25,14 +25,15 @@ svalues(object, svar) <- value
 
 \item{value}{value vector}
 }
+\value{
+character vector (get) or SummarizedExperiment (set)
+}
 \description{
 Get/Set svar values
 }
 \examples{
-if (require(autonomics.data)){
-   require(magrittr)
-   object <- autonomics.data::stemcomp.proteinratios
-   svalues(object, 'subgroup')
-   subgroup_values(object)
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+svalues(object, 'subgroup')
+subgroup_values(object)
 }

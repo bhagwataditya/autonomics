@@ -22,8 +22,6 @@ read_somascan(
 \item{subgroup_var}{string: subgroup     variable}
 
 \item{fname_var}{string: feature_name variable}
-
-\item{...}{provide backward compatibility to deprecated function load_soma}
 }
 \value{
 Summarizedexperiment

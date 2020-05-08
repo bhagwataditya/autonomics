@@ -17,11 +17,15 @@ read_proteingroups(
 
 \item{quantity}{string: any value in \code{maxquant_patterns}}
 
-\item{fvars}{character vector: annotation columns to extract from proteinGroups file.}
+\item{fvars}{character vector: annotation columns to extract}
 
-\item{demultiplex_snames}{TRUE (default) or FALSE: whether to demultiplex maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
+\item{demultiplex_snames}{TRUE (default) or FALSE: whether to demultiplex
+maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
 
 \item{verbose}{TRUE (default) or FALSE}
+}
+\value{
+SummarizedExperiment
 }
 \description{
 Read proteingroups

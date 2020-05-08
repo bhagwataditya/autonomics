@@ -30,9 +30,8 @@ exprs matrix (get) or updated object (set)
 Get / Set exprs matrix
 }
 \examples{
-if (require(autonomics.data)){
-   object <- autonomics.data::stemcomp.proteinratios
-   exprs(object) <- 0
-   object
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+exprs(object) <- 0
+object
 }

@@ -28,9 +28,8 @@ Get/Set feature variables
 }
 \examples{
 require(magrittr)
-if (require(autonomics.data)){
-   object <- autonomics.data::stemcomp.proteinratios
-   fvars(object)[1] \%<>\% paste0('1')
-   object
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+fvars(object)[1] \%<>\% paste0('1')
+fvars(object)[1]
 }

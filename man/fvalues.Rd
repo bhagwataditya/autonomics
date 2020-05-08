@@ -7,7 +7,7 @@
 fvalues(object, fvar)
 }
 \arguments{
-\item{object}{SummarizedExperiment, eSet, or EList}
+\item{object}{SummarizedExperiment}
 
 \item{fvar}{feature variable}
 }
@@ -18,10 +18,8 @@ fvar values
 Get fvar values
 }
 \examples{
-require(magrittr)
-if (require(autonomics.data)){
-   object <-autonomics.data::stemcomp.proteinratios
-   object \%>\% fvalues('Gene names') \%>\% head()
-   object \%>\% fvalues(NULL)
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+head(fvalues(object, 'Gene names'))
+fvalues(object, NULL)
 }

@@ -69,45 +69,45 @@ is_max <- function(x) cequals(x, max(x, na.rm = TRUE))
 #'    # guess_sep(object)
 #' @export
 guess_sep <- function (x, ...) {
-   UseMethod("guess_sep", x)
+    UseMethod("guess_sep", x)
 }
 
 
 #' @rdname guess_sep
 #' @export
 guess_sep.character <- function(
-   x,
-   possible_separators = c('.', ' ', '_'),
-   verbose = FALSE,
-   ...
+    x,
+    possible_separators = c('.', ' ', '_'),
+    verbose = FALSE,
+    ...
 ){
-   . <- NULL
-   sep_freqs <- Map(function(y) stri_split_fixed(x, y), possible_separators) %>%
+    . <- NULL
+    sep_freqs <-Map(function(y) stri_split_fixed(x, y), possible_separators) %>%
                 lapply(function(y) vapply(y, length, integer(1)))            %>%
                 extract( vapply(., has_identical_values, logical(1)))        %>%
                 vapply(unique, integer(1))
 
-   # No separator detected - return NULL
-   if (all(sep_freqs==1)){
-      if (verbose)  message(x[1], ': no (consistent) separator. Returning NULL')
-      return(NULL)   # no separator detected
-   }
+    # No separator detected - return NULL
+    if (all(sep_freqs==1)){
+        if (verbose) message(x[1],': no (consistent) separator. Returning NULL')
+        return(NULL)   # no separator detected
+    }
 
-   # Find best separator
-   best_sep <- sep_freqs %>%
-               extract(.!=1)  %>%
-               extract(is_max(vapply(., extract, integer(1), 1)))   %>%
-               names()
+    # Find best separator
+    best_sep <- sep_freqs %>%
+                extract(.!=1)  %>%
+                extract(is_max(vapply(., extract, integer(1), 1)))   %>%
+                names()
 
-   # Ambiguous separator - take first from tail
-   if (length(best_sep)>1){
-      pattern <- best_sep %>% paste0(collapse='') %>% paste0('[', ., ']')
-      best_sep <- x[1] %>% stri_extract_last_regex(pattern)
-   }
+    # Ambiguous separator - take first from tail
+    if (length(best_sep)>1){
+        pattern <- best_sep %>% paste0(collapse='') %>% paste0('[', ., ']')
+        best_sep <- x[1] %>% stri_extract_last_regex(pattern)
+    }
 
-   # Separator identified - return
-   if (verbose) cmessage("\t\tGuess sep: '", best_sep, "'")
-   return(best_sep)
+    # Separator identified - return
+    if (verbose) message("\t\tGuess sep: '", best_sep, "'")
+    return(best_sep)
 }
 
 
@@ -120,17 +120,17 @@ guess_sep.factor <- function(x, ...)  guess_sep.character(levels(x))
 #' @importFrom magrittr %>%
 #' @export
 guess_sep.SummarizedExperiment <- function(
-   x,
-   var = 'sample_id',
-   possible_separators = c('.', '_', ' '),
-   # if (contains_ratios(x)) c('.', ' ') else c('.', '_', ' '),
-   verbose = FALSE,
-   ...
+    x,
+    var = 'sample_id',
+    possible_separators = c('.', '_', ' '),
+    # if (contains_ratios(x)) c('.', ' ') else c('.', '_', ' '),
+    verbose = FALSE,
+    ...
 ){
-   assert_is_subset(var, c(svars(x), fvars(x)))
-  (if (var %in% svars(x)) slevels(x, var) else flevels(x, var)) %>%
-   guess_sep(possible_separators = possible_separators,
-             verbose             = verbose)
+    assert_is_subset(var, c(svars(x), fvars(x)))
+    (if (var %in% svars(x)) slevels(x, var) else flevels(x, var)) %>%
+    guess_sep(possible_separators = possible_separators,
+                verbose             = verbose)
 }
 
 
@@ -138,19 +138,19 @@ guess_sep.SummarizedExperiment <- function(
 #=======================================================================
 
 extract_first_components <- function(x, sep){
-   x                          %>%
-   stri_split_fixed(sep)      %>%
-   vapply(function(y) y       %>%
-   extract(1:(length(y)-1))   %>%
-   paste0(collapse = sep), character(1))
+    x                          %>%
+    stri_split_fixed(sep)      %>%
+    vapply(function(y) y       %>%
+    extract(seq_len(length(y)-1))   %>%
+    paste0(collapse = sep), character(1))
 }
 
 extract_last_component <- function(x, sep){
-   x                          %>%
-   stri_split_fixed(sep)      %>%
-   vapply(function(y) y       %>%
-   extract(length(y))         %>%
-   paste0(collapse = sep), character(1))
+    x                          %>%
+    stri_split_fixed(sep)      %>%
+    vapply(function(y) y       %>%
+    extract(length(y))         %>%
+    paste0(collapse = sep), character(1))
 }
 
 
@@ -180,51 +180,51 @@ extract_last_component <- function(x, sep){
 #'
 #' @export
 guess_subgroup_values <- function (x, ...) {
-   UseMethod("guess_subgroup_values", x)
+    UseMethod("guess_subgroup_values", x)
 }
 
 #' @rdname guess_subgroup_values
 #' @export
 guess_subgroup_values.character <- function(
-   x,
-   sep     = guess_sep(x),
-   invert  = FALSE,
-   verbose = FALSE,
-   ...
+    x,
+    sep     = guess_sep(x),
+    invert  = FALSE,
+    verbose = FALSE,
+    ...
 ){
-   # Guess
-   subgroup_values <- if (is.null(sep)){  x
-                      } else if (invert){ extract_last_component(x, sep)
-                      } else {            extract_first_components(x, sep)
-                      }
-   # Inform
-   if (verbose)   message(
-      '\t\tGuess subgroup values: ', x[1], ' => ', subgroup_values[1])
+    # Guess
+    subgroup_values <-  if (is.null(sep)){  x
+                        } else if (invert){ extract_last_component(x, sep)
+                        } else {            extract_first_components(x, sep)
+                        }
+    # Inform
+    if (verbose)   message(
+        '\t\tGuess subgroup values: ', x[1], ' => ', subgroup_values[1])
 
-   # Return
-   return(subgroup_values)
+    # Return
+    return(subgroup_values)
 }
 
 
 #' @rdname guess_subgroup_values
 #' @export
 guess_subgroup_values.SummarizedExperiment <- function(
-   x,
-   sep      = guess_sep(x),
-   invert   = FALSE,
-   verbose  = FALSE,
-   ...
+    x,
+    sep      = guess_sep(x),
+    invert   = FALSE,
+    verbose  = FALSE,
+    ...
 ){
 
-   # already in x
-   if ('subgroup' %in% svars(x)){
-      if (verbose) message("\t\tUse 'subgroup' values in x ")
-      return(sdata(x)$subgroup)
-   }
+    # already in x
+    if ('subgroup' %in% svars(x)){
+        if (verbose) message("\t\tUse 'subgroup' values in x ")
+        return(sdata(x)$subgroup)
+    }
 
-   # guess from sampleid values
+    # guess from sampleid values
     guess_subgroup_values(
-       sampleid_values(x), sep = sep, invert = invert, verbose = verbose)
+        sampleid_values(x), sep = sep, invert = invert, verbose = verbose)
 }
 
 

@@ -9,7 +9,7 @@ read_bam(
   ispaired = FALSE,
   gtffile = NULL,
   fvars = character(0),
-  nthreads = parallel::detectCores(),
+  nthreads = detectCores(),
   ...
 )
 }
@@ -27,8 +27,9 @@ string (path to GTF file)}
 \item{nthreads}{number of cores to be used by Rsubread::featureCounts()}
 
 \item{...}{passed to Rsubread::featureCounts}
-
-\item{sumexpfile}{string: file which object is saved to (with saveRDS)}
+}
+\value{
+SummarizedExperiment
 }
 \description{
 Read BAM files into SummarizedExperiment

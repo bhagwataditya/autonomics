@@ -25,8 +25,9 @@ read_metabolon(
 \item{subgroup_var}{string: subgroup variable (human comprehensible)}
 
 \item{fname_var}{string: feature_name variable}
-
-\item{...}{enable backward compatibility to deprecated load_metabolon}
+}
+\value{
+SummarizedExperiment
 }
 \description{
 Read metabolon

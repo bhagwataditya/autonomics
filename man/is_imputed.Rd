@@ -30,9 +30,7 @@ matrix (get) or updated object (set)
 Get/Set is_imputed
 }
 \examples{
-if (require(autonomics.data)){
-  require(magrittr)
-  object <- autonomics.data::stemcomp.proteinratios
-  object \%>\% is_imputed() \%>\% sum()
-}
+file <- download_autonomics_data('stemcells_proteinGroups.txt')
+object <- read_proteingroups(file)
+sum(is_imputed(object))
 }
