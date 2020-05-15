@@ -34,7 +34,7 @@ Get/Set contrast definitions
 }
 \examples{
 require(magrittr)
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 contrastdefs1 <- c(EM_E = 'EM_E', BM_E = 'BM_E', BM_EM = 'BM_EM')
 contrastdefs(object) <-     contrastdefs1   # conventional setter

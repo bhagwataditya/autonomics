@@ -40,7 +40,7 @@ ncols <- function(x, sheet=1){
 #'
 #' # METABOLON
 #' #----------
-#' file <- download_autonomics_data('glutaminase_metab.xlsx')
+#' file <- download_data('glutaminase.metabolon.xlsx')
 #' is_fixed_col_file(file)
 #' @noRd
 is_fixed_col_file <- function(file){
@@ -71,7 +71,7 @@ is_fixed_col_file <- function(file){
 #' #=======================================
 #' # exprs
 #'    require(magrittr)
-#'    x <- download_autonomics_data('glutaminase_metab.xlsx')
+#'    x <- download_data('glutaminase.metabolon.xlsx')
 #'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
 #'    extract(1:3, 1:3)
 #'
@@ -94,7 +94,7 @@ is_fixed_col_file <- function(file){
 #' # FROM MATRIX: extract_rectangle.matrix
 #' #======================================
 #' # exprs
-#'    x <-download_autonomics_data('glutaminase_metab.xlsx') %>%
+#'    x <-download_data('glutaminase.metabolon.xlsx') %>%
 #'        extract_rectangle(sheet = 2)
 #'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
 #'    extract(1:3, 1:3)
@@ -276,7 +276,7 @@ extract_sdata <- function(
 #' @return SummarizedExperiment
 #' @examples
 #' # RNASEQ
-#'    file <- download_autonomics_data('stemcells_rna.txt')
+#'    file <- download_data('stemcells.rnacounts.txt')
 #'    read_omics(file,fid_rows   = 2:58736,   fid_cols   = 1,
 #'                    sid_rows   = 1,         sid_cols   = 4:14,
 #'                    expr_rows  = 2:58736,   expr_cols  = 4:14,
@@ -284,7 +284,7 @@ extract_sdata <- function(
 #'                    fdata_rows = 2:58736,   fdata_cols = 1:3,
 #'                    transpose  = FALSE)
 #' # LCMSMS PROTEINGROUPS
-#'    file <- download_autonomics_data('diff_proteinGroups.txt')
+#'    file <- download_data('differentiation.proteinGroups.txt')
 #'    read_omics(file,fid_rows   = 2:9783,  fid_cols   = 383,
 #'                    sid_rows   = 1,       sid_cols   = seq(124, 316, by = 6),
 #'                    expr_rows  = 2:9783,  expr_cols  = seq(124, 316, by = 6),
@@ -292,7 +292,7 @@ extract_sdata <- function(
 #'                    fdata_rows = 2:9783,  fdata_cols = c(2, 6, 7, 383),
 #'                    transpose  = FALSE)
 #' # SOMASCAN
-#'    file <- download_autonomics_data('stemcells_soma.adat')
+#'    file <- download_data('stemcells.somascan.adat')
 #'    read_omics(file,fid_rows   = 21,       fid_cols   = 19:1146,
 #'                    sid_rows   = 30:40,    sid_cols   = 4,
 #'                    expr_rows  = 30:40,    expr_cols  = 19:1146,
@@ -302,7 +302,7 @@ extract_sdata <- function(
 #'                    sdata_rows = 30:40,    sdata_cols = 1:17,
 #'                    transpose  = TRUE)
 #' # METABOLON
-#'    file <- download_autonomics_data('glutaminase_metab.xlsx')
+#'    file <- download_data('glutaminase.metabolon.xlsx')
 #'    read_omics(file, sheet = 2,
 #'                    fid_rows   = 11:401,    fid_cols   = 5,
 #'                    sid_rows   = 3,         sid_cols   = 15:86,

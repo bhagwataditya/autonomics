@@ -42,10 +42,10 @@ add_affy_fdata <- function(object){
 #' require(magrittr)
 #' url <- paste0('http://www.bioconductor.org/help/publications/2003/',
 #'                 'Chiaretti/chiaretti2/T33.tgz')
-#' localfile <- file.path('~/autonomicscache', basename(url))
+#' localfile <- file.path('~/importomicscache', basename(url))
 #' if (!file.exists(localfile)){
 #'     download.file(url, destfile = localfile)
-#'     untar(localfile, exdir = path.expand('~/autonomicscache'))
+#'     untar(localfile, exdir = path.expand('~/importomicscache'))
 #' }
 #' localfile %<>% substr(1, nchar(.)-4)
 #' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))

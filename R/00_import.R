@@ -26,4 +26,3 @@
 #' @importFrom utils         getFromNamespace   installed.packages   unzip
 NULL
 
-utils::globalVariables('.')

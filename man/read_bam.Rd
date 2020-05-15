@@ -35,6 +35,6 @@ SummarizedExperiment
 Read BAM files into SummarizedExperiment
 }
 \examples{
-bamdir <- download_autonomics_data("stemcells.bam.zip")
+bamdir <- download_data("stemcells.bam.zip")
 read_bam(bamdir, ispaired = TRUE)
 }

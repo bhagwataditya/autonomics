@@ -28,7 +28,7 @@ character vector, dataframe, or SummarizedExperiment.
 }
 \examples{
 # file
-    x <- download_autonomics_data('stemcells_proteinGroups.txt')
+    x <- download_data('stemcells.proteinGroups.txt')
     guess_maxquant_quantity(x)
 
 # character vector
@@ -51,12 +51,12 @@ character vector, dataframe, or SummarizedExperiment.
     guess_maxquant_quantity(x)
 
 # dataframe
-    file <- download_autonomics_data( 'stemcells_proteinGroups.txt')
+    file <- download_data( 'stemcells.proteinGroups.txt')
     x <- data.table::fread(file)
     guess_maxquant_quantity(x)
 
 # SummarizedExperiment
-     file <-download_autonomics_data( 'stemcells_proteinGroups.txt')
+     file <-download_data( 'stemcells.proteinGroups.txt')
      x <- read_proteingroups(file, demultiplex_snames = FALSE)
      guess_maxquant_quantity(x)
 }

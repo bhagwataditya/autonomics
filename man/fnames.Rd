@@ -28,7 +28,7 @@ Get/Set feature names
 }
 \examples{
 require(magrittr)
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 fnames(object) \%<>\% paste0('PG', .)
 object

@@ -28,7 +28,7 @@ Get/Set sample names
 }
 \examples{
 require(magrittr)
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 head(snames(object))
 head(snames(object) \%<>\% paste0('SAMPLE_', .))

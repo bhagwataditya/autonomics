@@ -18,7 +18,7 @@ fvar values
 Get fvar values
 }
 \examples{
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 head(fvalues(object, 'Gene names'))
 fvalues(object, NULL)

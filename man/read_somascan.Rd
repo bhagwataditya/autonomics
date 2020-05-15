@@ -30,7 +30,7 @@ Summarizedexperiment
 Read data from somascan adat file
 }
 \examples{
-file <- download_autonomics_data('hypo_soma.adat')
+file <- download_data('hypoglycemia.somascan.adat')
 read_somascan(file)
 }
 \seealso{

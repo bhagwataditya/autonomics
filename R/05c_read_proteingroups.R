@@ -32,7 +32,7 @@ maxquant_patterns <- c(
 #' @return  string: value from names(maxquant_patterns)
 #' @examples
 #' # file
-#'     x <- download_autonomics_data('stemcells_proteinGroups.txt')
+#'     x <- download_data('stemcells.proteinGroups.txt')
 #'     guess_maxquant_quantity(x)
 #'
 #' # character vector
@@ -55,12 +55,12 @@ maxquant_patterns <- c(
 #'     guess_maxquant_quantity(x)
 #'
 #' # dataframe
-#'     file <- download_autonomics_data( 'stemcells_proteinGroups.txt')
+#'     file <- download_data( 'stemcells.proteinGroups.txt')
 #'     x <- data.table::fread(file)
 #'     guess_maxquant_quantity(x)
 #'
 #' # SummarizedExperiment
-#'      file <-download_autonomics_data( 'stemcells_proteinGroups.txt')
+#'      file <-download_data( 'stemcells.proteinGroups.txt')
 #'      x <- read_proteingroups(file, demultiplex_snames = FALSE)
 #'      guess_maxquant_quantity(x)
 #' @export
@@ -149,7 +149,7 @@ proteingroups_fvars <- c(
 #'    standardize_maxquant_snames(x)
 #'
 #' # SummarizedExperiment
-#'    file <- download_autonomics_data('stemcells_proteinGroups.txt')
+#'    file <- download_data('stemcells.proteinGroups.txt')
 #'    x <- read_proteingroups(file, demultiplex_snames = FALSE)
 #'    standardize_maxquant_snames(x)
 #' @export
@@ -235,7 +235,7 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #'
 #' # SummarizedExperiment
 #'    require(magrittr)
-#'    file <- download_autonomics_data('stemcells_proteinGroups.txt')
+#'    file <- download_data('stemcells.proteinGroups.txt')
 #'    x <- read_proteingroups(file, demultiplex = FALSE)
 #'    x %<>% standardize_maxquant_snames()
 #'    demultiplex(x, verbose = TRUE)
@@ -456,7 +456,7 @@ demultiplex.SummarizedExperiment <- function(x,verbose  = FALSE, ...){
 #' @param verbose     TRUE (default) or FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_autonomics_data('stemcells_proteinGroups.txt')
+#' file <- download_data('stemcells.proteinGroups.txt')
 #' read_proteingroups(file)
 #' @export
 read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file),
@@ -549,8 +549,8 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
 #' @param verbose             TRUE (default) or FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' phosphofile <- download_autonomics_data('diff_phosphoSites.txt')
-#' proteinfile <- download_autonomics_data('diff_proteinGroups.txt')
+#' phosphofile <- download_data('differentiation.phosphoSites.txt')
+#' proteinfile <- download_data('differentiation.proteinGroups.txt')
 #' read_phosphosites(phosphofile, proteinfile)
 #' @export
 read_phosphosites <- function(

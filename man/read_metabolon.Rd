@@ -33,6 +33,6 @@ SummarizedExperiment
 Read metabolon
 }
 \examples{
-file <- download_autonomics_data('hypo_metab.xlsx')
+file <- download_data('hypoglycemia.metabolon.xlsx')
 read_metabolon(file)
 }

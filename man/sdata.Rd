@@ -28,7 +28,7 @@ Get/Set sample data
 }
 \examples{
 require(magrittr)
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 head(sdata(object))
 head(sdata(object) \%<>\% cbind(z=1))

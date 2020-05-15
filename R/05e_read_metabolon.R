@@ -18,7 +18,7 @@ find_origscale_sheet <- function(file){
 #' @param fname_var    string: feature_name variable
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_autonomics_data('hypo_metab.xlsx')
+#' file <- download_data('hypoglycemia.metabolon.xlsx')
 #' read_metabolon(file)
 #' @export
 read_metabolon <- function(file, sheet = find_origscale_sheet(file),

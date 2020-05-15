@@ -53,7 +53,7 @@ make_gtf_url <- function(organism, release){
 download_gtf <- function(
     organism,
     release = 100,
-    gtffile = sprintf("~/autonomicscache/gtf/%s",
+    gtffile = sprintf("~/importomicscache/gtf/%s",
         basename(make_gtf_url(organism, release) %>% substr(1, nchar(.)-3)))
 ){
     assert_is_subset(organism,
@@ -139,7 +139,7 @@ read_gtf <- function(
 #' @param ...          passed to Rsubread::featureCounts
 #' @return SummarizedExperiment
 #' @examples
-#' bamdir <- download_autonomics_data("stemcells.bam.zip")
+#' bamdir <- download_data("stemcells.bam.zip")
 #' read_bam(bamdir, ispaired = TRUE)
 #' @export
 read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
@@ -206,7 +206,7 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
 #' @param fname_var string or number: feature name variable
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_autonomics_data('stemcells_rna.txt')
+#' file <- download_data('stemcells.rnacounts.txt')
 #' read_counts(file, fid_var = 'gene_id', fname_var = 'gene_name')
 #' @seealso merge_sdata, merge_fdata
 #' @export

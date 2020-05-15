@@ -18,7 +18,7 @@ fvar values
 Get fvar levels
 }
 \examples{
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 head(flevels(object, 'Gene names'))
 }

@@ -31,6 +31,6 @@ SummarizedExperiment
 Read proteingroups
 }
 \examples{
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 read_proteingroups(file)
 }

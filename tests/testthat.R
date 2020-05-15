@@ -1,4 +1,4 @@
 library(testthat)
-library(autonomics)
+library(importomics)
 
-test_check("autonomics")
+test_check("importomics")

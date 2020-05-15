@@ -33,7 +33,7 @@ SummarizedExperiment
 Read phosphosites
 }
 \examples{
-phosphofile <- download_autonomics_data('diff_phosphoSites.txt')
-proteinfile <- download_autonomics_data('diff_proteinGroups.txt')
+phosphofile <- download_data('differentiation.phosphoSites.txt')
+proteinfile <- download_data('differentiation.proteinGroups.txt')
 read_phosphosites(phosphofile, proteinfile)
 }

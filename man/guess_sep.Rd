@@ -50,11 +50,11 @@ Guess separator
    guess_sep(x)
 
 # SummarizedExperiment
-   # file <- download_autonomics_data('glutaminase_metab.xlsx')
+   # file <- download_data('glutaminase.metabolon.xlsx')
    # object <- read_metabolon(file)
    # guess_sep(object)
 
-   # file <- download_autonomics_data('stemcells_proteinGroups.txt')
+   # file <- download_data('stemcells.proteinGroups.txt')
    # object <- read_proteingroups(object)
    # guess_sep(object)
 }

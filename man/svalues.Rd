@@ -32,7 +32,7 @@ character vector (get) or SummarizedExperiment (set)
 Get/Set svar values
 }
 \examples{
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 svalues(object, 'subgroup')
 subgroup_values(object)

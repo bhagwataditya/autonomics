@@ -14,7 +14,7 @@
 #' @return Summarizedexperiment
 #' @seealso prepare_somascan
 #' @examples
-#' file <- download_autonomics_data('hypo_soma.adat')
+#' file <- download_data('hypoglycemia.somascan.adat')
 #' read_somascan(file)
 #' @export
 read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',

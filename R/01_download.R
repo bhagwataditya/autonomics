@@ -1,11 +1,16 @@
 #' Available autonomics datasets
 #' @noRd
-AUTONOMICS_DATASETS <-
-c( 'stemcells_rna.txt', 'stemcells_proteinGroups.txt', 'stemcells_soma.adat',
+IMPORTOMICS_DATASETS <- c(
     'stemcells.bam.zip',
-    'diff_rna.txt', 'diff_proteinGroups.txt', 'diff_phosphoSites.txt',
-    'hypo_soma.adat', 'hypo_metab.xlsx',
-    'glutaminase_metab.xlsx')
+    'stemcells.rnacounts.txt',
+    'stemcells.proteinGroups.txt',
+    'stemcells.somascan.adat',
+    'differentiation.rna.txt',
+    'differentiation.proteinGroups.txt',
+    'differentiation.phosphoSites.txt',
+    'hypoglycemia.somascan.adat',
+    'hypoglycemia.metabolon.xlsx',
+    'glutaminase.metabolon.xlsx')
 
 #' Download autonomics data
 #' @param file      name of file to download
@@ -13,15 +18,16 @@ c( 'stemcells_rna.txt', 'stemcells_proteinGroups.txt', 'stemcells_soma.adat',
 #' @param unzip     TRUE (default) or FALSE: whether to unzip
 #' @return return   localfile invisibly
 #' @examples
-#' print(download_autonomics_data(file = 'stemcells_soma.adat'))
+#' print(download_data(file = 'stemcells.somascan.adat'))
 #' @export
-download_autonomics_data <- function(
-    file, localdir = '~/autonomicscache', unzip = TRUE
+download_data <- function(
+    file, localdir = '~/importomicscache/datasets', unzip = TRUE
 ){
-    assert_is_subset(file, AUTONOMICS_DATASETS)
-    dir.create(localdir, showWarnings = FALSE, recursive = TRUE)
+    assert_is_subset(file, IMPORTOMICS_DATASETS)
 
-    bitbucket <- 'https://bitbucket.org/graumannlabtools/autonomics/downloads'
+    bitbucket <- 'https://bitbucket.org/graumannlabtools/importomics/downloads'
+    localdir  %<>% paste(vapply(stri_split_fixed(file, '.'), extract, character(1), 1), sep = '/')
+    dir.create(localdir, showWarnings = FALSE, recursive = TRUE)
     localfile <- paste0(localdir,  '/', file)
     if (file.exists(localfile)){
         message('Use already available file: ', localfile)

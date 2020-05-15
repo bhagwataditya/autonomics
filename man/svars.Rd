@@ -28,7 +28,7 @@ Get/Set sample variables
 }
 \examples{
 require(magrittr)
-file <- download_autonomics_data('stemcells_proteinGroups.txt')
+file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 svars(object)[1]
 (svars(object)[1] \%<>\% paste0('1'))

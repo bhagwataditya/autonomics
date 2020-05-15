@@ -1,3 +1,6 @@
+utils::globalVariables('.')
+
+
 #' Conveniently message dataframe
 #'
 #' Conveniently message dataframe using sprintf syntax.

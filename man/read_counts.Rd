@@ -25,7 +25,7 @@ File format: header row
              feature counts      in next columns
 }
 \examples{
-file <- download_autonomics_data('stemcells_rna.txt')
+file <- download_data('stemcells.rnacounts.txt')
 read_counts(file, fid_var = 'gene_id', fname_var = 'gene_name')
 }
 \seealso{
