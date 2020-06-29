@@ -2,16 +2,28 @@
 % Please edit documentation in R/05b_read_rnaseq.R
 \name{read_counts}
 \alias{read_counts}
-\title{Read rnaseq counts}
+\title{Read RNAseq counts}
 \usage{
-read_counts(file, fid_var, fname_var = character(0))
+read_counts(
+  file,
+  fid_col = 1,
+  fname_col = character(0),
+  filter_features_min_count = 10,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{file}{string: path to rnaseq counts file}
 
-\item{fid_var}{string or number: feature id variable}
+\item{fid_col}{number of name of column with feature identifiers}
 
-\item{fname_var}{string or number: feature name variable}
+\item{fname_col}{string or number: feature name variable}
+
+\item{filter_features_min_count}{number (default 10): filter out features
+with less than 10 counts (in the smallest library) across samples. Filtering
+performed with \code{\link[edgeR]{filterByExpr}}}
+
+\item{verbose}{TRUE (default) or FALSE}
 }
 \value{
 SummarizedExperiment
@@ -25,8 +37,8 @@ File format: header row
              feature counts      in next columns
 }
 \examples{
-file <- download_data('stemcells.rnacounts.txt')
-read_counts(file, fid_var = 'gene_id', fname_var = 'gene_name')
+file <- download_data('differentiation.rnacounts.txt')
+read_counts(file, fid_col = 'gene_id', fname_col = 'gene_name')
 }
 \seealso{
 merge_sdata, merge_fdata

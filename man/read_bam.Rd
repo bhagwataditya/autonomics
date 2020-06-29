@@ -2,7 +2,7 @@
 % Please edit documentation in R/05b_read_rnaseq.R
 \name{read_bam}
 \alias{read_bam}
-\title{Read BAM files into SummarizedExperiment}
+\title{Read RNAseq BAM files into SummarizedExperiment}
 \usage{
 read_bam(
   bamdir,
@@ -32,9 +32,9 @@ string (path to GTF file)}
 SummarizedExperiment
 }
 \description{
-Read BAM files into SummarizedExperiment
+Read RNAseq BAM files into SummarizedExperiment
 }
 \examples{
 bamdir <- download_data("stemcells.bam.zip")
-read_bam(bamdir, ispaired = TRUE)
+# read_bam(bamdir, ispaired = TRUE)
 }
