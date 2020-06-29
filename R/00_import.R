@@ -11,7 +11,7 @@
 #' @importFrom assertive     false   get_name_in_parent
 #' @importFrom assertive     has_no_duplicates
 #' @importFrom assertive     is_empty_character   is_existing_file
-#' @importFrom data.table    fread   fwrite   data.table   setkeyv
+#' @importFrom data.table    fread   fwrite   data.table   setkeyv   tstrsplit
 #' @importFrom edgeR         filterByExpr
 #' @importFrom graphics      title   lines
 #' @importFrom limma         duplicateCorrelation   lmFit   voom

@@ -3,6 +3,7 @@
 \name{sumexp_to_wide_dt}
 \alias{sumexp_to_wide_dt}
 \alias{sumexp_to_long_dt}
+\alias{sumexp_to_subrep_dt}
 \title{Convert SummarizedExperiment into data.table}
 \usage{
 sumexp_to_wide_dt(object, fid = "feature_id", fvars = character(0))
@@ -12,8 +13,11 @@ sumexp_to_long_dt(
   fid = "feature_id",
   fvars = character(0),
   sid = "sample_id",
-  svars = character(0)
+  svars = if ("subgroup" \%in\% autonomics.import::svars(object)) "subgroup" else
+    character(0)
 )
+
+sumexp_to_subrep_dt(object)
 }
 \arguments{
 \item{object}{sumexp}
@@ -34,10 +38,25 @@ data.table
 \description{
 Convert SummarizedExperiment into data.table
 }
+\details{
+\itemize{
+   \item \code{sumexp_to_wide_dt}:   feature          x sample
+   \item \code{sumexp_to_subrep_dt}: feature.subgroup x replicate
+   \item \code{sumexp_to_long_dt}:   feature.sample
+}
+}
 \examples{
-file <- download_data('stemcells.proteinGroups.txt')
-object <- read_proteingroups(file)
-sumexp_to_wide_dt(object)
-sumexp_to_long_dt(object)
-sumexp_to_long_dt(object, svars = 'subgroup')
+# Stem cell differentiation
+    file <- download_data('stemcells.proteinGroups.txt')
+    object <- read_proteingroups(file)
+    sumexp_to_wide_dt(object)
+    sumexp_to_long_dt(object)
+    sumexp_to_subrep_dt(object)
+
+# Glutaminase
+   file <- download_data('glutaminase.metabolon.xlsx')
+   object <- read_metabolon(file)
+   sumexp_to_wide_dt(object)
+   sumexp_to_long_dt(object)
+   sumexp_to_subrep_dt(object)
 }
