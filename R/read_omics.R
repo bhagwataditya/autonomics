@@ -1481,7 +1481,7 @@ phosphosite_fvars <- c(
   'id', 'Protein group IDs', 'Positions within proteins', 'Localization prob')
 
 phospho_expr_columns <- function(x, pattern){
-    which(stri_detect_regex(x,pattern) && stri_detect_regex(x, '___1'))
+    which(stri_detect_regex(x,pattern) & stri_detect_regex(x, '___1'))
 }
 
 
