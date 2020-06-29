@@ -5,7 +5,7 @@ IMPORTOMICS_DATASETS <- c(
     'stemcells.rnacounts.txt',
     'stemcells.proteinGroups.txt',
     'stemcells.somascan.adat',
-    'differentiation.rna.txt',
+    'differentiation.rnacounts.txt',
     'differentiation.proteinGroups.txt',
     'differentiation.phosphoSites.txt',
     'hypoglycemia.somascan.adat',
