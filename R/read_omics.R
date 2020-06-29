@@ -1480,8 +1480,8 @@ read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file),
 phosphosite_fvars <- c(
   'id', 'Protein group IDs', 'Positions within proteins', 'Localization prob')
 
-phospho_expr_columns <- function(x){
-    which(stri_detect_regex(x,pattern) & !stri_detect_regex(x, '___[1-3]'))
+phospho_expr_columns <- function(x, pattern){
+    which(stri_detect_regex(x,pattern) && stri_detect_regex(x, '___1'))
 }
 
 
@@ -1534,7 +1534,7 @@ read_phosphosites <- function(
 # Initial Read
     dt <- fread(phosphofile, integer64 = 'numeric', header = TRUE)
     pattern <- maxquant_patterns[[quantity]]
-    value_cols <- phospho_expr_columns(names(dt))
+    value_cols <- phospho_expr_columns(names(dt), pattern)
     fvar_cols  <- which(names(dt) %in% fvars)
 # Read phosphosites
     fid_rows   <- 2:nrow(dt);     fid_cols   <- which(names(dt) == 'id')
