@@ -199,7 +199,8 @@ guess_subgroup_values.character <- function(
                         }
     # Inform
     if (verbose)   message(
-        '\t\tGuess subgroup values: ', x[1], ' => ', subgroup_values[1])
+        '\t\tGuess subgroup values from sampleids: ',
+        x[1], ' => ', subgroup_values[1])
 
     # Return
     return(subgroup_values)
