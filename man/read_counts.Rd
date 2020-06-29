@@ -38,7 +38,7 @@ File format: header row
 }
 \examples{
 file <- download_data('differentiation.rnacounts.txt')
-read_counts(file, fid_col = 'gene_id', fname_col = 'gene_name')
+read_counts(file)
 }
 \seealso{
 merge_sdata, merge_fdata

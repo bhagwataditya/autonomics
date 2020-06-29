@@ -4,7 +4,9 @@
 \name{maxquant_patterns}
 \alias{maxquant_patterns}
 \title{maxquant patterns}
-\format{An object of class \code{character} of length 7.}
+\format{
+An object of class \code{character} of length 7.
+}
 \usage{
 maxquant_patterns
 }

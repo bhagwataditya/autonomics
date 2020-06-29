@@ -515,9 +515,17 @@ read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file),
 phosphosite_fvars <- c(
   'id', 'Protein group IDs', 'Positions within proteins', 'Localization prob')
 
+#' Which are the phospho expr columns?
+#' @param x phosphosites colnames
+#' @examples
+#' phosphofile <- download_data('differentiation.phosphoSites.txt')
+#' x <- names(data.table::fread(phosphofile))
+#' quantity <- guess_maxquant_quantity(phosphofile)
+#' phospho_expr_columns(x, quantity)
+#' @noRd
 phospho_expr_columns <- function(x, quantity){
     pattern <- maxquant_patterns[[quantity]]
-    which(stri_detect_regex(x,pattern) & !stri_detect_regex(x, '___[1-3]'))
+    which(stri_detect_regex(x,pattern) & stri_detect_regex(x, '___1'))
 }
 
 

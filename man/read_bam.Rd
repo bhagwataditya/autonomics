@@ -10,6 +10,7 @@ read_bam(
   gtffile = NULL,
   fvars = character(0),
   nthreads = detectCores(),
+  filter_features_min_count = 10,
   ...
 )
 }
