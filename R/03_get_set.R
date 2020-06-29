@@ -281,6 +281,17 @@ fvalues <- function(object, fvar){
     fdata(object)[[fvar]]
 }
 
+#' Get feature id variable
+#' @param object SummarizedExperiment
+#' @noRd
+fid_var <- function(object) 'feature_id'
+
+
+#' @rdname fid_var
+#' @noRd
+fid_values <- function(object) fvalues(object, 'feature_id')
+
+
 
 #==============================================================================
 #' @title Get/Set fvars
@@ -358,6 +369,38 @@ setReplaceMethod(
     "is_imputed",
     signature("SummarizedExperiment", "NULL"),
     function(object, value){object})
+
+#==============================================================================
+#' @title Get/set limma results
+#' @description Get/Set limma results
+#' @param object SummarizedExperiment
+#' @param value list
+#' @return limma results (get) or updated object (set)
+#' @export
+setGeneric("limma", function(object)   standardGeneric("limma") )
+
+#' @rdname limma
+setMethod(
+    "limma",
+    signature("SummarizedExperiment"),
+    function(object) S4Vectors::metadata(object)$limma )
+
+#' @rdname limma
+#' @export
+setGeneric("limma<-", function(object, value)  standardGeneric("limma<-") )
+
+#' @rdname limma
+setReplaceMethod(
+    "limma",
+    signature("SummarizedExperiment", "array"),
+    function(object, value){ metadata(object)$limma <- value; object})
+
+#' @rdname limma
+setReplaceMethod(
+    "limma",
+    signature("SummarizedExperiment", "NULL"),
+    function(object, value){object})
+
 
 
 #=========================================================================

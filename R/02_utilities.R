@@ -96,3 +96,19 @@ pull_columns <- function(df, first_cols, verbose = TRUE){
 
 
 
+# note: earlier name was 'order_pres_factor'
+#' Create factor with levels in order of appearance
+#'
+#' Creates a factor from a vector, where the levels are in (possibly reverse)
+#' order of appearance in the vector, rather than being alphabetically sorted.
+#' @param avector An atomic vector.
+#' @param reverse FALSE (default) or TRUE: reverse order factor levels?
+#' @return factor vector
+#' @examples
+#' factorify(c('x', 'z', 'a'))
+#' @noRd
+factorify <- function(avector, reverse = FALSE){
+    myLevels <- unique(avector)
+    if(reverse){myLevels <- rev(myLevels)}
+    factor(avector, myLevels)
+}
