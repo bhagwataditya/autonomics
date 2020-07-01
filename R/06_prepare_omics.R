@@ -223,7 +223,8 @@ prepare_metabolon <- function(
 
 #' Deconvolute proteingroups
 #' @param object             SummerizedExperiment with proteinGroups data
-#' @param fastafile          path to fastafile
+#' @param fasta              path to fastafile (if character) or output of
+#' load_uniprot_fasta_annotations (autonomics.annotate)
 #' @param fastafields        character vector: fields to load from fastafile
 #' @param drop_isoform_info  logical: whether to drop isoform info
 #' @param verbose            logical: whether to report back or not
@@ -248,7 +249,7 @@ prepare_metabolon <- function(
 #' @export
 deconvolute_proteingroups <- function(
    object,
-   fastafile,
+   fasta,
    fastafields = c('GENES', 'PROTEIN-NAMES', 'EXISTENCE', 'REVIEWED'),
    drop_isoform_info = FALSE,
    verbose = TRUE
@@ -259,7 +260,11 @@ deconvolute_proteingroups <- function(
 
    # Load fasta annotations
    if (verbose) autonomics.support::cmessage('\t\tLoad fasta file')
-   fasta_annotations <- fastafile %>% autonomics.annotate::load_uniprot_fasta_annotations(fastafields)
+   fasta_annotations <-  if (inherits(fasta, "fasta_data.table")) {
+      fasta
+   } else {
+      fasta %>% autonomics.annotate::load_uniprot_fasta_annotations(fastafields)
+   }
 
    # Uncollapse
    fdata1 <- object %>%

@@ -6,7 +6,7 @@
 \usage{
 deconvolute_proteingroups(
   object,
-  fastafile,
+  fasta,
   fastafields = c("GENES", "PROTEIN-NAMES", "EXISTENCE", "REVIEWED"),
   drop_isoform_info = FALSE,
   verbose = TRUE
@@ -15,7 +15,8 @@ deconvolute_proteingroups(
 \arguments{
 \item{object}{SummerizedExperiment with proteinGroups data}
 
-\item{fastafile}{path to fastafile}
+\item{fasta}{path to fastafile (if character) or output of
+load_uniprot_fasta_annotations (autonomics.annotate)}
 
 \item{fastafields}{character vector: fields to load from fastafile}
 
