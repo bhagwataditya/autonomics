@@ -1,6 +1,7 @@
 #' Available autonomics datasets
 #' @noRd
 IMPORTOMICS_DATASETS <- c(
+    'uniprot_hsa_20140515.fasta',
     'stemcells.bam.zip',
     'stemcells.rnacounts.txt',
     'stemcells.proteinGroups.txt',

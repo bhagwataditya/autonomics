@@ -115,12 +115,13 @@ is_fixed_col_file <- function(file){
 #'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
 #'    transpose = TRUE) %>% extract(1:3, 1:3)
 #' @importFrom magrittr %>% %<>%
-#' @noRd
+#' @export
 extract_rectangle <- function(x, ...){
     UseMethod('extract_rectangle')
 }
 
-
+#' @rdname extract_rectangle
+#' @export
 extract_rectangle.character <- function(x, rows=seq_len(nrows(x, sheet=sheet)),
     cols = seq_len(ncols(x, sheet=sheet)), verbose = FALSE, transpose = FALSE,
     drop = FALSE, sheet = 1, ...
@@ -162,6 +163,8 @@ extract_dt_row <- function(dt, i) unname(as.matrix(dt[i,])[1,])
 extract_dt_col <- function(dt, i) dt[[i]]
 
 
+#' @rdname extract_rectangle
+#' @export
 extract_rectangle.data.table <- function(
     x,
     rows = seq_len(nrow(x)),
@@ -176,6 +179,8 @@ extract_rectangle.data.table <- function(
 }
 
 
+#' @rdname extract_rectangle
+#' @export
 extract_rectangle.matrix <- function(
     x,
     rows      = seq_len(nrow(x)),
@@ -201,7 +206,8 @@ extract_rectangle.matrix <- function(
 extract_fdata <- function(
     x, sheet, fids, fvar_rows, fvar_cols, fdata_rows, fdata_cols, transpose
 ){
-    fdata1 <- data.frame(feature_id = fids, stringsAsFactors = FALSE)
+    fdata1 <- data.frame(feature_id = fids, stringsAsFactors = FALSE)#,
+                         #row.names  = fids) doesn't work with NA fids
     fdata_available <- !is.null(fvar_rows) & !is.null(fvar_cols)
     if (fdata_available){
         fvars1  <-  extract_rectangle(x,

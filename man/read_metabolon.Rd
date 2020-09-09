@@ -10,7 +10,11 @@ read_metabolon(
   fid_var = "(COMP|COMP_ID)",
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
   subgroup_var = "Group",
-  fname_var = "BIOCHEMICAL"
+  fname_var = "BIOCHEMICAL",
+  log2 = TRUE,
+  impute_consistent_nas = FALSE,
+  add_kegg_pathways = FALSE,
+  add_smiles = FALSE
 )
 }
 \arguments{
@@ -25,6 +29,14 @@ read_metabolon(
 \item{subgroup_var}{string: subgroup variable (human comprehensible)}
 
 \item{fname_var}{string: feature_name variable}
+
+\item{log2}{TRUE (default) or FALSE: log2 transform ?}
+
+\item{impute_consistent_nas}{TRUE or FALSE (default)}
+
+\item{add_kegg_pathways}{TRUE or FALSE (default)}
+
+\item{add_smiles}{TRUE or FALSE (default)}
 }
 \value{
 SummarizedExperiment
@@ -33,6 +45,10 @@ SummarizedExperiment
 Read metabolon
 }
 \examples{
-file <- download_data('hypoglycemia.metabolon.xlsx')
-read_metabolon(file)
+# GLUTAMINASE
+   file <- download_data('glutaminase.metabolon.xlsx')
+   read_metabolon(file)
+# HYPOGLYCEMIA
+   file <- download_data('hypoglycemia.metabolon.xlsx')
+   read_metabolon(file)
 }

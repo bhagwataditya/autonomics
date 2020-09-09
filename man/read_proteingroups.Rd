@@ -2,35 +2,95 @@
 % Please edit documentation in R/05c_read_proteingroups.R
 \name{read_proteingroups}
 \alias{read_proteingroups}
-\title{Read proteingroups}
+\alias{read_phosphosites}
+\title{Read proteingroups/phosphosites}
 \usage{
 read_proteingroups(
-  file,
-  quantity = guess_maxquant_quantity(file),
-  fvars = proteingroups_fvars,
+  proteingroupsfile,
+  fastafile = NULL,
+  quantity = guess_maxquant_quantity(proteingroupsfile),
+  fvars = PROTEINGROUP_FVARS,
+  contaminants = FALSE,
+  reverse = FALSE,
+  unquantified = FALSE,
   demultiplex_snames = TRUE,
-  verbose = TRUE
+  invert_subgroups = character(0),
+  log2 = TRUE,
+  impute = stri_detect_regex(quantity, "[Ii]ntensity"),
+  verbose = TRUE,
+  plot = TRUE
+)
+
+read_phosphosites(
+  phosphositesfile,
+  proteingroupsfile = paste0(dirname(phosphositesfile), "/proteinGroups.txt"),
+  fastafile = NULL,
+  quantity = guess_maxquant_quantity(phosphositesfile),
+  fvars = PHOSPHOSITE_FVARS,
+  contaminants = FALSE,
+  reverse = FALSE,
+  min_localization_prob = 0.75,
+  demultiplex_snames = TRUE,
+  invert_subgroups = character(0),
+  log2 = TRUE,
+  verbose = TRUE,
+  plot = TRUE
 )
 }
 \arguments{
-\item{file}{string: path to 'proteinGroups.txt'}
+\item{proteingroupsfile}{proteinGroups.txt path}
 
-\item{quantity}{string: any value in \code{maxquant_patterns}}
+\item{fastafile}{fastafile path if provided, used to simplify proteingroups}
+
+\item{quantity}{string: ""Ratio normalized", "Ratio", "LFQ intensity",
+"Reporter intensity corrected", "Reporter intensity","Intensity labeled",
+or "Intensity"}
 
 \item{fvars}{character vector: annotation columns to extract}
+
+\item{contaminants}{return also contaminants? (defaultFALSE)}
+
+\item{reverse}{return also reverse peptides? (default FALSE)}
+
+\item{unquantified}{return also unquantified peptides? (default FALSE)}
 
 \item{demultiplex_snames}{TRUE (default) or FALSE: whether to demultiplex
 maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
 
+\item{invert_subgroups}{character vector: subgroups to be inverted}
+
+\item{log2}{TRUE (default) or FALSE: log2 transform?}
+
+\item{impute}{TRUE or FALSE (default)}
+
 \item{verbose}{TRUE (default) or FALSE}
+
+\item{phosphositesfile}{phospho(STY)Sites.txt path}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Read proteingroups
+Read proteingroups/phosphosites
 }
 \examples{
-file <- download_data('stemcells.proteinGroups.txt')
-read_proteingroups(file)
+# STEMCELLS
+    # Normalized Ratios
+        proteingroupsfile <- download_data('stemcells.proteinGroups.txt')
+        (object <- read_proteingroups(proteingroupsfile,
+                                invert_subgroups = c('E_EM','E_BM','BM_EM')))
+    # Intensities
+        (object <- read_proteingroups(proteingroupsfile,
+                                      quantity = 'Intensity labeled'))
+    # Simplify proteingroups
+        fastafile <- download_data('uniprot_hsa_20140515.fasta')
+        fdata(object)[1:3, ]
+        fdata(read_proteingroups(proteingroupsfile,
+                quantity = 'Intensity labeled', fastafile = fastafile))[1:3,]
+# DIFFERENTIATION
+    phosphositesfile  <- download_data('differentiation.phosphoSites.txt')
+    proteingroupsfile <- download_data('differentiation.proteinGroups.txt')
+    fastafile         <- download_data('uniprot_hsa_20140515.fasta')
+    read_proteingroups(proteingroupsfile, fastafile)
+    read_phosphosites(phosphositesfile, proteingroupsfile, fastafile)
 }

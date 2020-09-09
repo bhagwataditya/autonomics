@@ -115,9 +115,11 @@ is_maxquant_eset <- function(object){
 #' contains_ratios(object)
 #' @noRd
 contains_ratios <- function(object){
-    assert_is_valid_object(object)
-    is_maxquant_eset(object) & all(grepl('_', subgroup_values(object)))
+    quantity <- metadata(object)$quantity
+    if (is.null(quantity)) return(FALSE)
+    return(stri_detect_fixed(quantity, 'Ratio'))
 }
+
 
 #=============================================================================
 # Assert

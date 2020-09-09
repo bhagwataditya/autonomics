@@ -48,6 +48,10 @@ add_affy_fdata <- function(object){
 #'     untar(localfile, exdir = path.expand('~/importomicscache'))
 #' }
 #' localfile %<>% substr(1, nchar(.)-4)
+#' if (!requireNamespace("BiocManager", quietly = TRUE)){
+#'     install.packages('BiocManager')
+#' }
+#' BiocManager::install('hgu95av2.db')
 #' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 #' @export
 read_affymetrix <- function(celfiles){

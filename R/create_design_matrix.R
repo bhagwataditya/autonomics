@@ -22,6 +22,7 @@ create_design_matrix <- function(
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset('subgroup', svars(object))
+    . <- NULL
 # Ensure that subgroup vector is a factor to preserve order of levels
     sdata1 <- sdata(object)
     if(is.character(sdata1$subgroup)) sdata1$subgroup %<>% factorify()

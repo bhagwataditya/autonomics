@@ -62,10 +62,10 @@ download_gtf <- function(
     remote <- make_gtf_url(organism, release)
 
     if(file.exists(gtffile)){
-        message(sprintf("GTF file already available at %s", gtffile))
+        cmessage("GTF file already available at %s", gtffile)
     } else {
-        message(sprintf("download   %s'" , remote))
-        message(sprintf("to         %s", gtffile ))
+        cmessage("download   %s'" , remote)
+        cmessage("to         %s", gtffile )
         dir.create(dirname(gtffile), showWarnings = FALSE, recursive = TRUE)
         tryCatch(expr = { download.file(
                                 url = remote, destfile = gtffile, quiet = TRUE)
@@ -117,7 +117,7 @@ read_gtf <- function(
 
     # Write
     if (!is.null(writefile)){
-        message(sprintf("\t\tWrite   %s", writefile))
+        cmessage("\t\tWrite   %s", writefile)
         dir.create(dirname(writefile), recursive = TRUE, showWarnings = FALSE)
         fwrite(dt, writefile)
     }
@@ -137,6 +137,8 @@ read_gtf <- function(
 #'                     string (path to GTF file)
 #' @param fvars        character vector: GTF variables to include in object.
 #' @param nthreads     number of cores to be used by Rsubread::featureCounts()
+#' @param filter_features_min_count  number
+#' @param verbose      TRUE(default) / FALSE
 #' @param ...          passed to Rsubread::featureCounts
 #' @return SummarizedExperiment
 #' @examples
@@ -145,7 +147,8 @@ read_gtf <- function(
 #' @export
 read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
     fvars = character(0), nthreads   = detectCores(),
-    filter_features_min_count = 10, ...){
+    filter_features_min_count = 10, verbose = TRUE, ...
+){
 # Assert
     assert_all_are_existing_files(bamdir)
     assert_is_a_bool(ispaired)
@@ -415,7 +418,7 @@ explicitly_compute_precision_weights_once <- function(
 ){
     # Extract
     log2cpm  <- exprs(object)
-    lib.size <- scaled_libsizes(counts(object))
+    lib.size <- scaledlibsizes(counts(object))
 
     # Assert
     n <- nrow(log2cpm)

@@ -117,13 +117,11 @@ guess_sep.factor <- function(x, ...)  guess_sep.character(levels(x))
 
 
 #' @rdname guess_sep
-#' @importFrom magrittr %>%
 #' @export
 guess_sep.SummarizedExperiment <- function(
     x,
     var = 'sample_id',
-    possible_separators = c('.', '_', ' '),
-    # if (contains_ratios(x)) c('.', ' ') else c('.', '_', ' '),
+    possible_separators =  c('.', '_', ' '),
     verbose = FALSE,
     ...
 ){
@@ -132,7 +130,6 @@ guess_sep.SummarizedExperiment <- function(
     guess_sep(possible_separators = possible_separators,
                 verbose             = verbose)
 }
-
 
 
 #=======================================================================

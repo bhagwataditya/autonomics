@@ -1,5 +1,16 @@
-utils::globalVariables('.')
 
+#' Conveniently message
+#'
+#' Print message to screen with sprintf syntax
+#'
+#' @param format_string sprintf format string
+#' @param ... additional arguments  passed to sprintf
+#' @examples
+#' cmessage('\t%s\t%s', 'Hi', 'there')
+#' @noRd
+cmessage <- function(format_string, ...){
+    message(sprintf(format_string, ...))
+}
 
 #' Conveniently message dataframe
 #'

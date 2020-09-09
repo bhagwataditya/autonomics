@@ -9,7 +9,14 @@ read_somascan(
   fid_var = "SeqId",
   sid_var = "SampleId",
   subgroup_var = "SampleGroup",
-  fname_var = "EntrezGeneSymbol"
+  fname_var = "EntrezGeneSymbol",
+  filter_sample_type = "Sample",
+  filter_feature_type = "Protein",
+  filter_sample_quality = c("FLAG", "PASS"),
+  filter_feature_quality = c("FLAG", "PASS"),
+  rm_na_svars = TRUE,
+  rm_single_value_svars = TRUE,
+  log2 = TRUE
 )
 }
 \arguments{
@@ -22,6 +29,21 @@ read_somascan(
 \item{subgroup_var}{string: subgroup     variable}
 
 \item{fname_var}{string: feature_name variable}
+
+\item{filter_sample_type}{subset of c('Sample','QC','Buffer','Calibrator')}
+
+\item{filter_feature_type}{subset of c('Protein',
+'Hybridization Control Elution', 'Rat Protein')}
+
+\item{filter_sample_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
+
+\item{filter_feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
+
+\item{rm_na_svars}{TRUE (default) or FALSE: rm NA svars?}
+
+\item{rm_single_value_svars}{TRUE (default) or FALSE: rm single value svars?}
+
+\item{log2}{TRUE (default) or FALSE: log2 transform?}
 }
 \value{
 Summarizedexperiment
@@ -30,9 +52,7 @@ Summarizedexperiment
 Read data from somascan adat file
 }
 \examples{
-file <- download_data('hypoglycemia.somascan.adat')
-read_somascan(file)
-}
-\seealso{
-prepare_somascan
+# HYPOGLYCEMIA
+    file <- download_data('hypoglycemia.somascan.adat')
+    read_somascan(file)
 }

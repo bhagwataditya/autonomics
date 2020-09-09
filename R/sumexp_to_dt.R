@@ -79,19 +79,20 @@ sumexp_to_long_dt <- function(
 sumexp_to_subrep_dt <- function(object){
 
     # Assert
-    assertive::assert_is_all_of(object, 'SummarizedExperiment')
-    assertive::assert_is_subset('subgroup', svars(object))
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset('subgroup', svars(object))
+    sample_id <- subgroup <- . <- NULL
 
     # Melt
     dt <- sumexp_to_long_dt(object, svars = 'subgroup')
-    sep <- autonomics.import::guess_sep(object)
+    sep <- guess_sep(object)
     dt[, replicate := stri_replace_first_fixed(sample_id, subgroup, '') %>%
                         substr(2, nchar(.))]
 
     # Partially recast
     subrepdt <- data.table::dcast(dt, feature_id + subgroup ~ replicate)
     subrepdt$feature_id %<>% factor(fid_values(object))
-    subrepdt %>% data.table::setorderv('feature_id')
+    setorderv(subrepdt, 'feature_id')
 
     # Return
     subrepdt

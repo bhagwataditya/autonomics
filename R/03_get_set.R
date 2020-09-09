@@ -182,11 +182,9 @@ setGeneric('fdata',   function(object)   standardGeneric('fdata'))
 
 #' @rdname fdata
 setMethod('fdata',  signature('SummarizedExperiment'),
-    function(object){
-        as.data.frame(object@elementMetadata@listData,
-                        check.names      = FALSE,
-                        row.names        = object@elementMetadata@rownames,
-                        stringsAsFactors = FALSE)})
+    function(object) as(rowData(object), "data.frame"))
+    # do not use as.data.frame !
+    # that somehow somewhere performs a check.names operation!
 
 #(1) as.data.frame(object@elementMetadata) doesn't handle check.names correctly!
 #(2) rowData returns a DataFrame (which is not generic to EList objects)
@@ -464,21 +462,14 @@ setReplaceMethod(
 #' head(sdata(object) %<>% cbind(z=1))
 #' @rdname sdata
 #' @export
-setGeneric(
-    'sdata',
+setGeneric('sdata',
     function(object){ standardGeneric('sdata')})
 
 #' @rdname sdata
-setMethod(
-    'sdata',
-    signature('SummarizedExperiment'),
+setMethod('sdata', signature('SummarizedExperiment'),
     function(object){
-        as.data.frame(object@colData@listData,
-                    check.names      = FALSE,
-                    row.names        = object@colData@rownames,
-                    stringsAsFactors = FALSE) })
-# !!(1) "as.data.frame(object@colData)" doesn't handle check.names correctly!
-#   (2)  colData returns a DataFrame, which is not generic (to e.g. EList)
+        as(colData(object), "data.frame") })
+        # !! as.data.frame somehow somewhere performs a check.names
 
 #' @rdname sdata
 #' @export

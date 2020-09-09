@@ -11,6 +11,7 @@ read_bam(
   fvars = character(0),
   nthreads = detectCores(),
   filter_features_min_count = 10,
+  verbose = TRUE,
   ...
 )
 }
@@ -26,6 +27,10 @@ string (path to GTF file)}
 \item{fvars}{character vector: GTF variables to include in object.}
 
 \item{nthreads}{number of cores to be used by Rsubread::featureCounts()}
+
+\item{filter_features_min_count}{number}
+
+\item{verbose}{TRUE(default) / FALSE}
 
 \item{...}{passed to Rsubread::featureCounts}
 }
