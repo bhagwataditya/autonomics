@@ -42,9 +42,8 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     n_row <- length(content)
     n_col <- max(count.fields(file, quote='', sep='\t'))
     f_row <- 1 + which(stri_detect_fixed(content, '^TABLE_BEGIN'))
-    s_row <- content %>% extract(f_row:length(.)) %>%
-        detect_index(function(y) stri_detect_regex(y, '^\t+', negate=TRUE)) %>%
-        add(f_row-1)
+    s_row <- which(stri_detect_regex(content[f_row:length(content)],
+                                    '^\t+', negate=TRUE))[1] + f_row-1
     f_col <- content %>% extract(f_row) %>%
         stri_extract_first_regex('^\\t+') %>% stri_count_fixed('\t') %>% add(1)
     fid_cols <- (1+f_col):n_col
@@ -76,7 +75,6 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
         rm_na_svars = rm_na_svars,
         rm_single_value_svars = rm_single_value_svars, log2 = log2)
 }
-
 
 #=============================================================================
 #

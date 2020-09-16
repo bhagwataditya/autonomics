@@ -19,7 +19,6 @@
 #' @importFrom data.table    data.table   fread   fwrite   setkeyv   set
 #' @importFrom data.table    setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR         filterByExpr
-#' @importFrom forcats       fct_rev
 #' @import     ggplot2
 #' @importFrom graphics      lines    pie    title
 #' @importFrom grDevices     hcl
@@ -31,7 +30,6 @@
 #' @importFrom matrixStats   rowAnys   colAnys   rowAlls   rowSds
 #' @importFrom methods       as
 #' @importFrom parallel      detectCores
-#' @importFrom purrr         detect_index
 #' @importFrom readxl        read_excel   excel_sheets
 #' @importFrom rlang         enquo   eval_tidy   enexpr   expr_text   quo_name
 #' @importFrom RCurl         url.exists

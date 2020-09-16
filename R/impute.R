@@ -331,7 +331,8 @@ plot_detects_per_subgroup <- function(
     title <- 'fulldetects  |  partialdetects'
     if ( all(imps==0) & !all(nons==0))  title %<>% paste0('  |  nondetects')
     if (!all(imps==0) &  all(nons==0))  title %<>% paste0('  |  imputes')
-    ggplot(plot_dt, aes(x = fct_rev(subgroup), y = value, fill = subgroup,
+    plot_dt$subgroup %<>% factor(rev(levels(.)))
+    ggplot(plot_dt, aes(x = subgroup, y = value, fill = subgroup,
                         group = variable)) +
     ggtitle(title) + theme_bw() +
     geom_col(color = 'black', position = position_stack()) +

@@ -28,6 +28,6 @@ Plot number of detects, partial detects, and nondetects per subgroup
     file <- download_data('stemcells.proteinGroups.txt')
     invert_subgroups <- c('E_EM', 'E_BM', 'EM_BM')
     object <- read_proteingroups(file, invert_subgroups = invert_subgroups,
-                                  impute_consistent_nas = FALSE)
-    plot_detects_per_subgroup(impute_consistent_nas(object))
+                                  impute = FALSE, plot = FALSE)
+    plot_detects_per_subgroup(object)
 }
