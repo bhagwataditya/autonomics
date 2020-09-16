@@ -72,20 +72,6 @@ has_complete_block_values <- function(object){
 }
 
 
-#' @title Does object contain prepro?
-#' @description Does object contain preprocessing info?
-#' @param object SummarizedExperiment
-#' @return logical
-#' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
-#' object <- read_proteingroups(file)
-#' contains_prepro(object)
-#' @noRd
-contains_prepro <- function(object){
-    assert_is_valid_object(object)
-    length(prepro(object))!=0
-}
-
 #' Is max quant object
 #' @param object SummarizedExperiment
 #' @return TRUE or FALSE
