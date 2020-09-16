@@ -484,7 +484,7 @@ load_uniprot_fasta <- function(fastafile,
 # Assert, Read, Extract
     assert_all_are_existing_files(fastafile)
     CANONICAL <- REVIEWED <- ENTRYNAME <- VERSION <- EXISTENCE <- GENES <- NULL
-    ORGID <- ORGNAME <- `PROTEIN-NAMES` <- annotation <- NULL
+    ORGID <- ORGNAME <- `PROTEIN-NAMES` <- UNIPROTKB <- annotation <- NULL
     if (verbose) message('\t\tLoad fasta file')
     fasta <- read.fasta(fastafile)
     all_accessions <- extract_from_name(names(fasta), 2)
