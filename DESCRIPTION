@@ -30,7 +30,7 @@ biocViews: Software, DataImport, GeneExpression, Transcription,
            RNASeq, MassSpectrometry
 BugReports: https://bitbucket.org/graumannlabtools/autonomics 
 URL: https://bitbucket.org/graumannlabtools/autonomics
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Imports: 
   affy,
   AnnotationDbi, 

@@ -1180,6 +1180,7 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
     cols <- c('feature_id', 'Protein group IDs')
     phospho_dt <- sumexp_to_wide_dt(phosphosites, fvars = 'Protein group IDs')
     phospho_dt %<>% separate_rows(`Protein group IDs`, sep = ';' )
+    phospho_dt %<>% data.table()
     phospho_dt %<>% data.table::melt.data.table(
         id.vars = c('feature_id', 'Protein group IDs'))
     setnames(phospho_dt,
