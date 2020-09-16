@@ -31,7 +31,7 @@ Get / Set counts matrix
 }
 \examples{
 file <- download_data('stemcells.rnacounts.txt')
-object <- read_counts(file, fid_var = 'gene_id')
+object <- read_counts(file)
 counts(object) <- exprs(object)
 counts(object)[1:3, 1:3]
 }

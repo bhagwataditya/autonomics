@@ -183,7 +183,7 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
     colData(object) <- DataFrame(
                         sample_id = sample_names, row.names = sample_names)
     object$subgroup <- guess_subgroup_values(object, verbose = FALSE)
-    object %<>% preprocess_counts(filter_features_min_count)
+    object %<>% preprocess_counts(filter_features_min_count, verbose = verbose)
 # Return
     object
 }
@@ -242,7 +242,7 @@ read_counts <- function(
 
 # Add design. Preprocess
     sdata(object)$subgroup  <- guess_subgroup_values(object, verbose = TRUE)
-    object %<>% preprocess_counts(filter_features_min_count)
+    object %<>% preprocess_counts(filter_features_min_count, verbose=verbose)
 
 # Align fdata
     if (length(fname_col)>0){
@@ -256,7 +256,7 @@ read_counts <- function(
 }
 
 
-preprocess_counts <- function(object, filter_features_min_count = 10){
+preprocess_counts <- function(object, filter_features_min_count = 10, verbose){
 
     # Filter lowly expressed features
     sdata(object)$libsize <- colSums(counts(object))
@@ -276,7 +276,7 @@ preprocess_counts <- function(object, filter_features_min_count = 10){
     if (verbose){
         message('\t\tReturn object: counts(object)  = counts')
         message('\t\t               exprs(object)   = log2cpm')
-        message('\t\t               weights(object) = voom precision weights (see plot)')
+        message('\t\t               weights(object) = voom weights (see plot)')
         message('\t\t               object$subgroup = subgroup values')
     }
     object
@@ -312,7 +312,7 @@ scaledlibsizes <- function(counts){
 #' @param scaled_libsizes  numeric vector: scaled library sizes
 #' @examples
 #' file <- download_data('differentiation.rnacounts.txt')
-#' object <- read_counts(file, 'gene_id')
+#' object <- read_counts(file)
 #'
 #' scaled_libsizes <- scaledlibsizes(exprs(object))
 #' cpm <- counts_to_cpm(counts(object), scaled_libsizes)

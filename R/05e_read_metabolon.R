@@ -217,7 +217,7 @@ add_smiles <- function(x, pubchem_var = 'PUBCHEM', smiles_var = 'SMILES'){
     . <- NULL
 
     # Assert
-    assert_is_subset(pubchem_var, autonomics.import::fvars(x))
+    assert_is_subset(pubchem_var, fvars(x))
 
     # Map to smiles
     PUBCHEMIDS <- fvalues(x, pubchem_var) %>%

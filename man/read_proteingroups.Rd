@@ -29,6 +29,7 @@ read_phosphosites(
   fvars = PHOSPHOSITE_FVARS,
   contaminants = FALSE,
   reverse = FALSE,
+  unquantified = FALSE,
   min_localization_prob = 0.75,
   demultiplex_snames = TRUE,
   invert_subgroups = character(0),
@@ -65,7 +66,12 @@ maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
 
 \item{verbose}{TRUE (default) or FALSE}
 
+\item{plot}{TRUE or FALSE}
+
 \item{phosphositesfile}{phospho(STY)Sites.txt path}
+
+\item{min_localization_prob}{number (default 0.75):
+minimum localization probability required for a site to be retained}
 }
 \value{
 SummarizedExperiment

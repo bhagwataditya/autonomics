@@ -90,7 +90,7 @@ set_contrastdefs <- function(object, value){
 #' @return count matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('stemcells.rnacounts.txt')
-#' object <- read_counts(file, fid_var = 'gene_id')
+#' object <- read_counts(file)
 #' counts(object) <- exprs(object)
 #' counts(object)[1:3, 1:3]
 #' @rdname counts

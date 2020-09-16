@@ -47,6 +47,7 @@ Imports:
   matrixStats,
   methods,
   parallel,
+  purrr,
   rlang,
   R.utils,
   readxl,
@@ -61,6 +62,7 @@ Imports:
   tools,
   utils
 Suggests: 
+  BiocManager,
   hgu95av2cdf, 
   knitr,
   testthat

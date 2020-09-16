@@ -13,8 +13,7 @@ sumexp_to_long_dt(
   fid = "feature_id",
   fvars = character(0),
   sid = "sample_id",
-  svars = if ("subgroup" \%in\% autonomics.import::svars(object)) "subgroup" else
-    character(0)
+  svars = if ("subgroup" \%in\% svars(object)) "subgroup" else character(0)
 )
 
 sumexp_to_subrep_dt(object)
@@ -29,8 +28,6 @@ sumexp_to_subrep_dt(object)
 \item{sid}{svar carrying sample id}
 
 \item{svars}{additional svars to include in table}
-
-\item{...}{(backward compatibility)}
 }
 \value{
 data.table

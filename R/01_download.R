@@ -25,6 +25,7 @@ download_data <- function(
     file, localdir = '~/importomicscache/datasets', unzip = TRUE
 ){
     assert_is_subset(file, IMPORTOMICS_DATASETS)
+    . <- NULL
 
     bitbucket <- 'https://bitbucket.org/graumannlabtools/importomics/downloads'
     localdir  %<>% paste(vapply(stri_split_fixed(file, '.'), extract, character(1), 1), sep = '/')

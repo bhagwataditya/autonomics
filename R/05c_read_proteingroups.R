@@ -484,7 +484,7 @@ load_uniprot_fasta <- function(fastafile,
 # Assert, Read, Extract
     assert_all_are_existing_files(fastafile)
     CANONICAL <- REVIEWED <- ENTRYNAME <- VERSION <- EXISTENCE <- GENES <- NULL
-    ORGID <- ORGNAME <- `PROTEIN-NAMES` <- NULL
+    ORGID <- ORGNAME <- `PROTEIN-NAMES` <- annotation <- NULL
     if (verbose) message('\t\tLoad fasta file')
     fasta <- read.fasta(fastafile)
     all_accessions <- extract_from_name(names(fasta), 2)
@@ -933,12 +933,15 @@ read_phosphosites_engine <- function(phosphositesfile, quantity, fvars, verbose)
 #' @param contaminants return also contaminants? (defaultFALSE)
 #' @param reverse      return also reverse peptides? (default FALSE)
 #' @param unquantified return also unquantified peptides? (default FALSE)
+#' @param min_localization_prob  number (default 0.75):
+#'  minimum localization probability required for a site to be retained
 #' @param demultiplex_snames  TRUE (default) or FALSE: whether to demultiplex
 #'    maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?
 #' @param invert_subgroups character vector: subgroups to be inverted
 #' @param log2 TRUE (default) or FALSE: log2 transform?
 #' @param impute TRUE or FALSE (default)
 #' @param verbose     TRUE (default) or FALSE
+#' @param plot TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # STEMCELLS
@@ -1008,8 +1011,9 @@ read_phosphosites <- function(phosphositesfile,
     proteingroupsfile = paste0(dirname(phosphositesfile), '/proteinGroups.txt'),
     fastafile = NULL, quantity = guess_maxquant_quantity(phosphositesfile),
     fvars = PHOSPHOSITE_FVARS, contaminants = FALSE, reverse = FALSE,
-    min_localization_prob = 0.75, demultiplex_snames = TRUE,
-    invert_subgroups = character(0), log2 = TRUE, verbose = TRUE, plot = TRUE
+    unquantified = FALSE, min_localization_prob = 0.75,
+    demultiplex_snames = TRUE, invert_subgroups = character(0), log2 = TRUE,
+    verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
@@ -1083,6 +1087,7 @@ rm_contaminants <- function(object, verbose){
 }
 
 rm_unlocalized <- function(object, min_localization_prob, verbose){
+    `Localization prob` <- NULL
     if (!'Localization prob' %in% fvars(object)) return(object)
     assert_all_are_in_range(min_localization_prob, 0, 1)
     object %<>% filter_features(`Localization prob` >= min_localization_prob,
@@ -1154,6 +1159,10 @@ phospho_expr_columns <- function(x, quantity){
 
 
 add_occupancies <- function(phosphosites, proteingroups, verbose){
+
+# Initialize
+  . <- phospho_value <- protein_value <- occupancy <- NULL
+  `Protein group IDs` <- NULL
 
 # Report
     if (verbose) message(

@@ -1,14 +1,11 @@
 #' @rdname sumexp_to_long_dt
 #' @export
-sumexp_to_wide_dt <- function(
-    object,
-    fid = 'feature_id',
-    fvars = character(0)
-){
+sumexp_to_wide_dt <- function(object, fid = 'feature_id', fvars = character(0)){
+
     # Assert
-    assertive::assert_is_all_of(object, 'SummarizedExperiment')
-    assertive::assert_is_subset(fid,   fvars(object))
-    assertive::assert_is_subset(fvars, fvars(object))
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(fid,   fvars(object))
+    assert_is_subset(fvars, fvars(object))
 
     # Extract
     fdata1 <- data.table(fdata(object)[, unique(c(fid, fvars)), drop = FALSE])
@@ -32,7 +29,6 @@ sumexp_to_wide_dt <- function(
 #' @param fvars  additional fvars to include in table
 #' @param sid    svar carrying sample id
 #' @param svars  additional svars to include in table
-#' @param ...    (backward compatibility)
 #' @return data.table
 #' @examples
 #' # Stem cell differentiation
@@ -54,14 +50,14 @@ sumexp_to_long_dt <- function(
     fid = 'feature_id',
     fvars = character(0),
     sid = 'sample_id',
-    svars = if ('subgroup' %in% autonomics.import::svars(object)) 'subgroup' else character(0)
+    svars = if ('subgroup' %in% svars(object)) 'subgroup' else character(0)
 ){
     # Assert
-    assertive::assert_is_all_of(object, 'SummarizedExperiment')
-    assertive::assert_is_subset(fid,   autonomics.import::fvars(object))
-    assertive::assert_is_subset(sid,   autonomics.import::svars(object))
-    assertive::assert_is_subset(fvars, autonomics.import::fvars(object))
-    assertive::assert_is_subset(svars, autonomics.import::svars(object))
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(fid,   fvars(object))
+    assert_is_subset(sid,   svars(object))
+    assert_is_subset(fvars, fvars(object))
+    assert_is_subset(svars, svars(object))
 
     # Extract & Return
     sdata1 <- sdata(object)[, c('sample_id', svars), drop = FALSE]
