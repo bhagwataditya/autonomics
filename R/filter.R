@@ -7,6 +7,7 @@
 #' @param object SummarizedExperiment
 #' @param extractor logical/numeric vector
 #' @examples
+#' require(magrittr)
 #' file <- download_data('stemcells.proteinGroups.txt')
 #' object <- read_proteingroups(file)
 #' (object %<>% extract_features(c(5,4)))
@@ -36,7 +37,7 @@ extract_first_from_collapsed.character <- function(x, sep = guess_sep(x), ...){
    if (is.null(sep)) return(x)
 
    stringi::stri_split_fixed(x, sep) %>%
-   vapply(magrittr::extract, character(1), 1)
+   vapply(extract, character(1), 1)
 }
 
 extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){

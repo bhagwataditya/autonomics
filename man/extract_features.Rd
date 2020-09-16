@@ -15,6 +15,7 @@ extract_features(object, extractor)
 Extract features
 }
 \examples{
+require(magrittr)
 file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
 (object \%<>\% extract_features(c(5,4)))

@@ -20,5 +20,5 @@ Get fvar levels
 \examples{
 file <- download_data('stemcells.proteinGroups.txt')
 object <- read_proteingroups(file)
-head(flevels(object, 'Gene names'))
+head(flevels(object, 'feature_name'))
 }

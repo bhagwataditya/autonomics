@@ -210,7 +210,7 @@ setReplaceMethod(
 #' @examples
 #' file <- download_data('stemcells.proteinGroups.txt')
 #' object <- read_proteingroups(file)
-#' head(flevels(object, 'Gene names'))
+#' head(flevels(object, 'feature_name'))
 #' @export
 flevels <- function(object, fvar){
     object %>%
@@ -264,7 +264,7 @@ setReplaceMethod(
 #' @examples
 #' file <- download_data('stemcells.proteinGroups.txt')
 #' object <- read_proteingroups(file)
-#' head(fvalues(object, 'Gene names'))
+#' head(fvalues(object, 'feature_name'))
 #' fvalues(object, NULL)
 #' @export
 fvalues <- function(object, fvar){

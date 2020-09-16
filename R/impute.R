@@ -300,8 +300,8 @@ collapse_words <- function(x, collapsor = 'and'){
 #'     file <- download_data('stemcells.proteinGroups.txt')
 #'     invert_subgroups <- c('E_EM', 'E_BM', 'EM_BM')
 #'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups,
-#'                                   impute_consistent_nas = FALSE)
-#'     plot_detects_per_subgroup(impute_consistent_nas(object))
+#'                                   impute = FALSE, plot = FALSE)
+#'     plot_detects_per_subgroup(object)
 #' @export
 plot_detects_per_subgroup <- function(
     object, svar = 'subgroup', color_values = default_color_values(object, svar)
