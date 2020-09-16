@@ -263,10 +263,11 @@ split_by_svar <- function(object, svar = 'subgroup'){
    if (is.null(svar)) return(list(object))
 
    # Split
-   Map( function(sg) filter_samples_(
-                        object,
-                        sprintf("%s %%in%% '%s'", svar, sg), record = FALSE),
-        slevels(object, svar))
+  extract_samples <- function(sg){
+                        idx <- sdata(object)[[svar]] == sg
+                        object[, idx]
+                    }
+   Map(extract_samples, slevels(object, svar))
 }
 
 

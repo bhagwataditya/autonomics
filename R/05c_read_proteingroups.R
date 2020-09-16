@@ -1075,15 +1075,22 @@ rm_reverse <- function(object, verbose){
     object
 }
 
-
+#' @examples
+#' file <- download_data('differentiation.proteinGroups.txt')
+#' object <- read_proteingroups(file, contaminants=TRUE)
+#' rm_contaminants(object, verbose=TRUE)
+#' @noRd
 rm_contaminants <- function(object, verbose){
     contaminant_var <- c('Potential contaminant', 'Contaminant')
     contaminant_var %<>% intersect(fvars(object))
     fdata(object)[[contaminant_var]] %<>% na_to_string()
-    object %<>% filter_features_(
-                    sprintf("`%s` != '+'", contaminant_var), verbose = verbose)
-    fdata(object)[[contaminant_var]] <- NULL
+
+    idx <- fdata(object)[[contaminant_var]]==''
+    if (verbose) message('\t\tRetain ',
+         sum(idx), '/', length(idx), " features: contaminant != '+'")
+    object %<>% extract_features(idx)
     object
+
 }
 
 rm_unlocalized <- function(object, min_localization_prob, verbose){

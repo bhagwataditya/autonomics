@@ -22,7 +22,6 @@
 #' @import     ggplot2
 #' @importFrom graphics      lines    pie    title
 #' @importFrom grDevices     hcl
-#' @importFrom lazyeval      lazy_eval
 #' @importFrom limma         duplicateCorrelation   lmFit   voom
 #' @importFrom magrittr      %>%   %<>%   add   and   equals
 #' @importFrom magrittr      extract   extract2   is_in

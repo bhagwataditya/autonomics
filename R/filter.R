@@ -51,23 +51,6 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 # FILTER FEATURES
 #=================
 
-#' @rdname filter_features
-#' @export
-filter_features_ <- function(object, condition, verbose = FALSE){
-    if (is.null(condition)) return(object)
-    idx <- lazy_eval(condition, fdata(object))
-    idx <- idx & !is.na(idx)
-    if (verbose) message(
-          '\t\tRetain ', sum(idx), '/', length(idx), ' features: ',
-          if (class(condition)=='lazy') deparse(condition$expr) else condition)
-    object %<>% extract_features(idx)
-    if (!is.null(analysis(object))) {
-        analysis(object)$nfeatures %<>%
-            c(structure(sum(idx), names = condition))
-    }
-    object
-}
-
 #' Filter features on condition
 #' @param object SummarizedExperiment
 #' @param condition filter condition
@@ -78,11 +61,8 @@ filter_features_ <- function(object, condition, verbose = FALSE){
 #'     file <- download_data('glutaminase.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
-#'     filter_features_(object, "SUPER_PATHWAY=='Lipid'", verbose = TRUE)
 #' @export
 filter_features <- function(object, condition, verbose = FALSE){
-    # filter_features_(object, lazyeval::lazy(condition), verbose = verbose)
-        # older version using -now deprecated- lazyeval package
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
@@ -207,25 +187,6 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #=======================
 
 
-#' @rdname filter_samples
-#' @export
-filter_samples_ <- function(object, condition, verbose = FALSE, record = TRUE){
-    if (is.null(condition)) return(object)
-    idx <- lazy_eval(condition, sdata(object))
-    idx <- idx & !is.na(idx)
-    if (verbose) if (verbose) message(
-        '\t\tRetain ', sum(idx), '/', length(idx), ' samples: ',
-        if (class(condition)=='lazy') deparse(condition$expr) else condition)
-    object %<>% extract(, idx)
-    sdata(object) %<>% droplevels()
-    if (record && !is.null(analysis(object))) {
-        analysis(object)$nsamples %<>% c(structure(sum(idx), names =
-        if (class(condition)=='lazy') deparse(condition$expr) else condition))
-    }
-    object
-}
-
-
 #' Filter samples on condition
 #' @param object    SummarizedExperiment
 #' @param condition filter condition
@@ -237,11 +198,8 @@ filter_samples_ <- function(object, condition, verbose = FALSE, record = TRUE){
 #'     file <- download_data('glutaminase.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     filter_samples(object,   TIME_POINT=='h10',  verbose = TRUE)
-#'     filter_samples_(object, "TIME_POINT=='h10'", verbose = TRUE)
 #' @export
 filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
-    # filter_samples_(object, lazyeval::lazy(condition), verbose = verbose)
-          # old version using deprecated lazyeval package
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
