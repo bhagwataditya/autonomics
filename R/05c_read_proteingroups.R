@@ -1031,7 +1031,9 @@ read_phosphosites <- function(phosphositesfile,
     # Features
     phospho %<>% filter_maxquant_features(reverse = reverse,
                                 contaminants = contaminants,
-                                unquantified = unquantified, verbose = verbose)
+                                unquantified = unquantified,
+                                min_localization_prob = min_localization_prob,
+                                verbose = verbose)
     stri_rep <- stri_replace_first_fixed
     names(fdata(phospho)) %<>% stri_rep('Gene names', 'feature_name')
     names(fdata(phospho)) %<>% stri_rep('Proteins', 'uniprot')
