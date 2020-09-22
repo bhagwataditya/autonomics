@@ -25,8 +25,6 @@
 #'     file <- load_data('glutaminase.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     na_to_zero(object, verbose = TRUE)
-#'
-#'
 #' @noRd
 zero_to_na <- function(object, verbose = FALSE){
     selector <- exprs(object) == 0

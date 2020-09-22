@@ -5,6 +5,7 @@
 #' @importFrom assertive     assert_all_are_finite
 #' @importFrom assertive     assert_all_are_greater_than
 #' @importFrom assertive     assert_all_are_in_range
+#' @importFrom assertive     assert_all_are_less_than_or_equal_to
 #' @importFrom assertive     assert_any_are_not_nan
 #' @importFrom assertive     assert_all_are_whole_numbers
 #' @importFrom assertive     assert_are_same_length

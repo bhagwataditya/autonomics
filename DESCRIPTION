@@ -45,6 +45,7 @@ Imports:
   lazyeval,
   magrittr, 
   matrixStats,
+  MASS,
   methods,
   parallel,
   rlang,
