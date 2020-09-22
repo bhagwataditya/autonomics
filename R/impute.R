@@ -59,7 +59,6 @@ nan_to_na <- function(object, verbose = FALSE){
 }
 
 
-#' @noRd
 na_to_zero <- function(object, verbose = FALSE){
    selector <- is.na(exprs(object))
    if (any(selector)){
@@ -74,7 +73,22 @@ na_to_zero <- function(object, verbose = FALSE){
    object
 }
 
-#' @noRd
+
+inf_to_na <- function(object, verbose){
+   selector <- is.infinite(exprs(object))
+   if (any(c(selector), na.rm = TRUE)){
+      if (verbose) cmessage(
+                    paste0( '\t\tReplace -Inf -> NA for %d/%d values ',
+                            '(in %d/%d features and %d/%d samples)'),
+                    sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
+                    sum(rowAnys(selector)), nrow(object),
+                    sum(colAnys(selector)), ncol(object))
+      exprs(object)[selector] <- NA_real_
+   }
+   object
+}
+
+
 minusinf_to_na <- function(object, verbose = FALSE){
    selector <- exprs(object)==-Inf
    if (any(c(selector), na.rm = TRUE)){
@@ -88,6 +102,7 @@ minusinf_to_na <- function(object, verbose = FALSE){
    }
    object
 }
+
 
 na_to_string <- function(x){
     x[is.na(x)] <- ''

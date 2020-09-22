@@ -6,7 +6,8 @@ Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.
              person("Johannes", "Graumann",  email = "johannes.graumann@mpi-bn.mpg.de", role = c('aut', 'sad', 'rth')),
              person("Shahina",  "Hayat",     email = "shh2026@qatar-med.cornell.edu",   role = "aut"), 
              person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",   role = "ctb"), 
-             person("Richard",  "Cotton",    email = "richierocks@gmail.com",           role = "ctb"), 
+             person("Richard",  "Cotton",    email = "richierocks@gmail.com",           role = "ctb"),
+             person("Laure",    "Cougnaud",  email = "laure.cougnaud@openanalytics.eu", role = "ctb"),
              person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",   role = "sad"))
 Description: 
   Many powerful platforms for molecular profiling have emerged in recent years: NGS, qPCR, MS, Microarrays, ...
@@ -63,4 +64,7 @@ Suggests:
   BiocManager,
   hgu95av2cdf, 
   knitr,
+  mixOmics,
+  mpm,
+  ropls,
   testthat
