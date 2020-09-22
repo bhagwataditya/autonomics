@@ -101,9 +101,14 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' str(pca(object))
+#' .add_pca(object)
 #' @noRd
 .add_pca <- function(object, ndim = 2){
+# Assert
+    assert_is_all_of(object, 'SummarizedExperiment')
+    if (is.infinite(ndim)) ndim <- ncol(object)
+    assert_is_a_number(ndim)
+    assertive::assert_all_are_less_than_or_equal_to(ndim, ncol(object))
 # Prepare
     tmpobj <- object
     tmpobj %<>% inf_to_na(verbose=TRUE)
@@ -118,8 +123,6 @@ merge_sdata <- function(object, df, by = 'sample_id'){
                         add(global_mean)          %>%   # Add doubly subtracted
                         divide_by(sd(., na.rm=TRUE))    # Normalize
 # Perform PCA
-    if (is.infinite(ndim)) ndim <- ncol(object)
-    assertive::assert_all_are_less_than_or_equal_to(ndim, ncol(object))
     pca_res  <- pcaMethods::pca(t(exprs(tmpobj)),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
     samples   <- pca_res@scores
@@ -144,7 +147,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' str(sma(object))
+#' .add_sma(object)
 #' @noRd
 .add_sma <- function(object, ndim = 2){
 # Assert
@@ -152,7 +155,10 @@ merge_sdata <- function(object, df, by = 'sample_id'){
         message("First Biocinstaller::install('mpm'). Then re-run.")
         return(object)
     }
-    assertive::assert_all_are_less_than_or_equal_to(ndim, ncol(object))
+    assert_is_all_of(object, 'SummarizedExperiment')
+    if (is.infinite(ndim)) ndim <- ncol(object)
+    assert_is_a_number(ndim)
+    assert_all_are_in_range(ndim, 1, ncol(object))
 # Preprocess
     tmpobj <- object
     tmpobj %<>% minusinf_to_na()
@@ -166,14 +172,15 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     ncomponents <- length(mpm_tmp$contrib)
     mpm_out <- mpm::plot.mpm(mpm_tmp, do.plot=FALSE, dim = seq_len(ncomponents))
 # Extract
-    samples  <- mpm_out$Columns
-    features <- mpm_out$Rows
+    samples   <- mpm_out$Columns
+    features  <- mpm_out$Rows
     variances <- round(100*mpm_tmp$contrib[1:ncomponents])
     names(samples)   <- sprintf('sma%d', seq_len(ncol(samples)))
     names(features)  <- sprintf('sma%d', seq_len(ncol(features)))
     names(variances) <- sprintf('sma%d', seq_len(length(variances)))
 # Restrict
-    samples   %<>% extract(, seq_len(ndim),  drop = FALSE)
+    if (is.infinite(ndim)) ndim <- ncol(samples)
+    samples   %<>% extract(, seq_len(ndim), drop = FALSE)
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Add
@@ -192,12 +199,15 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' str(lda(object))
+#' .add_lda(object)
 #' @noRd
 .add_lda <- function(object, ndim=2){
 # Assert
+    assert_is_all_of(object, 'SummarizedExperiment')
     nsubgroup <- length(subgroup_levels(object))
-    assert_all_are_greater_than(nsubgroup, 1)
+    if (is.infinite(ndim))  ndim <- nsubgroup - 1
+    assert_is_a_number(ndim)
+    assert_all_are_in_range(ndim, 1, nsubgroup-1)
     if (ndim > (nsubgroup-1)) stop(
         sprintf('LDA requires ndim (%d) <= nsubgroup-1 (%d)',ndim, nsubgroup-1))
 # Preprocess
@@ -218,7 +228,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 # Rename
     colnames(samples)  <- sprintf('lda%d', seq_len(ncol(samples)))
     colnames(features) <- sprintf('lda%d', seq_len(ncol(features)))
-    names(variances) <- sprintf('lda%d', seq_len(length(variances)))
+    names(variances)   <- sprintf('lda%d', seq_len(length(variances)))
 # Restrict
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
@@ -239,7 +249,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' str(pls(object))
+#' .add_pls(object)
 #' @noRd
 .add_pls <- function(object, ndim=2){
 # Assert
@@ -247,6 +257,10 @@ merge_sdata <- function(object, df, by = 'sample_id'){
         stop("BiocManager::install('mixOmics'). Then re-run.")
         return(object)
     }
+    assert_is_all_of(object, 'SummarizedExperiment')
+    if (is.infinite(ndim)) ndim <- ncol(object)
+    assert_is_a_number(ndim)
+    assert_all_are_in_range(ndim, 1, ncol(object))
 # Transform
     x <- t(exprs(object))
     y <- subgroup_values(object)
@@ -272,7 +286,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' str(spls(object))
+#' .add_spls(object)
 #' @noRd
 .add_spls <- function(object, ndim=2){
 # Assert
@@ -280,6 +294,10 @@ merge_sdata <- function(object, df, by = 'sample_id'){
         stop("BiocManager::install('mixOmics'). Then re-run.")
         return(object)
     }
+    assert_is_all_of(object, 'SummarizedExperiment')
+    if (is.infinite(ndim)) ndim <- ncol(object)
+    assert_is_a_number(ndim)
+    assert_all_are_in_range(ndim, 1, ncol(object))
 # Transform
     x <- t(exprs(object))
     y <- subgroup_values(object)
@@ -305,7 +323,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' str(opls(object))
+#' .add_opls(object)
 #' @noRd
 .add_opls <- function(object, ndim=2){
 # Assert
@@ -313,6 +331,10 @@ merge_sdata <- function(object, df, by = 'sample_id'){
         message("BiocManager::install('ropls'). Then re-run.")
         return(object)
     }
+    assert_is_all_of(object, 'SummarizedExperiment')
+    if (is.infinite(ndim)) ndim <- ncol(object)
+    assert_is_a_number(ndim)
+    assert_all_are_in_range(ndim, 1, ncol(object))
 # Transform
     x <- t(exprs(object))
     y <- subgroup_values(object)
