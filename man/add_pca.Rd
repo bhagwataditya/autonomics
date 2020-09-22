@@ -36,4 +36,6 @@ add_pca(object)  # Principal Component Analysis
 add_pls(object)  # Partial Least Squares
 add_lda(object)  # Linear Discriminant Analysis
 add_sma(object)  # Spectral Map Analysis
+add_pca(object, color = TIME_POINT)  # Principal Component Analysis
+add_pca(object, fixed = list(shape = 1))  # Principal Component Analysis
 }

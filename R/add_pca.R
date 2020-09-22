@@ -79,11 +79,13 @@ pca <- function(object, ndim = 2){
     row_means <- rowMeans(exprs(tmpobj), na.rm=TRUE)
     col_means <- colWeightedMeans(exprs(tmpobj), abs(row_means), na.rm = TRUE)
     global_mean <- mean(col_means)
-    exprs(tmpobj) %<>% apply(1, '-', col_means)  %>%   # Center columns
+    exprs(tmpobj) %<>% apply(1, '-', col_means)   %>%   # Center columns
                         apply(1, '-', row_means)  %>%   # Center rows
                         add(global_mean)          %>%   # Add doubly subtracted
                         divide_by(sd(., na.rm=TRUE))    # Normalize
 # Perform PCA
+    if (is.infinite(ndim)) ndim <- ncol(object)
+    assert_all_are_less_than_or_equal_to(ndim, ncol(object))
     pca_res  <- pcaMethods::pca(t(exprs(tmpobj)),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
     samples   <- pca_res@scores
@@ -119,10 +121,11 @@ sma <- function(object, ndim = 2){
     mpm_tmp <- mpm::mpm(
                 df, logtrans = FALSE, closure = 'none', center = 'double',
                 normal = 'global', row.weight = 'mean', col.weight = 'constant')
-    ncomponents <- evenify_upwards(sum((100*mpm_tmp$contrib) > 1))
-    if(ncomponents < ndim)  stop('\'ndim\' = \'', ndim, '\', but only \'',
-                                 ncomponents, 'can be provided.')
-    npairs  <- ncomponents/2
+    ncomponents <- length(mpm_tmp$contrib)
+    #ncomponents <- evenify_upwards(sum((100*mpm_tmp$contrib) > 1))
+    #if(ncomponents < ndim)  stop('\'ndim\' = \'', ndim, '\', but only \'',
+    #                             ncomponents, 'can be provided.')
+    npairs  <- floor(ncomponents/2)
     pairs <- split(1:ncomponents, rep(1:npairs, each = 2))
     sma_coords <- function(x){
         y <- suppressPackageStartupMessages(
@@ -365,6 +368,7 @@ merge_fdata <- function(object, df, by = 'feature_id'){
 #' object <- read_metabolon(file)
 #' pcaresults <- pca(object)
 #' object %<>% merge_sdata(pcaresults$samples)
+#' @noRd
 merge_sdata <- function(object, df, by = 'sample_id'){
     df %<>% as.data.frame() # convert matrix to df
     if (!'sample_id' %in% names(df))  df$sample_id <- rownames(df)
