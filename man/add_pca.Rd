@@ -7,13 +7,45 @@
 \alias{add_sma}
 \title{Add PCA, SMA, LDA, or PLS}
 \usage{
-add_pca(object, ndim = 2, plot = TRUE, x = 1, y = 2, ...)
+add_pca(
+  object,
+  ndim = 2,
+  plot = TRUE,
+  x = pca1,
+  y = pca2,
+  ...,
+  fixed = list(shape = 15, size = 3)
+)
 
-add_pls(object, ndim = 2, plot = TRUE, x = 1, y = 2, ...)
+add_pls(
+  object,
+  ndim = 2,
+  plot = TRUE,
+  x = pls1,
+  y = pls2,
+  ...,
+  fixed = list(shape = 15, size = 3)
+)
 
-add_lda(object, ndim = 2, plot = TRUE, x = 1, y = 2, ...)
+add_lda(
+  object,
+  ndim = 2,
+  plot = TRUE,
+  x = lda1,
+  y = lda2,
+  ...,
+  fixed = list(shape = 15, size = 3)
+)
 
-add_sma(object, ndim = 2, plot = TRUE, x = 1, y = 2, ...)
+add_sma(
+  object,
+  ndim = 2,
+  plot = TRUE,
+  x = sma1,
+  y = sma2,
+  ...,
+  fixed = list(shape = 15, size = 3)
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -36,6 +68,9 @@ add_pca(object)  # Principal Component Analysis
 add_pls(object)  # Partial Least Squares
 add_lda(object)  # Linear Discriminant Analysis
 add_sma(object)  # Spectral Map Analysis
-add_pca(object, color = TIME_POINT)  # Principal Component Analysis
-add_pca(object, fixed = list(shape = 1))  # Principal Component Analysis
+add_pca(object, color = TIME_POINT)
+add_pca(object, fixed = list(size=3, shape=1))
+}
+\author{
+Aditya Bhagwat, Laure Cougnaud (LDA)
 }
