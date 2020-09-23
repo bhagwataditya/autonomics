@@ -4,8 +4,9 @@
 #===================================================
 
 #' Extract features
-#' @param object SummarizedExperiment
-#' @param extractor logical/numeric vector
+#' @param   object SummarizedExperiment
+#' @param   extractor logical/numeric vector
+#' @return  SummarizedExperiment
 #' @examples
 #' require(magrittr)
 #' file <- download_data('stemcells.proteinGroups.txt')
@@ -13,11 +14,11 @@
 #' (object %<>% extract_features(c(5,4)))
 #' @export
 extract_features <- function(object, extractor){
-   object %<>% extract(extractor, )
-   if (!is.null(limma(object))){
-      limma(object) %<>% extract(fnames(object), , , drop = FALSE)
-   }
-   object
+    object %<>% extract(extractor, )
+    if (!is.null(limma(object))){
+        limma(object) %<>% extract(fnames(object), , , drop = FALSE)
+    }
+    object
 }
 
 #' Extract first from collapsed values
@@ -30,19 +31,19 @@ extract_features <- function(object, extractor){
 #' extract_first_from_collapsed(x, sep = ';')
 #' @noRd
 extract_first_from_collapsed <- function (x, ...) {
-   UseMethod("extract_first_from_collapsed", x)
+    UseMethod("extract_first_from_collapsed", x)
 }
 
 extract_first_from_collapsed.character <- function(x, sep = guess_sep(x), ...){
-   if (is.null(sep)) return(x)
+    if (is.null(sep)) return(x)
 
-   stringi::stri_split_fixed(x, sep) %>%
-   vapply(extract, character(1), 1)
+    stringi::stri_split_fixed(x, sep) %>%
+    vapply(extract, character(1), 1)
 }
 
 extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
-   levels(x) %<>% extract_first_from_collapsed.character(sep=sep)
-   x
+    levels(x) %<>% extract_first_from_collapsed.character(sep=sep)
+    x
 }
 
 
@@ -67,7 +68,7 @@ filter_features <- function(object, condition, verbose = FALSE){
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
     if (verbose) message('\t\tRetain ',
-         sum(idx), '/', length(idx), ' features: ', expr_text(condition))
+        sum(idx), '/', length(idx), ' features: ', expr_text(condition))
     object %<>% extract(idx,)
     fdata(object) %<>% droplevels()
     if (!is.null(analysis(object))) {
@@ -80,10 +81,10 @@ filter_features <- function(object, condition, verbose = FALSE){
 
 #' Keep features that are non-zero, non-NA, and non-NaN for some sample
 #' @param object  SummarizedExperiment
-#' @param verbose logical
-#' @return  filtered eSet
-#' @export
-filter_features_nonzero_in_some_sample <- function(object, verbose = TRUE){
+#' @param verbose TRUE (default) or FALSE
+#' @return  filtered SummarizedExperiment
+#' @noRd
+filter_features_available_in_some_sample <- function(object, verbose = TRUE){
     # . != 0 needed due to stupid behaviour of rowAnys
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
     selector <- rowAnys(exprs(object) != 0, na.rm = TRUE)
@@ -108,7 +109,7 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(exprs(object)))
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' filter_features_available_in_all_samples(object)
-#' @export
+#' @noRd
 filter_features_available_in_all_samples <- function(object){
 
     # Restrict to available values
@@ -160,7 +161,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
     exceeds_lod <- if (comparator == '>'){ function(value, lod) value >  lod
             } else if (comparator == '!=') function(value, lod) value != lod
     V1 <- dt[,.I[sum(exceeds_lod(value, lod), na.rm=TRUE)>1],
-              by = c('feature_id', 'subgroup')]$V1
+            by = c('feature_id', 'subgroup')]$V1
             #https://stackoverflow.com/questions/16573995
 
     # Keep only replicated features
@@ -208,8 +209,8 @@ filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
     if (record && !is.null(analysis(object))) {
-        analysis(object)$nsamples %<>%  c(structure(sum(idx),
-                                          names = expr_text(condition)))
+        analysis(object)$nsamples   %<>%  c(structure(sum(idx),
+                                            names = expr_text(condition)))
     }
     object
 }
@@ -226,14 +227,14 @@ filter_samples_available_for_some_feature <- function(object, verbose = FALSE){
         if (verbose) cmessage(
             '\t\tRetain %d/%d samples with a value available for some feature',
             sum(subsetter), length(subsetter))
-     object %<>% extract(, subsetter)
+    object %<>% extract(, subsetter)
     }
     object
 }
 
 is_available_for_some_feature <- function(object){
-   subsetter <- (!is.na(exprs(object))) & (exprs(object) != 0)
-   set_names(colAnys(subsetter), snames(object))
+    subsetter <- (!is.na(exprs(object))) & (exprs(object) != 0)
+    set_names(colAnys(subsetter), snames(object))
 }
 
 

@@ -140,12 +140,12 @@ preprocess_somascan <- function(object, filter_sample_type = 'Sample',
             ColCheck %in% !!enquo(filter_feature_quality), verbose = TRUE)
         message('\t\t========================================================')}
 # Select
-   if (rm_na_svars)            sdata(object) %<>% rm_na_columns()
-   if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
+    if (rm_na_svars)            sdata(object) %<>% rm_na_columns()
+    if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
 # Log2 transform
-   if (log2) object %<>% log2transform(verbose = TRUE)
+    if (log2) object %<>% log2transform(verbose = TRUE)
 # Return
-   object
+    object
 }
 
 #' Rm columns with only nas

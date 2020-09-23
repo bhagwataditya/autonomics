@@ -207,7 +207,7 @@ extract_fdata <- function(
     x, sheet, fids, fvar_rows, fvar_cols, fdata_rows, fdata_cols, transpose
 ){
     fdata1 <- data.frame(feature_id = fids, stringsAsFactors = FALSE)#,
-                         #row.names  = fids) doesn't work with NA fids
+                        #row.names  = fids) doesn't work with NA fids
     fdata_available <- !is.null(fvar_rows) & !is.null(fvar_cols)
     if (fdata_available){
         fvars1  <-  extract_rectangle(x,

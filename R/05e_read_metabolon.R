@@ -102,17 +102,17 @@ find_origscale_sheet <- function(file){
 #' preprocess_metabolon(object)
 #' @noRd
 preprocess_metabolon <- function(
-   object,
-   log2          = TRUE,
-   impute_consistent_nas  = FALSE,
-   add_kegg_pathways      = FALSE,
-   add_smiles             = FALSE
+    object,
+    log2          = TRUE,
+    impute_consistent_nas  = FALSE,
+    add_kegg_pathways      = FALSE,
+    add_smiles             = FALSE
 ){
-   if (log2)                object %<>% log2transform(verbose = TRUE)
-   if (impute_consistent_nas) object %<>% impute_consistent_nas()
-   if (add_kegg_pathways)   object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
-   if (add_smiles)          object %<>% add_smiles('SMILES', 'PUBCHEM')
-   object
+    if (log2)               object %<>% log2transform(verbose = TRUE)
+    if (impute_consistent_nas) object %<>% impute_consistent_nas()
+    if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
+    if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
+    object
 }
 
 #=============================================================================
@@ -136,20 +136,20 @@ preprocess_metabolon <- function(
 add_kegg_pathways <- function(
     object, entry_var = 'KEGG', pathway_var = 'KEGGPATHWAYS'
 ){
-   # Add KEGG Pathways
-   fdata(object)[[pathway_var]] <- fdata(object)[[entry_var]]     %>%
-                              extract_first_from_collapsed() %>%
-                              kegg_entry_to_pathways()
-   # Report
-   cmessage(paste0(  '\t\tAdd KEGG Pathways: %3d features ',
-                            '-> %3d map to KEGG IDS ',
-                            '-> %3d map to KEGG Pathways'),
-                            nrow(object),
-                            sum(!is.na(fdata(object)[[entry_var  ]])),
-                            sum(!is.na(fdata(object)[[pathway_var]])))
+    # Add KEGG Pathways
+    fdata(object)[[pathway_var]] <- fdata(object)[[entry_var]]     %>%
+                                    extract_first_from_collapsed() %>%
+                                    kegg_entry_to_pathways()
+    # Report
+    cmessage(paste0(  '\t\tAdd KEGG Pathways: %3d features ',
+                        '-> %3d map to KEGG IDS ',
+                        '-> %3d map to KEGG Pathways'),
+                        nrow(object),
+                        sum(!is.na(fdata(object)[[entry_var  ]])),
+                        sum(!is.na(fdata(object)[[pathway_var]])))
 
-   # Return
-   object
+    # Return
+    object
 }
 
 
@@ -160,7 +160,8 @@ add_kegg_pathways <- function(
 #' @param pathway_var kegg pathway fvar
 #' @return character vector
 #' @examples
-#' x <- c("C07326", "C04742", "C18218", "C18218", NA_character_, NA_character_, "", "")
+#'     x <- c("C07326", "C04742", "C18218", "C18218", NA_character_,
+#'            NA_character_, "", "")
 #' kegg_entry_to_pathways(x)
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
 #' @noRd
@@ -212,31 +213,27 @@ kegg_entry_to_pathways <- function(x){
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
 #' @noRd
 add_smiles <- function(x, pubchem_var = 'PUBCHEM', smiles_var = 'SMILES'){
-
-    # Satify CHECK
+# Satify CHECK
     . <- NULL
-
-    # Assert
+# Assert
     assert_is_subset(pubchem_var, fvars(x))
-
-    # Map to smiles
+# Map to smiles
     PUBCHEMIDS <- fvalues(x, pubchem_var) %>%
                 extract_first_from_collapsed(';')
     SMILES <- PUBCHEMIDS %>%
             (function(x) split(x, ceiling(seq_along(x)/100))) %>%
-             lapply(pubchem_to_smiles) %>%
-             unlist() %>%
-             unname()
+            lapply(pubchem_to_smiles) %>%
+            unlist() %>%
+            unname()
     fdata(x)[[smiles_var]] <- SMILES
-
-   # Report
-   cmessage(paste0('\t\tAdd SMILES: %3d features -> %3d map to PUBCHEM',
-                          ' -> %3d map to SMILES'),
-                nrow(x),
-                sum(!is.na(fdata(x)[[pubchem_var]])),
-                sum(!is.na(fdata(x)[[smiles_var ]])))
-   # Return
-   x
+# Report
+    cmessage(paste0('\t\tAdd SMILES: %3d features -> %3d map to PUBCHEM',
+                    ' -> %3d map to SMILES'),
+                    nrow(x),
+                    sum(!is.na(fdata(x)[[pubchem_var]])),
+                    sum(!is.na(fdata(x)[[smiles_var ]])))
+# Return
+    x
 }
 
 
@@ -250,18 +247,16 @@ add_smiles <- function(x, pubchem_var = 'PUBCHEM', smiles_var = 'SMILES'){
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
 #' @noRd
 pubchem_to_smiles <- function(x){
-
-    # Satisfy CHECK
+# Satisfy CHECK
     . <- NULL
-
-    # Download pubchem smiles
+# Download pubchem smiles
     cachefile <- tempfile()
-    resturl <- sprintf(paste0('https://pubchem.ncbi.nlm.nih.gov/rest/pug/',
+    resturl <- sprintf(
+                    paste0('https://pubchem.ncbi.nlm.nih.gov/rest/pug/',
                             'compound/cid/%s/property/CanonicalSMILES/CSV'),
-                       paste0(unique(as.vector(na.exclude(x))), collapse = ','))
+                    paste0(unique(as.vector(na.exclude(x))), collapse = ','))
     download.file(resturl, cachefile, quiet = TRUE)
-
-    # Return
+# Return
     data.table(CID = as.integer(as.character(x))) %>%
     merge(fread(cachefile), by = 'CID', all.x = TRUE, sort = FALSE) %>%
     extract2('CanonicalSMILES')

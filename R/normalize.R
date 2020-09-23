@@ -6,8 +6,12 @@
 
 
 #' Inverse normal transform samples
-#' @param object eset
-#' @return normalized eset
+#' @param object SummarizedExperiment
+#' @return normalized SummarizedExperimen
+#' @examples
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' invnorm(object)
 #' @export
 invnorm <- function(object){
     exprs(object) %<>% apply(2, transform_to_fitting_normal)
@@ -20,8 +24,8 @@ invnorm <- function(object){
 #' @return transformed vector
 #' @noRd
 transform_to_fitting_normal <- function(x){
-   pars <- estimate_mean_sd(x)
-   transform_to_normal(x, mean = pars[['mean']], sd = pars[['sd']])
+    pars <- estimate_mean_sd(x)
+    transform_to_normal(x, mean = pars[['mean']], sd = pars[['sd']])
 }
 
 estimate_mean_sd <- function(x){

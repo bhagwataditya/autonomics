@@ -102,7 +102,7 @@ pull_columns <- function(df, first_cols, verbose = TRUE){
         first_cols %<>% extract(idx)
     }
 
-  df %>% extract(, c(first_cols, setdiff(names(df), first_cols)), drop = FALSE)
+    df[, c(first_cols, setdiff(names(df), first_cols)), drop = FALSE]
 }
 
 

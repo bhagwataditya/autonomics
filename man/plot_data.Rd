@@ -17,6 +17,9 @@ plot_data(data, geom = geom_point, color = subgroup, ..., fixed = list())
 
 \item{fixed}{list with fixed aesthetic specifications}
 }
+\value{
+ggplot object
+}
 \description{
 Plot data
 }

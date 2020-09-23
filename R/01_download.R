@@ -28,7 +28,8 @@ download_data <- function(
     . <- NULL
 
     bitbucket <- 'https://bitbucket.org/graumannlabtools/importomics/downloads'
-    localdir  %<>% paste(vapply(stri_split_fixed(file, '.'), extract, character(1), 1), sep = '/')
+    localdir  %<>% paste(vapply(
+        stri_split_fixed(file, '.'), extract, character(1), 1), sep = '/')
     dir.create(localdir, showWarnings = FALSE, recursive = TRUE)
     localfile <- paste0(localdir,  '/', file)
     if (file.exists(localfile)){

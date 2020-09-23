@@ -7,11 +7,16 @@
 invnorm(object)
 }
 \arguments{
-\item{object}{eset}
+\item{object}{SummarizedExperiment}
 }
 \value{
-normalized eset
+normalized SummarizedExperimen
 }
 \description{
 Inverse normal transform samples
+}
+\examples{
+file <- download_data('glutaminase.metabolon.xlsx')
+object <- read_metabolon(file)
+invnorm(object)
 }

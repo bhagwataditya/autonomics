@@ -10,17 +10,14 @@
 
 
 add_affy_fdata <- function(object){
-
-    # Extract entrez identifiers
+# Extract entrez identifiers
     entrezgs <- vapply(
-      stri_split_fixed(fnames(object), '_'), extract, character(1), 1)
-
-    # Get annotation db
+        stri_split_fixed(fnames(object), '_'), extract, character(1), 1)
+# Get annotation db
     pkgname <- paste0(metadata(object)$annotation, '.db')
     #install_if_required(pkgname)
     db <- getFromNamespace(pkgname, pkgname)
-
-    # Map
+# Map
     rowData(object) <- DataFrame(
         feature_id    = fnames(object),
         feature_name  = suppressMessages(mapIds(
@@ -29,10 +26,8 @@ add_affy_fdata <- function(object){
                     db, entrezgs, column = 'GENENAME', keytype = 'ENTREZID')),
         row.names     = fnames(object)
     )
-
-    # Return
+# Return
     object
-
 }
 
 #' Read affymetrix microarray

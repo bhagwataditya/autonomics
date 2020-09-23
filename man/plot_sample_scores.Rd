@@ -29,6 +29,9 @@ plot_sample_scores(
 
 \item{fixed}{fixed plot aesthetics}
 }
+\value{
+ggplot object
+}
 \description{
 Plot sample scores
 }

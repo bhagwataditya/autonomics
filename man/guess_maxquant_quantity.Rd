@@ -21,7 +21,7 @@ guess_maxquant_quantity(x, ...)
 \item{...}{used for proper S3 method dispatch}
 }
 \value{
-string: value from names(maxquant_patterns)
+string: value from names(MAXQUANT_PATTERNS)
 }
 \description{
 character vector, dataframe, or SummarizedExperiment.

@@ -94,37 +94,27 @@ download_gtf <- function(
 #'    gtfdt <- read_gtf(gtffile, var = 'gene_id', values = 'ENSG00000198947')
 #' }
 #' @noRd
-read_gtf <- function(
-    gtffile,
-    var       = 'gene_id',
-    values    = NULL,
-    writefile = NULL
-){
-
-    # Assert
+read_gtf <- function(gtffile, var = 'gene_id', values = NULL, writefile = NULL){
+# Assert
     assert_all_are_existing_files(gtffile)
     assert_is_a_string(var)
-
-    # Read
+# Read
     dt <- rtracklayer::import(gtffile) %>%
-          GenomicRanges::as.data.frame() %>% data.table()
-
-    # Filter
+        GenomicRanges::as.data.frame() %>%
+        data.table()
+# Filter
     if (!is.null(values)){
         dt %>% setkeyv(var)
         dt %<>% extract(values)
     }
-
-    # Write
+# Write
     if (!is.null(writefile)){
         cmessage("\t\tWrite   %s", writefile)
         dir.create(dirname(writefile), recursive = TRUE, showWarnings = FALSE)
         fwrite(dt, writefile)
     }
-
-    # Return
+# Return
     dt
-
 }
 
 
@@ -221,9 +211,9 @@ read_counts <- function(
         assert_is_subset(fid_col, names(dt))
         fid_col <- which(names(dt)==fid_col)
     }
-    expr_cols   <- which(unname(vapply(dt, is.integer, logical(1))))
-    fdata_cols  <- c(fid_col,
-                     1 + which(unname(!vapply(
+    expr_cols  <- which(unname(vapply(dt, is.integer, logical(1))))
+    fdata_cols <- c(fid_col,
+                    1 + which(unname(!vapply(
                                         dt[, -fid_col, with = FALSE],
                                         is.integer,
                                         logical(1)))))
@@ -303,7 +293,7 @@ filter_low_count_features <- function(
 #' @rdname counts_to_cpm
 #' @noRd
 scaledlibsizes <- function(counts){
-   colSums(counts) * edgeR::calcNormFactors(counts)
+    colSums(counts) * edgeR::calcNormFactors(counts)
 }
 
 #' Convert between counts and cpm (counts per million scaled reads)
@@ -322,20 +312,16 @@ scaledlibsizes <- function(counts){
 #' @return cpm matrix
 #' @noRd
 counts_to_cpm <- function(counts, scaled_libsizes = scaledlibsizes(counts)){
-
-   t(t(counts + 0.5)/(scaled_libsizes + 1) * 1e+06)
+    t(t(counts + 0.5)/(scaled_libsizes + 1) * 1e+06)
 }
 
 #' @noRd
 cpm_to_counts <- function(cpm, scaled_libsizes){
-   1e-06 * t(t(cpm) * (scaled_libsizes + 1)) - 0.5
+    1e-06 * t(t(cpm) * (scaled_libsizes + 1)) - 0.5
 }
 
 compute_precision_weights_once <- function(
-   object,
-   design = create_design_matrix(object),
-   plot   = TRUE,
-   ...
+    object,design = create_design_matrix(object), plot = TRUE, ...
 ){
     counts   <- counts(object)
     scaled_libsizes <- scaledlibsizes(counts)
@@ -364,12 +350,12 @@ contains_replicates <- function(object){
 #' @noRd
 create_voom_design <- function(object, verbose = TRUE){
 
-   # Replicates
-   if (contains_replicates(object)) return(create_design_matrix(object))
+    # Replicates
+    if (contains_replicates(object)) return(create_design_matrix(object))
 
-   # No replicates
-   message('\t\t\tsubgroup values not replicated: voom(design=NULL)')
-   return(NULL)
+    # No replicates
+    message('\t\t\tsubgroup values not replicated: voom(design=NULL)')
+    return(NULL)
 
 }
 
@@ -388,57 +374,51 @@ create_voom_design <- function(object, verbose = TRUE){
 #' @noRd
 compute_precision_weights <- function(
     object, design = create_voom_design(object), plot = TRUE
-){    # Assert & message
+){
+# Assert & message
     assert_is_not_null(counts(object))
-
-    # Estimate precision weights
+# Estimate precision weights
     has_block <- has_complete_block_values(object)
     weights   <- compute_precision_weights_once(
                     object, design = design, plot = !has_block)
-
-    # Update precision weights using block correlation
+# Update precision weights using block correlation
     if (has_block){
         log2cpm <- log2(counts_to_cpm(counts(object)))
         correlation <-  duplicateCorrelation(
                             log2cpm, design = design, block = object$block,
                             weights = weights)
         correlation %<>% extract2('consensus')
-      weights <- compute_precision_weights_once(
+        weights <- compute_precision_weights_once(
                     object, design = design, block = object$block,
                     correlation = correlation, plot = TRUE)
-   }
-
-   # Return
-   dimnames(weights) <- dimnames(object)
-   weights
+    }
+# Return
+    dimnames(weights) <- dimnames(object)
+    weights
 }
 
 explicitly_compute_precision_weights_once <- function(
     object, design = create_voom_design(object), plot = TRUE, ...
 ){
-    # Extract
+# Extract
     log2cpm  <- exprs(object)
     lib.size <- scaledlibsizes(counts(object))
-
-    # Assert
+# Assert
     n <- nrow(log2cpm)
     if (n < 2L) stop("Need at least two genes to fit a mean-variance trend")
-
-    # Fit linear model
+# Fit linear model
     fit <- lmFit(log2cpm, design=design, ...)
-
-    # Predict
+# Predict
     if (is.null(fit$Amean)) fit$Amean <- rowMeans(log2cpm, na.rm = TRUE)
     if (fit$rank < ncol(design)) {
-        j <- fit$pivot[1:fit$rank]
+        j <- fit$pivot[seq_len(fit$rank)]
         fitted.log2cpm  <-  fit$coef[, j, drop = FALSE] %*%
                             t(fit$design[,j, drop = FALSE])
     } else {
-       fitted.log2cpm <- fit$coef %*% t(fit$design)
+        fitted.log2cpm <- fit$coef %*% t(fit$design)
     }
     fitted.log2count <-(2^fitted.log2cpm) %>% cpm_to_counts(lib.size) %>% log2()
-
-    # Fit mean-variance trend
+# Fit mean-variance trend
     mean.log2count <- fit$Amean + mean(log2(lib.size + 1)) - log2(1e+06)
     sdrt.log2count <- sqrt(fit$sigma)        # mean log2 count  &  sqrtsd(resid)
     all.identical <- matrixStats::rowVars(log2cpm)==0
@@ -448,21 +428,18 @@ explicitly_compute_precision_weights_once <- function(
     }
     l <- lowess(mean.log2count, sdrt.log2count, f = 0.5)
     f <- approxfun(l, rule = 2)
-
-    # Compute precision weights
+# Compute precision weights
     w <- 1/f(fitted.log2count)^4     # f(.) = sqrt(sd(.)) --> f(.)^4 = var(.)
     dim(w) <- dim(fitted.log2count)
-
-    # Plot
+# Plot
     if (plot) {
         plot(mean.log2count, sdrt.log2count, xlab = "mean log2count",
             ylab = "sdrt log2count", pch = 16, cex = 0.25)
         title("voom: Mean-variance trend")
         lines(l, col = "red")
-   }
-
-   # Return
-   return(w)
+    }
+# Return
+    return(w)
 }
 
 

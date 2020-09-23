@@ -28,7 +28,7 @@ Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
 biocViews: Software, DataImport, GeneExpression, Transcription, 
-           RNASeq, MassSpectrometry
+           RNASeq, MassSpectrometry, DimensionReduction, PrincipalComponent
 BugReports: https://bitbucket.org/graumannlabtools/autonomics 
 URL: https://bitbucket.org/graumannlabtools/autonomics
 RoxygenNote: 7.1.1
@@ -41,8 +41,9 @@ Imports:
   edgeR,
   GenomicRanges,
   ggplot2,
+  graphics,
+  grDevices,
   limma,
-  lazyeval,
   magrittr, 
   matrixStats,
   MASS,
@@ -57,6 +58,7 @@ Imports:
   rtracklayer, 
   S4Vectors, 
   seqinr,
+  stats, 
   stringi,
   SummarizedExperiment,
   tidyr,

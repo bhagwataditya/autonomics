@@ -10,12 +10,13 @@
 #' @return updated object
 #' @noRd
 flip_sign_if_all_exprs_are_negative <- function(object){
-   idx <- !is.na(exprs(object))
-   if (all(sign(exprs(object)[idx])==-1)){
-      cmessage('\t\tAll values negative: flip signs to prevent singularities.')
-      exprs(object) %<>% magrittr::multiply_by(-1)
-   }
-   object
+    idx <- !is.na(exprs(object))
+    if (all(sign(exprs(object)[idx])==-1)){
+        cmessage(
+            '\t\tAll values negative: flip signs to prevent singularities.')
+        exprs(object) %<>% magrittr::multiply_by(-1)
+    }
+    object
 }
 
 
@@ -114,7 +115,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     tmpobj <- object
     tmpobj %<>% inf_to_na(verbose=TRUE)
     tmpobj %<>% nan_to_na(verbose=TRUE)
-    tmpobj %<>% filter_features_nonzero_in_some_sample()
+    tmpobj %<>% filter_features_available_in_some_sample()
 # (Double) center and (global) normalize
     row_means <- rowMeans(exprs(tmpobj), na.rm=TRUE)
     col_means <- colWeightedMeans(exprs(tmpobj), abs(row_means), na.rm = TRUE)
@@ -176,7 +177,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 # Extract
     samples   <- mpm_out$Columns
     features  <- mpm_out$Rows
-    variances <- round(100*mpm_tmp$contrib[1:ncomponents])
+    variances <- round(100*mpm_tmp$contrib[seq_len(ncomponents)])
     names(samples)   <- sprintf('sma%d', seq_len(ncol(samples)))
     names(features)  <- sprintf('sma%d', seq_len(ncol(features)))
     names(variances) <- sprintf('sma%d', seq_len(length(variances)))
@@ -221,7 +222,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 # Transform
     exprs_t  <- t(exprs(tmpobj))
     lda_out  <- suppressWarnings(
-                     MASS::lda( exprs_t,grouping = sdata(object)$subgroup))
+                    MASS::lda( exprs_t,grouping = sdata(object)$subgroup))
     features <- lda_out$scaling
     if (ncol(features)==1) features %<>% cbind(LD2 = 0)
     exprs_t %<>% scale(center = colMeans(lda_out$means), scale = FALSE)
@@ -372,6 +373,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @param color   color variable
 #' @param ...     additional variable to aesthetic mappings
 #' @param fixed   list with fixed aesthetic specifications
+#' @return ggplot object
 #' @examples
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
@@ -402,6 +404,7 @@ plot_data <- function(
 #' @param color   sdata variable mapped to color
 #' @param ...     additional svars mapped to aesthetics
 #' @param fixed   fixed plot aesthetics
+#' @return ggplot object
 #' @examples
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')

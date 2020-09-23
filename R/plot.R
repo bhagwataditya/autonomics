@@ -14,9 +14,9 @@
 #'     default_color_var(object)
 #' @noRd
 default_color_var <- function(object){
-   if (     'block'    %in% svars(object))  'block'
-   else if ('subgroup' %in% svars(object))  'subgroup'
-   else                                     NULL
+    if (     'block'    %in% svars(object))  'block'
+    else if ('subgroup' %in% svars(object))  'subgroup'
+    else                                     NULL
 }
 
 
@@ -66,7 +66,7 @@ default_color_values <- function(
                         make_gg_colors(color_var_levels, show = show,
                             verbose = verbose)
                     } else {
-                       make_composite_colors(color_var_levels, sep = sep,
+                        make_composite_colors(color_var_levels, sep = sep,
                             show = show, verbose = verbose)
                     }
 # Return
@@ -87,7 +87,7 @@ default_color_values <- function(
 make_gg_colors <- function(factor_levels, show, verbose = TRUE) {
     n <- length(factor_levels)
     hues <- seq(15, 375, length = n + 1)
-    color_levels <- hcl(h = hues, l = 65, c = 100)[1:n] %>%
+    color_levels <- hcl(h = hues, l = 65, c = 100)[seq_len(n)] %>%
                     set_names(factor_levels)
     if (show) pie(rep(1, length(color_levels)), names(color_levels),
                     col = color_levels)
@@ -131,7 +131,7 @@ make_composite_colors <- function(
     V2levels <- sort(unique(V2))
     n1 <- length(V1levels)
     n2 <- length(V2levels)
-    hues <- seq(15, 375, length = n1 + 1)[1:n1] %>% set_names(V1levels)
+    hues <- seq(15, 375, length = n1 + 1)[seq_len(n1)] %>% set_names(V1levels)
 
     color_levels <- character(0)
     for (i in seq_along(hues)){
@@ -141,7 +141,7 @@ make_composite_colors <- function(
                             set_names(paste0(V1levels[[i]], sep, V2levels)))
     }
     if (show) pie(rep(1, length(color_levels)), names(color_levels),
-                  col = color_levels)
+                col = color_levels)
 
     return(color_levels)
 }

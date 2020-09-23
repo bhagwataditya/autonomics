@@ -36,69 +36,70 @@ zero_to_na <- function(object, verbose = FALSE){
                     sum(rowAnys(selector)), nrow(object),
                     sum(colAnys(selector)), ncol(object))
         exprs(object)[selector] <- NA_real_
-   }
-   object
+    }
+    object
 }
 
 
 #' @noRd
 nan_to_na <- function(object, verbose = FALSE){
-   selector <- is.nan(exprs(object))
-   if (any(c(selector), na.rm = TRUE)){
-      if (verbose) cmessage(
+    selector <- is.nan(exprs(object))
+    if (any(c(selector), na.rm = TRUE)){
+        if (verbose) cmessage(
                     paste0( '\t\tReplace NaN -> NA for %d/%d values ',
                             '(in %d/%d features and %d/%d samples)'),
                     sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
                     sum(rowAnys(selector)), nrow(object),
                     sum(colAnys(selector)), ncol(object))
-      exprs(object)[selector] <- NA_real_
-   }
-   object
+        exprs(object)[selector] <- NA_real_
+    }
+    object
 }
 
 
 na_to_zero <- function(object, verbose = FALSE){
-   selector <- is.na(exprs(object))
-   if (any(selector)){
-      if (verbose) cmessage(
-                    paste0( '\t\tReplace NA -> 0 for %d/%d values ',
-                            '(in %d/%d features and %d/%d samples)'),
-                    sum(selector), nrow(selector)*ncol(selector),
-                    sum(rowAnys(selector)), nrow(object),
-                    sum(colAnys(selector)), ncol(object))
-      exprs(object)[selector] <- 0
-   }
-   object
+    selector <- is.na(exprs(object))
+    if (any(selector)){
+        if (verbose) cmessage(
+                        paste0( '\t\tReplace NA -> 0 for %d/%d values ',
+                                '(in %d/%d features and %d/%d samples)'),
+                        sum(selector), nrow(selector)*ncol(selector),
+                        sum(rowAnys(selector)), nrow(object),
+                        sum(colAnys(selector)), ncol(object))
+        exprs(object)[selector] <- 0
+    }
+    object
 }
 
 
 inf_to_na <- function(object, verbose){
-   selector <- is.infinite(exprs(object))
-   if (any(c(selector), na.rm = TRUE)){
-      if (verbose) cmessage(
-                    paste0( '\t\tReplace -Inf -> NA for %d/%d values ',
-                            '(in %d/%d features and %d/%d samples)'),
+    selector <- is.infinite(exprs(object))
+    if (any(c(selector), na.rm = TRUE)){
+        if (verbose) cmessage(
+                    paste0(
+                        '\t\tReplace -Inf -> NA for %d/%d values ',
+                        '(in %d/%d features and %d/%d samples)'),
                     sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
                     sum(rowAnys(selector)), nrow(object),
                     sum(colAnys(selector)), ncol(object))
-      exprs(object)[selector] <- NA_real_
-   }
-   object
+        exprs(object)[selector] <- NA_real_
+    }
+    object
 }
 
 
 minusinf_to_na <- function(object, verbose = FALSE){
-   selector <- exprs(object)==-Inf
-   if (any(c(selector), na.rm = TRUE)){
-      if (verbose) cmessage(
+    selector <- exprs(object)==-Inf
+    if (any(c(selector), na.rm = TRUE)){
+        if (verbose) cmessage(
                     paste0( '\t\tReplace -Inf -> NA for %d/%d values ',
                             '(in %d/%d features and %d/%d samples)'),
                     sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
                     sum(rowAnys(selector)), nrow(object),
                     sum(colAnys(selector)), ncol(object))
-      exprs(object)[selector] <- NA_real_
-   }
-   object
+        exprs(object)[selector] <- NA_real_
+    }
+    object
 }
 
 
@@ -133,7 +134,7 @@ impute_common_nas <- function(
 
     # Replace inconsistent nondetects by median
     exprs1 <- exprs(object)
-    for (sample in 1:ncol(object)){
+    for (sample in seq_len(ncol(object))){
         exprs1[, sample] %<>% (function(x){
             x[is_inconsistent_na[, sample]] <- stats::median(x, na.rm=TRUE)
             x})
@@ -179,15 +180,15 @@ impute_around_zero <- function(x){
     if (ncol(x)==1) return(x) # single replicate -> no sd!
     meansd <- mean(rowSds(x), na.rm = TRUE)
     is_common_na_feature <- rowAlls(is.na(x))
-    imputed_values <- x[is_common_na_feature, , drop=FALSE]       %>%
+    imputed_values  <-  x[is_common_na_feature, , drop=FALSE]       %>%
                         apply(1, function(y) impute_row(y, meansd)) %>%
-                     t()
-   x[is_common_na_feature, ] <- imputed_values
-   x
+                        t()
+    x[is_common_na_feature, ] <- imputed_values
+    x
 }
 
 impute_row <- function(x, sd){
-   abs(rnorm(length(x), sd = sd * 2))
+    abs(rnorm(length(x), sd = sd * 2))
 }
 
 
@@ -271,16 +272,14 @@ is_missing_or_empty_character <- function(x){
 #' split_by_svar(object)
 #' @noRd
 split_by_svar <- function(object, svar = 'subgroup'){
-
-   # Return object if null svar
-   if (is.null(svar)) return(list(object))
-
-   # Split
-  extract_samples <- function(sg){
+# Return object if null svar
+    if (is.null(svar)) return(list(object))
+# Split
+    extract_samples <- function(sg){
                         idx <- sdata(object)[[svar]] == sg
                         object[, idx]
                     }
-   Map(extract_samples, slevels(object, svar))
+    Map(extract_samples, slevels(object, svar))
 }
 
 
@@ -289,9 +288,9 @@ split_by_svar <- function(object, svar = 'subgroup'){
 # x <- c('a', 'b', 'c')
 # collapse_words(x)
 collapse_words <- function(x, collapsor = 'and'){
-   if (length(x) == 1) return(x)
-   if (length(x) == 2) return(sprintf('%s %s %s', x[[1]], collapsor, x[[2]]))
-   paste0(x[-length(x)], collapse = ', ') %>% paste0(' and ', x[[3]])
+    if (length(x) == 1) return(x)
+    if (length(x) == 2) return(sprintf('%s %s %s', x[[1]], collapsor, x[[2]]))
+    paste0(x[-length(x)], collapse = ', ') %>% paste0(' and ', x[[3]])
 }
 
 
@@ -352,12 +351,12 @@ plot_detects_per_subgroup <- function(
     geom_col(color = 'black', position = position_stack()) +
     scale_fill_manual(values = color_values) +
     geom_text(aes(label=value, x = subgroup),
-                     position = position_stack(vjust=0.5),
-                     size = rel(3)) +
+                    position = position_stack(vjust=0.5),
+                    size = rel(3)) +
     theme(#axis.text.x        = element_text(angle = 90, vjust = 0.5, hjust=1),
-                 panel.grid.major.x = element_blank(),
-                 panel.border       = element_blank(),
-                 plot.title         = element_text(hjust = 0.5)) +
+                panel.grid.major.x = element_blank(),
+                panel.border       = element_blank(),
+                plot.title         = element_text(hjust = 0.5)) +
     xlab(NULL) +
     ylab(NULL) +
     coord_flip()

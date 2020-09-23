@@ -11,6 +11,9 @@ extract_features(object, extractor)
 
 \item{extractor}{logical/numeric vector}
 }
+\value{
+SummarizedExperiment
+}
 \description{
 Extract features
 }
