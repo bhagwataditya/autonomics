@@ -11,8 +11,9 @@ add_pca(
   object,
   ndim = 2,
   plot = TRUE,
-  x = pca1,
-  y = pca2,
+  xdim = 1,
+  ydim = 2,
+  color = subgroup,
   ...,
   fixed = list(shape = 15, size = 3)
 )
@@ -21,8 +22,9 @@ add_pls(
   object,
   ndim = 2,
   plot = TRUE,
-  x = pls1,
-  y = pls2,
+  xdim = 1,
+  ydim = 2,
+  color = subgroup,
   ...,
   fixed = list(shape = 15, size = 3)
 )
@@ -31,8 +33,8 @@ add_lda(
   object,
   ndim = 2,
   plot = TRUE,
-  x = lda1,
-  y = lda2,
+  xdim = 1,
+  ydim = 2,
   ...,
   fixed = list(shape = 15, size = 3)
 )
@@ -41,8 +43,8 @@ add_sma(
   object,
   ndim = 2,
   plot = TRUE,
-  x = sma1,
-  y = sma2,
+  xdim = 1,
+  ydim = 2,
   ...,
   fixed = list(shape = 15, size = 3)
 )
@@ -53,6 +55,16 @@ add_sma(
 \item{ndim}{number}
 
 \item{plot}{TRUE (default) or FALSE}
+
+\item{xdim}{number (default 1): x axis dimension}
+
+\item{ydim}{number (default 2): y axis dimension}
+
+\item{color}{sdata variable mapped to color}
+
+\item{...}{additional svar to aesthetic mappings}
+
+\item{fixed}{list with fixed ggplot aesthetics}
 }
 \value{
 SummarizedExperiment
@@ -70,6 +82,7 @@ add_lda(object)  # Linear Discriminant Analysis
 add_sma(object)  # Spectral Map Analysis
 add_pca(object, color = TIME_POINT)
 add_pca(object, fixed = list(size=3, shape=1))
+add_pca(object, xdim = 3, ydim = 4)
 }
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)

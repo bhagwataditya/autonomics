@@ -369,10 +369,10 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @param ...     additional variable to aesthetic mappings
 #' @param fixed   list with fixed aesthetic specifications
 #' @examples
+#' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' pcaresults <- pca(object)
-#' object %<>% merge_sdata(pcaresults$samples)
+#' object %<>% add_pca(plot = FALSE)
 #' plot_data(sdata(object), x = pca1, y = pca2)
 #' plot_data(sdata(object), x = pca1, y = pca2, color = TIME_POINT)
 #' plot_data(sdata(object), x = pca1, y = pca2, color = TIME_POINT,
@@ -387,9 +387,41 @@ plot_data <- function(
             data = data, mapping = aes(color = !!color, ...))
     p <- p + do.call(geom, fixed)
     p <- p + theme_bw()
-    print(p)
     p
 }
+
+#' Plot sample scores
+#' @param object  SummarizedExperiment
+#' @param method  string: 'pca', 'pls', 'lda', 'sma'
+#' @param xdim    number (default 1): x axis dimension
+#' @param ydim    number (default 2): y axis dimension
+#' @param color   sdata variable mapped to color
+#' @param fixed   fixed plot aesthetics
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% add_pca(plot = FALSE, ndim = 4)  # Principal Component Analysis
+#' plot_sample_scores(object, 'pca')
+#' plot_sample_scores(object, 'pca', x=3, y=4)
+#' plot_sample_scores(object, 'pca', color = TIME_POINT)
+#' @export
+plot_sample_scores <- function(object, method, xdim = 1, ydim = 2,
+    color = subgroup, ..., fixed = list(shape=15, size=3)
+){
+    x <- paste0(method, xdim)
+    y <- paste0(method, ydim)
+    xlab  <- paste0(x, ' : ', metadata(object)[[method]][[x]], '% ')
+    ylab  <- paste0(y, ' : ', metadata(object)[[method]][[y]], '% ')
+
+    p <- plot_data(
+            sdata(object), x = !!sym(x), y = !!sym(y), color = !!ensym(color),
+            ..., fixed = fixed)
+    p <- p + ggplot2::xlab(xlab)
+    p <- p + ggplot2::ylab(ylab)
+    p
+}
+
 
 
 #============================================================================
@@ -408,6 +440,11 @@ plot_data <- function(
 #' @param object  SummarizedExperiment
 #' @param ndim    number
 #' @param plot    TRUE (default) or FALSE
+#' @param xdim    number (default 1): x axis dimension
+#' @param ydim    number (default 2): y axis dimension
+#' @param color   sdata variable mapped to color
+#' @param fixed   list with fixed ggplot aesthetics
+#' @param ...     additional svar to aesthetic mappings
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
@@ -418,15 +455,16 @@ plot_data <- function(
 #' add_sma(object)  # Spectral Map Analysis
 #' add_pca(object, color = TIME_POINT)
 #' add_pca(object, fixed = list(size=3, shape=1))
+#' add_pca(object, xdim = 3, ydim = 4)
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 add_pca <- function(
-    object, ndim=2, plot=TRUE, x=pca1, y=pca2, ..., fixed=list(shape=15, size=3)
+    object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, color = subgroup, ...,
+    fixed = list(shape=15, size=3)
 ){
-    x <- ensym(x)
-    y <- ensym(y)
-    object %<>% .add_pca(ndim = ndim)
-    if (plot) plot_data(sdata(object), x = !!x, y = !!y, ..., fixed = fixed)
+    object %<>% .add_pca(ndim = max(ndim, xdim, ydim))
+    if (plot) print(plot_sample_scores(
+                object, 'pca', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object
 }
 
@@ -434,12 +472,12 @@ add_pca <- function(
 #' @rdname add_pca
 #' @export
 add_pls <- function(
-    object, ndim=2, plot=TRUE, x=pls1, y=pls2, ..., fixed=list(shape=15, size=3)
+    object, ndim=2, plot=TRUE, xdim = 1, ydim = 2, color = subgroup, ...,
+    fixed = list(shape=15, size=3)
 ){
-    x <- ensym(x)
-    y <- ensym(y)
-    object %<>% .add_pls(ndim = ndim)
-    if (plot) plot_data(sdata(object), x = !!x, y = !!y, ..., fixed = fixed)
+    object %<>% .add_pls(ndim = max(ndim, xdim, ydim))
+    if (plot) print(plot_sample_scores(
+                object, 'pls', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object
 }
 
@@ -447,12 +485,12 @@ add_pls <- function(
 #' @rdname add_pca
 #' @export
 add_lda <- function(
-    object, ndim=2, plot=TRUE, x=lda1, y=lda2, ..., fixed=list(shape=15, size=3)
+    object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, ...,
+    fixed = list(shape=15, size=3)
 ){
-    x <- ensym(x)
-    y <- ensym(y)
-    object %<>% .add_lda(ndim = ndim)
-    if (plot) plot_data(sdata(object), x = !!x, y = !!y, ..., fixed = fixed)
+    object %<>% .add_lda(ndim = max(ndim, xdim, ydim))
+    if (plot) print(plot_sample_scores(
+                object, 'lda', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object
 }
 
@@ -460,12 +498,11 @@ add_lda <- function(
 #' @rdname add_pca
 #' @export
 add_sma <- function(
-    object, ndim=2, plot=TRUE, x=sma1, y=sma2, ..., fixed=list(shape=15, size=3)
+    object, ndim=2, plot=TRUE, xdim=1, ydim=2, ..., fixed=list(shape=15, size=3)
 ){
-    x <- ensym(x)
-    y <- ensym(y)
-    object %<>% .add_sma(ndim = ndim)
-    if (plot) plot_data(sdata(object), x = !!x, y = !!y, ..., fixed = fixed)
+    object %<>% .add_sma(ndim = max(ndim, xdim, ydim))
+    if (plot) print(plot_sample_scores(
+                object, 'sma', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object
 }
 
