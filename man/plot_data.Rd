@@ -7,6 +7,8 @@
 plot_data(data, geom = geom_point, color = subgroup, ..., fixed = list())
 }
 \arguments{
+\item{data}{data.frame}
+
 \item{geom}{geom_point, etc.}
 
 \item{color}{color variable}
@@ -14,12 +16,6 @@ plot_data(data, geom = geom_point, color = subgroup, ..., fixed = list())
 \item{...}{additional variable to aesthetic mappings}
 
 \item{fixed}{list with fixed aesthetic specifications}
-
-\item{sdata}{sample data.frame}
-
-\item{x}{x variable}
-
-\item{y}{y variable}
 }
 \description{
 Plot data

@@ -109,6 +109,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assertive::assert_all_are_less_than_or_equal_to(ndim, ncol(object))
+    . <- NULL
 # Prepare
     tmpobj <- object
     tmpobj %<>% inf_to_na(verbose=TRUE)
@@ -159,6 +160,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
+    . <- NULL
 # Preprocess
     tmpobj <- object
     tmpobj %<>% minusinf_to_na()
@@ -210,6 +212,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     assert_all_are_in_range(ndim, 1, nsubgroup-1)
     if (ndim > (nsubgroup-1)) stop(
         sprintf('LDA requires ndim (%d) <= nsubgroup-1 (%d)',ndim, nsubgroup-1))
+    . <- NULL
 # Preprocess
     tmpobj <- object
     tmpobj %<>% minusinf_to_na()
@@ -261,6 +264,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
+    . <- NULL
 # Transform
     x <- t(exprs(object))
     y <- subgroup_values(object)
@@ -298,6 +302,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
+    . <- NULL
 # Transform
     x <- t(exprs(object))
     y <- subgroup_values(object)
@@ -335,6 +340,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
+    . <- NULL
 # Transform
     x <- t(exprs(object))
     y <- subgroup_values(object)
@@ -361,10 +367,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #==============================================================================
 
 #' Plot data
-#' @param sdata   sample data.frame
+#' @param data    data.frame
 #' @param geom    geom_point, etc.
-#' @param x       x variable
-#' @param y       y variable
 #' @param color   color variable
 #' @param ...     additional variable to aesthetic mappings
 #' @param fixed   list with fixed aesthetic specifications
@@ -396,6 +400,7 @@ plot_data <- function(
 #' @param xdim    number (default 1): x axis dimension
 #' @param ydim    number (default 2): y axis dimension
 #' @param color   sdata variable mapped to color
+#' @param ...     additional svars mapped to aesthetics
 #' @param fixed   fixed plot aesthetics
 #' @examples
 #' require(magrittr)
@@ -430,7 +435,6 @@ plot_sample_scores <- function(object, method, xdim = 1, ydim = 2,
 #       add_pca, add_sma, add_pls, add_lda
 #
 #=============================================================================
-
 
 #' Add PCA, SMA, LDA, or PLS
 #'

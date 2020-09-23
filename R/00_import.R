@@ -59,3 +59,4 @@
 #' @importFrom utils         installed.packages    unzip
 NULL
 
+utils::globalVariables('subgroup')

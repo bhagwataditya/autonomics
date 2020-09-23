@@ -25,6 +25,8 @@ plot_sample_scores(
 
 \item{color}{sdata variable mapped to color}
 
+\item{...}{additional svars mapped to aesthetics}
+
 \item{fixed}{fixed plot aesthetics}
 }
 \description{

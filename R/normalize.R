@@ -25,6 +25,7 @@ transform_to_fitting_normal <- function(x){
 }
 
 estimate_mean_sd <- function(x){
+    . <- NULL
     x %<>% extract(!is.na(.) & !is.infinite(.))
     fitdistr(x, 'normal')[['estimate']]
 }
