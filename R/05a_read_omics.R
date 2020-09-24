@@ -376,8 +376,9 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
 #'object <- read_proteingroups(file, plot = FALSE)
 #'add_design(object)
 #'@noRd
-add_design <- function(object, verbose = TRUE){
-    designfile <- default_designfile(object)
+add_design <- function(
+    object, designfile = default_designfile(object), verbose = TRUE
+){
     if (file.exists(designfile)){
         message('\t\tUse design from: ', designfile)
         message('\t\tUpdate manually if required')

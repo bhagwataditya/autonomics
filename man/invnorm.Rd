@@ -4,10 +4,12 @@
 \alias{invnorm}
 \title{Inverse normal transform samples}
 \usage{
-invnorm(object)
+invnorm(object, plot = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{plot}{TRUE (default) or FALSE}
 }
 \value{
 normalized SummarizedExperimen

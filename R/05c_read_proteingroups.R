@@ -879,6 +879,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
                         fdata_rows = fdata_rows,  fdata_cols = fdata_cols,
                         transpose  = FALSE,       verbose    = verbose)
 # Return
+    metadata(object)$quantity <- quantity
     object
 }
 
@@ -908,6 +909,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
                         transpose  = FALSE,       verbose    = verbose)
     snames(object)   %<>% stri_replace_all_fixed('___1', '')
     object$sample_id %<>% stri_replace_all_fixed('___1', '')
+    metadata(object)$quantity <- quantity
 # Return
     object
 }
@@ -1028,7 +1030,6 @@ read_phosphosites <- function(phosphositesfile,
                                     quantity, fvars, verbose = verbose)
     phospho %<>% add_occupancies(proteingroups, verbose)
     if (log2) phospho %<>% log2transform(verbose=verbose)
-    metadata(phospho)$quantity <- quantity
 # Prepare
     # Features
     phospho %<>% filter_maxquant_features(reverse = reverse,
@@ -1044,7 +1045,9 @@ read_phosphosites <- function(phosphositesfile,
     if (!is.null(fastafile)) phospho %<>% simplify_proteingroups(fastafile)
     # Samples
     phospho %<>% prepare_maxquant_samples(
-                    demultiplex_snames = demultiplex_snames, verbose = verbose)
+                    demultiplex_snames = demultiplex_snames,
+                    designfile = default_designfile(proteingroups),
+                    verbose = verbose)
 # Return
     phospho
 }
@@ -1114,13 +1117,15 @@ rm_unlocalized <- function(object, min_localization_prob, verbose){
 #==============================================================================
 
 
-prepare_maxquant_samples <- function(object, demultiplex_snames, verbose){
+prepare_maxquant_samples <- function(
+    object, demultiplex_snames, designfile = default_designfile(object), verbose
+){
     object %<>% filter_samples_available_for_some_feature(verbose = verbose)
     if (demultiplex_snames){
         snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
         object %<>% standardize_maxquant_snames(verbose = verbose)
         object %<>% demultiplex(verbose = verbose)
-        object %<>% add_design(verbose = verbose)
+        object %<>% add_design(designfile = designfile, verbose = verbose)
     }
     object
 }

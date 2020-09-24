@@ -7,15 +7,21 @@
 
 #' Inverse normal transform samples
 #' @param object SummarizedExperiment
+#' @param plot  TRUE (default) or FALSE
 #' @return normalized SummarizedExperimen
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' invnorm(object)
 #' @export
-invnorm <- function(object){
+invnorm <- function(object, plot = TRUE){
+    if (plot) object0 <- object
     exprs(object) %<>% apply(2, transform_to_fitting_normal)
-    object
+    if (plot){
+        sdata(object0)$normalized <- FALSE
+        sdata(object )$normalized <- TRUE
+
+    }
 }
 
 
