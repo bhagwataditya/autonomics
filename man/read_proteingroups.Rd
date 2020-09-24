@@ -18,7 +18,7 @@ read_proteingroups(
   log2 = TRUE,
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   verbose = TRUE,
-  plot = TRUE
+  plot = demultiplex_snames
 )
 
 read_phosphosites(

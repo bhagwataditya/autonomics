@@ -970,7 +970,7 @@ read_proteingroups <- function(proteingroupsfile, fastafile = NULL,
     unquantified = FALSE, demultiplex_snames = TRUE,
     invert_subgroups = character(0), log2 = TRUE,
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
-    verbose = TRUE, plot = TRUE
+    verbose = TRUE, plot = demultiplex_snames
 ){
 # Assert
     assert_all_are_existing_files(proteingroupsfile)
@@ -1119,8 +1119,8 @@ prepare_maxquant_samples <- function(object, demultiplex_snames, verbose){
         snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
         object %<>% standardize_maxquant_snames(verbose = verbose)
         object %<>% demultiplex(verbose = verbose)
+        object %<>% add_design(verbose = verbose)
     }
-    object %<>% add_design(verbose = verbose)
     object
 }
 
