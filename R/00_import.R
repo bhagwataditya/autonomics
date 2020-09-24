@@ -8,7 +8,7 @@
 #' @importFrom assertive     assert_all_are_less_than_or_equal_to
 #' @importFrom assertive     assert_any_are_not_nan
 #' @importFrom assertive     assert_all_are_whole_numbers
-#' @importFrom assertive     assert_are_same_length
+#' @importFrom assertive     assert_are_identical   assert_are_same_length
 #' @importFrom assertive     has_names
 #' @importFrom assertive     assert_is_all_of   assert_is_any_of
 #' @importFrom assertive     assert_is_a_bool

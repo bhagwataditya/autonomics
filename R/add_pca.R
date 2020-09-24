@@ -67,20 +67,30 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 merge_fdata <- function(object, df, by = 'feature_id'){
     df %<>% as.data.frame() # convert matrix
     if (!'feature_id' %in% names(df))  df$feature_id <- rownames(df)
+    duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
+    fdata(object)[duplicate_cols] <- NULL
     fdata(object) %<>% merge(df, by = by, all.x = TRUE, sort = FALSE)
+    fnames(object) <- fdata(object)$feature_id # merging drops them!
     object
 }
 
 
+#'@examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' pcaresults <- pca(object)
-#' object %<>% merge_sdata(pcaresults$samples)
+#' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
+#'                                     number = seq_along(object$sample_id)))
+#' sdata(object)
 #' @noRd
 merge_sdata <- function(object, df, by = 'sample_id'){
     df %<>% as.data.frame() # convert matrix to df
     if (!'sample_id' %in% names(df))  df$sample_id <- rownames(df)
+    duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
+    sdata(object)[duplicate_cols] <- NULL
     sdata(object) %<>% merge(df, by = by, all.x = TRUE, sort = FALSE)
+    snames(object) <- object$sample_id # merging drops them!
+    if ('subgroup'  %in% svars(object)) object$subgroup  %<>% as.character()
+    if ('replicate' %in% svars(object)) object$replicate %<>% as.character()
     object
 }
 
@@ -134,8 +144,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples  %>% as.data.frame(row.names = rownames(.)))
-    object %<>% merge_fdata(features %>% as.data.frame(row.names = rownames(.)))
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$pca <- variances
 # Return
     object
@@ -238,8 +248,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Merge
-    object %<>% merge_sdata(samples  %>% as.data.frame(row.names = rownames(.)))
-    object %<>% merge_fdata(features %>% as.data.frame(row.names = rownames(.)))
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$sma <- variances
 # Return
     object
@@ -277,8 +287,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples  %>% as.data.frame(row.names = rownames(.)))
-    object %<>% merge_fdata(features %>% as.data.frame(row.names = rownames(.)))
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$pls <- variances
 # Return
     object
@@ -315,8 +325,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples  %>% as.data.frame(row.names = rownames(.)))
-    object %<>% merge_sdata(features %>% as.data.frame(row.names = rownames(.)))
+    object %<>% merge_sdata(samples)
+    object %<>% merge_sdata(features)
     metadata(object)$spls <- variances
 # Return
     object
@@ -353,8 +363,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples  %>% as.data.frame(row.names = rownames(.)))
-    object %<>% merge_fdata(features %>% as.data.frame(row.names = rownames(.)))
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$opls <- variances
 # Return
     object

@@ -325,8 +325,7 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
     sdata_cols = NULL, transpose  = FALSE, verbose    = TRUE
 ){
 # Assert
-    assert_all_are_existing_files(file)
-    assert_is_a_bool(transpose)
+    assert_all_are_existing_files(file);     assert_is_a_bool(transpose)
 # Read (in one go if fixed col file)
     is_fixed_col <- is_fixed_col_file(file)
     x  <-   if (is_fixed_col){ extract_rectangle.character(file, sheet=sheet)
@@ -367,8 +366,45 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
     colData(object) <- as(sdata1, 'DataFrame')
     metadata(object)$analysis  <-list(
         nfeatures = c(all = nrow(exprs1)), nsamples  = c(all = ncol(exprs1)))
+    metadata(object)$file <- file
     object
 }
 
 
+#'@examples
+#'file <- download_data('differentiation.proteinGroups.txt')
+#'object <- read_proteingroups(file, plot = FALSE)
+#'add_design(object)
+#'@noRd
+add_design <- function(object, verbose = TRUE){
+    designfile <- default_designfile(object)
+    if (file.exists(designfile)){
+        message('\t\tUse design from: ', designfile)
+        message('\t\tUpdate manually if required')
+        dt <- fread(designfile)
+    } else {
+        dt <- data.table(
+            sample_id = object$sample_id,
+            subgroup  = guess_subgroup_values(
+                            object$sample_id, verbose=verbose),
+            replicate = guess_subgroup_values(
+                            object$sample_id, invert = TRUE, verbose = FALSE))
+            if (verbose){
+                message('\t\tWrite design to: ', designfile)
+                message('\t\tUpdate manually if required')
+            }
+            fwrite(dt, designfile, sep = '\t', row.names = FALSE)
+    }
+    object %<>% merge_sdata(dt)
+    object
+}
 
+
+default_designfile <- function(object){
+    inputfile <- metadata(object)$file
+    quantity  <- metadata(object)$quantity
+    paste( tools::file_path_sans_ext(inputfile),
+           if (is.null(quantity)) '' else  make.names(quantity),
+           'design',
+            tools::file_ext(inputfile), sep = '.')
+}

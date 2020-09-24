@@ -916,7 +916,8 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 
 #==============================================================================
 #
-#                            read_xxx
+#                            read_proteingroups
+#                            read_phosphosites
 #
 #==============================================================================
 
@@ -966,7 +967,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 read_proteingroups <- function(proteingroupsfile, fastafile = NULL,
     quantity = guess_maxquant_quantity(proteingroupsfile),
     fvars = PROTEINGROUP_FVARS, contaminants = FALSE, reverse = FALSE,
-    unquantified = FALSE,demultiplex_snames = TRUE,
+    unquantified = FALSE, demultiplex_snames = TRUE,
     invert_subgroups = character(0), log2 = TRUE,
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     verbose = TRUE, plot = TRUE
@@ -993,7 +994,8 @@ read_proteingroups <- function(proteingroupsfile, fastafile = NULL,
     if (!is.null(fastafile)) object %<>% simplify_proteingroups(fastafile)
     # Samples
     object %<>% prepare_maxquant_samples(
-                    demultiplex_snames = demultiplex_snames, verbose = verbose)
+                    demultiplex_snames = demultiplex_snames,
+                    verbose = verbose)
     # Exprs
     object %<>% prepare_proteingroups_exprs(
                     invert_subgroups = invert_subgroups, log2 = log2,
@@ -1118,10 +1120,7 @@ prepare_maxquant_samples <- function(object, demultiplex_snames, verbose){
         object %<>% standardize_maxquant_snames(verbose = verbose)
         object %<>% demultiplex(verbose = verbose)
     }
-    object$subgroup <- guess_subgroup_values(object$sample_id, verbose=verbose)
-    object$replicate<- guess_subgroup_values(object$sample_id, invert = TRUE,
-                                            verbose = FALSE)
-    #object$block  <- object$sample_id %>% guess_subject_values( verbose = TRUE)
+    object %<>% add_design(verbose = verbose)
     object
 }
 
@@ -1145,8 +1144,7 @@ prepare_proteingroups_exprs <- function(
     object %<>% zero_to_na(verbose = verbose)
     object %<>% nan_to_na(verbose = verbose)
     if (log2)                  object %<>% log2transform(verbose = verbose)
-    if (impute) object %<>% impute_consistent_nas(
-                                                verbose=verbose)
+    if (impute) object %<>% impute_consistent_nas(verbose=verbose)
     if (plot) print(plot_detects_per_subgroup(object))
     object
 }
