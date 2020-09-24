@@ -1028,6 +1028,7 @@ read_phosphosites <- function(phosphositesfile,
                                     quantity, fvars, verbose = verbose)
     phospho %<>% add_occupancies(proteingroups, verbose)
     if (log2) phospho %<>% log2transform(verbose=verbose)
+    metadata(phospho)$quantity <- quantity
 # Prepare
     # Features
     phospho %<>% filter_maxquant_features(reverse = reverse,
