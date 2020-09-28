@@ -32,14 +32,13 @@ download_data <- function(
         stri_split_fixed(file, '.'), extract, character(1), 1), sep = '/')
     dir.create(localdir, showWarnings = FALSE, recursive = TRUE)
     localfile <- paste0(localdir,  '/', file)
-    if (file.exists(localfile)){
-        message('Use already available file: ', localfile)
-    } else {
-        download.file(paste0(bitbucket, '/', file), localfile, mode = 'wb')
-    }
+    if (!file.exists(localfile))    download.file(
+        paste0(bitbucket, '/', file), localfile, mode = 'wb')
 
     if (file_ext(file) == 'zip'){
-        unzip(localfile, exdir = dirname(localfile))
+        if (!dir.exists(dirname(localfile))){
+            unzip(localfile, exdir = dirname(localfile))
+        }
         localfile %<>% substr(1, nchar(.)-4)
     }
 

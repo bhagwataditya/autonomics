@@ -7,32 +7,32 @@
 \usage{
 read_proteingroups(
   proteingroupsfile,
-  fastafile = NULL,
   quantity = guess_maxquant_quantity(proteingroupsfile),
   fvars = PROTEINGROUP_FVARS,
   contaminants = FALSE,
   reverse = FALSE,
   unquantified = FALSE,
-  demultiplex_snames = TRUE,
+  fastafile = NULL,
   invert_subgroups = character(0),
+  rm_subgroups = character(0),
   log2 = TRUE,
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   verbose = TRUE,
-  plot = demultiplex_snames
+  plot = TRUE
 )
 
 read_phosphosites(
   phosphositesfile,
   proteingroupsfile = paste0(dirname(phosphositesfile), "/proteinGroups.txt"),
-  fastafile = NULL,
   quantity = guess_maxquant_quantity(phosphositesfile),
   fvars = PHOSPHOSITE_FVARS,
   contaminants = FALSE,
   reverse = FALSE,
   unquantified = FALSE,
   min_localization_prob = 0.75,
-  demultiplex_snames = TRUE,
+  fastafile = NULL,
   invert_subgroups = character(0),
+  rm_subgroups = character(0),
   log2 = TRUE,
   verbose = TRUE,
   plot = TRUE
@@ -40,8 +40,6 @@ read_phosphosites(
 }
 \arguments{
 \item{proteingroupsfile}{proteinGroups.txt path}
-
-\item{fastafile}{fastafile path if provided, used to simplify proteingroups}
 
 \item{quantity}{string: ""Ratio normalized", "Ratio", "LFQ intensity",
 "Reporter intensity corrected", "Reporter intensity","Intensity labeled",
@@ -55,8 +53,7 @@ or "Intensity"}
 
 \item{unquantified}{return also unquantified peptides? (default FALSE)}
 
-\item{demultiplex_snames}{TRUE (default) or FALSE: whether to demultiplex
-maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
+\item{fastafile}{fastafile path if provided, used to simplify proteingroups}
 
 \item{invert_subgroups}{character vector: subgroups to be inverted}
 
@@ -72,6 +69,9 @@ maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
 
 \item{min_localization_prob}{number (default 0.75):
 minimum localization probability required for a site to be retained}
+
+\item{demultiplex}{TRUE (default) or FALSE: whether to demultiplex
+maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
 }
 \value{
 SummarizedExperiment
@@ -80,23 +80,32 @@ SummarizedExperiment
 Read proteingroups/phosphosites
 }
 \examples{
-# STEMCELLS
-    # Normalized Ratios
-        proteingroupsfile <- download_data('stemcells.proteinGroups.txt')
-        (object <- read_proteingroups(proteingroupsfile,
+# STEM CELLS
+    # NORMALIZED RATIOS
+    proteingroupsfile <- download_data('stemcells.proteinGroups.txt')
+    (object <- read_proteingroups(proteingroupsfile,
                                 invert_subgroups = c('E_EM','E_BM','BM_EM')))
-    # Intensities
-        (object <- read_proteingroups(proteingroupsfile,
+    # INTENSITIES
+    (object <- read_proteingroups(proteingroupsfile,
                                       quantity = 'Intensity labeled'))
-    # Simplify proteingroups
-        fastafile <- download_data('uniprot_hsa_20140515.fasta')
-        fdata(object)[1:3, ]
-        fdata(read_proteingroups(proteingroupsfile,
+    # DECONVOLUTE
+    fastafile <- download_data('uniprot_hsa_20140515.fasta')
+    fdata(object)[1:3, ]
+    fdata(read_proteingroups(proteingroupsfile,
                 quantity = 'Intensity labeled', fastafile = fastafile))[1:3,]
+
 # DIFFERENTIATION
-    phosphositesfile  <- download_data('differentiation.phosphoSites.txt')
+    # PROTEINGROUPS
     proteingroupsfile <- download_data('differentiation.proteinGroups.txt')
-    fastafile         <- download_data('uniprot_hsa_20140515.fasta')
-    read_proteingroups(proteingroupsfile, fastafile)
-    read_phosphosites(phosphositesfile, proteingroupsfile, fastafile)
+    read_proteingroups(proteingroupsfile)
+
+    # RM SUBGROUPS
+    rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
+                       'EM05_EM02', 'EM30_EM15')
+    read_proteingroups(proteingroupsfile, rm_subgroups = rm_subgroups)
+
+    # PHOSPHOSITES
+    phosphositesfile  <- download_data('differentiation.phosphoSites.txt')
+    read_phosphosites(
+        phosphositesfile, proteingroupsfile,rm_subgroups = rm_subgroups)
 }

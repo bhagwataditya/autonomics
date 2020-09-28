@@ -128,16 +128,18 @@ read_gtf <- function(gtffile, var = 'gene_id', values = NULL, writefile = NULL){
 #' @param fvars        character vector: GTF variables to include in object.
 #' @param nthreads     number of cores to be used by Rsubread::featureCounts()
 #' @param filter_features_min_count  number
-#' @param verbose      TRUE(default) / FALSE
+#' @param verbose      TRUE (default) / FALSE
+#' @param plot         TRUE (default) / FALSE
 #' @param ...          passed to Rsubread::featureCounts
 #' @return SummarizedExperiment
 #' @examples
 #' bamdir <- download_data("stemcells.bam.zip")
 #' # read_bam(bamdir, ispaired = TRUE)
+#' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
-    fvars = character(0), nthreads   = detectCores(),
-    filter_features_min_count = 10, verbose = TRUE, ...
+    fvars = character(0), nthreads = detectCores(),
+    filter_features_min_count = 10, verbose = TRUE, plot = TRUE, ...
 ){
 # Assert
     assert_all_are_existing_files(bamdir)
@@ -168,12 +170,13 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
     rowData(object) <- fcounts$annotation[ , c('GeneID', fvars), drop = FALSE]
     rownames(object) <- rowData(object)$GeneID
     fvars(object) %<>% stri_replace_first_fixed('GeneID', 'feature_id')
+    fdata(object)$feature_id %<>% as.character()
 # Add design. Preprocess
-    message("\t\tAdd sdata")
-    colData(object) <- DataFrame(
-                        sample_id = sample_names, row.names = sample_names)
-    object$subgroup <- guess_subgroup_values(object, verbose = FALSE)
+    object$sample_id <- sample_names
+    object %<>% add_design(verbose = verbose)
     object %<>% preprocess_counts(filter_features_min_count, verbose = verbose)
+# Plot
+    if (plot) add_pca(object)
 # Return
     object
 }
@@ -194,6 +197,7 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
 #' @param filter_features_min_count number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
+#' @param plot      TRUE (default) / FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('differentiation.rnacounts.txt')
@@ -201,8 +205,8 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
 #' @seealso merge_sdata, merge_fdata
 #' @export
 read_counts <- function(
-    file, fid_col = 1, fname_col = character(0),
-    filter_features_min_count = 10, verbose = TRUE
+    file, fid_col = 1, fname_col = character(0), filter_features_min_count = 10,
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     assert_all_are_existing_files(file)
@@ -229,18 +233,17 @@ read_counts <- function(
                 verbose    = TRUE)
     counts(object) <- exprs(object)
     assays(object)$exprs <- NULL
-
 # Add design. Preprocess
-    sdata(object)$subgroup  <- guess_subgroup_values(object, verbose = TRUE)
+    object %<>% add_design()
     object %<>% preprocess_counts(filter_features_min_count, verbose=verbose)
-
 # Align fdata
     if (length(fname_col)>0){
         assert_is_subset(fname_col, fvars(object))
         fdata(object)$feature_name <- fdata(object)[[fname_col]]
         fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     }
-
+# Plot
+    if (plot) add_pca(object)
 # Return
     object
 }

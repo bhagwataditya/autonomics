@@ -15,13 +15,9 @@
 #' invnorm(object)
 #' @export
 invnorm <- function(object, plot = TRUE){
-    if (plot) object0 <- object
     exprs(object) %<>% apply(2, transform_to_fitting_normal)
-    if (plot){
-        sdata(object0)$normalized <- FALSE
-        sdata(object )$normalized <- TRUE
-
-    }
+    if (plot)  plot_sample_scores(object0, 'pca') + ggtitle('invnorm')
+    object
 }
 
 

@@ -12,6 +12,7 @@ read_bam(
   nthreads = detectCores(),
   filter_features_min_count = 10,
   verbose = TRUE,
+  plot = TRUE,
   ...
 )
 }
@@ -30,7 +31,9 @@ string (path to GTF file)}
 
 \item{filter_features_min_count}{number}
 
-\item{verbose}{TRUE(default) / FALSE}
+\item{verbose}{TRUE (default) / FALSE}
+
+\item{plot}{TRUE (default) / FALSE}
 
 \item{...}{passed to Rsubread::featureCounts}
 }
@@ -43,4 +46,7 @@ Read RNAseq BAM files into SummarizedExperiment
 \examples{
 bamdir <- download_data("stemcells.bam.zip")
 # read_bam(bamdir, ispaired = TRUE)
+}
+\author{
+Aditya Bhagwat, Shahina Hayat
 }

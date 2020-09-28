@@ -104,18 +104,19 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(exprs(object)))
 
 #' Keep features that are available in all samples
 #' @param object SummarizedExperiment
+#' @param verbose TRUE (default) or FALSE
 #' @return updated object
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' filter_features_available_in_all_samples(object)
 #' @noRd
-filter_features_available_in_all_samples <- function(object){
+filter_features_available_in_all_samples <- function(object, verbose = TRUE){
 
     # Restrict to available values
     selector <- is_available_in_all_samples(object)
-    message('\t\tUse ', sum(selector), '/', length(selector),
-            ' features with available value for each sample')
+    if (verbose)  message('\t\tUse ', sum(selector), '/', length(selector),
+                            ' features with available value for each sample')
     object %<>% extract(selector, )
     if (!is.null(analysis(object))) {
         analysis(object)$nfeatures %<>% c(structure(sum(selector),

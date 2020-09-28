@@ -15,7 +15,8 @@ add_pca(
   ydim = 2,
   color = subgroup,
   ...,
-  fixed = list(shape = 15, size = 3)
+  fixed = list(shape = 15, size = 3),
+  verbose = TRUE
 )
 
 add_pls(
@@ -26,7 +27,8 @@ add_pls(
   ydim = 2,
   color = subgroup,
   ...,
-  fixed = list(shape = 15, size = 3)
+  fixed = list(shape = 15, size = 3),
+  verbose = TRUE
 )
 
 add_lda(
@@ -36,7 +38,8 @@ add_lda(
   xdim = 1,
   ydim = 2,
   ...,
-  fixed = list(shape = 15, size = 3)
+  fixed = list(shape = 15, size = 3),
+  verbose = TRUE
 )
 
 add_sma(
@@ -46,7 +49,8 @@ add_sma(
   xdim = 1,
   ydim = 2,
   ...,
-  fixed = list(shape = 15, size = 3)
+  fixed = list(shape = 15, size = 3),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -65,6 +69,8 @@ add_sma(
 \item{...}{additional svar to aesthetic mappings}
 
 \item{fixed}{list with fixed ggplot aesthetics}
+
+\item{verbose}{TRUE (verbose) or FALSE}
 }
 \value{
 SummarizedExperiment

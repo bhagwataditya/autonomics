@@ -2,36 +2,7 @@
 # READ
 #=======================================================
 
-#' Read somascan
-#'
-#' Read data from somascan adat file
-#'
-#' @param file         string: path to *.adat file
-#' @param fid_var      string: feature_id   variable
-#' @param sid_var      string: sample_id    variable
-#' @param subgroup_var string: subgroup     variable
-#' @param fname_var    string: feature_name variable
-#' @param filter_sample_type  subset of c('Sample','QC','Buffer','Calibrator')
-#' @param filter_feature_type subset of c('Protein',
-#'                             'Hybridization Control Elution', 'Rat Protein')
-#' @param filter_sample_quality  subset of c('PASS', 'FLAG', 'FAIL')
-#' @param filter_feature_quality subset of c('PASS', 'FLAG', 'FAIL')
-#' @param rm_na_svars            TRUE (default) or FALSE: rm NA svars?
-#' @param rm_single_value_svars  TRUE (default) or FALSE: rm single value svars?
-#' @param log2                   TRUE (default) or FALSE: log2 transform?
-#' @return Summarizedexperiment
-#' @examples
-#' # HYPOGLYCEMIA
-#'     file <- download_data('hypoglycemia.somascan.adat')
-#'     read_somascan(file)
-#' @export
-read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
-    subgroup_var = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
-    filter_sample_type = 'Sample', filter_feature_type = 'Protein',
-    filter_sample_quality  = c('FLAG', 'PASS'),
-    filter_feature_quality = c('FLAG', 'PASS'), rm_na_svars = TRUE,
-    rm_single_value_svars = TRUE, log2 = TRUE
-){
+.read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId'){
 # Assert
     assert_all_are_existing_files(file)
     assert_is_a_string(fid_var)
@@ -53,7 +24,7 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     sid_cols <- content %>% extract(s_row) %>% stri_extract_all_words() %>%
                 unlist() %>% equals(sid_var) %>% which()
 # Read
-    object <- read_omics(file, fid_rows = fid_rows, fid_cols = fid_cols,
+    read_omics(file, fid_rows = fid_rows, fid_cols = fid_cols,
         sid_rows   =  sid_rows,         sid_cols   =  sid_cols,
         expr_rows  = (s_row+1):n_row,   expr_cols  = (f_col+1):n_col,
         fvar_rows  =  f_row:(s_row-1),  fvar_cols  =  f_col,
@@ -61,92 +32,117 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
         svar_rows  =  s_row,            svar_cols  = seq_len(f_col-1),
         sdata_rows = (s_row+1):n_row,   sdata_cols = seq_len(f_col-1),
         transpose  = TRUE, verbose    = TRUE)
-# Add sdata / fdata
-    assert_is_subset(fname_var, fvars(object))
-    sdata(object)$subgroup <- sdata(object)[[subgroup_var]]
-    fdata(object)$feature_name <- fdata(object)[[fname_var]]
-    sdata(object) %<>% pull_columns(c('sample_id', 'subgroup'))
-    fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
-# Return
-    preprocess_somascan(object, filter_sample_type = filter_sample_type,
-        filter_feature_type    = filter_feature_quality,
-        filter_sample_quality  = filter_sample_quality,
-        filter_feature_quality = filter_feature_quality,
-        rm_na_svars = rm_na_svars,
-        rm_single_value_svars = rm_single_value_svars, log2 = log2)
 }
 
-#=============================================================================
-#
-#            preprocess_somascan
-#
-#=============================================================================
 
-#' Prepare somascan
+
+#' Read somascan
 #'
-#' @param object                 SummarizedExperiment
-#' @param filter_sample_type  subset of c('Sample','QC','Buffer','Calibrator')
-#' @param filter_feature_type subset of c('Protein',
+#' Read data from somascan adat file
+#'
+#' @param file         string: path to *.adat file
+#' @param fid_var      string: feature_id   variable
+#' @param sid_var      string: sample_id    variable
+#' @param subgroup_var string: subgroup     variable
+#' @param fname_var    string: feature_name variable
+#' @param sample_type  subset of c('Sample','QC','Buffer','Calibrator')
+#' @param feature_type subset of c('Protein',
 #'                             'Hybridization Control Elution', 'Rat Protein')
-#' @param filter_sample_quality  subset of c('PASS', 'FLAG', 'FAIL')
-#' @param filter_feature_quality subset of c('PASS', 'FLAG', 'FAIL')
-#' @param rm_na_svars     TRUE (default) or FALSE: rm NA svars ?
-#' @param rm_single_value_svars TRUE (default) or FALSE: rm single value svars ?
-#' @param infer_design    TRUE (default) or FALSE: infer design from sampleids ?
-#' @param log2transform   TRUE (default) or FALSE: log2 transform ?
+#' @param sample_quality  subset of c('PASS', 'FLAG', 'FAIL')
+#' @param feature_quality subset of c('PASS', 'FLAG', 'FAIL')
+#' @param rm_na_svars            TRUE (default) or FALSE: rm NA svars?
+#' @param rm_single_value_svars  TRUE (default) or FALSE: rm single value svars?
+#' @param log2                   TRUE (default) or FALSE: log2 transform?
+#' @param plot                   TRUE (default) or FALSE
 #' @return Summarizedexperiment
 #' @examples
-#' file <- download_data('hypoglycemia.somascan.adat')
-#' object <- read_somascan(file)
-#' preprocess_somascan(object)
-#' @noRd
-preprocess_somascan <- function(object, filter_sample_type = 'Sample',
-    filter_feature_type = 'Protein', filter_sample_quality = c('FLAG', 'PASS'),
-    filter_feature_quality = c('FLAG', 'PASS'), rm_na_svars = TRUE,
-    rm_single_value_svars = TRUE, log2 = TRUE
+#' # HYPOGLYCEMIA
+#'     file <- download_data('hypoglycemia.somascan.adat')
+#'     read_somascan(file)
+#' @export
+read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
+    subgroup_var = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
+    sample_type = 'Sample', feature_type = 'Protein',
+    sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
+    rm_na_svars = TRUE, rm_single_value_svars = TRUE, log2 = TRUE, plot = TRUE
 ){
-# Initialize. Assert
+# Read
+    object <- .read_somascan(file, fid_var=fid_var, sid_var = sid_var)
+# Add sdata / fdata
+    assert_is_subset(fname_var, fvars(object))
+    object %<>% add_design(subgroup_var = subgroup_var, verbose = verbose)
+    fdata(object)$feature_name <- fdata(object)[[fname_var]]
+    fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
+# Preprocess
     SampleType <- RowCheck <- Type <- ColCheck <- NULL
-    assert_is_any_of(object, 'SummarizedExperiment')
-    assert_is_character(filter_sample_type)
-    assert_is_character(filter_feature_type)
-    assert_is_character(filter_sample_quality)
-    assert_is_character(filter_feature_quality)
+    assert_is_character(sample_type);
+    assert_is_character(feature_type)
+    assert_is_character(sample_quality)
+    assert_is_character(feature_quality)
     assert_is_a_bool(rm_na_svars)
     assert_is_a_bool(rm_single_value_svars)
     assert_is_a_bool(log2)
-# Filter
+# Filter/Select
+    object %<>% filter_sample_type(    sample_type,     verbose)
+    object %<>% filter_sample_quality( sample_quality,  verbose)
+    object %<>% filter_feature_type(   feature_type,    verbose)
+    object %<>% filter_feature_quality(feature_quality, verbose)
+    if (rm_na_svars)            sdata(object) %<>% rm_na_columns()
+    if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
+# Log2 transform
+    if (log2) object %<>% log2transform(verbose = TRUE)
+# Plot
+    if (plot) add_pca(object)
+# Return
+    object
+}
+
+
+filter_sample_type <- function(object, sample_type, verbose){
     if ('SampleType' %in% svars(object)){ # missing in older versions
         message('\t\t========================================================')
         cmessage_df('\t\t%s', table(`Sample types` = sdata(object)$SampleType))
         object %<>% filter_samples(
-            SampleType %in% !!enquo(filter_sample_type), verbose = TRUE)}
+            SampleType %in% !!enquo(sample_type), verbose = TRUE)
+    }
+    object
+}
+
+
+filter_sample_quality <- function(object, sample_quality, verbose){
     if ('RowCheck'   %in% svars(object)){ # sample quality
         message('\t\t========================================================')
         cmessage_df('\t\t%s',
             table(`Sample qualities ("RowCheck")` = sdata(object)$RowCheck))
         object %<>% filter_samples(
-            RowCheck %in% !!enquo(filter_sample_quality), verbose = TRUE)}
+            RowCheck %in% !!enquo(sample_quality), verbose = TRUE)
+    }
+    object
+}
+
+filter_feature_type <- function(object, feature_type, verbose){
     if ('Type'       %in% fvars(object)){ # feature type
         message('\t\t========================================================')
         cmessage_df('\t\t%s', table(`Type` = (object)$Type))
         object %<>% filter_features(
-            Type %in% !!enquo(filter_feature_type), verbose = TRUE)}
+            Type %in% !!enquo(feature_type), verbose = TRUE)
+    }
+    object
+
+}
+
+filter_feature_quality <- function(object, feature_quality, verbose){
     if ('ColCheck'   %in% fvars(object)){ # feature quality
         message('\t\t========================================================')
         cmessage_df('\t\t%s',
             table(`Feature qualities ("ColCheck")` = fdata(object)$ColCheck))
         object %<>% filter_features(
-            ColCheck %in% !!enquo(filter_feature_quality), verbose = TRUE)
-        message('\t\t========================================================')}
-# Select
-    if (rm_na_svars)            sdata(object) %<>% rm_na_columns()
-    if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
-# Log2 transform
-    if (log2) object %<>% log2transform(verbose = TRUE)
-# Return
+            ColCheck %in% !!enquo(feature_quality), verbose = TRUE)
+        message('\t\t========================================================')
+    }
     object
 }
+
 
 #' Rm columns with only nas
 #' @param df dataframe

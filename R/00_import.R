@@ -1,9 +1,9 @@
 #' @importFrom AnnotationDbi mapIds
 #' @importFrom affy          just.rma
 #' @importFrom assertive     assert_engine   assert_all_are_existing_files
-#' @importFrom assertive     assert_all_are_in_closed_range
 #' @importFrom assertive     assert_all_are_finite
 #' @importFrom assertive     assert_all_are_greater_than
+#' @importFrom assertive     assert_all_are_in_closed_range
 #' @importFrom assertive     assert_all_are_in_range
 #' @importFrom assertive     assert_all_are_less_than_or_equal_to
 #' @importFrom assertive     assert_any_are_not_nan
@@ -33,6 +33,7 @@
 #' @importFrom limma         duplicateCorrelation   lmFit   voom
 #' @importFrom magrittr      %>%   %<>%   add   and   equals
 #' @importFrom magrittr      divide_by   extract   extract2   is_in
+#' @importFrom magrittr      multiply_by
 #' @importFrom magrittr      set_colnames   set_names   set_rownames
 #' @importFrom MASS          fitdistr
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans

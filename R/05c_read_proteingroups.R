@@ -63,7 +63,7 @@ MAXQUANT_PATTERNS <- c(
 #'
 #' # SummarizedExperiment
 #'      file <-download_data( 'stemcells.proteinGroups.txt')
-#'      x <- read_proteingroups(file, demultiplex_snames = FALSE)
+#'      x <- read_proteingroups(file, demultiplex = FALSE)
 #'      guess_maxquant_quantity(x)
 #' @export
 guess_maxquant_quantity <- function(x, ...){
@@ -151,7 +151,7 @@ guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
 #'
 #' # SummarizedExperiment
 #'    file <- download_data('stemcells.proteinGroups.txt')
-#'    x <- read_proteingroups(file, demultiplex_snames = FALSE)
+#'    x <- read_proteingroups(file, demultiplex= FALSE)
 #'    standardize_maxquant_snames(x)
 #' @export
 standardize_maxquant_snames <- function (x, ...) {
@@ -551,12 +551,12 @@ rm_from_annot <- function(annotation, pattern){
 
 #============================================================================
 #
-#             simplify_proteingroups()
+#             deconvolute_proteingroups()
 #
 #============================================================================
 
 
-#' Simplify proteingroups
+#' Deconvolute proteingroups
 #'
 #' @param object SummarizedExperiment
 #' @param fastafile string
@@ -569,12 +569,14 @@ rm_from_annot <- function(annotation, pattern){
 #' object <- read_proteingroups(file)
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' fdata(object)[1:5, ]
-#' object %<>% simplify_proteingroups(fastafile)
+#' object %<>% deconvolute_proteingroups(fastafile)
 #' fdata(object)[1:5, ]
 #' @noRd
-simplify_proteingroups <- function(
+deconvolute_proteingroups <- function(
     object, fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE
 ){
+# Return if NULL
+    if (is.null(fastafile)) return(object)
 # Uncollapse fdata annotations
     fasta_dt <- load_uniprot_fasta(fastafile, fastafields)
     feature_dt  <-  fdata(object)[, c('feature_id', 'uniprot')] %>%
@@ -899,7 +901,6 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     fvar_rows  <- 1;              fvar_cols  <- fvar_cols
     fdata_rows <- 2:nrow(dt);     fdata_cols <- fvar_cols
 # Read
-    if (verbose) message("\t\tRead: ", phosphositesfile)
     object  <- read_omics(phosphositesfile,
                         fid_rows   = fid_rows,    fid_cols   = fid_cols,
                         sid_rows   = sid_rows,    sid_cols   = sid_cols,
@@ -916,163 +917,36 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 
 
 
-#==============================================================================
-#
-#                            read_proteingroups
-#                            read_phosphosites
-#
-#==============================================================================
-
-
-#' Read proteingroups/phosphosites
-#' @param proteingroupsfile proteinGroups.txt path
-#' @param phosphositesfile  phospho(STY)Sites.txt path
-#' @param fastafile   fastafile path if provided, used to simplify proteingroups
-#' @param quantity  string: ""Ratio normalized", "Ratio", "LFQ intensity",
-#'   "Reporter intensity corrected", "Reporter intensity","Intensity labeled",
-#'   or "Intensity"
-#' @param fvars     character vector: annotation columns to extract
-#' @param contaminants return also contaminants? (defaultFALSE)
-#' @param reverse      return also reverse peptides? (default FALSE)
-#' @param unquantified return also unquantified peptides? (default FALSE)
-#' @param min_localization_prob  number (default 0.75):
-#'  minimum localization probability required for a site to be retained
-#' @param demultiplex_snames  TRUE (default) or FALSE: whether to demultiplex
-#'    maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?
-#' @param invert_subgroups character vector: subgroups to be inverted
-#' @param log2 TRUE (default) or FALSE: log2 transform?
-#' @param impute TRUE or FALSE (default)
-#' @param verbose     TRUE (default) or FALSE
-#' @param plot TRUE or FALSE
-#' @return SummarizedExperiment
-#' @examples
-#' # STEMCELLS
-#'     # Normalized Ratios
-#'         proteingroupsfile <- download_data('stemcells.proteinGroups.txt')
-#'         (object <- read_proteingroups(proteingroupsfile,
-#'                                 invert_subgroups = c('E_EM','E_BM','BM_EM')))
-#'     # Intensities
-#'         (object <- read_proteingroups(proteingroupsfile,
-#'                                       quantity = 'Intensity labeled'))
-#'     # Simplify proteingroups
-#'         fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#'         fdata(object)[1:3, ]
-#'         fdata(read_proteingroups(proteingroupsfile,
-#'                 quantity = 'Intensity labeled', fastafile = fastafile))[1:3,]
-#' # DIFFERENTIATION
-#'     phosphositesfile  <- download_data('differentiation.phosphoSites.txt')
-#'     proteingroupsfile <- download_data('differentiation.proteinGroups.txt')
-#'     fastafile         <- download_data('uniprot_hsa_20140515.fasta')
-#'     read_proteingroups(proteingroupsfile, fastafile)
-#'     read_phosphosites(phosphositesfile, proteingroupsfile, fastafile)
-#' @export
-read_proteingroups <- function(proteingroupsfile, fastafile = NULL,
-    quantity = guess_maxquant_quantity(proteingroupsfile),
-    fvars = PROTEINGROUP_FVARS, contaminants = FALSE, reverse = FALSE,
-    unquantified = FALSE, demultiplex_snames = TRUE,
-    invert_subgroups = character(0), log2 = TRUE,
-    impute = stri_detect_regex(quantity, "[Ii]ntensity"),
-    verbose = TRUE, plot = demultiplex_snames
-){
-# Assert
-    assert_all_are_existing_files(proteingroupsfile)
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
-    assert_is_character(fvars);     assert_is_a_bool(contaminants)
-    assert_is_a_bool(reverse);   assert_is_a_bool(demultiplex_snames)
-    if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
-    assert_is_a_bool(verbose)
-# Read
-    object <- .read_proteingroups(proteingroupsfile, quantity, fvars, verbose)
-    metadata(object)$quantity <- quantity
-# Prepare
-    # Features
-    object %<>% filter_maxquant_features(reverse = reverse,
-                                contaminants = contaminants,
-                                unquantified = unquantified, verbose = verbose)
-    stri_rep <- stri_replace_first_fixed
-    names(fdata(object)) %<>% stri_rep('Gene names', 'feature_name')
-    names(fdata(object)) %<>% stri_rep('Majority protein IDs', 'uniprot')
-    fdata(object) %<>% pull_columns(c('feature_id', 'feature_name', 'uniprot'))
-    if (!is.null(fastafile)) object %<>% simplify_proteingroups(fastafile)
-    # Samples
-    object %<>% prepare_maxquant_samples(
-                    demultiplex_snames = demultiplex_snames,
-                    verbose = verbose)
-    # Exprs
-    object %<>% prepare_proteingroups_exprs(
-                    invert_subgroups = invert_subgroups, log2 = log2,
-                    impute = impute,
-                    verbose = verbose, plot = plot)
-# Return
-    object
-}
-
-
-#' @rdname read_proteingroups
-#' @export
-read_phosphosites <- function(phosphositesfile,
-    proteingroupsfile = paste0(dirname(phosphositesfile), '/proteinGroups.txt'),
-    fastafile = NULL, quantity = guess_maxquant_quantity(phosphositesfile),
-    fvars = PHOSPHOSITE_FVARS, contaminants = FALSE, reverse = FALSE,
-    unquantified = FALSE, min_localization_prob = 0.75,
-    demultiplex_snames = TRUE, invert_subgroups = character(0), log2 = TRUE,
-    verbose = TRUE, plot = TRUE
-){
-# Assert
-    `Protein group IDs` <- `Localization prob` <- NULL
-    assert_all_are_existing_files(c(phosphositesfile, proteingroupsfile))
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
-    assert_is_character(fvars)
-# Read
-    proteingroups <- .read_proteingroups(proteingroupsfile,
-                                    quantity, fvars, verbose = verbose)
-    phospho <- .read_phosphosites(phosphositesfile,
-                                    quantity, fvars, verbose = verbose)
-    phospho %<>% add_occupancies(proteingroups, verbose)
-    if (log2) phospho %<>% log2transform(verbose=verbose)
-# Prepare
-    # Features
-    phospho %<>% filter_maxquant_features(reverse = reverse,
-                                contaminants = contaminants,
-                                unquantified = unquantified,
-                                min_localization_prob = min_localization_prob,
-                                verbose = verbose)
-    stri_rep <- stri_replace_first_fixed
-    names(fdata(phospho)) %<>% stri_rep('Gene names', 'feature_name')
-    names(fdata(phospho)) %<>% stri_rep('Proteins', 'uniprot')
-    names(fdata(phospho)) %<>% stri_rep('Positions within proteins', 'position')
-    fdata(phospho) %<>% pull_columns(c('feature_id', 'feature_name', 'uniprot'))
-    if (!is.null(fastafile)) phospho %<>% simplify_proteingroups(fastafile)
-    # Samples
-    phospho %<>% prepare_maxquant_samples(
-                    demultiplex_snames = demultiplex_snames,
-                    designfile = default_designfile(proteingroups),
-                    verbose = verbose)
-# Return
-    phospho
-}
-
-
-
 
 #==============================================================================
 #
-#                     filter_features
+#               prepare maxquant features
 #
 #==============================================================================
+
 
 filter_maxquant_features <- function(
     object, reverse, contaminants, unquantified, min_localization_prob = 0.75,
     verbose
 ){
+# Assert
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_a_bool(reverse)
+    assert_is_a_bool(contaminants)
+    assert_is_a_bool(unquantified)
+    assert_all_are_in_range(min_localization_prob, 0, 1)
+    assert_is_a_bool(verbose)
+# Filter
     if (verbose) message('\tFilter features')
     if (!reverse)      object %<>% rm_reverse(     verbose = verbose)
     if (!contaminants) object %<>% rm_contaminants(verbose = verbose)
     if (!unquantified) object %<>% filter_features_available_in_some_sample(
                                         verbose = verbose)
     object %<>% rm_unlocalized(min_localization_prob, verbose = verbose)
+# Return
     object
 }
+
 
 rm_reverse <- function(object, verbose){
     Reverse <- NULL
@@ -1081,6 +955,7 @@ rm_reverse <- function(object, verbose){
     fdata(object)$Reverse <- NULL
     object
 }
+
 
 #' @examples
 #' file <- download_data('differentiation.proteinGroups.txt')
@@ -1100,6 +975,7 @@ rm_contaminants <- function(object, verbose){
 
 }
 
+
 rm_unlocalized <- function(object, min_localization_prob, verbose){
     `Localization prob` <- NULL
     if (!'Localization prob' %in% fvars(object)) return(object)
@@ -1109,25 +985,46 @@ rm_unlocalized <- function(object, min_localization_prob, verbose){
     object
 }
 
-
-#==============================================================================
-#
-#                     prepare_samples
-#
-#==============================================================================
-
-
-prepare_maxquant_samples <- function(
-    object, demultiplex_snames, designfile = default_designfile(object), verbose
-){
-    object %<>% filter_samples_available_for_some_feature(verbose = verbose)
-    if (demultiplex_snames){
-        snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
-        object %<>% standardize_maxquant_snames(verbose = verbose)
-        object %<>% demultiplex(verbose = verbose)
-        object %<>% add_design(designfile = designfile, verbose = verbose)
-    }
+rename_proteingroup_fvars <- function(object){
+    stri_rep <- stri_replace_first_fixed
+    names(fdata(object)) %<>% stri_rep('Gene names', 'feature_name')
+    names(fdata(object)) %<>% stri_rep('Majority protein IDs', 'uniprot')
+    fdata(object) %<>% pull_columns(c('feature_id', 'feature_name', 'uniprot'))
     object
+}
+
+rename_phospho_fvars <- function(object){
+    stri_rep <- stri_replace_first_fixed
+    names(fdata(object)) %<>% stri_rep('Gene names', 'feature_name')
+    names(fdata(object)) %<>% stri_rep('Proteins', 'uniprot')
+    names(fdata(object)) %<>% stri_rep('Positions within proteins', 'position')
+    fdata(object) %<>% pull_columns(c('feature_id', 'feature_name', 'uniprot'))
+    object
+}
+
+
+
+
+#==============================================================================
+#
+#                     prepare_maxquant samples
+#
+#==============================================================================
+
+add_maxquant_design <- function(
+    object, designfile = default_designfile(object), verbose
+){
+    snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
+    object %<>% standardize_maxquant_snames(verbose = verbose)
+    object %<>% demultiplex(verbose = verbose)
+    object %<>% add_design(designfile = designfile, verbose = verbose)
+    object
+}
+
+
+filter_maxquant_samples <- function(object, rm_subgroups, verbose){
+    object %<>% filter_samples_available_for_some_feature(verbose = verbose)
+    object %<>% filter_samples(!subgroup %in% rm_subgroups, verbose=verbose)
 }
 
 
@@ -1136,24 +1033,198 @@ prepare_maxquant_samples <- function(
 
 #==============================================================================
 #
-#                     prepare_exprs
+#                     prepare_maxquant
 #
 #==============================================================================
 
+prepare_maxquant <- function(object,
+    reverse = FALSE, contaminants = FALSE, unquantified = FALSE,
+    min_localization_prob = 0.75, fastafile = NULL,
+    invert_subgroups = character(0), rm_subgroups = character(0),
+    designfile = default_designfile(object), log2 = TRUE,
+    impute = stri_detect_regex(metadata(object)$quantity, "[Ii]ntensity"),
+    verbose = TRUE, plot = TRUE
+){
+# Features
+    object %<>% filter_maxquant_features(
+                    reverse               = reverse,
+                    contaminants          = contaminants,
+                    unquantified          = unquantified,
+                    min_localization_prob = min_localization_prob,
+                    verbose               = verbose)
+    object %<>% deconvolute_proteingroups(fastafile)
+# Samples
+    if (verbose)  message('\tPrepare samples')
+    object %<>% add_maxquant_design(verbose=verbose, designfile=designfile)
+    object %<>% filter_maxquant_samples(rm_subgroups, verbose)
+# Exprs
+    object %<>% transform_maxquant(
+                    invert_subgroups      = invert_subgroups,
+                    log2                  = log2,
+                    impute                = impute,
+                    verbose               = verbose,
+                    plot                  = plot)
+}
 
-prepare_proteingroups_exprs <- function(
+
+transform_maxquant <- function(
     object, invert_subgroups, log2, impute, verbose, plot
 ){
-    # Transform exprs
-    if (verbose) message('\tTransform exprs')
-    object %<>% invert(subgroups = invert_subgroups)
-    object %<>% zero_to_na(verbose = verbose)
-    object %<>% nan_to_na(verbose = verbose)
-    if (log2)                  object %<>% log2transform(verbose = verbose)
-    if (impute) object %<>% impute_consistent_nas(verbose=verbose)
-    if (plot) print(plot_detects_per_subgroup(object))
+    # Invert
+        if (verbose) message('\tTransform exprs')
+        object %<>% invert(subgroups = invert_subgroups)
+    # Standardize non-detects
+        object %<>% zero_to_na(verbose = verbose)
+        object %<>% nan_to_na(verbose = verbose)
+    # Log2 transform
+        if (log2)   object %<>% log2transform(verbose = verbose)
+    # Impute
+        if (impute) object %<>% impute_consistent_nas(verbose=verbose)
+    # Plot/Return
+        if (plot) print(plot_detects_per_subgroup(object))
+        object
+}
+
+
+#==============================================================================
+#
+#                   read_proteingroups
+#                   read_phosphosites
+#                       phospho_expr_columns
+#                       add_occupancies
+#==============================================================================
+
+
+#' Read proteingroups/phosphosites
+#' @param proteingroupsfile proteinGroups.txt path
+#' @param phosphositesfile  phospho(STY)Sites.txt path
+#' @param fastafile   fastafile path if provided, used to simplify proteingroups
+#' @param quantity  string: ""Ratio normalized", "Ratio", "LFQ intensity",
+#'   "Reporter intensity corrected", "Reporter intensity","Intensity labeled",
+#'   or "Intensity"
+#' @param fvars     character vector: annotation columns to extract
+#' @param contaminants return also contaminants? (defaultFALSE)
+#' @param reverse      return also reverse peptides? (default FALSE)
+#' @param unquantified return also unquantified peptides? (default FALSE)
+#' @param min_localization_prob  number (default 0.75):
+#'  minimum localization probability required for a site to be retained
+#' @param demultiplex  TRUE (default) or FALSE: whether to demultiplex
+#'    maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?
+#' @param invert_subgroups character vector: subgroups to be inverted
+#' @param log2 TRUE (default) or FALSE: log2 transform?
+#' @param impute TRUE or FALSE (default)
+#' @param verbose     TRUE (default) or FALSE
+#' @param plot TRUE or FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' # STEM CELLS
+#'     # NORMALIZED RATIOS
+#'     proteingroupsfile <- download_data('stemcells.proteinGroups.txt')
+#'     (object <- read_proteingroups(proteingroupsfile,
+#'                                 invert_subgroups = c('E_EM','E_BM','BM_EM')))
+#'     # INTENSITIES
+#'     (object <- read_proteingroups(proteingroupsfile,
+#'                                       quantity = 'Intensity labeled'))
+#'     # DECONVOLUTE
+#'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#'     fdata(object)[1:3, ]
+#'     fdata(read_proteingroups(proteingroupsfile,
+#'                 quantity = 'Intensity labeled', fastafile = fastafile))[1:3,]
+#'
+#' # DIFFERENTIATION
+#'     # PROTEINGROUPS
+#'     proteingroupsfile <- download_data('differentiation.proteinGroups.txt')
+#'     read_proteingroups(proteingroupsfile)
+#'
+#'     # RM SUBGROUPS
+#'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
+#'                        'EM05_EM02', 'EM30_EM15')
+#'     read_proteingroups(proteingroupsfile, rm_subgroups = rm_subgroups)
+#'
+#'     # PHOSPHOSITES
+#'     phosphositesfile  <- download_data('differentiation.phosphoSites.txt')
+#'     read_phosphosites(
+#'         phosphositesfile, proteingroupsfile,rm_subgroups = rm_subgroups)
+#' @export
+read_proteingroups <- function(
+    proteingroupsfile, quantity = guess_maxquant_quantity(proteingroupsfile),
+    fvars = PROTEINGROUP_FVARS, contaminants = FALSE, reverse = FALSE,
+    unquantified = FALSE, fastafile = NULL, invert_subgroups = character(0),
+    rm_subgroups = character(0), log2 = TRUE,
+    impute = stri_detect_regex(quantity, "[Ii]ntensity"), verbose = TRUE,
+    plot = TRUE
+){
+# Assert
+    assert_all_are_existing_files(proteingroupsfile)
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
+    assert_is_character(fvars)
+    if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
+    assert_is_a_bool(verbose)
+# Read
+    object <- .read_proteingroups(proteingroupsfile, quantity, fvars, verbose)
+    metadata(object)$quantity <- quantity
+# Prepare
+    object %<>% rename_proteingroup_fvars()
+    object %<>% prepare_maxquant(
+                    reverse          = reverse,
+                    contaminants     = contaminants,
+                    unquantified     = unquantified,
+                    fastafile        = fastafile,
+                    invert_subgroups = invert_subgroups,
+                    rm_subgroups     = rm_subgroups,
+                    designfile       = default_designfile(object),
+                    log2             = log2,
+                    impute           = impute,
+                    verbose          = verbose,
+                    plot             = plot)
+# Return
+    if (plot)  add_pca(object, verbose = verbose)
     object
 }
+
+
+#' @rdname read_proteingroups
+#' @export
+read_phosphosites <- function(
+    phosphositesfile,
+    proteingroupsfile = paste0(dirname(phosphositesfile), '/proteinGroups.txt'),
+    quantity = guess_maxquant_quantity(phosphositesfile),
+    fvars = PHOSPHOSITE_FVARS, contaminants = FALSE, reverse = FALSE,
+    unquantified = FALSE, min_localization_prob = 0.75,
+    fastafile = NULL, invert_subgroups = character(0),
+    rm_subgroups = character(0), log2 = TRUE, verbose = TRUE, plot = TRUE
+){
+# Assert
+    `Protein group IDs` <- `Localization prob` <- NULL
+    assert_all_are_existing_files(c(phosphositesfile, proteingroupsfile))
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
+    assert_is_character(fvars)
+# Read
+    proteingroups <- .read_proteingroups(
+                        proteingroupsfile, quantity, fvars, verbose = verbose)
+    object <- .read_phosphosites(
+                        phosphositesfile,  quantity, fvars, verbose = verbose)
+    object %<>% add_occupancies(proteingroups, verbose)
+# Prepare
+    object %<>% rename_phospho_fvars()
+    object %<>% prepare_maxquant(
+                    reverse               = reverse,
+                    contaminants          = contaminants,
+                    unquantified          = unquantified,
+                    min_localization_prob = min_localization_prob,
+                    fastafile             = fastafile,
+                    invert_subgroups      = invert_subgroups,
+                    rm_subgroups          = rm_subgroups,
+                    designfile            = default_designfile(proteingroups),
+                    log2                  = log2,
+                    verbose               = verbose,
+                    plot                  = plot)
+# Return
+    if (plot)  add_pca(object, verbose = verbose)
+    object
+}
+
+
 
 
 #' Which are the phospho expr columns?
@@ -1208,5 +1279,4 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
 
     phosphosites
 }
-
 

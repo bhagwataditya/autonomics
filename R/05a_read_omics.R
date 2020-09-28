@@ -327,6 +327,7 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
 # Assert
     assert_all_are_existing_files(file);     assert_is_a_bool(transpose)
 # Read (in one go if fixed col file)
+    if (verbose) message("\tRead: ", file)
     is_fixed_col <- is_fixed_col_file(file)
     x  <-   if (is_fixed_col){ extract_rectangle.character(file, sheet=sheet)
             } else {           file }
@@ -377,27 +378,65 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
 #'add_design(object)
 #'@noRd
 add_design <- function(
-    object, designfile = default_designfile(object), verbose = TRUE
+    object, subgroup_var = NULL,
+    designfile = default_designfile(object), verbose = TRUE
 ){
+# Read design
     if (file.exists(designfile)){
         message('\t\tUse design from: ', designfile)
         message('\t\tUpdate manually if required')
         dt <- fread(designfile)
+# Write design
     } else {
         dt <- data.table(
             sample_id = object$sample_id,
-            subgroup  = guess_subgroup_values(
-                            object$sample_id, verbose=verbose),
-            replicate = guess_subgroup_values(
-                            object$sample_id, invert = TRUE, verbose = FALSE))
+            subgroup  = create_subgroup_values( object, subgroup_var, verbose),
+            replicate = create_replicate_values(object, subgroup_var, verbose))
             if (verbose){
                 message('\t\tWrite design to: ', designfile)
                 message('\t\tUpdate manually if required')
             }
             fwrite(dt, designfile, sep = '\t', row.names = FALSE)
     }
+# Merge into object and return
     object %<>% merge_sdata(dt)
+    sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
     object
+}
+
+
+create_subgroup_values <- function(object, subgroup_var, verbose){
+
+    if (is.null(subgroup_var)){
+        guess_subgroup_values(object$sample_id, verbose=verbose)
+
+    } else if (all(is.na(slevels(object, subgroup_var)))){
+        guess_subgroup_values(object$sample_id, verbose=verbose)
+
+    } else {
+        svalues(object, subgroup_var)
+    }
+}
+
+
+create_replicate_values <- function(object, subgroup_var, verbose){
+
+    if (is.null(subgroup_var)){
+        guess_subgroup_values(object$sample_id, invert=TRUE, verbose=verbose)
+
+    } else if (all(is.na(slevels(object, subgroup_var)))){
+        guess_subgroup_values(object$sample_id, invert=TRUE, verbose=verbose)
+
+    } else {
+        subgroup_values <- sdata(object)[[subgroup_var]]
+        sampleid_values <- sdata(object)$sample_id
+        for (i in seq_along(subgroup_values)){
+            sampleid_values[i] %>%
+            stri_replace_first_fixed(subgroup_values[i], '') %>%
+            stri_replace_all_regex('^[._ ]', '') %>%
+            stri_replace_all_regex('[._ ]$', '')
+        }
+    }
 }
 
 
@@ -409,3 +448,102 @@ default_designfile <- function(object){
            'design',
             tools::file_ext(inputfile), sep = '.')
 }
+
+
+
+#========================
+# AFFYMETRIX MICROARRAYS
+#========================
+
+# https://stackoverflow.com/a/4090208
+# install_if_required <- function(pkgs){
+#     pkgs %<>% extract(!(pkgs %in% installed.packages()[,"Package"]))
+#     if(length(pkgs)) BiocManager::install(pkgs)
+# }
+
+
+add_affy_fdata <- function(object){
+# Extract entrez identifiers
+    entrezgs <- vapply(
+        stri_split_fixed(fnames(object), '_'), extract, character(1), 1)
+# Get annotation db
+    pkgname <- paste0(metadata(object)$annotation, '.db')
+    #install_if_required(pkgname)
+    db <- getFromNamespace(pkgname, pkgname)
+# Map
+    rowData(object) <- DataFrame(
+        feature_id    = fnames(object),
+        feature_name  = suppressMessages(mapIds(
+                    db, entrezgs, column = 'SYMBOL',   keytype = 'ENTREZID')),
+        feature_descr = suppressMessages(mapIds(
+                    db, entrezgs, column = 'GENENAME', keytype = 'ENTREZID')),
+        row.names     = fnames(object)
+    )
+# Return
+    object
+}
+
+#' Read affymetrix microarray
+#' @param celfiles string vector: CEL file paths
+#' @return RangedSummarizedExperiment
+#' @examples
+#' require(magrittr)
+#' url <- paste0('http://www.bioconductor.org/help/publications/2003/',
+#'                 'Chiaretti/chiaretti2/T33.tgz')
+#' localfile <- file.path('~/importomicscache', basename(url))
+#' if (!file.exists(localfile)){
+#'     download.file(url, destfile = localfile)
+#'     untar(localfile, exdir = path.expand('~/importomicscache'))
+#' }
+#' localfile %<>% substr(1, nchar(.)-4)
+#' if (!requireNamespace("BiocManager", quietly = TRUE)){
+#'     install.packages('BiocManager')
+#' }
+#' BiocManager::install('hgu95av2.db')
+#' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
+#' @export
+read_affymetrix <- function(celfiles){
+# read
+    message('Read Affymetrix CEL files: ', basename(celfiles)[1], ', ...')
+    suppressWarnings(eset1 <- just.rma(filenames = celfiles))
+    object <- makeSummarizedExperimentFromExpressionSet(eset1)
+# sdata
+    snames(object) %<>% stri_replace_first_fixed('.CEL', '')
+    sdata(object) <- data.frame(sample_id = snames(object),
+                                row.names = snames(object),
+                                stringsAsFactors = FALSE)
+# fdata
+    object %<>% add_affy_fdata()
+# return
+    return(object)
+}
+
+
+
+
+#==========================================================
+# GENEX
+#==========================================================
+
+#' Read genex file
+#' @param file string: path to exiqon genex file
+#' @return SummarizedExperiment
+#' @noRd
+read_genex <- function(file){
+    assert_all_are_existing_files(file)
+    dt <- extract_rectangle(file, sheet=1)
+    read_omics(
+        file,
+        sheet = 1,
+        fid_rows   = 1,                     fid_cols   = 2:(ncol(dt)-2),
+        sid_rows   = 2:(nrow(dt)-3),        sid_cols   = 1,
+        expr_rows  = 2:(nrow(dt)-3),        expr_cols  = 2:(ncol(dt)-2),
+        fvar_rows  = (nrow(dt)-2):nrow(dt), fvar_cols  = 1,
+        svar_rows  = 1,                     svar_cols  = (ncol(dt)-1):ncol(dt),
+        fdata_rows = (nrow(dt)-2):nrow(dt), fdata_cols = 2:(ncol(dt)-2),
+        sdata_rows = 2:(nrow(dt)-3),        sdata_cols = (ncol(dt)-1):ncol(dt),
+        transpose  = TRUE,
+        verbose    = TRUE)
+}
+
+

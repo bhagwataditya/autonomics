@@ -9,7 +9,8 @@ read_counts(
   fid_col = 1,
   fname_col = character(0),
   filter_features_min_count = 10,
-  verbose = TRUE
+  verbose = TRUE,
+  plot = TRUE
 )
 }
 \arguments{
@@ -24,6 +25,8 @@ with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
 
 \item{verbose}{TRUE (default) or FALSE}
+
+\item{plot}{TRUE (default) / FALSE}
 }
 \value{
 SummarizedExperiment

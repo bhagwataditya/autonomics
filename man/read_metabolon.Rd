@@ -14,7 +14,9 @@ read_metabolon(
   log2 = TRUE,
   impute_consistent_nas = FALSE,
   add_kegg_pathways = FALSE,
-  add_smiles = FALSE
+  add_smiles = FALSE,
+  verbose = TRUE,
+  plot = TRUE
 )
 }
 \arguments{

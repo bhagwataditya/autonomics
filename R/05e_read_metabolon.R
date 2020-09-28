@@ -5,6 +5,40 @@
 #
 #=============================================================================
 
+.read_metabolon <- function(file, sheet = find_origscale_sheet(file),
+    fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
+    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL'
+){
+# Assert
+    assert_all_are_existing_files(file)
+    . <- NULL
+# Initial read
+    d_f <- read_excel(file, sheet, col_names = FALSE, .name_repair = 'minimal')
+    fvar_rows <- which(!is.na(d_f %>% extract_dt_col(1))) %>% extract(1)
+    svar_cols <- which(!is.na(d_f %>% extract_dt_row(1))) %>% extract(1)
+    fvar_cols <- fdata_cols <- seq_len(svar_cols)
+    svar_rows <- sdata_rows <- seq_len(fvar_rows)
+    fvar_names <- extract_dt_row(d_f, fvar_rows) %>% extract(seq_len(svar_cols))
+    svar_names <- extract_dt_col(d_f, svar_cols) %>%extract(seq_len(fvar_rows))
+    fid_var <- fvar_names %>% extract(stri_detect_regex(., fid_var))
+    sid_var <- svar_names %>% extract(stri_detect_regex(., sid_var))
+    fid_rows  <- fdata_rows <- expr_rows <- (fvar_rows+1):nrow(d_f)
+    sid_cols  <- sdata_cols <- expr_cols <- (svar_cols+1):ncol(d_f)
+    fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
+    sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
+# Systematic read
+    read_omics( file,                       sheet      = sheet,
+                fid_rows   = fid_rows,      fid_cols   = fid_cols,
+                sid_rows   = sid_rows,      sid_cols   = sid_cols,
+                expr_rows  = expr_rows,     expr_cols  = expr_cols,
+                fvar_rows  = fvar_rows,     fvar_cols  = fvar_cols,
+                svar_rows  = svar_rows,     svar_cols  = svar_cols,
+                fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
+                sdata_rows = svar_rows,     sdata_cols = sdata_cols,
+                transpose  = FALSE, verbose    = TRUE)
+
+}
+
 #' Read metabolon
 #' @param file         string: path to metabolon xlsx file
 #' @param sheet        number/string: xls sheet number or name
@@ -28,50 +62,32 @@
 read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL', log2 = TRUE,
-    impute_consistent_nas = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE
+    impute_consistent_nas = FALSE, add_kegg_pathways = FALSE,
+    add_smiles = FALSE, verbose = TRUE, plot = TRUE
 ){
-# Assert
-    assert_all_are_existing_files(file)
-    . <- NULL
-# Initial read
-    d_f <- read_excel(file, sheet, col_names = FALSE, .name_repair = 'minimal')
-    fvar_rows <- which(!is.na(d_f %>% extract_dt_col(1))) %>% extract(1)
-    svar_cols <- which(!is.na(d_f %>% extract_dt_row(1))) %>% extract(1)
-    fvar_cols <- fdata_cols <- seq_len(svar_cols)
-    svar_rows <- sdata_rows <- seq_len(fvar_rows)
-    fvar_names <- extract_dt_row(d_f, fvar_rows) %>% extract(seq_len(svar_cols))
-    svar_names <- extract_dt_col(d_f, svar_cols) %>%extract(seq_len(fvar_rows))
-    fid_var <- fvar_names %>% extract(stri_detect_regex(., fid_var))
-    sid_var <- svar_names %>% extract(stri_detect_regex(., sid_var))
-    fid_rows  <- fdata_rows <- expr_rows <- (fvar_rows+1):nrow(d_f)
-    sid_cols  <- sdata_cols <- expr_cols <- (svar_cols+1):ncol(d_f)
-    fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
-    sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
-# Systematic read
-    object <- read_omics(file, sheet = sheet,
-                        fid_rows = fid_rows, fid_cols = fid_cols,
-                        sid_rows   = sid_rows,      sid_cols   = sid_cols,
-                        expr_rows  = expr_rows,     expr_cols  = expr_cols,
-                        fvar_rows  = fvar_rows,     fvar_cols  = fvar_cols,
-                        svar_rows  = svar_rows,     svar_cols  = svar_cols,
-                        fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
-                        sdata_rows = svar_rows,     sdata_cols = sdata_cols,
-                        transpose  = FALSE, verbose    = TRUE)
+# Read
+    object <- .read_metabolon(
+        file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var,
+        subgroup_var = subgroup_var, fname_var = fname_var)
 # Add sdata
     is_subgroup_col <- stri_detect_regex(svars(object), subgroup_var)
     subgroup_var <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
                     } else {                    sid_var }
-    sdata(object)$subgroup <- sdata(object)[[subgroup_var]]
-    sdata(object) %<>% pull_columns( c('sample_id', 'subgroup'))
+
+    object %<>% add_design(subgroup_var, verbose = verbose)
 # Add fdata
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
-# Preprocess & return
-    preprocess_metabolon(object, log2 = log2,
-                        impute_consistent_nas = impute_consistent_nas,
-                        add_kegg_pathways     = add_kegg_pathways,
-                        add_smiles            = add_smiles)
+# Preprocess
+    if (log2)               object %<>% log2transform(verbose = TRUE)
+    if (impute_consistent_nas) object %<>% impute_consistent_nas()
+    if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
+    if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
+# Plot
+    if (plot) add_pca(object)
+# Return
+    object
 }
 
 
@@ -82,38 +98,6 @@ find_origscale_sheet <- function(file){
     extract2(1)
 }
 
-
-#=============================================================================
-#
-#        PREPROCESS
-#
-#=============================================================================
-
-#' Prepare metabolon sumexp for analysis
-#' @param object                SummarizedExperiment
-#' @param log2transform         TRUE (default) or FALSE
-#' @param impute_consistent_nas TRUE or FALSE (default)
-#' @param add_kegg_pathways     TRUE or FALSE (default)
-#' @param add_smiles            TRUE or FALSE (default)
-#' @return SummarizedExperiment
-#' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' preprocess_metabolon(object)
-#' @noRd
-preprocess_metabolon <- function(
-    object,
-    log2          = TRUE,
-    impute_consistent_nas  = FALSE,
-    add_kegg_pathways      = FALSE,
-    add_smiles             = FALSE
-){
-    if (log2)               object %<>% log2transform(verbose = TRUE)
-    if (impute_consistent_nas) object %<>% impute_consistent_nas()
-    if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
-    if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
-    object
-}
 
 #=============================================================================
 #

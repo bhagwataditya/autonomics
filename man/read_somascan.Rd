@@ -10,13 +10,14 @@ read_somascan(
   sid_var = "SampleId",
   subgroup_var = "SampleGroup",
   fname_var = "EntrezGeneSymbol",
-  filter_sample_type = "Sample",
-  filter_feature_type = "Protein",
-  filter_sample_quality = c("FLAG", "PASS"),
-  filter_feature_quality = c("FLAG", "PASS"),
+  sample_type = "Sample",
+  feature_type = "Protein",
+  sample_quality = c("FLAG", "PASS"),
+  feature_quality = c("FLAG", "PASS"),
   rm_na_svars = TRUE,
   rm_single_value_svars = TRUE,
-  log2 = TRUE
+  log2 = TRUE,
+  plot = TRUE
 )
 }
 \arguments{
@@ -30,20 +31,22 @@ read_somascan(
 
 \item{fname_var}{string: feature_name variable}
 
-\item{filter_sample_type}{subset of c('Sample','QC','Buffer','Calibrator')}
+\item{sample_type}{subset of c('Sample','QC','Buffer','Calibrator')}
 
-\item{filter_feature_type}{subset of c('Protein',
+\item{feature_type}{subset of c('Protein',
 'Hybridization Control Elution', 'Rat Protein')}
 
-\item{filter_sample_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
+\item{sample_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
-\item{filter_feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
+\item{feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
 \item{rm_na_svars}{TRUE (default) or FALSE: rm NA svars?}
 
 \item{rm_single_value_svars}{TRUE (default) or FALSE: rm single value svars?}
 
 \item{log2}{TRUE (default) or FALSE: log2 transform?}
+
+\item{plot}{TRUE (default) or FALSE}
 }
 \value{
 Summarizedexperiment

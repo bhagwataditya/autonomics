@@ -6,15 +6,16 @@
 #=============================================================================
 
 #' Flip sign if all expr values are negative
-#' @param object SummarizedExperiment, eSet, or EList
+#' @param object SummarizedExperiment
+#' @param verbose TRUE (default) or FALSE
 #' @return updated object
 #' @noRd
-flip_sign_if_all_exprs_are_negative <- function(object){
+flip_sign_if_all_exprs_are_negative <- function(object, verbose=TRUE){
     idx <- !is.na(exprs(object))
     if (all(sign(exprs(object)[idx])==-1)){
-        cmessage(
+        if (verbose) cmessage(
             '\t\tAll values negative: flip signs to prevent singularities.')
-        exprs(object) %<>% magrittr::multiply_by(-1)
+        exprs(object) %<>% multiply_by(-1)
     }
     object
 }
@@ -108,23 +109,24 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 
 #' @param object  SummarizedExperiment
 #' @param ndim    number
+#' @param verbose TRUE or FALSE (default)
 #' @return        SummarizedExperiment
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' .add_pca(object)
 #' @noRd
-.add_pca <- function(object, ndim = 2){
+.add_pca <- function(object, ndim = 2, verbose = TRUE){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
-    assertive::assert_all_are_less_than_or_equal_to(ndim, ncol(object))
+    assert_all_are_less_than_or_equal_to(ndim, ncol(object))
     . <- NULL
 # Prepare
     tmpobj <- object
-    tmpobj %<>% inf_to_na(verbose=TRUE)
-    tmpobj %<>% nan_to_na(verbose=TRUE)
+    tmpobj %<>% inf_to_na(verbose=verbose)
+    tmpobj %<>% nan_to_na(verbose=verbose)
     tmpobj %<>% filter_features_available_in_some_sample()
 # (Double) center and (global) normalize
     row_means <- rowMeans(exprs(tmpobj), na.rm=TRUE)
@@ -161,7 +163,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' object <- read_metabolon(file)
 #' .add_sma(object)
 #' @noRd
-.add_sma <- function(object, ndim = 2){
+.add_sma <- function(object, ndim = 2, verbose = TRUE){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
@@ -174,9 +176,9 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     . <- NULL
 # Preprocess
     tmpobj <- object
-    tmpobj %<>% minusinf_to_na()
-    tmpobj %<>% flip_sign_if_all_exprs_are_negative() # else SVD singular
-    tmpobj %<>% filter_features_available_in_all_samples()
+    tmpobj %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
+    tmpobj %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
+    tmpobj %<>% filter_features_available_in_all_samples(verbose = verbose)
 # Transform
     df <- data.frame(feature = rownames(tmpobj), exprs(tmpobj))
     mpm_tmp <- mpm::mpm(
@@ -214,7 +216,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' object <- read_metabolon(file)
 #' .add_lda(object)
 #' @noRd
-.add_lda <- function(object, ndim=2){
+.add_lda <- function(object, ndim=2, verbose = TRUE){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     nsubgroup <- length(subgroup_levels(object))
@@ -226,9 +228,9 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     . <- NULL
 # Preprocess
     tmpobj <- object
-    tmpobj %<>% minusinf_to_na()
-    tmpobj %<>% flip_sign_if_all_exprs_are_negative()      # else SVD singular
-    tmpobj %<>% filter_features_available_in_all_samples()
+    tmpobj %<>% minusinf_to_na(verbose = verbose)         # SVD singular
+    tmpobj %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
+    tmpobj %<>% filter_features_available_in_all_samples(verbose = verbose)
 # Transform
     exprs_t  <- t(exprs(tmpobj))
     lda_out  <- suppressWarnings(
@@ -460,8 +462,9 @@ plot_sample_scores <- function(object, method, xdim = 1, ydim = 2,
 #' @param xdim    number (default 1): x axis dimension
 #' @param ydim    number (default 2): y axis dimension
 #' @param color   sdata variable mapped to color
-#' @param fixed   list with fixed ggplot aesthetics
 #' @param ...     additional svar to aesthetic mappings
+#' @param fixed   list with fixed ggplot aesthetics
+#' @param verbose TRUE (verbose) or FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
@@ -477,9 +480,10 @@ plot_sample_scores <- function(object, method, xdim = 1, ydim = 2,
 #' @export
 add_pca <- function(
     object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, color = subgroup, ...,
-    fixed = list(shape=15, size=3)
+    fixed = list(shape=15, size=3), verbose = TRUE
 ){
-    object %<>% .add_pca(ndim = max(ndim, xdim, ydim))
+    if (verbose) message('\tAdd Principal Component Analysis')
+    object %<>% .add_pca(ndim = max(ndim, xdim, ydim), verbose = verbose)
     if (plot) print(plot_sample_scores(
                 object, 'pca', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object
@@ -490,9 +494,10 @@ add_pca <- function(
 #' @export
 add_pls <- function(
     object, ndim=2, plot=TRUE, xdim = 1, ydim = 2, color = subgroup, ...,
-    fixed = list(shape=15, size=3)
+    fixed = list(shape=15, size=3), verbose = TRUE
 ){
-    object %<>% .add_pls(ndim = max(ndim, xdim, ydim))
+    if (verbose) message('\tAdd Partial Least Squares Analysis')
+    object %<>% .add_pls(ndim = max(ndim, xdim, ydim), verbose = verbose)
     if (plot) print(plot_sample_scores(
                 object, 'pls', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object
@@ -503,9 +508,10 @@ add_pls <- function(
 #' @export
 add_lda <- function(
     object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, ...,
-    fixed = list(shape=15, size=3)
+    fixed = list(shape=15, size=3), verbose = TRUE
 ){
-    object %<>% .add_lda(ndim = max(ndim, xdim, ydim))
+    if (verbose) message('\tAdd Linear Discriminant Analysis')
+    object %<>% .add_lda(ndim = max(ndim, xdim, ydim), verbose = verbose)
     if (plot) print(plot_sample_scores(
                 object, 'lda', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object
@@ -515,9 +521,11 @@ add_lda <- function(
 #' @rdname add_pca
 #' @export
 add_sma <- function(
-    object, ndim=2, plot=TRUE, xdim=1, ydim=2, ..., fixed=list(shape=15, size=3)
+    object, ndim=2, plot=TRUE, xdim=1, ydim=2, ...,
+    fixed = list(shape=15, size=3), verbose = TRUE
 ){
-    object %<>% .add_sma(ndim = max(ndim, xdim, ydim))
+    if (verbose) message('\tAdd Spectral Map Analysis')
+    object %<>% .add_sma(ndim = max(ndim, xdim, ydim), verbose = verbose)
     if (plot) print(plot_sample_scores(
                 object, 'sma', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object
