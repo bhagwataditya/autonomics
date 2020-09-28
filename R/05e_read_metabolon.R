@@ -27,7 +27,8 @@
     fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
     sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
 # Systematic read
-    read_omics( file,                       sheet      = sheet,
+    object <- read_omics(
+                file,                       sheet      = sheet,
                 fid_rows   = fid_rows,      fid_cols   = fid_cols,
                 sid_rows   = sid_rows,      sid_cols   = sid_cols,
                 expr_rows  = expr_rows,     expr_cols  = expr_cols,
@@ -36,7 +37,8 @@
                 fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
                 sdata_rows = svar_rows,     sdata_cols = sdata_cols,
                 transpose  = FALSE, verbose    = TRUE)
-
+    metadata(object)$platform <- 'metabolon'
+    object
 }
 
 #' Read metabolon

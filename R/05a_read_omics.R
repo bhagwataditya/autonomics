@@ -372,35 +372,56 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
 }
 
 
+#' @param object        SummarizedExperiment
+#' @param subgroup_var  subgroup svar or NULL
+#' @param designfile    design file path (to read/write) or NULL (don't write)
+#' @param verbose       TRUE (default) or FALSE
 #'@examples
-#'file <- download_data('differentiation.proteinGroups.txt')
-#'object <- read_proteingroups(file, plot = FALSE)
-#'add_design(object)
+#'# PROTEINGROUPS
+#'    file <- download_data('differentiation.proteinGroups.txt')
+#'    object <- read_proteingroups(file, plot = FALSE)
+#'    add_design(object)
+#'
+#' # SOMASCAN
+#'     file <- download_data('hypoglycemia.somascan.adat')
+#'     read_somascan(file)
+#'
+#' # METABOLON
+#'     file <- download_data('hypoglycemia.metabolon.xlsx')
+#'     read_metabolon(file)
+#'
+#' # RNACOUNTS
 #'@noRd
 add_design <- function(
     object, subgroup_var = NULL,
-    designfile = default_designfile(object), verbose = TRUE
+    designfile = get_default_designfile(object),
+    verbose = TRUE
 ){
-# Read design
-    if (file.exists(designfile)){
-        message('\t\tUse design from: ', designfile)
-        message('\t\tUpdate manually if required')
-        dt <- fread(designfile)
-# Write design
+# Read
+    if (!is.null(designfile)){
+        if(file.exists(designfile)){
+            message('\t\tRead design (update if required!): ', designfile)
+            dt <- fread(designfile)
+        }
+# Create
     } else {
         dt <- data.table(
             sample_id = object$sample_id,
             subgroup  = create_subgroup_values( object, subgroup_var, verbose),
             replicate = create_replicate_values(object, subgroup_var, verbose))
-            if (verbose){
-                message('\t\tWrite design to: ', designfile)
-                message('\t\tUpdate manually if required')
-            }
-            fwrite(dt, designfile, sep = '\t', row.names = FALSE)
     }
-# Merge into object and return
+# Merge
     object %<>% merge_sdata(dt)
     sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
+# Write
+    if (!is.null(designfile)){
+        if (!file.exists(designfile)){
+            if (verbose) message(
+                        '\t\tWrite design (update if required!): ', designfile)
+        }
+        fwrite(dt, designfile, sep = '\t', row.names = FALSE)
+    }
+# Return
     object
 }
 
@@ -430,23 +451,66 @@ create_replicate_values <- function(object, subgroup_var, verbose){
     } else {
         subgroup_values <- sdata(object)[[subgroup_var]]
         sampleid_values <- sdata(object)$sample_id
+        replicate_values <- rep('', length(subgroup_values))
         for (i in seq_along(subgroup_values)){
-            sampleid_values[i] %>%
-            stri_replace_first_fixed(subgroup_values[i], '') %>%
-            stri_replace_all_regex('^[._ ]', '') %>%
-            stri_replace_all_regex('[._ ]$', '')
+            replicate_values[i] <-
+                sampleid_values[i] %>%
+                stri_replace_first_fixed(subgroup_values[i], '') %>%
+                stri_replace_all_regex('^[._ ]', '') %>%
+                stri_replace_all_regex('[._ ]$', '')
         }
+        replicate_values
     }
 }
 
 
-default_designfile <- function(object){
-    inputfile <- metadata(object)$file
-    quantity  <- metadata(object)$quantity
-    paste( tools::file_path_sans_ext(inputfile),
-           if (is.null(quantity)) '' else  make.names(quantity),
-           'design',
-            tools::file_ext(inputfile), sep = '.')
+default_designfile <- function(file, platform = NULL, quantity = NULL){
+
+    # Initialize
+    if (is.null(platform))  platform <- ''
+    if (is.null(quantity))  quantity <- ''
+
+    # No designfile for SOMASCAN and METABOLON
+    if (platform %in% c('metabolon', 'somascan')) return(NULL)
+
+    # Take basename file
+    designfile <- tools::file_path_sans_ext(file)
+
+    # Append quantity for MaxQuant files
+    if (platform == 'maxquant'){
+        designfile %<>% paste(make.names(quantity), sep = '.')
+    }
+
+    # Add .design.tx
+    designfile %<>% paste0('.design.txt')
+    designfile
+}
+
+#' @param object        SummarizedExperiment
+#' @param subgroup_var  subgroup svar or NULL
+#' @param designfile    design file path (to read/write) or NULL (don't write)
+#' @param verbose       TRUE (default) or FALSE
+#'@examples
+#'# PROTEINGROUPS
+#'    file <- download_data('differentiation.proteinGroups.txt')
+#'    object <- read_proteingroups(file)
+#'    get_default_designfile(object)
+#'
+#' # SOMASCAN
+#'     inputfile <- download_data('hypoglycemia.somascan.adat')
+#'     default_designfile(inputfile, platform = 'somascan')
+#'
+#' # METABOLON
+#'     file <- download_data('hypoglycemia.metabolon.xlsx')
+#'     default_designfile(inputfile, platform = 'metabolon')
+#'
+#' # RNACOUNTS
+#'@noRd
+get_default_designfile <- function(object){
+    default_designfile(
+        file     = metadata(object)$file,
+        platform = metadata(object)$platform,
+        quantity = metadata(object)$quantity)
 }
 
 

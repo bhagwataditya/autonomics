@@ -17,6 +17,7 @@ read_somascan(
   rm_na_svars = TRUE,
   rm_single_value_svars = TRUE,
   log2 = TRUE,
+  verbose = TRUE,
   plot = TRUE
 )
 }

@@ -24,14 +24,17 @@
     sid_cols <- content %>% extract(s_row) %>% stri_extract_all_words() %>%
                 unlist() %>% equals(sid_var) %>% which()
 # Read
-    read_omics(file, fid_rows = fid_rows, fid_cols = fid_cols,
+    object <- read_omics(file,
+        fid_rows   = fid_rows,          fid_cols   = fid_cols,
         sid_rows   =  sid_rows,         sid_cols   =  sid_cols,
         expr_rows  = (s_row+1):n_row,   expr_cols  = (f_col+1):n_col,
         fvar_rows  =  f_row:(s_row-1),  fvar_cols  =  f_col,
-        fdata_rows =  f_row:(s_row-1),  fdata_cols  = (f_col+1):n_col,
+        fdata_rows =  f_row:(s_row-1),  fdata_cols = (f_col+1):n_col,
         svar_rows  =  s_row,            svar_cols  = seq_len(f_col-1),
         sdata_rows = (s_row+1):n_row,   sdata_cols = seq_len(f_col-1),
         transpose  = TRUE, verbose    = TRUE)
+    metadata(object)$platform <- 'somascan'
+    object
 }
 
 
@@ -64,7 +67,8 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     subgroup_var = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
-    rm_na_svars = TRUE, rm_single_value_svars = TRUE, log2 = TRUE, plot = TRUE
+    rm_na_svars = TRUE, rm_single_value_svars = TRUE, log2 = TRUE,
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_somascan(file, fid_var=fid_var, sid_var = sid_var)

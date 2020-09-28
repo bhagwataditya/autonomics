@@ -882,6 +882,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
                         transpose  = FALSE,       verbose    = verbose)
 # Return
     metadata(object)$quantity <- quantity
+    metadata(object)$platform <- 'maxquant'
     object
 }
 
@@ -911,6 +912,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     snames(object)   %<>% stri_replace_all_fixed('___1', '')
     object$sample_id %<>% stri_replace_all_fixed('___1', '')
     metadata(object)$quantity <- quantity
+    metadata(object)$platform <- 'maxquant'
 # Return
     object
 }
@@ -1150,7 +1152,9 @@ read_proteingroups <- function(
     proteingroupsfile, quantity = guess_maxquant_quantity(proteingroupsfile),
     fvars = PROTEINGROUP_FVARS, contaminants = FALSE, reverse = FALSE,
     unquantified = FALSE, fastafile = NULL, invert_subgroups = character(0),
-    rm_subgroups = character(0), log2 = TRUE,
+    rm_subgroups = character(0),
+    designfile = default_designfile(proteingroupsfile, 'maxquant', quantity),
+    log2 = TRUE,
     impute = stri_detect_regex(quantity, "[Ii]ntensity"), verbose = TRUE,
     plot = TRUE
 ){
@@ -1172,7 +1176,7 @@ read_proteingroups <- function(
                     fastafile        = fastafile,
                     invert_subgroups = invert_subgroups,
                     rm_subgroups     = rm_subgroups,
-                    designfile       = default_designfile(object),
+                    designfile       = designfile,
                     log2             = log2,
                     impute           = impute,
                     verbose          = verbose,
@@ -1192,7 +1196,9 @@ read_phosphosites <- function(
     fvars = PHOSPHOSITE_FVARS, contaminants = FALSE, reverse = FALSE,
     unquantified = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
-    rm_subgroups = character(0), log2 = TRUE, verbose = TRUE, plot = TRUE
+    rm_subgroups = character(0),
+    designfile = default_designfile(proteingroupsfile, 'maxquant', quantity),
+    log2 = TRUE, verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
@@ -1215,7 +1221,7 @@ read_phosphosites <- function(
                     fastafile             = fastafile,
                     invert_subgroups      = invert_subgroups,
                     rm_subgroups          = rm_subgroups,
-                    designfile            = default_designfile(proteingroups),
+                    designfile            = designfile,
                     log2                  = log2,
                     verbose               = verbose,
                     plot                  = plot)

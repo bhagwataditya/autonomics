@@ -165,6 +165,7 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
                     } else {           paste0(subdirnames, '_', filenames)}
     object <- SummarizedExperiment(assays = list(
         counts = fcounts$counts %>% set_colnames(sample_names)))
+    metadata(object)$platform <- 'rnaseq'
 # Add fdata
     message("\t\tAdd fdata")
     rowData(object) <- fcounts$annotation[ , c('GeneID', fvars), drop = FALSE]
@@ -231,6 +232,7 @@ read_counts <- function(
                 fdata_rows = 2:nrow(dt),   fdata_cols = fdata_cols,
                 transpose  = FALSE,
                 verbose    = TRUE)
+    metadata(object)$platform <- 'rnaseq'
     counts(object) <- exprs(object)
     assays(object)$exprs <- NULL
 # Add design. Preprocess

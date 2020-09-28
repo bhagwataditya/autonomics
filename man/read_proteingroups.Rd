@@ -15,6 +15,7 @@ read_proteingroups(
   fastafile = NULL,
   invert_subgroups = character(0),
   rm_subgroups = character(0),
+  designfile = default_designfile(proteingroupsfile, "maxquant", quantity),
   log2 = TRUE,
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   verbose = TRUE,
@@ -33,6 +34,7 @@ read_phosphosites(
   fastafile = NULL,
   invert_subgroups = character(0),
   rm_subgroups = character(0),
+  designfile = default_designfile(proteingroupsfile, "maxquant", quantity),
   log2 = TRUE,
   verbose = TRUE,
   plot = TRUE
