@@ -50,7 +50,7 @@ Demultiplex sample names
 # SummarizedExperiment
    require(magrittr)
    file <- download_data('stemcells.proteinGroups.txt')
-   x <- read_proteingroups(file, demultiplex = FALSE)
-   x \%<>\% standardize_maxquant_snames()
-   demultiplex(x, verbose = TRUE)
+   # x <- .read_proteingroups(file)
+   # x \%<>\% standardize_maxquant_snames()
+   # demultiplex(x, verbose = TRUE)
 }

@@ -43,21 +43,28 @@ read_phosphosites(
 \arguments{
 \item{proteingroupsfile}{proteinGroups.txt path}
 
-\item{quantity}{string: ""Ratio normalized", "Ratio", "LFQ intensity",
-"Reporter intensity corrected", "Reporter intensity","Intensity labeled",
-or "Intensity"}
+\item{quantity}{string: "Ratio normalized",
+"Ratio", "LFQ intensity",
+"Reporter intensity corrected",
+"Reporter intensity",
+"Intensity labeled",
+"Intensity"}
 
-\item{fvars}{character vector: annotation columns to extract}
+\item{fvars}{character vector: annotation columns}
 
-\item{contaminants}{return also contaminants? (defaultFALSE)}
+\item{contaminants}{return contaminants? (defaultFALSE)}
 
-\item{reverse}{return also reverse peptides? (default FALSE)}
+\item{reverse}{return reverse peptides? (default FALSE)}
 
-\item{unquantified}{return also unquantified peptides? (default FALSE)}
+\item{unquantified}{return unquantified peptides? (default FALSE)}
 
-\item{fastafile}{fastafile path if provided, used to simplify proteingroups}
+\item{fastafile}{NULL or fastafile (to deconvolute proteingroups}
 
 \item{invert_subgroups}{character vector: subgroups to be inverted}
+
+\item{rm_subgroups}{character vector: subgroups to be removed}
+
+\item{designfile}{path to designfile}
 
 \item{log2}{TRUE (default) or FALSE: log2 transform?}
 
@@ -69,11 +76,7 @@ or "Intensity"}
 
 \item{phosphositesfile}{phospho(STY)Sites.txt path}
 
-\item{min_localization_prob}{number (default 0.75):
-minimum localization probability required for a site to be retained}
-
-\item{demultiplex}{TRUE (default) or FALSE: whether to demultiplex
-maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?}
+\item{min_localization_prob}{number (default 0.75): min site loc. prob.}
 }
 \value{
 SummarizedExperiment

@@ -39,6 +39,10 @@ read_metabolon(
 \item{add_kegg_pathways}{TRUE or FALSE (default)}
 
 \item{add_smiles}{TRUE or FALSE (default)}
+
+\item{verbose}{TRUE (default) or FALSE}
+
+\item{plot}{TRUE (default) or FALSE}
 }
 \value{
 SummarizedExperiment

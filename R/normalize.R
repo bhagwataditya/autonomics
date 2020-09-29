@@ -16,7 +16,7 @@
 #' @export
 invnorm <- function(object, plot = TRUE){
     exprs(object) %<>% apply(2, transform_to_fitting_normal)
-    if (plot)  plot_sample_scores(object0, 'pca') + ggtitle('invnorm')
+    if (plot)  plot_sample_scores(object, 'pca') + ggtitle('invnorm')
     object
 }
 

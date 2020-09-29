@@ -497,7 +497,7 @@ add_pls <- function(
     fixed = list(shape=15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Partial Least Squares Analysis')
-    object %<>% .add_pls(ndim = max(ndim, xdim, ydim), verbose = verbose)
+    object %<>% .add_pls(ndim = max(ndim, xdim, ydim))
     if (plot) print(plot_sample_scores(
                 object, 'pls', xdim = xdim, ydim = ydim, ..., fixed = fixed))
     object

@@ -50,12 +50,13 @@
 #' @param fname_var    string: feature_name variable
 #' @param sample_type  subset of c('Sample','QC','Buffer','Calibrator')
 #' @param feature_type subset of c('Protein',
-#'                             'Hybridization Control Elution', 'Rat Protein')
-#' @param sample_quality  subset of c('PASS', 'FLAG', 'FAIL')
-#' @param feature_quality subset of c('PASS', 'FLAG', 'FAIL')
+#'                              'Hybridization Control Elution', 'Rat Protein')
+#' @param sample_quality         subset of c('PASS', 'FLAG', 'FAIL')
+#' @param feature_quality        subset of c('PASS', 'FLAG', 'FAIL')
 #' @param rm_na_svars            TRUE (default) or FALSE: rm NA svars?
 #' @param rm_single_value_svars  TRUE (default) or FALSE: rm single value svars?
 #' @param log2                   TRUE (default) or FALSE: log2 transform?
+#' @param verbose                TRUE (default) or FALSE
 #' @param plot                   TRUE (default) or FALSE
 #' @return Summarizedexperiment
 #' @examples
@@ -104,6 +105,7 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
 
 filter_sample_type <- function(object, sample_type, verbose){
     if ('SampleType' %in% svars(object)){ # missing in older versions
+        SampleType <- NULL
         message('\t\t========================================================')
         cmessage_df('\t\t%s', table(`Sample types` = sdata(object)$SampleType))
         object %<>% filter_samples(
@@ -115,6 +117,7 @@ filter_sample_type <- function(object, sample_type, verbose){
 
 filter_sample_quality <- function(object, sample_quality, verbose){
     if ('RowCheck'   %in% svars(object)){ # sample quality
+        RowCheck <- NULL
         message('\t\t========================================================')
         cmessage_df('\t\t%s',
             table(`Sample qualities ("RowCheck")` = sdata(object)$RowCheck))
@@ -126,6 +129,7 @@ filter_sample_quality <- function(object, sample_quality, verbose){
 
 filter_feature_type <- function(object, feature_type, verbose){
     if ('Type'       %in% fvars(object)){ # feature type
+        Type <- NULL
         message('\t\t========================================================')
         cmessage_df('\t\t%s', table(`Type` = (object)$Type))
         object %<>% filter_features(
@@ -137,6 +141,7 @@ filter_feature_type <- function(object, feature_type, verbose){
 
 filter_feature_quality <- function(object, feature_quality, verbose){
     if ('ColCheck'   %in% fvars(object)){ # feature quality
+        ColCheck <- NULL
         message('\t\t========================================================')
         cmessage_df('\t\t%s',
             table(`Feature qualities ("ColCheck")` = fdata(object)$ColCheck))

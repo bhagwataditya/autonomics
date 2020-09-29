@@ -47,6 +47,8 @@ read_somascan(
 
 \item{log2}{TRUE (default) or FALSE: log2 transform?}
 
+\item{verbose}{TRUE (default) or FALSE}
+
 \item{plot}{TRUE (default) or FALSE}
 }
 \value{

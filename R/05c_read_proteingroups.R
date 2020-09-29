@@ -63,8 +63,8 @@ MAXQUANT_PATTERNS <- c(
 #'
 #' # SummarizedExperiment
 #'      file <-download_data( 'stemcells.proteinGroups.txt')
-#'      x <- read_proteingroups(file, demultiplex = FALSE)
-#'      guess_maxquant_quantity(x)
+#'      # x <- .read_proteingroups(file)
+#'      # guess_maxquant_quantity(x)
 #' @export
 guess_maxquant_quantity <- function(x, ...){
     UseMethod("guess_maxquant_quantity", x)
@@ -151,8 +151,8 @@ guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
 #'
 #' # SummarizedExperiment
 #'    file <- download_data('stemcells.proteinGroups.txt')
-#'    x <- read_proteingroups(file, demultiplex= FALSE)
-#'    standardize_maxquant_snames(x)
+#'    # x <- .read_proteingroups(file)
+#'    # standardize_maxquant_snames(x)
 #' @export
 standardize_maxquant_snames <- function (x, ...) {
     UseMethod("standardize_maxquant_snames", x)
@@ -244,9 +244,9 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #' # SummarizedExperiment
 #'    require(magrittr)
 #'    file <- download_data('stemcells.proteinGroups.txt')
-#'    x <- read_proteingroups(file, demultiplex = FALSE)
-#'    x %<>% standardize_maxquant_snames()
-#'    demultiplex(x, verbose = TRUE)
+#'    # x <- .read_proteingroups(file)
+#'    # x %<>% standardize_maxquant_snames()
+#'    # demultiplex(x, verbose = TRUE)
 #' @export
 demultiplex <- function (x, ...) {
     UseMethod("demultiplex", x)
@@ -858,12 +858,12 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     'Gene names', 'Positions within proteins', 'Localization prob', 'Reverse',
     'Potential contaminant', 'Contaminant')
 
-
 .read_proteingroups <- function(
-    proteingroupsfile, quantity, fvars, verbose
+    file, quantity = guess_maxquant_quantity(file),
+    fvars = PROTEINGROUP_FVARS, verbose = TRUE
 ){
 # Scan
-    dt <- fread(proteingroupsfile, integer64 = 'numeric', header = FALSE)
+    dt <- fread(file, integer64 = 'numeric', header = FALSE)
     columns <- as.character(dt[1])
     fvars %<>% intersect(columns)
     fid_rows <- 2:nrow(dt);    fid_cols <- which(columns == 'id')
@@ -873,7 +873,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     fvar_rows  <- 1;           fvar_cols  <- match(fvars, columns)
     fdata_rows <- 2:nrow(dt);  fdata_cols <- fvar_cols
 # Read
-    object <- read_omics(proteingroupsfile,
+    object <- read_omics(file,
                         fid_rows   = fid_rows,    fid_cols   = fid_cols,
                         sid_rows   = sid_rows,    sid_cols   = sid_cols,
                         expr_rows  = expr_rows,   expr_cols  = expr_cols,
@@ -889,10 +889,11 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 
 
 .read_phosphosites <- function(
-    phosphositesfile, quantity, fvars, verbose
+    file, quantity = guess_maxquant_quantity(file),
+    fvars = PHOSPHOSITE_FVARS, verbose = TRUE
 ){
 # Scan
-    dt <- fread(phosphositesfile, integer64 = 'numeric', header = FALSE)
+    dt <- fread(file, integer64 = 'numeric', header = FALSE)
     columns <- as.character(dt[1])
     value_cols <- phospho_expr_columns(columns, quantity)
     fvar_cols  <- which(columns %in% fvars)
@@ -902,7 +903,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     fvar_rows  <- 1;              fvar_cols  <- fvar_cols
     fdata_rows <- 2:nrow(dt);     fdata_cols <- fvar_cols
 # Read
-    object  <- read_omics(phosphositesfile,
+    object  <- read_omics(file,
                         fid_rows   = fid_rows,    fid_cols   = fid_cols,
                         sid_rows   = sid_rows,    sid_cols   = sid_cols,
                         expr_rows  = expr_rows,   expr_cols  = expr_cols,
@@ -1098,25 +1099,28 @@ transform_maxquant <- function(
 
 
 #' Read proteingroups/phosphosites
-#' @param proteingroupsfile proteinGroups.txt path
-#' @param phosphositesfile  phospho(STY)Sites.txt path
-#' @param fastafile   fastafile path if provided, used to simplify proteingroups
-#' @param quantity  string: ""Ratio normalized", "Ratio", "LFQ intensity",
-#'   "Reporter intensity corrected", "Reporter intensity","Intensity labeled",
-#'   or "Intensity"
-#' @param fvars     character vector: annotation columns to extract
-#' @param contaminants return also contaminants? (defaultFALSE)
-#' @param reverse      return also reverse peptides? (default FALSE)
-#' @param unquantified return also unquantified peptides? (default FALSE)
-#' @param min_localization_prob  number (default 0.75):
-#'  minimum localization probability required for a site to be retained
-#' @param demultiplex  TRUE (default) or FALSE: whether to demultiplex
-#'    maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -> KD(H)_WT(L).R1 ?
-#' @param invert_subgroups character vector: subgroups to be inverted
-#' @param log2 TRUE (default) or FALSE: log2 transform?
-#' @param impute TRUE or FALSE (default)
-#' @param verbose     TRUE (default) or FALSE
-#' @param plot TRUE or FALSE
+#'
+#' @param proteingroupsfile     proteinGroups.txt path
+#' @param phosphositesfile      phospho(STY)Sites.txt path
+#' @param fastafile             NULL or fastafile (to deconvolute proteingroups
+#' @param quantity              string: "Ratio normalized",
+#'                                      "Ratio", "LFQ intensity",
+#'                                      "Reporter intensity corrected",
+#'                                      "Reporter intensity",
+#'                                      "Intensity labeled",
+#'                                      "Intensity"
+#' @param fvars                  character vector: annotation columns
+#' @param contaminants           return contaminants? (defaultFALSE)
+#' @param reverse                return reverse peptides? (default FALSE)
+#' @param unquantified           return unquantified peptides? (default FALSE)
+#' @param min_localization_prob  number (default 0.75): min site loc. prob.
+#' @param invert_subgroups       character vector: subgroups to be inverted
+#' @param rm_subgroups           character vector: subgroups to be removed
+#' @param designfile             path to designfile
+#' @param log2                   TRUE (default) or FALSE: log2 transform?
+#' @param impute                 TRUE or FALSE (default)
+#' @param verbose                TRUE (default) or FALSE
+#' @param plot                   TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # STEM CELLS

@@ -166,6 +166,7 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
     object <- SummarizedExperiment(assays = list(
         counts = fcounts$counts %>% set_colnames(sample_names)))
     metadata(object)$platform <- 'rnaseq'
+    metadata(object)$file <- bamdir
 # Add fdata
     message("\t\tAdd fdata")
     rowData(object) <- fcounts$annotation[ , c('GeneID', fvars), drop = FALSE]
@@ -222,7 +223,6 @@ read_counts <- function(
                                         dt[, -fid_col, with = FALSE],
                                         is.integer,
                                         logical(1)))))
-    message('\t\tRead ', "'", basename(file), "'", ' into SummarizedExperiment')
     object <- read_omics(
                 file,
                 fid_rows   = 2:nrow(dt),   fid_cols   = fid_col,
@@ -291,7 +291,7 @@ filter_low_count_features <- function(
                 ' features: count >= ',
                 filter_features_min_count, ' in at least some samples')
 
-    subset(object, idx)
+    object[idx, ]
 }
 
 

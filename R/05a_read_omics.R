@@ -322,8 +322,7 @@ extract_sdata <- function(
 read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
     expr_rows, expr_cols, fvar_rows  = NULL, fvar_cols = NULL, svar_rows = NULL,
     svar_cols  = NULL, fdata_rows = NULL,  fdata_cols = NULL, sdata_rows = NULL,
-    sdata_cols = NULL, transpose  = FALSE, verbose    = TRUE
-){
+    sdata_cols = NULL, transpose  = FALSE, verbose    = TRUE){
 # Assert
     assert_all_are_existing_files(file);     assert_is_a_bool(transpose)
 # Read (in one go if fixed col file)
@@ -360,7 +359,6 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
     fids1 %<>% uniquify('make.unique'); sids1 %<>% uniquify('make.unique')
     rownames(exprs1) <- rownames(fdata1) <- fids1
     colnames(exprs1) <- rownames(sdata1) <- sids1
-
 # Wrap into Sumexp and return
     object <- SummarizedExperiment(assays = list(exprs = exprs1))
     rowData(object) <- as(fdata1, 'DataFrame')
@@ -382,6 +380,10 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
 #'    object <- read_proteingroups(file, plot = FALSE)
 #'    add_design(object)
 #'
+#'    file <- download_data('stemcells.proteinGroups.txt')
+#'    object <- read_proteingroups(file, plot = FALSE)
+#'    add_design(object)
+#'
 #' # SOMASCAN
 #'     file <- download_data('hypoglycemia.somascan.adat')
 #'     read_somascan(file)
@@ -397,34 +399,36 @@ add_design <- function(
     designfile = get_default_designfile(object),
     verbose = TRUE
 ){
-# Read
-    if (!is.null(designfile)){
-        if(file.exists(designfile)){
+# Read/Create
+    dt <- if (file_exists(designfile)){
             message('\t\tRead design (update if required!): ', designfile)
-            dt <- fread(designfile)
-        }
-# Create
-    } else {
-        dt <- data.table(
+            fread(designfile)
+        } else {
+            data.table(
             sample_id = object$sample_id,
             subgroup  = create_subgroup_values( object, subgroup_var, verbose),
             replicate = create_replicate_values(object, subgroup_var, verbose))
-    }
+        }
 # Merge
     object %<>% merge_sdata(dt)
     sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
 # Write
-    if (!is.null(designfile)){
-        if (!file.exists(designfile)){
-            if (verbose) message(
-                        '\t\tWrite design (update if required!): ', designfile)
-        }
+    if (file_exists(designfile)){
+       if (verbose) message('\t\tWrite design (update if required!): ',
+                            designfile)
         fwrite(dt, designfile, sep = '\t', row.names = FALSE)
     }
 # Return
     object
 }
 
+# Deals properly with NULL values
+# file.exists does not!
+file_exists <- function(file){
+    if (is.null(file))      return(FALSE)
+    if (file.exists(file))  return(TRUE)
+                            return(FALSE)
+}
 
 create_subgroup_values <- function(object, subgroup_var, verbose){
 
@@ -507,10 +511,11 @@ default_designfile <- function(file, platform = NULL, quantity = NULL){
 #' # RNACOUNTS
 #'@noRd
 get_default_designfile <- function(object){
-    default_designfile(
-        file     = metadata(object)$file,
-        platform = metadata(object)$platform,
-        quantity = metadata(object)$quantity)
+    file     <- metadata(object)$file
+    platform <- metadata(object)$platform
+    quantity <- metadata(object)$quantity
+
+    default_designfile(file, platform, quantity)
 }
 
 

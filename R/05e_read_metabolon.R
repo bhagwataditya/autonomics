@@ -52,6 +52,8 @@
 #' @param impute_consistent_nas TRUE or FALSE (default)
 #' @param add_kegg_pathways     TRUE or FALSE (default)
 #' @param add_smiles            TRUE or FALSE (default)
+#' @param verbose               TRUE (default) or FALSE
+#' @param plot                  TRUE (default) or FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # GLUTAMINASE

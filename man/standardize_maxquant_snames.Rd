@@ -62,6 +62,6 @@ Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 
 # SummarizedExperiment
    file <- download_data('stemcells.proteinGroups.txt')
-   x <- read_proteingroups(file, demultiplex= FALSE)
-   standardize_maxquant_snames(x)
+   # x <- .read_proteingroups(file)
+   # standardize_maxquant_snames(x)
 }
