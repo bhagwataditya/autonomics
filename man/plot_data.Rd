@@ -4,18 +4,18 @@
 \alias{plot_data}
 \title{Plot data}
 \usage{
-plot_data(data, geom = geom_point, color = subgroup, ..., fixed = list())
+plot_data(data, geom = geom_point, ..., fixed = list())
 }
 \arguments{
 \item{data}{data.frame}
 
 \item{geom}{geom_point, etc.}
 
-\item{color}{color variable}
-
 \item{...}{additional variable to aesthetic mappings}
 
 \item{fixed}{list with fixed aesthetic specifications}
+
+\item{color}{color variable}
 }
 \value{
 ggplot object
@@ -26,11 +26,13 @@ Plot data
 \examples{
 require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
-object <- read_metabolon(file)
+object <- read_metabolon(file, plot = FALSE)
 object \%<>\% add_pca(plot = FALSE)
 plot_data(sdata(object), x = pca1, y = pca2)
 plot_data(sdata(object), x = pca1, y = pca2, color = TIME_POINT)
 plot_data(sdata(object), x = pca1, y = pca2, color = TIME_POINT,
+            fixed = list(shape=15, size = 3))
+plot_data(sdata(object), x = pca1, y = pca2, shape = TIME_POINT,
             fixed = list(shape=15, size = 3))
 }
 \author{

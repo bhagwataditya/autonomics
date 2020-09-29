@@ -389,20 +389,23 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% add_pca(plot = FALSE)
 #' plot_data(sdata(object), x = pca1, y = pca2)
 #' plot_data(sdata(object), x = pca1, y = pca2, color = TIME_POINT)
 #' plot_data(sdata(object), x = pca1, y = pca2, color = TIME_POINT,
 #'             fixed = list(shape=15, size = 3))
+#' plot_data(sdata(object), x = pca1, y = pca2, shape = TIME_POINT,
+#'             fixed = list(shape=15, size = 3))
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
-    data, geom = geom_point, color = subgroup, ..., fixed = list()
+    data, geom = geom_point, ..., fixed = list()
 ){
-    color <- enquo(color)
-    p <- ggplot(
-            data = data, mapping = aes(color = !!color, ...))
+    dots <- enquos(...)
+    fixed %<>% extract(setdiff(names(fixed), names(dots)))
+    # https://stackoverflow.com/a/55816211
+    p <- ggplot(data = data, mapping = eval(expr(aes(!!!dots))))
     p <- p + do.call(geom, fixed)
     p <- p + theme_bw()
     p
@@ -468,7 +471,7 @@ plot_sample_scores <- function(object, method, xdim = 1, ydim = 2,
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, plot = FALSE)
 #' add_pca(object)  # Principal Component Analysis
 #' add_pls(object)  # Partial Least Squares
 #' add_lda(object)  # Linear Discriminant Analysis
@@ -479,13 +482,14 @@ plot_sample_scores <- function(object, method, xdim = 1, ydim = 2,
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 add_pca <- function(
-    object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, color = subgroup, ...,
-    fixed = list(shape=15, size=3), verbose = TRUE
+    object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, color = subgroup,
+    shape = replicate, ..., fixed = list(shape=15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Principal Component Analysis')
     object %<>% .add_pca(ndim = max(ndim, xdim, ydim), verbose = verbose)
     if (plot) print(plot_sample_scores(
-                object, 'pca', xdim = xdim, ydim = ydim, ..., fixed = fixed))
+            object, 'pca', xdim = xdim, ydim = ydim, color = !!ensym(color),
+            ..., fixed = fixed))
     object
 }
 
@@ -493,13 +497,14 @@ add_pca <- function(
 #' @rdname add_pca
 #' @export
 add_pls <- function(
-    object, ndim=2, plot=TRUE, xdim = 1, ydim = 2, color = subgroup, ...,
-    fixed = list(shape=15, size=3), verbose = TRUE
+    object, ndim=2, plot=TRUE, xdim = 1, ydim = 2, color = subgroup,
+    ..., fixed = list(shape = 15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Partial Least Squares Analysis')
     object %<>% .add_pls(ndim = max(ndim, xdim, ydim))
     if (plot) print(plot_sample_scores(
-                object, 'pls', xdim = xdim, ydim = ydim, ..., fixed = fixed))
+            object, 'pls', xdim = xdim, ydim = ydim, color = !!ensym(color),
+            ..., fixed = fixed))
     object
 }
 
@@ -507,13 +512,14 @@ add_pls <- function(
 #' @rdname add_pca
 #' @export
 add_lda <- function(
-    object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, ...,
-    fixed = list(shape=15, size=3), verbose = TRUE
+    object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, color = subgroup,
+    ..., fixed = list(shape = 15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Linear Discriminant Analysis')
     object %<>% .add_lda(ndim = max(ndim, xdim, ydim), verbose = verbose)
     if (plot) print(plot_sample_scores(
-                object, 'lda', xdim = xdim, ydim = ydim, ..., fixed = fixed))
+            object, 'lda', xdim = xdim, ydim = ydim, color = !!ensym(color),
+            ..., fixed = fixed))
     object
 }
 
@@ -521,13 +527,14 @@ add_lda <- function(
 #' @rdname add_pca
 #' @export
 add_sma <- function(
-    object, ndim=2, plot=TRUE, xdim=1, ydim=2, ...,
-    fixed = list(shape=15, size=3), verbose = TRUE
+    object, ndim=2, plot=TRUE, xdim=1, ydim=2, color = subgroup,
+    ..., fixed = list(shape = 15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Spectral Map Analysis')
     object %<>% .add_sma(ndim = max(ndim, xdim, ydim), verbose = verbose)
     if (plot) print(plot_sample_scores(
-                object, 'sma', xdim = xdim, ydim = ydim, ..., fixed = fixed))
+            object, 'sma', xdim = xdim, ydim = ydim, color = !!ensym(color),
+            ..., fixed = fixed))
     object
 }
 

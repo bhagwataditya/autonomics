@@ -14,6 +14,7 @@ add_pca(
   xdim = 1,
   ydim = 2,
   color = subgroup,
+  shape = replicate,
   ...,
   fixed = list(shape = 15, size = 3),
   verbose = TRUE
@@ -37,6 +38,7 @@ add_lda(
   plot = TRUE,
   xdim = 1,
   ydim = 2,
+  color = subgroup,
   ...,
   fixed = list(shape = 15, size = 3),
   verbose = TRUE
@@ -48,6 +50,7 @@ add_sma(
   plot = TRUE,
   xdim = 1,
   ydim = 2,
+  color = subgroup,
   ...,
   fixed = list(shape = 15, size = 3),
   verbose = TRUE
@@ -81,7 +84,7 @@ Add sample scores, feature loadings, and dimension variances to object.
 }
 \examples{
 file <- download_data('glutaminase.metabolon.xlsx')
-object <- read_metabolon(file)
+object <- read_metabolon(file, plot = FALSE)
 add_pca(object)  # Principal Component Analysis
 add_pls(object)  # Partial Least Squares
 add_lda(object)  # Linear Discriminant Analysis
