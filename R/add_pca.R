@@ -399,12 +399,13 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
-    data, geom = geom_point, ..., fixed = list()
+    data, geom = geom_point, color = subgroup, ..., fixed = list()
 ){
-    dots <- enquos(...)
+    color <- enquo(color)
+    dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
     # https://stackoverflow.com/a/55816211
-    p <- ggplot(data = data, mapping = eval(expr(aes(!!!dots))))
+    p <- ggplot(data = data, mapping = eval(expr(aes(color = !!color, !!!dots))))
     p <- p + do.call(geom, fixed)
     p <- p + theme_bw()
     p

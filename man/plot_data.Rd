@@ -4,7 +4,7 @@
 \alias{plot_data}
 \title{Plot data}
 \usage{
-plot_data(data, geom = geom_point, ..., fixed = list())
+plot_data(data, geom = geom_point, color = subgroup, ..., fixed = list())
 }
 \arguments{
 \item{data}{data.frame}
