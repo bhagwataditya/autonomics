@@ -6,16 +6,16 @@
 \usage{
 plot_detects_per_subgroup(
   object,
-  svar = "subgroup",
-  color_values = default_color_values(object, svar)
+  group = subgroup,
+  color_values = default_color_values(object, !!ensym(group))
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{svar}{svar}
-
 \item{color_values}{character vector (names = svalues, values = color names)}
+
+\item{svar}{svar}
 }
 \value{
 ggplot object

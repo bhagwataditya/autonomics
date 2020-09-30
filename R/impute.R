@@ -317,21 +317,23 @@ collapse_words <- function(x, collapsor = 'and'){
 #'     plot_detects_per_subgroup(object)
 #' @export
 plot_detects_per_subgroup <- function(
-    object, svar = 'subgroup', color_values = default_color_values(object, svar)
+    object, group = subgroup,
+    color_values = default_color_values(object, !!ensym(group))
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(c(svar), svars(object))
-    assert_is_subset(slevels(object, svar), names(color_values))
+    group_var <- as_string(ensym(group))
+    assert_is_subset(group_var, svars(object))
+    assert_is_subset(slevels(object, group_var), names(color_values))
     variable <- subgroup <- value <- . <- NULL
 # Prepare datatable
-    split_objects  <- split_by_svar(object, svar)
+    split_objects  <- split_by_svar(object, group_var)
     imps     <- vapply(split_objects, count_imputes,    numeric(1))
     nons     <- vapply(split_objects, count_nondetects, numeric(1))
     partials <- vapply(split_objects, count_pardetects, numeric(1)) - nons
     fulls    <- nrow(object) - partials - imps - nons
     plot_dt  <- data.table(subgroup = factor(names(split_objects),
-                                            slevels(object, svar)))
+                                            slevels(object, group_var)))
     if (any(fulls   !=0))            plot_dt %<>% extract(, fulls   := fulls)
     if (any(partials!=0))            plot_dt %<>% extract(, partials:= partials)
     if (any(nons!=0) | any(imps!=0)) plot_dt %<>% extract(, nons := nons + imps)

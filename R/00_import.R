@@ -41,7 +41,8 @@
 #' @importFrom methods       as
 #' @importFrom parallel      detectCores
 #' @importFrom readxl        read_excel   excel_sheets
-#' @importFrom rlang         enquo   eval_tidy   enexpr   expr_text   quo_name
+#' @importFrom rlang         as_string   enquo   eval_tidy   enexpr
+#' @importFrom rlang         expr_text   quo_name
 #' @importFrom RCurl         url.exists
 #' @importFrom Rsubread      featureCounts
 #' @importFrom R.utils       gunzip

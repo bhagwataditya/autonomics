@@ -21,16 +21,17 @@ default_color_var <- function(object){
 
 
 #' Default color values
-#' @param object     SummarizedExperiment
-#' @param color_var  string: svar mapped to color
-#' @param show       logical
+#' @param object   SummarizedExperiment
+#' @param color    symbol: svar mapped to color
+#' @param show     TRUE or FALSE (default)
+#' @param verbose  TRUE or FALSE (default)
 #' @return default color values vector
 #' @examples
 #' # STEMCELL RATIOS
 #'     file <- download_data('stemcells.proteinGroups.txt')
-#'     invert <- c('E_EM','BM_E', 'BM_EM')
+#'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
 #'     object <- read_proteingroups(
-#'                  file, invert_subgroups = invert_subgroups, plot = FALSE)
+#'                 file, invert_subgroups = invert_subgroups, plot = FALSE)
 #'     default_color_values(object, show = TRUE)
 #'
 #' # STEMCELL INTENSITIES
@@ -45,11 +46,11 @@ default_color_var <- function(object){
 #'     default_color_values(object, show = TRUE)
 #' @noRd
 default_color_values <- function(
-    object, color_var = default_color_var(object), show=FALSE, verbose=FALSE
+    object, color = subgroup, show = FALSE, verbose = FALSE
 ){
-
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
+    color_var <- as_string(ensym(color))
     assert_is_subset(color_var, svars(object))
 
 # Extract
