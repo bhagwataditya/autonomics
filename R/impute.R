@@ -246,6 +246,7 @@ impute_consistent_nas <- function(
     imputed_object <- split_by_svar(object, svar) %>%
                         lapply(impute_common_nas, imputefun=imputefun) %>%
                         do.call(SummarizedExperiment::cbind, .)
+    imputed_object %<>% extract(, snames(object))
 
     # Message
     if (verbose) cmessage(
