@@ -1,6 +1,6 @@
 #=============================================================================
 #
-#                    default_color_values
+#                    default_colorscale
 #
 #==============================================================================
 
@@ -16,20 +16,20 @@
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
 #'     object <- read_proteingroups(
 #'                 file, invert_subgroups = invert_subgroups, plot = FALSE)
-#'     default_color_values(object, show = TRUE)
+#'     default_colorscale(object, show = TRUE)
 #'
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('stemcells.proteinGroups.txt')
 #'    object <- read_proteingroups(
 #'                 file, quantity = 'Intensity labeled', plot = FALSE)
-#'    default_color_values(object, show = TRUE)
+#'    default_colorscale(object, show = TRUE)
 #'
 #' # GLUTAMINASE
 #'    file <- download_data('glutaminase.metabolon.xlsx')
 #'    object <- read_metabolon(file, plot = FALSE)
-#'    default_color_values(object, show = TRUE)
+#'    default_colorscale(object, show = TRUE)
 #' @noRd
-default_color_values <- function(
+default_colorscale <- function(
     object, color = subgroup, show = FALSE, verbose = FALSE
 ){
 # Assert
@@ -43,23 +43,24 @@ default_color_values <- function(
     } else {                      c('.',' ', '_') }
     sep <- guess_sep(object, color_var,
                 possible_separators = possible_separators, verbose=FALSE)
-    make_colors(color_var_levels, sep, show, verbose)
+    make_colorscale(color_var_levels, sep, show, verbose)
 }
 
 
-make_colors <- function(
+make_colorscale <- function(
     color_var_levels, sep = guess_sep(color_var_levels), show=FALSE,
     verbose = FALSE
 ){
     if (is.null(color_var_levels)){
-        return(make_gg_colors('default'))
+        return(make_gg_colorscale('default', show = show, verbose = verbose))
 
     } else if (is.null(sep)){
-        return(make_gg_colors(color_var_levels, show = show, verbose = verbose))
+        return(make_gg_colorscale(
+                color_var_levels, show = show, verbose = verbose))
 
     } else {
         if (verbose) cmessage('\t\tMake composite colors')
-        return(make_composite_colors(
+        return(make_composite_colorscale(
                 color_var_levels, sep = sep, show = show, verbose = verbose))
     }
 }
@@ -74,7 +75,7 @@ make_colors <- function(
 #' @author John Colby
 #' @references https://stackoverflow.com/questions/8197559
 #' @noRd
-make_gg_colors <- function(factor_levels, show, verbose = TRUE) {
+make_gg_colorscale <- function(factor_levels, show, verbose = TRUE) {
     n <- length(factor_levels)
     hues <- seq(15, 375, length = n + 1)
     color_levels <- hcl(h = hues, l = 65, c = 100)[seq_len(n)] %>%
@@ -96,9 +97,9 @@ make_gg_colors <- function(factor_levels, show, verbose = TRUE) {
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' svalues <- subgroup_levels(object)
-#' make_composite_colors(svalues, show = TRUE)
+#' make_composite_colorscale(svalues, show = TRUE)
 #' @noRd
-make_composite_colors <- function(
+make_composite_colorscale <- function(
     svalues, sep  = guess_sep(svalues), show = FALSE, verbose = TRUE
 ){
     # Assert
@@ -143,12 +144,12 @@ make_composite_colors <- function(
 #==============================================================================
 
 #' Plot data
-#' @param data          data.frame'
-#' @param geom          geom_point, etc.
-#' @param color         variable mapped to color (symbol)
-#' @param color_values  vector(names = svarlevels, values = colordefs)
-#' @param ...           mapped aesthetics
-#' @param fixed         fixed  aesthetics (list)
+#' @param data        data.frame'
+#' @param geom        geom_point, etc.
+#' @param color       variable mapped to color (symbol)
+#' @param colorscale  vector(names = svarlevels, values = colordefs)
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed  aesthetics (list)
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -157,25 +158,37 @@ make_composite_colors <- function(
 #' object %<>% add_pca(plot = FALSE)
 #' data <- sdata(object)
 #' plot_data(data, x = pca1, y = pca2)
-#' plot_data(data, x = pca1, y = pca2, fixed = list(size=3))
-#' plot_data(data, x = pca1, y = pca2, color = TIME_POINT, fixed=list(size=3))
+#' fixed <- list(shape = 15, size = 3)
+#' plot_data(data, x = pca1, y = pca2, fixed = fixed)
+#' plot_data(data, x = pca1, y = pca2, color = TIME_POINT, fixed = fixed)
+#' plot_data(data, x = pca1, y = pca2, color = NULL, fixed = fixed)
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
-    data, geom = geom_point, color = subgroup,
-    color_values = make_colors(eval_tidy(color, data)), ..., fixed = list()
+    data,
+    geom = geom_point,
+    color      = subgroup,
+    fill       = !!enquo(color),
+    colorscale = make_colorscale(eval_tidy(enquo(color), data)),
+    fillscale  = make_colorscale(eval_tidy(enquo(fill), data)),
+    ...,
+    fixed = list()
 ){
     color <- enquo(color)
+    fill  <- enquo(fill)
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
-    # https://stackoverflow.com/a/55816211
-    p <- ggplot(data = data, mapping = eval(expr(aes(color=!!color, !!!dots))))
+
+    p <- ggplot(data    = data,  # https://stackoverflow.com/a/55816211
+                mapping = eval(expr(aes(color=!!color, fill=!!fill, !!!dots))))
     p <- p + do.call(geom, fixed)
     p <- p + theme_bw()
-    if (!is.null(color_values)){
-        p <- p + scale_color_manual(values = color_values) }
+    if (!rlang::quo_is_null(color)) p <- p + scale_color_manual(values = colorscale)
+    if (!rlang::quo_is_null(fill )) p <- p + scale_fill_manual( values = fillscale)
+
     p
 }
+
 
 #=============================================================================
 #
@@ -190,7 +203,7 @@ plot_data <- function(
 #' @param xdim    number (default 1): x axis dimension
 #' @param ydim    number (default 2): y axis dimension
 #' @param color   svar mapped to color (symbol)
-#' @param color_values vector(names = svarlevels, values = colordefs)
+#' @param colorscale vector(names = svarlevels, values = colordefs)
 #' @param ...     additional svars mapped to aesthetics
 #' @param fixed   fixed plot aesthetics
 #' @return ggplot object
@@ -202,23 +215,195 @@ plot_data <- function(
 #' plot_sample_scores(object, 'pca')
 #' plot_sample_scores(object, 'pca', color = TIME_POINT)
 #' plot_sample_scores(object, 'pca', color = TIME_POINT, xdim=3, ydim=4)
+#' plot_sample_scores(object, 'pca', color = NULL)
 #' @export
 plot_sample_scores <- function(
     object, method, xdim = 1, ydim = 2, color = subgroup,
-    color_values = default_color_values(object, !!ensym(color)), ...,
+    colorscale = default_colorscale(object, !!enquo(color)), ...,
     fixed = list(shape=15, size=3)
 ){
+    color <- enquo(color)
     x <- paste0(method, xdim)
     y <- paste0(method, ydim)
     xlab  <- paste0(x, ' : ', metadata(object)[[method]][[x]], '% ')
     ylab  <- paste0(y, ' : ', metadata(object)[[method]][[y]], '% ')
 
     p <- plot_data( sdata(object), x = !!sym(x), y = !!sym(y),
-                    color = !!ensym(color), color_values = color_values, ...,
+                    color = !!(color), colorscale = colorscale, ...,
                     fixed = fixed)
     p <- p + ggplot2::xlab(xlab)
     p <- p + ggplot2::ylab(ylab)
     p
+}
+
+#=============================================================================
+#
+#                 plot_sample_densities()
+#                 plot_sample_violins()
+#                 plot_sample_boxplots()
+#
+#=============================================================================
+
+#' Plot sample densities
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param colorscale  named vector (names = varlevels, values = colors)
+#' @param fillscale   named vector (names = varlevels, values = colors)
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed aesthetics
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_sample_densities(object)
+#' plot_sample_densities(object, color = NULL)
+#' @export
+plot_sample_densities <- function(
+    object,
+    fill       = subgroup,
+    color      = NULL,
+    colorscale = default_colorscale(object, color = !!enquo(color)), # default_colorscale on NULL ?
+    fillscale  = default_colorscale(object, color = !!enquo(fill)),
+    ...,
+    fixed = list(alpha = 0.5, na.rm = TRUE)
+){
+    dt <- sumexp_to_long_dt(object, svars = svars(object))
+    fill <- enquo(fill)
+    color <- enquo(color)
+    plot_data(  dt,
+                geom       = geom_density,
+                x          = value,
+                fill       = !!fill,
+                color      = !!color,
+                colorscale = colorscale,
+                fillscale  = fillscale,
+                ...,
+                fixed      = fixed)
+}
+
+
+#' Plot sample violins
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param colorscale  named vector (names = varlevels, values = colors)
+#' @param fillscale   named vector (names = varlevels, values = colors)
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed aesthetics
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_sample_violins(object)
+#' @export
+plot_sample_violins <- function(
+    object,
+    fill       = subgroup,
+    color      = NULL,
+    colorscale = default_colorscale(object, color = !!enquo(color)), # default_colorscale on NULL ?
+    fillscale  = default_colorscale(object, color = !!enquo(fill)),
+    ...,
+    fixed = list(na.rm=TRUE)
+){
+    dt <- sumexp_to_long_dt(object, svars = svars(object))
+    fill <- enquo(fill)
+    color <- enquo(color)
+    plot_data(  dt,
+                geom       = geom_violin,
+                x          = sample_id,
+                y          = value,
+                fill       = !!fill,
+                color      = !!color,
+                colorscale = colorscale,
+                fillscale  = fillscale,
+                ...,
+                fixed      = fixed)
+}
+
+
+
+#' Plot sample boxplots
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param colorscale  named vector (names = varlevels, values = colors)
+#' @param fillscale   named vector (names = varlevels, values = colors)
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed aesthetics
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_sample_boxplots(object)
+#' @export
+plot_sample_boxplots <- function(
+    object,
+    fill       = subgroup,
+    color      = NULL,
+    colorscale = default_colorscale(object, color = !!enquo(color)), # default_colorscale on NULL ?
+    fillscale  = default_colorscale(object, color = !!enquo(fill)),
+    ...,
+    fixed = list(na.rm=TRUE)
+){
+    dt <- sumexp_to_long_dt(object, svars = svars(object))
+    fill <- enquo(fill)
+    color <- enquo(color)
+    plot_data(  dt,
+                geom       = geom_boxplot,
+                x          = sample_id,
+                y          = value,
+                fill       = !!fill,
+                color      = !!color,
+                colorscale = colorscale,
+                fillscale  = fillscale,
+                ...,
+                fixed      = fixed)
+}
+
+
+#=============================================================================
+#
+#                 plot_feature_boxplots()
+#
+#=============================================================================
+
+#' Plot feature boxplots
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param colorscale  named vector (names = varlevels, values = colors)
+#' @param fillscale   named vector (names = varlevels, values = colors)
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed aesthetics
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_sample_boxplots(object)
+#' @export
+plot_sample_boxplots <- function(
+    object,
+    fill       = subgroup,
+    color      = NULL,
+    colorscale = default_colorscale(object, color = !!enquo(color)), # default_colorscale on NULL ?
+    fillscale  = default_colorscale(object, color = !!enquo(fill)),
+    ...,
+    fixed = list(na.rm=TRUE)
+){
+    dt <- sumexp_to_long_dt(object, svars = svars(object))
+    fill <- enquo(fill)
+    color <- enquo(color)
+    plot_data(  dt,
+                geom       = geom_boxplot,
+                x          = sample_id,
+                y          = value,
+                fill       = !!fill,
+                color      = !!color,
+                colorscale = colorscale,
+                fillscale  = fillscale,
+                ...,
+                fixed      = fixed)
 }
 
 
@@ -234,7 +419,7 @@ plot_sample_scores <- function(
 #'
 #' @param object SummarizedExperiment
 #' @param group  svar (symbol)
-#' @param color_values vector(names = svarlevels, values = colordefs)
+#' @param colorscale vector(names = svarlevels, values = colordefs)
 #' @return ggplot object
 #' @examples
 #' # STEMCELLS
@@ -246,13 +431,13 @@ plot_sample_scores <- function(
 #' @export
 plot_detects_per_subgroup <- function(
     object, group = subgroup,
-    color_values = default_color_values(object, !!ensym(group))
+    colorscale = default_colorscale(object, !!ensym(group))
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     group_var <- as_string(ensym(group))
     assert_is_subset(group_var, svars(object))
-    assert_is_subset(slevels(object, group_var), names(color_values))
+    assert_is_subset(slevels(object, group_var), names(colorscale))
     variable <- subgroup <- value <- . <- NULL
 # Prepare datatable
     split_objects  <- split_by_svar(object, group_var)
@@ -279,7 +464,7 @@ plot_detects_per_subgroup <- function(
                         group = variable)) +
     ggtitle(title) + theme_bw() +
     geom_col(color = 'black', position = position_stack()) +
-    scale_fill_manual(values = color_values) +
+    scale_fill_manual(values = colorscale) +
     geom_text(aes(label=value, x = subgroup),
                     position = position_stack(vjust=0.5),
                     size = rel(3)) +

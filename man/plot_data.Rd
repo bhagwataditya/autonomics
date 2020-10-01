@@ -8,7 +8,9 @@ plot_data(
   data,
   geom = geom_point,
   color = subgroup,
-  color_values = make_colors(eval_tidy(color, data)),
+  fill = !!enquo(color),
+  colorscale = make_colorscale(eval_tidy(enquo(color), data)),
+  fillscale = make_colorscale(eval_tidy(enquo(fill), data)),
   ...,
   fixed = list()
 )
@@ -20,7 +22,7 @@ plot_data(
 
 \item{color}{variable mapped to color (symbol)}
 
-\item{color_values}{vector(names = svarlevels, values = colordefs)}
+\item{colorscale}{vector(names = svarlevels, values = colordefs)}
 
 \item{...}{mapped aesthetics}
 
@@ -39,8 +41,10 @@ object <- read_metabolon(file, plot = FALSE)
 object \%<>\% add_pca(plot = FALSE)
 data <- sdata(object)
 plot_data(data, x = pca1, y = pca2)
-plot_data(data, x = pca1, y = pca2, fixed = list(size=3))
-plot_data(data, x = pca1, y = pca2, color = TIME_POINT, fixed=list(size=3))
+fixed <- list(shape = 15, size = 3)
+plot_data(data, x = pca1, y = pca2, fixed = fixed)
+plot_data(data, x = pca1, y = pca2, color = TIME_POINT, fixed = fixed)
+plot_data(data, x = pca1, y = pca2, color = NULL, fixed = fixed)
 }
 \author{
 Aditya Bhagwat, Johannes Graumann

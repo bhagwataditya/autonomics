@@ -10,7 +10,7 @@ plot_sample_scores(
   xdim = 1,
   ydim = 2,
   color = subgroup,
-  color_values = default_color_values(object, !!ensym(color)),
+  colorscale = default_colorscale(object, !!ensym(color)),
   ...,
   fixed = list(shape = 15, size = 3)
 )
@@ -26,7 +26,7 @@ plot_sample_scores(
 
 \item{color}{svar mapped to color (symbol)}
 
-\item{color_values}{vector(names = svarlevels, values = colordefs)}
+\item{colorscale}{vector(names = svarlevels, values = colordefs)}
 
 \item{...}{additional svars mapped to aesthetics}
 

@@ -7,7 +7,7 @@
 plot_detects_per_subgroup(
   object,
   group = subgroup,
-  color_values = default_color_values(object, !!ensym(group))
+  colorscale = default_colorscale(object, !!ensym(group))
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ plot_detects_per_subgroup(
 
 \item{group}{svar (symbol)}
 
-\item{color_values}{vector(names = svarlevels, values = colordefs)}
+\item{colorscale}{vector(names = svarlevels, values = colordefs)}
 }
 \value{
 ggplot object
