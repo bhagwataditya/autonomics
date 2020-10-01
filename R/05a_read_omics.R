@@ -413,7 +413,7 @@ add_design <- function(
     object %<>% merge_sdata(dt)
     sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
 # Write
-    if (file_exists(designfile)){
+    if (!file_exists(designfile)){
        if (verbose) message('\t\tWrite design (update if required!): ',
                             designfile)
         fwrite(dt, designfile, sep = '\t', row.names = FALSE)
