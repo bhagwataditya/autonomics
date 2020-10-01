@@ -382,7 +382,7 @@ plot_sample_boxplots <- function(
 #' object <- read_metabolon(file, plot = FALSE)
 #' plot_sample_boxplots(object)
 #' @export
-plot_sample_boxplots <- function(
+plot_feature_boxplots <- function(
     object,
     fill       = subgroup,
     color      = NULL,
