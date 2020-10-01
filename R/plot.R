@@ -368,7 +368,40 @@ plot_sample_boxplots <- function(
 #
 #=============================================================================
 
-#' Plot feature boxplots
+plot_features <- function(
+    object,
+    geom,
+    x          = subgroup,
+    fill       = subgroup,
+    color      = subgroup,
+    colorscale = default_colorscale(object, color = !!enquo(color)), # default_colorscale on NULL ?
+    fillscale  = default_colorscale(object, color = !!enquo(fill)),
+    ...,
+    fixed = list(na.rm=TRUE),
+    theme = list(axis.text.x  = element_text(angle=90, vjust=0.5),
+                 axis.title.x = element_blank())
+){
+    fill  <- enquo(fill)
+    color <- enquo(color)
+    x     <- enquo(x)
+    dt <- sumexp_to_long_dt(object, svars = svars(object), fvars = fvars(object))
+    p <- plot_data(  dt,
+                geom       = geom,
+                x          = !!x,
+                y          = value,
+                fill       = !!fill,
+                color      = !!color,
+                colorscale = colorscale,
+                fillscale  = fillscale,
+                ...,
+                fixed      = fixed)
+    p <- p + facet_wrap(~ feature_name, scales = 'free_y')
+    p <- p + do.call(ggplot2::theme, theme)
+    p
+}
+
+
+#' Plot features
 #' @param object      SummarizedExperiment
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
@@ -380,30 +413,17 @@ plot_sample_boxplots <- function(
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
+#' object %<>% add_pca(plot = FALSE)
+#' object %<>% extract(order(-abs(fdata(.)$pca1)[1:10]), )
 #' plot_feature_boxplots(object)
+#' plot_feature_profiles(object)
 #' @export
-plot_feature_boxplots <- function(
-    object,
-    fill       = subgroup,
-    color      = NULL,
-    colorscale = default_colorscale(object, color = !!enquo(color)), # default_colorscale on NULL ?
-    fillscale  = default_colorscale(object, color = !!enquo(fill)),
-    ...,
-    fixed = list(na.rm=TRUE)
-){
-    dt <- sumexp_to_long_dt(object, svars = svars(object), fvars = fvars(object))
-    fill <- enquo(fill)
-    color <- enquo(color)
-    plot_data(  dt,
-                geom       = geom_boxplot,
-                x          = sample_id,
-                y          = value,
-                fill       = !!fill,
-                color      = !!color,
-                colorscale = colorscale,
-                fillscale  = fillscale,
-                ...,
-                fixed      = fixed)
+plot_feature_boxplots <- function(...){
+    plot_features(geom = geom_boxplot, color = NULL, ...)
+}
+
+plot_feature_profiles <- function(...){
+    plot_features(geom = geom_point, ...)
 }
 
 

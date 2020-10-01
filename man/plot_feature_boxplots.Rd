@@ -2,19 +2,13 @@
 % Please edit documentation in R/plot.R
 \name{plot_feature_boxplots}
 \alias{plot_feature_boxplots}
-\title{Plot feature boxplots}
+\title{Plot features}
 \usage{
-plot_feature_boxplots(
-  object,
-  fill = subgroup,
-  color = NULL,
-  colorscale = default_colorscale(object, color = !!enquo(color)),
-  fillscale = default_colorscale(object, color = !!enquo(fill)),
-  ...,
-  fixed = list(na.rm = TRUE)
-)
+plot_feature_boxplots(...)
 }
 \arguments{
+\item{...}{mapped aesthetics}
+
 \item{object}{SummarizedExperiment}
 
 \item{fill}{svar mapped to fill}
@@ -25,16 +19,17 @@ plot_feature_boxplots(
 
 \item{fillscale}{named vector (names = varlevels, values = colors)}
 
-\item{...}{mapped aesthetics}
-
 \item{fixed}{fixed aesthetics}
 }
 \description{
-Plot feature boxplots
+Plot features
 }
 \examples{
 require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
+object \%<>\% add_pca(plot = FALSE)
+object \%<>\% extract(order(-abs(fdata(.)$pca1)[1:10]), )
 plot_feature_boxplots(object)
+plot_feature_profiles(object)
 }

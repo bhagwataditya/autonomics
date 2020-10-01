@@ -41,6 +41,7 @@ sumexp_to_wide_dt <- function(object, fid = 'feature_id', fvars = character(0)){
 #' # Glutaminase
 #'    file <- download_data('glutaminase.metabolon.xlsx')
 #'    object <- read_metabolon(file)
+#'    object %<>% add_pca(plot = FALSE)
 #'    sumexp_to_wide_dt(object)
 #'    sumexp_to_long_dt(object)
 #'    sumexp_to_subrep_dt(object)
@@ -59,6 +60,12 @@ sumexp_to_long_dt <- function(
     assert_is_subset(sid,   importomics::svars(object))
     assert_is_subset(fvars, importomics::fvars(object))
     assert_is_subset(svars, importomics::svars(object))
+    common <- intersect(svars, fvars)
+    if (length(common) > 0){
+        message('\t\tRemove clashing svars/fvars: ', paste0(common,collapse = ', '))
+        fvars %<>% setdiff(common) # Avoid name clashes
+        svars %<>% setdiff(common)
+    }
 
     # Extract & Return
     sdata1 <- sdata(object)[, c('sample_id', svars), drop = FALSE]
