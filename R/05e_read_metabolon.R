@@ -38,6 +38,9 @@
                 sdata_rows = svar_rows,     sdata_cols = sdata_cols,
                 transpose  = FALSE, verbose    = TRUE)
     metadata(object)$platform <- 'metabolon'
+# Update fdata                        Group   HMDB_ID -> HMDB_ID
+    fvars(object) %<>% stri_replace_first_regex('Group[ ]+', '')
+# Return
     object
 }
 

@@ -380,7 +380,7 @@ plot_sample_boxplots <- function(
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' plot_sample_boxplots(object)
+#' plot_feature_boxplots(object)
 #' @export
 plot_feature_boxplots <- function(
     object,
@@ -391,7 +391,7 @@ plot_feature_boxplots <- function(
     ...,
     fixed = list(na.rm=TRUE)
 ){
-    dt <- sumexp_to_long_dt(object, svars = svars(object))
+    dt <- sumexp_to_long_dt(object, svars = svars(object), fvars = fvars(object))
     fill <- enquo(fill)
     color <- enquo(color)
     plot_data(  dt,
