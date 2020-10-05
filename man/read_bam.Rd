@@ -6,26 +6,21 @@
 \usage{
 read_bam(
   bamdir,
-  ispaired = FALSE,
-  gtffile = NULL,
-  fvars = character(0),
+  paired,
+  genome,
   nthreads = detectCores(),
   filter_features_min_count = 10,
   verbose = TRUE,
-  plot = TRUE,
-  ...
+  plot = TRUE
 )
 }
 \arguments{
 \item{bamdir}{string: path to SAM or BAM file directory
 (one SAM or BAM file per sample)}
 
-\item{ispaired}{TRUE or FALSE (default): paired end reads?}
+\item{paired}{TRUE or FALSE (default): paired end reads?}
 
-\item{gtffile}{NULL (use Rsubread's default human/mouse annotations) or
-string (path to GTF file)}
-
-\item{fvars}{character vector: GTF variables to include in object.}
+\item{genome}{string: either "mm10", "hg38" etc. or a GTF file}
 
 \item{nthreads}{number of cores to be used by Rsubread::featureCounts()}
 
@@ -34,6 +29,8 @@ string (path to GTF file)}
 \item{verbose}{TRUE (default) / FALSE}
 
 \item{plot}{TRUE (default) / FALSE}
+
+\item{fvars}{character vector: GTF variables to include in object.}
 
 \item{...}{passed to Rsubread::featureCounts}
 }
@@ -44,8 +41,11 @@ SummarizedExperiment
 Read RNAseq BAM files into SummarizedExperiment
 }
 \examples{
+# in-built genome
 bamdir <- download_data("stemcells.bam.zip")
-# read_bam(bamdir, ispaired = TRUE)
+# object <- read_bam(bamdir, paired=TRUE, genome="hg19", plot=FALSE)
+# gtffile <- download_gtf("Homo sapiens")
+# object <- read_bam(bamdir, paired=TRUE, genome=gtffile, plot = FALSE)
 }
 \author{
 Aditya Bhagwat, Shahina Hayat

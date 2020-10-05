@@ -1,7 +1,10 @@
 #=========================================================
-# RNASEQ
+#
+#                    download_gtf
+#       (could be replaced by biomartr::getGTF)
+#
 #=========================================================
-#download_gtf
+
 release_to_build <- function(release, organism){
     if        (organism == 'Homo sapiens'){
         if (release >= 76)  'GRCh38'   else 'GRCh37'  }
@@ -13,10 +16,6 @@ release_to_build <- function(release, organism){
         if (release >= 80)  'Rnor_6.0' else 'Rnor_5.0'  }
 }
 
-#-----------------------------------------------------------
-# Following GTF functions are soft-deprecated.
-# Better to outsource this functionality to biomartr::getGTF
-#-----------------------------------------------------------
 
 #' Make link to GTF file
 #' @param organism 'Homo sapiens', 'Mus musculus', or 'Rattus norvegicus'
@@ -40,16 +39,13 @@ make_gtf_url <- function(organism, release){
 #'
 #' Download GTF file with feature annotations
 #' @param organism  'Homo sapiens', 'Mus musculus' or 'Rattus norvegicus'
-#' @param release    GTF release. By default release 95 selected
+#' @param release    GTF release (number)
 #' @param gtffile    string: path to local GTF file
+#' @return gtffile path
 #' @examples
-#' \dontrun{ # requires internet and does not always work:
-#'           # https://stackoverflow.com/questions/55532102
-#'    download_gtf(organism = 'Homo sapiens')
-#'    download_gtf(organism = 'Mus musculus')
-#'    download_gtf(organism = 'Rattus norvegicus')
-#' }
-#' @noRd
+#' organism <- 'Homo sapiens'
+#' # download_gtf(organism)
+#' @export
 download_gtf <- function(
     organism,
     release = 100,
@@ -79,43 +75,85 @@ download_gtf <- function(
     invisible(gtffile)
 }
 
+#==============================================================================
+#
+#                             read_bam
+#                                 add_genenames
+#
+#==============================================================================
 
-#' Read GTF file into data.table
+
+#' Add gene names
 #'
-#' Read GTF file into a data.table. Filter for particular values of variable.
+#' Add gene names to SummarizedExperiment
 #'
+#' @param object     SummarizedExperiment
 #' @param gtffile    string: path to gtffile
-#' @param var        string: variable on which to filter
-#' @param values     filter variable for these values. If NULL, not filtering.
-#' @param writefile  string: file to write gtf table to
-#' @examples
-#' \dontrun{ # requires internet connection
-#'    require(magrittr)
-#'    gtffile <- download_gtf(organism = 'Homo sapiens', release = 95)
-#'    gtfdt <- read_gtf(gtffile, var = 'gene_id', values = 'ENSG00000198947')
-#' }
+#' @param verbose    TRUE or FALSE
 #' @noRd
-read_gtf <- function(gtffile, var = 'gene_id', values = NULL, writefile = NULL){
-# Assert
-    assert_all_are_existing_files(gtffile)
-    assert_is_a_string(var)
-# Read
-    dt <- rtracklayer::import(gtffile) %>%
-        GenomicRanges::as.data.frame() %>%
-        data.table()
-# Filter
-    if (!is.null(values)){
-        dt %>% setkeyv(var)
-        dt %<>% extract(values)
+add_genenames <- function(object, gtffile, verbose = TRUE){
+
+    if (is.null(gtffile)) return(object)
+
+    if (verbose) message('\t\t\tRead ', gtffile)
+    gtfdt <- rtracklayer::import(gtffile) %>%
+            GenomicRanges::as.data.frame() %>%
+            data.table()
+
+    if (verbose) message('\t\t\tMap gene_id to gene_name')
+    x <- fdata(object)$gene_name
+    gtfdt %<>% extract(, .SD[1], by = 'gene_id')
+    fdata(object)$feature_name <-  gtfdt[x, gene_name, on = "gene_id"]
+
+    object
+}
+
+
+#' x <- fcounts$annotation$GeneID
+entrezg_to_symbol <- function(x, genome){
+
+    orgdb <- if (genome %in% c('mm10', 'mm9')){
+                org.Mm.eg.db::org.Mm.eg.db
+            } else if (genome %in% c('hg19', 'hg38')){
+                org.Hs.eg.db::org.Hs.eg.db
+            }
+    x %<>% as.character()
+    suppressMessages(y <- AnnotationDbi::mapIds(orgdb, x, 'SYMBOL', 'ENTREZID'))
+    y %<>% unname()
+    y
+}
+
+
+
+count_reads <- function(files, paired, nthreads, genome){
+
+    # Common args
+    args <- list(files = files, isPaired = paired, nthreads = nthreads)
+
+    # Inbuilt genome
+    if (genome %in% c('mm10', 'mm9', 'hg38', 'hg19')){
+        args %<>% c(list(annot.inbuilt = genome))
+        fcounts <- do.call(featureCounts, args)
+        fcounts$annotation$gene_name <-
+            entrezg_to_symbol(fcounts$annotation$GeneID, genome)
+
+    # User GTF
+    } else {
+        assert_all_are_existing_files(genome)
+        args %<>% c(list(annot.ext = genome, isGTFAnnotationFile = TRUE,
+                         GTF.attrType.extra  = 'gene_name'))
+        fcounts <- do.call(featureCounts, args)
     }
-# Write
-    if (!is.null(writefile)){
-        cmessage("\t\tWrite   %s", writefile)
-        dir.create(dirname(writefile), recursive = TRUE, showWarnings = FALSE)
-        fwrite(dt, writefile)
-    }
-# Return
-    dt
+
+    # Rename, Select, Return
+    names(fcounts$annotation) %<>% gsub('GeneID',   'feature_id',   .)
+    names(fcounts$annotation) %<>% gsub('gene_name', 'feature_name', .)
+    fcounts$annotation %<>% extract(,
+                intersect(names(.), c('feature_id','feature_name')),
+                drop = FALSE)
+    fcounts$annotation$feature_id %<>% as.character()
+    rownames(fcounts$annotation) <- fcounts$annotation$feature_id
+    fcounts
 }
 
 
@@ -123,9 +161,8 @@ read_gtf <- function(gtffile, var = 'gene_id', values = NULL, writefile = NULL){
 #'
 #' @param bamdir       string: path to SAM or BAM file directory
 #'                    (one SAM or BAM file per sample)
-#' @param ispaired     TRUE or FALSE (default): paired end reads?
-#' @param gtffile      NULL (use Rsubread's default human/mouse annotations) or
-#'                     string (path to GTF file)
+#' @param paired     TRUE or FALSE (default): paired end reads?
+#' @param genome   string: either "mm10", "hg38" etc. or a GTF file
 #' @param fvars        character vector: GTF variables to include in object.
 #' @param nthreads     number of cores to be used by Rsubread::featureCounts()
 #' @param filter_features_min_count  number
@@ -134,30 +171,25 @@ read_gtf <- function(gtffile, var = 'gene_id', values = NULL, writefile = NULL){
 #' @param ...          passed to Rsubread::featureCounts
 #' @return SummarizedExperiment
 #' @examples
+#' # in-built genome
 #' bamdir <- download_data("stemcells.bam.zip")
-#' # read_bam(bamdir, ispaired = TRUE)
+#' # object <- read_bam(bamdir, paired=TRUE, genome="hg38")
+#' # gtffile <- download_gtf("Homo sapiens")
+#' # object <- read_bam(bamdir, paired=TRUE, genome=gtffile)
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
-read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
-    fvars = character(0), nthreads = detectCores(),
-    filter_features_min_count = 10, verbose = TRUE, plot = TRUE, ...
+read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
+    filter_features_min_count = 10, verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(bamdir)
-    assert_is_a_bool(ispaired)
-    if (!is.null(gtffile))   assert_all_are_existing_files(gtffile)
+    assert_is_a_bool(paired)
+    assert_is_a_string(genome)
     assert_is_a_number(nthreads)
 # Count reads
-    files <- list.files(
-        bamdir, pattern = ".sam$|.bam$", full.names = TRUE, recursive = TRUE)
-    fcounts <-  featureCounts(
-                    files               =  files,
-                    annot.ext           =  gtffile,
-                    isGTFAnnotationFile = !is.null(gtffile),
-                    GTF.attrType.extra  =  if(length(fvars)==0) NULL else fvars,
-                    isPairedEnd         =  ispaired,
-                    nthreads            =  nthreads,
-                    ...)
+    files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
+                        recursive = TRUE)
+    fcounts <- count_reads(files, paired, nthreads=nthreads, genome=genome)
 # Forge SummarizedExperiment
     filenames   <- basename(file_path_sans_ext(files))
     subdirnames <- basename(dirname(files))
@@ -165,15 +197,13 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
                     } else if (has_no_duplicates(subdirnames)){  subdirnames
                     } else {           paste0(subdirnames, '_', filenames)}
     object <- SummarizedExperiment(assays = list(
-        counts = fcounts$counts %>% set_colnames(sample_names)))
+                counts = fcounts$counts %>% set_colnames(sample_names)))
     metadata(object)$platform <- 'rnaseq'
     metadata(object)$file <- bamdir
 # Add fdata
     message("\t\tAdd fdata")
-    rowData(object) <- fcounts$annotation[ , c('GeneID', fvars), drop = FALSE]
-    rownames(object) <- rowData(object)$GeneID
-    fvars(object) %<>% stri_replace_first_fixed('GeneID', 'feature_id')
-    fdata(object)$feature_id %<>% as.character()
+    fcounts$annotation$feature_id %<>% as.character()
+    rowData(object)  <- fcounts$annotation
 # Add design. Preprocess
     object$sample_id <- sample_names
     object %<>% add_design(verbose = verbose)
@@ -183,6 +213,13 @@ read_bam <- function(bamdir, ispaired = FALSE, gtffile = NULL,
 # Return
     object
 }
+
+
+#==============================================================================
+#
+#                     read_counts
+#
+#==============================================================================
 
 
 #' Read RNAseq counts
