@@ -220,7 +220,7 @@ plot_data <- function(
 plot_sample_scores <- function(
     object, method, xdim = 1, ydim = 2, color = subgroup,
     colorscale = default_colorscale(object, !!enquo(color)), ...,
-    fixed = list(shape=15, size=3)
+    fixed = list(shape=15, size=3), nfeatures = 1
 ){
     color <- enquo(color)
     x <- paste0(method, xdim)
@@ -228,13 +228,100 @@ plot_sample_scores <- function(
     xlab  <- paste0(x, ' : ', metadata(object)[[method]][[x]], '% ')
     ylab  <- paste0(y, ' : ', metadata(object)[[method]][[y]], '% ')
 
-    p <- plot_data( sdata(object), x = !!sym(x), y = !!sym(y),
-                    color = !!(color), colorscale = colorscale, ...,
-                    fixed = fixed)
-    p <- p + ggplot2::xlab(xlab)
-    p <- p + ggplot2::ylab(ylab)
+    p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
+    p %<>% add_loadings(object, method, xdim=xdim, ydim=ydim)
+    p %<>% add_scores(object, method, xdim=xdim, ydim=ydim, color=!!color, ...)
+    p %<>% add_colorscale(!!color, colorscale)
+
     p
 }
+
+add_colorscale <- function(p, color, colorscale){
+    if (!rlang::quo_is_null(enquo(color))){
+        p <- p + scale_color_manual(values = colorscale)
+    }
+    p
+}
+
+add_scores <- function(
+    p, object, method = 'pca', xdim = 1, ydim = 1, color = subgroup, ...,
+    fixed = list(shape=15, size=3)
+){
+    color <- enquo(color)
+    x <- paste0(method, xdim)
+    y <- paste0(method, ydim)
+    p + layer(  geom = 'point',
+                mapping = aes(x = !!sym(x), y = !!sym(y), color = !!color, ...),
+                stat    = "identity",
+                data    = sdata(object),
+                params  = fixed,
+                position= 'identity')
+
+}
+
+add_loadings <- function(p, object, method='pca', xdim=1, ydim=2, n=1){
+# Process args
+    loadingdt <- fdata(object)
+    x <- paste0(method, xdim)
+    y <- paste0(method, ydim)
+# Loadings
+    idx <- unique(c(headtail(order(loadingdt[[x]]), n),
+                    headtail(order(loadingdt[[y]]), n)))
+# Scale loadings to scoreplot
+    scoredt <- sdata(object)
+    maxscore <- min(abs(min(c(scoredt[[x]], scoredt[[y]]))),
+                    abs(max(c(scoredt[[x]], scoredt[[y]]))))
+    scorefactor <- maxscore/max(abs(c(loadingdt[[x]], loadingdt[[y]])))
+    loadingdt[[x]] %<>% multiply_by(scorefactor)
+    loadingdt[[y]] %<>% multiply_by(scorefactor)
+    loadingdt %<>% extract(idx, )
+# Plot
+    p + layer(  geom     = 'segment',
+                mapping  = aes(x=0, y=0, xend=!!sym(x), yend=!!sym(y)),
+                stat     = "identity",
+                data     = loadingdt,
+                params   = list(alpha = 0.1, size=1),#params   = list(alpha = 0.05, size=3),
+                position = "identity") +
+        layer(  geom     = "text",
+                mapping  = aes(x   = !!sym(x),
+                            y     = !!sym(y),
+                            label = substr(feature_name, 1, 20)),
+                stat     = "identity",
+                data     = loadingdt,
+                params   = list(alpha = 0.5),
+                position ='identity')
+}
+
+
+headtail <- function(x, n){
+    c(x[seq(1, n)], x[seq(length(x)+1-n, length(x))])
+}
+
+
+plot_feature_loadings <- function(
+    object, method = 'pca', xdim = 1, ydim = 2, n = 2
+){
+    xaxis <- paste0(method, xdim)
+    yaxis <- paste0(method, ydim)
+    xloadings <- fdata(object)[[xaxis]]
+    idx <- order(xloadings) %>% extract(c(seq(1,n), seq(length(.)+1-n,length(.))))
+    xvalues <- fdata(object)[[xaxis]][idx]
+    yvalues <- fdata(object)[[yaxis]][idx]
+    fnames <- fdata(object)$feature_name[idx]
+    plot(xvalues, yvalues)
+
+    ggplot() +
+    theme_minimal() +
+    geom_vline(aes(xintercept=0), linetype = 'dashed') +
+    geom_hline(aes(yintercept=0), linetype = 'dashed') +
+    geom_segment(aes(x=0, y=0, xend=xvalues, yend=yvalues), arrow = arrow(), color = 'red') +
+    annotate("text", x = xvalues, y = yvalues, label = substr(fnames, 1, 10), color = 'red') +
+    xlab('PC1') +
+    ylab('PC2')
+
+}
+
+
 
 #=============================================================================
 #
@@ -378,8 +465,9 @@ plot_features <- function(
     fillscale  = default_colorscale(object, color = !!enquo(fill)),
     ...,
     fixed = list(na.rm=TRUE),
-    theme = list(axis.text.x  = element_text(angle=90, vjust=0.5),
-                 axis.title.x = element_blank())
+    theme = list(axis.text.x  = element_blank(),#element_text(angle=90, vjust=0.5),
+                 axis.title.x = element_blank(),
+                 axis.ticks.x = element_blank())
 ){
     fill  <- enquo(fill)
     color <- enquo(color)
@@ -414,7 +502,7 @@ plot_features <- function(
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% add_pca(plot = FALSE)
-#' object %<>% extract(order(-abs(fdata(.)$pca1)[1:10]), )
+#' object %<>% extract(order(abs(fdata(.)$pca1, decreasing = TRUE)[1:9]), )
 #' plot_feature_boxplots(object)
 #' plot_feature_profiles(object)
 #' @export
