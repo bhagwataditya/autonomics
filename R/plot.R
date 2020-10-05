@@ -147,7 +147,9 @@ make_composite_colorscale <- function(
 #' @param data        data.frame'
 #' @param geom        geom_point, etc.
 #' @param color       variable mapped to color (symbol)
+#' @param fill        variable mapped to fill (symbol)
 #' @param colorscale  vector(names = svarlevels, values = colordefs)
+#' @param fillscale   vector(names = svarlevels, values = colordefs)
 #' @param ...         mapped aesthetics
 #' @param fixed       fixed  aesthetics (list)
 #' @return ggplot object
@@ -198,14 +200,15 @@ plot_data <- function(
 
 
 #' Plot sample scores
-#' @param object  SummarizedExperiment
-#' @param method  string: 'pca', 'pls', 'lda', 'sma'
-#' @param xdim    number (default 1): x axis dimension
-#' @param ydim    number (default 2): y axis dimension
-#' @param color   svar mapped to color (symbol)
+#' @param object     SummarizedExperiment
+#' @param method     string: 'pca', 'pls', 'lda', 'sma'
+#' @param xdim       number (default 1): x axis dimension
+#' @param ydim       number (default 2): y axis dimension
+#' @param color      svar mapped to color (symbol)
 #' @param colorscale vector(names = svarlevels, values = colordefs)
-#' @param ...     additional svars mapped to aesthetics
-#' @param fixed   fixed plot aesthetics
+#' @param ...        additional svars mapped to aesthetics
+#' @param fixed      fixed plot aesthetics
+#' @param nloadings  number of loadings per half-axis to plot
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -279,6 +282,7 @@ add_loadings <- function(p, object, method='pca', xdim=1, ydim=2, nloadings=1){
     loadingdt[[y]] %<>% multiply_by(scorefactor)
     loadingdt %<>% extract(idx, )
 # Plot
+    feature_name <- NULL
     p + layer(  geom     = 'segment',
                 mapping  = aes(x=0, y=0, xend=!!sym(x), yend=!!sym(y)),
                 stat     = "identity",
@@ -304,6 +308,7 @@ headtail <- function(x, n){
 plot_feature_loadings <- function(
     object, method = 'pca', xdim = 1, ydim = 2, n = 2
 ){
+    . <- NULL
     xaxis <- paste0(method, xdim)
     yaxis <- paste0(method, ydim)
     xloadings <- fdata(object)[[xaxis]]
@@ -361,6 +366,7 @@ plot_sample_densities <- function(
     dt <- sumexp_to_long_dt(object, svars = svars(object))
     fill <- enquo(fill)
     color <- enquo(color)
+    value <- NULL
     plot_data(  dt,
                 geom       = geom_density,
                 x          = value,
@@ -399,6 +405,7 @@ plot_sample_violins <- function(
     dt <- sumexp_to_long_dt(object, svars = svars(object))
     fill <- enquo(fill)
     color <- enquo(color)
+    sample_id <- value <- NULL
     plot_data(  dt,
                 geom       = geom_violin,
                 x          = sample_id,
@@ -439,6 +446,7 @@ plot_sample_boxplots <- function(
     dt <- sumexp_to_long_dt(object, svars = svars(object))
     fill <- enquo(fill)
     color <- enquo(color)
+    sample_id <- value <- NULL
     plot_data(  dt,
                 geom       = geom_boxplot,
                 x          = sample_id,
@@ -458,6 +466,25 @@ plot_sample_boxplots <- function(
 #
 #=============================================================================
 
+#' Plot features
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param colorscale  named vector (names = varlevels, values = colors)
+#' @param fillscale   named vector (names = varlevels, values = colors)
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed aesthetics
+#' @param theme       ggplot theme specifications
+#' @return ggplot object
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' object %<>% add_pca(plot = FALSE)
+#' object %<>% extract(order(abs(fdata(.)$pca1, decreasing = TRUE)[1:9]), )
+#' plot_feature_boxplots(object)
+#' plot_feature_profiles(object)
+#' @export
 plot_features <- function(
     object,
     geom,
@@ -476,6 +503,7 @@ plot_features <- function(
     color <- enquo(color)
     x     <- enquo(x)
     dt <- sumexp_to_long_dt(object, svars = svars(object), fvars = fvars(object))
+    value <- NULL
     p <- plot_data(  dt,
                 geom       = geom,
                 x          = !!x,
@@ -491,28 +519,15 @@ plot_features <- function(
     p
 }
 
-
-#' Plot features
-#' @param object      SummarizedExperiment
-#' @param fill        svar mapped to fill
-#' @param color       svar mapped to color
-#' @param colorscale  named vector (names = varlevels, values = colors)
-#' @param fillscale   named vector (names = varlevels, values = colors)
-#' @param ...         mapped aesthetics
-#' @param fixed       fixed aesthetics
-#' @examples
-#' require(magrittr)
-#' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% add_pca(plot = FALSE)
-#' object %<>% extract(order(abs(fdata(.)$pca1, decreasing = TRUE)[1:9]), )
-#' plot_feature_boxplots(object)
-#' plot_feature_profiles(object)
+#' @rdname plot_features
 #' @export
 plot_feature_boxplots <- function(...){
     plot_features(geom = geom_boxplot, color = NULL, ...)
 }
 
+
+#' @rdname plot_features
+#' @export
 plot_feature_profiles <- function(...){
     plot_features(geom = geom_point, ...)
 }
