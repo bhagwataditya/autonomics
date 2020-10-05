@@ -67,6 +67,7 @@ download_gtf <- function(
         cmessage("download   %s'" , remote)
         cmessage("to         %s", gtffile )
         dir.create(dirname(gtffile), showWarnings = FALSE, recursive = TRUE)
+        gtffile %<>% paste0('.gz')
         tryCatch(expr = { download.file(
                                 url = remote, destfile = gtffile, quiet = TRUE)
                             gunzip(gtffile,  remove = TRUE, overwrite = TRUE)},
