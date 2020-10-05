@@ -6,10 +6,10 @@
 #' @importFrom assertive     assert_all_are_in_closed_range
 #' @importFrom assertive     assert_all_are_in_range
 #' @importFrom assertive     assert_all_are_less_than_or_equal_to
-#' @importFrom assertive     assert_any_are_not_nan
 #' @importFrom assertive     assert_all_are_whole_numbers
+#' @importFrom assertive     assert_any_are_not_nan
 #' @importFrom assertive     assert_are_identical   assert_are_same_length
-#' @importFrom assertive     has_names
+#' @importFrom assertive     assert_engine
 #' @importFrom assertive     assert_is_all_of   assert_is_any_of
 #' @importFrom assertive     assert_is_a_bool
 #' @importFrom assertive     assert_is_a_number   assert_is_a_string
@@ -21,7 +21,7 @@
 #' @importFrom assertive     assert_is_numeric    assert_is_of_length
 #' @importFrom assertive     assert_is_subset
 #' @importFrom assertive     false   get_name_in_parent
-#' @importFrom assertive     has_no_duplicates
+#' @importFrom assertive     has_names  has_no_duplicates
 #' @importFrom assertive     is_empty_character   is_existing_file
 #' @importFrom colorspace    sequential_hcl
 #' @importFrom data.table    data.table   fread   fwrite   setkeyv   set

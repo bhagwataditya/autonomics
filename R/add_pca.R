@@ -118,7 +118,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @noRd
 .add_pca <- function(object, ndim = 2, verbose = TRUE){
 # Assert
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_less_than_or_equal_to(ndim, ncol(object))
@@ -169,7 +169,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
         message("First Biocinstaller::install('mpm'). Then re-run.")
         return(object)
     }
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -218,7 +218,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @noRd
 .add_lda <- function(object, ndim=2, verbose = TRUE){
 # Assert
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
     nsubgroup <- length(subgroup_levels(object))
     if (is.infinite(ndim))  ndim <- nsubgroup - 1
     assert_is_a_number(ndim)
@@ -273,7 +273,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
         stop("BiocManager::install('mixOmics'). Then re-run.")
         return(object)
     }
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -311,7 +311,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
         stop("BiocManager::install('mixOmics'). Then re-run.")
         return(object)
     }
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -349,7 +349,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
         message("BiocManager::install('ropls'). Then re-run.")
         return(object)
     }
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))

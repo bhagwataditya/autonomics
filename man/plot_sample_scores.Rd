@@ -32,6 +32,8 @@ plot_sample_scores(
 \item{...}{additional svars mapped to aesthetics}
 
 \item{fixed}{fixed plot aesthetics}
+
+\item{nloadings}{number of loadings per half-axis to plot}
 }
 \value{
 ggplot object

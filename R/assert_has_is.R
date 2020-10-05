@@ -63,4 +63,85 @@ contains_ratios <- function(object){
 }
 
 
+#==============================================================================
+#
+#                        assert_is_valid_sumexp
+#
+#==============================================================================
+
+
+has_valid_fnames <- function(x, .xname = get_name_in_parent(x)){
+
+    if (is.null(fnames(object))){
+        return(false('fnames(%s) are NULL', .xname))}
+
+    if (!all(fnames(x) == fdata(x)$feature_id)){
+        return(false('fnames(%s) != rownames(fdata(%s))', .xname, .xname))}
+
+    #if (!all(fnames(x) == rownames(exprs(x)))){
+    #    return(false('fnames(%s) != rownames(exprs(%s))', .xname, .xname))}
+
+    #if (!all(fnames(x) == rownames(fdata(x)))){
+    #    return(false('fnames(%s) != rownames(fdata(%s))', .xname, .xname))}
+
+    TRUE
+}
+
+
+has_valid_snames <- function(x, .xname = get_name_in_parent(x)){
+
+    if (is.null(snames(x))){
+        return(false('snames(%s) are NULL', .xname))}
+
+    if (!all(snames(x) == sdata(x)$sample_id)){
+        return(false('snames(%s) != colnames(sdata(%s))', .xname, .xname))}
+
+    #if (!all(snames(x) == colnames(exprs(x)))){
+    #    return(false('snames(%s) != colnames(exprs(%s))', .xname, .xname))}
+
+    #if (!all(snames(x) == rownames(sdata(x)))){
+    #    return(false('snames(%s) != colnames(sdata(%s))', .xname, .xname))}
+
+    TRUE
+}
+
+
+
+
+#' Is valid SummarizedExperiment
+#' @param x SummarizedExperiment
+#' @param .xname see assertive.base::get_name_in_parent
+#' @return TRUE or FALSE
+#' @noRd
+is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
+   if (!(ok <- assertive::is2(x, "SummarizedExperiment")))  return(ok)
+   if (!(ok <- has_valid_fnames(x, .xname = .xname)))       return(ok)
+   if (!(ok <- has_valid_snames(x, .xname = .xname)))       return(ok)
+   TRUE
+}
+
+
+#' Assert that x is a valid SummarizedExperiment
+#'
+#' @param x SummarizedExperiment
+#' @param .xname see assertive.base::get_name_in_parent
+#' @return TRUE or FALSE
+#' @examples
+#' # VALID
+#'     file <- download_data('glutaminase.metabolon.xlsx')
+#'     x <- read_metabolon(file, plot = FALSE)
+#'     assert_is_valid_sumexp(x)
+#' # NOT VALID
+#'     rownames(colData(x)) <- NULL
+#'     # assert_is_valid_sumexp(x)
+#' @export
+assert_is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_valid_sumexp, x, .xname = get_name_in_parent(x))
+}
+
+
+
+
+
+
 

@@ -22,7 +22,11 @@ plot_data(
 
 \item{color}{variable mapped to color (symbol)}
 
+\item{fill}{variable mapped to fill (symbol)}
+
 \item{colorscale}{vector(names = svarlevels, values = colordefs)}
+
+\item{fillscale}{vector(names = svarlevels, values = colordefs)}
 
 \item{...}{mapped aesthetics}
 
