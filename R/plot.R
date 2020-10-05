@@ -213,6 +213,7 @@ plot_data <- function(
 #' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% add_pca(plot = FALSE, ndim = 4)  # Principal Component Analysis
 #' plot_sample_scores(object, 'pca')
+#' plot_sample_scores(object, 'pca', nloadings = 0)
 #' plot_sample_scores(object, 'pca', color = TIME_POINT)
 #' plot_sample_scores(object, 'pca', color = TIME_POINT, xdim=3, ydim=4)
 #' plot_sample_scores(object, 'pca', color = NULL)
@@ -220,7 +221,7 @@ plot_data <- function(
 plot_sample_scores <- function(
     object, method, xdim = 1, ydim = 2, color = subgroup,
     colorscale = default_colorscale(object, !!enquo(color)), ...,
-    fixed = list(shape=15, size=3), nfeatures = 1
+    fixed = list(shape=15, size=3), nloadings = 1
 ){
     color <- enquo(color)
     x <- paste0(method, xdim)
@@ -229,7 +230,8 @@ plot_sample_scores <- function(
     ylab  <- paste0(y, ' : ', metadata(object)[[method]][[y]], '% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
-    p %<>% add_loadings(object, method, xdim=xdim, ydim=ydim)
+    p %<>% add_loadings(
+            object, method, xdim=xdim, ydim=ydim, nloadings=nloadings)
     p %<>% add_scores(object, method, xdim=xdim, ydim=ydim, color=!!color, ...)
     p %<>% add_colorscale(!!color, colorscale)
 
@@ -259,14 +261,15 @@ add_scores <- function(
 
 }
 
-add_loadings <- function(p, object, method='pca', xdim=1, ydim=2, n=1){
+add_loadings <- function(p, object, method='pca', xdim=1, ydim=2, nloadings=1){
 # Process args
+    if (nloadings==0) return(p)
     loadingdt <- fdata(object)
     x <- paste0(method, xdim)
     y <- paste0(method, ydim)
 # Loadings
-    idx <- unique(c(headtail(order(loadingdt[[x]]), n),
-                    headtail(order(loadingdt[[y]]), n)))
+    idx <- unique(c(headtail(order(loadingdt[[x]]), nloadings),
+                    headtail(order(loadingdt[[y]]), nloadings)))
 # Scale loadings to scoreplot
     scoredt <- sdata(object)
     maxscore <- min(abs(min(c(scoredt[[x]], scoredt[[y]]))),

@@ -12,7 +12,8 @@ plot_sample_scores(
   color = subgroup,
   colorscale = default_colorscale(object, !!enquo(color)),
   ...,
-  fixed = list(shape = 15, size = 3)
+  fixed = list(shape = 15, size = 3),
+  nloadings = 1
 )
 }
 \arguments{
@@ -44,6 +45,7 @@ file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 object \%<>\% add_pca(plot = FALSE, ndim = 4)  # Principal Component Analysis
 plot_sample_scores(object, 'pca')
+plot_sample_scores(object, 'pca', nloadings = 0)
 plot_sample_scores(object, 'pca', color = TIME_POINT)
 plot_sample_scores(object, 'pca', color = TIME_POINT, xdim=3, ydim=4)
 plot_sample_scores(object, 'pca', color = NULL)
