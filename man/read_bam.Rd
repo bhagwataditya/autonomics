@@ -29,10 +29,6 @@ read_bam(
 \item{verbose}{TRUE (default) / FALSE}
 
 \item{plot}{TRUE (default) / FALSE}
-
-\item{fvars}{character vector: GTF variables to include in object.}
-
-\item{...}{passed to Rsubread::featureCounts}
 }
 \value{
 SummarizedExperiment
@@ -43,9 +39,9 @@ Read RNAseq BAM files into SummarizedExperiment
 \examples{
 # in-built genome
 bamdir <- download_data("stemcells.bam.zip")
-# object <- read_bam(bamdir, paired=TRUE, genome="hg19", plot=FALSE)
+# object <- read_bam(bamdir, paired=TRUE, genome="hg38")
 # gtffile <- download_gtf("Homo sapiens")
-# object <- read_bam(bamdir, paired=TRUE, genome=gtffile, plot = FALSE)
+# object <- read_bam(bamdir, paired=TRUE, genome=gtffile)
 }
 \author{
 Aditya Bhagwat, Shahina Hayat

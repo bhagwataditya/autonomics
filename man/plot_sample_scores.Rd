@@ -6,11 +6,11 @@
 \usage{
 plot_sample_scores(
   object,
-  method,
-  xdim = 1,
-  ydim = 2,
+  x = pca1,
+  y = pca2,
   color = subgroup,
   colorscale = default_colorscale(object, !!enquo(color)),
+  feature_label = feature_name,
   ...,
   fixed = list(shape = 15, size = 3),
   nloadings = 1
@@ -19,15 +19,15 @@ plot_sample_scores(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{method}{string: 'pca', 'pls', 'lda', 'sma'}
+\item{x}{svar mapped to x (default pca1)}
 
-\item{xdim}{number (default 1): x axis dimension}
-
-\item{ydim}{number (default 2): y axis dimension}
+\item{y}{svar mapped to y (default pca2)}
 
 \item{color}{svar mapped to color (symbol)}
 
 \item{colorscale}{vector(names = svarlevels, values = colordefs)}
+
+\item{feature_label}{fvar mapped to (loadings) label}
 
 \item{...}{additional svars mapped to aesthetics}
 

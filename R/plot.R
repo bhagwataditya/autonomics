@@ -198,17 +198,16 @@ plot_data <- function(
 #
 #==============================================================================
 
-
 #' Plot sample scores
-#' @param object     SummarizedExperiment
-#' @param method     string: 'pca', 'pls', 'lda', 'sma'
-#' @param xdim       number (default 1): x axis dimension
-#' @param ydim       number (default 2): y axis dimension
-#' @param color      svar mapped to color (symbol)
-#' @param colorscale vector(names = svarlevels, values = colordefs)
-#' @param ...        additional svars mapped to aesthetics
-#' @param fixed      fixed plot aesthetics
-#' @param nloadings  number of loadings per half-axis to plot
+#' @param object         SummarizedExperiment
+#' @param x              svar mapped to x (default pca1)
+#' @param y              svar mapped to y (default pca2)
+#' @param color          svar mapped to color (symbol)
+#' @param colorscale     vector(names = svarlevels, values = colordefs)
+#' @param ...            additional svars mapped to aesthetics
+#' @param feature_label  fvar mapped to (loadings) label
+#' @param fixed          fixed plot aesthetics
+#' @param nloadings      number of loadings per half-axis to plot
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -222,20 +221,27 @@ plot_data <- function(
 #' plot_sample_scores(object, 'pca', color = NULL)
 #' @export
 plot_sample_scores <- function(
-    object, method, xdim = 1, ydim = 2, color = subgroup,
-    colorscale = default_colorscale(object, !!enquo(color)), ...,
+    object, x = pca1, y = pca2,
+    color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
+    feature_label = feature_name,
+    ...,
     fixed = list(shape=15, size=3), nloadings = 1
 ){
     color <- enquo(color)
-    x <- paste0(method, xdim)
-    y <- paste0(method, ydim)
-    xlab  <- paste0(x, ' : ', metadata(object)[[method]][[x]], '% ')
-    ylab  <- paste0(y, ' : ', metadata(object)[[method]][[y]], '% ')
+    x     <- enquo(x)
+    y     <- enquo(y)
+    feature_label <- enquo(feature_label)
+
+    xstring <- rlang::as_name(x)
+    ystring <- rlang::as_name(y)
+    xmethod <- stri_extract_first_regex(xstring, '[a-z]+')
+    ymethod <- stri_extract_first_regex(ystring, '[a-z]+')
+    xlab  <- paste0(xstring, ' : ', metadata(object)[[xmethod]][[xstring]],'% ')
+    ylab  <- paste0(ystring, ' : ', metadata(object)[[ymethod]][[ystring]],'% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
-    p %<>% add_loadings(
-            object, method, xdim=xdim, ydim=ydim, nloadings=nloadings)
-    p %<>% add_scores(object, method, xdim=xdim, ydim=ydim, color=!!color, ...)
+    p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
+    p %<>% add_scores(object, !!x, !!y, color = !!color, ...)
     p %<>% add_colorscale(!!color, colorscale)
 
     p
@@ -249,14 +255,15 @@ add_colorscale <- function(p, color, colorscale){
 }
 
 add_scores <- function(
-    p, object, method = 'pca', xdim = 1, ydim = 1, color = subgroup, ...,
+    p, object, x = pca1, y = pca2, color = subgroup, ...,
     fixed = list(shape=15, size=3)
 ){
+    x     <- enquo(x)
+    y     <- enquo(y)
     color <- enquo(color)
-    x <- paste0(method, xdim)
-    y <- paste0(method, ydim)
+
     p + layer(  geom = 'point',
-                mapping = aes(x = !!sym(x), y = !!sym(y), color = !!color, ...),
+                mapping = aes(x = !!x, y = !!y, color = !!color, ...),
                 stat    = "identity",
                 data    = sdata(object),
                 params  = fixed,
@@ -264,69 +271,57 @@ add_scores <- function(
 
 }
 
-add_loadings <- function(p, object, method='pca', xdim=1, ydim=2, nloadings=1){
+utils::globalVariables('feature_name')
+
+add_loadings <- function(
+    p, object, x = pca1, y = pca2, label = feature_name, nloadings = 1
+){
 # Process args
     if (nloadings==0) return(p)
-    loadingdt <- fdata(object)
-    x <- paste0(method, xdim)
-    y <- paste0(method, ydim)
+    x     <- enquo(x)
+    y     <- enquo(y)
+    label <- enquo(label)
+    xstr <- rlang::as_name(x)
+    ystr <- rlang::as_name(y)
 # Loadings
-    idx <- unique(c(headtail(order(loadingdt[[x]]), nloadings),
-                    headtail(order(loadingdt[[y]]), nloadings)))
+    xloadings <- fdata(object)[[xstr]]
+    yloadings <- fdata(object)[[ystr]]
+    idx <- unique(c(headtail(order(xloadings, na.last=NA), nloadings),
+                    headtail(order(yloadings, na.last=NA), nloadings)))
 # Scale loadings to scoreplot
-    scoredt <- sdata(object)
-    maxscore <- min(abs(min(c(scoredt[[x]], scoredt[[y]]))),
-                    abs(max(c(scoredt[[x]], scoredt[[y]]))))
-    scorefactor <- maxscore/max(abs(c(loadingdt[[x]], loadingdt[[y]])))
-    loadingdt[[x]] %<>% multiply_by(scorefactor)
-    loadingdt[[y]] %<>% multiply_by(scorefactor)
-    loadingdt %<>% extract(idx, )
+    xscores <- sdata(object)[[xstr]]
+    yscores <- sdata(object)[[ystr]]
+    maxscore <- min(abs(min(c(xscores, yscores, na.rm=TRUE))),
+                    abs(max(c(xscores, yscores, na.rm=TRUE))), na.rm=TRUE)
+    scorefactor <- maxscore/max(abs(c(xloadings, yloadings)),  na.rm=TRUE)
+
+    plotdt <- fdata(object)
+    plotdt[[xstr]] %<>% multiply_by(scorefactor)
+    plotdt[[ystr]] %<>% multiply_by(scorefactor)
+    plotdt %<>% extract(idx, )
+
 # Plot
     feature_name <- NULL
+    if (!'feature_name' %in% names(plotdt)){
+        setnames(plotdt, 'feature_id', 'feature_name')}
     p + layer(  geom     = 'segment',
-                mapping  = aes(x=0, y=0, xend=!!sym(x), yend=!!sym(y)),
+                mapping  = aes(x=0, y=0, xend=!!x, yend=!!y),
                 stat     = "identity",
-                data     = loadingdt,
-                params   = list(alpha = 0.1, size=1),#params   = list(alpha = 0.05, size=3),
+                data     = plotdt,
+                params   = list(alpha = 0.1, size=1, na.rm = TRUE),#params   = list(alpha = 0.05, size=3),
                 position = "identity") +
         layer(  geom     = "text",
-                mapping  = aes(x   = !!sym(x),
-                            y     = !!sym(y),
-                            label = substr(feature_name, 1, 20)),
+                mapping  = aes(x = !!x, y = !!y, label = !!label),
                 stat     = "identity",
-                data     = loadingdt,
-                params   = list(alpha = 0.5),
+                data     = plotdt,
+                params   = list(alpha = 0.5, na.rm = TRUE),
                 position ='identity')
 }
 
 
+
 headtail <- function(x, n){
     c(x[seq(1, n)], x[seq(length(x)+1-n, length(x))])
-}
-
-
-plot_feature_loadings <- function(
-    object, method = 'pca', xdim = 1, ydim = 2, n = 2
-){
-    . <- NULL
-    xaxis <- paste0(method, xdim)
-    yaxis <- paste0(method, ydim)
-    xloadings <- fdata(object)[[xaxis]]
-    idx <- order(xloadings) %>% extract(c(seq(1,n), seq(length(.)+1-n,length(.))))
-    xvalues <- fdata(object)[[xaxis]][idx]
-    yvalues <- fdata(object)[[yaxis]][idx]
-    fnames <- fdata(object)$feature_name[idx]
-    plot(xvalues, yvalues)
-
-    ggplot() +
-    theme_minimal() +
-    geom_vline(aes(xintercept=0), linetype = 'dashed') +
-    geom_hline(aes(yintercept=0), linetype = 'dashed') +
-    geom_segment(aes(x=0, y=0, xend=xvalues, yend=yvalues), arrow = arrow(), color = 'red') +
-    annotate("text", x = xvalues, y = yvalues, label = substr(fnames, 1, 10), color = 'red') +
-    xlab('PC1') +
-    ylab('PC2')
-
 }
 
 
@@ -468,6 +463,8 @@ plot_sample_boxplots <- function(
 
 #' Plot features
 #' @param object      SummarizedExperiment
+#' @param geom        geom_point, geom_boxplot, etc.
+#' @param x           svar mapped to x
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
 #' @param colorscale  named vector (names = varlevels, values = colors)

@@ -93,6 +93,8 @@ download_gtf <- function(
 #' @noRd
 add_genenames <- function(object, gtffile, verbose = TRUE){
 
+    gene_name <- NULL
+
     if (is.null(gtffile)) return(object)
 
     if (verbose) message('\t\t\tRead ', gtffile)
@@ -109,13 +111,19 @@ add_genenames <- function(object, gtffile, verbose = TRUE){
 }
 
 
-#' x <- fcounts$annotation$GeneID
 entrezg_to_symbol <- function(x, genome){
 
+    assert_is_subset(genome, c('mm9', 'mm10', 'hg19', 'hg38'))
+
     orgdb <- if (genome %in% c('mm10', 'mm9')){
-                org.Mm.eg.db::org.Mm.eg.db
+                if (!requireNamespace('org.Mm.eg.db', quietly = FALSE)){
+                    stop("First: BiocManager::install('org.Mm.eg.db')")}
+                orgdb <- org.Mm.eg.db::org.Mm.eg.db
+
             } else if (genome %in% c('hg19', 'hg38')){
-                org.Hs.eg.db::org.Hs.eg.db
+                if (!requireNamespace('org.Hs.eg.db', quietly = FALSE)){
+                    stop("First: BiocManager::install('org.Hs.eg.db')")}
+                orgdb <- org.Hs.eg.db::org.Hs.eg.db
             }
     x %<>% as.character()
     suppressMessages(y <- AnnotationDbi::mapIds(orgdb, x, 'SYMBOL', 'ENTREZID'))
@@ -128,6 +136,7 @@ entrezg_to_symbol <- function(x, genome){
 count_reads <- function(files, paired, nthreads, genome){
 
     # Common args
+    . <- NULL
     args <- list(files = files, isPaired = paired, nthreads = nthreads)
 
     # Inbuilt genome
@@ -163,12 +172,10 @@ count_reads <- function(files, paired, nthreads, genome){
 #'                    (one SAM or BAM file per sample)
 #' @param paired     TRUE or FALSE (default): paired end reads?
 #' @param genome   string: either "mm10", "hg38" etc. or a GTF file
-#' @param fvars        character vector: GTF variables to include in object.
 #' @param nthreads     number of cores to be used by Rsubread::featureCounts()
 #' @param filter_features_min_count  number
 #' @param verbose      TRUE (default) / FALSE
 #' @param plot         TRUE (default) / FALSE
-#' @param ...          passed to Rsubread::featureCounts
 #' @return SummarizedExperiment
 #' @examples
 #' # in-built genome

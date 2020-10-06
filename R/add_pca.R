@@ -380,6 +380,9 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #
 #=============================================================================
 
+utils::globalVariables(
+    c('pca1', 'pca2', 'lda1', 'lda2', 'pls1', 'pls2', 'sma1', 'sma2'))
+
 #' Add PCA, SMA, LDA, or PLS
 #'
 #' Perform a dimension reduction.
@@ -388,8 +391,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @param object  SummarizedExperiment
 #' @param ndim    number
 #' @param plot    TRUE (default) or FALSE
-#' @param xdim    number (default 1): x axis dimension
-#' @param ydim    number (default 2): y axis dimension
+#' @param x       svar mapped to x
+#' @param y       svar mapped to y
 #' @param color   sdata variable mapped to color
 #' @param ...     additional svar to aesthetic mappings
 #' @param fixed   list with fixed ggplot aesthetics
@@ -408,14 +411,13 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 add_pca <- function(
-    object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, color = subgroup,
+    object, ndim = 2, plot = TRUE, x = pca1, y = pca2, color = subgroup,
         ..., fixed = list(shape=15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Principal Component Analysis')
-    object %<>% .add_pca(ndim = max(ndim, xdim, ydim), verbose = verbose)
-    if (plot) print(plot_sample_scores(
-            object, 'pca', xdim = xdim, ydim = ydim, color = !!ensym(color),
-            ..., fixed = fixed))
+    object %<>% .add_pca(ndim = ndim, verbose = verbose)
+    if (plot) print(plot_sample_scores(object, x=!!enquo(x), y=!!enquo(y),
+                                       color=!!enquo(color), ..., fixed=fixed))
     object
 }
 
@@ -423,14 +425,13 @@ add_pca <- function(
 #' @rdname add_pca
 #' @export
 add_pls <- function(
-    object, ndim=2, plot=TRUE, xdim = 1, ydim = 2, color = subgroup,
+    object, ndim=2, plot=TRUE, x = pls1, y = pls2, color = subgroup,
     ..., fixed = list(shape = 15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Partial Least Squares Analysis')
-    object %<>% .add_pls(ndim = max(ndim, xdim, ydim))
-    if (plot) print(plot_sample_scores(
-            object, 'pls', xdim = xdim, ydim = ydim, color = !!ensym(color),
-            ..., fixed = fixed))
+    object %<>% .add_pls(ndim = ndim)
+    if (plot) print(plot_sample_scores(object, x=!!enquo(x), y=!!enquo(y),
+                                       color=!!enquo(color), ..., fixed=fixed))
     object
 }
 
@@ -438,14 +439,13 @@ add_pls <- function(
 #' @rdname add_pca
 #' @export
 add_lda <- function(
-    object, ndim = 2, plot = TRUE, xdim = 1, ydim = 2, color = subgroup,
+    object, ndim = 2, plot = TRUE, x = lda1, y = lda2, color = subgroup,
     ..., fixed = list(shape = 15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Linear Discriminant Analysis')
-    object %<>% .add_lda(ndim = max(ndim, xdim, ydim), verbose = verbose)
-    if (plot) print(plot_sample_scores(
-            object, 'lda', xdim = xdim, ydim = ydim, color = !!ensym(color),
-            ..., fixed = fixed))
+    object %<>% .add_lda(ndim = ndim, verbose = verbose)
+    if (plot) print(plot_sample_scores(object, x=!!enquo(x), y=!!enquo(y),
+                                       color=!!enquo(color), ..., fixed=fixed))
     object
 }
 
@@ -453,14 +453,13 @@ add_lda <- function(
 #' @rdname add_pca
 #' @export
 add_sma <- function(
-    object, ndim=2, plot=TRUE, xdim=1, ydim=2, color = subgroup,
+    object, ndim=2, plot=TRUE, x=sma1, y=sma2, color = subgroup,
     ..., fixed = list(shape = 15, size=3), verbose = TRUE
 ){
     if (verbose) message('\tAdd Spectral Map Analysis')
-    object %<>% .add_sma(ndim = max(ndim, xdim, ydim), verbose = verbose)
-    if (plot) print(plot_sample_scores(
-            object, 'sma', xdim = xdim, ydim = ydim, color = !!ensym(color),
-            ..., fixed = fixed))
+    object %<>% .add_sma(ndim = ndim, verbose = verbose)
+    if (plot) print(plot_sample_scores(object, x=!!enquo(x), y=!!enquo(y),
+                                       color=!!enquo(color), ..., fixed=fixed))
     object
 }
 

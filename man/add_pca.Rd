@@ -11,8 +11,8 @@ add_pca(
   object,
   ndim = 2,
   plot = TRUE,
-  xdim = 1,
-  ydim = 2,
+  x = pca1,
+  y = pca2,
   color = subgroup,
   ...,
   fixed = list(shape = 15, size = 3),
@@ -23,8 +23,8 @@ add_pls(
   object,
   ndim = 2,
   plot = TRUE,
-  xdim = 1,
-  ydim = 2,
+  x = pls1,
+  y = pls2,
   color = subgroup,
   ...,
   fixed = list(shape = 15, size = 3),
@@ -35,8 +35,8 @@ add_lda(
   object,
   ndim = 2,
   plot = TRUE,
-  xdim = 1,
-  ydim = 2,
+  x = lda1,
+  y = lda2,
   color = subgroup,
   ...,
   fixed = list(shape = 15, size = 3),
@@ -47,8 +47,8 @@ add_sma(
   object,
   ndim = 2,
   plot = TRUE,
-  xdim = 1,
-  ydim = 2,
+  x = sma1,
+  y = sma2,
   color = subgroup,
   ...,
   fixed = list(shape = 15, size = 3),
@@ -62,9 +62,9 @@ add_sma(
 
 \item{plot}{TRUE (default) or FALSE}
 
-\item{xdim}{number (default 1): x axis dimension}
+\item{x}{svar mapped to x}
 
-\item{ydim}{number (default 2): y axis dimension}
+\item{y}{svar mapped to y}
 
 \item{color}{sdata variable mapped to color}
 

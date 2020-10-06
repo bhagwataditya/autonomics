@@ -72,7 +72,7 @@ contains_ratios <- function(object){
 
 has_valid_fnames <- function(x, .xname = get_name_in_parent(x)){
 
-    if (is.null(fnames(object))){
+    if (is.null(fnames(x))){
         return(false('fnames(%s) are NULL', .xname))}
 
     if (!all(fnames(x) == fdata(x)$feature_id)){
@@ -132,7 +132,7 @@ is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
 #'     x <- read_metabolon(file, plot = FALSE)
 #'     assert_is_valid_sumexp(x)
 #' # NOT VALID
-#'     rownames(colData(x)) <- NULL
+#'     rownames(SummarizedExperiment::colData(x)) <- NULL
 #'     # assert_is_valid_sumexp(x)
 #' @export
 assert_is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){

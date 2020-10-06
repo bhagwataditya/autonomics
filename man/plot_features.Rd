@@ -27,6 +27,10 @@ plot_feature_profiles(...)
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{geom}{geom_point, geom_boxplot, etc.}
+
+\item{x}{svar mapped to x}
+
 \item{fill}{svar mapped to fill}
 
 \item{color}{svar mapped to color}

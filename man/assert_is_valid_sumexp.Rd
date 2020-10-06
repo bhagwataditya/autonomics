@@ -23,6 +23,6 @@ Assert that x is a valid SummarizedExperiment
     x <- read_metabolon(file, plot = FALSE)
     assert_is_valid_sumexp(x)
 # NOT VALID
-    rownames(colData(x)) <- NULL
+    rownames(SummarizedExperiment::colData(x)) <- NULL
     # assert_is_valid_sumexp(x)
 }
