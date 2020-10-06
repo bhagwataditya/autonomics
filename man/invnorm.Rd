@@ -2,14 +2,22 @@
 % Please edit documentation in R/normalize.R
 \name{invnorm}
 \alias{invnorm}
+\alias{quantnorm}
+\alias{zscore}
 \title{Inverse normal transform samples}
 \usage{
-invnorm(object, plot = TRUE)
+invnorm(object, plot = TRUE, ...)
+
+quantnorm(object, plot = TRUE, ...)
+
+zscore(object, plot = TRUE, ...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
 \item{plot}{TRUE (default) or FALSE}
+
+\item{...}{additional aesthetic mappings}
 }
 \value{
 normalized SummarizedExperimen
@@ -19,6 +27,8 @@ Inverse normal transform samples
 }
 \examples{
 file <- download_data('glutaminase.metabolon.xlsx')
-object <- read_metabolon(file)
+object <- read_metabolon(file, plot = FALSE)
 invnorm(object)
+quantnorm(object)
+zscore(object)
 }
