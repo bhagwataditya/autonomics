@@ -193,7 +193,7 @@ plot_transformation_scores <- function(
     var2 <- metadata(object)[[method]][[ystr]]
     scoredt$transfo <- sprintf('input : %d + %d %%', var1, var2)
     for (transfo in transformations){
-        tmpobj <- get(transfo)(object) %>% add_projection(verbose=FALSE)
+        tmpobj <- get(transfo)(object) %>% add_projection(verbose=FALSE, ndim=max(xdim, ydim))
         var1 <- metadata(tmpobj)[[method]][[xstr]]
         var2 <- metadata(tmpobj)[[method]][[ystr]]
         tmpdt <- sdata(tmpobj)
@@ -218,7 +218,8 @@ plot_transformations <- function(
     method='pca', xdim=1, ydim=2, ...
 ){
     p1 <- plot_transformation_densities(object, transformations, ...)
-    p2 <- plot_transformation_scores(object, transformations, method, ...)
+    p2 <- plot_transformation_scores(
+            object, transformations, method, xdim1 = xdim, ydim = ydim, ...)
 
     gridExtra::grid.arrange(gridExtra::arrangeGrob(
                                 p1 + theme(legend.position='none'),
