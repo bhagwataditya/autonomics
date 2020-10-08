@@ -14,7 +14,6 @@ read_proteingroups(
   reverse = FALSE,
   fastafile = NULL,
   invert_subgroups = character(0),
-  log2 = TRUE,
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   verbose = TRUE,
   plot = TRUE
@@ -31,7 +30,6 @@ read_phosphosites(
   min_localization_prob = 0.75,
   fastafile = NULL,
   invert_subgroups = character(0),
-  log2 = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -58,8 +56,6 @@ read_phosphosites(
 
 \item{invert_subgroups}{character vector: subgroups to be inverted}
 
-\item{log2}{TRUE (default) or FALSE: log2 transform?}
-
 \item{impute}{TRUE or FALSE (default)}
 
 \item{verbose}{TRUE (default) or FALSE}
@@ -71,6 +67,8 @@ read_phosphosites(
 \item{min_localization_prob}{number (default 0.75): min site loc. prob.}
 
 \item{fvars}{character vector: annotation columns}
+
+\item{log2}{TRUE (default) or FALSE: log2 transform?}
 }
 \value{
 SummarizedExperiment

@@ -98,31 +98,48 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 
 #============================================================================
 #
-#                    .add_pca
-#                    .add_sma
-#                    .add_lda
-#                    .add_pls
-#                    .add_spls
-#                    .add_ropls
+#                    add_projection
+#                    add_pca
+#                    add_sma
+#                    add_lda
+#                    add_pls
+#                    add_spls
+#                    add_ropls
 #
 #============================================================================
 
+add_projection <- function(object, method, ndim, verbose){
+    assert_is_subset(method, c('pca', 'pls', 'sma', 'lda'))
+    get(paste0('add_', method))(object, ndim=ndim, verbose=verbose)
+}
+
+
+#' Add PCA, SMA, LDA, or PLS
+#'
+#' Perform a dimension reduction.
+#' Add sample scores, feature loadings, and dimension variances to object.
+#'
 #' @param object  SummarizedExperiment
 #' @param ndim    number
-#' @param verbose TRUE or FALSE (default)
+#' @param verbose TRUE (default) or FALSE
 #' @return        SummarizedExperiment
-#' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' .add_pca(object)
-#' @noRd
-.add_pca <- function(object, ndim = 2, verbose = TRUE){
+#' object <- read_metabolon(file, plot = FALSE)
+#' add_pca(object)  # Principal Component Analysis
+#' add_pls(object)  # Partial Least Squares
+#' add_lda(object)  # Linear Discriminant Analysis
+#' add_sma(object)  # Spectral Map Analysis
+#' add_pca(object, ndim=3)
+#' @author Aditya Bhagwat, Laure Cougnaud (LDA)
+#' @export
+add_pca <- function(object, ndim = 2, verbose = TRUE){
 # Assert
     assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_less_than_or_equal_to(ndim, ncol(object))
     . <- NULL
+    if (verbose)  message('\tAdd PCA')
 # Prepare
     tmpobj <- object
     tmpobj %<>% inf_to_na(verbose=verbose)
@@ -155,15 +172,9 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 
 
 
-#' @param object  SummarizedExperiment
-#' @param ndim    number
-#' @return        SummarizedExperiment
-#' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' .add_sma(object)
-#' @noRd
-.add_sma <- function(object, ndim = 2, verbose = TRUE){
+#' @rdname add_pca
+#' @export
+add_sma <- function(object, ndim = 2, verbose = TRUE){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
@@ -207,16 +218,9 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 }
 
 
-#' @param object  SummarizedExperiment
-#' @param ndim    number
-#' @return        SummarizedExperiment
-#' @author Aditya Bhagwat, Laure Cougnaud
-#' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' .add_lda(object)
-#' @noRd
-.add_lda <- function(object, ndim=2, verbose = TRUE){
+#' @rdname add_pca
+#' @export
+add_lda <- function(object, ndim=2, verbose = TRUE){
 # Assert
     assert_is_valid_sumexp(object)
     nsubgroup <- length(subgroup_levels(object))
@@ -258,16 +262,9 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 }
 
 
-
-#' @param object  SummarizedExperiment
-#' @param ndim    number
-#' @return        SummarizedExperiment
-#' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' .add_pls(object)
-#' @noRd
-.add_pls <- function(object, ndim=2, verbose = FALSE){
+#' @rdname add_pca
+#' @export
+add_pls <- function(object, ndim=2, verbose = FALSE){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -305,7 +302,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' object <- read_metabolon(file)
 #' .add_spls(object)
 #' @noRd
-.add_spls <- function(object, ndim=2){
+add_spls <- function(object, ndim=2){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -343,7 +340,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' object <- read_metabolon(file)
 #' .add_opls(object)
 #' @noRd
-.add_opls <- function(object, ndim=2){
+add_opls <- function(object, ndim=2){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
         message("BiocManager::install('ropls'). Then re-run.")
@@ -371,97 +368,5 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 # Return
     object
 }
-
-
-#============================================================================
-#
-#
-#       add_pca, add_sma, add_pls, add_lda
-#
-#=============================================================================
-
-utils::globalVariables(
-    c('pca1', 'pca2', 'lda1', 'lda2', 'pls1', 'pls2', 'sma1', 'sma2'))
-
-#' Add PCA, SMA, LDA, or PLS
-#'
-#' Perform a dimension reduction.
-#' Add sample scores, feature loadings, and dimension variances to object.
-#'
-#' @param object  SummarizedExperiment
-#' @param ndim    number
-#' @param plot    TRUE (default) or FALSE
-#' @param x       svar mapped to x
-#' @param y       svar mapped to y
-#' @param color   sdata variable mapped to color
-#' @param ...     additional svar to aesthetic mappings
-#' @param fixed   list with fixed ggplot aesthetics
-#' @param verbose TRUE (verbose) or FALSE
-#' @return SummarizedExperiment
-#' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' add_pca(object)  # Principal Component Analysis
-#' add_pls(object)  # Partial Least Squares
-#' add_lda(object)  # Linear Discriminant Analysis
-#' add_sma(object)  # Spectral Map Analysis
-#' add_pca(object, color = TIME_POINT)
-#' add_pca(object, fixed = list(size=3, shape=1))
-#' add_pca(object, xdim = 3, ydim = 4)
-#' @author Aditya Bhagwat, Laure Cougnaud (LDA)
-#' @export
-add_pca <- function(
-    object, ndim = 2, plot = TRUE, x = pca1, y = pca2, color = subgroup,
-        ..., fixed = list(shape=15, size=3), verbose = TRUE
-){
-    if (verbose) message('\tAdd Principal Component Analysis')
-    object %<>% .add_pca(ndim = ndim, verbose = verbose)
-    if (plot) print(plot_sample_scores(object, x=!!enquo(x), y=!!enquo(y),
-                                       color=!!enquo(color), ..., fixed=fixed))
-    object
-}
-
-
-#' @rdname add_pca
-#' @export
-add_pls <- function(
-    object, ndim=2, plot=TRUE, x = pls1, y = pls2, color = subgroup,
-    ..., fixed = list(shape = 15, size=3), verbose = TRUE
-){
-    if (verbose) message('\tAdd Partial Least Squares Analysis')
-    object %<>% .add_pls(ndim = ndim)
-    if (plot) print(plot_sample_scores(object, x=!!enquo(x), y=!!enquo(y),
-                                       color=!!enquo(color), ..., fixed=fixed))
-    object
-}
-
-
-#' @rdname add_pca
-#' @export
-add_lda <- function(
-    object, ndim = 2, plot = TRUE, x = lda1, y = lda2, color = subgroup,
-    ..., fixed = list(shape = 15, size=3), verbose = TRUE
-){
-    if (verbose) message('\tAdd Linear Discriminant Analysis')
-    object %<>% .add_lda(ndim = ndim, verbose = verbose)
-    if (plot) print(plot_sample_scores(object, x=!!enquo(x), y=!!enquo(y),
-                                       color=!!enquo(color), ..., fixed=fixed))
-    object
-}
-
-
-#' @rdname add_pca
-#' @export
-add_sma <- function(
-    object, ndim=2, plot=TRUE, x=sma1, y=sma2, color = subgroup,
-    ..., fixed = list(shape = 15, size=3), verbose = TRUE
-){
-    if (verbose) message('\tAdd Spectral Map Analysis')
-    object %<>% .add_sma(ndim = ndim, verbose = verbose)
-    if (plot) print(plot_sample_scores(object, x=!!enquo(x), y=!!enquo(y),
-                                       color=!!enquo(color), ..., fixed=fixed))
-    object
-}
-
 
 

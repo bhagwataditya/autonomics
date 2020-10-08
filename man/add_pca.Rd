@@ -2,95 +2,39 @@
 % Please edit documentation in R/add_pca.R
 \name{add_pca}
 \alias{add_pca}
-\alias{add_pls}
-\alias{add_lda}
 \alias{add_sma}
+\alias{add_lda}
+\alias{add_pls}
 \title{Add PCA, SMA, LDA, or PLS}
 \usage{
-add_pca(
-  object,
-  ndim = 2,
-  plot = TRUE,
-  x = pca1,
-  y = pca2,
-  color = subgroup,
-  ...,
-  fixed = list(shape = 15, size = 3),
-  verbose = TRUE
-)
+add_pca(object, ndim = 2, verbose = TRUE)
 
-add_pls(
-  object,
-  ndim = 2,
-  plot = TRUE,
-  x = pls1,
-  y = pls2,
-  color = subgroup,
-  ...,
-  fixed = list(shape = 15, size = 3),
-  verbose = TRUE
-)
+add_sma(object, ndim = 2, verbose = TRUE)
 
-add_lda(
-  object,
-  ndim = 2,
-  plot = TRUE,
-  x = lda1,
-  y = lda2,
-  color = subgroup,
-  ...,
-  fixed = list(shape = 15, size = 3),
-  verbose = TRUE
-)
+add_lda(object, ndim = 2, verbose = TRUE)
 
-add_sma(
-  object,
-  ndim = 2,
-  plot = TRUE,
-  x = sma1,
-  y = sma2,
-  color = subgroup,
-  ...,
-  fixed = list(shape = 15, size = 3),
-  verbose = TRUE
-)
+add_pls(object, ndim = 2, verbose = FALSE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
 \item{ndim}{number}
 
-\item{plot}{TRUE (default) or FALSE}
-
-\item{x}{svar mapped to x}
-
-\item{y}{svar mapped to y}
-
-\item{color}{sdata variable mapped to color}
-
-\item{...}{additional svar to aesthetic mappings}
-
-\item{fixed}{list with fixed ggplot aesthetics}
-
-\item{verbose}{TRUE (verbose) or FALSE}
+\item{verbose}{TRUE (default) or FALSE}
 }
 \value{
 SummarizedExperiment
-}
-\description{
-Perform a dimension reduction.
-Add sample scores, feature loadings, and dimension variances to object.
-}
-\examples{
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 add_pca(object)  # Principal Component Analysis
 add_pls(object)  # Partial Least Squares
 add_lda(object)  # Linear Discriminant Analysis
 add_sma(object)  # Spectral Map Analysis
-add_pca(object, color = TIME_POINT)
-add_pca(object, fixed = list(size=3, shape=1))
-add_pca(object, xdim = 3, ydim = 4)
+add_pca(object, ndim=3)
+}
+\description{
+Perform a dimension reduction.
+Add sample scores, feature loadings, and dimension variances to object.
 }
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)

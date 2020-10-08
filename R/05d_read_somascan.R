@@ -97,7 +97,7 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
 # Log2 transform
     if (log2) object %<>% .log2transform(verbose = TRUE)
 # Plot
-    if (plot) add_pca(object)
+    if (plot) plot_pca(object)
 # Return
     object
 }

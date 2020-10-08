@@ -43,7 +43,7 @@ Plot data
 require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-object \%<>\% add_pca(plot = FALSE)
+object \%<>\% add_pca()
 data <- sdata(object)
 plot_data(data, x = pca1, y = pca2)
 plot_data(data, x = pca1, y = pca2, color = TIME_POINT)

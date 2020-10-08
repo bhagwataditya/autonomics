@@ -54,7 +54,7 @@ Convert SummarizedExperiment into data.table
 # Glutaminase
    file <- download_data('glutaminase.metabolon.xlsx')
    object <- read_metabolon(file)
-   object \%<>\% add_pca(plot = FALSE)
+   object \%<>\% add_pca()
    sumexp_to_wide_dt(object)
    sumexp_to_long_dt(object)
    sumexp_to_subrep_dt(object)

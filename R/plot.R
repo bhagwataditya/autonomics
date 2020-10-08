@@ -157,7 +157,7 @@ make_composite_colorscale <- function(
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% add_pca(plot = FALSE)
+#' object %<>% add_pca()
 #' data <- sdata(object)
 #' plot_data(data, x = pca1, y = pca2)
 #' plot_data(data, x = pca1, y = pca2, color = TIME_POINT)
@@ -206,8 +206,9 @@ plot_data <- function(
 
 #' Plot sample scores
 #' @param object         SummarizedExperiment
-#' @param x              svar mapped to x (default pca1)
-#' @param y              svar mapped to y (default pca2)
+#' @param method         'pca', 'pls', 'lda', or 'sma'
+#' @param xdim           number (default 1)
+#' @param ydim           number (default 2)
 #' @param color          svar mapped to color (symbol)
 #' @param colorscale     vector(names = svarlevels, values = colordefs)
 #' @param ...            additional svars mapped to aesthetics
@@ -219,33 +220,32 @@ plot_data <- function(
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% add_pca(plot = FALSE, ndim = 4)  # Principal Component Analysis
-#' plot_sample_scores(object, 'pca')
-#' plot_sample_scores(object, 'pca', nloadings = 0)
-#' plot_sample_scores(object, 'pca', color = TIME_POINT)
-#' plot_sample_scores(object, 'pca', color = TIME_POINT, xdim=3, ydim=4)
-#' plot_sample_scores(object, 'pca', color = NULL)
+#' plot_pca(object)
+#' plot_pca(object, xdim=3, ydim=4)
+#' plot_pca(object, nloadings = 0)
+#' plot_pca(object, color = TIME_POINT)
+#' plot_pca(object, color = TIME_POINT, xdim=3, ydim=4)
+#' plot_pca(object, color = NULL)
 #' @export
 plot_sample_scores <- function(
-    object, x = pca1, y = pca2,
+    object, method='pca', xdim = 1, ydim = 2,
     color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
     feature_label = feature_name,
     ...,
     fixed = list(shape=15, size=3), nloadings = 1
 ){
+    object %<>% add_projection(method, ndim=max(xdim, ydim), verbose = TRUE)
     color <- enquo(color)
-    x     <- enquo(x)
-    y     <- enquo(y)
+    xstr <- paste0(method, xdim)
+    ystr <- paste0(method, ydim)
+    x     <- sym(xstr)
+    y     <- sym(ystr)
     feature_label <- enquo(feature_label)
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
 
-    xstring <- rlang::as_name(x)
-    ystring <- rlang::as_name(y)
-    xmethod <- stri_extract_first_regex(xstring, '[a-z]+')
-    ymethod <- stri_extract_first_regex(ystring, '[a-z]+')
-    xlab  <- paste0(xstring, ' : ', metadata(object)[[xmethod]][[xstring]],'% ')
-    ylab  <- paste0(ystring, ' : ', metadata(object)[[ymethod]][[ystring]],'% ')
+    xlab  <- paste0(xstr, ' : ', metadata(object)[[method]][[xstr]],'% ')
+    ylab  <- paste0(ystr, ' : ', metadata(object)[[method]][[ystr]],'% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
@@ -254,6 +254,69 @@ plot_sample_scores <- function(
 
     p
 }
+
+#' @rdname plot_sample_scores
+#' @export
+plot_pca <- function(
+    object, xdim = 1, ydim = 2, color = subgroup,
+    colorscale = default_colorscale(object, !!enquo(color)),
+    feature_label = feature_name, ...,  fixed = list(shape=15, size=3),
+    nloadings = 1
+){
+    plot_sample_scores(
+        object, method = 'pca', xdim = xdim, ydim = ydim,
+        color = !!enquo(color), colorscale = colorscale,
+        feature_label = !!enquo(feature_label), ..., fixed = fixed,
+        nloadings=nloadings)
+}
+
+#' @rdname plot_sample_scores
+#' @export
+plot_pls <- function(
+    object, xdim = 1, ydim = 2, color = subgroup,
+    colorscale = default_colorscale(object, !!enquo(color)),
+    feature_label = feature_name, ...,  fixed = list(shape=15, size=3),
+    nloadings = 1
+){
+    plot_sample_scores(
+        object, method = 'pls', xdim = xdim, ydim = ydim,
+        color = !!enquo(color), colorscale = colorscale,
+        feature_label = !!enquo(feature_label), ..., fixed = fixed,
+        nloadings=nloadings)
+}
+
+
+#' @rdname plot_sample_scores
+#' @export
+plot_lda <- function(
+    object, xdim = 1, ydim = 2, color = subgroup,
+    colorscale = default_colorscale(object, !!enquo(color)),
+    feature_label = feature_name, ...,  fixed = list(shape=15, size=3),
+    nloadings = 1
+){
+    plot_sample_scores(
+        object, method = 'lda', xdim = xdim, ydim = ydim,
+        color = !!enquo(color), colorscale = colorscale,
+        feature_label = !!enquo(feature_label), ..., fixed = fixed,
+        nloadings=nloadings)
+}
+
+
+#' @rdname plot_sample_scores
+#' @export
+plot_sma <- function(
+    object, xdim = 1, ydim = 2, color = subgroup,
+    colorscale = default_colorscale(object, !!enquo(color)),
+    feature_label = feature_name, ...,  fixed = list(shape=15, size=3),
+    nloadings = 1
+){
+    plot_sample_scores(
+        object, method = 'sma', xdim = xdim, ydim = ydim,
+        color = !!enquo(color), colorscale = colorscale,
+        feature_label = !!enquo(feature_label), ..., fixed = fixed,
+        nloadings=nloadings)
+}
+
 
 add_colorscale <- function(p, color, colorscale){
     if (!rlang::quo_is_null(enquo(color))){
@@ -485,7 +548,7 @@ plot_sample_boxplots <- function(
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% add_pca(plot = FALSE)
+#' object %<>% add_pca()
 #' object %<>% extract(order(abs(fdata(.)$pca1, decreasing = TRUE)[1:9]), )
 #' plot_feature_boxplots(object)
 #' plot_feature_profiles(object)

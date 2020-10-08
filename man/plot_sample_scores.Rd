@@ -2,12 +2,65 @@
 % Please edit documentation in R/plot.R
 \name{plot_sample_scores}
 \alias{plot_sample_scores}
+\alias{plot_pca}
+\alias{plot_pls}
+\alias{plot_lda}
+\alias{plot_sma}
 \title{Plot sample scores}
 \usage{
 plot_sample_scores(
   object,
-  x = pca1,
-  y = pca2,
+  method = "pca",
+  xdim = 1,
+  ydim = 2,
+  color = subgroup,
+  colorscale = default_colorscale(object, !!enquo(color)),
+  feature_label = feature_name,
+  ...,
+  fixed = list(shape = 15, size = 3),
+  nloadings = 1
+)
+
+plot_pca(
+  object,
+  xdim = 1,
+  ydim = 2,
+  color = subgroup,
+  colorscale = default_colorscale(object, !!enquo(color)),
+  feature_label = feature_name,
+  ...,
+  fixed = list(shape = 15, size = 3),
+  nloadings = 1
+)
+
+plot_pls(
+  object,
+  xdim = 1,
+  ydim = 2,
+  color = subgroup,
+  colorscale = default_colorscale(object, !!enquo(color)),
+  feature_label = feature_name,
+  ...,
+  fixed = list(shape = 15, size = 3),
+  nloadings = 1
+)
+
+plot_lda(
+  object,
+  xdim = 1,
+  ydim = 2,
+  color = subgroup,
+  colorscale = default_colorscale(object, !!enquo(color)),
+  feature_label = feature_name,
+  ...,
+  fixed = list(shape = 15, size = 3),
+  nloadings = 1
+)
+
+plot_sma(
+  object,
+  xdim = 1,
+  ydim = 2,
   color = subgroup,
   colorscale = default_colorscale(object, !!enquo(color)),
   feature_label = feature_name,
@@ -19,9 +72,11 @@ plot_sample_scores(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{x}{svar mapped to x (default pca1)}
+\item{method}{'pca', 'pls', 'lda', or 'sma'}
 
-\item{y}{svar mapped to y (default pca2)}
+\item{xdim}{number (default 1)}
+
+\item{ydim}{number (default 2)}
 
 \item{color}{svar mapped to color (symbol)}
 
@@ -45,10 +100,10 @@ Plot sample scores
 require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-object \%<>\% add_pca(plot = FALSE, ndim = 4)  # Principal Component Analysis
-plot_sample_scores(object, 'pca')
-plot_sample_scores(object, 'pca', nloadings = 0)
-plot_sample_scores(object, 'pca', color = TIME_POINT)
-plot_sample_scores(object, 'pca', color = TIME_POINT, xdim=3, ydim=4)
-plot_sample_scores(object, 'pca', color = NULL)
+plot_pca(object)
+plot_pca(object, xdim=3, ydim=4)
+plot_pca(object, nloadings = 0)
+plot_pca(object, color = TIME_POINT)
+plot_pca(object, color = TIME_POINT, xdim=3, ydim=4)
+plot_pca(object, color = NULL)
 }
