@@ -116,7 +116,7 @@ transform_to_standard_normal <- function(x){
 #==============================================================================
 #
 #                    plot_transformations
-#                        plot_transformation_scores
+#                        plot_transformation_biplots
 #                        plot_transformation_densities
 #                        plot_transformation_violins
 #
@@ -147,7 +147,7 @@ plot_transformations <- function(
     method='pca', xdim=1, ydim=2, ...
 ){
     p1 <- plot_transformation_densities(object, transformations, ...)
-    p2 <- plot_transformation_scores(
+    p2 <- plot_transformation_biplots(
             object, transformations, method, xdim1 = xdim, ydim = ydim, ...)
 
     gridExtra::grid.arrange(gridExtra::arrangeGrob(
@@ -202,7 +202,7 @@ plot_transformation_violins <- function(
 }
 
 
-plot_transformation_scores <- function(
+plot_transformation_biplots <- function(
     object,
     transformations = c('quantnorm', 'zscore', 'invnorm'),
     method = 'pca', xdim = 1, ydim = 2, color = subgroup, ...,

@@ -358,14 +358,14 @@ opls <- function(object, ndim=2){
 }
 
 
-#==============================================================================
+#=============================================================================
 #
-#                            plot_sample_scores
+#                       biplot()
 #
 #==============================================================================
 
 
-#' Plot sample scores
+#' Biplot
 #' @param object         SummarizedExperiment
 #' @param method         'pca', 'pls', 'lda', or 'sma'
 #' @param xdim           number (default 1)
@@ -381,14 +381,14 @@ opls <- function(object, ndim=2){
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' plot_pca(object)
-#' plot_pca(object, xdim=3, ydim=4)
-#' plot_pca(object, nloadings = 0)
-#' plot_pca(object, color = TIME_POINT)
-#' plot_pca(object, color = TIME_POINT, xdim=3, ydim=4)
-#' plot_pca(object, color = NULL)
+#' biplot(pca(object))
+#' biplot(pca(object), xdim=3, ydim=4)
+#' biplot(pca(object), nloadings = 0)
+#' biplot(pca(object), color = TIME_POINT)
+#' biplot(pca(object), color = TIME_POINT, xdim=3, ydim=4)
+#' biplot(pca(object), color = NULL)
 #' @export
-plot_sample_scores <- function(
+biplot <- function(
     object, method='pca', xdim = 1, ydim = 2,
     color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
     feature_label = feature_name,
@@ -486,4 +486,10 @@ headtail <- function(x, n){
     c(x[seq(1, n)], x[seq(length(x)+1-n, length(x))])
 }
 
+add_colorscale <- function(p, color, colorscale){
+    if (!rlang::quo_is_null(enquo(color))){
+        p <- p + scale_color_manual(values = colorscale)
+    }
+    p
+}
 
