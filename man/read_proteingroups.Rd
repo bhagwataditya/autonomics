@@ -6,16 +6,14 @@
 \title{Read proteingroups/phosphosites}
 \usage{
 read_proteingroups(
-  proteingroupsfile,
-  quantity = guess_maxquant_quantity(proteingroupsfile),
-  fvars = PROTEINGROUP_FVARS,
+  proteinfile,
+  quantity = guess_maxquant_quantity(proteinfile),
+  designfile = default_designfile(proteinfile, "maxquant", quantity),
+  rm_subgroups = character(0),
   contaminants = FALSE,
   reverse = FALSE,
-  unquantified = FALSE,
   fastafile = NULL,
   invert_subgroups = character(0),
-  rm_subgroups = character(0),
-  designfile = default_designfile(proteingroupsfile, "maxquant", quantity),
   log2 = TRUE,
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   verbose = TRUE,
@@ -23,25 +21,23 @@ read_proteingroups(
 )
 
 read_phosphosites(
-  phosphositesfile,
-  proteingroupsfile = paste0(dirname(phosphositesfile), "/proteinGroups.txt"),
-  quantity = guess_maxquant_quantity(phosphositesfile),
-  fvars = PHOSPHOSITE_FVARS,
+  phosphofile,
+  proteinfile = paste0(dirname(phosphofile), "/proteinGroups.txt"),
+  quantity = guess_maxquant_quantity(phosphofile),
+  designfile = default_designfile(proteinfile, "maxquant", quantity),
+  rm_subgroups = character(0),
   contaminants = FALSE,
   reverse = FALSE,
-  unquantified = FALSE,
   min_localization_prob = 0.75,
   fastafile = NULL,
   invert_subgroups = character(0),
-  rm_subgroups = character(0),
-  designfile = default_designfile(proteingroupsfile, "maxquant", quantity),
   log2 = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
 }
 \arguments{
-\item{proteingroupsfile}{proteinGroups.txt path}
+\item{proteinfile}{proteinGroups.txt path}
 
 \item{quantity}{string: "Ratio normalized",
 "Ratio", "LFQ intensity",
@@ -50,21 +46,17 @@ read_phosphosites(
 "Intensity labeled",
 "Intensity"}
 
-\item{fvars}{character vector: annotation columns}
+\item{designfile}{path to designfile}
+
+\item{rm_subgroups}{character vector: subgroups to be removed}
 
 \item{contaminants}{return contaminants? (defaultFALSE)}
 
 \item{reverse}{return reverse peptides? (default FALSE)}
 
-\item{unquantified}{return unquantified peptides? (default FALSE)}
-
 \item{fastafile}{NULL or fastafile (to deconvolute proteingroups}
 
 \item{invert_subgroups}{character vector: subgroups to be inverted}
-
-\item{rm_subgroups}{character vector: subgroups to be removed}
-
-\item{designfile}{path to designfile}
 
 \item{log2}{TRUE (default) or FALSE: log2 transform?}
 
@@ -74,9 +66,11 @@ read_phosphosites(
 
 \item{plot}{TRUE or FALSE}
 
-\item{phosphositesfile}{phospho(STY)Sites.txt path}
+\item{phosphofile}{phospho(STY)Sites.txt path}
 
 \item{min_localization_prob}{number (default 0.75): min site loc. prob.}
+
+\item{fvars}{character vector: annotation columns}
 }
 \value{
 SummarizedExperiment
@@ -87,30 +81,24 @@ Read proteingroups/phosphosites
 \examples{
 # STEM CELLS
     # NORMALIZED RATIOS
-    proteingroupsfile <- download_data('stemcells.proteinGroups.txt')
-    (object <- read_proteingroups(proteingroupsfile,
+    proteinfile <- download_data('stemcells.proteinGroups.txt')
+    (object <- read_proteingroups(proteinfile,
                                 invert_subgroups = c('E_EM','E_BM','BM_EM')))
     # INTENSITIES
-    (object <- read_proteingroups(proteingroupsfile,
+    (object <- read_proteingroups(proteinfile,
                                       quantity = 'Intensity labeled'))
     # DECONVOLUTE
     fastafile <- download_data('uniprot_hsa_20140515.fasta')
     fdata(object)[1:3, ]
-    fdata(read_proteingroups(proteingroupsfile,
+    fdata(read_proteingroups(proteinfile,
                 quantity = 'Intensity labeled', fastafile = fastafile))[1:3,]
 
 # DIFFERENTIATION
-    # PROTEINGROUPS
-    proteingroupsfile <- download_data('differentiation.proteinGroups.txt')
-    read_proteingroups(proteingroupsfile)
-
-    # RM SUBGROUPS
+    proteinfile <- download_data('differentiation.proteinGroups.txt')
+    phosphofile  <- download_data('differentiation.phosphoSites.txt')
+    read_proteingroups(proteinfile)
     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
                        'EM05_EM02', 'EM30_EM15')
-    read_proteingroups(proteingroupsfile, rm_subgroups = rm_subgroups)
-
-    # PHOSPHOSITES
-    phosphositesfile  <- download_data('differentiation.phosphoSites.txt')
-    read_phosphosites(
-        phosphositesfile, proteingroupsfile,rm_subgroups = rm_subgroups)
+    read_proteingroups(proteinfile, rm_subgroups = rm_subgroups)
+    read_phosphosites(phosphofile, proteinfile, rm_subgroups = rm_subgroups)
 }

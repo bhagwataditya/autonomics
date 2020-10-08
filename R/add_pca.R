@@ -127,7 +127,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     tmpobj <- object
     tmpobj %<>% inf_to_na(verbose=verbose)
     tmpobj %<>% nan_to_na(verbose=verbose)
-    tmpobj %<>% filter_features_available_in_some_sample()
+    tmpobj %<>% filter_features_available_in_some_sample(verbose = verbose)
 # (Double) center and (global) normalize
     row_means <- rowMeans(exprs(tmpobj), na.rm=TRUE)
     col_means <- colWeightedMeans(exprs(tmpobj), abs(row_means), na.rm = TRUE)
@@ -267,7 +267,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' object <- read_metabolon(file)
 #' .add_pls(object)
 #' @noRd
-.add_pls <- function(object, ndim=2){
+.add_pls <- function(object, ndim=2, verbose = FALSE){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")

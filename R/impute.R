@@ -249,10 +249,10 @@ impute_consistent_nas <- function(
     imputed_object %<>% extract(, snames(object))
 
     # Message
-    if (verbose) cmessage(
+    nimputed <- sum(rowAnys(is_imputed(imputed_object)))
+    if (verbose & nimputed>0) cmessage(
                     '\t\tImpute consistent NA values among %d/%d features',
-                    sum(rowAnys(is_imputed(imputed_object))),
-                    nrow(object))
+                    nimputed, nrow(object))
     # Return
     return(imputed_object)
 }

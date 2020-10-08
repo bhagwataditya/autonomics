@@ -160,10 +160,14 @@ make_composite_colorscale <- function(
 #' object %<>% add_pca(plot = FALSE)
 #' data <- sdata(object)
 #' plot_data(data, x = pca1, y = pca2)
+#' plot_data(data, x = pca1, y = pca2, color = TIME_POINT)
+#' plot_data(data, x = pca1, y = pca2, color = NULL)
+#'
 #' fixed <- list(shape = 15, size = 3)
-#' plot_data(data, x = pca1, y = pca2, fixed = fixed)
-#' plot_data(data, x = pca1, y = pca2, color = TIME_POINT, fixed = fixed)
-#' plot_data(data, x = pca1, y = pca2, color = NULL, fixed = fixed)
+#' plot_data(data, x = pca1, y = pca2, fixed=fixed)
+#'
+#' guides <- list(color=FALSE, fill=FALSE)
+#' plot_data(data, x = pca1, y = pca2, fixed=fixed, guides = guides)
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
@@ -171,10 +175,11 @@ plot_data <- function(
     geom = geom_point,
     color      = subgroup,
     fill       = !!enquo(color),
-    colorscale = make_colorscale(eval_tidy(enquo(color), data)),
-    fillscale  = make_colorscale(eval_tidy(enquo(fill), data)),
+    colorscale = make_colorscale(unique(eval_tidy(enquo(color), data))),
+    fillscale  = make_colorscale(unique(eval_tidy(enquo(fill), data))),
     ...,
-    fixed = list()
+    fixed = list(),
+    theme = list()
 ){
     color <- enquo(color)
     fill  <- enquo(fill)
@@ -187,6 +192,7 @@ plot_data <- function(
     p <- p + theme_bw()
     if (!rlang::quo_is_null(color)) p <- p + scale_color_manual(values = colorscale)
     if (!rlang::quo_is_null(fill )) p <- p + scale_fill_manual( values = fillscale)
+    p <- p + do.call(ggplot2::theme, theme)
 
     p
 }
@@ -231,6 +237,8 @@ plot_sample_scores <- function(
     x     <- enquo(x)
     y     <- enquo(y)
     feature_label <- enquo(feature_label)
+    dots  <- enquos(...)
+    fixed %<>% extract(setdiff(names(fixed), names(dots)))
 
     xstring <- rlang::as_name(x)
     ystring <- rlang::as_name(y)
@@ -241,7 +249,7 @@ plot_sample_scores <- function(
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
-    p %<>% add_scores(object, !!x, !!y, color = !!color, ...)
+    p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
     p %<>% add_colorscale(!!color, colorscale)
 
     p

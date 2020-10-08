@@ -87,7 +87,7 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
 # Preprocess
-    if (log2)               object %<>% log2transform(verbose = TRUE)
+    if (log2)               object %<>% .log2transform(verbose = TRUE)
     if (impute_consistent_nas) object %<>% impute_consistent_nas()
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')

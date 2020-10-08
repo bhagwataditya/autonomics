@@ -95,7 +95,7 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     if (rm_na_svars)            sdata(object) %<>% rm_na_columns()
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
 # Log2 transform
-    if (log2) object %<>% log2transform(verbose = TRUE)
+    if (log2) object %<>% .log2transform(verbose = TRUE)
 # Plot
     if (plot) add_pca(object)
 # Return
