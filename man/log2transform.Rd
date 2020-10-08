@@ -2,41 +2,48 @@
 % Please edit documentation in R/normalize.R
 \name{log2transform}
 \alias{log2transform}
-\alias{invnorm}
-\alias{quantnorm}
-\alias{zscore}
 \alias{exp2}
-\title{Inverse normal transform samples}
+\alias{zscore}
+\alias{quantnorm}
+\alias{invnorm}
+\title{Log2 transform}
 \usage{
-log2transform(object, assays = "exprs", plot = TRUE, verbose = TRUE, ...)
+log2transform(object, verbose = FALSE)
 
-invnorm(object, assays = "exprs", plot = TRUE, verbose = TRUE, ...)
+exp2(object, verbose = FALSE)
 
-quantnorm(object, assays = "exprs", plot = TRUE, verbose = TRUE, ...)
+zscore(object, verbose = FALSE)
 
-zscore(object, assays = "exprs", plot = TRUE, verbose = TRUE, ...)
+quantnorm(object, verbose = FALSE)
 
-exp2(object, assays = "exprs", plot = TRUE, verbose = TRUE, ...)
+invnorm(object, verbose = FALSE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{plot}{TRUE (default) or FALSE}
-
-\item{...}{passed on to plot_transformations}
+\item{verbose}{TRUE or FALSE}
 }
 \value{
-normalized SummarizedExperimen
+Transormed sumexp
 }
 \description{
-Inverse normal transform samples
+Log2 transform
 }
 \examples{
+require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE, log2=FALSE)
+object <- read_metabolon(file, plot = FALSE)
 
-object \%<>\% log2transform()
-invnorm(object)
-quantnorm(object)
-zscore(object)
+plot_sample_densities(object)
+plot_sample_densities(invnorm(object))
+
+plot_sample_densities(object)
+plot_sample_densities(quantnorm(object))
+
+plot_sample_densities(object)
+plot_sample_densities(zscore(object))
+
+plot_sample_densities(object)
+plot_sample_densities(exp2(object))
+plot_sample_densities(log2transform(exp2(object)))
 }

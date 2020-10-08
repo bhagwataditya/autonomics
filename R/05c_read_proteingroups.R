@@ -889,7 +889,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     if (verbose)  message('\tLog2 transform')
     object %<>% zero_to_na(verbose = verbose)
     object %<>% nan_to_na(verbose = verbose)
-    object %<>% .log2transform(verbose=verbose)
+    object %<>% log2transform(verbose=verbose)
 # Return
     metadata(object)$quantity <- quantity
     metadata(object)$platform <- 'maxquant'
@@ -934,7 +934,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     if (verbose)  message('\tLog2 transform')
     object %<>% zero_to_na(verbose = verbose)
     object %<>% nan_to_na(verbose = verbose)
-    object %<>% .log2transform(verbose=verbose)
+    object %<>% log2transform(verbose=verbose)
 # Return
     object
 }

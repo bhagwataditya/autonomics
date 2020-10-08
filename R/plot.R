@@ -200,60 +200,14 @@ plot_data <- function(
 
 #=============================================================================
 #
-#     plot_sample_scores()
+#                       plot_sample_scores()
+#                       plot_pca()
+#                       plot_pls()
+#                       plot_lda()
+#                       plot_sma()
 #
 #==============================================================================
 
-#' Plot sample scores
-#' @param object         SummarizedExperiment
-#' @param method         'pca', 'pls', 'lda', or 'sma'
-#' @param xdim           number (default 1)
-#' @param ydim           number (default 2)
-#' @param color          svar mapped to color (symbol)
-#' @param colorscale     vector(names = svarlevels, values = colordefs)
-#' @param ...            additional svars mapped to aesthetics
-#' @param feature_label  fvar mapped to (loadings) label
-#' @param fixed          fixed plot aesthetics
-#' @param nloadings      number of loadings per half-axis to plot
-#' @return ggplot object
-#' @examples
-#' require(magrittr)
-#' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' plot_pca(object)
-#' plot_pca(object, xdim=3, ydim=4)
-#' plot_pca(object, nloadings = 0)
-#' plot_pca(object, color = TIME_POINT)
-#' plot_pca(object, color = TIME_POINT, xdim=3, ydim=4)
-#' plot_pca(object, color = NULL)
-#' @export
-plot_sample_scores <- function(
-    object, method='pca', xdim = 1, ydim = 2,
-    color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
-    feature_label = feature_name,
-    ...,
-    fixed = list(shape=15, size=3), nloadings = 1
-){
-    object %<>% add_projection(method, ndim=max(xdim, ydim), verbose = TRUE)
-    color <- enquo(color)
-    xstr <- paste0(method, xdim)
-    ystr <- paste0(method, ydim)
-    x     <- sym(xstr)
-    y     <- sym(ystr)
-    feature_label <- enquo(feature_label)
-    dots  <- enquos(...)
-    fixed %<>% extract(setdiff(names(fixed), names(dots)))
-
-    xlab  <- paste0(xstr, ' : ', metadata(object)[[method]][[xstr]],'% ')
-    ylab  <- paste0(ystr, ' : ', metadata(object)[[method]][[ystr]],'% ')
-
-    p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
-    p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
-    p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
-    p %<>% add_colorscale(!!color, colorscale)
-
-    p
-}
 
 #' @rdname plot_sample_scores
 #' @export
@@ -269,6 +223,7 @@ plot_pca <- function(
         feature_label = !!enquo(feature_label), ..., fixed = fixed,
         nloadings=nloadings)
 }
+
 
 #' @rdname plot_sample_scores
 #' @export
@@ -322,6 +277,58 @@ add_colorscale <- function(p, color, colorscale){
     if (!rlang::quo_is_null(enquo(color))){
         p <- p + scale_color_manual(values = colorscale)
     }
+    p
+}
+
+
+#' Plot sample scores
+#' @param object         SummarizedExperiment
+#' @param method         'pca', 'pls', 'lda', or 'sma'
+#' @param xdim           number (default 1)
+#' @param ydim           number (default 2)
+#' @param color          svar mapped to color (symbol)
+#' @param colorscale     vector(names = svarlevels, values = colordefs)
+#' @param ...            additional svars mapped to aesthetics
+#' @param feature_label  fvar mapped to (loadings) label
+#' @param fixed          fixed plot aesthetics
+#' @param nloadings      number of loadings per half-axis to plot
+#' @return ggplot object
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_pca(object)
+#' plot_pca(object, xdim=3, ydim=4)
+#' plot_pca(object, nloadings = 0)
+#' plot_pca(object, color = TIME_POINT)
+#' plot_pca(object, color = TIME_POINT, xdim=3, ydim=4)
+#' plot_pca(object, color = NULL)
+#' @export
+plot_sample_scores <- function(
+    object, method='pca', xdim = 1, ydim = 2,
+    color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
+    feature_label = feature_name,
+    ...,
+    fixed = list(shape=15, size=3), nloadings = 1
+){
+    object %<>% add_projection(method, ndim=max(xdim, ydim), verbose = TRUE)
+    color <- enquo(color)
+    xstr <- paste0(method, xdim)
+    ystr <- paste0(method, ydim)
+    x     <- sym(xstr)
+    y     <- sym(ystr)
+    feature_label <- enquo(feature_label)
+    dots  <- enquos(...)
+    fixed %<>% extract(setdiff(names(fixed), names(dots)))
+
+    xlab  <- paste0(xstr, ' : ', metadata(object)[[method]][[xstr]],'% ')
+    ylab  <- paste0(ystr, ' : ', metadata(object)[[method]][[ystr]],'% ')
+
+    p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
+    p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
+    p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
+    p %<>% add_colorscale(!!color, colorscale)
+
     p
 }
 
@@ -394,7 +401,6 @@ add_loadings <- function(
 headtail <- function(x, n){
     c(x[seq(1, n)], x[seq(length(x)+1-n, length(x))])
 }
-
 
 
 #=============================================================================
