@@ -887,8 +887,9 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     object %<>% filter_maxquant_samples(rm_subgroups = rm_subgroups, verbose)
 # Log2
     if (verbose)  message('\tLog2 transform')
-    object %<>% zero_to_na(verbose=TRUE)
-    object %<>% .log2transform(verbose=TRUE)
+    object %<>% zero_to_na(verbose = verbose)
+    object %<>% nan_to_na(verbose = verbose)
+    object %<>% .log2transform(verbose=verbose)
 # Return
     metadata(object)$quantity <- quantity
     metadata(object)$platform <- 'maxquant'
@@ -931,8 +932,9 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     object %<>% filter_maxquant_samples(rm_subgroups = rm_subgroups, verbose)
 # Log2 transform
     if (verbose)  message('\tLog2 transform')
-    object %<>% zero_to_na(verbose=TRUE)
-    object %<>% .log2transform(verbose=TRUE)
+    object %<>% zero_to_na(verbose = verbose)
+    object %<>% nan_to_na(verbose = verbose)
+    object %<>% .log2transform(verbose=verbose)
 # Return
     object
 }
@@ -1058,18 +1060,11 @@ filter_maxquant_samples <- function(object, rm_subgroups, verbose){
 #==============================================================================
 
 transform_maxquant <- function(
-    object, invert_subgroups, log2, impute, verbose, plot
+    object, invert_subgroups, impute, verbose, plot
 ){
     # Invert
         if (verbose) message('\tTransform exprs')
         object %<>% invert(subgroups = invert_subgroups)
-
-    # Standardize non-detects
-        object %<>% zero_to_na(verbose = verbose)
-        object %<>% nan_to_na(verbose = verbose)
-
-    # Log2 transform
-        if (log2)   object %<>% .log2transform(verbose = verbose)
 
     # Remove batch effect
         if (grepl('Reporter intensity', metadata(object)$quantity))
@@ -1146,7 +1141,7 @@ read_proteingroups <- function(
     proteinfile, quantity = guess_maxquant_quantity(proteinfile),
     designfile = default_designfile(proteinfile, 'maxquant', quantity),
     rm_subgroups = character(0), contaminants = FALSE, reverse = FALSE,
-    fastafile = NULL, invert_subgroups = character(0), log2 = TRUE,
+    fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"), verbose = TRUE,
     plot = TRUE
 ){
@@ -1158,9 +1153,7 @@ read_proteingroups <- function(
 # Read
     object <- .read_proteingroups(
                     proteinfile, quantity, designfile = designfile,
-                    rm_subgroups = rm_subgroups, reverse = reverse,
-                    contaminants = contaminants, verbose = verbose,
-                    log2 = log2)
+                    rm_subgroups = rm_subgroups, verbose = verbose)
 # Prepare
     object %<>% filter_maxquant_features(reverse = reverse,
                     contaminants = contaminants, verbose = verbose)
@@ -1168,7 +1161,6 @@ read_proteingroups <- function(
     object %<>% deconvolute_proteingroups(fastafile)
     object %<>% transform_maxquant(
                     invert_subgroups      = invert_subgroups,
-                    log2                  = log2,
                     impute                = impute,
                     verbose               = verbose,
                     plot                  = plot)
@@ -1188,7 +1180,7 @@ read_phosphosites <- function(
     rm_subgroups = character(0),
     contaminants = FALSE, reverse = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
-    log2 = TRUE, verbose = TRUE, plot = TRUE
+    verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
