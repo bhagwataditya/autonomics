@@ -1067,10 +1067,11 @@ transform_maxquant <- function(
         object %<>% invert(subgroups = invert_subgroups)
 
     # Remove batch effect
-        if (grepl('Reporter intensity', metadata(object)$quantity))
-        message('\t\tTMT: rm run effect')
-        suppressWarnings(exprs(object) %<>% limma::removeBatchEffect(
-                                                batch = object$replicate))
+        if (grepl('Reporter intensity', metadata(object)$quantity)){
+            message('\t\tTMT: rm run effect')
+            suppressWarnings(exprs(object) %<>% limma::removeBatchEffect(
+                                                    batch = object$replicate))
+        }
 
     # Impute
         if (impute) object %<>% impute_consistent_nas(verbose=verbose)
