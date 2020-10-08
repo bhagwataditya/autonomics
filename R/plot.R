@@ -157,7 +157,7 @@ make_composite_colorscale <- function(
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% add_pca()
+#' object %<>% pca()
 #' data <- sdata(object)
 #' plot_data(data, x = pca1, y = pca2)
 #' plot_data(data, x = pca1, y = pca2, color = TIME_POINT)
@@ -311,7 +311,7 @@ plot_sample_scores <- function(
     ...,
     fixed = list(shape=15, size=3), nloadings = 1
 ){
-    object %<>% add_projection(method, ndim=max(xdim, ydim), verbose = TRUE)
+    object %<>% get(method)(ndim=max(xdim, ydim), verbose = TRUE)
     color <- enquo(color)
     xstr <- paste0(method, xdim)
     ystr <- paste0(method, ydim)
@@ -554,7 +554,7 @@ plot_sample_boxplots <- function(
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% add_pca()
+#' object %<>% pca()
 #' object %<>% extract(order(abs(fdata(.)$pca1, decreasing = TRUE)[1:9]), )
 #' plot_feature_boxplots(object)
 #' plot_feature_profiles(object)

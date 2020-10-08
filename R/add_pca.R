@@ -98,21 +98,9 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 
 #============================================================================
 #
-#                    add_projection
-#                    add_pca
-#                    add_sma
-#                    add_lda
-#                    add_pls
-#                    add_spls
-#                    add_ropls
+#                    pca, sma, lda, pls, spls, ropls
 #
 #============================================================================
-
-add_projection <- function(object, method, ndim, verbose){
-    assert_is_subset(method, c('pca', 'pls', 'sma', 'lda'))
-    get(paste0('add_', method))(object, ndim=ndim, verbose=verbose)
-}
-
 
 #' Add PCA, SMA, LDA, or PLS
 #'
@@ -125,14 +113,14 @@ add_projection <- function(object, method, ndim, verbose){
 #' @return        SummarizedExperiment
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' add_pca(object)  # Principal Component Analysis
-#' add_pls(object)  # Partial Least Squares
-#' add_lda(object)  # Linear Discriminant Analysis
-#' add_sma(object)  # Spectral Map Analysis
-#' add_pca(object, ndim=3)
+#' pca(object)  # Principal Component Analysis
+#' pls(object)  # Partial Least Squares
+#' lda(object)  # Linear Discriminant Analysis
+#' sma(object)  # Spectral Map Analysis
+#' pca(object, ndim=3)
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
-add_pca <- function(object, ndim = 2, verbose = TRUE){
+pca <- function(object, ndim = 2, verbose = TRUE){
 # Assert
     assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
@@ -172,9 +160,9 @@ add_pca <- function(object, ndim = 2, verbose = TRUE){
 
 
 
-#' @rdname add_pca
+#' @rdname pca
 #' @export
-add_sma <- function(object, ndim = 2, verbose = TRUE){
+sma <- function(object, ndim = 2, verbose = TRUE){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
@@ -218,9 +206,9 @@ add_sma <- function(object, ndim = 2, verbose = TRUE){
 }
 
 
-#' @rdname add_pca
+#' @rdname pca
 #' @export
-add_lda <- function(object, ndim=2, verbose = TRUE){
+lda <- function(object, ndim=2, verbose = TRUE){
 # Assert
     assert_is_valid_sumexp(object)
     nsubgroup <- length(subgroup_levels(object))
@@ -262,9 +250,9 @@ add_lda <- function(object, ndim=2, verbose = TRUE){
 }
 
 
-#' @rdname add_pca
+#' @rdname pca
 #' @export
-add_pls <- function(object, ndim=2, verbose = FALSE){
+pls <- function(object, ndim=2, verbose = FALSE){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -300,9 +288,9 @@ add_pls <- function(object, ndim=2, verbose = FALSE){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' .add_spls(object)
+#' spls(object)
 #' @noRd
-add_spls <- function(object, ndim=2){
+spls <- function(object, ndim=2){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -338,9 +326,9 @@ add_spls <- function(object, ndim=2){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' .add_opls(object)
+#' opls(object)
 #' @noRd
-add_opls <- function(object, ndim=2){
+opls <- function(object, ndim=2){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
         message("BiocManager::install('ropls'). Then re-run.")

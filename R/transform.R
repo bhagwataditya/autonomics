@@ -130,21 +130,17 @@ gglegend<-function(p){
 }
 
 
-#' Plot transformation effects
+#' Plot transformations
 #' @param object          SummarizedExperiment
-#' @param geom            function
-#' @param x               svar mapped to x
-#' @param group           svar mapped to group
-#' @param ...             additional svar to aesthetic mappings
-#' @param tranformations  character vector
-#' @param fixed           list
+#' @param transformations vector
+#' @param method          'pca', 'pls', 'sma', or 'lda'
+#' @param xdim            number (default 1)
+#' @param ydim            number (default 1)
+#' @param ...             passed to plot_data
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' plot_transformations(object)
-#' plot_transformation_scores(object)
-#' plot_transformation_densities(object)
-#' plot_transformation_violins(object)
 #' @export
 plot_transformations <- function(
     object, transformations = c('quantnorm', 'zscore', 'invnorm'),
@@ -162,8 +158,6 @@ plot_transformations <- function(
 }
 
 
-#' @rdname plot_transformations
-#' @export
 plot_transformation_densities <- function(
     object,
     transformations = c('quantnorm', 'zscore', 'invnorm'),
@@ -185,8 +179,6 @@ plot_transformation_densities <- function(
 }
 
 
-#' @rdname plot_transformations
-#' @export
 plot_transformation_violins <- function(
     object,
     transformations = c('quantnorm', 'zscore', 'invnorm'),
@@ -210,8 +202,6 @@ plot_transformation_violins <- function(
 }
 
 
-#' @rdname plot_transformations
-#' @export
 plot_transformation_scores <- function(
     object,
     transformations = c('quantnorm', 'zscore', 'invnorm'),
@@ -222,14 +212,14 @@ plot_transformation_scores <- function(
     xstr <- paste0(method, xdim)
     ystr <- paste0(method, ydim)
 
-    object %<>% add_projection(method, ndim=max(xdim, ydim), verbose = FALSE)
+    object %<>% get(method)(ndim=max(xdim, ydim), verbose = FALSE)
     scoredt <- sdata(object) %>% cbind(transfo = 'input')
     var1 <- metadata(object)[[method]][[xstr]]
     var2 <- metadata(object)[[method]][[ystr]]
     scoredt$transfo <- sprintf('input : %d + %d %%', var1, var2)
     for (transfo in transformations){
         tmpobj <- get(transfo)(object) %>%
-                add_projection(method, ndim=max(xdim, ydim), verbose=FALSE)
+                get(method)(ndim=max(xdim, ydim), verbose=FALSE)
         var1 <- metadata(tmpobj)[[method]][[xstr]]
         var2 <- metadata(tmpobj)[[method]][[ystr]]
         tmpdt <- sdata(tmpobj)
@@ -241,5 +231,4 @@ plot_transformation_scores <- function(
                     fixed = fixed)
     p + facet_wrap(~transfo, nrow=1, scales = "free")
 }
-
 

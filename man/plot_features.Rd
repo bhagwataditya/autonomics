@@ -55,7 +55,7 @@ Plot features
 require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-object \%<>\% add_pca()
+object \%<>\% pca()
 object \%<>\% extract(order(abs(fdata(.)$pca1, decreasing = TRUE)[1:9]), )
 plot_feature_boxplots(object)
 plot_feature_profiles(object)

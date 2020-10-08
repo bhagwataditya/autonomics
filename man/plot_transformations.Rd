@@ -2,10 +2,7 @@
 % Please edit documentation in R/transform.R
 \name{plot_transformations}
 \alias{plot_transformations}
-\alias{plot_transformation_densities}
-\alias{plot_transformation_violins}
-\alias{plot_transformation_scores}
-\title{Plot transformation effects}
+\title{Plot transformations}
 \usage{
 plot_transformations(
   object,
@@ -15,62 +12,25 @@ plot_transformations(
   ydim = 2,
   ...
 )
-
-plot_transformation_densities(
-  object,
-  transformations = c("quantnorm", "zscore", "invnorm"),
-  x = value,
-  fill = subgroup,
-  group = if (ncol(object) > 16) subgroup else sample_id,
-  ...,
-  fixed = list(na.rm = TRUE, alpha = 0.3)
-)
-
-plot_transformation_violins(
-  object,
-  transformations = c("quantnorm", "zscore", "invnorm"),
-  x = subgroup,
-  y = value,
-  fill = subgroup,
-  group = if (ncol(object) > 16) subgroup else sample_id,
-  ...,
-  fixed = list(na.rm = TRUE)
-)
-
-plot_transformation_scores(
-  object,
-  transformations = c("quantnorm", "zscore", "invnorm"),
-  method = "pca",
-  xdim = 1,
-  ydim = 2,
-  color = subgroup,
-  ...,
-  fixed = list(shape = 15, size = 3)
-)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{...}{additional svar to aesthetic mappings}
+\item{transformations}{vector}
 
-\item{x}{svar mapped to x}
+\item{method}{'pca', 'pls', 'sma', or 'lda'}
 
-\item{group}{svar mapped to group}
+\item{xdim}{number (default 1)}
 
-\item{fixed}{list}
+\item{ydim}{number (default 1)}
 
-\item{geom}{function}
-
-\item{tranformations}{character vector}
+\item{...}{passed to plot_data}
 }
 \description{
-Plot transformation effects
+Plot transformations
 }
 \examples{
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 plot_transformations(object)
-plot_transformation_scores(object)
-plot_transformation_densities(object)
-plot_transformation_violins(object)
 }
