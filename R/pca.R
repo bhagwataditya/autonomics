@@ -420,7 +420,7 @@ multiplot <- function(..., plotlist=NULL, cols) {
 }
 
 
-#' Multi-biplot
+#' Arrange multiple biplots
 #' @param object       SummarizedExperiment
 #' @param method      'pca', 'pls', 'lda', 'sma'
 #' @param ndim         number
@@ -429,12 +429,15 @@ multiplot <- function(..., plotlist=NULL, cols) {
 #' @param fixed        fixed ggplot aesthetics
 #' @param verbose      TRUE (default) or FALSE
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('hypoglycemia.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' multibiplot(object)
-#' multibiplot(object, minvar = 5) # Drops PC5 (5% variance) as no partner PC
+#' dim_biplots(object)
+#' color_biplots(object, colorvar = c('SEX', 'T2D', 'SUB', 'SET'))
+#' batch_biplots(object, batchvar = c('SEX', 'SUB', 'T2D'))
+#'
+#' dim_biplots(object, minvar = 5) # Drops PC5 (5% variance) as no partner PC
 #' @export
-multibiplot <- function(
+dim_biplots <- function(
     object, method = 'pca', ndim=8, minvar = 0,
     color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
     ...,
@@ -464,30 +467,38 @@ multibiplot <- function(
     multiplot(plotlist=plotlist, cols = floor(sqrt(length(plotlist))))
 }
 
-#' @examples
-#' file <- download_data('hypoglycemia.somascan.adat')
-#' object <- read_somascan(file, plot = FALSE)
-#' svars(object)
-#' biplot(object, pca1, pca2)
-#' nvarplot(object, color = list(SampleGroup, Subject_ID, Sex, T2D))
-#'
-#' nvarplot(object, 'Subject_ID')
-#' nvarplot(object, 'Sex')
-#' nvarplot(object, 'T2D')
-#' nvarplot(object, 'T2D')
-#' nvarplot(object, )
-nvarplot <- function(object, method = 'pca', colorvars = 'subgroup'){
+
+#' @rdname dim_biplots
+#' @export
+color_biplots <- function(object, method = 'pca', colorvar = 'subgroup'){
     plotlist <- list()
     for (icolor in colorvar){
-        p <- biplot(object, pca1, pca2, color = sym(icolor))
+        p <- biplot(object, pca1, pca2, color = !!sym(icolor), nloadings=0)
+        p <- p + ggtitle(icolor)
+        p <- p + guides(color = FALSE, fill = FALSE)
         plotlist %<>% c(list(p))
     }
-#
-#     p1 <- biplot(object, pca1, pca2, nloadings=0)
-#     exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[batch]])
-#     p2 <- biplot(object, pca1, pca2, nloadings=0)
-    multiplot(p1, p2, cols=2)
+    multiplot(plotlist = plotlist, cols=2)
 }
+
+
+#' @rdname dim_biplots
+#' @export
+batch_biplots <- function(object, method = 'pca', color = subgroup, batchvars = character(0)){
+    p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
+    p <- p + ggtitle('INPUT')
+    p <- p + guides(color=FALSE, fill=FALSE)
+    plotlist <- list(p)
+    for (ibatch in batchvars){
+        exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[ibatch]])
+        p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
+        p <- p + ggtitle(paste0(' - ', ibatch))
+        p <- p + guides(color=FALSE, fill=FALSE)
+        plotlist %<>% c(list(p))
+    }
+    multiplot(plotlist = plotlist, cols=2)
+}
+
 
 
 
