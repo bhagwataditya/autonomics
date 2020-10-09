@@ -437,6 +437,22 @@ multibiplot <- function(
     multiplot(plotlist=plotlist, cols = floor(sqrt(length(plotlist))))
 }
 
+#' @examples
+#' file <- download_data('hypoglycemia.somascan.adat')
+#' object <- read_somascan(file, plot = FALSE)
+#' biplot(object, pca1, pca2)
+#' nvarplot(object, 'Subject_ID')
+#' nvarplot(object, )
+nvarplot <- function(object, method = 'pca'){
+    p1 <- biplot(object, pca1, pca2, nloadings=0)
+    exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[batch]])
+    p2 <- biplot(object, pca1, pca2, nloadings=0)
+    multiplot(p1, p2, cols=2)
+}
+
+
+
+
 #' Biplot
 #' @param object         SummarizedExperiment
 #' @param method         'pca', 'pls', 'lda', or 'sma'
