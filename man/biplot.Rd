@@ -6,9 +6,8 @@
 \usage{
 biplot(
   object,
-  method = "pca",
-  xdim = 1,
-  ydim = 2,
+  x,
+  y,
   color = subgroup,
   colorscale = default_colorscale(object, !!enquo(color)),
   feature_label = feature_name,
@@ -19,12 +18,6 @@ biplot(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{method}{'pca', 'pls', 'lda', or 'sma'}
-
-\item{xdim}{number (default 1)}
-
-\item{ydim}{number (default 2)}
 
 \item{color}{svar mapped to color (symbol)}
 
@@ -37,6 +30,12 @@ biplot(
 \item{fixed}{fixed plot aesthetics}
 
 \item{nloadings}{number of loadings per half-axis to plot}
+
+\item{method}{'pca', 'pls', 'lda', or 'sma'}
+
+\item{xdim}{number (default 1)}
+
+\item{ydim}{number (default 2)}
 }
 \value{
 ggplot object
@@ -45,13 +44,13 @@ ggplot object
 Biplot
 }
 \examples{
-require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-biplot(pca(object))
-biplot(pca(object), xdim=3, ydim=4)
-biplot(pca(object), nloadings = 0)
-biplot(pca(object), color = TIME_POINT)
-biplot(pca(object), color = TIME_POINT, xdim=3, ydim=4)
-biplot(pca(object), color = NULL)
+biplot(object, x=pca1, y=pca2)
+biplot(object, x=pls1, y=pls2)
+biplot(object, xdim=3, ydim=4)
+biplot(object, nloadings = 0)
+biplot(object, color = TIME_POINT)
+biplot(object, color = TIME_POINT, xdim=3, ydim=4)
+biplot(object, color = NULL)
 }

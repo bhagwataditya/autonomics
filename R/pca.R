@@ -364,6 +364,59 @@ opls <- function(object, ndim=2){
 #
 #==============================================================================
 
+#' Multi-biplot
+#' @param object       SummarizedExperiment
+#' @param method      'pca', 'pls', 'lda', 'sma'
+#' @param ndim         number
+#' @param color        variable mapped to color (default subgroup)
+#' @param colorscale   vector (name = subgroup, value = colordef)
+#' @param fixed        fixed ggplot aesthetics
+#' @param verbose      TRUE (default) or FALSE
+#' @examples
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' multibiplot(object)
+#' @export
+multibiplot <- function(
+    object, method = 'pca', ndim=9,
+    color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
+    ...,
+    fixed = list(shape=15, size=3), verbose = TRUE
+){
+
+    baredt <- data.table(sdata(object))
+    object %<>% get(method)(ndim=ndim, verbose=verbose)
+    scoredt <- data.table(sdata(object))
+    xvar <- paste0(method, 1)
+    yvar <- paste0(method, 2)
+    plotdt <- baredt %>% cbind(x = scoredt[[xvar]], y = scoredt[[yvar]])
+    plotdt$facet <- sprintf('X1 X2   %d %% %d %%',
+                        metadata(object)[[method]][[xvar]],
+                        metadata(object)[[method]][[yvar]])
+    #  1   2   3   4
+    # 1:2 3:4 5:6 7:8
+    for (i in seq(2, ndim %/% 2)){
+        xdim <- 2*i-1
+        ydim <- 2*i
+        xvar <- paste0(method, xdim)
+        yvar <- paste0(method, ydim)
+        tmpdt <- baredt %>% cbind(x = scoredt[[xvar]], y = scoredt[[yvar]])
+        tmpdt$facet <- sprintf('X%d X%d   %d %% %d %%',
+                               xdim, ydim,
+                        metadata(object)[[method]][[xvar]],
+                        metadata(object)[[method]][[yvar]])
+        plotdt %<>% rbind(tmpdt)
+    }
+    plotdt$facet %<>% factor(unique(.))
+
+    plot_data(plotdt, x=x, y=y, color=!!enquo(color), ..., fixed = fixed) +
+    facet_wrap(~facet, scales = 'free') +
+    xlab(NULL) +
+    ylab(NULL) +
+    ggtitle(method) +
+    theme(plot.title = element_text(hjust = 0.5))
+
+}
 
 #' Biplot
 #' @param object         SummarizedExperiment
@@ -378,35 +431,41 @@ opls <- function(object, ndim=2){
 #' @param nloadings      number of loadings per half-axis to plot
 #' @return ggplot object
 #' @examples
-#' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' biplot(pca(object))
-#' biplot(pca(object), xdim=3, ydim=4)
-#' biplot(pca(object), nloadings = 0)
-#' biplot(pca(object), color = TIME_POINT)
-#' biplot(pca(object), color = TIME_POINT, xdim=3, ydim=4)
-#' biplot(pca(object), color = NULL)
+#' biplot(object, x=pca1, y=pca2)
+#' biplot(object, x=pls1, y=pls2)
+#' biplot(object, xdim=3, ydim=4)
+#' biplot(object, nloadings = 0)
+#' biplot(object, color = TIME_POINT)
+#' biplot(object, color = TIME_POINT, xdim=3, ydim=4)
+#' biplot(object, color = NULL)
 #' @export
 biplot <- function(
-    object, method='pca', xdim = 1, ydim = 2,
+    object, x, y,
     color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
     feature_label = feature_name,
     ...,
     fixed = list(shape=15, size=3), nloadings = 1
 ){
-    object %<>% get(method)(ndim=max(xdim, ydim), verbose = TRUE)
+    x     <- enquo(x)
+    y     <- enquo(y)
+    xstr <- as_name(x)
+    ystr <- as_name(y)
+    methodx <- substr(xstr, 1, 3)
+    methody <- substr(ystr, 1, 3)
+    xdim <- xstr %>% substr(4, nchar(.)) %>% as.numeric()
+    ydim <- ystr %>% substr(4, nchar(.)) %>% as.numeric()
+
+    object %<>% get(methodx)(ndim=xdim, verbose = FALSE)
+    object %<>% get(methody)(ndim=ydim, verbose = FALSE)
     color <- enquo(color)
-    xstr <- paste0(method, xdim)
-    ystr <- paste0(method, ydim)
-    x     <- sym(xstr)
-    y     <- sym(ystr)
     feature_label <- enquo(feature_label)
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
 
-    xlab  <- paste0(xstr, ' : ', metadata(object)[[method]][[xstr]],'% ')
-    ylab  <- paste0(ystr, ' : ', metadata(object)[[method]][[ystr]],'% ')
+    xlab  <- paste0(xstr, ' : ', metadata(object)[[methodx]][[xstr]],'% ')
+    ylab  <- paste0(ystr, ' : ', metadata(object)[[methody]][[ystr]],'% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
