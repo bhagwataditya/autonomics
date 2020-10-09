@@ -1166,7 +1166,7 @@ read_proteingroups <- function(
                     verbose               = verbose,
                     plot                  = plot)
 # Return
-    if (plot)  plot_pca(object, verbose = verbose)
+    if (plot)  print(biplot(object, pca1, pca2))
     object
 }
 
@@ -1209,7 +1209,7 @@ read_phosphosites <- function(
                     verbose               = verbose,
                     plot                  = plot)
 # Return
-    if (plot)  plot_pca(object, verbose = verbose)
+    if (plot)  print(biplot(object, pca1, pca2))
     object
 }
 
