@@ -159,7 +159,7 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     object %<>% merge_fdata(features)
     metadata(object)$pca <- variances
 # Filter for minvar
-    object %<>% .filter_minvar(method, minvar)
+    object %<>% .filter_minvar('pca', minvar)
 # Return
     object
 }
@@ -210,7 +210,7 @@ sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     object %<>% merge_fdata(features)
     metadata(object)$sma <- variances
 # Filter for minvar
-    object %<>% .filter_minvar(method, minvar)
+    object %<>% .filter_minvar('sma', minvar)
 # Return
     object
 }
@@ -258,7 +258,7 @@ lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     object %<>% merge_fdata(features)
     metadata(object)$sma <- variances
 # Filter for minvar
-    object %<>% .filter_minvar(method, minvar)
+    object %<>% .filter_minvar('lda', minvar)
 # Return
     object
 }
@@ -294,7 +294,7 @@ pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE){
     object %<>% merge_fdata(features)
     metadata(object)$pls <- variances
 # Filter for minvar
-    object %<>% .filter_minvar(method, minvar)
+    object %<>% .filter_minvar('pls', minvar)
 # Return
     object
 }
@@ -336,7 +336,7 @@ spls <- function(object, ndim = 2, minvar = 0){
     object %<>% merge_sdata(features)
     metadata(object)$spls <- variances
 # Filter for minvar
-    object %<>% .filter_minvar(method, minvar)
+    object %<>% .filter_minvar('spls', minvar)
 # Return
     object
 }
@@ -378,7 +378,7 @@ opls <- function(object, ndim = 2, minvar = 0){
     object %<>% merge_fdata(features)
     metadata(object)$opls <- variances
 # Filter for minvar
-    object %<>% .filter_minvar(method, minvar)
+    object %<>% .filter_minvar('opls', minvar)
 # Return
     object
 }

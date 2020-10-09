@@ -8,6 +8,7 @@ multibiplot(
   object,
   method = "pca",
   ndim = 8,
+  minvar = 0,
   color = subgroup,
   colorscale = default_colorscale(object, !!enquo(color)),
   ...,
@@ -37,4 +38,5 @@ Multi-biplot
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 multibiplot(object)
+multibiplot(object, minvar = 5) # Drops PC5 (5\% variance) as no partner PC
 }
