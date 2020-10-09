@@ -119,6 +119,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' lda(object)  # Linear Discriminant Analysis
 #' sma(object)  # Spectral Map Analysis
 #' pca(object, ndim=3)
+#' pca(object, ndim=Inf, minvar=5)
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
@@ -127,7 +128,8 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_less_than_or_equal_to(ndim, ncol(object))
-    assert_is_a_number(min_var)
+    assert_is_a_number(minvar)
+    assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
     if (verbose)  message('\tAdd PCA')
 # Prepare
@@ -146,11 +148,9 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 # Perform PCA
     pca_res  <- pcaMethods::pca(t(exprs(tmpobj)),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
+    samples   <- pca_res@scores
+    features  <- pca_res@loadings
     variances <- round(100*pca_res@R2)
-    selector <- variances >= min_var
-    variances %<>% extract(selector)
-    samples   <- pca_res@scores[,selector]
-    features  <- pca_res@loadings[,selector]
     colnames(samples)  <- sprintf('pca%d', seq_len(ncol(samples)))
     colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
@@ -158,6 +158,8 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     object %<>% merge_sdata(samples)
     object %<>% merge_fdata(features)
     metadata(object)$pca <- variances
+# Filter for minvar
+    object %<>% .filter_minvar('pca', minvar)
 # Return
     object
 }
@@ -166,7 +168,7 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 
 #' @rdname pca
 #' @export
-sma <- function(object, ndim = 2, verbose = TRUE){
+sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
@@ -176,6 +178,8 @@ sma <- function(object, ndim = 2, verbose = TRUE){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
+    assert_is_a_number(minvar)
+    assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Preprocess
     tmpobj <- object
@@ -205,6 +209,8 @@ sma <- function(object, ndim = 2, verbose = TRUE){
     object %<>% merge_sdata(samples)
     object %<>% merge_fdata(features)
     metadata(object)$sma <- variances
+# Filter for minvar
+    object %<>% .filter_minvar('sma', minvar)
 # Return
     object
 }
@@ -212,7 +218,7 @@ sma <- function(object, ndim = 2, verbose = TRUE){
 
 #' @rdname pca
 #' @export
-lda <- function(object, ndim=2, verbose = TRUE){
+lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 # Assert
     assert_is_valid_sumexp(object)
     nsubgroup <- length(subgroup_levels(object))
@@ -221,6 +227,8 @@ lda <- function(object, ndim=2, verbose = TRUE){
     assert_all_are_in_range(ndim, 1, nsubgroup-1)
     if (ndim > (nsubgroup-1)) stop(
         sprintf('LDA requires ndim (%d) <= nsubgroup-1 (%d)',ndim, nsubgroup-1))
+    assert_is_a_number(minvar)
+    assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Preprocess
     tmpobj <- object
@@ -249,6 +257,8 @@ lda <- function(object, ndim=2, verbose = TRUE){
     object %<>% merge_sdata(samples)
     object %<>% merge_fdata(features)
     metadata(object)$sma <- variances
+# Filter for minvar
+    object %<>% .filter_minvar('lda', minvar)
 # Return
     object
 }
@@ -256,7 +266,7 @@ lda <- function(object, ndim=2, verbose = TRUE){
 
 #' @rdname pca
 #' @export
-pls <- function(object, ndim=2, verbose = FALSE){
+pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -266,6 +276,8 @@ pls <- function(object, ndim=2, verbose = FALSE){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
+    assert_is_a_number(minvar)
+    assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
     x <- t(exprs(object))
@@ -281,6 +293,8 @@ pls <- function(object, ndim=2, verbose = FALSE){
     object %<>% merge_sdata(samples)
     object %<>% merge_fdata(features)
     metadata(object)$pls <- variances
+# Filter for minvar
+    object %<>% .filter_minvar('pls', minvar)
 # Return
     object
 }
@@ -294,7 +308,7 @@ pls <- function(object, ndim=2, verbose = FALSE){
 #' object <- read_metabolon(file)
 #' spls(object)
 #' @noRd
-spls <- function(object, ndim=2){
+spls <- function(object, ndim = 2, minvar = 0){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -304,6 +318,8 @@ spls <- function(object, ndim=2){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
+    assert_is_a_number(minvar)
+    assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
     x <- t(exprs(object))
@@ -319,6 +335,8 @@ spls <- function(object, ndim=2){
     object %<>% merge_sdata(samples)
     object %<>% merge_sdata(features)
     metadata(object)$spls <- variances
+# Filter for minvar
+    object %<>% .filter_minvar('spls', minvar)
 # Return
     object
 }
@@ -332,7 +350,7 @@ spls <- function(object, ndim=2){
 #' object <- read_metabolon(file)
 #' opls(object)
 #' @noRd
-opls <- function(object, ndim=2){
+opls <- function(object, ndim = 2, minvar = 0){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
         message("BiocManager::install('ropls'). Then re-run.")
@@ -342,6 +360,8 @@ opls <- function(object, ndim=2){
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
+    assert_is_a_number(minvar)
+    assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
     x <- t(exprs(object))
@@ -357,6 +377,8 @@ opls <- function(object, ndim=2){
     object %<>% merge_sdata(samples)
     object %<>% merge_fdata(features)
     metadata(object)$opls <- variances
+# Filter for minvar
+    object %<>% .filter_minvar('opls', minvar)
 # Return
     object
 }
@@ -410,15 +432,16 @@ multiplot <- function(..., plotlist=NULL, cols) {
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' multibiplot(object)
+#' multibiplot(object, minvar = 5) # Drops PC5 (5% variance) as no partner PC
 #' @export
 multibiplot <- function(
-    object, method = 'pca', ndim=8,
+    object, method = 'pca', ndim=8, minvar = 0,
     color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
     ...,
     fixed = list(shape=15, size=3), verbose = TRUE
 ){
     baredt <- data.table(sdata(object))
-    object %<>% get(method)(ndim=ndim, verbose=verbose)
+    object %<>% get(method)(ndim=ndim, minvar = minvar, verbose=verbose)
     scoredt <- data.table(sdata(object))
     scorecols <- names(scoredt) %>% extract(stri_detect_fixed(., method))
     ndim <- max(as.numeric(stri_replace_first_fixed(scorecols, method, '')))
@@ -603,3 +626,13 @@ add_colorscale <- function(p, color, colorscale){
     p
 }
 
+.filter_minvar <- function(object, method, minvar) {
+    variances <- metadata(object)[[method]]
+    discard_components <- variances[variances < minvar] %>% names()
+
+    sdata(object)[discard_components] <- NULL
+    fdata(object)[discard_components] <- NULL
+    metadata(object)[[method]] <-
+        variances[!names(variances) %in% discard_components]
+    object
+}

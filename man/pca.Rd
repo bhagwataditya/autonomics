@@ -7,18 +7,20 @@
 \alias{pls}
 \title{Add PCA, SMA, LDA, or PLS}
 \usage{
-pca(object, ndim = 2, verbose = TRUE)
+pca(object, ndim = 2, minvar = 0, verbose = TRUE)
 
-sma(object, ndim = 2, verbose = TRUE)
+sma(object, ndim = 2, minvar = 0, verbose = TRUE)
 
-lda(object, ndim = 2, verbose = TRUE)
+lda(object, ndim = 2, minvar = 0, verbose = TRUE)
 
-pls(object, ndim = 2, verbose = FALSE)
+pls(object, ndim = 2, minvar = 0, verbose = FALSE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
 \item{ndim}{number}
+
+\item{minvar}{number}
 
 \item{verbose}{TRUE (default) or FALSE}
 }
@@ -31,6 +33,7 @@ pls(object)  # Partial Least Squares
 lda(object)  # Linear Discriminant Analysis
 sma(object)  # Spectral Map Analysis
 pca(object, ndim=3)
+pca(object, ndim=Inf, minvar=5)
 }
 \description{
 Perform a dimension reduction.
