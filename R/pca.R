@@ -444,13 +444,25 @@ multibiplot <- function(
 #' @examples
 #' file <- download_data('hypoglycemia.somascan.adat')
 #' object <- read_somascan(file, plot = FALSE)
+#' svars(object)
 #' biplot(object, pca1, pca2)
+#' nvarplot(object, color = list(SampleGroup, Subject_ID, Sex, T2D))
+#'
 #' nvarplot(object, 'Subject_ID')
+#' nvarplot(object, 'Sex')
+#' nvarplot(object, 'T2D')
+#' nvarplot(object, 'T2D')
 #' nvarplot(object, )
-nvarplot <- function(object, method = 'pca'){
-    p1 <- biplot(object, pca1, pca2, nloadings=0)
-    exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[batch]])
-    p2 <- biplot(object, pca1, pca2, nloadings=0)
+nvarplot <- function(object, method = 'pca', colorvars = 'subgroup'){
+    plotlist <- list()
+    for (icolor in colorvar){
+        p <- biplot(object, pca1, pca2, color = sym(icolor))
+        plotlist %<>% c(list(p))
+    }
+#
+#     p1 <- biplot(object, pca1, pca2, nloadings=0)
+#     exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[batch]])
+#     p2 <- biplot(object, pca1, pca2, nloadings=0)
     multiplot(p1, p2, cols=2)
 }
 
