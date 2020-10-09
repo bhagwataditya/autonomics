@@ -364,6 +364,36 @@ opls <- function(object, ndim=2){
 #
 #==============================================================================
 
+# Winston Chang
+# http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/
+multiplot <- function(..., plotlist=NULL, cols) {
+    require(grid)
+
+    # Make a list from the ... arguments and plotlist
+    plots <- c(list(...), plotlist)
+
+    numPlots = length(plots)
+
+    # Make the panel
+    plotCols = cols                          # Number of columns of plots
+    plotRows = ceiling(numPlots/plotCols) # Number of rows needed, calculated from # of cols
+
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(plotRows, plotCols)))
+    vplayout <- function(x, y)
+        viewport(layout.pos.row = x, layout.pos.col = y)
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+        curRow = ceiling(i/plotCols)
+        curCol = (i-1) %% plotCols + 1
+        print(plots[[i]], vp = vplayout(curRow, curCol ))
+    }
+
+}
+
+
 #' Multi-biplot
 #' @param object       SummarizedExperiment
 #' @param method      'pca', 'pls', 'lda', 'sma'
@@ -378,44 +408,33 @@ opls <- function(object, ndim=2){
 #' multibiplot(object)
 #' @export
 multibiplot <- function(
-    object, method = 'pca', ndim=9,
+    object, method = 'pca', ndim=8,
     color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
     ...,
     fixed = list(shape=15, size=3), verbose = TRUE
 ){
-
     baredt <- data.table(sdata(object))
     object %<>% get(method)(ndim=ndim, verbose=verbose)
     scoredt <- data.table(sdata(object))
+    scorecols <- names(scoredt) %>% extract(stri_detect_fixed(., method))
+    ndim <- max(as.numeric(stri_replace_first_fixed(scorecols, method, '')))
     xvar <- paste0(method, 1)
     yvar <- paste0(method, 2)
     plotdt <- baredt %>% cbind(x = scoredt[[xvar]], y = scoredt[[yvar]])
-    plotdt$facet <- sprintf('X1 X2   %d %% %d %%',
-                        metadata(object)[[method]][[xvar]],
-                        metadata(object)[[method]][[yvar]])
-    #  1   2   3   4
-    # 1:2 3:4 5:6 7:8
-    for (i in seq(2, ndim %/% 2)){
+    plotlist <- list()
+    for (i in seq(1, ndim %/% 2)){
         xdim <- 2*i-1
         ydim <- 2*i
         xvar <- paste0(method, xdim)
         yvar <- paste0(method, ydim)
-        tmpdt <- baredt %>% cbind(x = scoredt[[xvar]], y = scoredt[[yvar]])
-        tmpdt$facet <- sprintf('X%d X%d   %d %% %d %%',
-                               xdim, ydim,
-                        metadata(object)[[method]][[xvar]],
-                        metadata(object)[[method]][[yvar]])
-        plotdt %<>% rbind(tmpdt)
+        plotdt <- baredt %>% cbind(x = scoredt[[xvar]], y = scoredt[[yvar]])
+        p <- plot_data(plotdt, x=x, y=y, color=!!enquo(color), ..., fixed=fixed)
+        p <- p + xlab(sprintf('%s %d%%', xvar, metadata(object)[[method]][[xvar]]))
+        p <- p + ylab(sprintf('%s %d%%', yvar, metadata(object)[[method]][[yvar]]))
+        p <- p + guides(color = FALSE, fill = FALSE)
+        plotlist %<>% c(list(p))
     }
-    plotdt$facet %<>% factor(unique(.))
-
-    plot_data(plotdt, x=x, y=y, color=!!enquo(color), ..., fixed = fixed) +
-    facet_wrap(~facet, scales = 'free') +
-    xlab(NULL) +
-    ylab(NULL) +
-    ggtitle(method) +
-    theme(plot.title = element_text(hjust = 0.5))
-
+    multiplot(plotlist=plotlist, cols = floor(sqrt(length(plotlist))))
 }
 
 #' Biplot

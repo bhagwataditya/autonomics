@@ -7,7 +7,7 @@
 multibiplot(
   object,
   method = "pca",
-  ndim = 9,
+  ndim = 8,
   color = subgroup,
   colorscale = default_colorscale(object, !!enquo(color)),
   ...,
