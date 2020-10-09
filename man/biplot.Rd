@@ -19,6 +19,10 @@ biplot(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{x}{pca1, etc.}
+
+\item{y}{pca2, etc.}
+
 \item{color}{svar mapped to color (symbol)}
 
 \item{colorscale}{vector(names = svarlevels, values = colordefs)}
@@ -32,10 +36,6 @@ biplot(
 \item{nloadings}{number of loadings per half-axis to plot}
 
 \item{method}{'pca', 'pls', 'lda', or 'sma'}
-
-\item{xdim}{number (default 1)}
-
-\item{ydim}{number (default 2)}
 }
 \value{
 ggplot object

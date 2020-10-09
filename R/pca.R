@@ -421,8 +421,8 @@ multibiplot <- function(
 #' Biplot
 #' @param object         SummarizedExperiment
 #' @param method         'pca', 'pls', 'lda', or 'sma'
-#' @param xdim           number (default 1)
-#' @param ydim           number (default 2)
+#' @param x              pca1, etc.
+#' @param y              pca2, etc.
 #' @param color          svar mapped to color (symbol)
 #' @param colorscale     vector(names = svarlevels, values = colordefs)
 #' @param ...            additional svars mapped to aesthetics
