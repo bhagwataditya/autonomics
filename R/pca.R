@@ -109,6 +109,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #'
 #' @param object  SummarizedExperiment
 #' @param ndim    number
+#' @param minvar  number
 #' @param verbose TRUE (default) or FALSE
 #' @return        SummarizedExperiment
 #' file <- download_data('glutaminase.metabolon.xlsx')
@@ -120,12 +121,13 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' pca(object, ndim=3)
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
-pca <- function(object, ndim = 2, verbose = TRUE){
+pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 # Assert
     assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_less_than_or_equal_to(ndim, ncol(object))
+    assert_is_a_number(min_var)
     . <- NULL
     if (verbose)  message('\tAdd PCA')
 # Prepare
@@ -144,9 +146,11 @@ pca <- function(object, ndim = 2, verbose = TRUE){
 # Perform PCA
     pca_res  <- pcaMethods::pca(t(exprs(tmpobj)),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
-    samples   <- pca_res@scores
-    features  <- pca_res@loadings
     variances <- round(100*pca_res@R2)
+    selector <- variances >= min_var
+    variances %<>% extract(selector)
+    samples   <- pca_res@scores[,selector]
+    features  <- pca_res@loadings[,selector]
     colnames(samples)  <- sprintf('pca%d', seq_len(ncol(samples)))
     colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
