@@ -92,7 +92,7 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Plot
-    if (plot)  print(biplot(object, pca1, pca2))
+    if (plot)  print(plot_biplot(object, pca1, pca2))
 # Return
     object
 }

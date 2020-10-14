@@ -216,7 +216,7 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
     object %<>% add_design(verbose = verbose)
     object %<>% preprocess_counts(filter_features_min_count, verbose = verbose)
 # Plot
-    if (plot)  print(biplot(object, pca1, pca2))
+    if (plot)  print(plot_biplot(object, pca1, pca2))
 # Return
     object
 }
@@ -290,7 +290,7 @@ read_counts <- function(
         fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     }
 # Plot
-    if (plot)  print(biplot(object, pca1, pca2))
+    if (plot)  print(plot_biplot(object, pca1, pca2))
 # Return
     object
 }
