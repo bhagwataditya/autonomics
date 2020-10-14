@@ -11,9 +11,25 @@ Make omics data analysis flow :-).
 ## Read and prepare
 
     # METABOLON
+    
+        # Read into SummarizedExperiment
         require(importomics)
         file <- download_data("hypoglycemia.metabolon.xlsx")
-        read_metabolon(file)
+        object <- read_metabolon(file)
+        
+        exprs(object)[1:3, 1:3]  # expr values
+        sdata(object)[1:3, ]     # sample data
+        fdata(object)[1:3, ]     # sample data
+        S4Vectors::metadata(object)
+        object
+        
+        # Explore
+        plot_sample_violins(object)
+        plot_sample_boxplots(object)
+        plot_sample_densities(object, group = sample_id) + facet_wrap(~ subgroup)
+        
+        biplot(object, pca1, pca2, nloadings = 0)
+        
         
           require(magrittr)
           (object <- 'extdata/glutaminase/glutaminase.xlsx'    %>% 

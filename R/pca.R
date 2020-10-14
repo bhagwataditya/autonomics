@@ -386,124 +386,12 @@ opls <- function(object, ndim = 2, minvar = 0){
 
 #=============================================================================
 #
-#                       biplot()
+#                       plot_biplot()
 #
 #==============================================================================
 
-# Winston Chang
-# http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/
-multiplot <- function(..., plotlist=NULL, cols) {
-    require(grid)
 
-    # Make a list from the ... arguments and plotlist
-    plots <- c(list(...), plotlist)
-
-    numPlots = length(plots)
-
-    # Make the panel
-    plotCols = cols                          # Number of columns of plots
-    plotRows = ceiling(numPlots/plotCols) # Number of rows needed, calculated from # of cols
-
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(plotRows, plotCols)))
-    vplayout <- function(x, y)
-        viewport(layout.pos.row = x, layout.pos.col = y)
-
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-        curRow = ceiling(i/plotCols)
-        curCol = (i-1) %% plotCols + 1
-        print(plots[[i]], vp = vplayout(curRow, curCol ))
-    }
-
-}
-
-
-#' Arrange multiple biplots
-#' @param object       SummarizedExperiment
-#' @param method      'pca', 'pls', 'lda', 'sma'
-#' @param ndim         number
-#' @param color        variable mapped to color (default subgroup)
-#' @param colorscale   vector (name = subgroup, value = colordef)
-#' @param fixed        fixed ggplot aesthetics
-#' @param verbose      TRUE (default) or FALSE
-#' @examples
-#' file <- download_data('hypoglycemia.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' dim_biplots(object)
-#' color_biplots(object, colorvar = c('SEX', 'T2D', 'SUB', 'SET'))
-#' batch_biplots(object, batchvar = c('SEX', 'SUB', 'T2D'))
-#'
-#' dim_biplots(object, minvar = 5) # Drops PC5 (5% variance) as no partner PC
-#' @export
-dim_biplots <- function(
-    object, method = 'pca', ndim=8, minvar = 0,
-    color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
-    ...,
-    fixed = list(shape=15, size=3), verbose = TRUE
-){
-    baredt <- data.table(sdata(object))
-    object %<>% get(method)(ndim=ndim, minvar = minvar, verbose=verbose)
-    scoredt <- data.table(sdata(object))
-    scorecols <- names(scoredt) %>% extract(stri_detect_fixed(., method))
-    ndim <- max(as.numeric(stri_replace_first_fixed(scorecols, method, '')))
-    xvar <- paste0(method, 1)
-    yvar <- paste0(method, 2)
-    plotdt <- baredt %>% cbind(x = scoredt[[xvar]], y = scoredt[[yvar]])
-    plotlist <- list()
-    for (i in seq(1, ndim %/% 2)){
-        xdim <- 2*i-1
-        ydim <- 2*i
-        xvar <- paste0(method, xdim)
-        yvar <- paste0(method, ydim)
-        plotdt <- baredt %>% cbind(x = scoredt[[xvar]], y = scoredt[[yvar]])
-        p <- plot_data(plotdt, x=x, y=y, color=!!enquo(color), ..., fixed=fixed)
-        p <- p + xlab(sprintf('%s %d%%', xvar, metadata(object)[[method]][[xvar]]))
-        p <- p + ylab(sprintf('%s %d%%', yvar, metadata(object)[[method]][[yvar]]))
-        p <- p + guides(color = FALSE, fill = FALSE)
-        plotlist %<>% c(list(p))
-    }
-    multiplot(plotlist=plotlist, cols = floor(sqrt(length(plotlist))))
-}
-
-
-#' @rdname dim_biplots
-#' @export
-color_biplots <- function(object, method = 'pca', colorvar = 'subgroup'){
-    plotlist <- list()
-    for (icolor in colorvar){
-        p <- biplot(object, pca1, pca2, color = !!sym(icolor), nloadings=0)
-        p <- p + ggtitle(icolor)
-        p <- p + guides(color = FALSE, fill = FALSE)
-        plotlist %<>% c(list(p))
-    }
-    multiplot(plotlist = plotlist, cols=2)
-}
-
-
-#' @rdname dim_biplots
-#' @export
-batch_biplots <- function(object, method = 'pca', color = subgroup, batchvars = character(0)){
-    p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
-    p <- p + ggtitle('INPUT')
-    p <- p + guides(color=FALSE, fill=FALSE)
-    plotlist <- list(p)
-    for (ibatch in batchvars){
-        exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[ibatch]])
-        p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
-        p <- p + ggtitle(paste0(' - ', ibatch))
-        p <- p + guides(color=FALSE, fill=FALSE)
-        plotlist %<>% c(list(p))
-    }
-    multiplot(plotlist = plotlist, cols=2)
-}
-
-
-
-
-
-#' Biplot
+#' plot_biplot
 #' @param object         SummarizedExperiment
 #' @param method         'pca', 'pls', 'lda', or 'sma'
 #' @param x              pca1, etc.
@@ -518,15 +406,15 @@ batch_biplots <- function(object, method = 'pca', color = subgroup, batchvars = 
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' biplot(object, x=pca1, y=pca2)
-#' biplot(object, x=pls1, y=pls2)
-#' biplot(object, xdim=3, ydim=4)
-#' biplot(object, nloadings = 0)
-#' biplot(object, color = TIME_POINT)
-#' biplot(object, color = TIME_POINT, xdim=3, ydim=4)
-#' biplot(object, color = NULL)
+#' plot_biplot(object, x=pca1, y=pca2)
+#' plot_biplot(object, x=pls1, y=pls2)
+#' plot_biplot(object, xdim=3, ydim=4)
+#' plot_biplot(object, nloadings = 0)
+#' plot_biplot(object, color = TIME_POINT)
+#' plot_biplot(object, color = TIME_POINT, xdim=3, ydim=4)
+#' plot_biplot(object, color = NULL)
 #' @export
-biplot <- function(
+plot_biplot <- function(
     object, x, y,
     color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
     feature_label = feature_name,
@@ -647,3 +535,122 @@ add_colorscale <- function(p, color, colorscale){
         variances[!names(variances) %in% discard_components]
     object
 }
+
+#=============================================================================
+#
+#                       plot_dim_biplots()
+#                       plot_color_biplots()
+#                       plot_batch_biplots()
+#
+#==============================================================================
+
+
+
+# Winston Chang
+# http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/
+multiplot <- function(..., plotlist=NULL, cols) {
+    require(grid)
+
+    # Make a list from the ... arguments and plotlist
+    plots <- c(list(...), plotlist)
+
+    numPlots = length(plots)
+
+    # Make the panel
+    plotCols = cols                          # Number of columns of plots
+    plotRows = ceiling(numPlots/plotCols) # Number of rows needed, calculated from # of cols
+
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(plotRows, plotCols)))
+    vplayout <- function(x, y)
+        viewport(layout.pos.row = x, layout.pos.col = y)
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+        curRow = ceiling(i/plotCols)
+        curCol = (i-1) %% plotCols + 1
+        print(plots[[i]], vp = vplayout(curRow, curCol ))
+    }
+
+}
+
+
+
+#' @rdname plot_covariates
+#' @export
+plot_corrections <- function(
+    object, method = 'pca', color = subgroup, covariates = character(0),
+    varcols = ceiling(sqrt(1+length(covariates)))
+){
+    p <- plot_biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
+    p <- p + ggtitle('INPUT')
+    p <- p + guides(color=FALSE, fill=FALSE)
+    plotlist <- list(p)
+    for (ibatch in covariates){
+        exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[ibatch]])
+        p <- plot_biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
+        p <- p + ggtitle(paste0(' - ', ibatch))
+        p <- p + guides(color=FALSE, fill=FALSE)
+        plotlist %<>% c(list(p))
+    }
+    multiplot(plotlist = plotlist, cols=varcols)
+}
+
+
+#' Plot covariates
+#' @param object     SummarizedExperiment
+#' @param method     'pca', 'pls', 'lda', or 'sma'
+#' @param covariates  covariates: mapped to color or batch-corrected
+#' @param ndim        number of dimensions to plot
+#' @param dimcols     number of dimension columns
+#' @param varcols     number of covariate columns
+#' @return  ggplot object
+#' @examples
+#' file <- download_data('hypoglycemia.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#'
+#' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+#' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
+#' plot_covariates(object, covariates = c('subgroup'), dimcols = 3)
+#'
+#' plot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+#' @export
+plot_covariates <- function(
+    object, method = 'pca', covariates = character(0), ndim = 6,
+    dimcols = 1, varcols = length(covariates)
+){
+    plotdt <- prep_covariates(object, method = 'pca', ndim=ndim)
+    plotlist <- list()
+    for (covar in covariates){
+        p <- plot_data(plotdt, geom = geom_point, x=x, y=y, color=!!sym(covar),
+                        fixed = list(shape=15, size=3))
+        p <- p + facet_wrap(~dims, ncol = dimcols)
+        p <- p + xlab(NULL) + ylab(NULL) + ggtitle(covar)
+        p <- p + theme(legend.position = 'bottom', legend.title = element_blank())
+        plotlist %<>% c(list(p))
+    }
+    multiplot(plotlist=plotlist, cols = varcols)
+}
+
+
+prep_covariates <- function(object, method='pca', ndim=6){
+
+    plotdt <- cbind(sdata(object)[FALSE,], x= character(0), y = character(0))
+    projdt <- data.table(sdata(get(method)(object, ndim=ndim)))
+    npairs <- ndim %/% 2
+    for (idim in seq_len(npairs)){
+        dim1 <- idim*2-1
+        dim2 <- idim*2
+        xvar <- paste0(method, dim1)
+        yvar <- paste0(method, dim2)
+        tmpdt <- data.table::copy(projdt)
+        setnames(tmpdt, c(xvar, yvar), c('x', 'y'))
+        tmpdt %<>% extract(, stri_detect_fixed(names(.), method, negate = TRUE), with = FALSE)
+        tmpdt$dims <- paste0(dim1, ':', dim2)
+        plotdt %<>% rbind(tmpdt)
+    }
+    plotdt
+}
+
+
