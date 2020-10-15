@@ -625,14 +625,13 @@ plot_covariates <- function(
     for (covar in covariates){
         p <- plot_data(plotdt, geom = geom_point, x=x, y=y, color=!!sym(covar),
                         fixed = list(shape=15, size=3))
-        p <- p + facet_wrap(~dims, ncol = dimcols)
+        p <- p + facet_wrap(~dims, ncol = dimcols, scales = 'free')
         p <- p + xlab(NULL) + ylab(NULL) + ggtitle(covar)
         p <- p + theme(legend.position = 'bottom', legend.title = element_blank())
         plotlist %<>% c(list(p))
     }
     multiplot(plotlist=plotlist, cols = varcols)
 }
-
 
 prep_covariates <- function(object, method='pca', ndim=6){
 
