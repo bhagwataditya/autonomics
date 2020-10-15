@@ -607,7 +607,7 @@ plot_corrections <- function(
 #' @examples
 #' file <- download_data('hypoglycemia.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' plot_covariates(object, dimcols = 3)
+#' plot_covariates(object, ndim = 12, dimcols = 3)
 #' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
 #' plot_covariates(object, covariates = c('subgroup'), dimcols = 3)
@@ -618,6 +618,7 @@ plot_covariates <- function(
     object, method = 'pca', covariates = 'subgroup', ndim = 6,
     dimcols = 1, varcols = length(covariates)
 ){
+    x <- y <- NULL
     plotdt <- prep_covariates(object, method = 'pca', ndim=ndim)
     plotlist <- list()
     for (covar in covariates){
@@ -651,6 +652,7 @@ prep_covariates <- function(object, method='pca', ndim=6){
         tmpdt$dims <- paste0(dim1, ':', dim2)
         plotdt %<>% rbind(tmpdt)
     }
+    plotdt$dims %<>% factor(unique(.))
     plotdt
 }
 

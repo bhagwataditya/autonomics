@@ -63,6 +63,8 @@
 NULL
 
 utils::globalVariables('.')
-utils::globalVariables('subgroup')
+utils::globalVariables(c('subgroup', 'sample_id'))
 utils::globalVariables('feature_name')
 utils::globalVariables(c('pca1', 'pca2'))
+utils::globalVariables('value')
+

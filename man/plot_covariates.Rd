@@ -44,7 +44,7 @@ Plot covariates
 \examples{
 file <- download_data('hypoglycemia.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-
+plot_covariates(object, ndim = 12, dimcols = 3)
 plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
 plot_covariates(object, covariates = c('subgroup'), dimcols = 3)

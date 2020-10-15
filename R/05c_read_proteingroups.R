@@ -1102,14 +1102,12 @@ transform_maxquant <- function(
 #'                                      "Reporter intensity",
 #'                                      "Intensity labeled",
 #'                                      "Intensity"
-#' @param fvars                  character vector: annotation columns
 #' @param contaminants           return contaminants? (defaultFALSE)
 #' @param reverse                return reverse peptides? (default FALSE)
 #' @param min_localization_prob  number (default 0.75): min site loc. prob.
 #' @param invert_subgroups       character vector: subgroups to be inverted
 #' @param rm_subgroups           character vector: subgroups to be removed
 #' @param designfile             path to designfile
-#' @param log2                   TRUE (default) or FALSE: log2 transform?
 #' @param impute                 TRUE or FALSE (default)
 #' @param verbose                TRUE (default) or FALSE
 #' @param plot                   TRUE or FALSE
@@ -1205,12 +1203,12 @@ read_phosphosites <- function(
     phosphosites %<>% deconvolute_proteingroups(fastafile)
     phosphosites %<>% transform_maxquant(
                     invert_subgroups      = invert_subgroups,
-                    impute                = impute,
+                    impute                = FALSE,
                     verbose               = verbose,
                     plot                  = plot)
 # Return
-    if (plot)  print(plot_biplot(object, pca1, pca2))
-    object
+    if (plot)  print(plot_biplot(phosphosites, pca1, pca2))
+    phosphosites
 }
 
 

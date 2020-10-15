@@ -152,6 +152,7 @@ make_composite_colorscale <- function(
 #' @param fillscale   vector(names = svarlevels, values = colordefs)
 #' @param ...         mapped aesthetics
 #' @param fixed       fixed  aesthetics (list)
+#' @param theme       list with ggplot theme specifications
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
