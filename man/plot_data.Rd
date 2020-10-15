@@ -32,6 +32,8 @@ plot_data(
 \item{...}{mapped aesthetics}
 
 \item{fixed}{fixed  aesthetics (list)}
+
+\item{theme}{list with ggplot theme specifications}
 }
 \value{
 ggplot object

@@ -65,10 +65,6 @@ read_phosphosites(
 \item{phosphofile}{phospho(STY)Sites.txt path}
 
 \item{min_localization_prob}{number (default 0.75): min site loc. prob.}
-
-\item{fvars}{character vector: annotation columns}
-
-\item{log2}{TRUE (default) or FALSE: log2 transform?}
 }
 \value{
 SummarizedExperiment

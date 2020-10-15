@@ -465,7 +465,6 @@ add_scores <- function(
 
 }
 
-utils::globalVariables('feature_name')
 
 add_loadings <- function(
     p, object, x = pca1, y = pca2, label = feature_name, nloadings = 1
@@ -549,7 +548,6 @@ add_colorscale <- function(p, color, colorscale){
 # Winston Chang
 # http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/
 multiplot <- function(..., plotlist=NULL, cols) {
-    require(grid)
 
     # Make a list from the ... arguments and plotlist
     plots <- c(list(...), plotlist)
@@ -609,7 +607,7 @@ plot_corrections <- function(
 #' @examples
 #' file <- download_data('hypoglycemia.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#'
+#' plot_covariates(object, ndim = 12, dimcols = 3)
 #' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
 #' plot_covariates(object, covariates = c('subgroup'), dimcols = 3)
@@ -617,9 +615,10 @@ plot_corrections <- function(
 #' plot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' @export
 plot_covariates <- function(
-    object, method = 'pca', covariates = character(0), ndim = 6,
+    object, method = 'pca', covariates = 'subgroup', ndim = 6,
     dimcols = 1, varcols = length(covariates)
 ){
+    x <- y <- NULL
     plotdt <- prep_covariates(object, method = 'pca', ndim=ndim)
     plotlist <- list()
     for (covar in covariates){
@@ -637,6 +636,9 @@ prep_covariates <- function(object, method='pca', ndim=6){
 
     plotdt <- cbind(sdata(object)[FALSE,], x= character(0), y = character(0))
     projdt <- data.table(sdata(get(method)(object, ndim=ndim)))
+    alldims <- names(projdt) %>% extract(stri_detect_fixed(., method)) %>%
+                stri_replace_first_fixed(method, '') %>% as.numeric()
+    ndim <- min(c(max(alldims), ndim))
     npairs <- ndim %/% 2
     for (idim in seq_len(npairs)){
         dim1 <- idim*2-1
@@ -649,6 +651,7 @@ prep_covariates <- function(object, method='pca', ndim=6){
         tmpdt$dims <- paste0(dim1, ':', dim2)
         plotdt %<>% rbind(tmpdt)
     }
+    plotdt$dims %<>% factor(unique(.))
     plotdt
 }
 
