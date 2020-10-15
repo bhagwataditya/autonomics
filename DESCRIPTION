@@ -43,6 +43,8 @@ Imports:
   ggplot2,
   graphics,
   grDevices,
+  grid,
+  gridExtra,
   limma,
   magrittr, 
   matrixStats,

@@ -31,6 +31,7 @@
 #' @importFrom graphics      lines    pie    title
 #' @importFrom grDevices     hcl
 #' @importFrom limma         duplicateCorrelation   lmFit   voom
+#' @importFrom grid          grid.layout  grid.newpage  pushViewport  viewport
 #' @importFrom magrittr      %>%   %<>%   add   and   equals
 #' @importFrom magrittr      divide_by   extract   extract2   is_in
 #' @importFrom magrittr      multiply_by
@@ -61,4 +62,7 @@
 #' @importFrom utils         installed.packages    unzip
 NULL
 
+utils::globalVariables('.')
 utils::globalVariables('subgroup')
+utils::globalVariables('feature_name')
+utils::globalVariables(c('pca1', 'pca2'))

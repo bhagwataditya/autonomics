@@ -16,7 +16,7 @@ plot_corrections(
 plot_covariates(
   object,
   method = "pca",
-  covariates = character(0),
+  covariates = "subgroup",
   ndim = 6,
   dimcols = 1,
   varcols = length(covariates)
