@@ -441,7 +441,7 @@ plot_biplot <- function(
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
     p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
-    p %<>% add_color_scale(!!color)
+    p %<>% add_color_scale(!!color, data = sdata(object))
 
     p
 }
