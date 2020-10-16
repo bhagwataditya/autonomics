@@ -6,10 +6,9 @@
 \usage{
 plot_biplot(
   object,
-  x,
-  y,
+  x = pca1,
+  y = pca2,
   color = subgroup,
-  colorscale = default_colorscale(object, !!enquo(color)),
   feature_label = feature_name,
   ...,
   fixed = list(shape = 15, size = 3),
@@ -25,8 +24,6 @@ plot_biplot(
 
 \item{color}{svar mapped to color (symbol)}
 
-\item{colorscale}{vector(names = svarlevels, values = colordefs)}
-
 \item{feature_label}{fvar mapped to (loadings) label}
 
 \item{...}{additional svars mapped to aesthetics}
@@ -34,8 +31,6 @@ plot_biplot(
 \item{fixed}{fixed plot aesthetics}
 
 \item{nloadings}{number of loadings per half-axis to plot}
-
-\item{method}{'pca', 'pls', 'lda', or 'sma'}
 }
 \value{
 ggplot object
@@ -46,9 +41,10 @@ plot_biplot
 \examples{
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
+plot_biplot(object)
 plot_biplot(object, x=pca1, y=pca2)
 plot_biplot(object, x=pls1, y=pls2)
-plot_biplot(object, xdim=3, ydim=4)
+plot_biplot(object, x=pca3, y=pca4)
 plot_biplot(object, nloadings = 0)
 plot_biplot(object, color = TIME_POINT)
 plot_biplot(object, color = TIME_POINT, xdim=3, ydim=4)

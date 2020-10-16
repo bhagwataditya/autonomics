@@ -393,11 +393,9 @@ opls <- function(object, ndim = 2, minvar = 0){
 
 #' plot_biplot
 #' @param object         SummarizedExperiment
-#' @param method         'pca', 'pls', 'lda', or 'sma'
 #' @param x              pca1, etc.
 #' @param y              pca2, etc.
 #' @param color          svar mapped to color (symbol)
-#' @param colorscale     vector(names = svarlevels, values = colordefs)
 #' @param ...            additional svars mapped to aesthetics
 #' @param feature_label  fvar mapped to (loadings) label
 #' @param fixed          fixed plot aesthetics
@@ -406,17 +404,17 @@ opls <- function(object, ndim = 2, minvar = 0){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
+#' plot_biplot(object)
 #' plot_biplot(object, x=pca1, y=pca2)
 #' plot_biplot(object, x=pls1, y=pls2)
-#' plot_biplot(object, xdim=3, ydim=4)
+#' plot_biplot(object, x=pca3, y=pca4)
 #' plot_biplot(object, nloadings = 0)
 #' plot_biplot(object, color = TIME_POINT)
-#' plot_biplot(object, color = TIME_POINT, xdim=3, ydim=4)
 #' plot_biplot(object, color = NULL)
 #' @export
 plot_biplot <- function(
-    object, x, y,
-    color = subgroup, colorscale = default_colorscale(object, !!enquo(color)),
+    object, x=pca1, y=pca2,
+    color = subgroup,
     feature_label = feature_name,
     ...,
     fixed = list(shape=15, size=3), nloadings = 1
@@ -443,7 +441,7 @@ plot_biplot <- function(
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
     p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
-    p %<>% add_colorscale(!!color, colorscale)
+    p %<>% add_color_scale(!!color)
 
     p
 }
@@ -515,13 +513,6 @@ add_loadings <- function(
 
 headtail <- function(x, n){
     c(x[seq(1, n)], x[seq(length(x)+1-n, length(x))])
-}
-
-add_colorscale <- function(p, color, colorscale){
-    if (!rlang::quo_is_null(enquo(color))){
-        p <- p + scale_color_manual(values = colorscale)
-    }
-    p
 }
 
 .filter_minvar <- function(object, method, minvar) {

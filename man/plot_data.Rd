@@ -9,8 +9,6 @@ plot_data(
   geom = geom_point,
   color = subgroup,
   fill = !!enquo(color),
-  colorscale = make_colorscale(unique(eval_tidy(enquo(color), data))),
-  fillscale = make_colorscale(unique(eval_tidy(enquo(fill), data))),
   ...,
   fixed = list(),
   theme = list()
@@ -24,10 +22,6 @@ plot_data(
 \item{color}{variable mapped to color (symbol)}
 
 \item{fill}{variable mapped to fill (symbol)}
-
-\item{colorscale}{vector(names = svarlevels, values = colordefs)}
-
-\item{fillscale}{vector(names = svarlevels, values = colordefs)}
 
 \item{...}{mapped aesthetics}
 
@@ -53,9 +47,6 @@ plot_data(data, x = pca1, y = pca2, color = NULL)
 
 fixed <- list(shape = 15, size = 3)
 plot_data(data, x = pca1, y = pca2, fixed=fixed)
-
-guides <- list(color=FALSE, fill=FALSE)
-plot_data(data, x = pca1, y = pca2, fixed=fixed, guides = guides)
 }
 \author{
 Aditya Bhagwat, Johannes Graumann

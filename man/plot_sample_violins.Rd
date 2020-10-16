@@ -8,8 +8,6 @@ plot_sample_violins(
   object,
   fill = subgroup,
   color = NULL,
-  colorscale = default_colorscale(object, color = !!enquo(color)),
-  fillscale = default_colorscale(object, color = !!enquo(fill)),
   ...,
   fixed = list(na.rm = TRUE)
 )
@@ -20,10 +18,6 @@ plot_sample_violins(
 \item{fill}{svar mapped to fill}
 
 \item{color}{svar mapped to color}
-
-\item{colorscale}{named vector (names = varlevels, values = colors)}
-
-\item{fillscale}{named vector (names = varlevels, values = colors)}
 
 \item{...}{mapped aesthetics}
 

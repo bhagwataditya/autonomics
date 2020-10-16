@@ -4,18 +4,12 @@
 \alias{plot_detects_per_subgroup}
 \title{Plot detects per subgroup}
 \usage{
-plot_detects_per_subgroup(
-  object,
-  group = subgroup,
-  colorscale = default_colorscale(object, !!ensym(group))
-)
+plot_detects_per_subgroup(object, group = subgroup)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
 \item{group}{svar (symbol)}
-
-\item{colorscale}{vector(names = svarlevels, values = colordefs)}
 }
 \value{
 ggplot object

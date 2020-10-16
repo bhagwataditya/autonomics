@@ -12,8 +12,6 @@ plot_features(
   x = subgroup,
   fill = subgroup,
   color = subgroup,
-  colorscale = default_colorscale(object, color = !!enquo(color)),
-  fillscale = default_colorscale(object, color = !!enquo(fill)),
   ...,
   fixed = list(na.rm = TRUE),
   theme = list(axis.text.x = element_blank(), axis.title.x = element_blank(),
@@ -35,10 +33,6 @@ plot_feature_profiles(...)
 
 \item{color}{svar mapped to color}
 
-\item{colorscale}{named vector (names = varlevels, values = colors)}
-
-\item{fillscale}{named vector (names = varlevels, values = colors)}
-
 \item{...}{mapped aesthetics}
 
 \item{fixed}{fixed aesthetics}
@@ -56,7 +50,8 @@ require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 object \%<>\% pca()
-object \%<>\% extract(order(abs(fdata(.)$pca1, decreasing = TRUE)[1:9]), )
+idx <- order(abs(fdata(object)$pca1), decreasing=TRUE)[1:9]
+object \%<>\% extract(idx, )
 plot_feature_boxplots(object)
 plot_feature_profiles(object)
 }

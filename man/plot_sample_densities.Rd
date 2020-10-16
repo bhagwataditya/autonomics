@@ -8,8 +8,6 @@ plot_sample_densities(
   object,
   fill = subgroup,
   color = NULL,
-  colorscale = default_colorscale(object, color = !!enquo(color)),
-  fillscale = default_colorscale(object, color = !!enquo(fill)),
   ...,
   fixed = list(alpha = 0.5, na.rm = TRUE)
 )
@@ -20,10 +18,6 @@ plot_sample_densities(
 \item{fill}{svar mapped to fill}
 
 \item{color}{svar mapped to color}
-
-\item{colorscale}{named vector (names = varlevels, values = colors)}
-
-\item{fillscale}{named vector (names = varlevels, values = colors)}
 
 \item{...}{mapped aesthetics}
 
@@ -37,5 +31,5 @@ require(magrittr)
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 plot_sample_densities(object)
-plot_sample_densities(object, color = NULL)
+plot_sample_densities(object, color = subgroup, fill = NULL)
 }
