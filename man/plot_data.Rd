@@ -43,6 +43,8 @@ object \%<>\% pca()
 data <- sdata(object)
 plot_data(data, x = pca1, y = pca2)
 plot_data(data, x = pca1, y = pca2, color = TIME_POINT)
+data$TIME <- as.numeric(substr(data$TIME_POINT, 2, 3))
+plot_data(data, x = pca1, y = pca2, color = TIME)
 plot_data(data, x = pca1, y = pca2, color = NULL)
 
 fixed <- list(shape = 15, size = 3)

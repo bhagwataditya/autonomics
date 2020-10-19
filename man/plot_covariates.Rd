@@ -10,7 +10,8 @@ plot_corrections(
   method = "pca",
   color = subgroup,
   covariates = character(0),
-  varcols = ceiling(sqrt(1 + length(covariates)))
+  varcols = ceiling(sqrt(1 + length(covariates))),
+  plot = TRUE
 )
 
 plot_covariates(
@@ -19,7 +20,8 @@ plot_covariates(
   covariates = "subgroup",
   ndim = 6,
   dimcols = 1,
-  varcols = length(covariates)
+  varcols = length(covariates),
+  plot = TRUE
 )
 }
 \arguments{
@@ -30,6 +32,8 @@ plot_covariates(
 \item{covariates}{covariates: mapped to color or batch-corrected}
 
 \item{varcols}{number of covariate columns}
+
+\item{plot}{TRUE or FALSE: whether to plot}
 
 \item{ndim}{number of dimensions to plot}
 

@@ -47,6 +47,5 @@ plot_biplot(object, x=pls1, y=pls2)
 plot_biplot(object, x=pca3, y=pca4)
 plot_biplot(object, nloadings = 0)
 plot_biplot(object, color = TIME_POINT)
-plot_biplot(object, color = TIME_POINT, xdim=3, ydim=4)
 plot_biplot(object, color = NULL)
 }

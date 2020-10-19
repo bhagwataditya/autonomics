@@ -536,41 +536,11 @@ headtail <- function(x, n){
 
 
 
-# Winston Chang
-# http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/
-multiplot <- function(..., plotlist=NULL, cols) {
-
-    # Make a list from the ... arguments and plotlist
-    plots <- c(list(...), plotlist)
-
-    numPlots = length(plots)
-
-    # Make the panel
-    plotCols = cols                          # Number of columns of plots
-    plotRows = ceiling(numPlots/plotCols) # Number of rows needed, calculated from # of cols
-
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(plotRows, plotCols)))
-    vplayout <- function(x, y)
-        viewport(layout.pos.row = x, layout.pos.col = y)
-
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-        curRow = ceiling(i/plotCols)
-        curCol = (i-1) %% plotCols + 1
-        print(plots[[i]], vp = vplayout(curRow, curCol ))
-    }
-
-}
-
-
-
 #' @rdname plot_covariates
 #' @export
 plot_corrections <- function(
     object, method = 'pca', color = subgroup, covariates = character(0),
-    varcols = ceiling(sqrt(1+length(covariates)))
+    varcols = ceiling(sqrt(1+length(covariates))), plot = TRUE
 ){
     p <- plot_biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
     p <- p + ggtitle('INPUT')
@@ -583,7 +553,9 @@ plot_corrections <- function(
         p <- p + guides(color=FALSE, fill=FALSE)
         plotlist %<>% c(list(p))
     }
-    multiplot(plotlist = plotlist, cols=varcols)
+    pp <- gridExtra::arrangeGrob(grobs = plotlist, ncol = varcols)
+    if (plot) grid::grid.draw(pp)
+    invisible(pp)
 }
 
 
@@ -594,6 +566,7 @@ plot_corrections <- function(
 #' @param ndim        number of dimensions to plot
 #' @param dimcols     number of dimension columns
 #' @param varcols     number of covariate columns
+#' @param plot        TRUE or FALSE: whether to plot
 #' @return  ggplot object
 #' @examples
 #' file <- download_data('hypoglycemia.metabolon.xlsx')
@@ -607,7 +580,7 @@ plot_corrections <- function(
 #' @export
 plot_covariates <- function(
     object, method = 'pca', covariates = 'subgroup', ndim = 6,
-    dimcols = 1, varcols = length(covariates)
+    dimcols = 1, varcols = length(covariates), plot = TRUE
 ){
     x <- y <- NULL
     plotdt <- prep_covariates(object, method = 'pca', ndim=ndim)
@@ -620,7 +593,9 @@ plot_covariates <- function(
         p <- p + theme(legend.position = 'bottom', legend.title = element_blank())
         plotlist %<>% c(list(p))
     }
-    multiplot(plotlist=plotlist, cols = varcols)
+    pp <- gridExtra::arrangeGrob(grobs = plotlist, ncol = varcols)
+    if (plot) grid::grid.draw(pp)
+    invisible(pp)
 }
 
 prep_covariates <- function(object, method='pca', ndim=6){
