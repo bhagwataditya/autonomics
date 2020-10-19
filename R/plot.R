@@ -17,13 +17,14 @@
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
 #'     object <- read_proteingroups(
 #'                 file, invert_subgroups = invert_subgroups, plot = FALSE)
-#'     add_color_scale(object, show = TRUE)
+#'     p <- plot_sample_densities(object)
+#'     add_color_scale(p, data=sdata(object))
 #'
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('stemcells.proteinGroups.txt')
 #'    object <- read_proteingroups(
 #'                 file, quantity = 'Intensity labeled', plot = FALSE)
-#'    add_color_scale(object, show = TRUE)
+#'    add_color_scale(object)
 #'
 #' # GLUTAMINASE
 #'    file <- download_data('glutaminase.metabolon.xlsx')
@@ -42,7 +43,7 @@ add_color_scale <- function(p, color = subgroup, data){
         values0 <- data[[color_var]]
         if (!is.numeric(values0)){
             levels0 <- unique(values0)
-            colors0 <- make_colorscale(levels0, sep = guess_sep(levels0))
+            colors0 <- make_colors(levels0, sep = guess_sep(levels0))
             p <- p + scale_color_manual(values = colors0)
         }
     }
@@ -61,7 +62,7 @@ add_fill_scale <- function(p, fill = subgroup, data){
         values0 <- data[[fill_var]]
         if (!is.numeric(values0)){
             levels0 <- unique(values0)
-            colors0 <- make_colorscale(levels0, sep = guess_sep(levels0))
+            colors0 <- make_colors(levels0, sep = guess_sep(levels0))
             p <- p + scale_fill_manual(values = colors0)
         }
     }
@@ -70,48 +71,47 @@ add_fill_scale <- function(p, fill = subgroup, data){
 }
 
 
-make_colorscale <- function(
-    color_var_levels, sep = guess_sep(color_var_levels), show=FALSE,
+make_colors <- function(
+    varlevels, sep = guess_sep(varlevels), show=FALSE,
     verbose = FALSE
 ){
-    if (is.null(color_var_levels)){
-        return(make_onefactor_colors('default', show = show, verbose = verbose))
-
-    } else if (is.null(sep)){
-        return(make_onefactor_colors(
-                color_var_levels, show = show, verbose = verbose))
-
-    } else {
-        if (verbose) cmessage('\t\tMake composite colors')
-        return(make_twofactor_colors(
-                color_var_levels, sep = sep, show = show, verbose = verbose))
+    makefun <- make_onefactor_colors
+    if (!is.null(sep)){            # consistent separator
+        if (length(varlevels)>2){  # 3+ samples
+            n1 <- length(unique(split_extract(varlevels, 1, sep)))
+            n2 <- length(unique(split_extract(varlevels, 2, sep)))
+            if (n1>1 & n2>1){             # 2+ huevar levels
+                makefun <- make_twofactor_colors
+            }
+        }
     }
+    makefun(varlevels, sep = sep, show = show, verbose = verbose)
 }
 
-
-
 #' Create default ggplot colors for factor levels
-#' @param factor_levels  string vector
+#' @param varlevels  string vector
 #' @param show           TRUE/FALSE
 #' @param verbose        TRUE/FALSE
 #' @return string vector: elements = colors, names = factor levels
 #' @author John Colby
 #' @references https://stackoverflow.com/questions/8197559
 #' @noRd
-make_onefactor_colors <- function(factor_levels, show, verbose = TRUE) {
-    n <- length(factor_levels)
+make_onefactor_colors <- function(
+    varlevels, show, verbose = TRUE, sep = NULL
+){
+    n <- length(varlevels)
     hues <- seq(15, 375, length = n + 1)
-    color_levels <- hcl(h = hues, l = 65, c = 100)[seq_len(n)] %>%
-                    set_names(factor_levels)
-    if (show) pie(rep(1, length(color_levels)), names(color_levels),
-                    col = color_levels)
+    colors <- hcl(h = hues, l = 65, c = 100)[seq_len(n)] %>%
+                    set_names(varlevels)
+    if (show) pie(rep(1, length(colors)), names(colors),
+                    col = colors)
     if (verbose)  cmessage('\t\tMake default ggplot colors')
-    color_levels
+    colors
 }
 
 
 #' Make composite colors
-#' @param svalues string vector
+#' @param varlevels string vector
 #' @param sep     string
 #' @param show    TRUE/FALSE: show colors in pie plot?
 #' @param verbose TRUE/FALSE
@@ -119,14 +119,16 @@ make_onefactor_colors <- function(factor_levels, show, verbose = TRUE) {
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' svalues <- subgroup_levels(object)
-#' make_twofactor_colors(svalues, show = TRUE)
+#' varlevels <- subgroup_levels(object)
+#' make_twofactor_colors(varlevels, show = TRUE)
 #' @noRd
 make_twofactor_colors <- function(
-    svalues, sep  = guess_sep(svalues), show = FALSE, verbose = TRUE
+    varlevels, sep  = guess_sep(varlevels), show = FALSE, verbose = TRUE
 ){
     # Assert
+    assertive::assert_has_no_duplicates(varlevels)
     assert_is_not_null(sep)
+    if (verbose) cmessage('\t\tMake composite colors')
 
     # Satisfy CHECK
     subgroup <- V1 <- V2 <- color <- hue <- luminance <- NULL
@@ -136,10 +138,10 @@ make_twofactor_colors <- function(
     #    * V2: last component       => will be mapped to luminance
     # This approach works also when more than two components are present
     # It is therefore used instead of autonomics.import::split_values()
-    V1  <-  stri_split_fixed(svalues, sep) %>%
+    V1  <-  stri_split_fixed(varlevels, sep) %>%
             vapply( function(x) paste0(x[-length(x)], collapse = sep),
                     character(1))
-    V2  <-  stri_split_fixed(svalues, sep) %>%
+    V2  <-  stri_split_fixed(varlevels, sep) %>%
             vapply(function(x) x[length(x)], character(1))
     V1levels <- sort(unique(V1))
     V2levels <- sort(unique(V2))
@@ -147,17 +149,17 @@ make_twofactor_colors <- function(
     n2 <- length(V2levels)
     hues <- seq(15, 375, length = n1 + 1)[seq_len(n1)] %>% set_names(V1levels)
 
-    color_levels <- character(0)
+    colors <- character(0)
     for (i in seq_along(hues)){
-        color_levels  %<>%  c(sequential_hcl(
+        colors  %<>%  c(sequential_hcl(
                                 n2, h = hues[[i]], power = 1, c = c(50, 100),
                                 l = c(90, 30)) %>%
                             set_names(paste0(V1levels[[i]], sep, V2levels)))
     }
-    if (show) pie(rep(1, length(color_levels)), names(color_levels),
-                col = color_levels)
+    if (show) pie(rep(1, length(colors)), names(colors),
+                col = colors)
 
-    return(color_levels)
+    return(colors)
 }
 
 #=============================================================================
@@ -401,7 +403,6 @@ plot_detects_per_subgroup <- function(object, group = subgroup){
     assert_is_all_of(object, 'SummarizedExperiment')
     group_var <- as_string(ensym(group))
     assert_is_subset(group_var, svars(object))
-    assert_is_subset(slevels(object, group_var), names(colorscale))
     variable <- subgroup <- value <- . <- NULL
 # Prepare datatable
     split_objects  <- split_by_svar(object, group_var)
@@ -424,11 +425,15 @@ plot_detects_per_subgroup <- function(object, group = subgroup){
     if ( all(imps==0) & !all(nons==0))  title %<>% paste0('  |  nondetects')
     if (!all(imps==0) &  all(nons==0))  title %<>% paste0('  |  imputes')
     plot_dt$subgroup %<>% factor(rev(levels(.)))
-    ggplot(plot_dt, aes(x = subgroup, y = value, fill = subgroup,
-                        group = variable)) +
+
+    plot_data(plot_dt, geom_col,
+              x = subgroup, y = value, fill = subgroup, group = variable,
+              fixed = list(position = position_stack(), color="black")) +
+    #ggplot(plot_dt, aes(x = subgroup, y = value, fill = subgroup,
+    #                    group = variable)) +
     ggtitle(title) + theme_bw() +
-    geom_col(color = 'black', position = position_stack()) +
-    scale_fill_manual(values = colorscale) +
+    #geom_col(color = 'black', position = position_stack()) +
+    #scale_fill_manual(values = colorscale) +
     geom_text(aes(label=value, x = subgroup),
                     position = position_stack(vjust=0.5),
                     size = rel(3)) +

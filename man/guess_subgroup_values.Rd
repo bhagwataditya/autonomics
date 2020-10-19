@@ -2,60 +2,36 @@
 % Please edit documentation in R/04_guess.R
 \name{guess_subgroup_values}
 \alias{guess_subgroup_values}
-\alias{guess_subgroup_values.character}
-\alias{guess_subgroup_values.SummarizedExperiment}
-\title{Guess subgroup values}
+\alias{guess_replicate_values}
+\title{Guess subgroup/replicate values}
 \usage{
-guess_subgroup_values(x, ...)
+guess_subgroup_values(x, sep = guess_sep(x), verbose = TRUE)
 
-\method{guess_subgroup_values}{character}(
-  x,
-  sep = guess_sep(x),
-  invert = FALSE,
-  verbose = FALSE,
-  ...
-)
-
-\method{guess_subgroup_values}{SummarizedExperiment}(
-  x,
-  sep = guess_sep(x),
-  invert = FALSE,
-  verbose = FALSE,
-  ...
-)
+guess_replicate_values(x, sep = guess_sep(x), verbose = TRUE)
 }
 \arguments{
-\item{x}{character vector or SummarizedExperiment}
+\item{x}{sampleid values (string vector)}
 
-\item{...}{used for proper S3 method dispatch}
+\item{sep}{subfactor separator (string)}
 
-\item{sep}{string}
-
-\item{invert}{FALSE (default) or TRUE: guess "non-subgroup" component?}
-
-\item{verbose}{logical(1)}
+\item{verbose}{boolean}
 }
 \value{
 character(n)
 }
 \description{
-Guess subgroup values
+Guess subgroup/replicate values
 }
 \examples{
 require(magrittr)
+x <- c("EM00", "EM01", "EM02")
+guess_subgroup_values(x)
 
-# charactervector
-   # No sep: subgroup = x
-      x <- c("EM00", "EM01", "EM02")
-      guess_subgroup_values(x)
+x <- c("UT_10h_R1", "UT_10h_R2", "UT_10h_R3")
+guess_subgroup_values(x)
+guess_replicate_values(x)
 
-   # Sep: subgroup = head components of x
-      x <- c("UT_10h_R1", "UT_10h_R2", "UT_10h_R3")
-      guess_subgroup_values(x)
-      guess_subgroup_values(x, invert = TRUE)
-
-      x <- c("EM00_STD.R1", "EM01_STD.R1", "EM01_EM00.R1")
-      guess_subgroup_values(x)
-      guess_subgroup_values(x, invert = TRUE)
-
+x <- c("EM00_STD.R1", "EM01_STD.R1", "EM01_EM00.R1")
+guess_subgroup_values(x)
+guess_replicate_values(x)
 }

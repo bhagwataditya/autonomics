@@ -1,3 +1,9 @@
+#=============================================================================
+#
+#                          guess_sep
+#
+#=============================================================================
+
 #' Convenient equals operator
 #'
 #' Performs x == y, but returns FALSE rather than NA for NA elements of x.
@@ -151,78 +157,67 @@ extract_last_component <- function(x, sep){
 }
 
 
-#' Guess subgroup values
-#' @param x       character vector or SummarizedExperiment
-#' @param sep     string
-#' @param invert  FALSE (default) or TRUE: guess "non-subgroup" component?
-#' @param verbose logical(1)
-#' @param ...     used for proper S3 method dispatch
+#==============================================================================
+#
+#                          guess_subgroup_values
+#
+#==============================================================================
+
+
+nfactors <- function(x, sep = guess_sep(x)){
+    length(unlist(stri_split_fixed(x[1], sep)))
+}
+
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- .read_metabolon(file)
+#' x <- object$sample_id[1:5]
+#' nfactors(x)
+#' x
+#' split_extract(x, 1:2)
+#' split_extract(x, seq_len(nfactors(x)-1))
+#' split_extract(x, nfactors(x))
+#' @noRd
+split_extract <- function(x, i, sep=guess_sep(x)){
+    factors <- stri_split_fixed(x, sep)
+    vapply(factors, function(y) paste0(y[i], collapse=sep), character(1))
+}
+
+
+#' Guess subgroup/replicate values
+#' @param x       sampleid values (string vector)
+#' @param sep     subfactor separator (string)
+#' @param verbose boolean
 #' @return character(n)
 #' @examples
 #' require(magrittr)
+#' x <- c("EM00", "EM01", "EM02")
+#' guess_subgroup_values(x)
 #'
-#' # charactervector
-#'    # No sep: subgroup = x
-#'       x <- c("EM00", "EM01", "EM02")
-#'       guess_subgroup_values(x)
+#' x <- c("UT_10h_R1", "UT_10h_R2", "UT_10h_R3")
+#' guess_subgroup_values(x)
+#' guess_replicate_values(x)
 #'
-#'    # Sep: subgroup = head components of x
-#'       x <- c("UT_10h_R1", "UT_10h_R2", "UT_10h_R3")
-#'       guess_subgroup_values(x)
-#'       guess_subgroup_values(x, invert = TRUE)
-#'
-#'       x <- c("EM00_STD.R1", "EM01_STD.R1", "EM01_EM00.R1")
-#'       guess_subgroup_values(x)
-#'       guess_subgroup_values(x, invert = TRUE)
-#'
+#' x <- c("EM00_STD.R1", "EM01_STD.R1", "EM01_EM00.R1")
+#' guess_subgroup_values(x)
+#' guess_replicate_values(x)
 #' @export
-guess_subgroup_values <- function (x, ...) {
-    UseMethod("guess_subgroup_values", x)
-}
-
-#' @rdname guess_subgroup_values
-#' @export
-guess_subgroup_values.character <- function(
-    x,
-    sep     = guess_sep(x),
-    invert  = FALSE,
-    verbose = FALSE,
-    ...
-){
-    # Guess
-    subgroup_values <-  if (is.null(sep)){  x
-                        } else if (invert){ extract_last_component(x, sep)
-                        } else {            extract_first_components(x, sep)
-                        }
-    # Inform
-    if (verbose)   message(
-        '\t\tGuess subgroup values from sampleids: ',
-        x[1], ' => ', subgroup_values[1])
-
-    # Return
-    return(subgroup_values)
+guess_subgroup_values <- function(x, sep = guess_sep(x), verbose=TRUE){
+    y <-  if (is.null(sep)){  x
+            } else {         split_extract(x, seq_len(nfactors(x)-1), sep) }
+    if (verbose)   message('\t\tGuess subgroup values: ', x[1], ' => ', y[1])
+    y
 }
 
 
 #' @rdname guess_subgroup_values
 #' @export
-guess_subgroup_values.SummarizedExperiment <- function(
-    x,
-    sep      = guess_sep(x),
-    invert   = FALSE,
-    verbose  = FALSE,
-    ...
-){
-
-    # already in x
-    if ('subgroup' %in% svars(x)){
-        if (verbose) message("\t\tUse 'subgroup' values in x ")
-        return(sdata(x)$subgroup)
-    }
-
-    # guess from sampleid values
-    guess_subgroup_values(
-        sampleid_values(x), sep = sep, invert = invert, verbose = verbose)
+guess_replicate_values <- function(x, sep = guess_sep(x), verbose=TRUE){
+    y  <-  if (is.null(sep)){   x
+            } else {            split_extract(x, nfactors(x,sep), sep) }
+    if (verbose)   message('\t\tGuess replicate values: ', x[1], ' => ', y[1])
+    y
 }
 
 

@@ -1,8 +1,13 @@
 
 
-#=================================================
-# GENERIC
-#=================================================
+#==============================================================================
+#
+#                       is_excel_file
+#                       is_fixed_col_file
+#                       nrows
+#                       ncols
+#
+#==============================================================================
 
 is_excel_file <- function(file){
     stri_detect_fixed(
@@ -51,9 +56,11 @@ is_fixed_col_file <- function(file){
     }
 }
 
-#=================================================
-# extract_rectangle
-#=================================================
+#==============================================================================
+#
+#                           extract_rectangle
+#
+#==============================================================================
 
 #' Extract rectangle from omics file, data.table, or matrix
 #'
@@ -114,7 +121,6 @@ is_fixed_col_file <- function(file){
 #' # sdata
 #'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
 #'    transpose = TRUE) %>% extract(1:3, 1:3)
-#' @importFrom magrittr %>% %<>%
 #' @export
 extract_rectangle <- function(x, ...){
     UseMethod('extract_rectangle')
@@ -196,9 +202,12 @@ extract_rectangle.matrix <- function(
     rectangle
 }
 
-#=================================================
-# extract_(s|f)data
-#=================================================
+#==============================================================================
+#
+#                         extract_fdata
+#                         extract_sdata
+#
+#==============================================================================
 
 # Leave rownames(fdata1) empty: fids1 may contain non-valid values
 # This happens in MaxQuant files, which sometimes contain missing rows
@@ -257,6 +266,12 @@ extract_sdata <- function(
     }
     sdata1
 }
+
+#==============================================================================
+#
+#                         read_omics
+#
+#==============================================================================
 
 
 #' Read omics data from rectangular file
@@ -370,59 +385,11 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
 }
 
 
-#' @param object        SummarizedExperiment
-#' @param subgroup_var  subgroup svar or NULL
-#' @param designfile    design file path (to read/write) or NULL (don't write)
-#' @param verbose       TRUE (default) or FALSE
-#'@examples
-#'# PROTEINGROUPS
-#'    file <- download_data('differentiation.proteinGroups.txt')
-#'    object <- read_proteingroups(file, plot = FALSE)
-#'    add_design(object)
-#'
-#'    file <- download_data('stemcells.proteinGroups.txt')
-#'    object <- read_proteingroups(file, plot = FALSE)
-#'    add_design(object)
-#'
-#' # SOMASCAN
-#'     file <- download_data('hypoglycemia.somascan.adat')
-#'     read_somascan(file)
-#'
-#' # METABOLON
-#'     file <- download_data('hypoglycemia.metabolon.xlsx')
-#'     read_metabolon(file)
-#'
-#' # RNACOUNTS
-#'@noRd
-add_design <- function(
-    object, subgroup_var = NULL,
-    designfile = get_default_designfile(object),
-    verbose = TRUE
-){
-# Read/Create
-    dt <- if (file_exists(designfile)){
-            message('\t\tRead design (update if required!): ', designfile)
-            fread(designfile)
-        } else {
-            data.table(
-            sample_id = object$sample_id,
-            subgroup  = create_subgroup_values( object, subgroup_var, verbose),
-            replicate = create_replicate_values(object, subgroup_var, verbose))
-        }
-# Merge
-    object %<>% merge_sdata(dt)
-    sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
-# Write
-    if (!is.null(designfile)){
-        if (!file.exists(designfile)){
-            if (verbose) message('\t\tWrite design (update if required!): ',
-                            designfile)
-            fwrite(dt, designfile, sep = '\t', row.names = FALSE)
-        }
-    }
-# Return
-    object
-}
+#=============================================================================
+#
+#                        add_design
+#
+#=============================================================================
 
 # Deals properly with NULL values
 # file.exists does not!
@@ -432,6 +399,12 @@ file_exists <- function(file){
                             return(FALSE)
 }
 
+#' @examples
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' create_subgroup_values(object, subgroup_var=NULL,  verbose=TRUE)
+#' create_replicate_values(object, subgroup_var=NULL, verbose=TRUE)
+#' @noRd
 create_subgroup_values <- function(object, subgroup_var, verbose){
 
     if (is.null(subgroup_var)){
@@ -447,16 +420,15 @@ create_subgroup_values <- function(object, subgroup_var, verbose){
 
 
 create_replicate_values <- function(object, subgroup_var, verbose){
-
+    sampleid_values <- sdata(object)$sample_id
     if (is.null(subgroup_var)){
-        guess_subgroup_values(object$sample_id, invert=TRUE, verbose=verbose)
-
+        replicate_values <- guess_replicate_values(
+                                sampleid_values, verbose=FALSE)
     } else if (all(is.na(slevels(object, subgroup_var)))){
-        guess_subgroup_values(object$sample_id, invert=TRUE, verbose=verbose)
-
+        replicate_values <- guess_replicate_values(
+                                sampleid_values, verbose=FALSE)
     } else {
         subgroup_values <- sdata(object)[[subgroup_var]]
-        sampleid_values <- sdata(object)$sample_id
         replicate_values <- rep('', length(subgroup_values))
         for (i in seq_along(subgroup_values)){
             replicate_values[i] <-
@@ -465,8 +437,10 @@ create_replicate_values <- function(object, subgroup_var, verbose){
                 stri_replace_all_regex('^[._ ]', '') %>%
                 stri_replace_all_regex('[._ ]$', '')
         }
-        replicate_values
     }
+    if (verbose)   message('\t\tGuess replicate values from sampleids: ',
+                            sampleid_values[1], ' => ', replicate_values[1])
+    replicate_values
 }
 
 
@@ -521,10 +495,82 @@ get_default_designfile <- function(object){
 }
 
 
+split_values <- function(x){
+    sep <- guess_sep(x)
+    dt <- data.table::data.table(x = x)
+    dt[, data.table::tstrsplit(x, sep) ]
+}
 
-#========================
-# AFFYMETRIX MICROARRAYS
-#========================
+#' @examples
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' split_subgroup_values(object)
+#' @noRd
+split_subgroup_values <- function(object){
+    subgroupvalues <- subgroup_values(object)
+    cbind(subgroup = subgroupvalues, split_values(subgroupvalues))
+}
+
+
+#' @param object        SummarizedExperiment
+#' @param subgroup_var  subgroup svar or NULL
+#' @param designfile    design file path (to read/write) or NULL (don't write)
+#' @param verbose       TRUE (default) or FALSE
+#'@examples
+#'# PROTEINGROUPS
+#'    file <- download_data('differentiation.proteinGroups.txt')
+#'    object <- read_proteingroups(file, plot = FALSE)
+#'    add_design(object)
+#'
+#'    file <- download_data('stemcells.proteinGroups.txt')
+#'    object <- read_proteingroups(file, plot = FALSE)
+#'    add_design(object)
+#'
+#' # SOMASCAN
+#'     file <- download_data('hypoglycemia.somascan.adat')
+#'     read_somascan(file)
+#'
+#' # METABOLON
+#'     file <- download_data('hypoglycemia.metabolon.xlsx')
+#'     read_metabolon(file)
+#'
+#' # RNACOUNTS
+#'@noRd
+add_design <- function(
+    object, subgroup_var = NULL,
+    designfile = get_default_designfile(object),
+    verbose = TRUE
+){
+# Read/Create
+    dt <- if (file_exists(designfile)){
+            message('\t\tRead design (update if required!): ', designfile)
+            fread(designfile)
+        } else {
+            data.table(
+            sample_id = object$sample_id,
+            subgroup  = create_subgroup_values( object, subgroup_var, verbose),
+            replicate = create_replicate_values(object, subgroup_var, verbose))
+        }
+# Merge
+    object %<>% merge_sdata(dt)
+    sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
+# Write
+    if (!is.null(designfile)){
+        if (!file.exists(designfile)){
+            if (verbose) message('\t\tWrite design (update if required!): ',
+                            designfile)
+            fwrite(dt, designfile, sep = '\t', row.names = FALSE)
+        }
+    }
+# Return
+    object
+}
+
+#==============================================================================
+#
+#                           read_affymetrix
+#
+#==============================================================================
 
 # https://stackoverflow.com/a/4090208
 # install_if_required <- function(pkgs){
@@ -590,11 +636,12 @@ read_affymetrix <- function(celfiles){
 }
 
 
+#==============================================================================
+#
+#                           read_genex
+#
+#==============================================================================
 
-
-#==========================================================
-# GENEX
-#==========================================================
 
 #' Read genex file
 #' @param file string: path to exiqon genex file
