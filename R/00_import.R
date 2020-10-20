@@ -30,8 +30,10 @@
 #' @import     ggplot2
 #' @importFrom graphics      lines    pie    title
 #' @importFrom grDevices     hcl
-#' @importFrom limma         duplicateCorrelation   lmFit   voom
-#' @importFrom grid          grid.layout  grid.newpage  pushViewport  viewport
+#' @importFrom limma         duplicateCorrelation   lmFit
+#' @importFrom limma         voom    removeBatchEffect
+#' @importFrom grid          grid.layout  grid.draw   grid.newpage
+#' @importFrom gridExtra     arrangeGrob
 #' @importFrom magrittr      %>%   %<>%   add   and   equals
 #' @importFrom magrittr      divide_by   extract   extract2   is_in
 #' @importFrom magrittr      multiply_by

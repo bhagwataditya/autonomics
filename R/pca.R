@@ -573,13 +573,13 @@ biplot_corrections <- function(
     p <- p + guides(color=FALSE, fill=FALSE)
     plotlist <- list(p)
     for (ibatch in covariates){
-        exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[ibatch]])
+        exprs(object) %<>% removeBatchEffect(batch=sdata(object)[[ibatch]])
         p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
         p <- p + ggtitle(paste0(' - ', ibatch))
         p <- p + guides(color=FALSE, fill=FALSE)
         plotlist %<>% c(list(p))
     }
-    pp <- gridExtra::arrangeGrob(grobs = plotlist, ncol = varcols)
+    pp <- arrangeGrob(grobs = plotlist, ncol = varcols)
     if (plot) grid::grid.draw(pp)
     invisible(pp)
 }
@@ -625,7 +625,7 @@ biplot_covariates <- function(
                         fixed = list(shape=15, size=3))
         p <- p + facet_wrap(~dims, ncol = dimcols, scales = 'free')
         p <- p + xlab(NULL) + ylab(NULL) + ggtitle(covar)
-        p <- p + theme(legend.position = 'bottom', legend.title = element_blank())
+        p <- p + theme(legend.position = 'bottom', legend.title=element_blank())
         plotlist %<>% c(list(p))
     }
     pp <- gridExtra::arrangeGrob(grobs = plotlist, ncol = varcols)
@@ -648,7 +648,8 @@ prep_covariates <- function(object, method='pca', ndim=6){
         yvar <- paste0(method, dim2)
         tmpdt <- data.table::copy(projdt)
         setnames(tmpdt, c(xvar, yvar), c('x', 'y'))
-        tmpdt %<>% extract(, stri_detect_fixed(names(.), method, negate = TRUE), with = FALSE)
+        tmpdt %<>% extract(, stri_detect_fixed(
+                                names(.), method, negate = TRUE), with = FALSE)
         tmpdt$dims <- paste0(dim1, ':', dim2)
         plotdt %<>% rbind(tmpdt)
     }

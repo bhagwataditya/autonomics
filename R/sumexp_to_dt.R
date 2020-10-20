@@ -63,7 +63,8 @@ sumexp_to_long_dt <- function(
     assert_is_subset(svars, importomics::svars(object))
     common <- intersect(svars, fvars)
     if (length(common) > 0){
-        message('\t\tRemove clashing svars/fvars: ', paste0(common,collapse = ', '))
+        message('\t\tRemove clashing svars/fvars: ',
+                paste0(common,collapse = ', '))
         fvars %<>% setdiff(common) # Avoid name clashes
         svars %<>% setdiff(common)
     }

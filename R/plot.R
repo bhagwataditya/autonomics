@@ -346,15 +346,16 @@ plot_features <- function(
     fill       = subgroup,
     color      = subgroup,
     ...,
-    fixed = list(na.rm=TRUE),
-    theme = list(axis.text.x  = element_blank(),#element_text(angle=90, vjust=0.5),
+    fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
+    theme = list(axis.text.x  = element_blank(),
                  axis.title.x = element_blank(),
                  axis.ticks.x = element_blank())
 ){
     fill  <- enquo(fill)
     color <- enquo(color)
     x     <- enquo(x)
-    dt <- sumexp_to_long_dt(object, svars = svars(object), fvars = fvars(object))
+    dt <- sumexp_to_long_dt(
+            object, svars = svars(object), fvars = fvars(object))
     value <- NULL
     p <- plot_data(
             dt, geom = geom, x = !!x, y = value, fill = !!fill,
