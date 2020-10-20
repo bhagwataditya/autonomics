@@ -26,6 +26,9 @@ plot_transformations(
 
 \item{...}{passed to plot_data}
 }
+\value{
+grid object
+}
 \description{
 Plot transformations
 }

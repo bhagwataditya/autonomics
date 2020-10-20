@@ -33,11 +33,11 @@
 #' @importFrom limma         duplicateCorrelation   lmFit
 #' @importFrom limma         voom    removeBatchEffect
 #' @importFrom grid          grid.layout  grid.draw   grid.newpage
-#' @importFrom gridExtra     arrangeGrob
+#' @importFrom gridExtra     arrangeGrob   grid.arrange
 #' @importFrom magrittr      %>%   %<>%   add   and   equals
 #' @importFrom magrittr      divide_by   extract   extract2   is_in
 #' @importFrom magrittr      multiply_by
-#' @importFrom magrittr      set_colnames   set_names   set_rownames
+    #' @importFrom magrittr      set_colnames   set_names   set_rownames
 #' @importFrom MASS          fitdistr
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans
 #' @importFrom matrixStats   rowAlls   rowSds

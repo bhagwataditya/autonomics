@@ -123,10 +123,10 @@ transform_to_standard_normal <- function(x){
 #==============================================================================
 
 gglegend<-function(p){
-  tmp <- ggplot_gtable(ggplot_build(p))
-  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
-  legend <- tmp$grobs[[leg]]
-  return(legend)
+    tmp <- ggplot_gtable(ggplot_build(p))
+    leg <- which(vapply(tmp$grobs, function(x) x$name, character(1))=="guide-box")
+    legend <- tmp$grobs[[leg]]
+    return(legend)
 }
 
 
@@ -137,6 +137,7 @@ gglegend<-function(p){
 #' @param xdim            number (default 1)
 #' @param ydim            number (default 1)
 #' @param ...             passed to plot_data
+#' @return grid object
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
@@ -150,9 +151,8 @@ plot_transformations <- function(
     p2 <- plot_transformation_biplots(
             object, transformations, method, xdim1 = xdim, ydim = ydim, ...)
 
-    gridExtra::grid.arrange(gridExtra::arrangeGrob(
-                                p1 + theme(legend.position='none'),
-                                p2 + theme(legend.position='none'), nrow=2),
+    grid.arrange(arrangeGrob(p1 + theme(legend.position='none'),
+                            p2  + theme(legend.position='none'), nrow=2),
                             gglegend(p2), ncol=2, widths = c(8, 1))
 
 }

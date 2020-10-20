@@ -26,6 +26,12 @@ pls(object, ndim = 2, minvar = 0, verbose = FALSE)
 }
 \value{
 SummarizedExperiment
+}
+\description{
+Perform a dimension reduction.
+Add sample scores, feature loadings, and dimension variances to object.
+}
+\examples{
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 pca(object)  # Principal Component Analysis
@@ -34,10 +40,6 @@ lda(object)  # Linear Discriminant Analysis
 sma(object)  # Spectral Map Analysis
 pca(object, ndim=3)
 pca(object, ndim=Inf, minvar=5)
-}
-\description{
-Perform a dimension reduction.
-Add sample scores, feature loadings, and dimension variances to object.
 }
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)

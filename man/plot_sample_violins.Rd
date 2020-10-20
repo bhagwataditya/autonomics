@@ -23,6 +23,9 @@ plot_sample_violins(
 
 \item{fixed}{fixed aesthetics}
 }
+\value{
+ggplot object
+}
 \description{
 Plot sample violins
 }

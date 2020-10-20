@@ -230,6 +230,7 @@ plot_data <- function(
 #' @param color       svar mapped to color
 #' @param ...         mapped aesthetics
 #' @param fixed       fixed aesthetics
+#' @return ggplot object
 #' @examples
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
@@ -260,6 +261,7 @@ plot_sample_densities <- function(
 #' @param color       svar mapped to color
 #' @param ...         mapped aesthetics
 #' @param fixed       fixed aesthetics
+#' @return ggplot object
 #' @examples
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
@@ -290,6 +292,7 @@ plot_sample_violins <- function(
 #' @param color       svar mapped to color
 #' @param ...         mapped aesthetics
 #' @param fixed       fixed aesthetics
+#' @return  ggplot object
 #' @examples
 #' require(magrittr)
 #' file <- download_data('glutaminase.metabolon.xlsx')
@@ -347,9 +350,9 @@ plot_features <- function(
     color      = subgroup,
     ...,
     fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
-    theme = list(axis.text.x  = element_blank(),
-                 axis.title.x = element_blank(),
-                 axis.ticks.x = element_blank())
+    theme = list(axis.text.x = element_blank(),
+                axis.title.x = element_blank(),
+                axis.ticks.x = element_blank())
 ){
     fill  <- enquo(fill)
     color <- enquo(color)
@@ -429,8 +432,8 @@ plot_detects_per_subgroup <- function(object, group = subgroup){
     plot_dt$subgroup %<>% factor(rev(levels(.)))
 
     plot_data(plot_dt, geom_col,
-              x = subgroup, y = value, fill = subgroup, group = variable,
-              fixed = list(position = position_stack(), color="black")) +
+                x = subgroup, y = value, fill = subgroup, group = variable,
+                fixed = list(position = position_stack(), color="black")) +
     #ggplot(plot_dt, aes(x = subgroup, y = value, fill = subgroup,
     #                    group = variable)) +
     ggtitle(title) + theme_bw() +

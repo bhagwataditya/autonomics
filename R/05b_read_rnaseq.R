@@ -150,7 +150,7 @@ count_reads <- function(files, paired, nthreads, genome){
     } else {
         assert_all_are_existing_files(genome)
         args %<>% c(list(annot.ext = genome, isGTFAnnotationFile = TRUE,
-                         GTF.attrType.extra  = 'gene_name'))
+                        GTF.attrType.extra  = 'gene_name'))
         fcounts <- do.call(featureCounts, args)
     }
 

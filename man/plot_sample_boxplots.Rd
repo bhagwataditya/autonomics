@@ -23,6 +23,9 @@ plot_sample_boxplots(
 
 \item{fixed}{fixed aesthetics}
 }
+\value{
+ggplot object
+}
 \description{
 Plot sample boxplots
 }

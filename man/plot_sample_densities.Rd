@@ -23,6 +23,9 @@ plot_sample_densities(
 
 \item{fixed}{fixed aesthetics}
 }
+\value{
+ggplot object
+}
 \description{
 Plot sample densities
 }

@@ -112,6 +112,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @param minvar  number
 #' @param verbose TRUE (default) or FALSE
 #' @return        SummarizedExperiment
+#' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' pca(object)  # Principal Component Analysis
@@ -447,7 +448,8 @@ biplot <- function(
     ylab  <- paste0(ystr, ' : ', metadata(object)[[methody]][[ystr]],'% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
-    p %<>% add_loadings(object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
+    p %<>% add_loadings(
+            object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
     p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
     p %<>% add_color_scale(!!color, data = sdata(object))
 
@@ -506,8 +508,8 @@ add_loadings <- function(
     p + layer(  geom     = 'segment',
                 mapping  = aes(x=0, y=0, xend=!!x, yend=!!y),
                 stat     = "identity",
-                data     = plotdt,
-                params   = list(alpha = 0.1, size=1, na.rm = TRUE),#params   = list(alpha = 0.05, size=3),
+                data     = plotdt, # list(alpha = 0.05, size=3),
+                params   = list(alpha = 0.1, size=1, na.rm = TRUE),
                 position = "identity") +
         layer(  geom     = "text",
                 mapping  = aes(x = !!x, y = !!y, label = !!label),
