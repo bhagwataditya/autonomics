@@ -124,7 +124,8 @@ transform_to_standard_normal <- function(x){
 
 gglegend<-function(p){
     tmp <- ggplot_gtable(ggplot_build(p))
-    leg <- which(vapply(tmp$grobs, function(x) x$name, character(1))=="guide-box")
+    leg <- which(vapply(
+                    tmp$grobs, function(x) x$name, character(1))=="guide-box")
     legend <- tmp$grobs[[leg]]
     return(legend)
 }
