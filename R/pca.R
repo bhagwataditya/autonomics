@@ -556,6 +556,7 @@ plot_corrections <- function(...){
 #' @param covariates  covariates to be batch-corrected
 #' @param varcols     number of covariate columns
 #' @param plot        TRUE/FALSE: plot?
+#' @param ...         used to maintain deprecated functions
 #' @return  grid object
 #' @examples
 #' file <- download_data('hypoglycemia.metabolon.xlsx')
@@ -601,14 +602,15 @@ plot_covariates <- function(...){
 #' @param dimcols     number of dimension columns
 #' @param varcols     number of covariate columns
 #' @param plot        TRUE or FALSE: whether to plot
+#' @param ...         used to maintain deprecated functions
 #' @return  ggplot object
 #' @examples
 #' file <- download_data('hypoglycemia.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' plot_covariates(object, ndim = 12, dimcols = 3)
-#' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
-#' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
-#' plot_covariates(object, covariates = c('subgroup'), dimcols = 3)
+#' biplot_covariates(object, ndim = 12, dimcols = 3)
+#' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+#' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
+#' biplot_covariates(object, covariates = c('subgroup'), dimcols = 3)
 #' @seealso biplot_corrections
 #' @export
 biplot_covariates <- function(

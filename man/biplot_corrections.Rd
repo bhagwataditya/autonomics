@@ -17,6 +17,8 @@ biplot_corrections(
 )
 }
 \arguments{
+\item{...}{used to maintain deprecated functions}
+
 \item{object}{SummarizedExperiment}
 
 \item{method}{'pca', 'pls', 'lda', or 'sma'}
