@@ -386,12 +386,20 @@ opls <- function(object, ndim = 2, minvar = 0){
 
 #=============================================================================
 #
-#                       plot_biplot()
+#                       biplot()
 #
 #==============================================================================
 
 
-#' plot_biplot
+#' @rdname biplot
+#' @export
+plot_biplot <- function(...){
+    .Deprecated('biplot')
+    biplot(...)
+}
+
+
+#' Biplot
 #' @param object         SummarizedExperiment
 #' @param x              pca1, etc.
 #' @param y              pca2, etc.
@@ -404,15 +412,15 @@ opls <- function(object, ndim = 2, minvar = 0){
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' plot_biplot(object)
-#' plot_biplot(object, x=pca1, y=pca2)
-#' plot_biplot(object, x=pls1, y=pls2)
-#' plot_biplot(object, x=pca3, y=pca4)
-#' plot_biplot(object, nloadings = 0)
-#' plot_biplot(object, color = TIME_POINT)
-#' plot_biplot(object, color = NULL)
+#' biplot(object)
+#' biplot(object, x=pca1, y=pca2)
+#' biplot(object, x=pls1, y=pls2)
+#' biplot(object, x=pca3, y=pca4)
+#' biplot(object, nloadings = 0)
+#' biplot(object, color = TIME_POINT)
+#' biplot(object, color = NULL)
 #' @export
-plot_biplot <- function(
+biplot <- function(
     object, x=pca1, y=pca2,
     color = subgroup,
     feature_label = feature_name,
@@ -528,27 +536,44 @@ headtail <- function(x, n){
 
 #=============================================================================
 #
-#                       plot_dim_biplots()
-#                       plot_color_biplots()
-#                       plot_batch_biplots()
+#                       biplot_corrections()
+#                       biplot_covariates()
 #
 #==============================================================================
 
-
-
-#' @rdname plot_covariates
 #' @export
-plot_corrections <- function(
+#' @rdname biplot_corrections
+plot_corrections <- function(...){
+    .Deprecated("biplot_corrections")
+    biplot_corrections(...)
+}
+
+#' Biplot batch corrections
+#'
+#' @param object      SummarizedExperiment
+#' @param method      'pca', 'pls', 'lda', or 'sma'
+#' @param color       variable mapped to color (symbol)
+#' @param covariates  covariates to be batch-corrected
+#' @param varcols     number of covariate columns
+#' @param plot        TRUE/FALSE: plot?
+#' @return  grid object
+#' @examples
+#' file <- download_data('hypoglycemia.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' biplot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+#' @seealso biplot_covariates
+#' @export
+biplot_corrections <- function(
     object, method = 'pca', color = subgroup, covariates = character(0),
     varcols = ceiling(sqrt(1+length(covariates))), plot = TRUE
 ){
-    p <- plot_biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
+    p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
     p <- p + ggtitle('INPUT')
     p <- p + guides(color=FALSE, fill=FALSE)
     plotlist <- list(p)
     for (ibatch in covariates){
         exprs(object) %<>% limma::removeBatchEffect(batch=sdata(object)[[ibatch]])
-        p <- plot_biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
+        p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
         p <- p + ggtitle(paste0(' - ', ibatch))
         p <- p + guides(color=FALSE, fill=FALSE)
         plotlist %<>% c(list(p))
@@ -559,7 +584,16 @@ plot_corrections <- function(
 }
 
 
-#' Plot covariates
+#' @rdname biplot_covariates
+#' @export
+plot_covariates <- function(...){
+    .Deprecated('biplot_covariates')
+    biplot_covariates(...)
+}
+
+
+#' Biplot covariates
+#'
 #' @param object     SummarizedExperiment
 #' @param method     'pca', 'pls', 'lda', or 'sma'
 #' @param covariates  covariates: mapped to color or batch-corrected
@@ -575,10 +609,9 @@ plot_corrections <- function(
 #' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' plot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
 #' plot_covariates(object, covariates = c('subgroup'), dimcols = 3)
-#'
-#' plot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+#' @seealso biplot_corrections
 #' @export
-plot_covariates <- function(
+biplot_covariates <- function(
     object, method = 'pca', covariates = 'subgroup', ndim = 6,
     dimcols = 1, varcols = length(covariates), plot = TRUE
 ){

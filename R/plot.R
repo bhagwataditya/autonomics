@@ -27,6 +27,7 @@
 #'    add_color_scale(object)
 #'
 #' # GLUTAMINASE
+#'    require(magrittr)
 #'    file <- download_data('glutaminase.metabolon.xlsx')
 #'    object <- read_metabolon(file, plot = FALSE)
 #'    object %<>% pca()

@@ -52,6 +52,7 @@ Convert SummarizedExperiment into data.table
     sumexp_to_subrep_dt(object)
 
 # Glutaminase
+   require(magrittr)
    file <- download_data('glutaminase.metabolon.xlsx')
    object <- read_metabolon(file)
    object \%<>\% pca()

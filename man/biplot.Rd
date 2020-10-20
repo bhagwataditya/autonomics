@@ -2,9 +2,12 @@
 % Please edit documentation in R/pca.R
 \name{plot_biplot}
 \alias{plot_biplot}
-\title{plot_biplot}
+\alias{biplot}
+\title{Biplot}
 \usage{
-plot_biplot(
+plot_biplot(...)
+
+biplot(
   object,
   x = pca1,
   y = pca2,
@@ -16,6 +19,8 @@ plot_biplot(
 )
 }
 \arguments{
+\item{...}{additional svars mapped to aesthetics}
+
 \item{object}{SummarizedExperiment}
 
 \item{x}{pca1, etc.}
@@ -26,8 +31,6 @@ plot_biplot(
 
 \item{feature_label}{fvar mapped to (loadings) label}
 
-\item{...}{additional svars mapped to aesthetics}
-
 \item{fixed}{fixed plot aesthetics}
 
 \item{nloadings}{number of loadings per half-axis to plot}
@@ -36,16 +39,16 @@ plot_biplot(
 ggplot object
 }
 \description{
-plot_biplot
+Biplot
 }
 \examples{
 file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-plot_biplot(object)
-plot_biplot(object, x=pca1, y=pca2)
-plot_biplot(object, x=pls1, y=pls2)
-plot_biplot(object, x=pca3, y=pca4)
-plot_biplot(object, nloadings = 0)
-plot_biplot(object, color = TIME_POINT)
-plot_biplot(object, color = NULL)
+biplot(object)
+biplot(object, x=pca1, y=pca2)
+biplot(object, x=pls1, y=pls2)
+biplot(object, x=pca3, y=pca4)
+biplot(object, nloadings = 0)
+biplot(object, color = TIME_POINT)
+biplot(object, color = NULL)
 }

@@ -39,6 +39,7 @@ sumexp_to_wide_dt <- function(object, fid = 'feature_id', fvars = character(0)){
 #'     sumexp_to_subrep_dt(object)
 #'
 #' # Glutaminase
+#'    require(magrittr)
 #'    file <- download_data('glutaminase.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    object %<>% pca()
