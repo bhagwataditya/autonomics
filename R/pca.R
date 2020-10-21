@@ -137,7 +137,7 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     tmpobj <- object
     tmpobj %<>% inf_to_na(verbose=verbose)
     tmpobj %<>% nan_to_na(verbose=verbose)
-    tmpobj %<>% filter_features_available_in_some_sample(verbose = verbose)
+    tmpobj %<>% rm_missing_in_all_samples(verbose = verbose)
 # (Double) center and (global) normalize
     row_means <- rowMeans(exprs(tmpobj), na.rm=TRUE)
     col_means <- colWeightedMeans(exprs(tmpobj), abs(row_means), na.rm = TRUE)
@@ -186,7 +186,7 @@ sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     tmpobj <- object
     tmpobj %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
     tmpobj %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
-    tmpobj %<>% filter_features_available_in_all_samples(verbose = verbose)
+    tmpobj %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
     df <- data.frame(feature = rownames(tmpobj), exprs(tmpobj))
     mpm_tmp <- mpm::mpm(
@@ -235,7 +235,7 @@ lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     tmpobj <- object
     tmpobj %<>% minusinf_to_na(verbose = verbose)         # SVD singular
     tmpobj %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
-    tmpobj %<>% filter_features_available_in_all_samples(verbose = verbose)
+    tmpobj %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
     exprs_t  <- t(exprs(tmpobj))
     lda_out  <- suppressWarnings(

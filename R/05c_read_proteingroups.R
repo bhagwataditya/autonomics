@@ -963,7 +963,7 @@ filter_maxquant_features <- function(
     if (verbose) message('\tFilter features')
     if (!reverse)      object %<>% rm_reverse(     verbose = verbose)
     if (!contaminants) object %<>% rm_contaminants(verbose = verbose)
-    object %<>% filter_features_available_in_some_sample(verbose = verbose)
+    object %<>% rm_missing_in_all_samples(verbose = verbose)
     object %<>% rm_unlocalized(min_localization_prob, verbose = verbose)
 # Return
     object

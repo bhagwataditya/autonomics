@@ -79,12 +79,12 @@ filter_features <- function(object, condition, verbose = FALSE){
 }
 
 
-#' Keep features that are non-zero, non-NA, and non-NaN for some sample
+#' Rm features missing in all samples
 #' @param object  SummarizedExperiment
 #' @param verbose TRUE (default) or FALSE
 #' @return  filtered SummarizedExperiment
 #' @noRd
-filter_features_available_in_some_sample <- function(object, verbose = TRUE){
+rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # . != 0 needed due to stupid behaviour of rowAnys
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
     selector <- rowAnys(exprs(object) != 0, na.rm = TRUE)
@@ -109,9 +109,9 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(exprs(object)))
 #' @examples
 #' file <- download_data('glutaminase.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' filter_features_available_in_all_samples(object)
+#' rm_missing_in_some_samples(object)
 #' @noRd
-filter_features_available_in_all_samples <- function(object, verbose = TRUE){
+rm_missing_in_some_samples <- function(object, verbose = TRUE){
 
     # Restrict to available values
     selector <- is_available_in_all_samples(object)
