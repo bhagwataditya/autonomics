@@ -551,12 +551,12 @@ rm_from_annot <- function(annotation, pattern){
 
 #============================================================================
 #
-#             deconvolute_proteingroups()
+#             simplify_proteingroups()
 #
 #============================================================================
 
 
-#' Deconvolute proteingroups
+#' Simplify proteingroups
 #'
 #' @param object SummarizedExperiment
 #' @param fastafile string
@@ -569,10 +569,10 @@ rm_from_annot <- function(annotation, pattern){
 #' object <- read_proteingroups(file)
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' fdata(object)[1:5, ]
-#' object %<>% deconvolute_proteingroups(fastafile)
+#' object %<>% simplify_proteingroups(fastafile)
 #' fdata(object)[1:5, ]
 #' @noRd
-deconvolute_proteingroups <- function(
+simplify_proteingroups <- function(
     object, fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE
 ){
 # Return if NULL
@@ -1157,7 +1157,7 @@ read_proteingroups <- function(
     object %<>% filter_maxquant_features(reverse = reverse,
                     contaminants = contaminants, verbose = verbose)
     object %<>% rename_proteingroup_fvars()
-    object %<>% deconvolute_proteingroups(fastafile)
+    object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(
                     invert_subgroups      = invert_subgroups,
                     impute                = impute,
@@ -1200,7 +1200,7 @@ read_phosphosites <- function(
 
 # Prepare
     phosphosites %<>% rename_phospho_fvars()
-    phosphosites %<>% deconvolute_proteingroups(fastafile)
+    phosphosites %<>% simplify_proteingroups(fastafile)
     phosphosites %<>% transform_maxquant(
                     invert_subgroups      = invert_subgroups,
                     impute                = FALSE,
