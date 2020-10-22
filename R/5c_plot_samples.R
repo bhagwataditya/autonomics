@@ -1,5 +1,105 @@
 #=============================================================================
 #
+#                 plot_sample_densities()
+#                 plot_sample_violins()
+#                 plot_sample_boxplots()
+#
+#=============================================================================
+
+#' Plot sample densities
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed aesthetics
+#' @return ggplot object
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_sample_densities(object)
+#' plot_sample_densities(object, color = subgroup, fill = NULL)
+#' @export
+plot_sample_densities <- function(
+    object,
+    fill       = subgroup,
+    color      = NULL,
+    ...,
+    fixed = list(alpha = 0.5, na.rm = TRUE)
+){
+    dt <- sumexp_to_long_dt(object, svars = svars(object))
+    fill <- enquo(fill)
+    color <- enquo(color)
+    value <- NULL
+    plot_data(
+        dt, geom = geom_density, x = value, fill = !!fill,
+        color= !!color, ..., fixed = fixed)
+}
+
+
+#' Plot sample violins
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed aesthetics
+#' @return ggplot object
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_sample_violins(object)
+#' @export
+plot_sample_violins <- function(
+    object,
+    fill       = subgroup,
+    color      = NULL,
+    ...,
+    fixed = list(na.rm=TRUE)
+){
+    dt <- sumexp_to_long_dt(object, svars = svars(object))
+    fill <- enquo(fill)
+    color <- enquo(color)
+    sample_id <- value <- NULL
+    plot_data(
+        dt, geom = geom_violin, x = sample_id, y = value, fill = !!fill,
+        color= !!color, ..., fixed      = fixed)
+}
+
+
+
+#' Plot sample boxplots
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param ...         mapped aesthetics
+#' @param fixed       fixed aesthetics
+#' @return  ggplot object
+#' @examples
+#' require(magrittr)
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_sample_boxplots(object)
+#' @export
+plot_sample_boxplots <- function(
+    object,
+    fill       = subgroup,
+    color      = NULL,
+    ...,
+    fixed = list(na.rm=TRUE)
+){
+    dt <- sumexp_to_long_dt(object, svars = svars(object))
+    fill <- enquo(fill)
+    color <- enquo(color)
+    sample_id <- value <- NULL
+    plot_data(
+        dt, geom = geom_boxplot, x = sample_id, y = value, fill = !!fill,
+        color = !!color, ..., fixed      = fixed)
+}
+
+
+#=============================================================================
+#
 #                       biplot()
 #
 #==============================================================================
@@ -271,5 +371,38 @@ prep_covariates <- function(object, method='pca', ndim=6){
     plotdt$dims %<>% factor(unique(.))
     plotdt
 }
+
+
+#' Plot samples
+#'
+#' Plots sample densities and scores
+#' @param object  SummarizedExperiment
+#' @param x       svar mapped to biplot x (sym, default pca1)
+#' @param y       svar mapped to biplot y *sym, default pca2)
+#' @param color   svar mapped to biplot color and density fill
+#' @param ...     passed to plot_data
+#' @examples
+#' file <- download_data('glutaminase.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' plot_samples(object)
+#' @export
+plot_samples <- function(
+    object, x=pca1, y=pca2, color=subgroup, nloadings=0, ..., plot=TRUE
+){
+    p1  <-  biplot(object, x=!!enquo(x), y=!!enquo(y), color=!!enquo(color),
+                nloadings = nloadings, ...) +
+            theme(legend.position='top')
+    p2  <-  plot_sample_densities(object, fill = !!enquo(color), ...) +
+            theme(legend.position='none')
+    p3 <- gglegend(p1)
+    p1 <- p1 + theme(legend.position='none')
+    pp <- grid.arrange( p3,
+                        gridExtra::arrangeGrob(grobs = list(p1, p2), ncol = 2),
+                        ncol=1, heights = c(2,8))
+    if (plot) grid.draw(pp)
+    invisible(pp)
+}
+
+
 
 

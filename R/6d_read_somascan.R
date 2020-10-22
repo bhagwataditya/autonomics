@@ -97,7 +97,7 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
 # Log2 transform
     if (log2) object %<>% log2transform(verbose = TRUE)
 # Plot
-    if (plot) print(biplot(object, pca1, pca2))
+    if (plot) plot_samples(object)
 # Return
     object
 }

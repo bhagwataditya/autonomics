@@ -57,10 +57,10 @@ knitr::include_graphics("../inst/extdata/prepro.png")
 After these steps, the data is ready for statistical analysis. As a first analysis step, each of the importers plots the  principal component analysis biplot. The subgroup extraction and decomposition in the previous step is used for coloring: the first subfactor is mapped to color hue and the second to luminance. This allows to get an easy-to-comprehend overview of the dataset, as shown below for the glutaminase dataset from Halama et al. (2018), which investigates the effect of different concentrations of glutaminase inhibitor (Untreated, Vehicle, 5 uM, 10 uM) at different time points (10h, 24h, 48h, 72h)
 
 
-```{r, fig.width=5.5, fig.height=4, out.width="85%"}
+```{r, fig.width=7, fig.height=4, out.width="95%"}
 require(importomics, quietly = TRUE)
 file <- download_data('glutaminase.metabolon.xlsx')
-object <- read_metabolon(file)
+object <- read_metabolon(file) 
 ```
 
 # Transform 
