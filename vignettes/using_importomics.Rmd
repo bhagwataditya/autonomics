@@ -1,0 +1,77 @@
+---
+title: "Using importomics"
+author: "Aditya M Bhagwat"
+date: "`r Sys.Date()`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{using_importomics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=TRUE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE)
+#str(knitr::opts_chunk$get())
+```
+
+<!-- ![](../inst/extdata/readme.png) -->
+Importomics is an R package for intuitive cross-platform omics data import, preprocessing, exploration, and analysis
+It provides oneliner importers for data from transcriptomics, proteomics, and metabolomics platforms.
+
+
+# Read
+
+Importomics provides dedicated importers for data from:
+
+* Transcriptomics
+    - RNAseq:      `read_bam`, `read_counts` 
+    - Microarrays: `read_affymetrix`
+* Proteomics: 
+    - SOMAscan `read_somascan`
+    - Mass Spectrometry: `read_proteingroups`, `read_phosphosites`, after MaxQuant.
+* Metabolomics: 
+    - Metabolon: `read_metabolon`
+  
+These importers use the generic backend `read_omics`, which can be used to import rectangular data from any new platform, by specifying the location of the three rectangular components in the data file: `fdata` (feature data), `sdata` (sample data), and `exprs` (expression values), which are extracted and wrapped into a `SummarizedExperiment` with feature_id and sample_id values in fdata and sdata.
+
+
+```{r, echo=FALSE, fig.wide=TRUE}
+knitr::include_graphics("../inst/extdata/importers5.png")
+```
+
+# Preprocess
+
+Each importer performs all preprocessing steps required to get the data ready for statistical analysis, as shown in the table below.  
+
+* **Sample** names are *demultiplexed* (proteingroups), technical/failing samples are *removed*, the *subgroup* is extracted, and further decomposed into *subfactors*.  
+* **Features** are *aggregated*, technical/unexpressed features are *removed*, and feature identifications are *simplified* (proteomics).
+* **Exprs** are transformed: (labeled proteingroups) ratios can be inverted, samples normalized, epxrs log2 transformed, precision weights computed (RNAseq), consistent non-detects imputed (proteingroups), and occupancies computed (phosphosites).
+
+
+```{r, echo=FALSE, fig.wide=TRUE}
+knitr::include_graphics("../inst/extdata/prepro.png")
+```
+
+# Explore
+
+After these steps, the data is ready for statistical analysis. As a first analysis step, each of the importers plots the  principal component analysis biplot. The subgroup extraction and decomposition in the previous step is used for coloring: the first subfactor is mapped to color hue and the second to luminance. This allows to get an easy-to-comprehend overview of the dataset, as shown below for the glutaminase dataset from Halama et al. (2018), which investigates the effect of different concentrations of glutaminase inhibitor (Untreated, Vehicle, 5 uM, 10 uM) at different time points (10h, 24h, 48h, 72h)
+
+
+```{r, fig.width=5.5, fig.height=4, out.width="85%"}
+require(importomics, quietly = TRUE)
+file <- download_data('glutaminase.metabolon.xlsx')
+object <- read_metabolon(file)
+```
+
+# References
+
+A. Halama, M. Kulinski, S. Dib, S.B. Zaghlool, K.S. Siveen, A. Iskandarani, J. Zierer 3, K.S. Prabhu, N.J. Satheesh, A.M. Bhagwat, S. Uddin, G. Kastenmüller, O. Elemento, S.S. Gross, K. Suhre (2018). Accelerated lipid catabolism and autophagy are cancer survival mechanisms under inhibited glutaminolysis. Cancer Lett., 430:133-147. doi:10.1016/j.canlet.2018.05.017
+
+
+
+
+
+
+
+
+
