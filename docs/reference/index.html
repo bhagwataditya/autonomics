@@ -86,6 +86,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/using_importomics.html">Using importomics</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -134,9 +146,27 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="assert_is_valid_object.html">assert_is_valid_object()</a></code> </p>
+          <p><code><a href="assert_is_valid_sumexp.html">assert_is_valid_sumexp()</a></code> </p>
         </td>
         <td><p>Assert that x is a valid SummarizedExperiment</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="biplot.html">plot_biplot()</a></code> <code><a href="biplot.html">biplot()</a></code> </p>
+        </td>
+        <td><p>Biplot</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="biplot_corrections.html">plot_corrections()</a></code> <code><a href="biplot_corrections.html">biplot_corrections()</a></code> </p>
+        </td>
+        <td><p>Biplot batch corrections</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="biplot_covariates.html">plot_covariates()</a></code> <code><a href="biplot_covariates.html">biplot_covariates()</a></code> </p>
+        </td>
+        <td><p>Biplot covariates</p></td>
       </tr><tr>
         
         <td>
@@ -167,6 +197,12 @@
           <p><code><a href="download_data.html">download_data()</a></code> </p>
         </td>
         <td><p>Download autonomics data</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="download_gtf.html">download_gtf()</a></code> </p>
+        </td>
+        <td><p>Download GTF file</p></td>
       </tr><tr>
         
         <td>
@@ -203,18 +239,6 @@
           <p><code><a href="filter_features.html">filter_features()</a></code> </p>
         </td>
         <td><p>Filter features on condition</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="filter_features_available_in_all_samples.html">filter_features_available_in_all_samples()</a></code> </p>
-        </td>
-        <td><p>Keep features that are available in all samples</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="filter_features_nonzero_in_some_sample.html">filter_features_nonzero_in_some_sample()</a></code> </p>
-        </td>
-        <td><p>Keep features that are non-zero, non-NA, and non-NaN for some sample</p></td>
       </tr><tr>
         
         <td>
@@ -260,9 +284,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="guess_subgroup_values.html">guess_subgroup_values()</a></code> </p>
+          <p><code><a href="guess_subgroup_values.html">guess_subgroup_values()</a></code> <code><a href="guess_subgroup_values.html">guess_replicate_values()</a></code> </p>
         </td>
-        <td><p>Guess subgroup values</p></td>
+        <td><p>Guess subgroup/replicate values</p></td>
       </tr><tr>
         
         <td>
@@ -278,19 +302,19 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="is_valid_object.html">is_valid_object()</a></code> </p>
-        </td>
-        <td><p>Is valid SummarizedExperiment</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="limma.html">limma()</a></code> <code><a href="limma.html">`limma&lt;-`()</a></code> </p>
         </td>
         <td><p>Get/set limma results</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="maxquant_patterns.html">maxquant_patterns</a></code> </p>
+          <p><code><a href="log2transform.html">log2transform()</a></code> <code><a href="log2transform.html">exp2()</a></code> <code><a href="log2transform.html">zscore()</a></code> <code><a href="log2transform.html">quantnorm()</a></code> <code><a href="log2transform.html">invnorm()</a></code> </p>
+        </td>
+        <td><p>Log2 transform</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="MAXQUANT_PATTERNS.html">MAXQUANT_PATTERNS</a></code> </p>
         </td>
         <td><p>maxquant patterns</p></td>
       </tr><tr>
@@ -302,9 +326,57 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="pca.html">pca()</a></code> <code><a href="pca.html">sma()</a></code> <code><a href="pca.html">lda()</a></code> <code><a href="pca.html">pls()</a></code> </p>
+        </td>
+        <td><p>Add PCA, SMA, LDA, or PLS</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_data.html">plot_data()</a></code> </p>
+        </td>
+        <td><p>Plot data</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="plot_detects_per_subgroup.html">plot_detects_per_subgroup()</a></code> </p>
         </td>
         <td><p>Plot detects per subgroup</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_features.html">plot_features()</a></code> <code><a href="plot_features.html">plot_feature_boxplots()</a></code> <code><a href="plot_features.html">plot_feature_profiles()</a></code> </p>
+        </td>
+        <td><p>Plot features</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_samples.html">plot_samples()</a></code> </p>
+        </td>
+        <td><p>Plot samples</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_sample_boxplots.html">plot_sample_boxplots()</a></code> </p>
+        </td>
+        <td><p>Plot sample boxplots</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_sample_densities.html">plot_sample_densities()</a></code> </p>
+        </td>
+        <td><p>Plot sample densities</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_sample_violins.html">plot_sample_violins()</a></code> </p>
+        </td>
+        <td><p>Plot sample violins</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_transformations.html">plot_transformations()</a></code> </p>
+        </td>
+        <td><p>Plot transformations</p></td>
       </tr><tr>
         
         <td>

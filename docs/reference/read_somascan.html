@@ -87,6 +87,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/using_importomics.html">Using importomics</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -118,13 +130,15 @@
   sid_var = <span class='st'>"SampleId"</span>,
   subgroup_var = <span class='st'>"SampleGroup"</span>,
   fname_var = <span class='st'>"EntrezGeneSymbol"</span>,
-  filter_sample_type = <span class='st'>"Sample"</span>,
-  filter_feature_type = <span class='st'>"Protein"</span>,
-  filter_sample_quality = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"FLAG"</span>, <span class='st'>"PASS"</span>),
-  filter_feature_quality = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"FLAG"</span>, <span class='st'>"PASS"</span>),
+  sample_type = <span class='st'>"Sample"</span>,
+  feature_type = <span class='st'>"Protein"</span>,
+  sample_quality = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"FLAG"</span>, <span class='st'>"PASS"</span>),
+  feature_quality = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"FLAG"</span>, <span class='st'>"PASS"</span>),
   rm_na_svars = <span class='fl'>TRUE</span>,
   rm_single_value_svars = <span class='fl'>TRUE</span>,
-  log2 = <span class='fl'>TRUE</span>
+  log2 = <span class='fl'>TRUE</span>,
+  verbose = <span class='fl'>TRUE</span>,
+  plot = <span class='fl'>TRUE</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -151,20 +165,20 @@
       <td><p>string: feature_name variable</p></td>
     </tr>
     <tr>
-      <th>filter_sample_type</th>
+      <th>sample_type</th>
       <td><p>subset of c('Sample','QC','Buffer','Calibrator')</p></td>
     </tr>
     <tr>
-      <th>filter_feature_type</th>
+      <th>feature_type</th>
       <td><p>subset of c('Protein',
 'Hybridization Control Elution', 'Rat Protein')</p></td>
     </tr>
     <tr>
-      <th>filter_sample_quality</th>
+      <th>sample_quality</th>
       <td><p>subset of c('PASS', 'FLAG', 'FAIL')</p></td>
     </tr>
     <tr>
-      <th>filter_feature_quality</th>
+      <th>feature_quality</th>
       <td><p>subset of c('PASS', 'FLAG', 'FAIL')</p></td>
     </tr>
     <tr>
@@ -179,6 +193,14 @@
       <th>log2</th>
       <td><p>TRUE (default) or FALSE: log2 transform?</p></td>
     </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>TRUE (default) or FALSE</p></td>
+    </tr>
+    <tr>
+      <th>plot</th>
+      <td><p>TRUE (default) or FALSE</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -188,21 +210,21 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># HYPOGLYCEMIA</span>
     <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'hypoglycemia.somascan.adat'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/hypoglycemia/hypoglycemia.somascan.adat</span></div><div class='input'>    <span class='fu'>read_somascan</span>(<span class='kw'>file</span>)
-</div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample types</span>
+    <span class='fu'>read_somascan</span>(<span class='kw'>file</span>)
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/hypoglycemia/hypoglycemia.somascan.adat</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: D05.t0 =&gt; D05</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample types</span>
 #&gt; <span class='message'>		Sample </span>
-#&gt; <span class='message'>		    67 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 samples: ~SampleType %in% ~"Sample"</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample qualities ("RowCheck")</span>
+#&gt; <span class='message'>		    67 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 samples: ~SampleType %in% ~sample_type</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample qualities ("RowCheck")</span>
 #&gt; <span class='message'>		PASS </span>
-#&gt; <span class='message'>		  67 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 samples: ~RowCheck %in% ~c("FLAG", "PASS")</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Feature qualities ("ColCheck")</span>
+#&gt; <span class='message'>		  67 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 samples: ~RowCheck %in% ~sample_quality</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Feature qualities ("ColCheck")</span>
 #&gt; <span class='message'>		FAIL PASS </span>
-#&gt; <span class='message'>		   4 1125 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 1125/1129 features: ~ColCheck %in% ~c("FLAG", "PASS")</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform exprs</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
+#&gt; <span class='message'>		   4 1125 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 1125/1129 features: ~ColCheck %in% ~feature_quality</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='img'><img src='read_somascan-1.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 1125 67 
-#&gt; metadata(1): analysis
+#&gt; metadata(3): analysis file platform
 #&gt; assays(1): exprs
 #&gt; rownames(1125): 2182-54_1 2190-55_1 ... 5491-12_3 5494-52_3
 #&gt; rowData names(15): feature_id feature_name ... ColCheck Dilution
-#&gt; colnames(67): Set0Sub05 Set0Sub14 ... Set3Sub01 Set3Sub10
-#&gt; colData names(14): sample_id SlideId ... NormScale_0.005 NormScale_1.0</div></pre>
+#&gt; colnames(67): D05.t0 D14.t0 ... C01.t3 C10.t3
+#&gt; colData names(18): sample_id subgroup ... NormScale_0.005 NormScale_1.0</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

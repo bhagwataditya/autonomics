@@ -87,6 +87,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/using_importomics.html">Using importomics</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -113,34 +125,30 @@
     </div>
 
     <pre class="usage"><span class='fu'>read_proteingroups</span>(
-  <span class='kw'>proteingroupsfile</span>,
-  fastafile = <span class='kw'>NULL</span>,
-  quantity = <span class='fu'><a href='guess_maxquant_quantity.html'>guess_maxquant_quantity</a></span>(<span class='kw'>proteingroupsfile</span>),
-  fvars = <span class='kw'>PROTEINGROUP_FVARS</span>,
+  <span class='kw'>proteinfile</span>,
+  quantity = <span class='fu'><a href='guess_maxquant_quantity.html'>guess_maxquant_quantity</a></span>(<span class='kw'>proteinfile</span>),
+  designfile = <span class='fu'>default_designfile</span>(<span class='kw'>proteinfile</span>, <span class='st'>"maxquant"</span>, <span class='kw'>quantity</span>),
+  rm_subgroups = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
   contaminants = <span class='fl'>FALSE</span>,
   reverse = <span class='fl'>FALSE</span>,
-  unquantified = <span class='fl'>FALSE</span>,
-  demultiplex_snames = <span class='fl'>TRUE</span>,
+  fastafile = <span class='kw'>NULL</span>,
   invert_subgroups = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
-  log2 = <span class='fl'>TRUE</span>,
   impute = <span class='fu'>stri_detect_regex</span>(<span class='kw'>quantity</span>, <span class='st'>"[Ii]ntensity"</span>),
   verbose = <span class='fl'>TRUE</span>,
   plot = <span class='fl'>TRUE</span>
 )
 
 <span class='fu'>read_phosphosites</span>(
-  <span class='kw'>phosphositesfile</span>,
-  proteingroupsfile = <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/basename.html'>dirname</a></span>(<span class='kw'>phosphositesfile</span>), <span class='st'>"/proteinGroups.txt"</span>),
-  fastafile = <span class='kw'>NULL</span>,
-  quantity = <span class='fu'><a href='guess_maxquant_quantity.html'>guess_maxquant_quantity</a></span>(<span class='kw'>phosphositesfile</span>),
-  fvars = <span class='kw'>PHOSPHOSITE_FVARS</span>,
+  <span class='kw'>phosphofile</span>,
+  proteinfile = <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/basename.html'>dirname</a></span>(<span class='kw'>phosphofile</span>), <span class='st'>"/proteinGroups.txt"</span>),
+  quantity = <span class='fu'><a href='guess_maxquant_quantity.html'>guess_maxquant_quantity</a></span>(<span class='kw'>phosphofile</span>),
+  designfile = <span class='fu'>default_designfile</span>(<span class='kw'>proteinfile</span>, <span class='st'>"maxquant"</span>, <span class='kw'>quantity</span>),
+  rm_subgroups = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
   contaminants = <span class='fl'>FALSE</span>,
   reverse = <span class='fl'>FALSE</span>,
-  unquantified = <span class='fl'>FALSE</span>,
   min_localization_prob = <span class='fl'>0.75</span>,
-  demultiplex_snames = <span class='fl'>TRUE</span>,
+  fastafile = <span class='kw'>NULL</span>,
   invert_subgroups = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
-  log2 = <span class='fl'>TRUE</span>,
   verbose = <span class='fl'>TRUE</span>,
   plot = <span class='fl'>TRUE</span>
 )</pre>
@@ -149,47 +157,41 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>proteingroupsfile</th>
+      <th>proteinfile</th>
       <td><p>proteinGroups.txt path</p></td>
     </tr>
     <tr>
-      <th>fastafile</th>
-      <td><p>fastafile path if provided, used to simplify proteingroups</p></td>
-    </tr>
-    <tr>
       <th>quantity</th>
-      <td><p>string: ""Ratio normalized", "Ratio", "LFQ intensity",
-"Reporter intensity corrected", "Reporter intensity","Intensity labeled",
-or "Intensity"</p></td>
+      <td><p>string: "Ratio normalized",
+"Ratio", "LFQ intensity",
+"Reporter intensity corrected",
+"Reporter intensity",
+"Intensity labeled",
+"Intensity"</p></td>
     </tr>
     <tr>
-      <th>fvars</th>
-      <td><p>character vector: annotation columns to extract</p></td>
+      <th>designfile</th>
+      <td><p>path to designfile</p></td>
+    </tr>
+    <tr>
+      <th>rm_subgroups</th>
+      <td><p>character vector: subgroups to be removed</p></td>
     </tr>
     <tr>
       <th>contaminants</th>
-      <td><p>return also contaminants? (defaultFALSE)</p></td>
+      <td><p>return contaminants? (defaultFALSE)</p></td>
     </tr>
     <tr>
       <th>reverse</th>
-      <td><p>return also reverse peptides? (default FALSE)</p></td>
+      <td><p>return reverse peptides? (default FALSE)</p></td>
     </tr>
     <tr>
-      <th>unquantified</th>
-      <td><p>return also unquantified peptides? (default FALSE)</p></td>
-    </tr>
-    <tr>
-      <th>demultiplex_snames</th>
-      <td><p>TRUE (default) or FALSE: whether to demultiplex
-maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -&gt; KD(H)_WT(L).R1 ?</p></td>
+      <th>fastafile</th>
+      <td><p>NULL or fastafile (to deconvolute proteingroups</p></td>
     </tr>
     <tr>
       <th>invert_subgroups</th>
       <td><p>character vector: subgroups to be inverted</p></td>
-    </tr>
-    <tr>
-      <th>log2</th>
-      <td><p>TRUE (default) or FALSE: log2 transform?</p></td>
     </tr>
     <tr>
       <th>impute</th>
@@ -204,13 +206,12 @@ maxquant snames: Ratio normalized H/L WT(L).KD(H).R1 -&gt; KD(H)_WT(L).R1 ?</p><
       <td><p>TRUE or FALSE</p></td>
     </tr>
     <tr>
-      <th>phosphositesfile</th>
+      <th>phosphofile</th>
       <td><p>phospho(STY)Sites.txt path</p></td>
     </tr>
     <tr>
       <th>min_localization_prob</th>
-      <td><p>number (default 0.75):
-minimum localization probability required for a site to be retained</p></td>
+      <td><p>number (default 0.75): min site loc. prob.</p></td>
     </tr>
     </table>
 
@@ -219,68 +220,77 @@ minimum localization probability required for a site to be retained</p></td>
     <p>SummarizedExperiment</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># STEMCELLS</span>
-    <span class='co'># Normalized Ratios</span>
-        <span class='kw'>proteingroupsfile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'stemcells.proteinGroups.txt'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.txt</span></div><div class='input'>        (<span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'>read_proteingroups</span>(<span class='kw'>proteingroupsfile</span>,
+    <pre class="examples"><div class='input'><span class='co'># STEM CELLS</span>
+    <span class='co'># NORMALIZED RATIOS</span>
+    <span class='kw'>proteinfile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'stemcells.proteinGroups.txt'</span>)
+    (<span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'>read_proteingroups</span>(<span class='kw'>proteinfile</span>,
                                 invert_subgroups = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>'E_EM'</span>,<span class='st'>'E_BM'</span>,<span class='st'>'BM_EM'</span>)))
-</div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values from sampleids: EM_E.R1 =&gt; EM_E</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Invert subgroups E_EM, E_BM, BM_EM</span></div><div class='output co'>#&gt; <span class='message'>			exprs    : 1.1 -&gt; 0.91</span></div><div class='output co'>#&gt; <span class='message'>			subgroups: BM_EM -&gt; EM_BM</span></div><div class='output co'>#&gt; <span class='message'>			sampleids: BM_EM.R1 -&gt; EM_BM.R1</span></div><div class='output co'>#&gt; <span class='message'>		Order on subgroup</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 6935/70893 values (in 1565/7877 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform exprs</span></div><div class='img'><img src='read_proteingroups-1.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9/9 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Invert subgroups E_EM, E_BM, BM_EM</span></div><div class='output co'>#&gt; <span class='message'>			exprs    : 0.14 -&gt; -0.14</span></div><div class='output co'>#&gt; <span class='message'>			subgroups: BM_EM -&gt; EM_BM</span></div><div class='output co'>#&gt; <span class='message'>			sampleids: BM_EM.R1 -&gt; EM_BM.R1</span></div><div class='output co'>#&gt; <span class='message'>		Order on subgroup</span></div><div class='img'><img src='read_proteingroups-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_proteingroups-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 7877 9 
-#&gt; metadata(2): analysis quantity
+#&gt; metadata(4): analysis file quantity platform
 #&gt; assays(1): exprs
 #&gt; rownames(7877): 0 1 ... 8624 8626
-#&gt; rowData names(6): feature_id feature_name ... Protein names Contaminant
+#&gt; rowData names(6): feature_id feature_name ... Contaminant id
 #&gt; colnames(9): BM_E.R1 BM_E.R2 ... EM_E.R2 EM_E.R3
-#&gt; colData names(3): sample_id subgroup replicate</div><div class='input'>    <span class='co'># Intensities</span>
-        (<span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'>read_proteingroups</span>(<span class='kw'>proteingroupsfile</span>,
+#&gt; colData names(3): sample_id subgroup replicate</div><div class='input'>    <span class='co'># INTENSITIES</span>
+    (<span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'>read_proteingroups</span>(<span class='kw'>proteinfile</span>,
                                       quantity = <span class='st'>'Intensity labeled'</span>))
-</div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8373/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Intensity L E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{L}  -&gt;  E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values from sampleids: E.R1 =&gt; E</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 4695/75357 values (in 1159/8373 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Impute consistent NA values among 38/8373 features</span></div><div class='img'><img src='read_proteingroups-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Intensity L E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{L}  -&gt;  E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.Intensity.labeled.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9/9 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 5454/77643 values (in 1287/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8373/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Impute consistent NA values among 38/8373 features</span></div><div class='img'><img src='read_proteingroups-3.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_proteingroups-4.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 8373 9 
-#&gt; metadata(6): analysis quantity ... analysis quantity
+#&gt; metadata(12): analysis file ... quantity platform
 #&gt; assays(2): exprs is_imputed
 #&gt; rownames(8373): 0 1 ... 8625 8626
-#&gt; rowData names(6): feature_id feature_name ... Protein names Contaminant
-#&gt; colnames(9): E.R1 E.R2 ... BM.R2 BM.R3
-#&gt; colData names(3): sample_id subgroup replicate</div><div class='input'>    <span class='co'># Simplify proteingroups</span>
-        <span class='kw'>fastafile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'uniprot_hsa_20140515.fasta'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/uniprot_hsa_20140515/uniprot_hsa_20140515.fasta</span></div><div class='input'>        <span class='fu'><a href='fdata.html'>fdata</a></span>(<span class='kw'>object</span>)[<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, ]
-</div><div class='output co'>#&gt;   feature_id feature_name                                            uniprot id
-#&gt; 0          0        RBM47 D6R9D6;A0AV96-2;A0AV96;B7Z8Z7;D6RBS9;D6REZ6;D6R9M7  0
-#&gt; 1          1        TTC26             A0AVF1-3;A0AVF1;B7Z2T3;B7Z6R6;A0AVF1-2  1
-#&gt; 2          2         UBA6                                    A0AVT1;A0AVT1-2  2
-#&gt;                                 Protein names Contaminant
-#&gt; 0                      RNA-binding protein 47            
-#&gt; 1         Tetratricopeptide repeat protein 26            
-#&gt; 2 Ubiquitin-like modifier-activating enzyme 6            </div><div class='input'>        <span class='fu'><a href='fdata.html'>fdata</a></span>(<span class='fu'>read_proteingroups</span>(<span class='kw'>proteingroupsfile</span>,
+#&gt; rowData names(6): feature_id feature_name ... Contaminant id
+#&gt; colnames(9): E.R1 EM.R1 ... BM.R3 E.R3
+#&gt; colData names(3): sample_id subgroup replicate</div><div class='input'>    <span class='co'># DECONVOLUTE</span>
+    <span class='kw'>fastafile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'uniprot_hsa_20140515.fasta'</span>)
+    <span class='fu'><a href='fdata.html'>fdata</a></span>(<span class='kw'>object</span>)[<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, ]
+</div><div class='output co'>#&gt;   feature_id feature_name                                            uniprot
+#&gt; 0          0        RBM47 D6R9D6;A0AV96-2;A0AV96;B7Z8Z7;D6RBS9;D6REZ6;D6R9M7
+#&gt; 1          1        TTC26             A0AVF1-3;A0AVF1;B7Z2T3;B7Z6R6;A0AVF1-2
+#&gt; 2          2         UBA6                                    A0AVT1;A0AVT1-2
+#&gt;                                 Protein names Contaminant id
+#&gt; 0                      RNA-binding protein 47              0
+#&gt; 1         Tetratricopeptide repeat protein 26              1
+#&gt; 2 Ubiquitin-like modifier-activating enzyme 6              2</div><div class='input'>    <span class='fu'><a href='fdata.html'>fdata</a></span>(<span class='fu'>read_proteingroups</span>(<span class='kw'>proteinfile</span>,
                 quantity = <span class='st'>'Intensity labeled'</span>, fastafile = <span class='kw'>fastafile</span>))[<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>,]
-</div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8373/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Load fasta file</span></div><div class='output co'>#&gt; <span class='message'>			Extract REVIEWED: 0=trembl, 1=swissprot</span></div><div class='output co'>#&gt; <span class='message'>			Extract ENTRYNAME</span></div><div class='output co'>#&gt; <span class='message'>			Extract (sequence) VERSION</span></div><div class='output co'>#&gt; <span class='message'>			Extract EXISTENCE: 1=protein, 2=transcript, 3=homology, 4=prediction, 5=uncertain, NA=isoform</span></div><div class='output co'>#&gt; <span class='message'>			Extract GENES</span></div><div class='output co'>#&gt; <span class='message'>			Extract ORGID</span></div><div class='output co'>#&gt; <span class='message'>			Extract ORGNAME</span></div><div class='output co'>#&gt; <span class='message'>			Extract PROTEIN-NAMES</span></div><div class='output co'>#&gt; <span class='message'>		Simplify proteingroups</span></div><div class='output co'>#&gt; <span class='message'>			Drop inferior existences</span></div><div class='output co'>#&gt; <span class='message'>			Drop trembl when swissprot available</span></div><div class='output co'>#&gt; <span class='message'>			Drop fragments when full seqs available</span></div><div class='output co'>#&gt; <span class='message'>			Collapse isoforms and paralogs</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Intensity L E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{L}  -&gt;  E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values from sampleids: E.R1 =&gt; E</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 4695/75357 values (in 1159/8373 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Impute consistent NA values among 38/8373 features</span></div><div class='img'><img src='read_proteingroups-3.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;   feature_id feature_name                  uniprot canonical
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Intensity L E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{L}  -&gt;  E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.Intensity.labeled.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9/9 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 5454/77643 values (in 1287/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8373/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Load fasta file</span></div><div class='output co'>#&gt; <span class='message'>			Extract REVIEWED: 0=trembl, 1=swissprot</span></div><div class='output co'>#&gt; <span class='message'>			Extract ENTRYNAME</span></div><div class='output co'>#&gt; <span class='message'>			Extract (sequence) VERSION</span></div><div class='output co'>#&gt; <span class='message'>			Extract EXISTENCE: 1=protein, 2=transcript, 3=homology, 4=prediction, 5=uncertain, NA=isoform</span></div><div class='output co'>#&gt; <span class='message'>			Extract GENES</span></div><div class='output co'>#&gt; <span class='message'>			Extract ORGID</span></div><div class='output co'>#&gt; <span class='message'>			Extract ORGNAME</span></div><div class='output co'>#&gt; <span class='message'>			Extract PROTEIN-NAMES</span></div><div class='output co'>#&gt; <span class='message'>		Simplify proteingroups</span></div><div class='output co'>#&gt; <span class='message'>			Drop inferior existences</span></div><div class='output co'>#&gt; <span class='message'>			Drop trembl when swissprot available</span></div><div class='output co'>#&gt; <span class='message'>			Drop fragments when full seqs available</span></div><div class='output co'>#&gt; <span class='message'>			Collapse isoforms and paralogs</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Impute consistent NA values among 38/8373 features</span></div><div class='img'><img src='read_proteingroups-5.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_proteingroups-6.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;   feature_id feature_name                  uniprot canonical
 #&gt; 0          0        RBM47          A0AV96-2;A0AV96    A0AV96
 #&gt; 1          1        TTC26 A0AVF1-3;A0AVF1;A0AVF1-2    A0AVF1
 #&gt; 2          2         UBA6          A0AVT1;A0AVT1-2    A0AVT1
-#&gt;                                 Protein names id Contaminant
-#&gt; 0                      RNA-binding protein 47  0            
-#&gt; 1         Tetratricopeptide repeat protein 26  1            
-#&gt; 2 Ubiquitin-like modifier-activating enzyme 6  2            </div><div class='input'><span class='co'># DIFFERENTIATION</span>
-    <span class='kw'>phosphositesfile</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'differentiation.phosphoSites.txt'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/differentiation/differentiation.phosphoSites.txt</span></div><div class='input'>    <span class='kw'>proteingroupsfile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'differentiation.proteinGroups.txt'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.txt</span></div><div class='input'>    <span class='kw'>fastafile</span>         <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'uniprot_hsa_20140515.fasta'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/uniprot_hsa_20140515/uniprot_hsa_20140515.fasta</span></div><div class='input'>    <span class='fu'>read_proteingroups</span>(<span class='kw'>proteingroupsfile</span>, <span class='kw'>fastafile</span>)
-</div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9566/9778 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9470/9566 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7864/9470 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Load fasta file</span></div><div class='output co'>#&gt; <span class='message'>			Extract REVIEWED: 0=trembl, 1=swissprot</span></div><div class='output co'>#&gt; <span class='message'>			Extract ENTRYNAME</span></div><div class='output co'>#&gt; <span class='message'>			Extract (sequence) VERSION</span></div><div class='output co'>#&gt; <span class='message'>			Extract EXISTENCE: 1=protein, 2=transcript, 3=homology, 4=prediction, 5=uncertain, NA=isoform</span></div><div class='output co'>#&gt; <span class='message'>			Extract GENES</span></div><div class='output co'>#&gt; <span class='message'>			Extract ORGID</span></div><div class='output co'>#&gt; <span class='message'>			Extract ORGNAME</span></div><div class='output co'>#&gt; <span class='message'>			Extract PROTEIN-NAMES</span></div><div class='output co'>#&gt; <span class='message'>		Simplify proteingroups</span></div><div class='output co'>#&gt; <span class='message'>			Drop inferior existences</span></div><div class='output co'>#&gt; <span class='message'>			Drop trembl when swissprot available</span></div><div class='output co'>#&gt; <span class='message'>			Drop fragments when full seqs available</span></div><div class='output co'>#&gt; <span class='message'>			Collapse isoforms and paralogs</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized STD(L).EM00(M).EM01(H).R1  -&gt;  STD(L).EM00(M).EM01(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: STD(L).EM00(M).EM01(H).R1{M/L}  -&gt;  EM00_STD.R1</span></div><div class='output co'>#&gt; <span class='message'>		Uniquify snames: BM00_STD.R10 -&gt; BM00_STD.R10ML (for 2/33 snames)</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values from sampleids: EM00_STD.R1 =&gt; EM00_STD</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 60624/259512 values (in 3542/7864 features and 33/33 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform exprs</span></div><div class='img'><img src='read_proteingroups-4.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+#&gt;                                 Protein names Contaminant id
+#&gt; 0                      RNA-binding protein 47              0
+#&gt; 1         Tetratricopeptide repeat protein 26              1
+#&gt; 2 Ubiquitin-like modifier-activating enzyme 6              2</div><div class='input'>
+<span class='co'># DIFFERENTIATION</span>
+    <span class='kw'>proteinfile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'differentiation.proteinGroups.txt'</span>)
+    <span class='kw'>phosphofile</span>  <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'differentiation.phosphoSites.txt'</span>)
+    <span class='fu'>read_proteingroups</span>(<span class='kw'>proteinfile</span>)
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized STD(L).EM00(M).EM01(H).R1  -&gt;  STD(L).EM00(M).EM01(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: STD(L).EM00(M).EM01(H).R1{M/L}  -&gt;  EM00_STD.R1</span></div><div class='output co'>#&gt; <span class='message'>		Uniquify snames: BM00_STD.R10 -&gt; BM00_STD.R10ML (for 2/33 snames)</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 33/33 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 121486/322674 values (in 5426/9778 features and 33/33 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9566/9778 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9470/9566 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7864/9470 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='img'><img src='read_proteingroups-7.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_proteingroups-8.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 7864 33 
-#&gt; metadata(2): analysis quantity
+#&gt; metadata(4): analysis file quantity platform
 #&gt; assays(1): exprs
 #&gt; rownames(7864): 0 1 ... 9776 9777
-#&gt; rowData names(8): feature_id feature_name ... Contaminant Phospho (STY)
-#&gt;   site IDs
+#&gt; rowData names(7): feature_id feature_name ... id Phospho (STY) site IDs
 #&gt; colnames(33): EM00_STD.R1 EM01_STD.R1 ... EM30_STD.R9 EM30_EM15.R9
-#&gt; colData names(3): sample_id subgroup replicate</div><div class='input'>    <span class='fu'>read_phosphosites</span>(<span class='kw'>phosphositesfile</span>, <span class='kw'>proteingroupsfile</span>, <span class='kw'>fastafile</span>)
-</div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>		Read: ~/importomicscache/datasets/differentiation/differentiation.phosphoSites.txt</span></div><div class='output co'>#&gt; <span class='message'>		Add occupancies(phospho) = exprs(phospho) / exprs(proteins)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform occupancies</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 13968/14106 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 13826/13968 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9691/13826 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7510/9691 features: ~`Localization prob` &gt;= min_localization_prob</span></div><div class='output co'>#&gt; <span class='message'>		Load fasta file</span></div><div class='output co'>#&gt; <span class='message'>			Extract REVIEWED: 0=trembl, 1=swissprot</span></div><div class='output co'>#&gt; <span class='message'>			Extract ENTRYNAME</span></div><div class='output co'>#&gt; <span class='message'>			Extract (sequence) VERSION</span></div><div class='output co'>#&gt; <span class='message'>			Extract EXISTENCE: 1=protein, 2=transcript, 3=homology, 4=prediction, 5=uncertain, NA=isoform</span></div><div class='output co'>#&gt; <span class='message'>			Extract GENES</span></div><div class='output co'>#&gt; <span class='message'>			Extract ORGID</span></div><div class='output co'>#&gt; <span class='message'>			Extract ORGNAME</span></div><div class='output co'>#&gt; <span class='message'>			Extract PROTEIN-NAMES</span></div><div class='output co'>#&gt; <span class='message'>		Simplify proteingroups</span></div><div class='output co'>#&gt; <span class='message'>			Drop inferior existences</span></div><div class='output co'>#&gt; <span class='message'>			Drop trembl when swissprot available</span></div><div class='output co'>#&gt; <span class='message'>			Drop fragments when full seqs available</span></div><div class='output co'>#&gt; <span class='message'>			Collapse isoforms and paralogs</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized STD(L).EM00(M).EM01(H).R1  -&gt;  STD(L).EM00(M).EM01(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: STD(L).EM00(M).EM01(H).R1{M/L}  -&gt;  EM00_STD.R1</span></div><div class='output co'>#&gt; <span class='message'>		Uniquify snames: BM00_STD.R10 -&gt; BM00_STD.R10ML (for 2/33 snames)</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values from sampleids: EM00_STD.R1 =&gt; EM00_STD</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
-#&gt; dim: 7510 33 
-#&gt; metadata(1): analysis
+#&gt; colData names(3): sample_id subgroup replicate</div><div class='input'>    <span class='kw'>rm_subgroups</span> <span class='op'>&lt;-</span>  <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>'BLANK_BM00'</span>, <span class='st'>'BLANK_STD'</span>, <span class='st'>'BM00_BM00'</span>, <span class='st'>'EM01_EM00'</span>,
+                       <span class='st'>'EM05_EM02'</span>, <span class='st'>'EM30_EM15'</span>)
+    <span class='fu'>read_proteingroups</span>(<span class='kw'>proteinfile</span>, rm_subgroups = <span class='kw'>rm_subgroups</span>)
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized STD(L).EM00(M).EM01(H).R1  -&gt;  STD(L).EM00(M).EM01(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: STD(L).EM00(M).EM01(H).R1{M/L}  -&gt;  EM00_STD.R1</span></div><div class='output co'>#&gt; <span class='message'>		Uniquify snames: BM00_STD.R10 -&gt; BM00_STD.R10ML (for 2/33 snames)</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 21/33 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 77204/205338 values (in 5423/9778 features and 21/21 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9566/9778 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9470/9566 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7864/9470 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='img'><img src='read_proteingroups-9.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_proteingroups-10.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+#&gt; dim: 7864 21 
+#&gt; metadata(4): analysis file quantity platform
+#&gt; assays(1): exprs
+#&gt; rownames(7864): 0 1 ... 9776 9777
+#&gt; rowData names(7): feature_id feature_name ... id Phospho (STY) site IDs
+#&gt; colnames(21): EM00_STD.R1 EM01_STD.R1 ... EM15_STD.R9 EM30_STD.R9
+#&gt; colData names(3): sample_id subgroup replicate</div><div class='input'>    <span class='fu'>read_phosphosites</span>(<span class='kw'>phosphofile</span>, <span class='kw'>proteinfile</span>, rm_subgroups = <span class='kw'>rm_subgroups</span>)
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized STD(L).EM00(M).EM01(H).R1  -&gt;  STD(L).EM00(M).EM01(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: STD(L).EM00(M).EM01(H).R1{M/L}  -&gt;  EM00_STD.R1</span></div><div class='output co'>#&gt; <span class='message'>		Uniquify snames: BM00_STD.R10 -&gt; BM00_STD.R10ML (for 2/33 snames)</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 21/33 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 77204/205338 values (in 5423/9778 features and 21/21 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/differentiation/differentiation.phosphoSites.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized STD(L).EM00(M).EM01(H).R1  -&gt;  STD(L).EM00(M).EM01(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: STD(L).EM00(M).EM01(H).R1{M/L}  -&gt;  EM00_STD.R1</span></div><div class='output co'>#&gt; <span class='message'>		Uniquify snames: BM00_STD.R10 -&gt; BM00_STD.R10ML (for 2/33 snames)</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 21/33 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 11144/296226 values (in 1290/14106 features and 21/21 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 13968/14106 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 13826/13968 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9690/13826 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7510/9690 features: ~`Localization prob` &gt;= min_localization_prob</span></div><div class='output co'>#&gt; <span class='message'>		Add occupancies(phospho) = exprs(phospho) - exprs(proteins)</span></div><div class='output co'>#&gt; <span class='message'>Aggregate function missing, defaulting to 'length'</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='img'><img src='read_proteingroups-11.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_proteingroups-12.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+#&gt; dim: 7510 21 
+#&gt; metadata(4): analysis file quantity platform
 #&gt; assays(2): exprs occupancies
 #&gt; rownames(7510): 0 1 ... 14094 14101
-#&gt; rowData names(10): feature_id feature_name ... id Protein group IDs
-#&gt; colnames(33): EM00_STD.R1 EM01_STD.R1 ... EM30_STD.R9 EM30_EM15.R9
+#&gt; rowData names(9): feature_id feature_name ... id Protein group IDs
+#&gt; colnames(21): EM00_STD.R1 EM01_STD.R1 ... EM15_STD.R9 EM30_STD.R9
 #&gt; colData names(3): sample_id subgroup replicate</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

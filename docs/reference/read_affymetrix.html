@@ -87,6 +87,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/using_importomics.html">Using importomics</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -141,12 +153,18 @@
     <span class='fu'><a href='https://rdrr.io/r/utils/install.packages.html'>install.packages</a></span>(<span class='st'>'BiocManager'</span>)
 }
 <span class='kw'>BiocManager</span>::<span class='fu'><a href='https://rdrr.io/pkg/BiocManager/man/install.html'>install</a></span>(<span class='st'>'hgu95av2.db'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Bioconductor version 3.11 (BiocManager 1.30.10), R 4.0.1 (2020-06-06)</span></div><div class='output co'>#&gt; <span class='message'>Installing package(s) 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>installing the source package 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>Installation path not writeable, unable to update packages: MASS, mgcv, nlme,</span>
-#&gt; <span class='message'>  survival</span></div><div class='output co'>#&gt; <span class='message'>Old packages: 'affyio', 'backports', 'Biobase', 'BiocParallel', 'Biostrings',</span>
-#&gt; <span class='message'>  'bit', 'bit64', 'data.table', 'DelayedArray', 'ellipsis',</span>
-#&gt; <span class='message'>  'GenomicAlignments', 'GenomicRanges', 'glue', 'IRanges', 'karyoploteR',</span>
-#&gt; <span class='message'>  'limma', 'mixOmics', 'preprocessCore', 'Rcpp', 'Rsamtools', 'Rsubread',</span>
-#&gt; <span class='message'>  'rtracklayer', 'S4Vectors', 'stringi', 'tibble', 'XML', 'XVector', 'zlibbioc'</span></div><div class='input'><span class='fu'>read_affymetrix</span>(celfiles = <span class='fu'><a href='https://rdrr.io/r/base/list.files.html'>list.files</a></span>(<span class='kw'>localfile</span>, full.names = <span class='fl'>TRUE</span>))
+</div><div class='output co'>#&gt; <span class='message'>Bioconductor version 3.11 (BiocManager 1.30.10), R 4.0.2 (2020-06-22)</span></div><div class='output co'>#&gt; <span class='message'>Installing package(s) 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>installing the source package 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>Installation path not writeable, unable to update packages: MASS, mgcv, nlme,</span>
+#&gt; <span class='message'>  survival</span></div><div class='output co'>#&gt; <span class='message'>Old packages: 'affyio', 'backports', 'Biobase', 'BiocParallel', 'BiocStyle',</span>
+#&gt; <span class='message'>  'biomaRt', 'Biostrings', 'bit', 'bit64', 'bookdown', 'callr', 'cli', 'clipr',</span>
+#&gt; <span class='message'>  'covr', 'cpp11', 'data.table', 'DelayedArray', 'devtools', 'diagram',</span>
+#&gt; <span class='message'>  'digest', 'downlit', 'DT', 'ellipsis', 'ff', 'fields', 'foreach', 'Formula',</span>
+#&gt; <span class='message'>  'GenomicAlignments', 'GenomicRanges', 'glue', 'htmlTable', 'htmlwidgets',</span>
+#&gt; <span class='message'>  'igraph', 'IRanges', 'iterators', 'karyoploteR', 'knitr', 'labeling',</span>
+#&gt; <span class='message'>  'limma', 'magick', 'matrixStats', 'mixOmics', 'openssl', 'preprocessCore',</span>
+#&gt; <span class='message'>  'ps', 'ragg', 'Rcpp', 'RcppArmadillo', 'reticulate', 'rlang', 'rmarkdown',</span>
+#&gt; <span class='message'>  'Rsamtools', 'RSQLite', 'Rsubread', 'rtracklayer', 'S4Vectors', 'sandwich',</span>
+#&gt; <span class='message'>  'seqinr', 'sp', 'stringdist', 'stringi', 'systemfonts', 'tibble', 'tinytex',</span>
+#&gt; <span class='message'>  'usethis', 'withr', 'xfun', 'XML', 'XVector', 'zlibbioc'</span></div><div class='input'><span class='fu'>read_affymetrix</span>(celfiles = <span class='fu'><a href='https://rdrr.io/r/base/list.files.html'>list.files</a></span>(<span class='kw'>localfile</span>, full.names = <span class='fl'>TRUE</span>))
 </div><div class='output co'>#&gt; <span class='message'>Read Affymetrix CEL files: 01003.CEL, ...</span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; </div><div class='output co'>#&gt; class: RangedSummarizedExperiment 
 #&gt; dim: 12625 33 
 #&gt; metadata(3): experimentData annotation protocolData

@@ -87,6 +87,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/using_importomics.html">Using importomics</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -218,15 +230,15 @@ excel (xls, xlsx) file</p></td>
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># RNASEQ</span>
    <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'stemcells.rnacounts.txt'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/stemcells/stemcells.rnacounts.txt</span></div><div class='input'>   <span class='fu'>read_omics</span>(<span class='kw'>file</span>,fid_rows   = <span class='fl'>2</span><span class='op'>:</span><span class='fl'>58736</span>,   fid_cols   = <span class='fl'>1</span>,
+   <span class='fu'>read_omics</span>(<span class='kw'>file</span>,fid_rows   = <span class='fl'>2</span><span class='op'>:</span><span class='fl'>58736</span>,   fid_cols   = <span class='fl'>1</span>,
                    sid_rows   = <span class='fl'>1</span>,         sid_cols   = <span class='fl'>4</span><span class='op'>:</span><span class='fl'>14</span>,
                    expr_rows  = <span class='fl'>2</span><span class='op'>:</span><span class='fl'>58736</span>,   expr_cols  = <span class='fl'>4</span><span class='op'>:</span><span class='fl'>14</span>,
                    fvar_rows  = <span class='fl'>1</span>,         fvar_cols  = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>,
                    fdata_rows = <span class='fl'>2</span><span class='op'>:</span><span class='fl'>58736</span>,   fdata_cols = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>,
                    transpose  = <span class='fl'>FALSE</span>)
-</div><div class='output co'>#&gt; class: SummarizedExperiment 
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/stemcells/stemcells.rnacounts.txt</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 58735 11 
-#&gt; metadata(1): analysis
+#&gt; metadata(2): analysis file
 #&gt; assays(1): exprs
 #&gt; rownames(58735): ENSG00000223972 ENSG00000227232 ... ENSG00000277475
 #&gt;   ENSG00000268674
@@ -234,15 +246,15 @@ excel (xls, xlsx) file</p></td>
 #&gt; colnames(11): BM_R1 BM_R2 ... EM_R2 EM_R3
 #&gt; colData names(1): sample_id</div><div class='input'><span class='co'># LCMSMS PROTEINGROUPS</span>
    <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'differentiation.proteinGroups.txt'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.txt</span></div><div class='input'>   <span class='fu'>read_omics</span>(<span class='kw'>file</span>,fid_rows   = <span class='fl'>2</span><span class='op'>:</span><span class='fl'>9783</span>,  fid_cols   = <span class='fl'>383</span>,
+   <span class='fu'>read_omics</span>(<span class='kw'>file</span>,fid_rows   = <span class='fl'>2</span><span class='op'>:</span><span class='fl'>9783</span>,  fid_cols   = <span class='fl'>383</span>,
                    sid_rows   = <span class='fl'>1</span>,       sid_cols   = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>124</span>, <span class='fl'>316</span>, by = <span class='fl'>6</span>),
                    expr_rows  = <span class='fl'>2</span><span class='op'>:</span><span class='fl'>9783</span>,  expr_cols  = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>124</span>, <span class='fl'>316</span>, by = <span class='fl'>6</span>),
                    fvar_rows  = <span class='fl'>1</span>,       fvar_cols  = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2</span>, <span class='fl'>6</span>, <span class='fl'>7</span>, <span class='fl'>383</span>),
                    fdata_rows = <span class='fl'>2</span><span class='op'>:</span><span class='fl'>9783</span>,  fdata_cols = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>2</span>, <span class='fl'>6</span>, <span class='fl'>7</span>, <span class='fl'>383</span>),
                    transpose  = <span class='fl'>FALSE</span>)
-</div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/differentiation/differentiation.proteinGroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 9712 33 
-#&gt; metadata(1): analysis
+#&gt; metadata(2): analysis file
 #&gt; assays(1): exprs
 #&gt; rownames(9712): 0 1 ... 9710 9711
 #&gt; rowData names(5): feature_id Majority protein IDs Protein names Gene
@@ -253,7 +265,7 @@ excel (xls, xlsx) file</p></td>
 #&gt;   STD(L).EM15(M).EM30(H).R9
 #&gt; colData names(1): sample_id</div><div class='input'><span class='co'># SOMASCAN</span>
    <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'stemcells.somascan.adat'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/stemcells/stemcells.somascan.adat</span></div><div class='input'>   <span class='fu'>read_omics</span>(<span class='kw'>file</span>,fid_rows   = <span class='fl'>21</span>,       fid_cols   = <span class='fl'>19</span><span class='op'>:</span><span class='fl'>1146</span>,
+   <span class='fu'>read_omics</span>(<span class='kw'>file</span>,fid_rows   = <span class='fl'>21</span>,       fid_cols   = <span class='fl'>19</span><span class='op'>:</span><span class='fl'>1146</span>,
                    sid_rows   = <span class='fl'>30</span><span class='op'>:</span><span class='fl'>40</span>,    sid_cols   = <span class='fl'>4</span>,
                    expr_rows  = <span class='fl'>30</span><span class='op'>:</span><span class='fl'>40</span>,    expr_cols  = <span class='fl'>19</span><span class='op'>:</span><span class='fl'>1146</span>,
                    fvar_rows  = <span class='fl'>21</span><span class='op'>:</span><span class='fl'>28</span>,    fvar_cols  = <span class='fl'>18</span>,
@@ -261,16 +273,16 @@ excel (xls, xlsx) file</p></td>
                    fdata_rows = <span class='fl'>21</span><span class='op'>:</span><span class='fl'>28</span>,    fdata_cols = <span class='fl'>19</span><span class='op'>:</span><span class='fl'>1146</span>,
                    sdata_rows = <span class='fl'>30</span><span class='op'>:</span><span class='fl'>40</span>,    sdata_cols = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>17</span>,
                    transpose  = <span class='fl'>TRUE</span>)
-</div><div class='output co'>#&gt; class: SummarizedExperiment 
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/stemcells/stemcells.somascan.adat</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 1128 11 
-#&gt; metadata(1): analysis
+#&gt; metadata(2): analysis file
 #&gt; assays(1): exprs
 #&gt; rownames(1128): SL000318 SL002662 ... SL010471 SL009790
 #&gt; rowData names(9): feature_id SeqId ... Dilution Units
 #&gt; colnames(11): E_1 E_2 ... BM_4 BM_5
 #&gt; colData names(18): sample_id PlateId ... SiteId SampleOrganism</div><div class='input'><span class='co'># METABOLON</span>
    <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'glutaminase.metabolon.xlsx'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/glutaminase/glutaminase.metabolon.xlsx</span></div><div class='input'>   <span class='fu'>read_omics</span>(<span class='kw'>file</span>, sheet = <span class='fl'>2</span>,
+   <span class='fu'>read_omics</span>(<span class='kw'>file</span>, sheet = <span class='fl'>2</span>,
                    fid_rows   = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>,    fid_cols   = <span class='fl'>5</span>,
                    sid_rows   = <span class='fl'>3</span>,         sid_cols   = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>,
                    expr_rows  = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>,    expr_cols  = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>,
@@ -279,9 +291,9 @@ excel (xls, xlsx) file</p></td>
                    fdata_rows = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>,    fdata_cols = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>14</span>,
                    sdata_rows = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,      sdata_cols = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>,
                    transpose  = <span class='fl'>FALSE</span>)
-</div><div class='output co'>#&gt; class: SummarizedExperiment 
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/glutaminase/glutaminase.metabolon.xlsx</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 391 72 
-#&gt; metadata(1): analysis
+#&gt; metadata(2): analysis file
 #&gt; assays(1): exprs
 #&gt; rownames(391): 52603 52457 ... 54834 54859
 #&gt; rowData names(15): feature_id PATHWAY_SORTORDER ... KEGG Group HMDB_ID

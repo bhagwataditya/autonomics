@@ -87,6 +87,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/using_importomics.html">Using importomics</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -166,17 +178,10 @@
 <span class='co'># SummarizedExperiment</span>
    <span class='fu'><a href='https://rdrr.io/r/base/library.html'>require</a></span>(<span class='kw'>magrittr</span>)
    <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'stemcells.proteinGroups.txt'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Use already available file: ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.txt</span></div><div class='input'>   <span class='kw'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span>(<span class='kw'>file</span>, demultiplex = <span class='fl'>FALSE</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values from sampleids: Ratio M/L normalized E(L).EM(M).BM(H).R1 =&gt; Ratio M/L normalized E(L).EM(M).BM(H)</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 6935/70893 values (in 1565/7877 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform exprs</span></div><div class='img'><img src='demultiplex-1.png' alt='' width='700' height='433' /></div><div class='input'>   <span class='kw'>x</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='standardize_maxquant_snames.html'>standardize_maxquant_snames</a></span>()
-   <span class='fu'>demultiplex</span>(<span class='kw'>x</span>, verbose = <span class='fl'>TRUE</span>)
-</div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
-#&gt; dim: 7877 9 
-#&gt; metadata(2): analysis quantity
-#&gt; assays(1): exprs
-#&gt; rownames(7877): 0 1 ... 8624 8626
-#&gt; rowData names(6): feature_id feature_name ... Protein names Contaminant
-#&gt; colnames(9): EM_E.R1 BM_E.R1 ... E_EM.R3 E_BM.R3
-#&gt; colData names(3): sample_id subgroup replicate</div></pre>
+   <span class='co'># x &lt;- .read_proteingroups(file)</span>
+   <span class='co'># x %&lt;&gt;% standardize_maxquant_snames()</span>
+   <span class='co'># demultiplex(x, verbose = TRUE)</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
