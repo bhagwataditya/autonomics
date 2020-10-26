@@ -28,6 +28,7 @@
 #' @importFrom data.table    setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR         filterByExpr
 #' @import     ggplot2
+#' @importFrom ggrepel       geom_text_repel
 #' @importFrom graphics      lines    pie    title
 #' @importFrom grDevices     hcl
 #' @importFrom limma         duplicateCorrelation   lmFit
@@ -45,7 +46,7 @@
 #' @importFrom parallel      detectCores
 #' @importFrom readxl        read_excel   excel_sheets
 #' @importFrom rlang         as_string   enquo   eval_tidy   enexpr
-#' @importFrom rlang         expr_text   quo_name   as_name
+#' @importFrom rlang         expr_text   quo_name   as_name   quo_is_null
 #' @importFrom RCurl         url.exists
 #' @importFrom Rsubread      featureCounts
 #' @importFrom R.utils       gunzip

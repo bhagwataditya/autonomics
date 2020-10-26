@@ -41,6 +41,7 @@ Imports:
   edgeR,
   GenomicRanges,
   ggplot2,
+  ggrepel,
   graphics,
   grDevices,
   grid,

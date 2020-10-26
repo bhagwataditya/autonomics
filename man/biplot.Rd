@@ -12,6 +12,7 @@ biplot(
   x = pca1,
   y = pca2,
   color = subgroup,
+  label = NULL,
   feature_label = feature_name,
   ...,
   fixed = list(shape = 15, size = 3),
@@ -28,6 +29,8 @@ biplot(
 \item{y}{pca2, etc.}
 
 \item{color}{svar mapped to color (symbol)}
+
+\item{label}{svar mapped to label (symbol)}
 
 \item{feature_label}{fvar mapped to (loadings) label}
 

@@ -118,6 +118,7 @@ plot_biplot <- function(...){
 #' @param x              pca1, etc.
 #' @param y              pca2, etc.
 #' @param color          svar mapped to color (symbol)
+#' @param label          svar mapped to label (symbol)
 #' @param ...            additional svars mapped to aesthetics
 #' @param feature_label  fvar mapped to (loadings) label
 #' @param fixed          fixed plot aesthetics
@@ -134,15 +135,13 @@ plot_biplot <- function(...){
 #' biplot(object, color = TIME_POINT)
 #' biplot(object, color = NULL)
 #' @export
-biplot <- function(
-    object, x=pca1, y=pca2,
-    color = subgroup,
-    feature_label = feature_name,
-    ...,
+biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
+    feature_label = feature_name, ...,
     fixed = list(shape=15, size=3), nloadings = 1
 ){
     x     <- enquo(x)
     y     <- enquo(y)
+    label <- enquo(label)
     xstr <- as_name(x)
     ystr <- as_name(y)
     methodx <- substr(xstr, 1, 3)
@@ -165,6 +164,10 @@ biplot <- function(
             object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
     p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
     p %<>% add_color_scale(!!color, data = sdata(object))
+
+    if (!quo_is_null(label)){
+        p <- p + geom_text_repel(
+                    aes(x=!!x, y=!!y, label=!!label), data=sdata(object))}
 
     p
 }
