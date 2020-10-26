@@ -263,9 +263,20 @@ extract_sdata <- function(
                                     sheet      = sheet) %>%
                 set_colnames(svars1) %>%
                 data.frame(stringsAsFactors = FALSE, check.names = FALSE))
+        sdata1 %<>% numerify()
     }
     sdata1
 }
+
+
+is_numeric <- function(x)   all(grepl('^[0-9.]+$', x))
+numerify   <- function(df){
+    for (i in names(df)){
+        if (is_numeric(df[[i]]))  df[[i]] %<>% as.numeric()
+    }
+    df
+}
+
 
 #==============================================================================
 #
