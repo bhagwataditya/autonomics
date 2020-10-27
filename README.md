@@ -1,6 +1,6 @@
 ---
 title: importomics
-subtitle: generifying and intuifying cross-platform omics data import & analysis
+subtitle: generifying and intuifying cross-platform omics analysis
 ---
 
 ![ ](https://bitbucket.org/graumannlabtools/importomics/downloads/read_prepro_analyze.png)

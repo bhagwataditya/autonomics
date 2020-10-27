@@ -1,7 +1,6 @@
 ---
-title: "Using importomics"
-author: "Aditya M Bhagwat"
-date: "`r Sys.Date()`"
+title: "importomics"
+subtitle: "Generifying and intuifying cross-platform omics analysis"
 output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{using_importomics}
@@ -14,9 +13,35 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE)
 #str(knitr::opts_chunk$get())
 ```
 
-<!-- ![](../inst/extdata/readme.png) -->
-Importomics is an R package for intuitive cross-platform omics data import, preprocessing, exploration, and analysis
-It provides oneliner importers for data from transcriptomics, proteomics, and metabolomics platforms.
+![ ](https://bitbucket.org/graumannlabtools/importomics/downloads/read_prepro_analyze.png)
+
+
+```{r, eval=FALSE}
+# Install
+    install.packages('remotes')
+    remotes::install_github('bhagwataditya/importomics',  
+                             repos = BiocManager::repositories(), 
+                             dependencies = TRUE, upgrade = FALSE)
+                             
+# Run
+    file <- download_data('stemcells.bam.zip')                           # RNAseq BAM
+    read_bam(file)
+    
+    file <- download_data('stemcells.rnacounts.txt')                     # RNAseq counts
+    read_counts(file)
+        
+    file <- download_data('glutaminase.metabolon.xlsx')                  # Metabolon xlsx
+    read_metabolon(file)
+    
+    proteingroups <- download_data('differentiation.proteinGroups.txt')  # LCMSMS Proteingroups
+    read_proteingroups(proteingroups)
+    
+    phosphosites <- download_data('differentiation.phosphoSites.txt')    # LCMSMS Phosphosites
+    read_phosphosites(phosphosites, proteingroupss)
+    
+    file <- download_data('hypoglycemia.somascan.adat')                  # SOMAscan adat
+    read_somascan(file)
+```
 
 
 # Read
@@ -35,9 +60,7 @@ Importomics provides dedicated importers for data from:
 These importers use the generic backend `read_omics`, which can be used to import rectangular data from any new platform, by specifying the location of the three rectangular components in the data file: `fdata` (feature data), `sdata` (sample data), and `exprs` (expression values), which are extracted and wrapped into a `SummarizedExperiment` with feature_id and sample_id values in fdata and sdata.
 
 
-```{r, echo=FALSE, fig.wide=TRUE}
-knitr::include_graphics("../inst/extdata/importers5.png")
-```
+![](https://bitbucket.org/graumannlabtools/importomics/downloads/importers.png)
 
 # Preprocess
 
@@ -48,9 +71,7 @@ Each importer performs all preprocessing steps required to get the data ready fo
 * **Exprs** are transformed: (labeled proteingroups) ratios can be inverted, samples normalized, epxrs log2 transformed, precision weights computed (RNAseq), consistent non-detects imputed (proteingroups), and occupancies computed (phosphosites).
 
 
-```{r, echo=FALSE, fig.wide=TRUE}
-knitr::include_graphics("../inst/extdata/prepro.png")
-```
+![](https://bitbucket.org/graumannlabtools/importomics/downloads/prepro.png)
 
 # Explore
 
@@ -63,7 +84,13 @@ file <- download_data('glutaminase.metabolon.xlsx')
 object <- read_metabolon(file) 
 ```
 
-# Transform 
+# Transform
+
+# Explore
+
+# Contrast 
+
+# Connect
 
 
 
