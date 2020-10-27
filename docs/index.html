@@ -67,7 +67,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/using_importomics.html">Using importomics</a>
+      <a href="articles/using_importomics.html">importomics</a>
     </li>
   </ul>
 </li>
@@ -85,161 +85,33 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div id="intro" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#intro" class="anchor"></a>Intro</h1></div>
-<p>Make omics data analysis flow :-).</p>
-</div>
-<div id="install" class="section level1">
-<h1 class="hasAnchor">
-<a href="#install" class="anchor"></a>Install</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">install.packages</span>(<span class="st">'remotes'</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>remotes<span class="op">::</span><span class="kw">install_github</span>(<span class="st">'bhagwataditya/importomics'</span>,       <span class="dt">repos =</span> BiocManager<span class="op">::</span><span class="kw">repositories</span>(), <span class="dt">dependencies =</span> <span class="ot">TRUE</span>, <span class="dt">upgrade =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
-<div id="read-and-prepare" class="section level2">
-<h2 class="hasAnchor">
-<a href="#read-and-prepare" class="anchor"></a>Read and prepare</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># METABOLON</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a></span>
-<span id="cb2-3"><a href="#cb2-3"></a>    <span class="co"># Read into SummarizedExperiment</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a>    <span class="kw">require</span>(importomics)</span>
-<span id="cb2-5"><a href="#cb2-5"></a>    file &lt;-<span class="st"> </span><span class="kw">download_data</span>(<span class="st">"hypoglycemia.metabolon.xlsx"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6"></a>    object &lt;-<span class="st"> </span><span class="kw">read_metabolon</span>(file)</span>
-<span id="cb2-7"><a href="#cb2-7"></a>    </span>
-<span id="cb2-8"><a href="#cb2-8"></a>    <span class="kw">exprs</span>(object)[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>]  <span class="co"># expr values</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>    <span class="kw">sdata</span>(object)[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, ]     <span class="co"># sample data</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>    <span class="kw">fdata</span>(object)[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, ]     <span class="co"># sample data</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a>    S4Vectors<span class="op">::</span><span class="kw">metadata</span>(object)</span>
-<span id="cb2-12"><a href="#cb2-12"></a>    object</span>
-<span id="cb2-13"><a href="#cb2-13"></a>    </span>
-<span id="cb2-14"><a href="#cb2-14"></a>    <span class="co"># Explore</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a>    <span class="kw">plot_sample_violins</span>(object)</span>
-<span id="cb2-16"><a href="#cb2-16"></a>    <span class="kw">plot_sample_boxplots</span>(object)</span>
-<span id="cb2-17"><a href="#cb2-17"></a>    <span class="kw">plot_sample_densities</span>(object, <span class="dt">group =</span> sample_id) <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>subgroup)</span>
-<span id="cb2-18"><a href="#cb2-18"></a>    </span>
-<span id="cb2-19"><a href="#cb2-19"></a>    <span class="kw">biplot</span>(object, pca1, pca2, <span class="dt">nloadings =</span> <span class="dv">0</span>)</span>
-<span id="cb2-20"><a href="#cb2-20"></a>    </span>
-<span id="cb2-21"><a href="#cb2-21"></a>    </span>
-<span id="cb2-22"><a href="#cb2-22"></a>      <span class="kw">require</span>(magrittr)</span>
-<span id="cb2-23"><a href="#cb2-23"></a>      (object &lt;-<span class="st"> 'extdata/glutaminase/glutaminase.xlsx'</span>    <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-24"><a href="#cb2-24"></a><span class="st">                  </span><span class="kw">system.file</span>(<span class="dt">package =</span> <span class="st">'autonomics.data'</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-25"><a href="#cb2-25"></a><span class="st">                  </span>autonomics<span class="op">::</span><span class="kw">read_metabolon</span>())</span>
-<span id="cb2-26"><a href="#cb2-26"></a>      object <span class="op">%&lt;&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">prepare_metabolon</span>()</span>
-<span id="cb2-27"><a href="#cb2-27"></a></span>
-<span id="cb2-28"><a href="#cb2-28"></a><span class="co"># SOMASCAN</span></span>
-<span id="cb2-29"><a href="#cb2-29"></a>      (object &lt;-<span class="st"> 'extdata/stemcomp/soma/stemcomp.adat'</span>     <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-30"><a href="#cb2-30"></a><span class="st">                  </span><span class="kw">system.file</span>(<span class="dt">package =</span> <span class="st">'autonomics.data'</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-31"><a href="#cb2-31"></a><span class="st">                  </span>autonomics<span class="op">::</span><span class="kw">read_somascan</span>())</span>
-<span id="cb2-32"><a href="#cb2-32"></a>      object <span class="op">%&lt;&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">prepare_somascan</span>()</span>
-<span id="cb2-33"><a href="#cb2-33"></a></span>
-<span id="cb2-34"><a href="#cb2-34"></a><span class="co"># RNASEQ COUNTS</span></span>
-<span id="cb2-35"><a href="#cb2-35"></a>      object &lt;-<span class="st"> 'extdata/stemdiff/rnaseq/gene_counts.txt'</span> <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-36"><a href="#cb2-36"></a><span class="st">                 </span><span class="kw">system.file</span>(<span class="dt">package =</span> <span class="st">'autonomics.data'</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-37"><a href="#cb2-37"></a><span class="st">                 </span>autonomics<span class="op">::</span><span class="kw">read_counts</span>(<span class="dt">fid_var =</span> <span class="st">'gene_id'</span>)</span>
-<span id="cb2-38"><a href="#cb2-38"></a>      (object <span class="op">%&lt;&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">prepare_rnaseq</span>())</span>
-<span id="cb2-39"><a href="#cb2-39"></a></span>
-<span id="cb2-40"><a href="#cb2-40"></a><span class="co"># RNASEQ BAMFILES</span></span>
-<span id="cb2-41"><a href="#cb2-41"></a></span>
-<span id="cb2-42"><a href="#cb2-42"></a>     <span class="co"># Download example BAM files</span></span>
-<span id="cb2-43"><a href="#cb2-43"></a>       url &lt;-<span class="st"> "https://bitbucket.org/graumannlab/billing.stemcells/downloads/stemcomp.bamfiles.zip"</span></span>
-<span id="cb2-44"><a href="#cb2-44"></a>       <span class="kw">dir.create</span>(<span class="st">'~/.autonomics'</span>, <span class="dt">showWarnings =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb2-45"><a href="#cb2-45"></a>       destfile &lt;-<span class="st"> "~/.autonomics/stemcomp.bamfiles.zip"</span></span>
-<span id="cb2-46"><a href="#cb2-46"></a>       <span class="kw">download.file</span>(url, <span class="dt">destfile =</span> destfile, )</span>
-<span id="cb2-47"><a href="#cb2-47"></a>       utils<span class="op">::</span><span class="kw">unzip</span>(destfile, <span class="dt">exdir =</span> <span class="st">'~/.autonomics'</span>)</span>
-<span id="cb2-48"><a href="#cb2-48"></a>       <span class="kw">unlink</span>(destfile)</span>
-<span id="cb2-49"><a href="#cb2-49"></a></span>
-<span id="cb2-50"><a href="#cb2-50"></a>     <span class="co"># Download GTF file</span></span>
-<span id="cb2-51"><a href="#cb2-51"></a>       gtffile &lt;-<span class="st"> </span>autonomics<span class="op">::</span><span class="kw">download_gtf</span>(<span class="st">'Homo sapiens'</span>, <span class="dv">95</span>)</span>
-<span id="cb2-52"><a href="#cb2-52"></a></span>
-<span id="cb2-53"><a href="#cb2-53"></a>     <span class="co"># Read BAM files into SummarizedExperiment</span></span>
-<span id="cb2-54"><a href="#cb2-54"></a>       object &lt;-<span class="st"> </span>autonomics<span class="op">::</span><span class="kw">read_bam</span>(<span class="dt">bamdir    =</span> <span class="st">"~/.autonomics/stemcomp.bamfiles"</span>,</span>
-<span id="cb2-55"><a href="#cb2-55"></a>                                      <span class="dt">gtffile   =</span> gtffile,</span>
-<span id="cb2-56"><a href="#cb2-56"></a>                                      <span class="dt">ispaired  =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb2-57"><a href="#cb2-57"></a>     <span class="co"># Prepare for analysis</span></span>
-<span id="cb2-58"><a href="#cb2-58"></a>       object <span class="op">%&lt;&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">prepare_rnaseq</span>()</span>
-<span id="cb2-59"><a href="#cb2-59"></a></span>
-<span id="cb2-60"><a href="#cb2-60"></a></span>
-<span id="cb2-61"><a href="#cb2-61"></a><span class="co"># PROTEINGROUPS</span></span>
-<span id="cb2-62"><a href="#cb2-62"></a>      object &lt;-<span class="st"> 'extdata/stemcomp/maxquant/proteinGroups.txt'</span> <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-63"><a href="#cb2-63"></a><span class="st">                 </span><span class="kw">system.file</span>(<span class="dt">package =</span> <span class="st">'autonomics.data'</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-64"><a href="#cb2-64"></a><span class="st">                 </span>autonomics<span class="op">::</span><span class="kw">read_proteingroups</span>()</span>
-<span id="cb2-65"><a href="#cb2-65"></a>      object <span class="op">%&lt;&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">prepare_proteingroups</span>()</span>
-<span id="cb2-66"><a href="#cb2-66"></a></span>
-<span id="cb2-67"><a href="#cb2-67"></a><span class="co"># EXIQON</span></span>
-<span id="cb2-68"><a href="#cb2-68"></a>      object &lt;-<span class="st">  </span>autonomics<span class="op">::</span><span class="kw">read_exiqon</span>(myfile)</span>
-<span id="cb2-69"><a href="#cb2-69"></a>      object <span class="op">%&lt;&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">prepare_exiqon</span>()</span>
-<span id="cb2-70"><a href="#cb2-70"></a></span>
-<span id="cb2-71"><a href="#cb2-71"></a></span>
-<span id="cb2-72"><a href="#cb2-72"></a><span class="co"># ANY OMICS DATASET</span></span>
-<span id="cb2-73"><a href="#cb2-73"></a>      object &lt;-<span class="st"> 'extdata/glutaminase/glutaminase.xlsx'</span>   <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-74"><a href="#cb2-74"></a><span class="st">                 </span><span class="kw">system.file</span>(<span class="dt">package =</span> <span class="st">'autonomics.data'</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb2-75"><a href="#cb2-75"></a><span class="st">                 </span>autonomics<span class="op">::</span><span class="kw">read_omics</span>(</span>
-<span id="cb2-76"><a href="#cb2-76"></a>                    <span class="dt">sheet      =</span> <span class="dv">2</span>,</span>
-<span id="cb2-77"><a href="#cb2-77"></a>                    <span class="dt">fid_rows   =</span> <span class="dv">11</span><span class="op">:</span><span class="dv">401</span>,    <span class="dt">fid_cols   =</span> <span class="dv">5</span>,</span>
-<span id="cb2-78"><a href="#cb2-78"></a>                    <span class="dt">sid_rows   =</span> <span class="dv">3</span>,         <span class="dt">sid_cols   =</span> <span class="dv">15</span><span class="op">:</span><span class="dv">86</span>,</span>
-<span id="cb2-79"><a href="#cb2-79"></a>                    <span class="dt">expr_rows  =</span> <span class="dv">11</span><span class="op">:</span><span class="dv">401</span>,    <span class="dt">expr_cols  =</span> <span class="dv">15</span><span class="op">:</span><span class="dv">86</span>,</span>
-<span id="cb2-80"><a href="#cb2-80"></a>                    <span class="dt">fvar_rows  =</span> <span class="dv">10</span>,        <span class="dt">fvar_cols  =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">14</span>,</span>
-<span id="cb2-81"><a href="#cb2-81"></a>                    <span class="dt">svar_rows  =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>,      <span class="dt">svar_cols  =</span> <span class="dv">14</span>,</span>
-<span id="cb2-82"><a href="#cb2-82"></a>                    <span class="dt">fdata_rows =</span> <span class="dv">11</span><span class="op">:</span><span class="dv">401</span>,    <span class="dt">fdata_cols =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">14</span>,</span>
-<span id="cb2-83"><a href="#cb2-83"></a>                    <span class="dt">sdata_rows =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>,      <span class="dt">sdata_cols =</span> <span class="dv">15</span><span class="op">:</span><span class="dv">86</span>,</span>
-<span id="cb2-84"><a href="#cb2-84"></a>                    <span class="dt">transpose  =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb2-85"><a href="#cb2-85"></a>                    </span></code></pre></div>
-</div>
-<div id="explore" class="section level2">
-<h2 class="hasAnchor">
-<a href="#explore" class="anchor"></a>Explore</h2>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Sample densities</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>    object &lt;-<span class="st"> </span>autonomics.data<span class="op">::</span>glutaminase</span>
-<span id="cb3-3"><a href="#cb3-3"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_sample_densities</span>(<span class="dt">color =</span> subgroup, <span class="dt">facet =</span> subgroup)</span>
-<span id="cb3-4"><a href="#cb3-4"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_sample_boxplots</span>( <span class="dt">fill  =</span> subgroup, <span class="dt">coord_flip =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb3-5"><a href="#cb3-5"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_sample_violins</span>(<span class="dt">fill  =</span> subgroup, <span class="dt">coord_flip =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb3-6"><a href="#cb3-6"></a></span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="co"># Principal Component Analysis</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>    object &lt;-<span class="st"> </span>autonomics.data<span class="op">::</span>glutaminase</span>
-<span id="cb3-9"><a href="#cb3-9"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_pca_samples</span>()</span>
-<span id="cb3-10"><a href="#cb3-10"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_pca_features</span>()</span>
-<span id="cb3-11"><a href="#cb3-11"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_pca_samples_and_features</span>(<span class="dt">n=</span><span class="dv">4</span>)</span>
-<span id="cb3-12"><a href="#cb3-12"></a>    </span>
-<span id="cb3-13"><a href="#cb3-13"></a><span class="co">#  Linear Discriminant Analysis</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_lda_samples</span>()</span>
-<span id="cb3-15"><a href="#cb3-15"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_lda_features</span>()</span>
-<span id="cb3-16"><a href="#cb3-16"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_lda_samples_and_features</span>()</span>
-<span id="cb3-17"><a href="#cb3-17"></a>    </span>
-<span id="cb3-18"><a href="#cb3-18"></a><span class="co"># Partial Least Squares Analysis</span></span>
-<span id="cb3-19"><a href="#cb3-19"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_pls_samples</span>()</span>
-<span id="cb3-20"><a href="#cb3-20"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_pls_features</span>()</span>
-<span id="cb3-21"><a href="#cb3-21"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_pls_samples_and_features</span>()</span>
-<span id="cb3-22"><a href="#cb3-22"></a></span>
-<span id="cb3-23"><a href="#cb3-23"></a><span class="co"># Spectral Map Analysis</span></span>
-<span id="cb3-24"><a href="#cb3-24"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_sma_samples</span>()          </span>
-<span id="cb3-25"><a href="#cb3-25"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_sma_features</span>() </span>
-<span id="cb3-26"><a href="#cb3-26"></a>    object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_sma_samples_and_features</span>()</span></code></pre></div>
-</div>
-<div id="contrast" class="section level2">
-<h2 class="hasAnchor">
-<a href="#contrast" class="anchor"></a>Contrast</h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># Add limma</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a>   object &lt;-<span class="st"> </span>autonomics.data<span class="op">::</span>glutaminase</span>
-<span id="cb4-3"><a href="#cb4-3"></a>   <span class="kw">table</span>(object<span class="op">$</span>subgroup)</span>
-<span id="cb4-4"><a href="#cb4-4"></a>   ctrdefs &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">uM05.h10 =</span> <span class="st">'uM05_h10 - Veh_h10'</span>, </span>
-<span id="cb4-5"><a href="#cb4-5"></a>                <span class="dt">uM10.h10 =</span> <span class="st">'uM10_h10 - Veh_h10'</span>)</span>
-<span id="cb4-6"><a href="#cb4-6"></a>   autonomics<span class="op">::</span><span class="kw">contrastdefs</span>(object) &lt;-<span class="st"> </span>ctrdefs</span>
-<span id="cb4-7"><a href="#cb4-7"></a>   object <span class="op">%&lt;&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">add_limma</span>()</span>
-<span id="cb4-8"><a href="#cb4-8"></a></span>
-<span id="cb4-9"><a href="#cb4-9"></a><span class="co"># Plot contrast features</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a>   object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_contrast_features</span>(<span class="dt">contrast =</span> ctrdefs[<span class="dv">1</span>], <span class="dt">n=</span><span class="dv">2</span>)</span>
-<span id="cb4-11"><a href="#cb4-11"></a>   object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_contrast_features</span>(<span class="dt">contrast =</span> ctrdefs[<span class="dv">2</span>], <span class="dt">n=</span><span class="dv">2</span>)</span>
-<span id="cb4-12"><a href="#cb4-12"></a></span>
-<span id="cb4-13"><a href="#cb4-13"></a><span class="co"># Write to file</span></span>
-<span id="cb4-14"><a href="#cb4-14"></a>   (file &lt;-<span class="st"> </span><span class="kw">tempdir</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">file.path</span>(<span class="st">'/glutaminase_results.txt'</span>))</span>
-<span id="cb4-15"><a href="#cb4-15"></a>   object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">write_features</span>(file)</span>
-<span id="cb4-16"><a href="#cb4-16"></a></span>
-<span id="cb4-17"><a href="#cb4-17"></a><span class="co"># Plot volcano</span></span>
-<span id="cb4-18"><a href="#cb4-18"></a>   object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_volcano</span>()</span>
-<span id="cb4-19"><a href="#cb4-19"></a></span>
-<span id="cb4-20"><a href="#cb4-20"></a><span class="co"># Plot venns</span></span>
-<span id="cb4-21"><a href="#cb4-21"></a>   object <span class="op">%&gt;%</span><span class="st"> </span>autonomics<span class="op">::</span><span class="kw">plot_contrast_venns</span>(<span class="dt">euler =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
-</div>
-</div>
+<hr>
+<p>title: importomics subtitle: generifying and intuifying cross-platform omics analysis —</p>
+<p><img src="https://bitbucket.org/graumannlabtools/importomics/downloads/read_prepro_analyze.png"></p>
+<pre><code><a href="https://rdrr.io/r/utils/install.packages.html"># Install
+    install.packages('remotes')
+    remotes::install_github('bhagwataditya/importomics',  
+                             repos = BiocManager::repositories(), 
+                             dependencies = TRUE, upgrade = FALSE)
+                             
+# Run
+    file &lt;- download_data('stemcells.bam.zip')                           # RNAseq BAM
+    read_bam(file)
+    
+    file &lt;- download_data('stemcells.rnacounts.txt')                     # RNAseq counts
+    read_counts(file)
+        
+    file &lt;- download_data('glutaminase.metabolon.xlsx')                  # Metabolon xlsx
+    read_metabolon(file)
+    
+    proteingroups &lt;- download_data('differentiation.proteinGroups.txt')  # LCMSMS Proteingroups
+    read_proteingroups(proteingroups)
+    
+    phosphosites &lt;- download_data('differentiation.phosphoSites.txt')    # LCMSMS Phosphosites
+    read_phosphosites(phosphosites, proteingroupss)
+    
+    file &lt;- download_data('hypoglycemia.somascan.adat')                  # SOMAscan adat
+    read_somascan(file)</a></code></pre>
 
   </div>
 

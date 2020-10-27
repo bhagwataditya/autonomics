@@ -95,7 +95,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">Using importomics</a>
+      <a href="../articles/using_importomics.html">importomics</a>
     </li>
   </ul>
 </li>
@@ -131,6 +131,7 @@
   x = <span class='kw'>pca1</span>,
   y = <span class='kw'>pca2</span>,
   color = <span class='kw'>subgroup</span>,
+  label = <span class='kw'>NULL</span>,
   feature_label = <span class='kw'>feature_name</span>,
   <span class='kw'>...</span>,
   fixed = <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(shape = <span class='fl'>15</span>, size = <span class='fl'>3</span>),
@@ -159,6 +160,10 @@
     <tr>
       <th>color</th>
       <td><p>svar mapped to color (symbol)</p></td>
+    </tr>
+    <tr>
+      <th>label</th>
+      <td><p>svar mapped to label (symbol)</p></td>
     </tr>
     <tr>
       <th>feature_label</th>
