@@ -1,28 +1,26 @@
 ---
-title: "importomics"
-subtitle: |
-  | Generifying and intuifying cross-platform omics data import & analysis
+title: importomics
+subtitle: generifying and intuifying cross-platform omics data import & analysis
 ---
 
-![ ](https://bitbucket.org/graumannlabtools/importomics/downloads/overview.png)
+![ ](https://bitbucket.org/graumannlabtools/importomics/downloads/read_prepro_analyze.png)
 
-### Install
 
+```
+# Install
     install.packages('remotes')
     remotes::install_github('bhagwataditya/importomics',  
                              repos = BiocManager::repositories(), 
                              dependencies = TRUE, upgrade = FALSE)
-
-### Run
-
-```
+                             
+# Run
     file <- download_data('stemcells.bam.zip')                           # RNAseq BAM
     read_bam(file)
     
     file <- download_data('stemcells.rnacounts.txt')                     # RNAseq counts
     read_counts(file)
         
-    file <- download_data('glutaminase.metabolon.xlsx')                 # Metabolon xlsx
+    file <- download_data('glutaminase.metabolon.xlsx')                  # Metabolon xlsx
     read_metabolon(file)
     
     proteingroups <- download_data('differentiation.proteinGroups.txt')  # LCMSMS Proteingroups
@@ -35,8 +33,3 @@ subtitle: |
     read_somascan(file)
 ```
 
-### Output
-
-```
-
-```
