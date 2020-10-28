@@ -2,3 +2,6 @@
 ^\.Rproj\.user$
 docs
 vignettes/using_importomics_cache
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
