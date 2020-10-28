@@ -1,6 +1,6 @@
 Package: importomics
 Type: Package
-Title: Import data from rectangular omics files into ready-to-analyze SummarizedExperiment
+Title: Generifying and intuifying cross-platform omics analysis
 Version: 0.99.0
 Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.de",    role = c("aut", "cre")), 
              person("Johannes", "Graumann",  email = "johannes.graumann@mpi-bn.mpg.de", role = c('aut', 'sad', 'rth')),
@@ -10,19 +10,7 @@ Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.
              person("Laure",    "Cougnaud",  email = "laure.cougnaud@openanalytics.eu", role = "ctb"),
              person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",   role = "sad"))
 Description: 
-  Many powerful platforms for molecular profiling have emerged in recent years: NGS, qPCR, MS, Microarrays, ...
-  They all use different technologies and produce different raw files.
-  These raw files are preprocessed, often resulting in an intermediate data file. 
-  Format and arrangement of this intermediate data file differs between platforms.
-  Yet, the backbone structure is identical, containing three rectangles of information: 
-  (1) feature quantifications, (2) feature annotations, and (3) sample design.
-  Building on this genericity, importomics provides a generic importer for any rectangular omics data file.
-  The importer reads the data directly into a SummarizedExperiment. 
-  Additionally, when sample names are chosen consistently, it also automatically extracts sample design from sample names. 
-  This makes the imported SummarizedExperiment directly ready for subsequent statistical analysis.
-  For a number of commonly used platforms (LCMS Proteomics/MaxQuant, RNAseq, SOMAscan, Metabolon), we additionally provide
-  dedicated importers, based on the generic backend. These additional importers take care of additonal, platform-specific 
-  taks required prior to analysis. 
+  Importomics is a package for intuitive and generic cross-platform analysis of omics data.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
