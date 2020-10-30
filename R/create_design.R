@@ -64,3 +64,9 @@ create_design_matrix <- function(...){
     .Deprecated('create_design')
     create_design(...)
 }
+
+
+
+
+
+
