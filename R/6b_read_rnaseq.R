@@ -371,7 +371,7 @@ cpm_to_counts <- function(cpm, scaled_libsizes){
 }
 
 compute_precision_weights_once <- function(
-    object,design = create_design_matrix(object), plot = TRUE, ...
+    object,design = create_design(object), plot = TRUE, ...
 ){
     counts   <- counts(object)
     scaled_libsizes <- scaledlibsizes(counts)
@@ -401,7 +401,7 @@ contains_replicates <- function(object){
 create_voom_design <- function(object, verbose = TRUE){
 
     # Replicates
-    if (contains_replicates(object)) return(create_design_matrix(object))
+    if (contains_replicates(object)) return(create_design(object))
 
     # No replicates
     message('\t\t\tsubgroup values not replicated: voom(design=NULL)')

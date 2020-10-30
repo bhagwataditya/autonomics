@@ -1,60 +1,66 @@
-#' Create design matrix for statistical analysis
+
+
+single_subgroup <- function(object){
+    assert_is_subset('subgroup', svars(object))
+    length(unique(object$subgroup))==1
+}
+
+
+are_factor <- function(df) vapply(df, is.factor, logical(1))
+
+
+#' Create design
+#'
+#'  Create design matrix  for statistical analysis
 #' @param object      SummarizedExperiment
-#' @param intercept   TRUE or FALSE: include an intercept in the design?
-#' @param confounders confounder svars (character)
+#' @param formula     formula with svars
+#' @param ...         backward compatibility
 #' @return design matrix
 #' @examples
-#' # STEM CELL COMPARISON
-#' file <- download_data('stemcells.proteinGroups.txt')
-#' object <- read_proteingroups(file)
-#' create_design_matrix(object)
-#'
-#' # GLUTAMINASE
-#' file <- download_data('glutaminase.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' create_design_matrix(object)[1:10, 1:10]
+#' file <- download_data('hypoglycemia.somascan.adat')
+#' object <- read_somascan(file, plot=FALSE)
+#' create_design(object)
+#' create_design(object, ~ 0 + subgroup + Sex + T2D + age + bmi)
 #' @export
-create_design_matrix <- function(
+create_design <- function(
     object,
-    intercept = length(unique(sdata(object)$subgroup)) == 1,
-    confounders = character(0)
+    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset('subgroup', svars(object))
+    assert_is_subset(all.vars(formula), svars(object))
     . <- NULL
 # Ensure that subgroup vector is a factor to preserve order of levels
-    sdata1 <- sdata(object)
-    if(is.character(sdata1$subgroup)) sdata1$subgroup %<>% factorify()
-# Create formula
-    formula <- if (intercept) '~ 1' else '~ 0'
-    if (length(unique(sdata(object)$subgroup)) > 1) formula %<>%
-        paste0(' + subgroup')
-    if (length(confounders)>0){
-        formula %<>% sprintf('%s + %s', ., paste0(confounders, collapse=' + '))
+    for (var in all.vars(formula)){
+        if (is.character(sdata(object)[[var]])){
+            sdata(object)[[var]] %<>% factor()
+        }
     }
-    formula %<>% as.formula()
 # Create design matrix
-    myDesign <- model.matrix(formula,  data = sdata1)
-# Rename coefficients
-    # ~ 1 + subgroup
-    if (intercept){
-        subgroup1 <- as.character(unique(sdata(object)$subgroup)[1])
-        colnames(myDesign) %<>% gsub('(Intercept)', subgroup1, ., fixed = TRUE)
-        colnames(myDesign) %<>% stri_replace_first_regex('subgroup(.+)',
-                                                    paste0('$1_', subgroup1))
-    # ~ 0 + subgroup
-    } else { colnames(myDesign) %<>% gsub('subgroup', '', ., fixed = TRUE) }
-    # Rename confounders
-    if (length(confounders) > 0){
-        numeric_confounders <-  sdata(object)[, confounders, drop = FALSE] %>%
-                                vapply(is.numeric, logical(1)) %>%
-                                which() %>% names()
-        factor_confounders  <- confounders %>% setdiff(numeric_confounders)
-    }
-    # Validify names
+    myDesign <- model.matrix(formula,  data = sdata(object))
+# Rename: intercept -> factor1level1
+    factors <- svars(object)[are_factor(sdata(object))]
+    factor1 <- factors[1]
+    level1  <- levels(sdata(object)[[factor1]])[1]
+    colnames(myDesign) %<>% gsub('(Intercept)', level1, ., fixed = TRUE)
+# Rename regressors
+    for (var in factors) colnames(myDesign) %<>% gsub(var, '', ., fixed = TRUE)
+        # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
+        # For other cases it works wonderfully, so I keep it for now.
+        # If it gives too many issues, roll back to doing the dropping only
+        # for "subgroup" levels:
+        #colnames(myDesign) %<>% gsub('subgroup', '', ., fixed=TRUE)
+# Validify names
     colnames(myDesign) %<>% gsub(':', '..', ., fixed = TRUE)
     colnames(myDesign) %<>% make.names()
 # Return
     return(myDesign)
+}
+
+
+#' @rdname create_design
+#' @export
+create_design_matrix <- function(...){
+    .Deprecated('create_design')
+    create_design(...)
 }
