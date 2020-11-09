@@ -25,11 +25,11 @@ Filter features with replicated expression in some subgroup
 }
 \examples{
 require(magrittr)
-file <- download_data('stemcells.proteinGroups.txt')
+file <- download_data('billing16.proteingroups.txt')
 object <- read_proteingroups(file)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 
-file <- download_data('glutaminase.metabolon.xlsx')
+file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 }

@@ -32,7 +32,7 @@ Perform a dimension reduction.
 Add sample scores, feature loadings, and dimension variances to object.
 }
 \examples{
-file <- download_data('glutaminase.metabolon.xlsx')
+file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 pca(object)  # Principal Component Analysis
 pls(object)  # Partial Least Squares

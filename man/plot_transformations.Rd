@@ -33,7 +33,7 @@ grid object
 Plot transformations
 }
 \examples{
-file <- download_data('glutaminase.metabolon.xlsx')
+file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 plot_transformations(object)
 }

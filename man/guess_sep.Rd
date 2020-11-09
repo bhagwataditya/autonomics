@@ -50,11 +50,11 @@ Guess separator
    guess_sep(x)
 
 # SummarizedExperiment
-   # file <- download_data('glutaminase.metabolon.xlsx')
+   # file <- download_data('halama18.metabolon.xlsx')
    # object <- read_metabolon(file)
    # guess_sep(object)
 
-   # file <- download_data('stemcells.proteinGroups.txt')
+   # file <- download_data('billing16.proteingroups.txt')
    # object <- read_proteingroups(object)
    # guess_sep(object)
 }

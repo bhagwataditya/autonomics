@@ -59,6 +59,6 @@ Read data from somascan adat file
 }
 \examples{
 # HYPOGLYCEMIA
-    file <- download_data('hypoglycemia.somascan.adat')
+    file <- download_data('atkin18.somascan.adat')
     read_somascan(file)
 }

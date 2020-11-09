@@ -66,11 +66,11 @@ is_max <- function(x) cequals(x, max(x, na.rm = TRUE))
 #'    guess_sep(x)
 #'
 #' # SummarizedExperiment
-#'    # file <- download_data('glutaminase.metabolon.xlsx')
+#'    # file <- download_data('halama18.metabolon.xlsx')
 #'    # object <- read_metabolon(file)
 #'    # guess_sep(object)
 #'
-#'    # file <- download_data('stemcells.proteinGroups.txt')
+#'    # file <- download_data('billing16.proteingroups.txt')
 #'    # object <- read_proteingroups(object)
 #'    # guess_sep(object)
 #' @export
@@ -170,7 +170,7 @@ nfactors <- function(x, sep = guess_sep(x)){
 
 #' @examples
 #' require(magrittr)
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- .read_metabolon(file)
 #' x <- object$sample_id[1:5]
 #' nfactors(x)

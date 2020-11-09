@@ -179,7 +179,7 @@ count_reads <- function(files, paired, nthreads, genome){
 #' @return SummarizedExperiment
 #' @examples
 #' # in-built genome
-#' bamdir <- download_data("stemcells.bam.zip")
+#' bamdir <- download_data("billing16.bam.zip")
 #' # object <- read_bam(bamdir, paired=TRUE, genome="hg38")
 #' # gtffile <- download_gtf("Homo sapiens")
 #' # object <- read_bam(bamdir, paired=TRUE, genome=gtffile)
@@ -247,7 +247,7 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' @param plot      TRUE (default) / FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('differentiation.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' read_counts(file)
 #' @seealso merge_sdata, merge_fdata
 #' @export
@@ -351,7 +351,7 @@ scaledlibsizes <- function(counts){
 #' @param cpm              cpm matrix (counts per million scaled reads)
 #' @param scaled_libsizes  numeric vector: scaled library sizes
 #' @examples
-#' file <- download_data('differentiation.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_counts(file)
 #'
 #' scaled_libsizes <- scaledlibsizes(exprs(object))
@@ -417,7 +417,7 @@ create_voom_design <- function(object, verbose = TRUE){
 #' @param plot    TRUE (default) or FALSE
 #' @param ...     passed to limma::voom() -> limma::lmFit()
 #' @examples
-#' file <- download_file('differentiation.rnacounts.txt')
+#' file <- download_file('billing19.rnacounts.txt')
 #' object <- read_counts(file)
 #' counts(object) <- exprs(object)
 #' compute_precision_weights(object)[1:3, 1:3]

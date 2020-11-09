@@ -60,10 +60,10 @@
 #' @return SummarizedExperiment
 #' @examples
 #' # GLUTAMINASE
-#'    file <- download_data('glutaminase.metabolon.xlsx')
+#'    file <- download_data('halama18.metabolon.xlsx')
 #'    read_metabolon(file)
 #' # HYPOGLYCEMIA
-#'    file <- download_data('hypoglycemia.metabolon.xlsx')
+#'    file <- download_data('atkin18.metabolon.xlsx')
 #'    read_metabolon(file)
 #' @export
 read_metabolon <- function(file, sheet = find_origscale_sheet(file),
@@ -119,7 +119,7 @@ find_origscale_sheet <- function(file){
 #' @param pathway_var kegg pathway fvar
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% add_kegg_pathways()
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
@@ -198,7 +198,7 @@ kegg_entry_to_pathways <- function(x){
 #' @param x character/factor vector with pubchem ids
 #' @return character/factor vector
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' add_smiles(object)
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial

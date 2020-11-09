@@ -45,7 +45,7 @@ ncols <- function(x, sheet=1){
 #'
 #' # METABOLON
 #' #----------
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' is_fixed_col_file(file)
 #' @noRd
 is_fixed_col_file <- function(file){
@@ -78,7 +78,7 @@ is_fixed_col_file <- function(file){
 #' #=======================================
 #' # exprs
 #'    require(magrittr)
-#'    x <- download_data('glutaminase.metabolon.xlsx')
+#'    x <- download_data('halama18.metabolon.xlsx')
 #'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
 #'    extract(1:3, 1:3)
 #'
@@ -101,7 +101,7 @@ is_fixed_col_file <- function(file){
 #' # FROM MATRIX: extract_rectangle.matrix
 #' #======================================
 #' # exprs
-#'    x <-download_data('glutaminase.metabolon.xlsx') %>%
+#'    x <-download_data('halama18.metabolon.xlsx') %>%
 #'        extract_rectangle(sheet = 2)
 #'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
 #'    extract(1:3, 1:3)
@@ -308,7 +308,7 @@ numerify   <- function(df){
 #' @return SummarizedExperiment
 #' @examples
 #' # RNASEQ
-#'    file <- download_data('stemcells.rnacounts.txt')
+#'    file <- download_data('billing16.rnacounts.txt')
 #'    read_omics(file,fid_rows   = 2:58736,   fid_cols   = 1,
 #'                    sid_rows   = 1,         sid_cols   = 4:14,
 #'                    expr_rows  = 2:58736,   expr_cols  = 4:14,
@@ -316,7 +316,7 @@ numerify   <- function(df){
 #'                    fdata_rows = 2:58736,   fdata_cols = 1:3,
 #'                    transpose  = FALSE)
 #' # LCMSMS PROTEINGROUPS
-#'    file <- download_data('differentiation.proteinGroups.txt')
+#'    file <- download_data('billing19.proteingroups.txt')
 #'    read_omics(file,fid_rows   = 2:9783,  fid_cols   = 383,
 #'                    sid_rows   = 1,       sid_cols   = seq(124, 316, by = 6),
 #'                    expr_rows  = 2:9783,  expr_cols  = seq(124, 316, by = 6),
@@ -324,7 +324,7 @@ numerify   <- function(df){
 #'                    fdata_rows = 2:9783,  fdata_cols = c(2, 6, 7, 383),
 #'                    transpose  = FALSE)
 #' # SOMASCAN
-#'    file <- download_data('stemcells.somascan.adat')
+#'    file <- download_data('billing16.somascan.adat')
 #'    read_omics(file,fid_rows   = 21,       fid_cols   = 19:1146,
 #'                    sid_rows   = 30:40,    sid_cols   = 4,
 #'                    expr_rows  = 30:40,    expr_cols  = 19:1146,
@@ -334,7 +334,7 @@ numerify   <- function(df){
 #'                    sdata_rows = 30:40,    sdata_cols = 1:17,
 #'                    transpose  = TRUE)
 #' # METABOLON
-#'    file <- download_data('glutaminase.metabolon.xlsx')
+#'    file <- download_data('halama18.metabolon.xlsx')
 #'    read_omics(file, sheet = 2,
 #'                    fid_rows   = 11:401,    fid_cols   = 5,
 #'                    sid_rows   = 3,         sid_cols   = 15:86,
@@ -411,7 +411,7 @@ file_exists <- function(file){
 }
 
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' create_subgroup_values(object, subgroup_var=NULL,  verbose=TRUE)
 #' create_replicate_values(object, subgroup_var=NULL, verbose=TRUE)
@@ -483,16 +483,16 @@ default_designfile <- function(file, platform = NULL, quantity = NULL){
 #' @param verbose       TRUE (default) or FALSE
 #'@examples
 #'# PROTEINGROUPS
-#'    file <- download_data('differentiation.proteinGroups.txt')
+#'    file <- download_data('billing19.proteingroups.txt')
 #'    object <- read_proteingroups(file)
 #'    get_default_designfile(object)
 #'
 #' # SOMASCAN
-#'     inputfile <- download_data('hypoglycemia.somascan.adat')
+#'     inputfile <- download_data('atkin18.somascan.adat')
 #'     default_designfile(inputfile, platform = 'somascan')
 #'
 #' # METABOLON
-#'     file <- download_data('hypoglycemia.metabolon.xlsx')
+#'     file <- download_data('atkin18.metabolon.xlsx')
 #'     default_designfile(inputfile, platform = 'metabolon')
 #'
 #' # RNACOUNTS
@@ -513,7 +513,7 @@ split_values <- function(x){
 }
 
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' split_subgroup_values(object)
 #' @noRd
@@ -529,20 +529,20 @@ split_subgroup_values <- function(object){
 #' @param verbose       TRUE (default) or FALSE
 #'@examples
 #'# PROTEINGROUPS
-#'    file <- download_data('differentiation.proteinGroups.txt')
+#'    file <- download_data('billing19.proteingroups.txt')
 #'    object <- read_proteingroups(file, plot = FALSE)
 #'    add_design(object)
 #'
-#'    file <- download_data('stemcells.proteinGroups.txt')
+#'    file <- download_data('billing16.proteingroups.txt')
 #'    object <- read_proteingroups(file, plot = FALSE)
 #'    add_design(object)
 #'
 #' # SOMASCAN
-#'     file <- download_data('hypoglycemia.somascan.adat')
+#'     file <- download_data('atkin18.somascan.adat')
 #'     read_somascan(file)
 #'
 #' # METABOLON
-#'     file <- download_data('hypoglycemia.metabolon.xlsx')
+#'     file <- download_data('atkin18.metabolon.xlsx')
 #'     read_metabolon(file)
 #'
 #' # RNACOUNTS

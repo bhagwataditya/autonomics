@@ -29,7 +29,7 @@ plot_samples(
 Plots sample densities and scores
 }
 \examples{
-file <- download_data('glutaminase.metabolon.xlsx')
+file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 plot_samples(object)
 }

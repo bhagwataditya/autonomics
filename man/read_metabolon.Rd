@@ -52,9 +52,9 @@ Read metabolon
 }
 \examples{
 # GLUTAMINASE
-   file <- download_data('glutaminase.metabolon.xlsx')
+   file <- download_data('halama18.metabolon.xlsx')
    read_metabolon(file)
 # HYPOGLYCEMIA
-   file <- download_data('hypoglycemia.metabolon.xlsx')
+   file <- download_data('atkin18.metabolon.xlsx')
    read_metabolon(file)
 }

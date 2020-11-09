@@ -13,7 +13,7 @@
 #' @return default color values vector
 #' @examples
 #' # STEMCELL RATIOS
-#'     file <- download_data('stemcells.proteinGroups.txt')
+#'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
 #'     object <- read_proteingroups(
 #'                 file, invert_subgroups = invert_subgroups, plot = FALSE)
@@ -21,14 +21,14 @@
 #'     add_color_scale(p, data=sdata(object))
 #'
 #' # STEMCELL INTENSITIES
-#'    file <- download_data('stemcells.proteinGroups.txt')
+#'    file <- download_data('billing16.proteingroups.txt')
 #'    object <- read_proteingroups(
 #'                 file, quantity = 'Intensity labeled', plot = FALSE)
 #'    add_color_scale(object)
 #'
 #' # GLUTAMINASE
 #'    require(magrittr)
-#'    file <- download_data('glutaminase.metabolon.xlsx')
+#'    file <- download_data('halama18.metabolon.xlsx')
 #'    object <- read_metabolon(file, plot = FALSE)
 #'    object %<>% pca()
 #'    plot_data(sdata(object), x=pca1, y=pca2, color=TIME_POINT)
@@ -118,7 +118,7 @@ make_onefactor_colors <- function(
 #' @param verbose TRUE/FALSE
 #' @return named string vector (elements = colors, names = color_var levels)
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' varlevels <- subgroup_levels(object)
 #' make_twofactor_colors(varlevels, show = TRUE)
@@ -180,7 +180,7 @@ make_twofactor_colors <- function(
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% pca()
 #' data <- sdata(object)

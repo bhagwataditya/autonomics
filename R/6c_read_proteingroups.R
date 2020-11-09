@@ -34,7 +34,7 @@ MAXQUANT_PATTERNS <- c(
 #' @return  string: value from names(MAXQUANT_PATTERNS)
 #' @examples
 #' # file
-#'     x <- download_data('stemcells.proteinGroups.txt')
+#'     x <- download_data('billing16.proteingroups.txt')
 #'     guess_maxquant_quantity(x)
 #'
 #' # character vector
@@ -57,12 +57,12 @@ MAXQUANT_PATTERNS <- c(
 #'     guess_maxquant_quantity(x)
 #'
 #' # dataframe
-#'     file <- download_data( 'stemcells.proteinGroups.txt')
+#'     file <- download_data( 'billing16.proteingroups.txt')
 #'     x <- data.table::fread(file)
 #'     guess_maxquant_quantity(x)
 #'
 #' # SummarizedExperiment
-#'      file <-download_data( 'stemcells.proteinGroups.txt')
+#'      file <-download_data( 'billing16.proteingroups.txt')
 #'      # x <- .read_proteingroups(file)
 #'      # guess_maxquant_quantity(x)
 #' @export
@@ -150,7 +150,7 @@ guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
 #'    standardize_maxquant_snames(x)
 #'
 #' # SummarizedExperiment
-#'    file <- download_data('stemcells.proteinGroups.txt')
+#'    file <- download_data('billing16.proteingroups.txt')
 #'    # x <- .read_proteingroups(file)
 #'    # standardize_maxquant_snames(x)
 #' @export
@@ -243,7 +243,7 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #'
 #' # SummarizedExperiment
 #'    require(magrittr)
-#'    file <- download_data('stemcells.proteinGroups.txt')
+#'    file <- download_data('billing16.proteingroups.txt')
 #'    # x <- .read_proteingroups(file)
 #'    # x %<>% standardize_maxquant_snames()
 #'    # demultiplex(x, verbose = TRUE)
@@ -565,7 +565,7 @@ rm_from_annot <- function(annotation, pattern){
 #' @return data.table
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' fdata(object)[1:5, ]
@@ -771,7 +771,7 @@ extract_common_substr <- function(a, b){
 #'
 #' # SummarizedExperiment
 #' #---------------------
-#'    file <- download_data('stemcells.proteinGroups.txt')
+#'    file <- download_data('billing16.proteingroups.txt')
 #'    x <- read_proteingroups(file)
 #'    invert(x, subgroups = c('E_EM', 'E_BM', 'EM_BM'))
 #' @export
@@ -980,7 +980,7 @@ rm_reverse <- function(object, verbose){
 
 
 #' @examples
-#' file <- download_data('differentiation.proteinGroups.txt')
+#' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_proteingroups(file, contaminants=TRUE)
 #' rm_contaminants(object, verbose=TRUE)
 #' @noRd
@@ -1093,7 +1093,7 @@ transform_maxquant <- function(
 
 #' Read proteingroups/phosphosites
 #'
-#' @param proteinfile     proteinGroups.txt path
+#' @param proteinfile     proteingroups.txt path
 #' @param phosphofile      phospho(STY)Sites.txt path
 #' @param fastafile             NULL or fastafile (to deconvolute proteingroups
 #' @param quantity              string: "Ratio normalized",
@@ -1115,7 +1115,7 @@ transform_maxquant <- function(
 #' @examples
 #' # STEM CELLS
 #'     # NORMALIZED RATIOS
-#'     proteinfile <- download_data('stemcells.proteinGroups.txt')
+#'     proteinfile <- download_data('billing16.proteingroups.txt')
 #'     (object <- read_proteingroups(proteinfile,
 #'                                 invert_subgroups = c('E_EM','E_BM','BM_EM')))
 #'     # INTENSITIES
@@ -1128,8 +1128,8 @@ transform_maxquant <- function(
 #'                 quantity = 'Intensity labeled', fastafile = fastafile))[1:3,]
 #'
 #' # DIFFERENTIATION
-#'     proteinfile <- download_data('differentiation.proteinGroups.txt')
-#'     phosphofile  <- download_data('differentiation.phosphoSites.txt')
+#'     proteinfile <- download_data('billing19.proteingroups.txt')
+#'     phosphofile <- download_data('billing19.phosphosites.txt')
 #'     read_proteingroups(proteinfile)
 #'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
 #'                        'EM05_EM02', 'EM30_EM15')
@@ -1217,7 +1217,7 @@ read_phosphosites <- function(
 #' Which are the phospho expr columns?
 #' @param x phosphosites colnames
 #' @examples
-#' phosphosites <- download_data('differentiation.phosphoSites.txt')
+#' phosphosites <- download_data('billing19.phosphosites.txt')
 #' x <- names(data.table::fread(phosphosites))
 #' quantity <- guess_maxquant_quantity(phosphosites)
 #' phospho_expr_columns(x, quantity)

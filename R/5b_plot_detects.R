@@ -13,7 +13,7 @@
 #' @return ggplot object
 #' @examples
 #' # STEMCELLS
-#'     file <- download_data('stemcells.proteinGroups.txt')
+#'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('E_EM', 'E_BM', 'EM_BM')
 #'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups,
 #'                                   impute = FALSE, plot = FALSE)

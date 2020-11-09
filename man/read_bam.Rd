@@ -38,7 +38,7 @@ Read RNAseq BAM files into SummarizedExperiment
 }
 \examples{
 # in-built genome
-bamdir <- download_data("stemcells.bam.zip")
+bamdir <- download_data("billing16.bam.zip")
 # object <- read_bam(bamdir, paired=TRUE, genome="hg38")
 # gtffile <- download_gtf("Homo sapiens")
 # object <- read_bam(bamdir, paired=TRUE, genome=gtffile)

@@ -12,17 +12,17 @@
 #' @examples
 #' require(magrittr)
 #'
-#' # 0 -> NA (proteinGroups LFQ intensities)
+#' # 0 -> NA (proteingroups LFQ intensities)
 #'
-#' # NaN -> NA (proteinGroups ratios)
-#'     file <- load_data('stemcells.proteinGroups.txt')
+#' # NaN -> NA (proteingroups ratios)
+#'     file <- load_data('billing16.proteingroups.txt')
 #'     object <- read_proteingroups(file)
 #'     nan_to_na(object, verbose=TRUE)
 #'
-#' # -Inf -> NA (log2 transformed proteinGroups LFQ intensity)
+#' # -Inf -> NA (log2 transformed proteingroups LFQ intensity)
 #'
 #' # NA -> 0
-#'     file <- load_data('glutaminase.metabolon.xlsx')
+#'     file <- load_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     na_to_zero(object, verbose = TRUE)
 #' @noRd
@@ -208,7 +208,7 @@ impute_row <- function(x, sd){
 #' @param verbose    TRUE or FALSE
 #' @examples
 #' # Read object
-#'     file <- download_data('glutaminase.metabolon.xlsx')
+#'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'
 #' # Common NA values - missing in all samples
@@ -268,7 +268,7 @@ is_missing_or_empty_character <- function(x){
 #' @param svar 'subgroup'
 #' @return list of SummarizedExperiments
 #' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' split_by_svar(object)
 #' @noRd

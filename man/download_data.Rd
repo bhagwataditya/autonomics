@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_download.R
 \name{download_data}
 \alias{download_data}
-\title{Download autonomics data}
+\title{Download example datasets}
 \usage{
 download_data(file, localdir = "~/importomicscache/datasets", unzip = TRUE)
 }
@@ -17,8 +17,27 @@ download_data(file, localdir = "~/importomicscache/datasets", unzip = TRUE)
 return   localfile invisibly
 }
 \description{
-Download autonomics data
+Download example datasets
 }
 \examples{
-print(download_data(file = 'stemcells.somascan.adat'))
+# atkin18 - hypoglycemia - pubmed 30525282
+    download_data('atkin18.somascan.adat')        # somascan  intensities
+    download_data('atkin18.metabolon.xlsx')       # metabolon intensities
+
+# billing16 - stemcell characterization - pubmed 26857143  pride PXD001856
+    download_data('billing16.proteingroups.txt')  # proteingroup ratios
+    download_data('billing16.somascan.adat')      # somascan     intensities
+    download_data('billing16.rnacounts.txt')      # rnaseq       counts
+    download_data('billing2016.bam.zip')          # rnaseq       alignments
+
+# billing19 - stemcell differentiation - pubmed 31332097  pride PXD004652
+    download_data('billing19.proteingroups.txt')  # proteingroup ratios
+    download_data('billing19.phosphosites.txt')   # phosphosite  ratios
+    download_data('billing19.rnacounts.txt')      # rnaseq       counts
+
+# fukuda20 - heart regeneration - pubmed PXD016235  pride PXD016235
+    download_data('fukuda20.proteingroups.txt')   # proteingroup LFQ intens.
+
+# halama18 - glutaminase inhibition - pubmed 30525282
+    download_data('halama18.metabolon.xlsx')      # metabolon intensities
 }

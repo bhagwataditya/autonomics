@@ -6,7 +6,7 @@
 #' @return analysis details (get) or updated object (set)
 #' @rdname analysis
 #' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' analysis(object)
 #' @export
@@ -39,7 +39,7 @@ setReplaceMethod(
 #' @return updated SummarizedExperiment
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' contrastdefs1 <- c(EM_E = 'EM_E', BM_E = 'BM_E', BM_EM = 'BM_EM')
 #' contrastdefs(object) <-     contrastdefs1   # conventional setter
@@ -89,7 +89,7 @@ set_contrastdefs <- function(object, value){
 #' @param value count matrix (features x samples)
 #' @return count matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('stemcells.rnacounts.txt')
+#' file <- download_data('billing16.rnacounts.txt')
 #' object <- read_counts(file)
 #' counts(object) <- exprs(object)
 #' counts(object)[1:3, 1:3]
@@ -130,7 +130,7 @@ setReplaceMethod(
 #' @param value ratio matrix (features x samples)
 #' @return exprs matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' exprs(object) <- 0
 #' object
@@ -172,7 +172,7 @@ setReplaceMethod(
 #' @return feature dataframe (get) or updated object (set)
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' head(fdata(object)) # Getter
 #' fdata(object) %<>% cbind(z=1)
@@ -208,7 +208,7 @@ setReplaceMethod(
 #' @param  fvar    feature variable
 #' @return fvar values
 #' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' head(flevels(object, 'feature_name'))
 #' @export
@@ -227,7 +227,7 @@ flevels <- function(object, fvar){
 #' @return feature name vector (get) or updated object (set)
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' fnames(object) %<>% paste0('PG', .)
 #' object
@@ -262,7 +262,7 @@ setReplaceMethod(
 #' @param  fvar    feature variable
 #' @return fvar values
 #' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' head(fvalues(object, 'feature_name'))
 #' fvalues(object, NULL)
@@ -299,7 +299,7 @@ fid_values <- function(object) fvalues(object, 'feature_id')
 #' @return feature variables vector (get) or updated object (set)
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' fvars(object)[1] %<>% paste0('1')
 #' fvars(object)[1]
@@ -332,7 +332,7 @@ setReplaceMethod(
 #'@param value matrix
 #'@return matrix (get) or updated object (set)
 #'@examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' sum(is_imputed(object))
 #' @rdname is_imputed
@@ -409,8 +409,8 @@ setReplaceMethod(
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
-#' proteinfile <- download_data('differentiation.proteinGroups.txt')
-#' phosphofile <- download_data('differentiation.phosphoSites.txt')
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
 #' object <- read_phosphosites(phosphofile, proteinfile)
 #' exprs(object)[1:3, 1:3]
 #' occupancies(object)[1:3, 1:3]
@@ -456,7 +456,7 @@ setReplaceMethod(
 #' @return sample dataframe (get) or updated object (set)
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' head(sdata(object))
 #' head(sdata(object) %<>% cbind(z=1))
@@ -492,7 +492,7 @@ setReplaceMethod(
 #' @return sample names vector (get) or updated eSet (set)
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' head(snames(object))
 #' head(snames(object) %<>% paste0('SAMPLE_', .))
@@ -526,7 +526,7 @@ setReplaceMethod(
 #' @param svar sample var (character)
 #' @return svar values (character)
 #' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' slevels(object, 'subgroup')
 #' subgroup_levels(object)
@@ -553,7 +553,7 @@ subgroup_levels <- function(object){
 #' @param value  value vector
 #' @return character vector (get) or SummarizedExperiment (set)
 #' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' svalues(object, 'subgroup')
 #' subgroup_values(object)
@@ -600,7 +600,7 @@ setReplaceMethod(
 #' @return sample variable names (get) or updated eSet (set)
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' svars(object)[1]
 #' (svars(object)[1] %<>% paste0('1'))
@@ -637,7 +637,7 @@ setReplaceMethod(
 #' @param ... addtional params
 #' @return weight matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' weights(object)[1:3, 1:2]
 #' weights(object) <- 1; weights(object)[1:3, 1:2]

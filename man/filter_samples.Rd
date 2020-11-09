@@ -23,7 +23,7 @@ Filter samples on condition
 }
 \examples{
 # GLUTAMINASE
-    file <- download_data('glutaminase.metabolon.xlsx')
+    file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file)
     filter_samples(object,   TIME_POINT=='h10',  verbose = TRUE)
 }

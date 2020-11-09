@@ -77,7 +77,7 @@ merge_fdata <- function(object, df, by = 'feature_id'){
 
 
 #'@examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
@@ -113,7 +113,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @param verbose TRUE (default) or FALSE
 #' @return        SummarizedExperiment
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' pca(object)  # Principal Component Analysis
 #' pls(object)  # Partial Least Squares
@@ -305,7 +305,7 @@ pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE){
 #' @param ndim    number
 #' @return        SummarizedExperiment
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' spls(object)
 #' @noRd
@@ -347,7 +347,7 @@ spls <- function(object, ndim = 2, minvar = 0){
 #' @param ndim    number
 #' @return        SummarizedExperiment
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' opls(object)
 #' @noRd

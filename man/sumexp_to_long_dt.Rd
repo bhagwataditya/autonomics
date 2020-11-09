@@ -44,8 +44,8 @@ Convert SummarizedExperiment into data.table
 }
 }
 \examples{
-# Stem cell differentiation
-    file <- download_data('stemcells.proteinGroups.txt')
+# Stem cell comparison
+    file <- download_data('billing16.proteingroups.txt')
     object <- read_proteingroups(file)
     sumexp_to_wide_dt(object)
     sumexp_to_long_dt(object)
@@ -53,7 +53,7 @@ Convert SummarizedExperiment into data.table
 
 # Glutaminase
    require(magrittr)
-   file <- download_data('glutaminase.metabolon.xlsx')
+   file <- download_data('halama18.metabolon.xlsx')
    object <- read_metabolon(file)
    object \%<>\% pca()
    sumexp_to_wide_dt(object)

@@ -15,7 +15,7 @@
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' plot_sample_densities(object)
 #' plot_sample_densities(object, color = subgroup, fill = NULL)
@@ -46,7 +46,7 @@ plot_sample_densities <- function(
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' plot_sample_violins(object)
 #' @export
@@ -77,7 +77,7 @@ plot_sample_violins <- function(
 #' @return  ggplot object
 #' @examples
 #' require(magrittr)
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' plot_sample_boxplots(object)
 #' @export
@@ -125,7 +125,7 @@ plot_biplot <- function(...){
 #' @param nloadings      number of loadings per half-axis to plot
 #' @return ggplot object
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' biplot(object)
 #' biplot(object, x=pca1, y=pca2)
@@ -277,7 +277,7 @@ plot_corrections <- function(...){
 #' @param ...         used to maintain deprecated functions
 #' @return  grid object
 #' @examples
-#' file <- download_data('hypoglycemia.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' biplot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' @seealso biplot_covariates
@@ -323,7 +323,7 @@ plot_covariates <- function(...){
 #' @param ...         used to maintain deprecated functions
 #' @return  ggplot object
 #' @examples
-#' file <- download_data('hypoglycemia.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' biplot_covariates(object, ndim = 12, dimcols = 3)
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
@@ -385,7 +385,7 @@ prep_covariates <- function(object, method='pca', ndim=6){
 #' @param color   svar mapped to biplot color and density fill
 #' @param ...     passed to plot_data
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' plot_samples(object)
 #' @export

@@ -40,7 +40,7 @@ File format: header row
              feature counts      in next columns
 }
 \examples{
-file <- download_data('differentiation.rnacounts.txt')
+file <- download_data('billing19.rnacounts.txt')
 read_counts(file)
 }
 \seealso{

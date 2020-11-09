@@ -41,7 +41,7 @@ ggplot object
 Biplot covariates
 }
 \examples{
-file <- download_data('hypoglycemia.metabolon.xlsx')
+file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 biplot_covariates(object, ndim = 12, dimcols = 3)
 biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))

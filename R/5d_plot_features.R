@@ -16,7 +16,7 @@
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% pca()
 #' idx <- order(abs(fdata(object)$pca1), decreasing=TRUE)[1:9]

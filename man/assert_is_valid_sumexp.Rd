@@ -19,7 +19,7 @@ Assert that x is a valid SummarizedExperiment
 }
 \examples{
 # VALID
-    file <- download_data('glutaminase.metabolon.xlsx')
+    file <- download_data('halama18.metabolon.xlsx')
     x <- read_metabolon(file, plot = FALSE)
     assert_is_valid_sumexp(x)
 # NOT VALID

@@ -8,7 +8,7 @@
 #' @param svar   sample var
 #' @return logical
 #' @examples
-#' file <- load_data('glutaminase.metabolon.xlsx')
+#' file <- load_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' has_complete_subgroup_values(object)
 #' has_complete_block_values(object)
@@ -47,12 +47,12 @@ has_complete_block_values <- function(object){
 #' @return logical
 #' @examples
 #' # STEM CELL COMPARISON
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' contains_ratios(object)
 #'
 #' # GLUTAMINASE
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' contains_ratios(object)
 #' @noRd
@@ -128,7 +128,7 @@ is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
 #' @return TRUE or FALSE
 #' @examples
 #' # VALID
-#'     file <- download_data('glutaminase.metabolon.xlsx')
+#'     file <- download_data('halama18.metabolon.xlsx')
 #'     x <- read_metabolon(file, plot = FALSE)
 #'     assert_is_valid_sumexp(x)
 #' # NOT VALID

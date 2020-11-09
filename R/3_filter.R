@@ -9,7 +9,7 @@
 #' @return  SummarizedExperiment
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' (object %<>% extract_features(c(5,4)))
 #' @export
@@ -59,7 +59,7 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' @return filtered eSet
 #' @examples
 #' # GLUTAMINASE
-#'     file <- download_data('glutaminase.metabolon.xlsx')
+#'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 #' @export
@@ -107,7 +107,7 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(exprs(object)))
 #' @param verbose TRUE (default) or FALSE
 #' @return updated object
 #' @examples
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' rm_missing_in_some_samples(object)
 #' @noRd
@@ -137,11 +137,11 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' @return Filtered SummarizedExperiment
 #' @examples
 #' require(magrittr)
-#' file <- download_data('stemcells.proteinGroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
 #'
-#' file <- download_data('glutaminase.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
 #' @export
@@ -197,7 +197,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' @return filtered SummarizedExperiment
 #' @examples
 #' # GLUTAMINASE
-#'     file <- download_data('glutaminase.metabolon.xlsx')
+#'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     filter_samples(object,   TIME_POINT=='h10',  verbose = TRUE)
 #' @export

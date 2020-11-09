@@ -35,7 +35,7 @@ read_phosphosites(
 )
 }
 \arguments{
-\item{proteinfile}{proteinGroups.txt path}
+\item{proteinfile}{proteingroups.txt path}
 
 \item{quantity}{string: "Ratio normalized",
 "Ratio", "LFQ intensity",
@@ -75,7 +75,7 @@ Read proteingroups/phosphosites
 \examples{
 # STEM CELLS
     # NORMALIZED RATIOS
-    proteinfile <- download_data('stemcells.proteinGroups.txt')
+    proteinfile <- download_data('billing16.proteingroups.txt')
     (object <- read_proteingroups(proteinfile,
                                 invert_subgroups = c('E_EM','E_BM','BM_EM')))
     # INTENSITIES
@@ -88,8 +88,8 @@ Read proteingroups/phosphosites
                 quantity = 'Intensity labeled', fastafile = fastafile))[1:3,]
 
 # DIFFERENTIATION
-    proteinfile <- download_data('differentiation.proteinGroups.txt')
-    phosphofile  <- download_data('differentiation.phosphoSites.txt')
+    proteinfile <- download_data('billing19.proteingroups.txt')
+    phosphofile <- download_data('billing19.phosphosites.txt')
     read_proteingroups(proteinfile)
     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
                        'EM05_EM02', 'EM30_EM15')

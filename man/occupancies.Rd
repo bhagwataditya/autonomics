@@ -30,8 +30,8 @@ occpuancy matrix (get) or updated object (set)
 Get / Set occupancies matrix
 }
 \examples{
-proteinfile <- download_data('differentiation.proteinGroups.txt')
-phosphofile <- download_data('differentiation.phosphoSites.txt')
+proteinfile <- download_data('billing19.proteingroups.txt')
+phosphofile <- download_data('billing19.phosphosites.txt')
 object <- read_phosphosites(phosphofile, proteinfile)
 exprs(object)[1:3, 1:3]
 occupancies(object)[1:3, 1:3]

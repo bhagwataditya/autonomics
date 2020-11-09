@@ -17,7 +17,7 @@ are_factor <- function(df) vapply(df, is.factor, logical(1))
 #' @param ...         backward compatibility
 #' @return design matrix
 #' @examples
-#' file <- download_data('hypoglycemia.somascan.adat')
+#' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
 #' create_design(object)
 #' create_design(object, ~ 0 + subgroup + Sex + T2D + age + bmi)

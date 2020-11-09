@@ -28,7 +28,7 @@ Get/Set feature variables
 }
 \examples{
 require(magrittr)
-file <- download_data('stemcells.proteinGroups.txt')
+file <- download_data('billing16.proteingroups.txt')
 object <- read_proteingroups(file)
 fvars(object)[1] \%<>\% paste0('1')
 fvars(object)[1]

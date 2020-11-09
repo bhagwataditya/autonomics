@@ -30,7 +30,7 @@ count matrix (get) or updated object (set)
 Get / Set counts matrix
 }
 \examples{
-file <- download_data('stemcells.rnacounts.txt')
+file <- download_data('billing16.rnacounts.txt')
 object <- read_counts(file)
 counts(object) <- exprs(object)
 counts(object)[1:3, 1:3]

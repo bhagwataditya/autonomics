@@ -61,7 +61,7 @@
 #' @return Summarizedexperiment
 #' @examples
 #' # HYPOGLYCEMIA
-#'     file <- download_data('hypoglycemia.somascan.adat')
+#'     file <- download_data('atkin18.somascan.adat')
 #'     read_somascan(file)
 #' @export
 read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
