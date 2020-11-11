@@ -2,7 +2,7 @@
 % Please edit documentation in R/8_impute.R
 \name{explore_imputations}
 \alias{explore_imputations}
-\title{Plot imputations}
+\title{Explore imputations}
 \usage{
 explore_imputations(object, xbiplot = pca1, ybiplot = pca2, ...)
 }
@@ -19,7 +19,7 @@ explore_imputations(object, xbiplot = pca1, ybiplot = pca2, ...)
 ggplot object
 }
 \description{
-Plot imputations
+Explore imputations
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')

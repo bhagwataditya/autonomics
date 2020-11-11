@@ -2,7 +2,7 @@
 % Please edit documentation in R/7_transform.R
 \name{explore_transformations}
 \alias{explore_transformations}
-\title{Plot transformations}
+\title{Explore transformations}
 \usage{
 explore_transformations(
   object,
@@ -30,7 +30,7 @@ explore_transformations(
 grid object
 }
 \description{
-Plot transformations
+Explore transformations
 }
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
