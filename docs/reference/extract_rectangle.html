@@ -204,7 +204,7 @@
 <span class='co'>#=======================================</span>
 <span class='co'># exprs</span>
    <span class='fu'><a href='https://rdrr.io/r/base/library.html'>require</a></span>(<span class='kw'>magrittr</span>)
-   <span class='kw'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'glutaminase.metabolon.xlsx'</span>)
+   <span class='kw'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'halama18.metabolon.xlsx'</span>)
    <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet = <span class='fl'>2</span>) <span class='op'>%&gt;%</span>
    <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
 </div><div class='output co'>#&gt;            V1       V2       V3
@@ -237,7 +237,7 @@
 <span class='co'># FROM MATRIX: extract_rectangle.matrix</span>
 <span class='co'>#======================================</span>
 <span class='co'># exprs</span>
-   <span class='kw'>x</span> <span class='op'>&lt;-</span><span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'glutaminase.metabolon.xlsx'</span>) <span class='op'>%&gt;%</span>
+   <span class='kw'>x</span> <span class='op'>&lt;-</span><span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'halama18.metabolon.xlsx'</span>) <span class='op'>%&gt;%</span>
        <span class='fu'>extract_rectangle</span>(sheet = <span class='fl'>2</span>)
    <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet = <span class='fl'>2</span>) <span class='op'>%&gt;%</span>
    <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)

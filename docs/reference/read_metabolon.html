@@ -132,7 +132,7 @@
   subgroup_var = <span class='st'>"Group"</span>,
   fname_var = <span class='st'>"BIOCHEMICAL"</span>,
   log2 = <span class='fl'>TRUE</span>,
-  impute_consistent_nas = <span class='fl'>FALSE</span>,
+  impute = <span class='fl'>FALSE</span>,
   add_kegg_pathways = <span class='fl'>FALSE</span>,
   add_smiles = <span class='fl'>FALSE</span>,
   verbose = <span class='fl'>TRUE</span>,
@@ -171,10 +171,6 @@
       <td><p>TRUE (default) or FALSE: log2 transform ?</p></td>
     </tr>
     <tr>
-      <th>impute_consistent_nas</th>
-      <td><p>TRUE or FALSE (default)</p></td>
-    </tr>
-    <tr>
       <th>add_kegg_pathways</th>
       <td><p>TRUE or FALSE (default)</p></td>
     </tr>
@@ -190,6 +186,10 @@
       <th>plot</th>
       <td><p>TRUE (default) or FALSE</p></td>
     </tr>
+    <tr>
+      <th>impute_systematic_nas</th>
+      <td><p>TRUE or FALSE (default)</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -198,9 +198,9 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># GLUTAMINASE</span>
-   <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'glutaminase.metabolon.xlsx'</span>)
+   <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'halama18.metabolon.xlsx'</span>)
    <span class='fu'>read_metabolon</span>(<span class='kw'>file</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/glutaminase/glutaminase.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: UT_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='img'><img src='read_metabolon-1.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: UT_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='img'><img src='read_metabolon-1.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 391 96 
 #&gt; metadata(3): analysis file platform
 #&gt; assays(1): exprs
@@ -208,9 +208,9 @@
 #&gt; rowData names(16): feature_id feature_name ... KEGG HMDB_ID
 #&gt; colnames(96): UT_h10_R1 UT_h10_R2 ... uM10_h72_R5 uM10_h72_R6
 #&gt; colData names(13): sample_id subgroup ... TUBE_BARCODE Group HMDB_ID</div><div class='input'><span class='co'># HYPOGLYCEMIA</span>
-   <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'hypoglycemia.metabolon.xlsx'</span>)
+   <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'atkin18.metabolon.xlsx'</span>)
    <span class='fu'>read_metabolon</span>(<span class='kw'>file</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/hypoglycemia/hypoglycemia.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values: t0.S01 =&gt; t0</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: t0.S01 =&gt; S01</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='img'><img src='read_metabolon-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/atkin18/atkin18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values: t0.S01 =&gt; t0</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: t0.S01 =&gt; S01</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='img'><img src='read_metabolon-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 975 67 
 #&gt; metadata(3): analysis file platform
 #&gt; assays(1): exprs

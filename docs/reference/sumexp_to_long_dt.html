@@ -124,7 +124,12 @@
     <p>Convert SummarizedExperiment into data.table</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sumexp_to_wide_dt</span>(<span class='kw'>object</span>, fid = <span class='st'>"feature_id"</span>, fvars = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>))
+    <pre class="usage"><span class='fu'>sumexp_to_wide_dt</span>(
+  <span class='kw'>object</span>,
+  fid = <span class='st'>"feature_id"</span>,
+  fvars = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
+  assay = <span class='st'>"exprs"</span>
+)
 
 <span class='fu'>sumexp_to_long_dt</span>(
   <span class='kw'>object</span>,
@@ -132,7 +137,8 @@
   fvars = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
   sid = <span class='st'>"sample_id"</span>,
   svars = <span class='co'>if</span> (<span class='st'>"subgroup"</span> <span class='op'>%in%</span> <span class='kw'>importomics</span>::<span class='fu'><a href='svars.html'>svars</a></span>(<span class='kw'>object</span>)) {     <span class='st'>"subgroup"</span> } <span class='co'>else</span> {  
-      <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>) }
+      <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>) },
+  assay = <span class='st'>"exprs"</span>
 )
 
 <span class='fu'>sumexp_to_subrep_dt</span>(<span class='kw'>object</span>)</pre>
@@ -176,10 +182,10 @@
 
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># Stem cell differentiation</span>
-    <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'stemcells.proteinGroups.txt'</span>)
+    <pre class="examples"><div class='input'><span class='co'># Stem cell comparison</span>
+    <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'billing16.proteingroups.txt'</span>)
     <span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span>(<span class='kw'>file</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/stemcells/stemcells.proteinGroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9/9 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='img'><img src='sumexp_to_long_dt-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='sumexp_to_long_dt-2.png' alt='' width='700' height='433' /></div><div class='input'>    <span class='fu'>sumexp_to_wide_dt</span>(<span class='kw'>object</span>)
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/billing16/billing16.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/billing16/billing16.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9/9 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7156/7877 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='img'><img src='sumexp_to_long_dt-1.png' alt='' width='700' height='433' /></div><div class='input'>    <span class='fu'>sumexp_to_wide_dt</span>(<span class='kw'>object</span>)
 </div><div class='output co'>#&gt;       feature_id     EM_E.R1     BM_E.R1     BM_EM.R1     E_BM.R2    EM_BM.R2
 #&gt;    1:          0 -3.79748323 -3.01952130  0.135797512  3.08302610 -0.36421775
 #&gt;    2:          1 -0.25504672  0.23216954  0.471759742  0.36446037 -1.78667138
@@ -187,11 +193,11 @@
 #&gt;    4:          3  0.92941229  1.28486943  0.588132944 -0.73535548 -0.84718057
 #&gt;    5:          4  0.34891224  0.33159058  0.161823203  0.50039417 -0.90522344
 #&gt;   ---                                                                        
-#&gt; 7873:       8621 -0.92779814 -0.70618224  0.009203827  1.35957739 -0.05713648
-#&gt; 7874:       8622  0.07244885  0.58890049  0.280362490 -0.08399733 -0.15169856
-#&gt; 7875:       8623  0.55846357  0.03745251 -0.509737951  0.53196778 -0.89665679
-#&gt; 7876:       8624  1.16722945  1.80900277  0.661293556 -1.47405142 -1.64805513
-#&gt; 7877:       8626          NA          NA           NA -0.81301778 -0.76317066
+#&gt; 7152:       8620  0.21747890 -0.11469116 -0.223676992 -1.50996392  0.17440642
+#&gt; 7153:       8621 -0.92779814 -0.70618224  0.009203827  1.35957739 -0.05713648
+#&gt; 7154:       8622  0.07244885  0.58890049  0.280362490 -0.08399733 -0.15169856
+#&gt; 7155:       8623  0.55846357  0.03745251 -0.509737951  0.53196778 -0.89665679
+#&gt; 7156:       8624  1.16722945  1.80900277  0.661293556 -1.47405142 -1.64805513
 #&gt;           EM_E.R2    BM_EM.R3     E_EM.R3    E_BM.R3
 #&gt;    1: -3.65433566 -0.08672185  2.57247741  2.6421239
 #&gt;    2: -1.88517991 -0.12173765 -0.36914725  0.1843438
@@ -199,11 +205,11 @@
 #&gt;    4:  0.21871918  0.58851677 -0.84339628 -1.2154793
 #&gt;    5: -1.30878746  0.52516685 -0.10238781  0.2242873
 #&gt;   ---                                               
-#&gt; 7873: -1.37650767 -0.42784763  1.28380327  1.6610655
-#&gt; 7874:  0.05658353 -0.19313980 -0.98279071 -0.3783443
-#&gt; 7875: -0.72225324 -0.35188434  0.62816700  1.4550181
-#&gt; 7876:  0.83979838  0.91808087 -0.97293090 -2.1073681
-#&gt; 7877:  0.22342255          NA          NA         NA</div><div class='input'>    <span class='fu'>sumexp_to_long_dt</span>(<span class='kw'>object</span>)
+#&gt; 7152:  1.47969621 -0.10551979 -2.00179005 -1.7052411
+#&gt; 7153: -1.37650767 -0.42784763  1.28380327  1.6610655
+#&gt; 7154:  0.05658353 -0.19313980 -0.98279071 -0.3783443
+#&gt; 7155: -0.72225324 -0.35188434  0.62816700  1.4550181
+#&gt; 7156:  0.83979838  0.91808087 -0.97293090 -2.1073681</div><div class='input'>    <span class='fu'>sumexp_to_long_dt</span>(<span class='kw'>object</span>)
 </div><div class='output co'>#&gt;        feature_id sample_id subgroup       value
 #&gt;     1:          0   BM_E.R1     BM_E -3.01952130
 #&gt;     2:          1   BM_E.R1     BM_E  0.23216954
@@ -211,11 +217,11 @@
 #&gt;     4:          3   BM_E.R1     BM_E  1.28486943
 #&gt;     5:          4   BM_E.R1     BM_E  0.33159058
 #&gt;    ---                                          
-#&gt; 70889:       8621   E_EM.R3     E_EM  1.28380327
-#&gt; 70890:       8622   E_EM.R3     E_EM -0.98279071
-#&gt; 70891:       8623   E_EM.R3     E_EM  0.62816700
-#&gt; 70892:       8624   E_EM.R3     E_EM -0.97293090
-#&gt; 70893:       8626   E_EM.R3     E_EM          NA</div><div class='input'>    <span class='fu'>sumexp_to_subrep_dt</span>(<span class='kw'>object</span>)
+#&gt; 64400:       8620   E_EM.R3     E_EM -2.00179005
+#&gt; 64401:       8621   E_EM.R3     E_EM  1.28380327
+#&gt; 64402:       8622   E_EM.R3     E_EM -0.98279071
+#&gt; 64403:       8623   E_EM.R3     E_EM  0.62816700
+#&gt; 64404:       8624   E_EM.R3     E_EM -0.97293090</div><div class='input'>    <span class='fu'>sumexp_to_subrep_dt</span>(<span class='kw'>object</span>)
 </div><div class='output co'>#&gt;        feature_id subgroup         R1         R2          R3
 #&gt;     1:          0     BM_E -3.0195213         NA          NA
 #&gt;     2:          0    BM_EM  0.1357975         NA -0.08672185
@@ -223,16 +229,16 @@
 #&gt;     4:          0     EM_E -3.7974832 -3.6543357          NA
 #&gt;     5:          0     E_BM         NA  3.0830261  2.64212392
 #&gt;    ---                                                      
-#&gt; 47258:       8626    BM_EM         NA         NA          NA
-#&gt; 47259:       8626    EM_BM         NA -0.7631707          NA
-#&gt; 47260:       8626     EM_E         NA  0.2234225          NA
-#&gt; 47261:       8626     E_BM         NA -0.8130178          NA
-#&gt; 47262:       8626     E_EM         NA         NA          NA</div><div class='input'>
+#&gt; 42932:       8624    BM_EM  0.6612936         NA  0.91808087
+#&gt; 42933:       8624    EM_BM         NA -1.6480551          NA
+#&gt; 42934:       8624     EM_E  1.1672295  0.8397984          NA
+#&gt; 42935:       8624     E_BM         NA -1.4740514 -2.10736806
+#&gt; 42936:       8624     E_EM         NA         NA -0.97293090</div><div class='input'>
 <span class='co'># Glutaminase</span>
    <span class='fu'><a href='https://rdrr.io/r/base/library.html'>require</a></span>(<span class='kw'>magrittr</span>)
-   <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'glutaminase.metabolon.xlsx'</span>)
+   <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'halama18.metabolon.xlsx'</span>)
    <span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_metabolon.html'>read_metabolon</a></span>(<span class='kw'>file</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/glutaminase/glutaminase.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: UT_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='img'><img src='sumexp_to_long_dt-3.png' alt='' width='700' height='433' /></div><div class='input'>   <span class='kw'>object</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='pca.html'>pca</a></span>()
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: UT_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='img'><img src='sumexp_to_long_dt-2.png' alt='' width='700' height='433' /></div><div class='input'>   <span class='kw'>object</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='pca.html'>pca</a></span>()
 </div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='input'>   <span class='fu'>sumexp_to_wide_dt</span>(<span class='kw'>object</span>)
 </div><div class='output co'>#&gt;      feature_id UT_h10_R1 UT_h10_R2 UT_h10_R3 UT_h10_R4 UT_h10_R5 UT_h10_R6
 #&gt;   1:      52603  18.99232  19.38894  18.66954        NA  17.57336        NA

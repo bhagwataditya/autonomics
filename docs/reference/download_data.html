@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Download autonomics data — download_data • importomics</title>
+<title>Download example datasets — download_data • importomics</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Download autonomics data — download_data" />
-<meta property="og:description" content="Download autonomics data" />
+<meta property="og:title" content="Download example datasets — download_data" />
+<meta property="og:description" content="Download example datasets" />
 
 
 
@@ -115,13 +115,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Download autonomics data</h1>
+    <h1>Download example datasets</h1>
     
     <div class="hidden name"><code>download_data.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Download autonomics data</p>
+    <p>Download example datasets</p>
     </div>
 
     <pre class="usage"><span class='fu'>download_data</span>(<span class='kw'>file</span>, localdir = <span class='st'>"~/importomicscache/datasets"</span>, unzip = <span class='fl'>TRUE</span>)</pre>
@@ -148,8 +148,27 @@
     <p>return   localfile invisibly</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='fu'>download_data</span>(file = <span class='st'>'stemcells.somascan.adat'</span>))
-</div><div class='output co'>#&gt; [1] "~/importomicscache/datasets/stemcells/stemcells.somascan.adat"</div></pre>
+    <pre class="examples"><div class='input'><span class='co'># atkin18 - hypoglycemia - pubmed 30525282</span>
+    <span class='fu'>download_data</span>(<span class='st'>'atkin18.somascan.adat'</span>)        <span class='co'># somascan  intensities</span>
+    <span class='fu'>download_data</span>(<span class='st'>'atkin18.metabolon.xlsx'</span>)       <span class='co'># metabolon intensities</span>
+
+<span class='co'># billing16 - stemcell characterization - pubmed 26857143  pride PXD001856</span>
+    <span class='fu'>download_data</span>(<span class='st'>'billing16.proteingroups.txt'</span>)  <span class='co'># proteingroup ratios</span>
+    <span class='fu'>download_data</span>(<span class='st'>'billing16.somascan.adat'</span>)      <span class='co'># somascan     intensities</span>
+    <span class='fu'>download_data</span>(<span class='st'>'billing16.rnacounts.txt'</span>)      <span class='co'># rnaseq       counts</span>
+    <span class='fu'>download_data</span>(<span class='st'>'billing2016.bam.zip'</span>)          <span class='co'># rnaseq       alignments</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in download_data("billing2016.bam.zip"): is_subset : The element 'billing2016.bam.zip' in file is not in IMPORTOMICS_DATASETS.</span></div><div class='input'>
+<span class='co'># billing19 - stemcell differentiation - pubmed 31332097  pride PXD004652</span>
+    <span class='fu'>download_data</span>(<span class='st'>'billing19.proteingroups.txt'</span>)  <span class='co'># proteingroup ratios</span>
+    <span class='fu'>download_data</span>(<span class='st'>'billing19.phosphosites.txt'</span>)   <span class='co'># phosphosite  ratios</span>
+    <span class='fu'>download_data</span>(<span class='st'>'billing19.rnacounts.txt'</span>)      <span class='co'># rnaseq       counts</span>
+
+<span class='co'># fukuda20 - heart regeneration - pubmed PXD016235  pride PXD016235</span>
+    <span class='fu'>download_data</span>(<span class='st'>'fukuda20.proteingroups.txt'</span>)   <span class='co'># proteingroup LFQ intens.</span>
+
+<span class='co'># halama18 - glutaminase inhibition - pubmed 30525282</span>
+    <span class='fu'>download_data</span>(<span class='st'>'halama18.metabolon.xlsx'</span>)      <span class='co'># metabolon intensities</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
