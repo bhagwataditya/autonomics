@@ -393,13 +393,17 @@ plot_detects <- function(object, group = subgroup, fill = subgroup){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
-#' explore_transformations(object)
 #' explore_imputations(object)
+#' explore_transformations(object)
 #' @export
 explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
     imputed     <- impute_systematic_nondetects(object, plot=FALSE)
     zeroed <- impute_systematic_nondetects(object, fun = zeroimpute, plot = FALSE)
     legend <- gglegend(biplot(object))
+
+    do_plot_detects <- function(obj, ...){
+        plot_detects(obj, ...) + guides(color=FALSE, fill=FALSE)
+    }
 
     do_biplot <- function(obj, ...){
         biplot(obj, x=!!enquo(xbiplot), y=!!enquo(ybiplot), nloadings=0,...) +
@@ -413,9 +417,9 @@ explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
         ggtitle(NULL)
     }
 
-    p1 <- plot_detects(object, ...)  + noguides + ggtitle('Original')
-    p2 <- plot_detects(imputed, ...) + noguides + ggtitle('Halfnorm imputed')
-    p3 <- plot_detects(zeroed, ...)  + noguides + ggtitle('Zero imputed')
+    p1 <- do_plot_detects(object, ...)  + ggtitle('Original')
+    p2 <- do_plot_detects(imputed, ...) + ggtitle('Halfnorm imputed')
+    p3 <- do_plot_detects(zeroed, ...)  + ggtitle('Zero imputed')
     p4 <- do_plot_sample_densities(object,  ...)
     p5 <- do_plot_sample_densities(imputed, ...)
     p6 <- do_plot_sample_densities(zeroed,  ...)
