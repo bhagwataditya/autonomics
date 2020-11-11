@@ -52,7 +52,7 @@
 #' @param subgroup_var string: subgroup variable (human comprehensible)
 #' @param fname_var    string: feature_name variable
 #' @param log2         TRUE (default) or FALSE: log2 transform ?
-#' @param impute_consistent_nas TRUE or FALSE (default)
+#' @param impute_systematic_nas TRUE or FALSE (default)
 #' @param add_kegg_pathways     TRUE or FALSE (default)
 #' @param add_smiles            TRUE or FALSE (default)
 #' @param verbose               TRUE (default) or FALSE
@@ -69,7 +69,7 @@
 read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL', log2 = TRUE,
-    impute_consistent_nas = FALSE, add_kegg_pathways = FALSE,
+    impute  = FALSE, add_kegg_pathways = FALSE,
     add_smiles = FALSE, verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -88,7 +88,7 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
 # Preprocess
     if (log2)               object %<>% log2transform(verbose = TRUE)
-    if (impute_consistent_nas) object %<>% impute_consistent_nas()
+    if (impute)             object %<>% impute_systematic_nondetects()
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Plot

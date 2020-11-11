@@ -1,6 +1,11 @@
 #' @rdname sumexp_to_long_dt
 #' @export
-sumexp_to_wide_dt <- function(object, fid = 'feature_id', fvars = character(0)){
+sumexp_to_wide_dt <- function(
+    object,
+    fid   = 'feature_id',
+    fvars = character(0),
+    assay = 'exprs'
+){
 
     # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -9,11 +14,12 @@ sumexp_to_wide_dt <- function(object, fid = 'feature_id', fvars = character(0)){
 
     # Extract
     fdata1 <- data.table(fdata(object)[, unique(c(fid, fvars)), drop = FALSE])
-    exprs1 <- data.table(exprs(object))
+    exprs1 <- data.table(assays(object)[[assay]])
     wide1  <- cbind(fdata1, exprs1)
+    wide1[, (fid) := factor(get(fid), unique(fdata(object)[[fid]]))]
 
     # Return
-    wide1
+    wide1[]
 }
 
 
@@ -53,7 +59,8 @@ sumexp_to_long_dt <- function(
     fvars = character(0),
     sid = 'sample_id',
     svars = if ('subgroup' %in% importomics::svars(object)){ 'subgroup'
-            } else {                                         character(0) }
+            } else {                                         character(0) },
+    assay = 'exprs'
 ){
     # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -71,13 +78,19 @@ sumexp_to_long_dt <- function(
 
     # Extract & Return
     sdata1 <- sdata(object)[, c('sample_id', svars), drop = FALSE]
-    sumexp_to_wide_dt(object, fid, fvars) %>%
-    data.table::melt.data.table(
-        id.vars = unique(c(fid, fvars)),
-        variable.name = sid, value.name = 'value') %>%
-        # Note: unique is to avoid duplication of same fields in fid and fvars
-    merge(sdata1, by = sid) %>%
-    extract(, unique(c(fid, fvars, sid, svars, 'value')), with = FALSE)
+    dt  <-  sumexp_to_wide_dt(object, fid, fvars, assay = assay) %>%
+            data.table::melt.data.table(
+                id.vars       = unique(c(fid, fvars)),
+                variable.name = sid,
+                value.name    = 'value') %>%
+            # Note: unique is to avoid duplication of same fields in fid and fvars
+            merge(sdata1, by = sid) %>%
+            extract(, unique(c(fid, fvars, sid, svars, 'value')), with = FALSE)
+
+    # Encode fid/sid order
+    dt[, (fid) := factor(get(fid), unique(fdata(object)[[fid]]))]
+    dt[, (sid) := factor(get(sid), unique(sdata(object)[[sid]]))]
+    dt[]
 }
 
 #' @export
@@ -102,4 +115,24 @@ sumexp_to_subrep_dt <- function(object){
 
     # Return
     subrepdt
+}
+
+dt2mat    <- function(dt) dt[,-1] %>% as.matrix() %>% set_rownames(dt[[1]])
+dt2DF     <- function(dt) DataFrame(dt, row.names = dt[[1]])
+dt2exprs  <- function(dt) dt2mat(data.table::dcast(
+                            dt, feature_id ~ sample_id, value.var = 'value'))
+dt2sumexp  <- function(
+    dt,
+    fvars = character(0),
+    svars = setdiff(names(dt), c('feature_id', fvars, 'sample_id', 'value'))
+){
+    exprs1 <- dt2exprs(dt)
+    sdata1 <- dt2DF(dt[, .SD[1], by = 'sample_id' ])[, c('sample_id',  svars),
+                                                     drop = FALSE]
+    fdata1 <- dt2DF(dt[, .SD[1], by = 'feature_id'])[, c('feature_id', fvars),
+                                                     drop = FALSE]
+    SummarizedExperiment(
+        assays = list(exprs = exprs1),
+        rowData = fdata1,
+        colData = sdata1)
 }

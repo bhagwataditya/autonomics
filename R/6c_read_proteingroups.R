@@ -964,6 +964,7 @@ filter_maxquant_features <- function(
     if (!reverse)      object %<>% rm_reverse(     verbose = verbose)
     if (!contaminants) object %<>% rm_contaminants(verbose = verbose)
     object %<>% rm_missing_in_all_samples(verbose = verbose)
+    object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
     object %<>% rm_unlocalized(min_localization_prob, verbose = verbose)
 # Return
     object
@@ -1050,9 +1051,6 @@ filter_maxquant_samples <- function(object, rm_subgroups, verbose){
 }
 
 
-
-
-
 #==============================================================================
 #
 #                     transform_maxquant
@@ -1062,23 +1060,18 @@ filter_maxquant_samples <- function(object, rm_subgroups, verbose){
 transform_maxquant <- function(
     object, invert_subgroups, impute, verbose, plot
 ){
-    # Invert
-        if (verbose) message('\tTransform exprs')
-        object %<>% invert(subgroups = invert_subgroups)
-
-    # Remove batch effect
-        if (grepl('Reporter intensity', metadata(object)$quantity)){
-            message('\t\tTMT: rm run effect')
-            suppressWarnings(exprs(object) %<>% limma::removeBatchEffect(
-                                                    batch = object$replicate))
-        }
-
-    # Impute
-        if (impute) object %<>% impute_consistent_nas(verbose=verbose)
-
-    # Plot/Return
-        if (plot) print(plot_detects_per_subgroup(object))
-        object
+# Invert
+    if (verbose) message('\tTransform exprs')
+    object %<>% invert(subgroups = invert_subgroups)
+# Remove batch effect
+    if (grepl('Reporter intensity', metadata(object)$quantity)){
+        message('\t\tTMT: rm run effect')
+        suppressWarnings(exprs(object) %<>% limma::removeBatchEffect(
+                                                batch = object$replicate))
+    }
+# Impute
+    if (impute) object %<>% impute_systematic_nondetects(plot = FALSE)
+    object
 }
 
 

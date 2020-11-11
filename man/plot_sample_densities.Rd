@@ -8,6 +8,7 @@ plot_sample_densities(
   object,
   fill = subgroup,
   color = NULL,
+  group = sample_id,
   ...,
   fixed = list(alpha = 0.5, na.rm = TRUE)
 )

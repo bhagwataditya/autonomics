@@ -115,7 +115,6 @@ transform_to_standard_normal <- function(x){
 
 #==============================================================================
 #
-#                    plot_transformations
 #                        plot_transformation_biplots
 #                        plot_transformation_densities
 #                        plot_transformation_violins
@@ -128,34 +127,6 @@ gglegend<-function(p){
                     tmp$grobs, function(x) x$name, character(1))=="guide-box")
     legend <- tmp$grobs[[leg]]
     return(legend)
-}
-
-
-#' Plot transformations
-#' @param object          SummarizedExperiment
-#' @param transformations vector
-#' @param method          'pca', 'pls', 'sma', or 'lda'
-#' @param xdim            number (default 1)
-#' @param ydim            number (default 1)
-#' @param ...             passed to plot_data
-#' @return grid object
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' plot_transformations(object)
-#' @export
-plot_transformations <- function(
-    object, transformations = c('quantnorm', 'zscore', 'invnorm'),
-    method='pca', xdim=1, ydim=2, ...
-){
-    p1 <- plot_transformation_densities(object, transformations, ...)
-    p2 <- plot_transformation_biplots(
-            object, transformations, method, xdim1 = xdim, ydim = ydim, ...)
-
-    grid.arrange(arrangeGrob(p1 + theme(legend.position='none'),
-                            p2  + theme(legend.position='none'), nrow=2),
-                            gglegend(p2), ncol=2, widths = c(8, 1))
-
 }
 
 
@@ -231,5 +202,39 @@ plot_transformation_biplots <- function(
     p <- plot_data( scoredt, x=!!sym(xstr), y=!!sym(ystr), color=!!color, ...,
                     fixed = fixed)
     p + facet_wrap(~transfo, nrow=1, scales = "free")
+}
+
+
+#==============================================================================
+#
+#                    explore_transformations
+#
+#==============================================================================
+
+#' Explore transformations
+#' @param object          SummarizedExperiment
+#' @param transformations vector
+#' @param method          'pca', 'pls', 'sma', or 'lda'
+#' @param xdim            number (default 1)
+#' @param ydim            number (default 1)
+#' @param ...             passed to plot_data
+#' @return grid object
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' explore_transformations(object)
+#' @export
+explore_transformations <- function(
+    object, transformations = c('quantnorm', 'zscore', 'invnorm'),
+    method='pca', xdim=1, ydim=2, ...
+){
+    p1 <- plot_transformation_densities(object, transformations, ...)
+    p2 <- plot_transformation_biplots(
+            object, transformations, method, xdim1 = xdim, ydim = ydim, ...)
+
+    grid.arrange(arrangeGrob(p1 + theme(legend.position='none'),
+                            p2  + theme(legend.position='none'), nrow=2),
+                            gglegend(p2), ncol=2, widths = c(8, 1))
+
 }
 

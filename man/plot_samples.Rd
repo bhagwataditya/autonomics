@@ -32,4 +32,8 @@ Plots sample densities and scores
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 plot_samples(object)
+
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file, plot = FALSE)
+plot_samples(object)
 }

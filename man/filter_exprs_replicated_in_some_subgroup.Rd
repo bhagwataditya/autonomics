@@ -7,7 +7,8 @@
 filter_exprs_replicated_in_some_subgroup(
   object,
   comparator = if (contains_ratios(object)) "!=" else ">",
-  lod = 0
+  lod = 0,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -15,7 +16,9 @@ filter_exprs_replicated_in_some_subgroup(
 
 \item{comparator}{'>' or '!='}
 
-\item{lod}{number}
+\item{lod}{number: limit of detection}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 Filtered SummarizedExperiment

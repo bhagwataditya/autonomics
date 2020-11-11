@@ -133,7 +133,8 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' Filter features with replicated expression in some subgroup
 #' @param object      SummarizedExperiment
 #' @param comparator  '>' or '!='
-#' @param lod         number
+#' @param lod         number: limit of detection
+#' @param verbose     TRUE or FALSE
 #' @return Filtered SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -148,7 +149,8 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 filter_exprs_replicated_in_some_subgroup <- function(
     object,
     comparator = if (contains_ratios(object)) '!=' else '>',
-    lod = 0
+    lod = 0,
+    verbose = TRUE
 ){
     # Return if no subgroups or replicates
     if (!'subgroup' %in% svars(object))             return(object)
@@ -168,8 +170,8 @@ filter_exprs_replicated_in_some_subgroup <- function(
     # Keep only replicated features
     replicated_features <- dt[V1]$feature_id
     idx <- fid_values(object) %in% replicated_features
-    message('\t\tFilter ', sum(idx), '/', length(idx), ' features: expr ',
-            comparator, ' ', as.character(lod),
+    if (verbose)   message('\t\tFilter ', sum(idx), '/', length(idx),
+            ' features: expr ', comparator, ' ', as.character(lod),
             ' for at least two samples in some subgroup')
     object %<>% extract_features(idx) # also handles limma in metadata
 

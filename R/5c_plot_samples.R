@@ -24,16 +24,18 @@ plot_sample_densities <- function(
     object,
     fill       = subgroup,
     color      = NULL,
+    group      = sample_id,
     ...,
     fixed = list(alpha = 0.5, na.rm = TRUE)
 ){
     dt <- sumexp_to_long_dt(object, svars = svars(object))
-    fill <- enquo(fill)
+    fill  <- enquo(fill)
     color <- enquo(color)
+    group <- enquo(group)
     value <- NULL
-    plot_data(
-        dt, geom = geom_density, x = value, fill = !!fill,
-        color= !!color, ..., fixed = fixed)
+    plot_data(dt, geom = geom_density, x = value, fill = !!fill,
+        color = !!color, group = !!group, ..., fixed = fixed) +
+    ggtitle('sample densities')
 }
 
 
@@ -160,6 +162,7 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
     ylab  <- paste0(ystr, ' : ', metadata(object)[[methody]][[ystr]],'% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
+    p <- p + ggtitle(paste0(unique(c(methodx, methody)), collapse = '/'))
     p %<>% add_loadings(
             object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
     p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
@@ -388,6 +391,10 @@ prep_covariates <- function(object, method='pca', ndim=6){
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' plot_samples(object)
+#'
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, plot = FALSE)
+#' plot_samples(object)
 #' @export
 plot_samples <- function(
     object, x=pca1, y=pca2, color=subgroup, nloadings=0, ..., plot=TRUE
@@ -397,10 +404,11 @@ plot_samples <- function(
             theme(legend.position='top')
     p2  <-  plot_sample_densities(object, fill = !!enquo(color), ...) +
             theme(legend.position='none')
-    p3 <- gglegend(p1)
+    p3 <- plot_detects(object) + theme(legend.position='none')
+    p4 <- gglegend(p1)
     p1 <- p1 + theme(legend.position='none')
-    pp <- grid.arrange( p3,
-                        gridExtra::arrangeGrob(grobs = list(p1, p2), ncol = 2),
+    pp <- grid.arrange( p4,
+                        gridExtra::arrangeGrob(grobs = list(p1, p2, p3), ncol = 3),
                         ncol=1, heights = c(2,8))
     if (plot) grid.draw(pp)
     invisible(pp)

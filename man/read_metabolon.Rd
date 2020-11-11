@@ -12,7 +12,7 @@ read_metabolon(
   subgroup_var = "Group",
   fname_var = "BIOCHEMICAL",
   log2 = TRUE,
-  impute_consistent_nas = FALSE,
+  impute = FALSE,
   add_kegg_pathways = FALSE,
   add_smiles = FALSE,
   verbose = TRUE,
@@ -34,8 +34,6 @@ read_metabolon(
 
 \item{log2}{TRUE (default) or FALSE: log2 transform ?}
 
-\item{impute_consistent_nas}{TRUE or FALSE (default)}
-
 \item{add_kegg_pathways}{TRUE or FALSE (default)}
 
 \item{add_smiles}{TRUE or FALSE (default)}
@@ -43,6 +41,8 @@ read_metabolon(
 \item{verbose}{TRUE (default) or FALSE}
 
 \item{plot}{TRUE (default) or FALSE}
+
+\item{impute_systematic_nas}{TRUE or FALSE (default)}
 }
 \value{
 SummarizedExperiment

@@ -6,7 +6,12 @@
 \alias{sumexp_to_subrep_dt}
 \title{Convert SummarizedExperiment into data.table}
 \usage{
-sumexp_to_wide_dt(object, fid = "feature_id", fvars = character(0))
+sumexp_to_wide_dt(
+  object,
+  fid = "feature_id",
+  fvars = character(0),
+  assay = "exprs"
+)
 
 sumexp_to_long_dt(
   object,
@@ -14,7 +19,8 @@ sumexp_to_long_dt(
   fvars = character(0),
   sid = "sample_id",
   svars = if ("subgroup" \%in\% importomics::svars(object)) {     "subgroup" } else {  
-      character(0) }
+      character(0) },
+  assay = "exprs"
 )
 
 sumexp_to_subrep_dt(object)
