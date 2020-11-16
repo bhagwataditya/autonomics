@@ -17,6 +17,8 @@ impute_systematic_nondetects(
 \item{group}{group svar}
 
 \item{fun}{imputation function}
+
+\item{plot}{TRUE or FALSE}
 }
 \value{
 SummarizedExperiment

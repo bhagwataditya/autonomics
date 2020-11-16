@@ -17,6 +17,8 @@ plot_contrastogram(
 \item{directed}{TRUE or FALSE: whether to distinguish up and downregulations}
 
 \item{subgroup_colors}{named color vector (names = subgroups)}
+
+\item{sparse}{TRUE or FALSE}
 }
 \description{
 Plot contrastogram

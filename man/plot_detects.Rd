@@ -11,7 +11,7 @@ plot_detects(object, group = subgroup, fill = subgroup)
 
 \item{group}{subgroup}
 
-\item{assays}{character vector: assayData matrices to plot}
+\item{fill}{svar mapped to plot fill}
 }
 \value{
 ggplot object

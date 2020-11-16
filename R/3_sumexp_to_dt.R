@@ -35,6 +35,7 @@ sumexp_to_wide_dt <- function(
 #' @param fvars  additional fvars to include in table
 #' @param sid    svar carrying sample id
 #' @param svars  additional svars to include in table
+#' @param assay  matrix in assays(object) to be used
 #' @return data.table
 #' @examples
 #' # Stem cell comparison

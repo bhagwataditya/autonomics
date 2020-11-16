@@ -23,7 +23,11 @@ plot_samples(
 
 \item{color}{svar mapped to biplot color and density fill}
 
+\item{nloadings}{n loadings added to plot}
+
 \item{...}{passed to plot_data}
+
+\item{plot}{whether to print plot}
 }
 \description{
 Plots sample densities and scores

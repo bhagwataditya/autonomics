@@ -32,6 +32,8 @@ sumexp_to_subrep_dt(object)
 
 \item{fvars}{additional fvars to include in table}
 
+\item{assay}{matrix in assays(object) to be used}
+
 \item{sid}{svar carrying sample id}
 
 \item{svars}{additional svars to include in table}

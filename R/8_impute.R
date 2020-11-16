@@ -117,16 +117,20 @@ na_to_string <- function(x){
 #
 #=============================================================================
 
+#' @rdname halfnormimpute
+#' @export
 normimpute <- function(x, selector = is.na(x)){
     x[selector] <- rnorm(length(x[selector]), sd = sd(x[!is.na(x)]))
     x
 }
 
 
-#' Random draw from half-normal distribution
-#' @param n   number
-#' @param sd  standard deviation (will be doubled)
+#' Impute from half-normal distribution around 0
+#' @param x          NA-containing numeric vector
+#' @param selector   which values to impute
+#' @return numeric vector of same length
 #' @examples
+#' require(data.table)
 #' idx <- runif(length(x))>0.9
 #' x <- rnorm(1e5); x[idx] <- NA
 #' dt1 <- data.table(value = normimpute(x), distr = 'norm')
@@ -137,7 +141,8 @@ normimpute <- function(x, selector = is.na(x)){
 #' x <- abs(rnorm(1e5)); x[idx] <- NA
 #' dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
 #'
-#' ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) + geom_density(alpha=0.5)
+#' ggplot2::ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) +
+#' ggplot2::geom_density(alpha=0.5)
 #' @export
 halfnormimpute <- function(x, selector = is.na(x)){
     x[selector] <- abs(rnorm(length(x[selector]), sd = 2*sd(x[!is.na(x)])))
@@ -245,6 +250,7 @@ venn_detects <- function(object){
 #' @param object SummarizedExperiment
 #' @param group  group svar
 #' @param fun    imputation function
+#' @param plot   TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
@@ -255,6 +261,7 @@ impute_systematic_nondetects <- function(
     object, group = subgroup, fun = halfnormimpute, plot = TRUE
 ){
 # Process
+    absent <- replicated <- systematic <- NULL
     group <- enquo(group)
     groupstr <- as_name(group)
 # Filter
@@ -317,7 +324,7 @@ detect_order_features <- function(object){
 #' Plot detects
 #' @param object   SummarizedExperiment
 #' @param group    subgroup
-#' @param assays   character vector: assayData matrices to plot
+#' @param fill     svar mapped to plot fill
 #' @return ggplot object
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
@@ -333,11 +340,10 @@ detect_order_features <- function(object){
 #' @export
 plot_detects <- function(object, group = subgroup, fill = subgroup){
 # Process
+    detection <- feature_id <- NULL
     set.seed(39)
-    group <- enquo(group)
-    fill  <- enquo(fill)
-    groupstr <- as_name(group)
-    fillstr  <- as_name(fill)
+    group <- enquo(group);         fill     <- enquo(fill)
+    groupstr <- as_name(group);    fillstr  <- as_name(fill)
 # Reorder samples
     sdata(object)[[groupstr]] %<>% factor()
     object %<>% extract(, order(sdata(.)[[groupstr]]))
@@ -360,15 +366,17 @@ plot_detects <- function(object, group = subgroup, fill = subgroup){
     plotdt[, detection := factor(detection, c('nondetect', 'impute', 'detect'))]
     plotdt[, sample_id  := factor( sample_id, unique(snames(object)))]
     plotdt[, feature_id := factor(feature_id, rev(unique(fnames(object))))]
-    colors <- c(make_colors(unique(sdata(object)[[fillstr]])), nondetect = "#FFFFFF")
+    colors <- make_colors(unique(sdata(object)[[fillstr]]))
+    colors %<>% c(nondetect = "#FFFFFF")
 # Plot
     ggplot(plotdt) +
-    geom_tile(aes(x = sample_id, y = feature_id, fill = !!fill, alpha = detection)) +
+    geom_tile(aes(x=sample_id, y=feature_id, fill=!!fill, alpha=detection)) +
     scale_fill_manual(values = colors) +
     scale_alpha_manual(values = c(nondetect=0, impute=0.3, detect = 1)) +
     ylab('features') +
-    #ylab(sprintf('features: %d %d %d full systematic random detects', nfull, nsystematic, nrandom)) +
-    xlab('samples') + ggtitle(sprintf('detects: %d full, %d random, %d systematic', nfull, nrandom, nsystematic)) +
+    xlab('samples') +
+    ggtitle(sprintf('detects: %d full, %d random, %d systematic',
+                    nfull, nrandom, nsystematic)) +
     theme_bw() +
     theme(  axis.text.y  = element_blank(), axis.ticks.y = element_blank(),
             axis.text.x  = element_blank(), legend.title = element_blank()) +

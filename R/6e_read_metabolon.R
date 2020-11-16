@@ -52,7 +52,7 @@
 #' @param subgroup_var string: subgroup variable (human comprehensible)
 #' @param fname_var    string: feature_name variable
 #' @param log2         TRUE (default) or FALSE: log2 transform ?
-#' @param impute_systematic_nas TRUE or FALSE (default)
+#' @param impute                TRUE or FALSE (default)
 #' @param add_kegg_pathways     TRUE or FALSE (default)
 #' @param add_smiles            TRUE or FALSE (default)
 #' @param verbose               TRUE (default) or FALSE

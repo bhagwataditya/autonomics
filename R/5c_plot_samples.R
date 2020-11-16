@@ -10,6 +10,7 @@
 #' @param object      SummarizedExperiment
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param group       svar mapped to group
 #' @param ...         mapped aesthetics
 #' @param fixed       fixed aesthetics
 #' @return ggplot object
@@ -382,11 +383,13 @@ prep_covariates <- function(object, method='pca', ndim=6){
 #' Plot samples
 #'
 #' Plots sample densities and scores
-#' @param object  SummarizedExperiment
-#' @param x       svar mapped to biplot x (sym, default pca1)
-#' @param y       svar mapped to biplot y *sym, default pca2)
-#' @param color   svar mapped to biplot color and density fill
-#' @param ...     passed to plot_data
+#' @param object    SummarizedExperiment
+#' @param x         svar mapped to biplot x (sym, default pca1)
+#' @param y         svar mapped to biplot y *sym, default pca2)
+#' @param color     svar mapped to biplot color and density fill
+#' @param nloadings n loadings added to plot
+#' @param ...       passed to plot_data
+#' @param plot      whether to print plot
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
@@ -408,7 +411,7 @@ plot_samples <- function(
     p4 <- gglegend(p1)
     p1 <- p1 + theme(legend.position='none')
     pp <- grid.arrange( p4,
-                        gridExtra::arrangeGrob(grobs = list(p1, p2, p3), ncol = 3),
+                        arrangeGrob(grobs = list(p1, p2, p3), ncol = 3),
                         ncol=1, heights = c(2,8))
     if (plot) grid.draw(pp)
     invisible(pp)
