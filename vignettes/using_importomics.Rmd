@@ -24,22 +24,23 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE)
                              dependencies = TRUE, upgrade = FALSE)
                              
 # Run
-    file <- download_data('stemcells.bam.zip')                           # RNAseq BAM
-    read_bam(file)
+    file <- download_data('billing16.bam.zip')                      # RNAseq BAM
+    read_bam(file, paired = TRUE, genome = 'hg38')
     
-    file <- download_data('stemcells.rnacounts.txt')                     # RNAseq counts
+    file <- download_data('billing16.rnacounts.txt')                # RNAseq counts
     read_counts(file)
         
-    file <- download_data('glutaminase.metabolon.xlsx')                  # Metabolon xlsx
+    file <- download_data('halama18.metabolon.xlsx')                # Metabolon xlsx
     read_metabolon(file)
     
-    proteingroups <- download_data('differentiation.proteinGroups.txt')  # LCMSMS Proteingroups
-    read_proteingroups(proteingroups)
+    rm_subgroups <- c('BLANK_BM00', 'BM00_BM00', 'EM01_EM00', 'EM05_EM02', 'EM30_EM15')
+    proteingroups <- download_data('billing19.proteingroups.txt')   # LCMSMS Proteingroups
+    read_proteingroups(proteingroups, rm_subgroups = rm_subgroups)
     
-    phosphosites <- download_data('differentiation.phosphoSites.txt')    # LCMSMS Phosphosites
-    read_phosphosites(phosphosites, proteingroupss)
+    phosphosites <- download_data('billing19.phosphosites.txt')     # LCMSMS Phosphosites
+    read_phosphosites(phosphosites, proteingroups, rm_subgroup = rm_subgroups)
     
-    file <- download_data('hypoglycemia.somascan.adat')                  # SOMAscan adat
+    file <- download_data('atkin18.somascan.adat')                  # SOMAscan adat
     read_somascan(file)
 ```
 
@@ -80,7 +81,7 @@ After these steps, the data is ready for statistical analysis. As a first analys
 
 ```{r, fig.width=7, fig.height=4, out.width="95%"}
 require(importomics, quietly = TRUE)
-file <- download_data('glutaminase.metabolon.xlsx')
+file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file) 
 ```
 
