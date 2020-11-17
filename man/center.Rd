@@ -16,7 +16,12 @@ center(
 
 \item{selector}{logical vector (length = nrow(object))}
 
+\item{fun}{aggregation function (string)}
+
 \item{verbose}{TRUE/FALSE}
+}
+\value{
+SummarizedExperiment
 }
 \description{
 Center samples
@@ -31,7 +36,6 @@ object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
 object \%<>\% extract(, order(object$subgroup))
 fdata(object)$housekeeping <- FALSE
 fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE
-
 exprs(object)[, object$subgroup=='BM00_STD'] \%<>\% add(5)
 gridExtra::grid.arrange(plot_sample_densities(object),
                         plot_sample_densities(center(object)),

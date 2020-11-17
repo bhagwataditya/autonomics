@@ -59,6 +59,7 @@ zscore <- function(object, verbose = FALSE){
 #' @param selector logical vector (length = nrow(object))
 #' @param fun      aggregation function (string)
 #' @param verbose  TRUE/FALSE
+#' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
 #' require(matrixStats)
