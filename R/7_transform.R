@@ -57,6 +57,7 @@ zscore <- function(object, verbose = FALSE){
 #' Center samples
 #' @param object   SummarizedExperiment
 #' @param selector logical vector (length = nrow(object))
+#' @param fun      aggregation function (string)
 #' @param verbose  TRUE/FALSE
 #' @examples
 #' require(magrittr)
@@ -68,7 +69,6 @@ zscore <- function(object, verbose = FALSE){
 #' object %<>% extract(, order(object$subgroup))
 #' fdata(object)$housekeeping <- FALSE
 #' fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE
-#'
 #' exprs(object)[, object$subgroup=='BM00_STD'] %<>% add(5)
 #' gridExtra::grid.arrange(plot_sample_densities(object),
 #'                         plot_sample_densities(center(object)),
