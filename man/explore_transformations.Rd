@@ -22,7 +22,7 @@ explore_transformations(
 
 \item{xdim}{number (default 1)}
 
-\item{ydim}{number (default 1)}
+\item{ydim}{number (default 2)}
 
 \item{...}{passed to plot_data}
 }

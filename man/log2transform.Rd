@@ -24,7 +24,7 @@ invnorm(object, verbose = FALSE)
 \item{verbose}{TRUE or FALSE}
 }
 \value{
-Transormed sumexp
+Transformed sumexp
 }
 \description{
 Log2 transform
