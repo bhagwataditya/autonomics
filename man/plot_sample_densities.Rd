@@ -2,7 +2,9 @@
 % Please edit documentation in R/5c_plot_samples.R
 \name{plot_sample_densities}
 \alias{plot_sample_densities}
-\title{Plot sample densities}
+\alias{plot_sample_violins}
+\alias{plot_sample_boxplots}
+\title{Plot sample densities/boxplots/violins}
 \usage{
 plot_sample_densities(
   object,
@@ -11,6 +13,24 @@ plot_sample_densities(
   group = sample_id,
   ...,
   fixed = list(alpha = 0.5, na.rm = TRUE)
+)
+
+plot_sample_violins(
+  object,
+  fill = subgroup,
+  color = NULL,
+  ...,
+  highlight = NULL,
+  fixed = list(na.rm = TRUE)
+)
+
+plot_sample_boxplots(
+  object,
+  fill = subgroup,
+  color = NULL,
+  ...,
+  highlight = NULL,
+  fixed = list(na.rm = TRUE)
 )
 }
 \arguments{
@@ -25,17 +45,29 @@ plot_sample_densities(
 \item{...}{mapped aesthetics}
 
 \item{fixed}{fixed aesthetics}
+
+\item{highlight}{fvar expressing which feature should be highlighted}
 }
 \value{
 ggplot object
 }
 \description{
-Plot sample densities
+Plot sample densities/boxplots/violins
 }
 \examples{
-require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
+object \%<>\% extract(, order(.$subgroup))
 plot_sample_densities(object)
-plot_sample_densities(object, color = subgroup, fill = NULL)
+plot_sample_boxplots(object)
+plot_sample_violins(object)
+
+object \%<>\% extract(, 1:10)
+plot_sample_densities(object)
+plot_sample_boxplots(object)
+plot_sample_violins(object)
+
+fdata(object) \%<>\% cbind(control=.$feature_name \%in\% c('biotin','phosphate'))
+plot_sample_boxplots(object, highlight = control)
+plot_sample_violins(object,  highlight = control)
 }

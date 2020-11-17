@@ -1,33 +1,63 @@
+#==============================================================================
+#
+#                  add_highlights
+#
+#==============================================================================
+add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
+    hlstr <- as_name(hl)
+    hl_df <- p$data[get(hlstr)==TRUE]
+    args <- list(data = hl_df)
+    if (identical(geom, geom_point)) {
+        many_hl <- length(unique(args$data$feature_name)) > 6
+        if (many_hl) args$data$feature_name <- hlstr
+        args %<>% c(
+            list(aes(shape = feature_name), size = rel(3), color = fixed_color))
+    }
+    p <- p + do.call(geom, args)
+    if (identical(geom, geom_point)) p <- p +
+        labs(shape = if (many_hl) NULL else hlstr) +
+        guides(fill = guide_legend(override.aes = list(shape = NA)))
+    p
+}
+
+
 #=============================================================================
 #
 #                 plot_sample_densities()
-#                 plot_sample_violins()
 #                 plot_sample_boxplots()
+#                 plot_sample_violins()
 #
 #=============================================================================
 
-#' Plot sample densities
+#' Plot sample densities/boxplots/violins
+#'
 #' @param object      SummarizedExperiment
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
 #' @param group       svar mapped to group
 #' @param ...         mapped aesthetics
+#' @param highlight   fvar expressing which feature should be highlighted
 #' @param fixed       fixed aesthetics
-#' @return ggplot object
+#' @return  ggplot object
 #' @examples
-#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
+#' object %<>% extract(, order(.$subgroup))
 #' plot_sample_densities(object)
-#' plot_sample_densities(object, color = subgroup, fill = NULL)
+#' plot_sample_boxplots(object)
+#' plot_sample_violins(object)
+#'
+#' object %<>% extract(, 1:10)
+#' plot_sample_densities(object)
+#' plot_sample_boxplots(object)
+#' plot_sample_violins(object)
+#'
+#' fdata(object) %<>% cbind(control=.$feature_name %in% c('biotin','phosphate'))
+#' plot_sample_boxplots(object, highlight = control)
+#' plot_sample_violins(object,  highlight = control)
 #' @export
-plot_sample_densities <- function(
-    object,
-    fill       = subgroup,
-    color      = NULL,
-    group      = sample_id,
-    ...,
-    fixed = list(alpha = 0.5, na.rm = TRUE)
+plot_sample_densities <- function(object, fill = subgroup, color = NULL,
+    group = sample_id, ..., fixed = list(alpha = 0.5, na.rm = TRUE)
 ){
     dt <- sumexp_to_long_dt(object, svars = svars(object))
     fill  <- enquo(fill)
@@ -40,64 +70,70 @@ plot_sample_densities <- function(
 }
 
 
-#' Plot sample violins
-#' @param object      SummarizedExperiment
-#' @param fill        svar mapped to fill
-#' @param color       svar mapped to color
-#' @param ...         mapped aesthetics
-#' @param fixed       fixed aesthetics
-#' @return ggplot object
-#' @examples
-#' require(magrittr)
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' plot_sample_violins(object)
+#' @rdname plot_sample_densities
 #' @export
-plot_sample_violins <- function(
-    object,
-    fill       = subgroup,
-    color      = NULL,
-    ...,
-    fixed = list(na.rm=TRUE)
+plot_sample_violins <- function(object, fill = subgroup, color = NULL, ...,
+    highlight = NULL, fixed = list(na.rm=TRUE)
 ){
-    dt <- sumexp_to_long_dt(object, svars = svars(object))
-    fill <- enquo(fill)
-    color <- enquo(color)
+# Process
     sample_id <- value <- NULL
-    plot_data(
-        dt, geom = geom_violin, x = sample_id, y = value, fill = !!fill,
-        color= !!color, ..., fixed      = fixed)
+    fill      <- enquo(fill)
+    color     <- enquo(color)
+    highlight <- enquo(highlight)
+    fillstr      <- if (quo_is_null(fill))      NULL else as_name(fill)
+    highlightstr <- if (quo_is_null(highlight)) NULL else as_name(highlight)
+# Prepare
+    show_highlights <- !is.null(highlightstr) &&
+                        is.element(highlightstr, fvars(object)) &&
+                        any(fdata(object)[[highlightstr]], na.rm = TRUE)
+    fvars <- character(0)
+    if (show_highlights) fvars %<>% c(highlightstr, "feature_name")
+    dt <- sumexp_to_long_dt(object, svars = svars(object), fvars = fvars)
+# Plot
+    p <- plot_data(dt, geom = geom_violin, x = sample_id, y = value,
+                   fill = !!fill, color= !!color, ..., fixed = fixed)
+    if (show_highlights) p %<>% add_highlights(highlight, geom = geom_point)
+# Finish
+    breaks <- levels(dt$sample_id)
+    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][, sample_id]
+    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) +
+        theme(axis.text.x = element_text(angle=90, hjust=1))
+# Return
+    p
 }
 
 
-
-#' Plot sample boxplots
-#' @param object      SummarizedExperiment
-#' @param fill        svar mapped to fill
-#' @param color       svar mapped to color
-#' @param ...         mapped aesthetics
-#' @param fixed       fixed aesthetics
-#' @return  ggplot object
-#' @examples
-#' require(magrittr)
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' plot_sample_boxplots(object)
+#' @rdname plot_sample_densities
 #' @export
-plot_sample_boxplots <- function(
-    object,
-    fill       = subgroup,
-    color      = NULL,
-    ...,
-    fixed = list(na.rm=TRUE)
+plot_sample_boxplots <- function(object, fill = subgroup, color = NULL, ...,
+    highlight = NULL, fixed = list(na.rm=TRUE)
 ){
-    dt <- sumexp_to_long_dt(object, svars = svars(object))
-    fill <- enquo(fill)
-    color <- enquo(color)
+# Process
     sample_id <- value <- NULL
-    plot_data(
-        dt, geom = geom_boxplot, x = sample_id, y = value, fill = !!fill,
-        color = !!color, ..., fixed      = fixed)
+    fill      <- enquo(fill)
+    color     <- enquo(color)
+    highlight <- enquo(highlight)
+    fillstr      <- if (quo_is_null(fill))      NULL else as_name(fill)
+    highlightstr <- if (quo_is_null(highlight)) NULL else as_name(highlight)
+# Prepare
+    show_highlights <- !is.null(highlightstr) &&
+                        is.element(highlightstr, fvars(object)) &&
+                        any(fdata(object)[[highlightstr]], na.rm = TRUE)
+    fvars <- character(0)
+    if (show_highlights) fvars %<>% c(highlightstr, "feature_name")
+    dt <- sumexp_to_long_dt(object, svars = svars(object), fvars = fvars)
+# Plot
+    p <- plot_data(dt, geom = geom_boxplot, x = sample_id, y = value,
+                   fill = !!fill, color = !!color, ..., fixed = fixed)
+    if (show_highlights) p %<>% add_highlights( highlight, geom = geom_point,
+                                                fixed_color = "darkred")
+# Finish
+    breaks <- levels(dt$sample_id)
+    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][, sample_id]
+    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) +
+        theme(axis.text.x = element_text(angle=90, hjust=1))
+# Return
+    p
 }
 
 
