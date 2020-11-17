@@ -54,6 +54,40 @@ zscore <- function(object, verbose = FALSE){
 }
 
 
+#' Center samples
+#' @param object   SummarizedExperiment
+#' @param selector logical vector (length = nrow(object))
+#' @param verbose  TRUE/FALSE
+#' @examples
+#' require(magrittr)
+#' require(matrixStats)
+#' file <- download_data('billing19.proteingroups.txt')
+#' rm_subgroups <- c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
+#'     'EM05_EM02', 'EM30_EM15')
+#' object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+#' object %<>% extract(, order(object$subgroup))
+#' fdata(object)$housekeeping <- FALSE
+#' fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE
+#'
+#' exprs(object)[, object$subgroup=='BM00_STD'] %<>% add(5)
+#' gridExtra::grid.arrange(plot_sample_densities(object),
+#'                         plot_sample_densities(center(object)),
+#'                         plot_sample_densities(center(object, housekeeping)))
+#' @export
+center <- function(object, selector = rep(TRUE, nrow(object))==TRUE,
+                   fun = 'median', verbose = TRUE
+){
+    selector <- enexpr(selector)
+    selector <- rlang::eval_tidy(selector, data = fdata(object))
+    if (verbose) cmessage('%s center samples on %d features',
+                        fun, nrow(object[selector, ]))
+    correction_factors <- apply(exprs(object[selector, ]), 2, fun, na.rm=TRUE)
+    correction_factors[is.na(correction_factors)] <- 0
+    exprs(object) %<>% sweep(2, correction_factors)
+    object
+}
+
+
 #' @rdname log2transform
 #' @export
 quantnorm <- function(object, verbose = FALSE){

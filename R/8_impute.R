@@ -131,8 +131,9 @@ normimpute <- function(x, selector = is.na(x)){
 #' @return numeric vector of same length
 #' @examples
 #' require(data.table)
+#' x <- rnorm(1e5)
 #' idx <- runif(length(x))>0.9
-#' x <- rnorm(1e5); x[idx] <- NA
+#' x[idx] <- NA
 #' dt1 <- data.table(value = normimpute(x), distr = 'norm')
 #'
 #' x <- abs(rnorm(1e5)); x[idx] <- NA
@@ -141,8 +142,9 @@ normimpute <- function(x, selector = is.na(x)){
 #' x <- abs(rnorm(1e5)); x[idx] <- NA
 #' dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
 #'
-#' ggplot2::ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) +
-#' ggplot2::geom_density(alpha=0.5)
+#' require(ggplot2)
+#' ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) +
+#' geom_density(alpha=0.5)
 #' @export
 halfnormimpute <- function(x, selector = is.na(x)){
     x[selector] <- abs(rnorm(length(x[selector]), sd = 2*sd(x[!is.na(x)])))
@@ -255,7 +257,7 @@ venn_detects <- function(object){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
-#' object %<>% impute_systematic_nondetects()
+#' impute_systematic_nondetects(object)
 #' @export
 impute_systematic_nondetects <- function(
     object, group = subgroup, fun = halfnormimpute, plot = TRUE

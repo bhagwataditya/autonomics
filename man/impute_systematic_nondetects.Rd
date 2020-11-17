@@ -29,5 +29,5 @@ Impute systematic nondetects
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
-object \%<>\% impute_systematic_nondetects()
+impute_systematic_nondetects(object)
 }

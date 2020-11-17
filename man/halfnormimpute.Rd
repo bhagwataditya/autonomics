@@ -25,8 +25,9 @@ Impute from half-normal distribution around 0
 }
 \examples{
 require(data.table)
+x <- rnorm(1e5)
 idx <- runif(length(x))>0.9
-x <- rnorm(1e5); x[idx] <- NA
+x[idx] <- NA
 dt1 <- data.table(value = normimpute(x), distr = 'norm')
 
 x <- abs(rnorm(1e5)); x[idx] <- NA
@@ -35,6 +36,7 @@ dt2 <- data.table(value = halfnormimpute(x), distr = 'halfnorm')
 x <- abs(rnorm(1e5)); x[idx] <- NA
 dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
 
-ggplot2::ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) +
-ggplot2::geom_density(alpha=0.5)
+require(ggplot2)
+ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) +
+geom_density(alpha=0.5)
 }
