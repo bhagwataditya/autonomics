@@ -55,6 +55,7 @@ ggplot object
 Plot sample densities/boxplots/violins
 }
 \examples{
+require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 object \%<>\% extract(, order(.$subgroup))

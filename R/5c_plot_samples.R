@@ -40,6 +40,7 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #' @param fixed       fixed aesthetics
 #' @return  ggplot object
 #' @examples
+#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% extract(, order(.$subgroup))

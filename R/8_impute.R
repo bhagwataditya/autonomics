@@ -329,6 +329,7 @@ detect_order_features <- function(object){
 #' @param fill     svar mapped to plot fill
 #' @return ggplot object
 #' @examples
+#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 #' plot_detects(object)
@@ -338,7 +339,6 @@ detect_order_features <- function(object){
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
 #' plot_detects(object)
-#'
 #' @export
 plot_detects <- function(object, group = subgroup, fill = subgroup){
 # Process

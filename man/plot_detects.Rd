@@ -20,6 +20,7 @@ ggplot object
 Plot detects
 }
 \examples{
+require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 plot_detects(object)
@@ -29,5 +30,4 @@ plot_detects(object)
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, impute = FALSE, plot = FALSE)
 plot_detects(object)
-
 }
