@@ -11,7 +11,7 @@
 #' Log2 transform
 #' @param object SummarizedExperiment
 #' @param verbose TRUE or FALSE
-#' @return Transormed sumexp
+#' @return Transformed sumexp
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
@@ -250,7 +250,7 @@ plot_transformation_biplots <- function(
 #' @param transformations vector
 #' @param method          'pca', 'pls', 'sma', or 'lda'
 #' @param xdim            number (default 1)
-#' @param ydim            number (default 1)
+#' @param ydim            number (default 2)
 #' @param ...             passed to plot_data
 #' @return grid object
 #' @examples
