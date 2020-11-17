@@ -34,6 +34,8 @@ read_metabolon(
 
 \item{log2}{TRUE (default) or FALSE: log2 transform ?}
 
+\item{impute}{TRUE or FALSE (default)}
+
 \item{add_kegg_pathways}{TRUE or FALSE (default)}
 
 \item{add_smiles}{TRUE or FALSE (default)}
@@ -41,8 +43,6 @@ read_metabolon(
 \item{verbose}{TRUE (default) or FALSE}
 
 \item{plot}{TRUE (default) or FALSE}
-
-\item{impute_systematic_nas}{TRUE or FALSE (default)}
 }
 \value{
 SummarizedExperiment

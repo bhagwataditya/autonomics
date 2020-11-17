@@ -127,7 +127,7 @@ make_twofactor_colors <- function(
     varlevels, sep  = guess_sep(varlevels), show = FALSE, verbose = TRUE
 ){
     # Assert
-    assertive::assert_has_no_duplicates(varlevels)
+    assert_has_no_duplicates(varlevels)
     assert_is_not_null(sep)
     if (verbose) cmessage('\t\tMake composite colors')
 
@@ -138,7 +138,7 @@ make_twofactor_colors <- function(
     #    * V1: first n-1 components => will be mapped to hue
     #    * V2: last component       => will be mapped to luminance
     # This approach works also when more than two components are present
-    # It is therefore used instead of autonomics.import::split_values()
+    # It is therefore used instead of split_values()
     V1  <-  stri_split_fixed(varlevels, sep) %>%
             vapply( function(x) paste0(x[-length(x)], collapse = sep),
                     character(1))

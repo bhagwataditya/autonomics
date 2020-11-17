@@ -28,7 +28,7 @@ IMPORTOMICS_DATASETS <- c(
 #'     download_data('billing16.proteingroups.txt')  # proteingroup ratios
 #'     download_data('billing16.somascan.adat')      # somascan     intensities
 #'     download_data('billing16.rnacounts.txt')      # rnaseq       counts
-#'     download_data('billing2016.bam.zip')          # rnaseq       alignments
+#'     download_data('billing16.bam.zip')          # rnaseq       alignments
 #'
 #' # billing19 - stemcell differentiation - pubmed 31332097  pride PXD004652
 #'     download_data('billing19.proteingroups.txt')  # proteingroup ratios

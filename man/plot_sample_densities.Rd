@@ -20,6 +20,8 @@ plot_sample_densities(
 
 \item{color}{svar mapped to color}
 
+\item{group}{svar mapped to group}
+
 \item{...}{mapped aesthetics}
 
 \item{fixed}{fixed aesthetics}
