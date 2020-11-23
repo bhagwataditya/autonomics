@@ -441,3 +441,46 @@ explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
 }
 
 
+#==============================================================================
+#'@title Get/set is_imputed
+#'@description Get/Set is_imputed
+#'@param object SummarizedExperiment
+#'@param value matrix
+#'@return matrix (get) or updated object (set)
+#'@examples
+#' file <- download_data('billing16.proteingroups.txt')
+#' object <- read_proteingroups(file)
+#' sum(is_imputed(object))
+#' @rdname is_imputed
+#' @export
+setGeneric("is_imputed",  function(object) standardGeneric("is_imputed") )
+
+#' @rdname is_imputed
+setMethod("is_imputed", signature("SummarizedExperiment"),  function(object){
+    if ('is_imputed' %in% names(assays(object))){
+        assays(object)$is_imputed
+    } else {
+        matrix(FALSE, nrow = nrow(object), ncol = ncol(object),
+                dimnames = dimnames(object))
+    }
+})
+
+#' @rdname is_imputed
+#' @export
+setGeneric(
+    "is_imputed<-",
+    function(object, value)  standardGeneric("is_imputed<-") )
+
+#' @rdname is_imputed
+setReplaceMethod(
+    "is_imputed",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$is_imputed <- value; object})
+
+#' @rdname is_imputed
+setReplaceMethod(
+    "is_imputed",
+    signature("SummarizedExperiment", "NULL"),
+    function(object, value){object})
+

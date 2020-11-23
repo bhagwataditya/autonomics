@@ -1,9 +1,18 @@
 
 #=============================================================================
 #
-#      READ
+#                   .read_metabolon
+#                       find_origscale_sheet
 #
 #=============================================================================
+
+find_origscale_sheet <- function(file){
+    . <- NULL
+    excel_sheets(file) %>%
+    extract(stri_detect_fixed(., 'OrigScale')) %>%
+    extract2(1)
+}
+
 
 .read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
@@ -44,71 +53,12 @@
     object
 }
 
-#' Read metabolon
-#' @param file         string: path to metabolon xlsx file
-#' @param sheet        number/string: xls sheet number or name
-#' @param fid_var      string: feature_id variable (ideally transcends dataset)
-#' @param sid_var      string: sample_id variable
-#' @param subgroup_var string: subgroup variable (human comprehensible)
-#' @param fname_var    string: feature_name variable
-#' @param log2         TRUE (default) or FALSE: log2 transform ?
-#' @param impute                TRUE or FALSE (default)
-#' @param add_kegg_pathways     TRUE or FALSE (default)
-#' @param add_smiles            TRUE or FALSE (default)
-#' @param verbose               TRUE (default) or FALSE
-#' @param plot                  TRUE (default) or FALSE
-#' @return SummarizedExperiment
-#' @examples
-#' # GLUTAMINASE
-#'    file <- download_data('halama18.metabolon.xlsx')
-#'    read_metabolon(file)
-#' # HYPOGLYCEMIA
-#'    file <- download_data('atkin18.metabolon.xlsx')
-#'    read_metabolon(file)
-#' @export
-read_metabolon <- function(file, sheet = find_origscale_sheet(file),
-    fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL', log2 = TRUE,
-    impute  = FALSE, add_kegg_pathways = FALSE,
-    add_smiles = FALSE, verbose = TRUE, plot = TRUE
-){
-# Read
-    object <- .read_metabolon(
-        file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var,
-        subgroup_var = subgroup_var, fname_var = fname_var)
-# Add sdata
-    is_subgroup_col <- stri_detect_regex(svars(object), subgroup_var)
-    subgroup_var <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
-                    } else {                    sid_var }
-
-    object %<>% add_design(subgroup_var, verbose = verbose)
-# Add fdata
-    assert_is_subset(fname_var, fvars(object))
-    fdata(object)$feature_name <- fdata(object)[[fname_var]]
-    fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
-# Preprocess
-    if (log2)               object %<>% log2transform(verbose = TRUE)
-    if (impute)             object %<>% impute_systematic_nondetects()
-    if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
-    if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
-# Plot
-    if (plot)  plot_samples(object)
-# Return
-    object
-}
-
-
-find_origscale_sheet <- function(file){
-    . <- NULL
-    excel_sheets(file) %>%
-    extract(stri_detect_fixed(., 'OrigScale')) %>%
-    extract2(1)
-}
 
 
 #=============================================================================
 #
-#         add_kegg_pathways
+#                   add_kegg_pathways
+#                       kegg_entry_to_pathways
 #
 #=============================================================================
 
@@ -183,13 +133,10 @@ kegg_entry_to_pathways <- function(x){
 }
 
 
-
-
-
-
 #===================================================================
 #
-#        add_smiles
+#                    add_smiles
+#                        pubchem_to_smiles
 #
 #===================================================================
 
@@ -252,5 +199,73 @@ pubchem_to_smiles <- function(x){
     merge(fread(cachefile), by = 'CID', all.x = TRUE, sort = FALSE) %>%
     extract2('CanonicalSMILES')
 }
+
+
+#=============================================================================
+#
+#                           read_metabolon
+#
+#=============================================================================
+
+
+#' Read metabolon
+#' @param file         string: path to metabolon xlsx file
+#' @param sheet        number/string: xls sheet number or name
+#' @param fid_var      string: feature_id variable (ideally transcends dataset)
+#' @param sid_var      string: sample_id variable
+#' @param subgroup_var string: subgroup variable (human comprehensible)
+#' @param fname_var    string: feature_name variable
+#' @param log2         TRUE (default) or FALSE: log2 transform ?
+#' @param impute                TRUE or FALSE (default)
+#' @param add_kegg_pathways     TRUE or FALSE (default)
+#' @param add_smiles            TRUE or FALSE (default)
+#' @param formula                formula to create design matrix (using svars)
+#' @param verbose               TRUE (default) or FALSE
+#' @param plot                  TRUE (default) or FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' # GLUTAMINASE
+#'    file <- download_data('halama18.metabolon.xlsx')
+#'    read_metabolon(file)
+#' # HYPOGLYCEMIA
+#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    read_metabolon(file)
+#' @export
+read_metabolon <- function(file, sheet = find_origscale_sheet(file),
+    fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
+    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL', log2 = TRUE,
+    impute  = FALSE, add_kegg_pathways = FALSE,
+    add_smiles = FALSE,
+    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    contrasts = default_contrasts(object), verbose = TRUE, plot = TRUE
+){
+# Read
+    object <- .read_metabolon(
+        file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var,
+        subgroup_var = subgroup_var, fname_var = fname_var)
+# Prepare
+    is_subgroup_col <- stri_detect_regex(svars(object), subgroup_var)
+    subgroup_var <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
+                    } else {                    sid_var }
+    object %<>% add_designvars(subgroup_var, verbose = verbose)
+    assert_is_subset(fname_var, fvars(object))
+    fdata(object)$feature_name <- fdata(object)[[fname_var]]
+    fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
+    if (log2)               object %<>% log2transform(verbose = TRUE)
+    if (impute)             object %<>% impute_systematic_nondetects()
+    if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
+    if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
+# Contrast
+    object %<>% add_limma(contrasts = contrasts, formula = !!enquo(formula))
+# Plot
+    if (plot)  plot_samples(object)
+# Return
+    object
+}
+
+
+
+
+
 
 

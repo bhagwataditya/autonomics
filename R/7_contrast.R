@@ -76,41 +76,53 @@ validify_contrasts <- function(contrasts, design){
 
 #==============================================================================
 #
-#                       create_contrast_matrix
+#                       create_contrastmat
 #
 #==============================================================================
 
 
 #' Create contrast matrix
-#' @param contrast_defs vector of contrast defs
-#' @param design        design matrix
+#' @param object        SummarizedExperiment
+#' @param contrasts  vector of contrast definitions
+#' @param design     design matrix
 #' @return contrast matrix
 #' @examples
+#' # PROTEINGROUPS
 #' file <- download_data('billing16.proteingroups.txt')
 #' invert_subgroups <- c('BM_EM', 'EM_E', 'BM_E')
 #' object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-#' create_contrast_matrix(create_design(object))
+#' create_contrastmat(object)
 #'
+#' # RNACOUNTS
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_counts(file)
-#' create_contrast_matrix(create_design(object), c(EM0.8_0 = 'EM.8 - EM00'))
+#' create_contrastmat(object, c(EM0.8_0 = 'EM.8 - EM00'))
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' create_contrast_matrix(create_design(object))
+#' create_contrastmat(object)
 #' @export
-create_contrast_matrix <- function(design, contrast_defs = colnames(design)){
-
-    # Create contrast matrix
-    if (!has_names(contrast_defs)){
-        names(contrast_defs) <- make.names(contrast_defs)
-    }
-    if (length(contrast_defs) == 0)  return(NULL)
-    assert_has_no_duplicates(names(contrast_defs))
-
-    makeContrasts(contrasts = contrast_defs, levels = design) %>%
-    set_colnames(names(contrast_defs))
+create_contrastmat <- function(
+    object, contrasts = default_contrasts(object),
+    design = importomics::design(object) # be explicit to disambiguate!
+){
+    if (!has_names(contrasts)) names(contrasts) <-make.names(contrasts)
+    if (length(contrasts) == 0)  return(NULL)
+    assert_has_no_duplicates(names(contrasts))
+    makeContrasts(contrasts = contrasts, levels = design) %>%
+    set_colnames(names(contrasts))
 }
+
+
+add_contrastmat <- function(
+    object,
+    contrasts = default_contrasts(object),
+    design    = design(object)
+){
+    contrasts(object) <- create_contrastmat(object, contrasts, design)
+    object
+}
+
 
 #==============================================================================
 #
@@ -137,9 +149,9 @@ create_contrast_matrix <- function(design, contrast_defs = colnames(design)){
 #'    \item {F.p}    vector (ngene)            : p    values (moderated F test)
 #' }
 #' @param object        SummarizedExperiment
-#' @param contrastdefs  contrastdef vector, preferably named
+#' @param contrasts  contrast vector, preferably named
 #'                   (automatically generated names are not always intuitive)
-#' @param design        design matrix
+#' @param formula   formula to create design matrix (using svars)
 #' @return Updated SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -150,26 +162,29 @@ create_contrast_matrix <- function(design, contrast_defs = colnames(design)){
 #' file <- download_data('billing19.proteingroups.txt')
 #' rm_subgroups<-c('BLANK_BM00','BM00_BM00','EM01_EM00','EM05_EM02','EM30_EM15')
 #' object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
-#' contrastdefs <- c(EM01_EM00 = 'EM01_STD - EM00_STD')
-#' object %<>% add_limma(contrastdefs)
+#' contrasts <- c(EM01_EM00 = 'EM01_STD - EM00_STD')
+#' object %<>% add_limma(contrasts)
 #' sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
 #'
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_counts(file)
-#' contrastdefs <- c(EM01_EM00 = 'EM01 - EM00')
-#' object %<>% add_limma(contrastdefs)
+#' contrasts <- c(EM01_EM00 = 'EM01 - EM00')
+#' object %<>% add_limma(contrasts)
 #' sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
 #' @export
-add_limma <- function(object, contrastdefs = default_contrasts(object),
-    design = create_design(object)
+add_limma <- function(
+    object,
+    contrasts = default_contrasts(object),
+    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup
 ){
 # Assert
+    design <- create_design(object, formula=!!enquo(formula))
     assert_is_matrix(design)
     assert_is_numeric(design)
     assert_is_identical_to_true(unname(ncol(object)) == nrow(design))
-    if (is.null(contrastdefs))    return(object)
-    contrastdefs %<>% validify_contrasts(design)
-    if (length(contrastdefs)==0) return(object)
+    if (is.null(contrasts))    return(object)
+    contrasts %<>% validify_contrasts(design)
+    if (length(contrasts)==0) return(object)
 # Set block and correlation if required
     cmessage('\t\tRun limma')
     block <- NULL; correlation <- NULL
@@ -181,11 +196,11 @@ add_limma <- function(object, contrastdefs = default_contrasts(object),
                         duplicateCorrelation(design, block = block) %>%
                         extract2('consensus.correlation')}
 # Fit lm and compute contrasts
-    contrast_matrix <- create_contrast_matrix(design, contrastdefs)
+    contrastmat <- create_contrastmat(object, contrasts, design)
     fit <- suppressWarnings(lmFit(object = exprs(object), design = design,
                                   block = block, correlation = correlation,
                                   weights = weights(object)))
-    fit %<>% contrasts.fit(contrasts = contrast_matrix)
+    fit %<>% contrasts.fit(contrasts = contrastmat)
     limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
                         } else { c('effect','rank','t','se','p','fdr','bonf')}
     limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
@@ -341,8 +356,8 @@ aggregate_column_contrasts <- function(contrastmat){
     aggregate_contrasts(contrastmat, 2)
 }
 
-aggregate_row_contrasts <- function(conc_contrast_matrix){
-    aggregate_contrasts(conc_contrast_matrix, 1)
+aggregate_row_contrasts <- function(conc_contrastmat){
+    aggregate_contrasts(conc_contrastmat, 1)
 }
 
 
@@ -404,12 +419,6 @@ create_diff_contrasts <- function(object){
 #' @export
 default_contrasts <- function(object){
 
-    # If contrasts present in object, use these
-    if (!is.null(contrastdefs(object))){
-        message('\tUse contrasts in contrastdefs(object)')
-        return(contrastdefs(object))
-    }
-
     # Extract subgroup levels
     subgroup_values <- sdata(object)$subgroup
     if (is.character(subgroup_values))  subgroup_values %<>% factorify()
@@ -437,9 +446,9 @@ validify_contrast_names <- function(x){
          make.names()
 }
 
-# add_limma2 <- function(object, contrastdefs = create_diff_contrasts(object)){
-#     S4Vectors::metadata(object)$contrastdefs <- contrastdefs
-#     object %<>% autonomics.find::add_limma(contrastdefs = contrastdefs)
+# add_limma2 <- function(object, contrasts = create_diff_contrasts(object)){
+#     S4Vectors::metadata(object)$contrasts <- contrasts
+#     object %<>% autonomics.find::add_limma(contrasts = contrasts)
 #     object
 # }
 
@@ -600,4 +609,91 @@ compute_connections <- function(
     list(connection_sizes = connection_sizes,
         connection_colors = connection_colors)
 }
+
+
+
+
+
+#==============================================================================
+#' Get/Set contrasts
+#' @param object SummarizedExperiment
+#' @param value named string vector (see examples)
+#' @return updated SummarizedExperiment
+#' @examples
+#' require(magrittr)
+#' file <- download_data('billing16.proteingroups.txt')
+#' object <- read_proteingroups(file)
+#' contrasts1 <- c(EM_E = 'EM_E', BM_E = 'BM_E', BM_EM = 'BM_EM')
+#' contrasts(object) <-     contrasts1   # conventional setter
+#' object %>% set_contrasts(contrasts1)  # piping       setter
+#' contrasts(object)                        # getter
+#' @rdname contrasts
+#' @export
+setGeneric("contrasts",   function(object)   standardGeneric("contrasts"))
+
+#' @rdname contrasts
+#' @export
+setMethod(
+    "contrasts",
+    signature("SummarizedExperiment"),
+    function(object) metadata(object)$contrasts )
+
+#' @rdname contrasts
+#' @export
+setGeneric(
+    "contrasts<-",
+    function(object, value)  standardGeneric("contrasts<-") )
+
+#' @rdname contrasts
+setReplaceMethod(
+    "contrasts",
+    signature("SummarizedExperiment", "character"),
+    function(object, value){ metadata(object)$contrasts <- value; object})
+
+#' @rdname contrasts
+setReplaceMethod(
+    "contrasts",
+    signature("SummarizedExperiment", "NULL"),
+    function(object, value){object})
+
+#' @rdname contrasts
+#' @export
+set_contrasts <- function(object, value){
+    contrasts(object) <- value
+    object
+}
+
+
+#==============================================================================
+#' @title Get/set limma results
+#' @description Get/Set limma results
+#' @param object SummarizedExperiment
+#' @param value list
+#' @return limma results (get) or updated object (set)
+#' @export
+setGeneric("limma", function(object)   standardGeneric("limma") )
+
+#' @rdname limma
+setMethod(
+    "limma",
+    signature("SummarizedExperiment"),
+    function(object) S4Vectors::metadata(object)$limma )
+
+#' @rdname limma
+#' @export
+setGeneric("limma<-", function(object, value)  standardGeneric("limma<-") )
+
+#' @rdname limma
+setReplaceMethod(
+    "limma",
+    signature("SummarizedExperiment", "array"),
+    function(object, value){ metadata(object)$limma <- value; object})
+
+#' @rdname limma
+setReplaceMethod(
+    "limma",
+    signature("SummarizedExperiment", "NULL"),
+    function(object, value){object})
+
+
 

@@ -858,10 +858,9 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     'Gene names', 'Positions within proteins', 'Localization prob', 'Reverse',
     'Potential contaminant', 'Contaminant')
 
-.read_proteingroups <- function(
-    file, quantity = guess_maxquant_quantity(file),
+.read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file),
     designfile = default_designfile(file, 'maxquant', quantity),
-    rm_subgroups = character(0), verbose = TRUE
+    rm_subgroups = character(0), invert_subgroups = character(0), verbose=TRUE
 ){
 # Scan
     dt <- fread(file, integer64 = 'numeric', header = FALSE)
@@ -883,13 +882,14 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
                         transpose  = FALSE,       verbose    = verbose)
 # Samples: Parse/Filter
     if (verbose)  message('\tPrepare samples')
-    object %<>% add_maxquant_design(verbose=verbose, designfile=designfile)
+    object %<>% add_maxquant_designvars(verbose=verbose, designfile=designfile)
     object %<>% filter_maxquant_samples(rm_subgroups = rm_subgroups, verbose)
-# Log2
+# Transform
     if (verbose)  message('\tLog2 transform')
     object %<>% zero_to_na(verbose = verbose)
     object %<>% nan_to_na(verbose = verbose)
     object %<>% log2transform(verbose=verbose)
+    object %<>% invert(invert_subgroups)
 # Return
     metadata(object)$quantity <- quantity
     metadata(object)$platform <- 'maxquant'
@@ -901,7 +901,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 .read_phosphosites <- function(
     file, quantity = guess_maxquant_quantity(file),
     designfile = default_designfile(file, 'maxquant', quantity),
-    rm_subgroups = character(0), verbose = TRUE
+    rm_subgroups = character(0), invert_subgroups = character(0), verbose=TRUE
 ){
 # Scan
     dt <- fread(file, integer64 = 'numeric', header = FALSE)
@@ -928,13 +928,14 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     metadata(object)$platform <- 'maxquant'
 # Samples: Parse/Filter
     if (verbose)  message('\tPrepare samples')
-    object %<>% add_maxquant_design(verbose=verbose, designfile=designfile)
+    object %<>% add_maxquant_designvars(verbose=verbose, designfile=designfile)
     object %<>% filter_maxquant_samples(rm_subgroups = rm_subgroups, verbose)
 # Log2 transform
     if (verbose)  message('\tLog2 transform')
     object %<>% zero_to_na(verbose = verbose)
     object %<>% nan_to_na(verbose = verbose)
     object %<>% log2transform(verbose=verbose)
+    object %<>% invert(invert_subgroups)
 # Return
     object
 }
@@ -1034,13 +1035,13 @@ rename_phospho_fvars <- function(object){
 #
 #==============================================================================
 
-add_maxquant_design <- function(
+add_maxquant_designvars <- function(
     object, designfile = default_designfile(object), verbose
 ){
     snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
     object %<>% standardize_maxquant_snames(verbose = verbose)
     object %<>% demultiplex(verbose = verbose)
-    object %<>% add_design(designfile = designfile, verbose = verbose)
+    object %<>% add_designvars(designfile = designfile, verbose = verbose)
     object
 }
 
@@ -1057,13 +1058,9 @@ filter_maxquant_samples <- function(object, rm_subgroups, verbose){
 #
 #==============================================================================
 
-transform_maxquant <- function(
-    object, invert_subgroups, impute, verbose, plot
-){
-# Invert
-    if (verbose) message('\tTransform exprs')
-    object %<>% invert(subgroups = invert_subgroups)
+transform_maxquant <- function(object, impute, verbose, plot){
 # Remove batch effect
+    if (verbose) message('\tTransform exprs')
     if (grepl('Reporter intensity', metadata(object)$quantity)){
         message('\t\tTMT: rm run effect')
         suppressWarnings(exprs(object) %<>% limma::removeBatchEffect(
@@ -1086,15 +1083,15 @@ transform_maxquant <- function(
 
 #' Read proteingroups/phosphosites
 #'
-#' @param proteinfile     proteingroups.txt path
-#' @param phosphofile      phospho(STY)Sites.txt path
-#' @param fastafile             NULL or fastafile (to deconvolute proteingroups
-#' @param quantity              string: "Ratio normalized",
-#'                                      "Ratio", "LFQ intensity",
-#'                                      "Reporter intensity corrected",
-#'                                      "Reporter intensity",
-#'                                      "Intensity labeled",
-#'                                      "Intensity"
+#' @param proteinfile  proteingroups.txt path
+#' @param phosphofile  phospho(STY)Sites.txt path
+#' @param fastafile    NULL or fastafile (to deconvolute proteingroups)
+#' @param quantity     string: "Ratio normalized",
+#'                             "Ratio", "LFQ intensity",
+#'                             "Reporter intensity corrected",
+#'                             "Reporter intensity",
+#'                             "Intensity labeled",
+#'                             "Intensity"
 #' @param contaminants           return contaminants? (defaultFALSE)
 #' @param reverse                return reverse peptides? (default FALSE)
 #' @param min_localization_prob  number (default 0.75): min site loc. prob.
@@ -1102,6 +1099,7 @@ transform_maxquant <- function(
 #' @param rm_subgroups           character vector: subgroups to be removed
 #' @param designfile             path to designfile
 #' @param impute                 TRUE or FALSE (default)
+#' @param formula                formula to create design matrix (using svars)
 #' @param verbose                TRUE (default) or FALSE
 #' @param plot                   TRUE or FALSE
 #' @return SummarizedExperiment
@@ -1123,7 +1121,6 @@ transform_maxquant <- function(
 #' # DIFFERENTIATION
 #'     proteinfile <- download_data('billing19.proteingroups.txt')
 #'     phosphofile <- download_data('billing19.phosphosites.txt')
-#'     read_proteingroups(proteinfile)
 #'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
 #'                        'EM05_EM02', 'EM30_EM15')
 #'     read_proteingroups(proteinfile, rm_subgroups = rm_subgroups)
@@ -1134,8 +1131,9 @@ read_proteingroups <- function(
     designfile = default_designfile(proteinfile, 'maxquant', quantity),
     rm_subgroups = character(0), contaminants = FALSE, reverse = FALSE,
     fastafile = NULL, invert_subgroups = character(0),
-    impute = stri_detect_regex(quantity, "[Ii]ntensity"), verbose = TRUE,
-    plot = TRUE
+    impute = stri_detect_regex(quantity, "[Ii]ntensity"),
+    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    contrasts  = default_contrasts(object), verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(proteinfile)
@@ -1143,19 +1141,17 @@ read_proteingroups <- function(
     if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
     assert_is_a_bool(verbose)
 # Read
-    object <- .read_proteingroups(
-                    proteinfile, quantity, designfile = designfile,
-                    rm_subgroups = rm_subgroups, verbose = verbose)
+    object <- .read_proteingroups(proteinfile, quantity, designfile=designfile,
+        rm_subgroups = rm_subgroups, invert_subgroups = invert_subgroups,
+        verbose = verbose)
 # Prepare
     object %<>% filter_maxquant_features(reverse = reverse,
                     contaminants = contaminants, verbose = verbose)
     object %<>% rename_proteingroup_fvars()
     object %<>% simplify_proteingroups(fastafile)
-    object %<>% transform_maxquant(
-                    invert_subgroups      = invert_subgroups,
-                    impute                = impute,
-                    verbose               = verbose,
-                    plot                  = plot)
+    object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
+# Contrast
+    object %<>% add_limma(contrasts=contrasts, formula=!!enquo(formula))
 # Return
     if (plot)  plot_samples(object)
     object
@@ -1172,6 +1168,7 @@ read_phosphosites <- function(
     rm_subgroups = character(0),
     contaminants = FALSE, reverse = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
+    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     verbose = TRUE, plot = TRUE
 ){
 # Assert
@@ -1179,29 +1176,27 @@ read_phosphosites <- function(
     assert_all_are_existing_files(c(phosphofile, proteinfile))
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
 # Read
-    proteingroups <- .read_proteingroups(file=proteinfile, quantity=quantity,
-                            designfile = designfile,
-                            rm_subgroups = rm_subgroups, verbose = verbose)
-    phosphosites  <- .read_phosphosites(file = phosphofile, quantity = quantity,
-                            designfile = designfile,
-                            rm_subgroups = rm_subgroups, verbose = verbose)
-    phosphosites %<>% filter_maxquant_features(
+    proteingroups <- .read_proteingroups(file=proteinfile, quantity = quantity,
+        designfile = designfile, rm_subgroups = rm_subgroups,
+        invert_subgroups = invert_subgroups, verbose=verbose)
+    object  <- .read_phosphosites(file = phosphofile, quantity = quantity,
+        designfile = designfile, rm_subgroups = rm_subgroups,
+        invert_subgroups = invert_subgroups, verbose = verbose)
+    object %<>% filter_maxquant_features(
                     reverse = reverse, contaminants = contaminants,
                     min_localization_prob = min_localization_prob,
                     verbose = verbose)
-    phosphosites %<>% add_occupancies(proteingroups, verbose)
-
+    object %<>% add_occupancies(proteingroups, verbose)
 # Prepare
-    phosphosites %<>% rename_phospho_fvars()
-    phosphosites %<>% simplify_proteingroups(fastafile)
-    phosphosites %<>% transform_maxquant(
-                    invert_subgroups      = invert_subgroups,
-                    impute                = FALSE,
-                    verbose               = verbose,
-                    plot                  = plot)
+    object %<>% add_design(formula=!!enquo(formula))
+    object %<>% rename_phospho_fvars()
+    object %<>% simplify_proteingroups(fastafile)
+    object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
+# Contrast
+    object %<>% add_limma(contrasts = contrasts, formula = !!enquo(formula))
 # Return
-    if (plot)  plot_samples(phosphosites)
-    phosphosites
+    if (plot)  plot_samples(object)
+    object
 }
 
 
@@ -1264,3 +1259,51 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
     phosphosites
 }
 
+
+
+
+#=========================================================================
+
+#' @title Get/Set occupancies
+#' @description Get / Set occupancies matrix
+#' @param object SummarizedExperiment
+#' @param value occupancy matrix (features x samples)
+#' @return occpuancy matrix (get) or updated object (set)
+#' @examples
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' object <- read_phosphosites(phosphofile, proteinfile)
+#' exprs(object)[1:3, 1:3]
+#' occupancies(object)[1:3, 1:3]
+#' @rdname occupancies
+#' @export
+setGeneric('occupancies', function(object)   standardGeneric("occupancies"))
+
+#' @rdname occupancies
+setMethod(
+    "occupancies",
+    signature("SummarizedExperiment"),
+    function(object)   assays(object)$occupancies)
+
+
+#' @rdname occupancies
+#' @export
+setGeneric(
+    'occupancies<-',
+    function(object, value) standardGeneric("occupancies<-"))
+
+#' @rdname occupancies
+setReplaceMethod(
+    "occupancies",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$occupancies <- value
+        object })
+
+#' @rdname occupancies
+setReplaceMethod(
+    "occupancies",
+    signature("SummarizedExperiment", "numeric"),
+    function(object, value){
+        assays(object)$occupancies[] <- value
+        object })
