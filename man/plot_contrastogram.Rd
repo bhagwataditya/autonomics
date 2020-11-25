@@ -4,21 +4,12 @@
 \alias{plot_contrastogram}
 \title{Plot contrastogram}
 \usage{
-plot_contrastogram(
-  object,
-  directed = TRUE,
-  subgroup_colors = default_color_values2(object),
-  sparse = FALSE
-)
+plot_contrastogram(object, subgroup_colors = default_color_values2(object))
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{directed}{TRUE or FALSE: whether to distinguish up and downregulations}
-
 \item{subgroup_colors}{named color vector (names = subgroups)}
-
-\item{sparse}{TRUE or FALSE}
 }
 \description{
 Plot contrastogram
@@ -27,5 +18,4 @@ Plot contrastogram
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file)
 plot_contrastogram(object)
-plot_contrastogram(object, directed = FALSE)
 }

@@ -114,13 +114,255 @@ create_contrastmat <- function(
 }
 
 
-add_contrastmat <- function(
-    object,
-    contrasts = default_contrasts(object),
-    design    = design(object)
-){
-    contrasts(object) <- create_contrastmat(object, contrasts, design)
-    object
+
+#=============================================================================
+#
+#               matrixify_subgroups
+#                   split_subgroup_levels
+#                       split_subgroup_values
+#                           split_values
+#
+#=============================================================================
+
+split_values <- function(x){
+    sep <- guess_sep(x)
+    dt <- data.table::data.table(x = x)
+    dt[, data.table::tstrsplit(x, sep) ]
+}
+
+split_subgroup_values <- function(object){
+    subgroupvalues <- subgroup_values(object)
+    cbind(subgroup = subgroupvalues, split_values(subgroupvalues))
+}
+
+split_subgroup_levels <- function(object){
+    subgrouplevels <- subgroup_levels(object)
+    cbind(subgroup = subgrouplevels, split_values(subgrouplevels))
+}
+
+#' Matrixify subgroups
+#'
+#' Organize subgroups in 2d matrix
+#'
+#' @param object SummarizedExperiment
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' matrixify_subgroups(object)
+#' @noRd
+matrixify_subgroups <- function(object){
+    dt <- split_subgroup_levels(object)
+    subgroup_matrix <- as.matrix(data.table::dcast(
+        dt, V1 ~ V2, value.var = 'subgroup'), rownames = 'V1')
+    subgroup_matrix %>% extract(rev(order(rownames(.))), order(colnames(.)))
+}
+
+
+
+#=============================================================================
+#
+#               contrast_columns
+#               contrast_rows
+#
+#==============================================================================
+
+
+#' Contrast columns
+#'
+#' Contrast columns within a row
+#'
+#' Contrast timepoints within conc
+#'
+#' @param subgroup_matrix subgroup matrix (nconc x ntime)
+#' @return      contrast matrix: nconc x (ntime-1)
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' subgroup_matrix <- matrixify_subgroups(object)
+#' contrast_columns(subgroup_matrix)
+#' @noRd
+contrast_columns <- function(subgroup_matrix, symbol = ' - '){
+
+    contrastmat <- matrix(  sprintf('%s%s%s',
+                                    subgroup_matrix[, -1],
+                                    symbol,
+                                    subgroup_matrix[, -ncol(subgroup_matrix)]),
+                            nrow = nrow(subgroup_matrix),
+                            ncol = ncol(subgroup_matrix)-1)
+
+    rownames(contrastmat) <- rownames(subgroup_matrix)
+    colnames(contrastmat) <- sprintf('%s - %s',
+                            colnames(subgroup_matrix)[-1],
+                            colnames(subgroup_matrix)[-ncol(subgroup_matrix)])
+    contrastmat
+}
+
+
+#' Contrast rows
+#'
+#' Contrast rows within a column
+#'
+#' Contrast concentrations within timepoint
+#'
+#' @param subgroup_matrix subgroup matrix: nconc x ntime
+#' @return      contrast matrix: (nconc-1) x ntime
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' subgroup_matrix <- matrixify_subgroups(object)
+#' contrast_rows(subgroup_matrix)
+#' @noRd
+contrast_rows <- function(subgroup_matrix, symbol = ' - '){
+
+    contrastmat <- matrix(  sprintf('%s%s%s',
+                                  subgroup_matrix[-nrow(subgroup_matrix), ],
+                                  symbol,
+                                  subgroup_matrix[-1, ]),
+                            nrow = nrow(subgroup_matrix)-1,
+                            ncol = ncol(subgroup_matrix))
+
+    colnames(contrastmat) <- colnames(subgroup_matrix)
+    rownames(contrastmat) <- sprintf('%s - %s',
+                            rownames(subgroup_matrix)[-nrow(subgroup_matrix)],
+                            rownames(subgroup_matrix)[-1])
+    contrastmat
+}
+
+
+#=============================================================================
+#
+#               aggregate_column_contrasts
+#               aggregate_row_contrasts
+#                   aggregate_contrasts
+#
+#==============================================================================
+
+
+#' Aggregate contrasts
+#'
+#' Aggregate row contrasts across columns (or column contrasts across rows)
+#'
+#' @param contrastmat contrast matrix
+#' @param dim 1 (aggregate across rows) or 2 (aggregate across columns)
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' (x <- matrixify_subgroups(object))
+#' aggregate_contrasts(contrast_rows(x), 1)    # some conc across t
+#' aggregate_contrasts(contrast_rows(x), 2)    # concentrations at t
+#' aggregate_contrasts(contrast_columns(x), 2) # some time across conc
+#' aggregate_contrasts(contrast_columns(x), 1) # times at conc
+#' @noRd
+aggregate_contrasts <- function(contrastmat, dim){
+    apply(contrastmat,
+          dim,
+          function(x){
+              paste0(sprintf('(%s)/%d', x, length(x)), collapse = ' + ')})
+}
+
+aggregate_column_contrasts <- function(contrastmat){
+    aggregate_contrasts(contrastmat, 2)
+}
+
+aggregate_row_contrasts <- function(conc_contrastmat){
+    aggregate_contrasts(conc_contrastmat, 1)
+}
+
+
+#=============================================================================
+#
+#               create_diff_contrasts
+#
+#==============================================================================
+
+
+#' Create diff contrasts
+#'
+#' Create vector with difference contrasts
+#'
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' create_diff_contrasts(object)
+#' @noRd
+create_diff_contrasts <- function(object){
+
+    # Subgroup matrix
+    subgroup_matrix <- matrixify_subgroups(object)
+
+    # Contrast matrix
+    column_contrastmat   <- contrast_columns(subgroup_matrix)
+    column_contrastnames <- contrast_columns(subgroup_matrix, '__')
+    row_contrastmat      <- contrast_rows(   subgroup_matrix)
+    row_contrastnames    <- contrast_rows(   subgroup_matrix, '__')
+
+    # Contrast vector
+    column_contrasts <- structure(c(column_contrastmat),
+                                    names = c(column_contrastnames))
+    row_contrasts    <- structure( c(row_contrastmat),
+                                    names = c(row_contrastnames))
+    #aggregated_column_contrasts <- aggregate_column_contrasts(
+    #                                    column_contrastmat)
+    #aggregated_row_contrasts    <- aggregate_row_contrasts(
+    #                                    row_contrastmat)
+
+    # Return
+    c(  column_contrasts,
+        row_contrasts)#,
+        #aggregated_column_contrasts,
+        #aggregated_row_contrasts)
+}
+
+
+#=============================================================================
+#
+#               default_contrasts
+#
+#==============================================================================
+
+
+validify_contrast_names <- function(x){
+   x %>% gsub(' ', '',  ., fixed = TRUE) %>%
+         gsub('-', '_', ., fixed = TRUE) %>%
+         make.names()
+}
+
+
+#' Default contrasts
+#' @param object SummarizedExperiment
+#' @return named character vector: contrast definitions
+#' @examples
+#' # STEM CELL COMPARISON
+#' require(magrittr)
+#' file <- download_data('billing16.proteingroups.txt')
+#' object <- read_proteingroups(file)
+#' default_contrasts(object)
+#'
+#' # GLUTAMINASE
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' default_contrasts(object)
+#' @export
+default_contrasts <- function(object){
+
+    # Extract subgroup levels
+    subgroup_values <- sdata(object)$subgroup
+    if (is.character(subgroup_values))  subgroup_values %<>% factorify()
+
+    # Ratios themselves for ratio data
+    if (contains_ratios(object)){
+        message('\tGenerate contrasts from ratios')
+        contrasts <- levels(subgroup_values) %>%
+                    set_names(validify_contrast_names(.))
+
+    # Difference contrasts for abundance data
+    } else {
+        message('\tGenerate difference contrasts')
+        contrasts <- create_diff_contrasts(object)
+    }
+
+    # Return
+    contrasts
 }
 
 
@@ -172,11 +414,8 @@ add_contrastmat <- function(
 #' object %<>% add_limma(contrasts)
 #' sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
 #' @export
-add_limma <- function(
-    object,
-    contrasts = default_contrasts(object),
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup
-){
+add_limma <- function(object, contrasts = default_contrasts(object),
+    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup){
 # Assert
     design <- create_design(object, formula=!!enquo(formula))
     assert_is_matrix(design)
@@ -192,9 +431,8 @@ add_limma <- function(
     if (has_complete_block_values(object)){
         cmessage("\t\tBlock on svar 'block'")
         block <- my_sdata$block
-        correlation  <- exprs(object) %>%
-                        duplicateCorrelation(design, block = block) %>%
-                        extract2('consensus.correlation')}
+        correlation  <- duplicateCorrelation(exprs(object), design,
+                                     block = block)[['consensus.correlation']]}
 # Fit lm and compute contrasts
     contrastmat <- create_contrastmat(object, contrasts, design)
     fit <- suppressWarnings(lmFit(object = exprs(object), design = design,
@@ -226,277 +464,56 @@ add_limma <- function(
 }
 
 
+#==============================================================================
+#
+#                    limma<-
+#
+#==============================================================================
+
+
+#' @title Get/set limma results
+#' @description Get/Set limma results
+#' @param object SummarizedExperiment
+#' @param value list
+#' @return limma results (get) or updated object (set)
+#' @export
+setGeneric("limma", function(object)   standardGeneric("limma") )
+
+#' @rdname limma
+setMethod(
+    "limma",
+    signature("SummarizedExperiment"),
+    function(object) S4Vectors::metadata(object)$limma )
+
+#' @rdname limma
+#' @export
+setGeneric("limma<-", function(object, value)  standardGeneric("limma<-") )
+
+#' @rdname limma
+setReplaceMethod(
+    "limma",
+    signature("SummarizedExperiment", "array"),
+    function(object, value){ metadata(object)$limma <- value; object})
+
+#' @rdname limma
+setReplaceMethod(
+    "limma",
+    signature("SummarizedExperiment", "NULL"),
+    function(object, value){object})
+
+
+
+
+#=============================================================================
+#
+#             plot_contrastogram
+#                 compute_connections
+#                     default_color_values2
+#                         default_color_values
+#                             default_color_var
+#
 #=============================================================================
 
-#' Matrixify subgroups
-#'
-#' Organize subgroups in 2d matrix
-#'
-#' @param object SummarizedExperiment
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' matrixify_subgroups(object)
-#' @noRd
-matrixify_subgroups <- function(object){
-    dt <- split_subgroup_levels(object)
-    subgroup_matrix <- as.matrix(data.table::dcast(
-        dt, V1 ~ V2, value.var = 'subgroup'), rownames = 'V1')
-    subgroup_matrix
-}
-
-split_values <- function(x){
-    sep <- guess_sep(x)
-    dt <- data.table::data.table(x = x)
-    dt[, data.table::tstrsplit(x, sep) ]
-}
-
-split_subgroup_values <- function(object){
-    subgroupvalues <- subgroup_values(object)
-    cbind(subgroup = subgroupvalues, split_values(subgroupvalues))
-}
-
-split_subgroup_levels <- function(object){
-    subgrouplevels <- subgroup_levels(object)
-    cbind(subgroup = subgrouplevels, split_values(subgrouplevels))
-}
-
-
-#=============================================================================
-
-
-#' Contrast columns
-#'
-#' Contrast columns within a row
-#'
-#' Contrast timepoints within conc
-#'
-#' @param subgroup_matrix subgroup matrix (nconc x ntime)
-#' @return      contrast matrix: nconc x (ntime-1)
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' subgroup_matrix <- matrixify_subgroups(object)
-#' contrast_columns(subgroup_matrix)
-#' @noRd
-contrast_columns <- function(subgroup_matrix, symbol = ' - '){
-
-    contrastmat <- matrix(  sprintf('%s%s%s',
-                                    subgroup_matrix[, -1],
-                                    symbol,
-                                    subgroup_matrix[, -ncol(subgroup_matrix)]),
-                            nrow = nrow(subgroup_matrix),
-                            ncol = ncol(subgroup_matrix)-1)
-
-    rownames(contrastmat) <- rownames(subgroup_matrix)
-    colnames(contrastmat) <- sprintf('%s - %s',
-                            colnames(subgroup_matrix)[-1],
-                            colnames(subgroup_matrix)[-ncol(subgroup_matrix)])
-    contrastmat
-}
-
-
-#' Contrast rows
-#'
-#' Contrast rows within a column
-#'
-#' Contrast concentrations within timepoint
-#'
-#' @param subgroup_matrix subgroup matrix: nconc x ntime
-#' @return      contrast matrix: (nconc-1) x ntime
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' subgroup_matrix <- matrixify_subgroups(object)
-#' contrast_rows(subgroup_matrix)
-#' @noRd
-contrast_rows <- function(subgroup_matrix, symbol = ' - '){
-
-    contrastmat <- matrix(  sprintf('%s%s%s',
-                                  subgroup_matrix[-1, ],
-                                  symbol,
-                                  subgroup_matrix[-nrow(subgroup_matrix), ]),
-                            nrow = nrow(subgroup_matrix)-1,
-                            ncol = ncol(subgroup_matrix))
-
-    colnames(contrastmat) <- colnames(subgroup_matrix)
-    rownames(contrastmat) <- sprintf('%s - %s',
-                            rownames(subgroup_matrix)[-1],
-                            rownames(subgroup_matrix)[-nrow(subgroup_matrix)])
-    contrastmat
-}
-
-
-#==============================================================================
-
-
-#' Aggregate contrasts
-#'
-#' Aggregate row contrasts across columns (or column contrasts across rows)
-#'
-#' @param contrastmat contrast matrix
-#' @param dim 1 (aggregate across rows) or 2 (aggregate across columns)
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' (x <- matrixify_subgroups(object))
-#' aggregate_contrasts(contrast_rows(x), 1)    # some conc across t
-#' aggregate_contrasts(contrast_rows(x), 2)    # concentrations at t
-#' aggregate_contrasts(contrast_columns(x), 2) # some time across conc
-#' aggregate_contrasts(contrast_columns(x), 1) # times at conc
-#' @noRd
-aggregate_contrasts <- function(contrastmat, dim){
-    apply(contrastmat,
-          dim,
-          function(x){
-              paste0(sprintf('(%s)/%d', x, length(x)), collapse = ' + ')})
-}
-
-aggregate_column_contrasts <- function(contrastmat){
-    aggregate_contrasts(contrastmat, 2)
-}
-
-aggregate_row_contrasts <- function(conc_contrastmat){
-    aggregate_contrasts(conc_contrastmat, 1)
-}
-
-
-#==============================================================================
-
-#' Create diff contrasts
-#'
-#' Create vector with difference contrasts
-#'
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' create_diff_contrasts(object)
-#' @noRd
-create_diff_contrasts <- function(object){
-
-    # Subgroup matrix
-    subgroup_matrix <- matrixify_subgroups(object)
-
-    # Contrast matrix
-    column_contrastmat   <- contrast_columns(subgroup_matrix)
-    column_contrastnames <- contrast_columns(subgroup_matrix, '__')
-    row_contrastmat      <- contrast_rows(   subgroup_matrix)
-    row_contrastnames    <- contrast_rows(   subgroup_matrix, '__')
-
-    # Contrast vector
-    column_contrasts <- structure(c(column_contrastmat),
-                                    names = c(column_contrastnames))
-    row_contrasts    <- structure( c(row_contrastmat),
-                                    names = c(row_contrastnames))
-    #aggregated_column_contrasts <- aggregate_column_contrasts(
-    #                                    column_contrastmat)
-    #aggregated_row_contrasts    <- aggregate_row_contrasts(
-    #                                    row_contrastmat)
-
-    # Return
-    c(  column_contrasts,
-        row_contrasts)#,
-        #3aggregated_column_contrasts,
-        #aggregated_row_contrasts)
-}
-
-#==============================================================================
-
-#' Default contrasts
-#' @param object SummarizedExperiment
-#' @return named character vector: contrast definitions
-#' @examples
-#' # STEM CELL COMPARISON
-#' require(magrittr)
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
-#' default_contrasts(object)
-#'
-#' # GLUTAMINASE
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' default_contrasts(object)
-#' @export
-default_contrasts <- function(object){
-
-    # Extract subgroup levels
-    subgroup_values <- sdata(object)$subgroup
-    if (is.character(subgroup_values))  subgroup_values %<>% factorify()
-
-    # Ratios themselves for ratio data
-    if (contains_ratios(object)){
-        message('\tGenerate contrasts from ratios')
-        contrasts <- levels(subgroup_values) %>%
-                    set_names(validify_contrast_names(.))
-
-    # Difference contrasts for abundance data
-    } else {
-        message('\tGenerate difference contrasts')
-        contrasts <- create_diff_contrasts(object)
-    }
-
-    # Return
-    contrasts
-}
-
-
-validify_contrast_names <- function(x){
-   x %>% gsub(' ', '',  ., fixed = TRUE) %>%
-         gsub('-', '_', ., fixed = TRUE) %>%
-         make.names()
-}
-
-# add_limma2 <- function(object, contrasts = create_diff_contrasts(object)){
-#     S4Vectors::metadata(object)$contrasts <- contrasts
-#     object %<>% autonomics.find::add_limma(contrasts = contrasts)
-#     object
-# }
-
-
-#==============================================================================
-
-
-#' Plot contrastogram
-#' @param object SummarizedExperiment
-#' @param directed TRUE or FALSE: whether to distinguish up and downregulations
-#' @param subgroup_colors named color vector (names = subgroups)
-#' @param sparse TRUE or FALSE
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' plot_contrastogram(object)
-#' plot_contrastogram(object, directed = FALSE)
-#' @export
-plot_contrastogram <- function(object, directed = TRUE,
-    subgroup_colors = default_color_values2(object), sparse = FALSE
-){
-    # Initialize
-    V2 <- .N <- N <- NULL
-
-    # Perform limma
-    object %<>% add_limma()
-    contrastogram_matrices <- compute_connections(
-        object, directed = directed, subgroup_colors = subgroup_colors)
-    connection_sizes  <- contrastogram_matrices$connection_sizes
-    connection_colors <- contrastogram_matrices$connection_colors
-
-        widths <- scales::rescale(connection_sizes, c(0.01,30))
-        if (sparse) connection_colors[connection_sizes/nrow(object)<0.50] <- "0"
-
-    # Plot diagram
-    dt <- split_subgroup_levels(object)
-    nrow <- dt[, data.table::uniqueN(V2)]
-    nperrow <- dt[, .N, by = 'V1'][, N]
-    #dir.create('~/importomicscache/contrastogram')
-    #pdf('~/importomicscache/contrastogram/directed_contrastogram.pdf',
-    #width = 9, height = 9)
-    diagram::plotmat(connection_sizes, nperrow, relsize = 1, box.size = 0.05,
-        name = rownames(connection_sizes), box.col = subgroup_colors,
-        box.type = 'square', arr.lwd = widths, # sqrt(connection_sizes)
-        arr.lcol = connection_colors, arr.col = connection_colors)
-    #, arr.lcol = log2(1+diagram_matrix))
-    #dev.off()
-}
 
 #' default color_var
 #' @param object SummarizedExperiment
@@ -555,145 +572,93 @@ default_color_values <- function(
 
 
 default_color_values2 <- function(object){
-    default_color_values(object)[subgroup_levels(object)]
+    default_color_values(object)[c(t(matrixify_subgroups(object)))]
 }
 
 
 compute_connections <- function(
-    object, directed = FALSE, subgroup_colors = default_color_values2(object)
+    object, subgroup_colors = default_color_values2(object)
 ){
 # subgroup matrix, difference contrasts, limma
     pvalues <- limma(object)[, , 'p']
     effects <- limma(object)[, , 'effect']
-    is_significant <-  pvalues < 0.05
-    is_up          <- (pvalues < 0.05) & (effects > 0)
-    is_down        <- (pvalues < 0.05) & (effects < 0)
-
-    n <- apply(if (directed) is_up else is_significant, 2,sum, na.rm = TRUE)
-    ndown <- apply(is_down, 2, sum, na.rm = TRUE)
+    nsignif <- colSums( pvalues < 0.05, na.rm=TRUE)
+    nup     <- colSums((pvalues < 0.05) & (effects > 0), na.rm=TRUE)
+    ndown   <- colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
-    subgrouplevels <- subgroup_levels(object)
-    connection_sizes <- connection_colors <- matrix(
-        0,
-        nrow = length(subgrouplevels),
-        ncol = length(subgrouplevels),
+    subgrouplevels <- c(t(matrixify_subgroups(object)))
+    sizes <- colors <- matrix(0,
+        nrow = length(subgrouplevels), ncol = length(subgrouplevels),
         dimnames = list(subgrouplevels, subgrouplevels))
+    labels <- matrix("0", nrow = nrow(sizes), ncol = ncol(sizes),
+                     dimnames = dimnames(sizes))
 # Add column contrasts
     subgroup_matrix <- matrixify_subgroups(object)
-    for (i in 1:nrow(subgroup_matrix)){
-        for (j in 2:ncol(subgroup_matrix)){
-            from <- subgroup_matrix[i, j-1]
-            to   <- subgroup_matrix[i, j]
-            connection_sizes[to, from]         <- n[[paste0(to, '__', from)]]
-            connection_colors[to, from] <- subgroup_colors[[to]]
-            if (directed){
-                connection_sizes[from, to] <- ndown[[paste0(to, '__', from)]]
-                connection_colors[from, to] <- subgroup_colors[[to]]
-            }
-        }
-    }
+    for (i in nrow(subgroup_matrix):1){
+    for (j in 2:ncol(subgroup_matrix)){
+        from <- subgroup_matrix[i, j-1]
+        to   <- subgroup_matrix[i, j  ]
+        ctr <- paste0(to, '__', from)
+        ns <- nsignif[[ctr]]; nu <- nup[[ctr]]; nd <- ndown[[ctr]]
+        sizes[ to, from] <- ns
+        colors[to, from] <- subgroup_colors[[to]]
+        labels[to, from] <- if (nu>0) paste0(nu,  " %up% phantom(.)") else "phantom(.)"
+        labels[from, to] <- if (nd>0) paste0(nd," %down% phantom(.)") else "phantom(.)"}}
 # Add row contrasts
     for (j in 1:ncol(subgroup_matrix)){
-        for (i in 2:ncol(subgroup_matrix)){
-            from <- subgroup_matrix[i-1, j]
-            to   <- subgroup_matrix[i, j]
-            connection_sizes[to, from]         <- n[[paste0(to, '__', from)]]
-            connection_colors[to, from] <- subgroup_colors[[to]]
-            if (directed){
-                connection_sizes[from, to] <- ndown[[paste0(to, '__', from)]]
-                connection_colors[from, to] <- subgroup_colors[[to]]
-            }
-        }
-    }
+    for (i in nrow(subgroup_matrix):2){
+        from <- subgroup_matrix[i,   j]
+        to   <- subgroup_matrix[i-1, j]
+        ctr  <- paste0(to, '__', from)
+        ns <- nsignif[[ctr]]; nu <- nup[[ctr]]; nd <- ndown[[ctr]]
+        sizes[ to, from] <- ns
+        colors[to, from] <- subgroup_colors[[to]]
+        labels[to, from] <- if (nd>0) paste0(nd," %down% phantom(.)") else "phantom(.)"
+        labels[from, to] <- if (nu>0) paste0(nu,  " %up% phantom(.)") else "phantom(.)"}}
 # Return
-    list(connection_sizes = connection_sizes,
-        connection_colors = connection_colors)
+    #labels[colors==0] <- "0"
+    list(sizes = sizes, colors = colors, labels = labels)
 }
 
 
-
-
-
-#==============================================================================
-#' Get/Set contrasts
+#' Plot contrastogram
 #' @param object SummarizedExperiment
-#' @param value named string vector (see examples)
-#' @return updated SummarizedExperiment
+#' @param subgroup_colors named color vector (names = subgroups)
 #' @examples
-#' require(magrittr)
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
-#' contrasts1 <- c(EM_E = 'EM_E', BM_E = 'BM_E', BM_EM = 'BM_EM')
-#' contrasts(object) <-     contrasts1   # conventional setter
-#' object %>% set_contrasts(contrasts1)  # piping       setter
-#' contrasts(object)                        # getter
-#' @rdname contrasts
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' plot_contrastogram(object)
 #' @export
-setGeneric("contrasts",   function(object)   standardGeneric("contrasts"))
+plot_contrastogram <- function(
+  object, subgroup_colors = default_color_values2(object)
+){
+    # Initialize
+    V2 <- .N <- N <- NULL
 
-#' @rdname contrasts
-#' @export
-setMethod(
-    "contrasts",
-    signature("SummarizedExperiment"),
-    function(object) metadata(object)$contrasts )
+    # Perform limma
+    object %<>% add_limma()
+    contrastogram_matrices <- compute_connections(object, subgroup_colors = subgroup_colors)
+    sizes  <- contrastogram_matrices$sizes
+    colors <- contrastogram_matrices$colors
+    labels <- contrastogram_matrices$labels
+    widths <- scales::rescale(sizes, c(0.01,30))
 
-#' @rdname contrasts
-#' @export
-setGeneric(
-    "contrasts<-",
-    function(object, value)  standardGeneric("contrasts<-") )
-
-#' @rdname contrasts
-setReplaceMethod(
-    "contrasts",
-    signature("SummarizedExperiment", "character"),
-    function(object, value){ metadata(object)$contrasts <- value; object})
-
-#' @rdname contrasts
-setReplaceMethod(
-    "contrasts",
-    signature("SummarizedExperiment", "NULL"),
-    function(object, value){object})
-
-#' @rdname contrasts
-#' @export
-set_contrasts <- function(object, value){
-    contrasts(object) <- value
-    object
+    # Plot diagram
+    dt <- split_subgroup_levels(object)
+    nrow <- dt[, data.table::uniqueN(V2)]
+    nperrow <- dt[, .N, by = 'V1'][, N]
+    #dir.create('~/importomicscache/contrastogram')
+    #pdf('~/importomicscache/contrastogram/directed_contrastogram.pdf',
+    #width = 9, height = 9)
+    labels %<>% as.data.frame()
+    diagram::plotmat(labels, nperrow, relsize = 1, box.size = 0.05,
+    #diagram::plotmat(sizes, nperrow, relsize = 1, box.size = 0.05,
+        name = rownames(sizes), box.col = subgroup_colors,
+        box.type = 'square', arr.lwd = widths, shadow.size =0, # sqrt(sizes)
+        arr.lcol = colors, arr.col = colors)
+    #, arr.lcol = log2(1+diagram_matrix))
+    #dev.off()
 }
-
-
-#==============================================================================
-#' @title Get/set limma results
-#' @description Get/Set limma results
-#' @param object SummarizedExperiment
-#' @param value list
-#' @return limma results (get) or updated object (set)
-#' @export
-setGeneric("limma", function(object)   standardGeneric("limma") )
-
-#' @rdname limma
-setMethod(
-    "limma",
-    signature("SummarizedExperiment"),
-    function(object) S4Vectors::metadata(object)$limma )
-
-#' @rdname limma
-#' @export
-setGeneric("limma<-", function(object, value)  standardGeneric("limma<-") )
-
-#' @rdname limma
-setReplaceMethod(
-    "limma",
-    signature("SummarizedExperiment", "array"),
-    function(object, value){ metadata(object)$limma <- value; object})
-
-#' @rdname limma
-setReplaceMethod(
-    "limma",
-    signature("SummarizedExperiment", "NULL"),
-    function(object, value){object})
 
 
 

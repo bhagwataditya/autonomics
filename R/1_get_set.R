@@ -320,7 +320,7 @@ setReplaceMethod(
 slevels <- function(object, svar){
     object %>%
     svalues(svar) %>%
-    (function(x) if (is.factor(x)) levels(x) else unique(x))
+    (function(x) if (is.factor(x)) levels(x) else sort(unique(x)))
 }
 
 #' @rdname slevels
