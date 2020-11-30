@@ -221,6 +221,10 @@ sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 #' @export
 lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 # Assert
+    if (!requireNamespace('MASS', quietly = TRUE)){
+        message("BiocManager::install('MASS'). Then re-run.")
+        return(object)
+    }
     assert_is_valid_sumexp(object)
     nsubgroup <- length(subgroup_levels(object))
     if (is.infinite(ndim))  ndim <- nsubgroup - 1

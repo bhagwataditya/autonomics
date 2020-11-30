@@ -38,7 +38,6 @@
 #' @importFrom magrittr    divide_by   extract   extract2   is_in
 #' @importFrom magrittr    multiply_by
 #' @importFrom magrittr    set_colnames   set_names   set_rownames
-#' @importFrom MASS        fitdistr
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans
 #' @importFrom matrixStats   rowAlls   rowSds
 #' @importFrom methods       as

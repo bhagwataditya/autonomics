@@ -117,9 +117,13 @@ transform_to_fitting_normal <- function(x){
 }
 
 estimate_mean_sd <- function(x){
+    if (!requireNamespace('MASS', quietly = TRUE)){
+        message("BiocManager::install('MASS'). Then re-run.")
+        return(object)
+    }
     . <- NULL
     x %<>% extract(!is.na(.) & !is.infinite(.))
-    fitdistr(x, 'normal')[['estimate']]
+    MASS::fitdistr(x, 'normal')[['estimate']]
 }
 
 
