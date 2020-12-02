@@ -345,6 +345,7 @@ subgroup_levels <- function(object){
 #' @rdname svalues
 #' @export
 svalues <- function(object, svar){
+    if (is.null(svar)) return(NULL)
     sdata(object)[[svar]]
 }
 
