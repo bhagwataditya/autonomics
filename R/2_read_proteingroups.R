@@ -1169,7 +1169,7 @@ read_phosphosites <- function(
     contaminants = FALSE, reverse = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    verbose = TRUE, plot = TRUE
+    contrasts  = default_contrasts(object), verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
@@ -1188,7 +1188,6 @@ read_phosphosites <- function(
                     verbose = verbose)
     object %<>% add_occupancies(proteingroups, verbose)
 # Prepare
-    object %<>% add_design(formula=!!enquo(formula))
     object %<>% rename_phospho_fvars()
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)

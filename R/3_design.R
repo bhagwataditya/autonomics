@@ -99,7 +99,7 @@ guess_sep.character <- function(
 # No separator detected - return NULL
     if (all(sep_freqs==1)){
         if (verbose) message(x[1],': no (consistent) separator. Returning NULL')
-        return(NULL)   # no separator detected
+        return('NOSEP')   # no separator detected
     }
 # Find best separator
     best_sep <- sep_freqs %>%

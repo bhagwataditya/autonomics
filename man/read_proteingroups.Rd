@@ -33,6 +33,7 @@ read_phosphosites(
   fastafile = NULL,
   invert_subgroups = character(0),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
+  contrasts = default_contrasts(object),
   verbose = TRUE,
   plot = TRUE
 )

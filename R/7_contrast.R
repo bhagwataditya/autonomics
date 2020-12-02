@@ -140,22 +140,65 @@ split_subgroup_levels <- function(object){
     cbind(subgroup = subgrouplevels, split_values(subgrouplevels))
 }
 
+
+#' Arrayify (subgroup) levels
+#'
+#' Arrange (subgroup) levels in array
+#'
+#' @param x  subgroup levels (character vector)
+#' @return array
+#' @examples
+#' array_levels(x = c('wt',             'kd'))
+#' array_levels(x = c('wt.t0',     'wt.t1',     'kd.t0',     'kd.t1'))
+#' array_levels(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
+#'                    'wt.t0.uM5', 'wt.t1.uM5', 'kd.t0.uM5', 'kd.t1.uM5'))
+#' @noRd
+arrayify_subgroups <- function(x){
+    x %<>% sort()
+    sep      <- guess_sep(x)
+    dt <- data.table(subgroup = x)
+    components <- dt[, tstrsplit(subgroup, sep, fixed=TRUE)]
+    dt %<>% cbind(components)
+    data.table::setorderv(dt, rev(names(components)))
+    levels  <- dt[, -1] %>% lapply(unique)
+    nlevels <- levels %>% vapply(length, integer(1))
+    array(dt$subgroup, dim = nlevels, dimnames = levels)
+}
+
 #' Matrixify subgroups
 #'
-#' Organize subgroups in 2d matrix
+#' Arrange (subgroup) levels in matrix
 #'
-#' @param object SummarizedExperiment
+#' @param x  subgroup levels (character vector)
+#' @return matrix
 #' @examples
+#' matrixify_subgroups(x = c('wt', 'kd'))
+#' matrixify_subgroups(x = c('wt.t0', 'wt.t1', 'kd.t0', 'kd.t1'))
+#' matrixify_subgroups(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
+#'                    'wt.t0.uM5', 'wt.t1.uM5', 'kd.t0.uM5', 'kd.t1.uM5'))
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' matrixify_subgroups(object)
+#' matrixify_subgroups(x = subgroup_levels(read_metabolon(file, plot=FALSE)))
 #' @noRd
-matrixify_subgroups <- function(object){
-    dt <- split_subgroup_levels(object)
-    subgroup_matrix <- as.matrix(data.table::dcast(
-        dt, V1 ~ V2, value.var = 'subgroup'), rownames = 'V1')
-    subgroup_matrix %>% extract(rev(order(rownames(.))), order(colnames(.)))
+matrixify_subgroups <- function(x){
+    subgroup_array <- arrayify_subgroups(x)
+    if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
+                      byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
+    otherdims <- names(dim(subgroup_array)) %>% setdiff('V1')
+    ncol1   <- Reduce('*', dim(subgroup_array)[otherdims])
+    colnames1 <- dimnames(subgroup_array)[otherdims] %>%
+                expand.grid()                        %>%
+                apply(1, paste0, collapse='.')
+    subgroup_matrix <- matrix(subgroup_array,
+           nrow = nrow(subgroup_array), ncol = ncol1,
+           dimnames=list(rownames(subgroup_array), colnames1))
+    subgroup_matrix %>% extract(nrow(.):1, )
+    #dt <- split_subgroup_levels(object)
+    #subgroup_matrix <- as.matrix(data.table::dcast(
+    #    dt, V1 ~ V2, value.var = 'subgroup'), rownames = 'V1')
+    #subgroup_matrix %>% extract(rev(order(rownames(.))), order(colnames(.)))
 }
+
+
 
 
 
@@ -178,7 +221,7 @@ matrixify_subgroups <- function(object){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' subgroup_matrix <- matrixify_subgroups(object)
+#' subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
 #' contrast_columns(subgroup_matrix)
 #' @noRd
 contrast_columns <- function(subgroup_matrix, symbol = ' - '){
@@ -209,7 +252,7 @@ contrast_columns <- function(subgroup_matrix, symbol = ' - '){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' subgroup_matrix <- matrixify_subgroups(object)
+#' subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
 #' contrast_rows(subgroup_matrix)
 #' @noRd
 contrast_rows <- function(subgroup_matrix, symbol = ' - '){
@@ -247,7 +290,7 @@ contrast_rows <- function(subgroup_matrix, symbol = ' - '){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' (x <- matrixify_subgroups(object))
+#' (x <- matrixify_subgroups(subgroup_levels(object)))
 #' aggregate_contrasts(contrast_rows(x), 1)    # some conc across t
 #' aggregate_contrasts(contrast_rows(x), 2)    # concentrations at t
 #' aggregate_contrasts(contrast_columns(x), 2) # some time across conc
@@ -288,7 +331,7 @@ aggregate_row_contrasts <- function(conc_contrastmat){
 create_diff_contrasts <- function(object){
 
     # Subgroup matrix
-    subgroup_matrix <- matrixify_subgroups(object)
+    subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
 
     # Contrast matrix
     column_contrastmat   <- contrast_columns(subgroup_matrix)
@@ -572,7 +615,8 @@ default_color_values <- function(
 
 
 default_color_values2 <- function(object){
-    default_color_values(object)[c(t(matrixify_subgroups(object)))]
+    default_color_values(object)[
+        c(t(matrixify_subgroups(subgroup_levels(object))))]
 }
 
 
@@ -586,14 +630,14 @@ compute_connections <- function(
     nup     <- colSums((pvalues < 0.05) & (effects > 0), na.rm=TRUE)
     ndown   <- colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
-    subgrouplevels <- c(t(matrixify_subgroups(object)))
+    subgrouplevels <- c(t(matrixify_subgroups(subgroup_levels(object))))
     sizes <- colors <- matrix(0,
         nrow = length(subgrouplevels), ncol = length(subgrouplevels),
         dimnames = list(subgrouplevels, subgrouplevels))
     labels <- matrix("0", nrow = nrow(sizes), ncol = ncol(sizes),
                      dimnames = dimnames(sizes))
 # Add column contrasts
-    subgroup_matrix <- matrixify_subgroups(object)
+    subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
     for (i in nrow(subgroup_matrix):1){
     for (j in 2:ncol(subgroup_matrix)){
         from <- subgroup_matrix[i, j-1]

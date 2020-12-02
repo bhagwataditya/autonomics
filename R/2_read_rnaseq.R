@@ -269,16 +269,17 @@ compute_precision_weights <- function(
 ){
 # Assert & message
     assert_is_not_null(counts(object))
+    formula <- enquo(formula)
 # Estimate precision weights
     has_block <- has_complete_block_values(object)
     weights   <- compute_precision_weights_once(
-                    object, design = design, plot = !has_block)
+                    object, formula = !!formula, plot = !has_block)
 # Update precision weights using block correlation
     if (has_block){
         log2cpm <- log2(counts_to_cpm(counts(object)))
         correlation <-  duplicateCorrelation(
-                            log2cpm, design = importomics::design(object), block = object$block,
-                            weights = weights)
+                            log2cpm, design = create_design(object, !!formula),
+                            block = object$block, weights = weights)
         correlation %<>% extract2('consensus')
         weights <- compute_precision_weights_once(
                     object, formula = !!enquo(formula), block = object$block,
