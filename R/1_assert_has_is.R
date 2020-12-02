@@ -20,7 +20,7 @@ has_complete_svalues <- function(object, svar){
     if (!var_present) return(FALSE)
 
     # svalues missing
-    values_present <-
+    values_present <- any(is_empty_character(svalues(object, svar)))
     if (values_present) return(FALSE)
 
     # svar and svalues both present
