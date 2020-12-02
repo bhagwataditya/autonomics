@@ -79,7 +79,7 @@ filter_feature_type <- function(object, feature_type, verbose){
     if ('Type'       %in% fvars(object)){ # feature type
         Type <- NULL
         message('\t\t========================================================')
-        cmessage_df('\t\t%s', table(`Type` = (object)$Type))
+        cmessage_df('\t\t%s', table(`Type` = fdata(object)$Type))
         object %<>% filter_features(
             Type %in% !!enquo(feature_type), verbose = TRUE)
     }
@@ -172,12 +172,13 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     subgroup_var = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
-    rm_na_svars = TRUE, rm_single_value_svars = TRUE, log2 = TRUE,
+    rm_na_svars = FALSE, rm_single_value_svars = FALSE, log2 = TRUE,
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrasts = default_contrasts(object), verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_somascan(file, fid_var=fid_var, sid_var = sid_var)
+    object$sample_id %<>% make.unique()
 # Prepare
     assert_is_subset(fname_var, fvars(object))
     object %<>% add_designvars(subgroup_var = subgroup_var, verbose = verbose)

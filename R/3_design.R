@@ -217,16 +217,12 @@ guess_replicate_values <- function(x, sep = guess_sep(x), verbose=TRUE){
 #' create_replicate_values(object, subgroup_var=NULL, verbose=TRUE)
 #' @noRd
 create_subgroup_values <- function(object, subgroup_var, verbose){
-
-    if (is.null(subgroup_var)){
-        guess_subgroup_values(object$sample_id, verbose=verbose)
-
-    } else if (all(is.na(slevels(object, subgroup_var)))){
-        guess_subgroup_values(object$sample_id, verbose=verbose)
-
-    } else {
-        svalues(object, subgroup_var)
-    }
+    values <- svalues(object, subgroup_var)
+    if (is.null(values) | all(is.na(values)) | all(values=="")) values <-
+         guess_subgroup_values(object$sample_id, verbose=verbose)
+    if (all(is.na(values)) | all(values=="")) values[] <-
+        make.names(basename(tools::file_path_sans_ext(metadata(object)$file)))
+    values
 }
 
 
@@ -421,6 +417,8 @@ are_factor <- function(df) vapply(df, is.factor, logical(1))
 #' object <- read_somascan(file, plot=FALSE)
 #' create_design(object)
 #' create_design(object, ~ 0 + subgroup + Sex + T2D + age + bmi)
+#' object$subgroup <- 'atkin18'
+#' create_design(object)
 #' @export
 create_design <- function(
     object,

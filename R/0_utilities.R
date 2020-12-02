@@ -45,9 +45,8 @@ cmessage_df <- function(format_string, x){
 #' @examples
 #' x <- c('A', 'B', 'C', 'A', 'D')
 #' uniquify(x, 'make.unique')
-#' uniquify(x, 'make.unique.spaces')
 #' @noRd
-uniquify <- function(x, method = 'make.unique.spaces', verbose = TRUE){
+uniquify <- function(x, method = 'make.unique', verbose = TRUE){
     idx <- cduplicated(x)
     if (any(idx)){
         uniquefun <- get(method)

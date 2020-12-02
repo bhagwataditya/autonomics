@@ -332,6 +332,8 @@ create_diff_contrasts <- function(object){
 
     # Subgroup matrix
     subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
+    if (assertive::is_scalar(subgroup_matrix)) return(subgroup_matrix %>%
+                                                    set_names(subgroup_matrix))
 
     # Contrast matrix
     column_contrastmat   <- contrast_columns(subgroup_matrix)
