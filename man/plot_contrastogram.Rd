@@ -4,7 +4,11 @@
 \alias{plot_contrastogram}
 \title{Plot contrastogram}
 \usage{
-plot_contrastogram(object, subgroup_colors = default_color_values2(object))
+plot_contrastogram(
+  object,
+  contrasts = default_contrasts(object),
+  subgroup_colors = default_color_values2(object)
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -17,5 +21,10 @@ Plot contrastogram
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file)
+plot_contrastogram(object)
+
+file <- download_data('billing16.proteingroups.txt')
+invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
+object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
 plot_contrastogram(object)
 }

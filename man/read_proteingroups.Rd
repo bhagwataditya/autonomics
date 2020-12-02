@@ -81,9 +81,9 @@ Read proteingroups/phosphosites
 \examples{
 # STEM CELLS
     # NORMALIZED RATIOS
-    proteinfile <- download_data('billing16.proteingroups.txt')
-    (object <- read_proteingroups(proteinfile,
-                                invert_subgroups = c('E_EM','E_BM','BM_EM')))
+    file <- download_data('billing16.proteingroups.txt')
+    read_proteingroups(file, invert_subgroups = c('E_EM','E_BM','BM_EM'))
+
     # INTENSITIES
     (object <- read_proteingroups(proteinfile,
                                       quantity = 'Intensity labeled'))

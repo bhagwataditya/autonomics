@@ -155,9 +155,8 @@ split_subgroup_levels <- function(object){
 #' @noRd
 arrayify_subgroups <- function(x){
     x %<>% sort()
-    sep      <- guess_sep(x)
     dt <- data.table(subgroup = x)
-    components <- dt[, tstrsplit(subgroup, sep, fixed=TRUE)]
+    components <- dt[, tstrsplit(subgroup, guess_sep(x), fixed=TRUE)]
     dt %<>% cbind(components)
     data.table::setorderv(dt, rev(names(components)))
     levels  <- dt[, -1] %>% lapply(unique)
@@ -274,7 +273,7 @@ contrast_rows <- function(subgroup_matrix, symbol = ' - '){
 
 #=============================================================================
 #
-#               aggregate_column_contrasts
+#               aggregate_col_contrasts
 #               aggregate_row_contrasts
 #                   aggregate_contrasts
 #
@@ -303,7 +302,7 @@ aggregate_contrasts <- function(contrastmat, dim){
               paste0(sprintf('(%s)/%d', x, length(x)), collapse = ' + ')})
 }
 
-aggregate_column_contrasts <- function(contrastmat){
+aggregate_col_contrasts <- function(contrastmat){
     aggregate_contrasts(contrastmat, 2)
 }
 
@@ -329,33 +328,25 @@ aggregate_row_contrasts <- function(conc_contrastmat){
 #' create_diff_contrasts(object)
 #' @noRd
 create_diff_contrasts <- function(object){
-
-    # Subgroup matrix
+# Subgroup matrix
     subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
-    if (assertive::is_scalar(subgroup_matrix)) return(subgroup_matrix %>%
-                                                    set_names(subgroup_matrix))
-
-    # Contrast matrix
-    column_contrastmat   <- contrast_columns(subgroup_matrix)
-    column_contrastnames <- contrast_columns(subgroup_matrix, '__')
-    row_contrastmat      <- contrast_rows(   subgroup_matrix)
-    row_contrastnames    <- contrast_rows(   subgroup_matrix, '__')
-
-    # Contrast vector
-    column_contrasts <- structure(c(column_contrastmat),
-                                    names = c(column_contrastnames))
-    row_contrasts    <- structure( c(row_contrastmat),
-                                    names = c(row_contrastnames))
-    #aggregated_column_contrasts <- aggregate_column_contrasts(
-    #                                    column_contrastmat)
-    #aggregated_row_contrasts    <- aggregate_row_contrasts(
-    #                                    row_contrastmat)
-
-    # Return
-    c(  column_contrasts,
-        row_contrasts)#,
-        #aggregated_column_contrasts,
-        #aggregated_row_contrasts)
+# Row contrasts
+    row_contrmat   <- contrast_rows(subgroup_matrix)
+    row_contrnames <- contrast_rows(subgroup_matrix, '__')
+    contrasts  <- structure(c(row_contrmat), names = c(row_contrnames))
+  # Column contrasts
+    if (ncol(subgroup_matrix)>1){
+        col_contrmat   <- contrast_columns(subgroup_matrix)
+        col_contrnames <- contrast_columns(subgroup_matrix, '__')
+        contrasts %<>% c(structure(c(col_contrmat), names = c(col_contrnames)))
+    }
+# Aggregated contrasts
+    # aggregated_col_contrasts <- aggregate_col_contrasts(col_contrmat)
+    # aggregated_row_contrasts <- aggregate_row_contrasts(row_contrmat)
+    # contrasts %<>% c(aggregated_col_contrasts)
+    # contrasts %<>% c(aggregated_row_contrasts))
+# Return
+    contrasts
 }
 
 
@@ -380,7 +371,8 @@ validify_contrast_names <- function(x){
 #' # STEM CELL COMPARISON
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' invert_subgroups <- c('EM_BM', 'EM_E', 'E_BM')
+#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
 #' default_contrasts(object)
 #'
 #' # GLUTAMINASE
@@ -390,15 +382,11 @@ validify_contrast_names <- function(x){
 #' @export
 default_contrasts <- function(object){
 
-    # Extract subgroup levels
-    subgroup_values <- sdata(object)$subgroup
-    if (is.character(subgroup_values))  subgroup_values %<>% factorify()
-
     # Ratios themselves for ratio data
     if (contains_ratios(object)){
         message('\tGenerate contrasts from ratios')
-        contrasts <- levels(subgroup_values) %>%
-                    set_names(validify_contrast_names(.))
+        return(
+            subgroup_levels(object) %>% set_names(validify_contrast_names(.)))
 
     # Difference contrasts for abundance data
     } else {
@@ -623,7 +611,7 @@ default_color_values2 <- function(object){
 
 
 compute_connections <- function(
-    object, subgroup_colors = default_color_values2(object)
+    object, contrasts, subgroup_colors = default_color_values2(object)
 ){
 # subgroup matrix, difference contrasts, limma
     pvalues <- limma(object)[, , 'p']
@@ -674,16 +662,22 @@ compute_connections <- function(
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' plot_contrastogram(object)
+#'
+#' file <- download_data('billing16.proteingroups.txt')
+#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
+#' plot_contrastogram(object)
 #' @export
 plot_contrastogram <- function(
-  object, subgroup_colors = default_color_values2(object)
+  object, contrasts = default_contrasts(object),
+  subgroup_colors = default_color_values2(object)
 ){
     # Initialize
     V2 <- .N <- N <- NULL
 
     # Perform limma
     object %<>% add_limma()
-    contrastogram_matrices <- compute_connections(object, subgroup_colors = subgroup_colors)
+    contrastogram_matrices <- compute_connections(object, contrasts, subgroup_colors = subgroup_colors)
     sizes  <- contrastogram_matrices$sizes
     colors <- contrastogram_matrices$colors
     labels <- contrastogram_matrices$labels

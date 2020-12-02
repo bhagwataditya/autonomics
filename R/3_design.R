@@ -54,11 +54,11 @@ is_max <- function(x) cequals(x, max(x, na.rm = TRUE))
 has_identical_values <- function(x) length(unique(x))==1
 
 #' Guess separator
-#' @param x                   character vector or SummarizedExperiment
-#' @param var                 svar or fvar
-#' @param possible_separators character vector: possible separators to look for
-#' @param verbose             TRUE or FALSE
-#' @param ...                 used for proper S3 method dispatch
+#' @param x          character vector or SummarizedExperiment
+#' @param var        svar or fvar
+#' @param separators character vector: possible separators to look for
+#' @param verbose    TRUE or FALSE
+#' @param ...        used for proper S3 method dispatch
 #' @return separator (string) or NULL (if no separator could be identified)
 #' @examples
 #' # charactervector
@@ -88,11 +88,11 @@ guess_sep <- function (x, ...) {
 #' @rdname guess_sep
 #' @export
 guess_sep.character <- function(
-    x, possible_separators = c('.', ' ', '_'), verbose = FALSE, ...
+    x, separators = c('.', ' ', '_'), verbose = FALSE, ...
 ){
 # Initialize
     . <- NULL
-    sep_freqs <-Map(function(y) stri_split_fixed(x, y), possible_separators) %>%
+    sep_freqs <-Map(function(y) stri_split_fixed(x, y), separators) %>%
                 lapply(function(y) vapply(y, length, integer(1)))            %>%
                 extract( vapply(., has_identical_values, logical(1)))        %>%
                 vapply(unique, integer(1))
@@ -125,13 +125,12 @@ guess_sep.factor <- function(x, ...)  guess_sep.character(levels(x))
 #' @rdname guess_sep
 #' @export
 guess_sep.SummarizedExperiment <- function(
-    x, var = 'sample_id', possible_separators =  c('.', '_', ' '),
+    x, var = 'sample_id', separators =  c('.', '_', ' '),
     verbose = FALSE, ...
 ){
     assert_is_subset(var, c(svars(x), fvars(x)))
     (if (var %in% svars(x)) slevels(x, var) else flevels(x, var)) %>%
-    guess_sep(possible_separators = possible_separators,
-                verbose             = verbose)
+    guess_sep(separators = separators, verbose = verbose)
 }
 
 

@@ -19,7 +19,8 @@ Default contrasts
 # STEM CELL COMPARISON
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+invert_subgroups <- c('EM_BM', 'EM_E', 'E_BM')
+object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
 default_contrasts(object)
 
 # GLUTAMINASE

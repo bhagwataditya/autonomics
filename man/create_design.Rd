@@ -34,4 +34,6 @@ file <- download_data('atkin18.somascan.adat')
 object <- read_somascan(file, plot=FALSE)
 create_design(object)
 create_design(object, ~ 0 + subgroup + Sex + T2D + age + bmi)
+object$subgroup <- 'atkin18'
+create_design(object)
 }

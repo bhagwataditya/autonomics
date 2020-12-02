@@ -21,7 +21,7 @@
 #' @importFrom assertive   assert_is_of_length          assert_is_subset
 #' @importFrom assertive   false                        get_name_in_parent
 #' @importFrom assertive   has_names                    has_no_duplicates
-#' @importFrom assertive   is_empty_character           is_existing_file
+#' @importFrom assertive   is_empty_character   is_scalar   is_existing_file
 #' @importFrom colorspace  sequential_hcl
 #' @importFrom data.table  data.table   fread   fwrite   setkeyv   set
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
