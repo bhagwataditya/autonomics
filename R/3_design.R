@@ -143,21 +143,27 @@ guess_sep.SummarizedExperiment <- function(
 #
 #=============================================================================
 
+#' @export
+#' @rdname split_extract
 nfactors <- function(x, sep = guess_sep(x)){
     length(unlist(stri_split_fixed(x[1], sep)))
 }
 
+#' stri_split and extract
+#' @param x string
+#' @param i integer
+#' @param sep string
+#' @return character
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- .read_metabolon(file)
+#' object <- read_metabolon(file, plot=FALSE)
 #' x <- object$sample_id[1:5]
 #' nfactors(x)
-#' x
 #' split_extract(x, 1:2)
 #' split_extract(x, seq_len(nfactors(x)-1))
 #' split_extract(x, nfactors(x))
-#' @noRd
+#' @export
 split_extract <- function(x, i, sep=guess_sep(x)){
     factors <- stri_split_fixed(x, sep)
     vapply(factors, function(y) paste0(y[i], collapse=sep), character(1))
