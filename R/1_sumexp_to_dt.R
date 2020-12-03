@@ -137,3 +137,22 @@ dt2sumexp  <- function(
         rowData = fdata1,
         colData = sdata1)
 }
+
+
+#' Convert matrix into SummarizedExperiment
+#' @param x matrix
+#' @return SummarizedExperiment
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' x <- exprs(read_metabolon(file, plot=FALSE))
+#' object <- matrix2sumexp(x)
+#' biplot(object, nloadings=0)
+#' @export
+matrix2sumexp <- function(x){
+    object <- SummarizedExperiment(list(exprs = x))
+    fdata(object)$feature_id <- rownames(object)
+    fdata(object)$feature_name <- rownames(object)
+    sdata(object)$sample_id    <- colnames(object)
+    object %<>% add_designvars(designfile = NULL)
+    object
+}
