@@ -184,6 +184,29 @@ filter_exprs_replicated_in_some_subgroup <- function(
     object
 }
 
+#' Filter for replicated features
+#' @param object     SummarizedExperiment
+#' @param comparator string
+#' @param lod        number: limit of detection
+#' @param n          number: number of replicates above lod
+#' @return  SummarizedExperiment
+#' @export
+filter_replicated  <- function(object, comparator = `>`, lod=0, n=2){
+    assert_is_all_of(object, "SummarizedExperiment")
+    assertive::assert_is_function(comparator)
+    assert_is_a_number(lod)
+    assert_is_a_number(n)
+
+    nreplicates <- rowSums(comparator(exprs(object), lod), na.rm=TRUE)
+    idx <- nreplicates >= n
+    cmessage('\tRetain %d/%d features replicated in at least %d samples',
+                    sum(idx), length(idx), n)
+    object[idx, ]
+}
+
+
+
+
 #=======================
 # FILTER SAMPLES
 #=======================
