@@ -2,35 +2,23 @@
 % Please edit documentation in R/4_plot_samples.R
 \name{plot_sample_densities}
 \alias{plot_sample_densities}
-\alias{plot_sample_violins}
-\alias{plot_sample_boxplots}
-\title{Plot sample densities/boxplots/violins}
+\alias{plot_feature_densities}
+\title{Plot sample/feature densities}
 \usage{
 plot_sample_densities(
   object,
   fill = subgroup,
   color = NULL,
   group = sample_id,
-  ...,
   fixed = list(alpha = 0.5, na.rm = TRUE)
 )
 
-plot_sample_violins(
+plot_feature_densities(
   object,
-  fill = subgroup,
+  fill = feature_id,
   color = NULL,
-  ...,
-  highlight = NULL,
-  fixed = list(na.rm = TRUE)
-)
-
-plot_sample_boxplots(
-  object,
-  fill = subgroup,
-  color = NULL,
-  ...,
-  highlight = NULL,
-  fixed = list(na.rm = TRUE)
+  group = feature_id,
+  fixed = list(alpha = 0.5, na.rm = TRUE)
 )
 }
 \arguments{
@@ -42,33 +30,24 @@ plot_sample_boxplots(
 
 \item{group}{svar mapped to group}
 
-\item{...}{mapped aesthetics}
-
 \item{fixed}{fixed aesthetics}
-
-\item{highlight}{fvar expressing which feature should be highlighted}
 }
 \value{
 ggplot object
 }
 \description{
-Plot sample densities/boxplots/violins
+Plot sample/feature densities
 }
 \examples{
-require(magrittr)
-file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
-object \%<>\% extract(, order(.$subgroup))
-plot_sample_densities(object)
-plot_sample_boxplots(object)
-plot_sample_violins(object)
-
-object \%<>\% extract(, 1:10)
-plot_sample_densities(object)
-plot_sample_boxplots(object)
-plot_sample_violins(object)
-
-fdata(object) \%<>\% cbind(control=.$feature_name \%in\% c('biotin','phosphate'))
-plot_sample_boxplots(object, highlight = control)
-plot_sample_violins(object,  highlight = control)
+# Read data
+    require(magrittr)
+    file <- download_data('halama18.metabolon.xlsx')
+    object <- read_metabolon(file, plot = FALSE)
+    object \%<>\% extract(, order(.$subgroup))
+# Plot sample distributions
+    plot_feature_densities(object)
+    plot_sample_densities(object)
+}
+\seealso{
+\code{\link{plot_sample_violins}}, \code{\link{plot_sample_boxplots}}
 }

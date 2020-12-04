@@ -9,14 +9,14 @@
 sumexp_to_wide_dt(
   object,
   fid = "feature_id",
-  fvars = character(0),
+  fvars = "feature_name",
   assay = "exprs"
 )
 
 sumexp_to_long_dt(
   object,
   fid = "feature_id",
-  fvars = character(0),
+  fvars = "feature_name",
   sid = "sample_id",
   svars = if ("subgroup" \%in\% importomics::svars(object)) {     "subgroup" } else {  
       character(0) },

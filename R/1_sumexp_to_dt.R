@@ -3,7 +3,7 @@
 sumexp_to_wide_dt <- function(
     object,
     fid   = 'feature_id',
-    fvars = character(0),
+    fvars = 'feature_name',
     assay = 'exprs'
 ){
 
@@ -56,9 +56,9 @@ sumexp_to_wide_dt <- function(
 #' @export
 sumexp_to_long_dt <- function(
     object,
-    fid = 'feature_id',
-    fvars = character(0),
-    sid = 'sample_id',
+    fid   = 'feature_id',
+    fvars = 'feature_name',
+    sid   = 'sample_id',
     svars = if ('subgroup' %in% importomics::svars(object)){ 'subgroup'
             } else {                                         character(0) },
     assay = 'exprs'

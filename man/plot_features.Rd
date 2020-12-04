@@ -18,7 +18,14 @@ plot_features(
     axis.ticks.x = element_blank())
 )
 
-plot_feature_boxplots(...)
+plot_feature_boxplots(
+  object,
+  x = feature_id,
+  fill = feature_id,
+  color = NULL,
+  highlight = NULL,
+  fixed = list(na.rm = TRUE)
+)
 
 plot_feature_profiles(...)
 }
