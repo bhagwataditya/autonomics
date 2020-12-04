@@ -4,6 +4,8 @@
 #
 #==============================================================================
 add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
+    hl <- enquo(hl)
+    if (quo_is_null(hl)) return(p)
     hlstr <- as_name(hl)
     hl_df <- p$data[get(hlstr)==TRUE]
     args <- list(data = hl_df)
@@ -30,6 +32,25 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #=============================================================================
 
 
+#' Plot sample/feature densities
+#'
+#' @param object      SummarizedExperiment
+#' @param fill        svar mapped to fill
+#' @param color       svar mapped to color
+#' @param group       svar mapped to group
+#' @param fixed       fixed aesthetics
+#' @seealso \code{\link{plot_sample_violins}}, \code{\link{plot_sample_boxplots}}
+#' @return  ggplot object
+#' @examples
+#' # Read data
+#'     require(magrittr)
+#'     file <- download_data('halama18.metabolon.xlsx')
+#'     object <- read_metabolon(file, plot = FALSE)
+#'     object %<>% extract(, order(.$subgroup))
+#' # Plot sample distributions
+#'     plot_sample_densities(object)
+#'     plot_feature_densities(object[1:9, ])
+#' @export
 plot_densities <- function(object, group, fill, color = NULL,
     fixed = list(alpha = 0.5, na.rm = TRUE)
 ){
@@ -58,24 +79,8 @@ is_uniquely_empty <- function(x, y){
     ( is_empty(x) | !is_empty(y)) | (!is_empty(x) |  is_empty(y))
 }
 
-#' Plot sample/feature densities
-#'
-#' @param object      SummarizedExperiment
-#' @param fill        svar mapped to fill
-#' @param color       svar mapped to color
-#' @param group       svar mapped to group
-#' @param fixed       fixed aesthetics
-#' @seealso \code{\link{plot_sample_violins}}, \code{\link{plot_sample_boxplots}}
-#' @return  ggplot object
-#' @examples
-#' # Read data
-#'     require(magrittr)
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$subgroup))
-#' # Plot sample distributions
-#'     plot_feature_densities(object)
-#'     plot_sample_densities(object)
+
+#' @rdname plot_densities
 #' @export
 plot_sample_densities <- function(
     object, fill = subgroup, color = NULL, group = sample_id,
@@ -85,7 +90,8 @@ plot_sample_densities <- function(
     fixed = fixed
 )
 
-#' @rdname plot_sample_densities
+
+#' @rdname plot_densities
 #' @export
 plot_feature_densities <- function(
     object, fill = feature_id, color = NULL, group = feature_id,
@@ -103,45 +109,13 @@ plot_feature_densities <- function(
 #
 #==============================================================================
 
-plot_violins <- function(object, x, fill, color = NULL,
-    highlight = NULL, fixed = list(na.rm=TRUE)
-){
-# Process
-    assert_is_all_of(object, 'SummarizedExperiment')
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    highlight <- enquo(highlight)
-    sample_id <- value <- NULL
-    fillstr      <- if (quo_is_null(fill))      character(0) else as_name(fill)
-    colorstr     <- if (quo_is_null(color))     character(0) else as_name(color)
-    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(highlight)
-# Prepare
-    plotvars <- unique(c(fillstr, colorstr, highlightstr))
-    plottedsvars <- intersect(plotvars, svars(object))
-    plottedfvars <- intersect(plotvars, fvars(object))
-    assert_is_identical_to_true(is_uniquely_empty(plottedsvars, plottedfvars))
-    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
-# Plot
-    p <- plot_data(dt, geom = geom_violin, x = !!x, y = value,
-                   fill = !!fill, color= !!color, ..., fixed = fixed)
-    if (show_highlights) p %<>% add_highlights(highlight, geom = geom_point)
-# Finish
-    breaks <- levels(dt$sample_id)
-    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][, sample_id]
-    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) +
-        theme(axis.text.x = element_text(angle=90, hjust=1))
-# Return
-    p
-}
-
-
 #' Plot sample/feature violins
 #'
 #' @param object      SummarizedExperiment
 #' @param x           svar mapped to x
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param facet       svar mapped to facets
 #' @param highlight   fvar expressing which feature should be highlighted
 #' @param fixed       fixed aesthetics
 #' @return  ggplot object
@@ -152,13 +126,57 @@ plot_violins <- function(object, x, fill, color = NULL,
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
-#' # feature violins
-#'     plot_feature_violins(object)
-#' # sample violins
-#'     plot_sample_violins(object)
 #'     fdata(object) %<>% cbind(control=.$feature_name %in% c('biotin','phosphate'))
-#'     plot_sample_violins(object,  highlight = control)
+#' # plot
+#'     plot_violins(object[1:12, ], x=feature_id, fill=feature_id)
+#'     plot_violins(object[, 1:12], x=sample_id, fill=sample_id)
+#'     plot_violins(object[, 1:12], x=sample_id, fill=subgroup)
+#'     plot_violins(object[, 1:12], x=subgroup, fill=subgroup, group=sample_id)
+#'     plot_violins(object[1:4, ],  x=subgroup, fill=subgroup, facet=feature_id)
+#'
+#'     plot_feature_violins(object[1:12, ])
+#'
+#'     plot_sample_violins(object)
+#'     plot_sample_violins(object[, 1:12],  highlight = control)
+#'
+#'     plot_subgroup_violins(object[1:4, ])
 #' @export
+plot_violins <- function(object, x, fill, color = NULL, group = NULL,
+    facet = NULL, highlight = NULL, fixed = list(na.rm=TRUE)
+){
+# Process
+    assert_is_all_of(object, 'SummarizedExperiment')
+    x         <- enquo(x)
+    fill      <- enquo(fill)
+    color     <- enquo(color)
+    group     <- enquo(group)
+    highlight <- enquo(highlight)
+    facet     <- enquo(facet)
+    sample_id <- value <- NULL
+    xstr         <- as_name(x)
+    fillstr      <- if (quo_is_null(fill))      character(0) else as_name(fill)
+    colorstr     <- if (quo_is_null(color))     character(0) else as_name(color)
+    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(highlight)
+# Prepare
+    plotvars <- unique(c('feature_name', fillstr, colorstr, highlightstr))
+    plottedsvars <- intersect(plotvars, svars(object))
+    plottedfvars <- intersect(plotvars, fvars(object))
+    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+# Plot
+    p <- plot_data(dt, geom = geom_violin, x = !!x, y = value,
+                   fill = !!fill, color= !!color, group=!!group, fixed = fixed)
+    p %<>% add_highlights(!!highlight, geom = geom_point)
+    p <- p + facet_wrap(vars(!!facet), scales = "free_y")
+    # Finish
+    breaks <- unique(dt[[xstr]])
+    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
+    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) +
+        theme(axis.text.x = element_text(angle=90, hjust=1))
+# Return
+    p
+}
+
+#' @rdname plot_violins
 #' @export
 plot_sample_violins <- function(
     object, x = sample_id, fill = subgroup, color = NULL, highlight = NULL,
@@ -169,14 +187,24 @@ plot_sample_violins <- function(
 )
 
 
-#' @rdname plot_sample_violins
+#' @rdname plot_violins
 #' @export
 plot_feature_violins <- function(
-    object, x = feature_id, fill = feature_id, color = NULL, highlight = NULL,
+    object, x = feature_id, fill = feature_name, color = NULL, highlight = NULL,
     fixed = list(na.rm=TRUE)
 ) plot_violins(
      object, x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color),
      highlight=!!enquo(highlight), fixed = fixed
+)
+
+#' @rdname plot_violins
+#' @export
+plot_subgroup_violins <- function(
+    object, x = subgroup, fill = subgroup, color = NULL, highlight = NULL,
+    facet = feature_id, fixed = list(na.rm=TRUE)
+) plot_violins(
+    object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
+    facet=!!enquo(facet), highlight=!!enquo(highlight), fixed=fixed
 )
 
 
@@ -189,45 +217,13 @@ plot_feature_violins <- function(
 #==============================================================================
 
 
-plot_boxplots <- function(object, x, fill, color = NULL,
-    highlight = NULL, fixed = list(na.rm=TRUE)
-){
-# Process
-    sample_id <- value <- NULL
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    highlight <- enquo(highlight)
-    fillstr      <- if (quo_is_null(fill))      character(0) else as_name(fill)
-    colorstr     <- if (quo_is_null(color))     character(0) else as_name(color)
-    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(highlight)
-# Prepare
-    plotvars <- unique(c(fillstr, colorstr, highlightstr))
-    plottedsvars <- intersect(plotvars, svars(object))
-    plottedfvars <- intersect(plotvars, fvars(object))
-    assert_is_identical_to_true(is_uniquely_empty(plottedsvars, plottedfvars))
-    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
-# Plot
-    p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
-                   fill = !!fill, color = !!color, ..., fixed = fixed)
-    if (show_highlights) p %<>% add_highlights( highlight, geom = geom_point,
-                                                fixed_color = "darkred")
-# Finish
-    breaks <- levels(dt$sample_id)
-    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][, sample_id]
-    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) +
-        theme(axis.text.x = element_text(angle=90, hjust=1))
-# Return
-    p
-}
-
-
 #' Plot sample/feature boxplots
 #'
 #' @param object      SummarizedExperiment
 #' @param x           svar mapped to x
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param facet       svar mapped to facet
 #' @param highlight   fvar expressing which feature should be highlighted
 #' @param fixed       fixed aesthetics
 #' @return  ggplot object
@@ -238,33 +234,83 @@ plot_boxplots <- function(object, x, fill, color = NULL,
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
-#' # feature boxplots
-#'     plot_sample_boxplots(object)
-#' # sample boxplots
-#'     plot_sample_boxplots(object)
 #'     fdata(object) %<>% cbind(control=.$feature_name %in% c('biotin','phosphate'))
-#'     plot_sample_boxplots(object, highlight = control)
+#' # plot
+#'     plot_boxplots(object[1:9,], x = feature_id, fill = feature_id)
+#'     plot_boxplots(object[,1:9], x = sample_id,  fill = sample_id )
+#'
+#'     plot_feature_boxplots(object[1:9, ])
+#'
+#'     plot_sample_boxplots(object[, 1:12])
+#'     plot_sample_boxplots(object[, 1:12], highlight = control)
+#'
+#'     plot_subgroup_boxplots(object[1:4, ])
+#' @export
+plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
+    highlight = NULL, fixed = list(na.rm=TRUE)
+){
+# Assert/Process
+    assert_is_all_of(object, "SummarizedExperiment")
+    sample_id <- value <- NULL
+    x         <- enquo(x)
+    fill      <- enquo(fill)
+    color     <- enquo(color)
+    highlight <- enquo(highlight)
+    facet     <- enquo(facet)
+    xstr         <- as_name(x)
+    fillstr      <- if (quo_is_null(fill))      character(0) else as_name(fill)
+    colorstr     <- if (quo_is_null(color))     character(0) else as_name(color)
+    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(highlight)
+# Prepare
+    plotvars <- unique(c('feature_name', xstr, fillstr, colorstr, highlightstr))
+    plottedsvars <- intersect(plotvars, svars(object))
+    plottedfvars <- intersect(plotvars, fvars(object))
+    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+# Plot
+    p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
+                   fill = !!fill, color = !!color, fixed = fixed)
+    p %<>% add_highlights(!!highlight, geom = geom_point, fixed_color="darkred")
+    p <- p + facet_wrap(vars(!!facet), scales = 'free_y')
+# Finish
+    breaks <- unique(dt[[xstr]])
+    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
+    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) +
+        theme(axis.text.x = element_text(angle=90, hjust=1))
+# Return
+    p
+}
+
+
+#' @rdname plot_boxplots
 #' @export
 plot_sample_boxplots <- function(
     object, x = sample_id, fill = subgroup, color = NULL, highlight = NULL,
     fixed = list(na.rm=TRUE)
 ) plot_boxplots(
-    fill=!!enquo(fill), color=!!color, highlight=!!enquo(highlight),
-    fixed=fixed
+    object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
+    highlight=!!enquo(highlight), fixed=fixed
 )
 
 
-#' @rdname plot_sample_boxplots
+#' @rdname plot_boxplots
 #' @export
 plot_feature_boxplots <- function(
     object, x = feature_id, fill = feature_id, color = NULL, highlight = NULL,
     fixed = list(na.rm=TRUE)
 ) plot_boxplots(
-    fill=!!enquo(fill), color=!!color, highlight=!!enquo(highlight),
-    fixed=fixed
+    object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
+    highlight=!!enquo(highlight), fixed=fixed
 )
 
-
+#' @rdname plot_boxplots
+#' @export
+plot_subgroup_boxplots <- function(
+    object, x = subgroup, fill = subgroup, color = NULL, highlight = NULL,
+    facet = feature_id, fixed = list(na.rm=TRUE)
+) plot_boxplots(
+    object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
+    facet=!!enquo(facet), highlight=!!enquo(highlight), fixed=fixed
+)
 
 #=============================================================================
 #

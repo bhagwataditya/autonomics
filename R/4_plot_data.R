@@ -39,7 +39,7 @@ add_color_scale <- function(p, color = subgroup, data){
     color <- enquo(color)
 # Colors
     if (!rlang::quo_is_null(color)){
-        color_var <- as_string(ensym(color))
+        color_var <- as_name(color)
         assert_is_subset(color_var, names(data))
         values0 <- data[[color_var]]
         if (!is.numeric(values0)){
@@ -52,15 +52,16 @@ add_color_scale <- function(p, color = subgroup, data){
     return(p)
 }
 
+
 add_fill_scale <- function(p, fill = subgroup, data){
 # Assert
     assert_is_data.frame(data)
     fill <- enquo(fill)
 # Colors
     if (!rlang::quo_is_null(fill)){
-        fill_var <- as_string(ensym(fill))
-        assert_is_subset(fill_var, names(data))
-        values0 <- data[[fill_var]]
+        fillstr <- as_name(fill)
+        assert_is_subset(fillstr, names(data))
+        values0 <- data[[fillstr]]
         if (!is.numeric(values0)){
             levels0 <- unique(values0)
             colors0 <- make_colors(levels0, sep = guess_sep(levels0))

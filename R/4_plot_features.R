@@ -50,11 +50,11 @@ plot_features <- function(
     p
 }
 
-#' @rdname plot_features
-#' @export
-plot_feature_boxplots <- function(...){
-    plot_features(geom = geom_boxplot, color = NULL, ...)
-}
+# @rdname plot_features
+# @export
+#plot_feature_boxplots <- function(...){
+#    plot_features(geom = geom_boxplot, color = NULL, ...)
+#}
 
 
 #' @rdname plot_features
