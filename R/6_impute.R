@@ -9,23 +9,7 @@
 #' @param x    matrix
 #' @param verbose   logical(1)
 #' @return Updated matrix
-#' @examples
-#' require(magrittr)
-#'
-#' # 0 -> NA (proteingroups LFQ intensities)
-#'
-#' # NaN -> NA (proteingroups ratios)
-#'     file <- load_data('billing16.proteingroups.txt')
-#'     x <- exprs(read_proteingroups(file))
-#'     nan_to_na(x, verbose=TRUE)
-#'
-#' # -Inf -> NA (log2 transformed proteingroups LFQ intensity)
-#'
-#' # NA -> 0
-#'     file <- load_data('halama18.metabolon.xlsx')
-#'     x <- exprs(read_metabolon(file))
-#'     na_to_zero(x, verbose = TRUE)
-#' @noRd
+#' @export
 zero_to_na <- function(x, verbose = FALSE){
     selector <- x == 0
     if (any(c(selector), na.rm = TRUE)){
@@ -41,7 +25,15 @@ zero_to_na <- function(x, verbose = FALSE){
 }
 
 
-#' @noRd
+#' Convert NaN to NA
+#' @param x matrix
+#' @param verbose TRUE/FALSE
+#' @return matrix
+#' @examples
+#' file <- load_data('billing16.proteingroups.txt')
+#' x <- exprs(read_proteingroups(file))
+#' nan_to_na(x, verbose=TRUE)
+#' @export
 nan_to_na <- function(x, verbose = FALSE){
     selector <- is.nan(x)
     if (any(c(selector), na.rm = TRUE)){
@@ -57,6 +49,15 @@ nan_to_na <- function(x, verbose = FALSE){
 }
 
 
+#' Convert NA to zero
+#' @param x matrix
+#' @param verbose TRUE/FALSE
+#' @return matrix
+#' @examples
+#' file <- load_data('halama18.metabolon.xlsx')
+#' x <- exprs(read_metabolon(file))
+#' na_to_zero(x, verbose = TRUE)
+#' @export
 na_to_zero <- function(x, verbose = FALSE){
     selector <- is.na(x)
     if (any(selector)){
@@ -72,6 +73,11 @@ na_to_zero <- function(x, verbose = FALSE){
 }
 
 
+#' Convert Inf to NA
+#' @param x matrix
+#' @param verbose TRUE/FALSE
+#' @return matrix
+#' @export
 inf_to_na <- function(x, verbose){
     selector <- is.infinite(x)
     if (any(c(selector), na.rm = TRUE)){
@@ -88,6 +94,11 @@ inf_to_na <- function(x, verbose){
 }
 
 
+#' Convert -Inf to NA
+#' @param x matrix
+#' @param verbose TRUE/FALSE
+#' @return matrix
+#' @export
 minusinf_to_na <- function(x, verbose = FALSE){
     selector <- x==-Inf
     if (any(c(selector), na.rm = TRUE)){
