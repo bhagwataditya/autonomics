@@ -225,8 +225,7 @@ create_subgroup_values <- function(object, subgroup_var, verbose){
     values <- svalues(object, subgroup_var)
     if (is.null(values) | all(is.na(values)) | all(values=="")) values <-
          guess_subgroup_values(object$sample_id, verbose=verbose)
-    if (all(is.na(values)) | all(values=="")) values[] <-
-        make.names(basename(tools::file_path_sans_ext(metadata(object)$file)))
+    if (all(is.na(values)) | all(values=="")) values[] <- 'subgroup1'
     values
 }
 
