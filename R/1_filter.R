@@ -142,15 +142,15 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' file <- download_data('billing16.proteingroups.txt')
 #' invert_subgroups <- c('E_EM', 'BM_EM', 'E_BM')
 #' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
-#' object %<>% filter_replicated()
+#' object %<>% filter_exprs_replicated_in_some_subgroup()
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% filter_replicated()
+#' object %<>% filter_exprs_replicated_in_some_subgroup()
 #'
-#' filter_replicated(object, character(0))
+#' filter_exprs_replicated_in_some_subgroup(object, character(0))
 #' @export
-filter_replicated <- function(
+filter_exprs_replicated_in_some_subgroup <- function(
     object, group = 'subgroup',
     comparator = if (contains_ratios(object)) '!=' else '>',
     lod = 0, verbose = TRUE
@@ -182,13 +182,6 @@ filter_replicated <- function(
                     comparator, as.character(lod), group)))
     }
     object
-}
-
-#' @rdname filter_replicated
-#' @export
-filter_exprs_replicated_in_some_subgroup <- function(...){
-    .Deprecated('filter_replicated')
-    filter_replicated(...)
 }
 
 #=======================
