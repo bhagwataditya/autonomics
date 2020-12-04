@@ -153,7 +153,7 @@ matrix2sumexp <- function(x){
     fdata(object)$feature_id <- rownames(object)
     fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
-    object$subgroup <- 'group1'
+    object$subgroup <- 'subgroup1'
     #object %<>% add_designvars(designfile = NULL) # too slow for large matrices
     object
 }
