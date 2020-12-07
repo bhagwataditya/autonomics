@@ -28,6 +28,7 @@ Plot contrastogram
    plot_contrastogram(object)
 
 # subgroup vector
+    require(magrittr)
     file <-  download_data('billing19.proteingroups.txt')
     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
                        'EM05_EM02', 'EM30_EM15')
