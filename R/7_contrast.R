@@ -619,6 +619,8 @@ default_color_values2 <- function(object){
     default_color_values(object)[c(t(subgroupmatrix))]
 }
 
+true_names <- function(x) names(x[x])
+
 
 compute_connections <- function(
     object, contrasts, subgroup_colors = default_color_values2(object)
@@ -630,35 +632,28 @@ compute_connections <- function(
     nup     <- colSums((pvalues < 0.05) & (effects > 0), na.rm=TRUE)
     ndown   <- colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
-    subgrouplevels <- c(t(matrixify_subgroups(subgroup_levels(object))))
+    sep <- guess_sep(object)
+    subgroupmatrix <- matrixify_subgroups(subgroup_levels(object), sep)
+    subgrouplevels <- c(t(subgroupmatrix))
     sizes <- colors <- matrix(0,
         nrow = length(subgrouplevels), ncol = length(subgrouplevels),
         dimnames = list(subgrouplevels, subgrouplevels))
     labels <- matrix("0", nrow = nrow(sizes), ncol = ncol(sizes),
                      dimnames = dimnames(sizes))
-# Add column contrasts
-    subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
-    for (i in nrow(subgroup_matrix):1){
-    for (j in 2:ncol(subgroup_matrix)){
-        from <- subgroup_matrix[i, j-1]
-        to   <- subgroup_matrix[i, j  ]
-        ctr <- paste0(to, '__', from)
-        ns <- nsignif[[ctr]]; nu <- nup[[ctr]]; nd <- ndown[[ctr]]
+# Add contrast numbers
+    contrastmat <- create_contrastmat(object, contrasts)
+    for (contrastname in colnames(contrastmat)){
+        contrastvector <- contrastmat[, contrastname]
+        to   <- true_names(contrastvector>0)
+        from <- if (any(contrastvector<0)) true_names(contrastvector<0) else to
+        ns <- nsignif[[contrastname]]
+        nu <- nup[[contrastname]]
+        nd <- ndown[[contrastname]]
         sizes[ to, from] <- ns
         colors[to, from] <- subgroup_colors[[to]]
         labels[to, from] <- if (nu>0) paste0(nu,  " %up% phantom(.)") else "phantom(.)"
-        labels[from, to] <- if (nd>0) paste0(nd," %down% phantom(.)") else "phantom(.)"}}
-# Add row contrasts
-    for (j in 1:ncol(subgroup_matrix)){
-    for (i in nrow(subgroup_matrix):2){
-        from <- subgroup_matrix[i,   j]
-        to   <- subgroup_matrix[i-1, j]
-        ctr  <- paste0(to, '__', from)
-        ns <- nsignif[[ctr]]; nu <- nup[[ctr]]; nd <- ndown[[ctr]]
-        sizes[ to, from] <- ns
-        colors[to, from] <- subgroup_colors[[to]]
-        labels[to, from] <- if (nd>0) paste0(nd," %down% phantom(.)") else "phantom(.)"
-        labels[from, to] <- if (nu>0) paste0(nu,  " %up% phantom(.)") else "phantom(.)"}}
+        labels[from, to] <- if (nd>0) paste0(nd," %down% phantom(.)") else "phantom(.)"
+    }
 # Return
     #labels[colors==0] <- "0"
     list(sizes = sizes, colors = colors, labels = labels)
