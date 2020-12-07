@@ -618,7 +618,7 @@ default_color_values <- function(
 default_color_values2 <- function(object){
     subgrouplevels <- subgroup_levels(object)
     subgroupmatrix <- matrify_subgroups(subgrouplevels, sep=guess_sep(object))
-    default_color_values(object)[c(t(subgroupmatrix))]
+    default_color_values(object, 'subgroup')[c(t(subgroupmatrix))]
 }
 
 true_names <- function(x) names(x[x])
@@ -628,11 +628,14 @@ compute_connections <- function(
     object, contrasts, subgroup_colors = default_color_values2(object)
 ){
 # subgroup matrix, difference contrasts, limma
-    pvalues <- limma(object)[, , 'p']
-    effects <- limma(object)[, , 'effect']
-    nsignif <- colSums( pvalues < 0.05, na.rm=TRUE)
-    nup     <- colSums((pvalues < 0.05) & (effects > 0), na.rm=TRUE)
-    ndown   <- colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
+    pvalues <- limma(object)[, , 'p',      drop=FALSE]
+    effects <- limma(object)[, , 'effect', drop=FALSE]
+    nsignif <- apply(pvalues < 0.05, 2, sum, na.rm=TRUE)
+               #colSums( pvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
+    nup     <- apply(pvalues < 0.05 & effects>0, 2, sum, na.rm=TRUE)
+              #colSums((pvalues < 0.05) & (effects > 0), na.rm=TRUE)
+    ndown   <- apply(pvalues < 0.05 & effects<0, 2, sum, na.rm=TRUE)
+              #colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
     sep <- guess_sep(object)
     subgroupmatrix <- matrify_subgroups(subgroup_levels(object), sep)
@@ -669,10 +672,9 @@ compute_connections <- function(
 #' @param contrasts contrast vector
 #' @param subgroup_colors named color vector (names = subgroups)
 #' @examples
-#' # Ratios: self-contrasts
-#'    file <- download_data('billing16.proteingroups.txt')
-#'    invert <- c('EM_E', 'BM_E', 'BM_EM')
-#'    object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
+#' # subgroup matrix
+#'    file <- download_data('halama18.metabolon.xlsx')
+#'    object <- read_metabolon(file, plot=FALSE)
 #'    plot_contrastogram(object)
 #'
 #' # subgroup vector
@@ -685,10 +687,15 @@ compute_connections <- function(
 #'     object$subgroup %<>% factor(c('EM00','EM01','EM02','EM05','EM15','EM30','BM00'))
 #'     plot_contrastogram(object, contrasts=difference_contrasts(object))
 #'
-#' # subgroup matrix
-#'    file <- download_data('halama18.metabolon.xlsx')
-#'    object <- read_metabolon(file, plot=FALSE)
+#' # subgroup scalar
+#'    plot_contrastogram(object, contrasts=difference_contrasts(object)[1])
+#'
+#' # Ratios: self-contrasts
+#'    file <- download_data('billing16.proteingroups.txt')
+#'    invert <- c('EM_E', 'BM_E', 'BM_EM')
+#'    object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
 #'    plot_contrastogram(object)
+#'
 #'
 #' @export
 plot_contrastogram <- function(
