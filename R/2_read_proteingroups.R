@@ -1092,7 +1092,8 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #' @param phosphofile  phospho(STY)Sites.txt path
 #' @param fastafile    NULL or fastafile (to deconvolute proteingroups)
 #' @param quantity     string: "Ratio normalized",
-#'                             "Ratio", "LFQ intensity",
+#'                             "Ratio",
+#'                             "LFQ intensity",
 #'                             "Reporter intensity corrected",
 #'                             "Reporter intensity",
 #'                             "Intensity labeled",
@@ -1110,27 +1111,35 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #' @param plot                   TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' # STEM CELLS
-#'     # NORMALIZED RATIOS
+#' # Subgroup ratios
 #'     file <- download_data('billing16.proteingroups.txt')
-#'     read_proteingroups(file, invert_subgroups = c('E_EM','E_BM','BM_EM'))
+#'     object <- read_proteingroups(file)
 #'
-#'     # INTENSITIES
-#'     (object <- read_proteingroups(proteinfile,
-#'                                       quantity = 'Intensity labeled'))
-#'     # DECONVOLUTE
-#'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#'     fdata(object)[1:3, ]
-#'     fdata(read_proteingroups(proteinfile,
-#'                 quantity = 'Intensity labeled', fastafile = fastafile))[1:3,]
+#' # Invert subgroups
+#'     invert_subgroups <- c('EM_E','BM_E','BM_EM')
+#'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
 #'
-#' # DIFFERENTIATION
-#'     proteinfile <- download_data('billing19.proteingroups.txt')
-#'     phosphofile <- download_data('billing19.phosphosites.txt')
+#' # Intensities
+#'     object <- read_proteingroups(file, quantity = 'Intensity labeled')
+#'
+#' # Deconvolute proteingroups
+#'     fdata(object)[1:3, 1:4]
+#'     object <- read_proteingroups(file,quantity = 'Intensity labeled',
+#'         fastafile=download_data('uniprot_hsa_20140515.fasta'), plot=FALSE)
+#'     fdata(object)[1:3, 1:4]
+#'
+#' # Internal Standard Ratios
+#'     file <-  download_data('billing19.proteingroups.txt')
+#'     object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+#'
+#' # Rm subgroups
 #'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
 #'                        'EM05_EM02', 'EM30_EM15')
-#'     read_proteingroups(proteinfile, rm_subgroups = rm_subgroups)
-#'     read_phosphosites(phosphofile, proteinfile, rm_subgroups = rm_subgroups)
+#'     object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+#'
+#' # Phosphosites
+#'     phosphofile <- download_data('billing19.phosphosites.txt')
+#'     read_phosphosites(phosphofile, file, rm_subgroups = rm_subgroups)
 #' @export
 read_proteingroups <- function(
     proteinfile, quantity = guess_maxquant_quantity(proteinfile),
