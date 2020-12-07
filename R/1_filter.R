@@ -132,6 +132,7 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 
 #' Filter features with replicated expression in some subgroup
 #' @param object      SummarizedExperiment
+#' @param group       group svar
 #' @param comparator  '>' or '!='
 #' @param lod         number: limit of detection
 #' @param verbose     TRUE or FALSE
@@ -139,52 +140,72 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' invert_subgroups <- c('E_EM', 'BM_EM', 'E_BM')
+#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
+#'
+#' filter_exprs_replicated_in_some_subgroup(object, character(0))
 #' @export
 filter_exprs_replicated_in_some_subgroup <- function(
-    object,
+    object, group = 'subgroup',
     comparator = if (contains_ratios(object)) '!=' else '>',
-    lod = 0,
-    verbose = TRUE
+    lod = 0, verbose = TRUE
 ){
-    # Return if no subgroups or replicates
-    if (!'subgroup' %in% svars(object))             return(object)
-    if (all(!duplicated(sdata(object)$subgroup)))   return(object)
-
-    # Datatablify
+# Assert
+    assert_is_subset(group, svars(object))
+# Datatablify
     replicated_in_its_subgroup <- replicated_in_any_subgroup <- value <- NULL
-    dt <- sumexp_to_long_dt(object, svars = 'subgroup')
-
-    # Find replicated features
+    dt <- sumexp_to_long_dt(object, svars = group)
+# Find replicated features
     exceeds_lod <- if (comparator == '>'){ function(value, lod) value >  lod
             } else if (comparator == '!=') function(value, lod) value != lod
     V1 <- dt[,.I[sum(exceeds_lod(value, lod), na.rm=TRUE)>1],
-            by = c('feature_id', 'subgroup')]$V1
+            by = c('feature_id', group)]$V1
             #https://stackoverflow.com/questions/16573995
-
-    # Keep only replicated features
+# Keep only replicated features
     replicated_features <- dt[V1]$feature_id
     idx <- fid_values(object) %in% replicated_features
     if (verbose)   message('\t\tFilter ', sum(idx), '/', length(idx),
             ' features: expr ', comparator, ' ', as.character(lod),
-            ' for at least two samples in some subgroup')
+            ' for at least two samples in some ', group)
     object %<>% extract_features(idx) # also handles limma in metadata
-
-    # Update analysis log
+# Update analysis log
     if (!is.null(analysis(object))) {
         analysis(object)$nfeatures %<>% c(structure(
                 sum(idx),
                 names = sprintf(
-                    "expr %s %s, for at least two samples in some subgroup",
-                    comparator, as.character(lod))))
+                    "expr %s %s, for at least two samples in some %s",
+                    comparator, as.character(lod), group)))
     }
     object
 }
+
+#' Filter for replicated features
+#' @param object     SummarizedExperiment
+#' @param comparator string
+#' @param lod        number: limit of detection
+#' @param n          number: number of replicates above lod
+#' @return  SummarizedExperiment
+#' @export
+filter_replicated  <- function(object, comparator = `>`, lod=0, n=2){
+    assert_is_all_of(object, "SummarizedExperiment")
+    assertive::assert_is_function(comparator)
+    assert_is_a_number(lod)
+    assert_is_a_number(n)
+
+    nreplicates <- rowSums(comparator(exprs(object), lod), na.rm=TRUE)
+    idx <- nreplicates >= n
+    cmessage('\tRetain %d/%d features replicated in at least %d samples',
+                    sum(idx), length(idx), n)
+    object[idx, ]
+}
+
+
+
 
 #=======================
 # FILTER SAMPLES

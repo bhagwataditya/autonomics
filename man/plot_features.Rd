@@ -2,7 +2,6 @@
 % Please edit documentation in R/4_plot_features.R
 \name{plot_features}
 \alias{plot_features}
-\alias{plot_feature_boxplots}
 \alias{plot_feature_profiles}
 \title{Plot features}
 \usage{
@@ -17,8 +16,6 @@ plot_features(
   theme = list(axis.text.x = element_blank(), axis.title.x = element_blank(),
     axis.ticks.x = element_blank())
 )
-
-plot_feature_boxplots(...)
 
 plot_feature_profiles(...)
 }

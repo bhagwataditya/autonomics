@@ -6,6 +6,7 @@
 \usage{
 filter_exprs_replicated_in_some_subgroup(
   object,
+  group = "subgroup",
   comparator = if (contains_ratios(object)) "!=" else ">",
   lod = 0,
   verbose = TRUE
@@ -13,6 +14,8 @@ filter_exprs_replicated_in_some_subgroup(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{group}{group svar}
 
 \item{comparator}{'>' or '!='}
 
@@ -29,10 +32,13 @@ Filter features with replicated expression in some subgroup
 \examples{
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+invert_subgroups <- c('E_EM', 'BM_EM', 'E_BM')
+object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
+
+filter_exprs_replicated_in_some_subgroup(object, character(0))
 }

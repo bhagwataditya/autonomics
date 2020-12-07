@@ -45,6 +45,7 @@ setReplaceMethod(
 setGeneric('exprs',  function(object)   standardGeneric("exprs"))
 
 #' @rdname exprs
+#' @export
 setMethod(
     "exprs",
     signature("SummarizedExperiment"),
@@ -55,6 +56,7 @@ setMethod(
 setGeneric('exprs<-',   function(object, value) standardGeneric("exprs<-"))
 
 #' @rdname exprs
+#' @export
 setReplaceMethod(
     "exprs",
     signature("SummarizedExperiment", "matrix"),
@@ -63,6 +65,7 @@ setReplaceMethod(
         object })
 
 #' @rdname exprs
+#' @export
 setReplaceMethod(
     "exprs",
     signature("SummarizedExperiment", "numeric"),

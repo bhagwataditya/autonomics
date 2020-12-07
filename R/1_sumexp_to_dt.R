@@ -3,7 +3,7 @@
 sumexp_to_wide_dt <- function(
     object,
     fid   = 'feature_id',
-    fvars = character(0),
+    fvars = 'feature_name',
     assay = 'exprs'
 ){
 
@@ -56,9 +56,9 @@ sumexp_to_wide_dt <- function(
 #' @export
 sumexp_to_long_dt <- function(
     object,
-    fid = 'feature_id',
-    fvars = character(0),
-    sid = 'sample_id',
+    fid   = 'feature_id',
+    fvars = 'feature_name',
+    sid   = 'sample_id',
     svars = if ('subgroup' %in% importomics::svars(object)){ 'subgroup'
             } else {                                         character(0) },
     assay = 'exprs'
@@ -136,4 +136,24 @@ dt2sumexp  <- function(
         assays = list(exprs = exprs1),
         rowData = fdata1,
         colData = sdata1)
+}
+
+
+#' Convert matrix into SummarizedExperiment
+#' @param x matrix
+#' @return SummarizedExperiment
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' x <- exprs(read_metabolon(file, plot=FALSE))
+#' object <- matrix2sumexp(x)
+#' biplot(object, nloadings=0)
+#' @export
+matrix2sumexp <- function(x){
+    object <- SummarizedExperiment(list(exprs = x))
+    fdata(object)$feature_id <- rownames(object)
+    fdata(object)$feature_name <- rownames(object)
+    sdata(object)$sample_id    <- colnames(object)
+    object$subgroup <- 'subgroup1'
+    #object %<>% add_designvars(designfile = NULL) # too slow for large matrices
+    object
 }
