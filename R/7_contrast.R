@@ -328,12 +328,17 @@ aggregate_row_contrasts <- function(conc_contrastmat){
 #' create_diff_contrasts(object)
 #' @noRd
 create_diff_contrasts <- function(object){
-# Subgroup matrix
-    subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
+# Single subgroup
+    subgroups <- subgroup_levels(object)
+    if (assertive::is_scalar(subgroups)) return(
+        structure(subgroups, names=subgroups))
 # Row contrasts
-    row_contrmat   <- contrast_rows(subgroup_matrix)
-    row_contrnames <- contrast_rows(subgroup_matrix, '__')
-    contrasts  <- structure(c(row_contrmat), names = c(row_contrnames))
+    subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
+    if (nrow(subgroup_matrix)>1){
+        row_contrmat   <- contrast_rows(subgroup_matrix)
+        row_contrnames <- contrast_rows(subgroup_matrix, '__')
+        contrasts  <- structure(c(row_contrmat), names = c(row_contrnames))
+    }
   # Column contrasts
     if (ncol(subgroup_matrix)>1){
         col_contrmat   <- contrast_columns(subgroup_matrix)

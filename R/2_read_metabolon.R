@@ -14,6 +14,8 @@ find_origscale_sheet <- function(file){
 }
 
 
+#' @rdname read_metabolon
+#' @export
 .read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL'

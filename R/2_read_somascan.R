@@ -4,6 +4,8 @@
 #
 #=============================================================================
 
+#' @rdname read_somascan
+#' @export
 .read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId'){
 # Assert
     assert_all_are_existing_files(file)
