@@ -29,8 +29,8 @@ zero_to_na <- function(x, verbose = FALSE){
 #' @param x matrix
 #' @param verbose TRUE/FALSE
 #' @return matrix
-#' @examples
-#' file <- load_data('billing16.proteingroups.txt')
+#' @examples\
+#' file <- download_data('billing16.proteingroups.txt')
 #' x <- exprs(read_proteingroups(file))
 #' nan_to_na(x, verbose=TRUE)
 #' @export
@@ -54,7 +54,7 @@ nan_to_na <- function(x, verbose = FALSE){
 #' @param verbose TRUE/FALSE
 #' @return matrix
 #' @examples
-#' file <- load_data('halama18.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' x <- exprs(read_metabolon(file))
 #' na_to_zero(x, verbose = TRUE)
 #' @export

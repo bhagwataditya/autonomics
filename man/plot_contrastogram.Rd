@@ -13,6 +13,8 @@ plot_contrastogram(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{contrasts}{contrast vector}
+
 \item{subgroup_colors}{named color vector (names = subgroups)}
 }
 \description{

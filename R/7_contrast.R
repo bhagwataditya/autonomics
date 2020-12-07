@@ -104,7 +104,7 @@ validify_contrasts <- function(contrasts, design){
 #' @export
 create_contrastmat <- function(
     object, contrasts = default_contrasts(object),
-    design = importomics::design(object) # be explicit to disambiguate!
+    design = create_design(object) # be explicit to disambiguate!
 ){
     if (!has_names(contrasts)) names(contrasts) <-make.names(contrasts)
     if (length(contrasts) == 0)  return(NULL)
@@ -333,11 +333,12 @@ create_diff_contrasts <- function(object){
     if (assertive::is_scalar(subgroups)) return(
         structure(subgroups, names=subgroups))
 # Row contrasts
-    subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
+    subgroup_matrix <- matrixify_subgroups(subgroups)
+    contrasts <- character(0)
     if (nrow(subgroup_matrix)>1){
         row_contrmat   <- contrast_rows(subgroup_matrix)
         row_contrnames <- contrast_rows(subgroup_matrix, '__')
-        contrasts  <- structure(c(row_contrmat), names = c(row_contrnames))
+        contrasts %<>% c(structure(c(row_contrmat), names = c(row_contrnames)))
     }
   # Column contrasts
     if (ncol(subgroup_matrix)>1){
@@ -662,6 +663,7 @@ compute_connections <- function(
 
 #' Plot contrastogram
 #' @param object SummarizedExperiment
+#' @param contrasts contrast vector
 #' @param subgroup_colors named color vector (names = subgroups)
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')

@@ -3,7 +3,7 @@
 sumexp_to_wide_dt <- function(
     object,
     fid   = 'feature_id',
-    fvars = 'feature_name',
+    fvars = intersect('feature_name', importomics::fvars(object)),
     assay = 'exprs'
 ){
 
@@ -40,7 +40,8 @@ sumexp_to_wide_dt <- function(
 #' @examples
 #' # Stem cell comparison
 #'     file <- download_data('billing16.proteingroups.txt')
-#'     object <- read_proteingroups(file)
+#'     invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
+#'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
 #'     sumexp_to_wide_dt(object)
 #'     sumexp_to_long_dt(object)
 #'     sumexp_to_subrep_dt(object)
@@ -49,7 +50,6 @@ sumexp_to_wide_dt <- function(
 #'    require(magrittr)
 #'    file <- download_data('halama18.metabolon.xlsx')
 #'    object <- read_metabolon(file)
-#'    object %<>% pca()
 #'    sumexp_to_wide_dt(object)
 #'    sumexp_to_long_dt(object)
 #'    sumexp_to_subrep_dt(object)
@@ -57,10 +57,9 @@ sumexp_to_wide_dt <- function(
 sumexp_to_long_dt <- function(
     object,
     fid   = 'feature_id',
-    fvars = 'feature_name',
+    fvars = intersect('feature_name', importomics::fvars(object)),
     sid   = 'sample_id',
-    svars = if ('subgroup' %in% importomics::svars(object)){ 'subgroup'
-            } else {                                         character(0) },
+    svars = intersect('subgroup', importomics::svars(object)),
     assay = 'exprs'
 ){
     # Assert

@@ -64,6 +64,8 @@ read_phosphosites(
 
 \item{formula}{formula to create design matrix (using svars)}
 
+\item{contrasts}{contrasts vector}
+
 \item{verbose}{TRUE (default) or FALSE}
 
 \item{plot}{TRUE or FALSE}

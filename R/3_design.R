@@ -407,7 +407,6 @@ are_factor <- function(df) vapply(df, is.factor, logical(1))
 #'  Create design matrix  for statistical analysis
 #' @param object      SummarizedExperiment
 #' @param formula     formula with svars
-#' @param ...         backward compatibility
 #' @return design matrix
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')

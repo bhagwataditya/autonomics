@@ -54,6 +54,8 @@ read_somascan(
 
 \item{formula}{formula to create design matrix (using svars)}
 
+\item{contrasts}{named vector}
+
 \item{verbose}{TRUE (default) or FALSE}
 
 \item{plot}{TRUE (default) or FALSE}

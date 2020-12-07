@@ -162,6 +162,7 @@ rm_single_value_columns <- function(df){
 #' @param rm_single_value_svars  TRUE (default) or FALSE: rm single value svars?
 #' @param log2                   TRUE (default) or FALSE: log2 transform?
 #' @param formula                formula to create design matrix (using svars)
+#' @param contrasts              named vector
 #' @param verbose                TRUE (default) or FALSE
 #' @param plot                   TRUE (default) or FALSE
 #' @return Summarizedexperiment

@@ -55,6 +55,8 @@ plot_subgroup_violins(
 
 \item{color}{svar mapped to color}
 
+\item{group}{svar mapped to group}
+
 \item{facet}{svar mapped to facets}
 
 \item{highlight}{fvar expressing which feature should be highlighted}

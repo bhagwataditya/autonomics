@@ -7,7 +7,7 @@
 create_contrastmat(
   object,
   contrasts = default_contrasts(object),
-  design = importomics::design(object)
+  design = create_design(object)
 )
 }
 \arguments{

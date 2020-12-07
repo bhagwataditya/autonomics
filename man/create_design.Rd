@@ -13,8 +13,6 @@ create_design(
 \item{object}{SummarizedExperiment}
 
 \item{formula}{formula with svars}
-
-\item{...}{backward compatibility}
 }
 \value{
 design matrix

@@ -186,7 +186,7 @@ sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
     tmpobj <- object
     exprs(tmpobj) %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
     exprs(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
-    exprs(tmpobj) %<>% rm_missing_in_some_samples(verbose = verbose)
+    tmpobj        %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
     df <- data.frame(feature = rownames(tmpobj), exprs(tmpobj))
     mpm_tmp <- mpm::mpm(

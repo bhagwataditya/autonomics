@@ -115,6 +115,7 @@ plot_feature_densities <- function(
 #' @param x           svar mapped to x
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param group       svar mapped to group
 #' @param facet       svar mapped to facets
 #' @param highlight   fvar expressing which feature should be highlighted
 #' @param fixed       fixed aesthetics

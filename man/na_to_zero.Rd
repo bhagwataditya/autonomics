@@ -18,7 +18,7 @@ matrix
 Convert NA to zero
 }
 \examples{
-file <- load_data('halama18.metabolon.xlsx')
+file <- download_data('halama18.metabolon.xlsx')
 x <- exprs(read_metabolon(file))
 na_to_zero(x, verbose = TRUE)
 }

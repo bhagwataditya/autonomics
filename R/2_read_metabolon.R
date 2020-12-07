@@ -222,6 +222,7 @@ pubchem_to_smiles <- function(x){
 #' @param add_kegg_pathways     TRUE or FALSE (default)
 #' @param add_smiles            TRUE or FALSE (default)
 #' @param formula                formula to create design matrix (using svars)
+#' @param contrasts             contrast vector
 #' @param verbose               TRUE (default) or FALSE
 #' @param plot                  TRUE (default) or FALSE
 #' @return SummarizedExperiment

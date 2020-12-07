@@ -8,7 +8,7 @@ read_counts(
   file,
   fid_col = 1,
   fname_col = character(0),
-  filter_features_min_count = 10,
+  filter_count = 10,
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrasts = default_contrasts(object),
   verbose = TRUE,
@@ -22,11 +22,13 @@ read_counts(
 
 \item{fname_col}{string or number: feature name variable}
 
-\item{filter_features_min_count}{number (default 10): filter out features
+\item{filter_count}{number (default 10): filter out features
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
 
 \item{formula}{formula to create design matrix (using svars)}
+
+\item{contrasts}{contrast vector}
 
 \item{verbose}{TRUE (default) or FALSE}
 

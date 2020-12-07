@@ -54,6 +54,8 @@ read_metabolon(
 
 \item{formula}{formula to create design matrix (using svars)}
 
+\item{contrasts}{contrast vector}
+
 \item{verbose}{TRUE (default) or FALSE}
 
 \item{plot}{TRUE (default) or FALSE}

@@ -880,7 +880,12 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
                         fvar_rows  = fvar_rows,   fvar_cols  = fvar_cols,
                         fdata_rows = fdata_rows,  fdata_cols = fdata_cols,
                         transpose  = FALSE,       verbose    = verbose)
-# Samples: Parse/Filter
+# Features: parse/filter
+    if (verbose)  message('\tPrepare samples')
+    if ('Gene names' %in% fvars(object))    fvars(object) %<>%
+        stri_replace_first_fixed('Gene names', 'feature_name')
+
+# Samples: parse/filter
     if (verbose)  message('\tPrepare samples')
     object %<>% add_maxquant_designvars(verbose=verbose, designfile=designfile)
     object %<>% filter_maxquant_samples(rm_subgroups = rm_subgroups, verbose)
@@ -1100,6 +1105,7 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #' @param designfile             path to designfile
 #' @param impute                 TRUE or FALSE (default)
 #' @param formula                formula to create design matrix (using svars)
+#' @param contrasts              contrasts vector
 #' @param verbose                TRUE (default) or FALSE
 #' @param plot                   TRUE or FALSE
 #' @return SummarizedExperiment

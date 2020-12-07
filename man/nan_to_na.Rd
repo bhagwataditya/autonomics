@@ -18,7 +18,8 @@ matrix
 Convert NaN to NA
 }
 \examples{
-file <- load_data('billing16.proteingroups.txt')
+\
+file <- download_data('billing16.proteingroups.txt')
 x <- exprs(read_proteingroups(file))
 nan_to_na(x, verbose=TRUE)
 }

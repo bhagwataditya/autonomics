@@ -9,7 +9,7 @@ read_bam(
   paired,
   genome,
   nthreads = detectCores(),
-  filter_features_min_count = 10,
+  filter_count = 10,
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrasts = default_contrasts(object),
   verbose = TRUE,
@@ -26,9 +26,11 @@ read_bam(
 
 \item{nthreads}{number of cores to be used by Rsubread::featureCounts()}
 
-\item{filter_features_min_count}{number}
+\item{filter_count}{number}
 
 \item{formula}{formula to create design matrix (using svars)}
+
+\item{contrasts}{contrast vector}
 
 \item{verbose}{TRUE (default) / FALSE}
 

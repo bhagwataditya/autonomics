@@ -291,11 +291,11 @@ compute_precision_weights <- function(
 }
 
 
-explicitly_compute_precision_weights_once <- function(object, plot = TRUE, ...){
+explicitly_compute_precision_weights_once <- function(object, formula, plot = TRUE, ...){
 # Extract
     log2cpm  <- exprs(object)
     lib.size <- scaledlibsizes(counts(object))
-    design   <- importomics::design(object)
+    design   <- create_design(object, formula=!!enquo(formula))
 # Assert
     n <- nrow(log2cpm)
     if (n < 2L) stop("Need at least two genes to fit a mean-variance trend")
@@ -343,15 +343,15 @@ explicitly_compute_precision_weights_once <- function(object, plot = TRUE, ...){
 #
 #==============================================================================
 
-filter_low_count_features <- function(object,filter_features_min_count,verbose){
+filter_low_count_features <- function(object,filter_count,verbose){
     idx <- filterByExpr(counts(object),
                         group     = object$subgroup,
                         lib.size  = scaledlibsizes(counts(object)),
-                        min.count = filter_features_min_count)
+                        min.count = filter_count)
 
     if (verbose) message('\t\tKeep ', sum(idx), '/', length(idx),
                 ' features: count >= ',
-                filter_features_min_count, ' in at least some samples')
+                filter_count, ' in at least some samples')
 
     object[idx, ]
 }
@@ -359,14 +359,14 @@ filter_low_count_features <- function(object,filter_features_min_count,verbose){
 
 preprocess_counts <- function(
     object,
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    filter_features_min_count = 10,
-    verbose = TRUE
+    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    filter_count = 10,
+    verbose      = TRUE
 ){
 # Filter lowly expressed features
     sdata(object)$libsize <- colSums(counts(object))
     object %<>% filter_low_count_features(
-                    filter_features_min_count, verbose = TRUE)
+                    filter_count, verbose = TRUE)
     sdata(object)$libsize.filtered <- colSums(counts(object))
     sdata(object)$libsize.scaled   <- scaledlibsizes(counts(object))
 # Normalize: counts -> cpm
@@ -396,15 +396,16 @@ preprocess_counts <- function(
 
 #' Read RNAseq BAM files into SummarizedExperiment
 #'
-#' @param bamdir    string: path to SAM or BAM file directory
-#'                  (one SAM or BAM file per sample)
-#' @param paired    TRUE or FALSE (default): paired end reads?
-#' @param genome    string: either "mm10", "hg38" etc. or a GTF file
-#' @param nthreads  number of cores to be used by Rsubread::featureCounts()
-#' @param filter_features_min_count  number
-#' @param formula   formula to create design matrix (using svars)
-#' @param verbose   TRUE (default) / FALSE
-#' @param plot      TRUE (default) / FALSE
+#' @param bamdir     string: path to SAM or BAM file directory
+#'                   (one SAM or BAM file per sample)
+#' @param paired     TRUE or FALSE (default): paired end reads?
+#' @param genome     string: either "mm10", "hg38" etc. or a GTF file
+#' @param nthreads   number of cores to be used by Rsubread::featureCounts()
+#' @param filter_count  number
+#' @param formula    formula to create design matrix (using svars)
+#' @param contrasts  contrast vector
+#' @param verbose    TRUE (default) / FALSE
+#' @param plot       TRUE (default) / FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # in-built genome
@@ -415,7 +416,7 @@ preprocess_counts <- function(
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
-    filter_features_min_count = 10,
+    filter_count = 10,
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrasts = default_contrasts(object), verbose = TRUE, plot = TRUE
 ){
@@ -446,7 +447,7 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 # Add design. Preprocess
     object$sample_id <- sample_names
     object %<>% add_designvars(verbose = verbose)
-    object %<>% preprocess_counts(filter_features_min_count, verbose=verbose)
+    object %<>% preprocess_counts(filter_count=filter_count, verbose=verbose)
 # Contrast
     object %<>% add_limma(contrasts = contrasts, formula=!!enquo(formula))
 # Plot
@@ -467,10 +468,11 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' @param file      string: path to rnaseq counts file
 #' @param fid_col   number of name of column with feature identifiers
 #' @param fname_col string or number: feature name variable
-#' @param filter_features_min_count number (default 10): filter out features
+#' @param filter_count number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
 #' @param formula   formula to create design matrix (using svars)
+#' @param contrasts  contrast vector
 #' @param verbose   TRUE (default) or FALSE
 #' @param plot      TRUE (default) / FALSE
 #' @return SummarizedExperiment
@@ -483,7 +485,7 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' @seealso merge_sdata, merge_fdata
 #' @export
 read_counts <- function(
-    file, fid_col = 1, fname_col = character(0), filter_features_min_count = 10,
+    file, fid_col = 1, fname_col = character(0), filter_count = 10,
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrasts = default_contrasts(object), verbose = TRUE, plot = TRUE
 ){
@@ -513,14 +515,15 @@ read_counts <- function(
     assays(object)$exprs <- NULL
 # Prepare
     object %<>% add_designvars()
-    object %<>% preprocess_counts(filter_features_min_count, verbose=verbose)
+    object %<>% preprocess_counts(
+        formula=!!formula, filter_count=filter_count, verbose=verbose)
     if (length(fname_col)>0){
         assert_is_subset(fname_col, fvars(object))
         fdata(object)$feature_name <- fdata(object)[[fname_col]]
         fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     }
 # Contrast
-    object %<>% add_limma(contrasts=contrasts, formula=!!enquo(formula))
+    object %<>% add_limma(contrasts=contrasts, formula=!!formula)
 # Plot
     if (plot)  plot_samples(object)
 # Return
