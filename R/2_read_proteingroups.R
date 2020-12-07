@@ -1130,7 +1130,7 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #'
 #' # Internal Standard Ratios
 #'     file <-  download_data('billing19.proteingroups.txt')
-#'     object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+#'     object <- read_proteingroups(file)
 #'
 #' # Rm subgroups
 #'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',

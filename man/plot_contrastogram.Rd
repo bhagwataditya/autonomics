@@ -21,12 +21,24 @@ plot_contrastogram(
 Plot contrastogram
 }
 \examples{
-file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
-plot_contrastogram(object)
+# Ratios: self-contrasts
+   file <- download_data('billing16.proteingroups.txt')
+   invert <- c('EM_E', 'BM_E', 'BM_EM')
+   object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
+   plot_contrastogram(object)
 
-file <- download_data('billing16.proteingroups.txt')
-invert <- c('EM_E', 'BM_E', 'BM_EM')
-object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
-plot_contrastogram(object)
+# subgroup vector
+    file <-  download_data('billing19.proteingroups.txt')
+    rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
+                       'EM05_EM02', 'EM30_EM15')
+    object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
+    object$subgroup \%<>\% stri_replace_first_fixed('_STD', '')
+    object$subgroup \%<>\% factor(c('EM00','EM01','EM02','EM05','EM15','EM30','BM00'))
+    plot_contrastogram(object, contrasts=difference_contrasts(object))
+
+# subgroup matrix
+   file <- download_data('halama18.metabolon.xlsx')
+   object <- read_metabolon(file, plot=FALSE)
+   plot_contrastogram(object)
+
 }

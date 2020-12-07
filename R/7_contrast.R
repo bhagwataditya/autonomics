@@ -117,7 +117,7 @@ create_contrastmat <- function(
 
 #=============================================================================
 #
-#               matrixify_subgroups
+#               matrify_subgroups
 #                   split_subgroup_levels
 #                       split_subgroup_values
 #                           split_values
@@ -141,7 +141,7 @@ split_subgroup_levels <- function(object){
 }
 
 
-#' Arrayify (subgroup) levels
+#' Arrify (subgroup) levels
 #'
 #' Arrange (subgroup) levels in array
 #'
@@ -149,23 +149,25 @@ split_subgroup_levels <- function(object){
 #' @param sep separator (string)
 #' @return array
 #' @examples
-#' array_levels(x = c('wt',             'kd'))
-#' array_levels(x = c('wt.t0',     'wt.t1',     'kd.t0',     'kd.t1'))
-#' array_levels(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
-#'                    'wt.t0.uM5', 'wt.t1.uM5', 'kd.t0.uM5', 'kd.t1.uM5'))
+#' arrify(x = c('wt',             'kd'))
+#' arrify(x = c('wt.t0',     'wt.t1',     'kd.t0',     'kd.t1'))
+#' arrify(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
+#'              'wt.t0.uM5', 'wt.t1.uM5', 'kd.t0.uM5', 'kd.t1.uM5'))
 #' @noRd
-arrayify_subgroups <- function(x, sep=guess_sep(x)){
-    x %<>% sort()
-    dt <- data.table(subgroup = x)
+arrify_subgroups <- function(x, sep=guess_sep(x)){
+    #x %<>% sort()
+    dt <- data.table(subgroup = factor(x, x))
     components <- dt[, tstrsplit(subgroup, sep, fixed=TRUE)]
+    for (i in 1:ncol(components)) components[[i]] %<>% factor(., levels=unique(.))
     dt %<>% cbind(components)
     data.table::setorderv(dt, rev(names(components)))
     levels  <- dt[, -1] %>% lapply(unique)
+    #levels[1:2] %<>% rev()
     nlevels <- levels %>% vapply(length, integer(1))
     array(dt$subgroup, dim = nlevels, dimnames = levels)
 }
 
-#' Matrixify subgrouplevels
+#' Matrify subgrouplevels
 #'
 #' Arrange (subgroup)levels in matrix
 #'
@@ -173,16 +175,16 @@ arrayify_subgroups <- function(x, sep=guess_sep(x)){
 #' @param sep separator (string)
 #' @return matrix
 #' @examples
-#' matrixify_subgroups(x = c('BM_EM', 'BM_E', 'EM_E'))
-#' matrixify_subgroups(x = c('wt', 'kd'))
-#' matrixify_subgroups(x = c('wt.t0', 'wt.t1', 'kd.t0', 'kd.t1'))
-#' matrixify_subgroups(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
+#' matrify_subgroups(x = c('BM_EM', 'BM_E', 'EM_E'))
+#' matrify_subgroups(x = c('wt', 'kd'))
+#' matrify_subgroups(x = c('wt.t0', 'wt.t1', 'kd.t0', 'kd.t1'))
+#' matrify_subgroups(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
 #'                    'wt.t0.uM5', 'wt.t1.uM5', 'kd.t0.uM5', 'kd.t1.uM5'))
 #' file <- download_data('halama18.metabolon.xlsx')
-#' matrixify_subgroups(x = subgroup_levels(read_metabolon(file, plot=FALSE)))
+#' matrify_subgroups(x = subgroup_levels(read_metabolon(file, plot=FALSE)))
 #' @noRd
-matrixify_subgroups <- function(x, sep=guess_sep(x)){
-    subgroup_array <- arrayify_subgroups(x, sep)
+matrify_subgroups <- function(x, sep=guess_sep(x)){
+    subgroup_array <- arrify_subgroups(x, sep)
     if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
                       byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
     otherdims <- names(dim(subgroup_array)) %>% setdiff('V1')
@@ -223,7 +225,7 @@ matrixify_subgroups <- function(x, sep=guess_sep(x)){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
+#' subgroup_matrix <- matrify_subgroups(subgroup_levels(object))
 #' contrast_columns(subgroup_matrix)
 #' @noRd
 contrast_columns <- function(subgroup_matrix, symbol = ' - '){
@@ -254,7 +256,7 @@ contrast_columns <- function(subgroup_matrix, symbol = ' - '){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' subgroup_matrix <- matrixify_subgroups(subgroup_levels(object))
+#' subgroup_matrix <- matrify_subgroups(subgroup_levels(object))
 #' contrast_rows(subgroup_matrix)
 #' @noRd
 contrast_rows <- function(subgroup_matrix, symbol = ' - '){
@@ -292,7 +294,7 @@ contrast_rows <- function(subgroup_matrix, symbol = ' - '){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' (x <- matrixify_subgroups(subgroup_levels(object)))
+#' (x <- matrify_subgroups(subgroup_levels(object)))
 #' aggregate_contrasts(contrast_rows(x), 1)    # some conc across t
 #' aggregate_contrasts(contrast_rows(x), 2)    # concentrations at t
 #' aggregate_contrasts(contrast_columns(x), 2) # some time across conc
@@ -316,7 +318,7 @@ aggregate_row_contrasts <- function(conc_contrastmat){
 
 #=============================================================================
 #
-#               create_diff_contrasts
+#               difference_contrasts
 #
 #==============================================================================
 
@@ -328,15 +330,15 @@ aggregate_row_contrasts <- function(conc_contrastmat){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' create_diff_contrasts(object)
+#' difference_contrasts(object)
 #' @noRd
-create_diff_contrasts <- function(object){
+difference_contrasts <- function(object){
 # Single subgroup
     subgroups <- subgroup_levels(object)
     if (assertive::is_scalar(subgroups)) return(
         structure(subgroups, names=subgroups))
 # Row contrasts
-    subgroup_matrix <- matrixify_subgroups(subgroups)
+    subgroup_matrix <- matrify_subgroups(subgroups)
     contrasts <- character(0)
     if (nrow(subgroup_matrix)>1){
         row_contrmat   <- contrast_rows(subgroup_matrix)
@@ -400,7 +402,7 @@ default_contrasts <- function(object){
     # Difference contrasts for abundance data
     } else {
         message('\tGenerate difference contrasts')
-        contrasts <- create_diff_contrasts(object)
+        contrasts <- difference_contrasts(object)
     }
 
     # Return
@@ -615,7 +617,7 @@ default_color_values <- function(
 
 default_color_values2 <- function(object){
     subgrouplevels <- subgroup_levels(object)
-    subgroupmatrix <- matrixify_subgroups(subgrouplevels, sep=guess_sep(object))
+    subgroupmatrix <- matrify_subgroups(subgrouplevels, sep=guess_sep(object))
     default_color_values(object)[c(t(subgroupmatrix))]
 }
 
@@ -633,7 +635,7 @@ compute_connections <- function(
     ndown   <- colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
     sep <- guess_sep(object)
-    subgroupmatrix <- matrixify_subgroups(subgroup_levels(object), sep)
+    subgroupmatrix <- matrify_subgroups(subgroup_levels(object), sep)
     subgrouplevels <- c(t(subgroupmatrix))
     sizes <- colors <- matrix(0,
         nrow = length(subgrouplevels), ncol = length(subgrouplevels),
@@ -649,10 +651,12 @@ compute_connections <- function(
         ns <- nsignif[[contrastname]]
         nu <- nup[[contrastname]]
         nd <- ndown[[contrastname]]
-        sizes[ to, from] <- ns
+        sizes[ to, from] <- nu#ns
+        sizes[ from, to] <- nd#ns
         colors[to, from] <- subgroup_colors[[to]]
-        labels[to, from] <- if (nu>0) paste0(nu,  " %up% phantom(.)") else "phantom(.)"
-        labels[from, to] <- if (nd>0) paste0(nd," %down% phantom(.)") else "phantom(.)"
+        colors[from, to] <- subgroup_colors[[from]]
+        labels[to, from] <- if (nu>0) nu else 0#paste0(nu,  " %up% phantom(.)") else "phantom(.)"
+        labels[from, to] <- if (nd>0) nd else 0#paste0(nd," %down% phantom(.)") else "phantom(.)"
     }
 # Return
     #labels[colors==0] <- "0"
@@ -665,14 +669,26 @@ compute_connections <- function(
 #' @param contrasts contrast vector
 #' @param subgroup_colors named color vector (names = subgroups)
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' plot_contrastogram(object)
+#' # Ratios: self-contrasts
+#'    file <- download_data('billing16.proteingroups.txt')
+#'    invert <- c('EM_E', 'BM_E', 'BM_EM')
+#'    object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
+#'    plot_contrastogram(object)
 #'
-#' file <- download_data('billing16.proteingroups.txt')
-#' invert <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
-#' plot_contrastogram(object)
+#' # subgroup vector
+#'     file <-  download_data('billing19.proteingroups.txt')
+#'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
+#'                        'EM05_EM02', 'EM30_EM15')
+#'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
+#'     object$subgroup %<>% stri_replace_first_fixed('_STD', '')
+#'     object$subgroup %<>% factor(c('EM00','EM01','EM02','EM05','EM15','EM30','BM00'))
+#'     plot_contrastogram(object, contrasts=difference_contrasts(object))
+#'
+#' # subgroup matrix
+#'    file <- download_data('halama18.metabolon.xlsx')
+#'    object <- read_metabolon(file, plot=FALSE)
+#'    plot_contrastogram(object)
+#'
 #' @export
 plot_contrastogram <- function(
   object, contrasts = default_contrasts(object),
@@ -693,6 +709,7 @@ plot_contrastogram <- function(
     dt <- split_subgroup_levels(object)
     nrow <- dt[, data.table::uniqueN(V2)]
     nperrow <- dt[, .N, by = 'V1'][, N]
+    if (all(nperrow==1)) nperrow %<>% length()
     #dir.create('~/importomicscache/contrastogram')
     #pdf('~/importomicscache/contrastogram/directed_contrastogram.pdf',
     #width = 9, height = 9)
