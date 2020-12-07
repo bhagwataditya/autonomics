@@ -29,9 +29,10 @@ zero_to_na <- function(x, verbose = FALSE){
 #' @param x matrix
 #' @param verbose TRUE/FALSE
 #' @return matrix
-#' @examples\
+#' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' x <- exprs(read_proteingroups(file))
+#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
+#' x <- exprs(read_proteingroups(file, invert_subgroups=invert_subgroups))
 #' nan_to_na(x, verbose=TRUE)
 #' @export
 nan_to_na <- function(x, verbose = FALSE){
