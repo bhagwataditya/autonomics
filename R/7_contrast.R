@@ -146,6 +146,7 @@ split_subgroup_levels <- function(object){
 #' Arrange (subgroup) levels in array
 #'
 #' @param x  subgroup levels (character vector)
+#' @param sep separator (string)
 #' @return array
 #' @examples
 #' array_levels(x = c('wt',             'kd'))
@@ -153,10 +154,10 @@ split_subgroup_levels <- function(object){
 #' array_levels(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
 #'                    'wt.t0.uM5', 'wt.t1.uM5', 'kd.t0.uM5', 'kd.t1.uM5'))
 #' @noRd
-arrayify_subgroups <- function(x){
+arrayify_subgroups <- function(x, sep=guess_sep(x)){
     x %<>% sort()
     dt <- data.table(subgroup = x)
-    components <- dt[, tstrsplit(subgroup, guess_sep(x), fixed=TRUE)]
+    components <- dt[, tstrsplit(subgroup, sep, fixed=TRUE)]
     dt %<>% cbind(components)
     data.table::setorderv(dt, rev(names(components)))
     levels  <- dt[, -1] %>% lapply(unique)
@@ -164,13 +165,15 @@ arrayify_subgroups <- function(x){
     array(dt$subgroup, dim = nlevels, dimnames = levels)
 }
 
-#' Matrixify subgroups
+#' Matrixify subgrouplevels
 #'
-#' Arrange (subgroup) levels in matrix
+#' Arrange (subgroup)levels in matrix
 #'
-#' @param x  subgroup levels (character vector)
+#' @param x   subgrouplevels (character vector)
+#' @param sep separator (string)
 #' @return matrix
 #' @examples
+#' matrixify_subgroups(x = c('BM_EM', 'BM_E', 'EM_E'))
 #' matrixify_subgroups(x = c('wt', 'kd'))
 #' matrixify_subgroups(x = c('wt.t0', 'wt.t1', 'kd.t0', 'kd.t1'))
 #' matrixify_subgroups(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
@@ -178,8 +181,8 @@ arrayify_subgroups <- function(x){
 #' file <- download_data('halama18.metabolon.xlsx')
 #' matrixify_subgroups(x = subgroup_levels(read_metabolon(file, plot=FALSE)))
 #' @noRd
-matrixify_subgroups <- function(x){
-    subgroup_array <- arrayify_subgroups(x)
+matrixify_subgroups <- function(x, sep=guess_sep(x)){
+    subgroup_array <- arrayify_subgroups(x, sep)
     if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
                       byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
     otherdims <- names(dim(subgroup_array)) %>% setdiff('V1')
@@ -611,8 +614,9 @@ default_color_values <- function(
 
 
 default_color_values2 <- function(object){
-    default_color_values(object)[
-        c(t(matrixify_subgroups(subgroup_levels(object))))]
+    subgrouplevels <- subgroup_levels(object)
+    subgroupmatrix <- matrixify_subgroups(subgrouplevels, sep=guess_sep(object))
+    default_color_values(object)[c(t(subgroupmatrix))]
 }
 
 
@@ -667,30 +671,30 @@ compute_connections <- function(
 #' @param subgroup_colors named color vector (names = subgroups)
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, plot=FALSE)
 #' plot_contrastogram(object)
 #'
 #' file <- download_data('billing16.proteingroups.txt')
-#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
+#' invert <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
 #' plot_contrastogram(object)
 #' @export
 plot_contrastogram <- function(
   object, contrasts = default_contrasts(object),
   subgroup_colors = default_color_values2(object)
 ){
-    # Initialize
+# Initialize
     V2 <- .N <- N <- NULL
 
-    # Perform limma
-    object %<>% add_limma()
+# Perform limma
+    object %<>% add_limma(contrasts = contrasts)
     contrastogram_matrices <- compute_connections(object, contrasts, subgroup_colors = subgroup_colors)
     sizes  <- contrastogram_matrices$sizes
     colors <- contrastogram_matrices$colors
     labels <- contrastogram_matrices$labels
     widths <- scales::rescale(sizes, c(0.01,30))
 
-    # Plot diagram
+# Plot diagram
     dt <- split_subgroup_levels(object)
     nrow <- dt[, data.table::uniqueN(V2)]
     nperrow <- dt[, .N, by = 'V1'][, N]
