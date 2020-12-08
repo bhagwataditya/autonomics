@@ -16,15 +16,15 @@ named character vector: contrast definitions
 Default contrasts
 }
 \examples{
-# STEM CELL COMPARISON
-require(magrittr)
-file <- download_data('billing16.proteingroups.txt')
-invert_subgroups <- c('EM_BM', 'EM_E', 'E_BM')
-object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
-default_contrasts(object)
+# Ratios
+    require(magrittr)
+    file <- download_data('billing16.proteingroups.txt')
+    inv <- c('EM_BM', 'EM_E', 'E_BM')
+    object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+    default_contrasts(object)
 
 # GLUTAMINASE
-file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file)
-default_contrasts(object)
+    file <- download_data('halama18.metabolon.xlsx')
+    object <- read_metabolon(file, plot=FALSE)
+    default_contrasts(object)
 }

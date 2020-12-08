@@ -1,3 +1,467 @@
+#=============================================================================
+#
+#                   guess_sep
+#                   guess_sep.SummarizedExperiment
+#                   guess_sep.factor
+#                   guess_sep.character
+#                       has_identical_values
+#                       is_max
+#                           cequals
+#
+#=============================================================================
+
+#' Convenient equals operator
+#'
+#' Performs x == y, but returns FALSE rather than NA for NA elements of x.
+#' @param x numeric vector or scalar
+#' @param y numeric scalar
+#' @return logical vector
+#' @examples
+#' x <- c(A=1,B=3,C=2,D=3, E=NA)
+#' y <- 3
+#' cequals(x, y)
+#' @noRd
+cequals <- function(x,y){
+    result <- rep(FALSE, length(x)) %>% set_names(names(x))
+    if (is.na(y)){
+        result[ is.na(x)] <- TRUE
+        result[!is.na(x)] <- FALSE
+    } else {
+        result[ is.na(x)] <- FALSE
+        result[!is.na(x)] <- x[!is.na(x)] == y
+    }
+    result
+}
+
+
+#' Is maximal
+#' @param x numeric vector
+#' @return logical vector
+#' @examples
+#' x <- c(A=1,B=3,C=2,D=3, E=NA)
+#' is_max(x)
+#' @noRd
+is_max <- function(x) cequals(x, max(x, na.rm = TRUE))
+
+
+#' All elements of vector are identical
+#' @param x vector
+#' @return TRUE or FALSE
+#' @examples
+#' x <- c(2,2,1,2)
+#' has_identical_values(x)
+#' @noRd
+has_identical_values <- function(x) length(unique(x))==1
+
+#' Guess separator
+#' @param x          character vector or SummarizedExperiment
+#' @param var        svar or fvar
+#' @param separators character vector: possible separators to look for
+#' @param verbose    TRUE or FALSE
+#' @param ...        used for proper S3 method dispatch
+#' @return separator (string) or NULL (if no separator could be identified)
+#' @examples
+#' # charactervector
+#'    x <- c('PERM_NON.R1[H/L]', 'PERM_NON.R2[H/L]', 'PERM_NON.R3[H/L]')
+#'    guess_sep(x)
+#'
+#'    x <- c('WT untreated 1', 'WT untreated 2', 'WT treated 1')
+#'    guess_sep(x)
+#'
+#'    x <- c('group1', 'group2', 'group3.R1')
+#'    guess_sep(x)
+#'
+#' # SummarizedExperiment
+#'    # file <- download_data('halama18.metabolon.xlsx')
+#'    # object <- read_metabolon(file)
+#'    # guess_sep(object)
+#'
+#'    # file <- download_data('billing16.proteingroups.txt')
+#'    # object <- read_proteingroups(object)
+#'    # guess_sep(object)
+#' @export
+guess_sep <- function (x, ...) {
+    UseMethod("guess_sep", x)
+}
+
+
+#' @rdname guess_sep
+#' @export
+guess_sep.character <- function(
+    x, separators = c('.', ' ', '_'), verbose = FALSE, ...
+){
+# Initialize
+    . <- NULL
+    sep_freqs <-Map(function(y) stri_split_fixed(x, y), separators) %>%
+                lapply(function(y) vapply(y, length, integer(1)))            %>%
+                extract( vapply(., has_identical_values, logical(1)))        %>%
+                vapply(unique, integer(1))
+# No separator detected - return NULL
+    if (all(sep_freqs==1)){
+        if (verbose) message(x[1],': no (consistent) separator. Returning NULL')
+        return('NOSEP')   # no separator detected
+    }
+# Find best separator
+    best_sep <- sep_freqs %>%
+                extract(.!=1)  %>%
+                extract(is_max(vapply(., extract, integer(1), 1)))   %>%
+                names()
+# Ambiguous separator - take first from tail
+    if (length(best_sep)>1){
+        pattern <- best_sep %>% paste0(collapse='') %>% paste0('[', ., ']')
+        best_sep <- x[1] %>% stri_extract_last_regex(pattern)
+    }
+# Separator identified - return
+    if (verbose) message("\t\tGuess sep: '", best_sep, "'")
+    return(best_sep)
+}
+
+
+#' @rdname guess_sep
+#' @export
+guess_sep.factor <- function(x, ...)  guess_sep.character(levels(x))
+
+
+#' @rdname guess_sep
+#' @export
+guess_sep.SummarizedExperiment <- function(
+    x, var = 'sample_id', separators =  c('.', '_', ' '),
+    verbose = FALSE, ...
+){
+    assert_is_subset(var, c(svars(x), fvars(x)))
+    (if (var %in% svars(x)) slevels(x, var) else flevels(x, var)) %>%
+    guess_sep(separators = separators, verbose = verbose)
+}
+
+
+#=============================================================================
+#
+#                   guess_subgroup_values
+#                   guess_replicate_values
+#                       nfactors
+#                       split_extract
+#
+#=============================================================================
+
+#' @export
+#' @rdname split_extract
+nfactors <- function(x, sep = guess_sep(x)){
+    length(unlist(stri_split_fixed(x[1], sep)))
+}
+
+#' stri_split and extract
+#' @param x string
+#' @param i integer
+#' @param sep string
+#' @return character
+#' @examples
+#' require(magrittr)
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot=FALSE)
+#' x <- object$sample_id[1:5]
+#' nfactors(x)
+#' split_extract(x, 1:2)
+#' split_extract(x, seq_len(nfactors(x)-1))
+#' split_extract(x, nfactors(x))
+#' @export
+split_extract <- function(x, i, sep=guess_sep(x)){
+    factors <- stri_split_fixed(x, sep)
+    vapply(factors, function(y) paste0(y[i], collapse=sep), character(1))
+}
+
+#' Guess subgroup/replicate values
+#' @param x       sampleid values (string vector)
+#' @param sep     subfactor separator (string)
+#' @param verbose boolean
+#' @return character(n)
+#' @examples
+#' require(magrittr)
+#' x <- c("EM00", "EM01", "EM02")
+#' guess_subgroup_values(x)
+#'
+#' x <- c("EM_R1", "EM_R2", "EM_R3")
+#' guess_subgroup_values(x)
+#'
+#' x <- c("UT_10h_R1", "UT_10h_R2", "UT_10h_R3")
+#' guess_subgroup_values(x)
+#' guess_replicate_values(x)
+#'
+#' x <- c("EM00_STD.R1", "EM01_STD.R1", "EM01_EM00.R1")
+#' guess_subgroup_values(x)
+#' guess_replicate_values(x)
+#' @export
+guess_subgroup_values <- function(x, sep = guess_sep(x), verbose=TRUE){
+    y <-  if (is.null(sep)){  x
+            } else {         split_extract(x, seq_len(nfactors(x)-1), sep) }
+    if (verbose)   message('\t\tGuess subgroup values: ', x[1], ' => ', y[1])
+    y
+}
+
+
+#' @rdname guess_subgroup_values
+#' @export
+guess_replicate_values <- function(x, sep = guess_sep(x), verbose=TRUE){
+    y  <-  if (is.null(sep)){   x
+            } else {            split_extract(x, nfactors(x,sep), sep) }
+    if (verbose)   message('\t\tGuess replicate values: ', x[1], ' => ', y[1])
+    y
+}
+
+
+#=============================================================================
+#
+#                     create_subgroup_values
+#                     create_replicate_values
+#
+#=============================================================================
+
+#' @examples
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' create_subgroup_values(object, subgroup_var=NULL,  verbose=TRUE)
+#' create_replicate_values(object, subgroup_var=NULL, verbose=TRUE)
+#' @noRd
+create_subgroup_values <- function(object, subgroup_var, verbose){
+    values <- svalues(object, subgroup_var)
+    if (is.null(values) | all(is.na(values)) | all(values=="")) values <-
+         guess_subgroup_values(object$sample_id, verbose=verbose)
+    if (all(is.na(values)) | all(values=="")) values[] <- 'subgroup1'
+    values
+}
+
+
+create_replicate_values <- function(object, subgroup_var, verbose){
+    sampleid_values <- sdata(object)$sample_id
+    if (is.null(subgroup_var)){
+        replicate_values <- guess_replicate_values(
+                                sampleid_values, verbose=FALSE)
+    } else if (all(is.na(slevels(object, subgroup_var)))){
+        replicate_values <- guess_replicate_values(
+                                sampleid_values, verbose=FALSE)
+    } else {
+        subgroup_values <- sdata(object)[[subgroup_var]]
+        replicate_values <- rep('', length(subgroup_values))
+        for (i in seq_along(subgroup_values)){
+            replicate_values[i] <-
+                sampleid_values[i] %>%
+                stri_replace_first_fixed(subgroup_values[i], '') %>%
+                stri_replace_all_regex('^[._ ]', '') %>%
+                stri_replace_all_regex('[._ ]$', '')
+        }
+    }
+    if (verbose)   message('\t\tGuess replicate values from sampleids: ',
+                            sampleid_values[1], ' => ', replicate_values[1])
+    replicate_values
+}
+
+
+#=============================================================================
+#
+#               add_designvars
+#                   file_exists
+#                   get_default_designfile
+#                       default_designfile
+#
+#=============================================================================
+
+# Deals properly with NULL values
+# file.exists does not!
+file_exists <- function(file){
+    if (is.null(file))      return(FALSE)
+    if (file.exists(file))  return(TRUE)
+                            return(FALSE)
+}
+
+default_designfile <- function(file, platform = NULL, quantity = NULL){
+
+    # Initialize
+    if (is.null(platform))  platform <- ''
+    if (is.null(quantity))  quantity <- ''
+
+    # No designfile for SOMASCAN and METABOLON
+    if (platform %in% c('metabolon', 'somascan')) return(NULL)
+
+    # Take basename file
+    designfile <- tools::file_path_sans_ext(file)
+
+    # Append quantity for MaxQuant files
+    if (platform == 'maxquant'){
+        designfile %<>% paste(make.names(quantity), sep = '.')
+    }
+
+    # Add .design.tx
+    designfile %<>% paste0('.design.txt')
+    designfile
+}
+
+
+#' @param object        SummarizedExperiment
+#' @param subgroup_var  subgroup svar or NULL
+#' @param designfile    design file path (to read/write) or NULL (don't write)
+#' @param verbose       TRUE (default) or FALSE
+#'@examples
+#'# PROTEINGROUPS
+#'    file <- download_data('billing19.proteingroups.txt')
+#'    object <- read_proteingroups(file)
+#'    get_default_designfile(object)
+#'
+#' # SOMASCAN
+#'     inputfile <- download_data('atkin18.somascan.adat')
+#'     default_designfile(inputfile, platform = 'somascan')
+#'
+#' # METABOLON
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     default_designfile(inputfile, platform = 'metabolon')
+#'
+#' # RNACOUNTS
+#'@noRd
+get_default_designfile <- function(object){
+    file     <- metadata(object)$file
+    platform <- metadata(object)$platform
+    quantity <- metadata(object)$quantity
+
+    default_designfile(file, platform, quantity)
+}
+
+
+#' @param object        SummarizedExperiment
+#' @param subgroup_var  subgroup svar or NULL
+#' @param designfile    design file path (to read/write) or NULL (don't write)
+#' @param verbose       TRUE (default) or FALSE
+#'@examples
+#'# PROTEINGROUPS
+#'    file <- download_data('billing19.proteingroups.txt')
+#'    rm_subgroups <- c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
+#'                        'EM05_EM02', 'EM30_EM15')
+#'    object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+#'    add_designvars(object)
+#'
+#'    file <- download_data('billing16.proteingroups.txt')
+#'    invert_subgroups <- c('EM_E', 'E_BM', 'EM_BM')
+#'    object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
+#'    add_designvars(object)
+#'
+#' # SOMASCAN
+#'     file <- download_data('atkin18.somascan.adat')
+#'     read_somascan(file)
+#'
+#' # METABOLON
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     read_metabolon(file)
+#'
+#' # RNACOUNTS
+#'@noRd
+add_designvars <- function(object, subgroup_var = NULL,
+    designfile = get_default_designfile(object),
+    verbose = TRUE
+){
+# Read
+    dt <- if (file_exists(designfile)){
+            if (verbose) message(
+                '\t\tRead design (update if required!): ', designfile)
+            fread(designfile)
+        } else {
+            if (verbose) message(
+                '\t\tInfer design from sample_ids')
+            data.table(
+            sample_id = object$sample_id,
+            subgroup  = create_subgroup_values( object, subgroup_var, verbose),
+            replicate = create_replicate_values(object, subgroup_var, verbose))
+        }
+# Add to object
+    object %<>% merge_sdata(dt)
+    sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
+# Write
+    if (!is.null(designfile)){
+        if (!file.exists(designfile)){
+            if (verbose) message('\t\tWrite design (update if required!): ',
+                            designfile)
+            fwrite(dt, designfile, sep = '\t', row.names = FALSE)
+        }
+    }
+# Return
+    object
+}
+
+
+
+#==============================================================================
+#
+#                       create_design
+#                           single_subgroup
+#                           are_factor
+#
+#==============================================================================
+
+single_subgroup <- function(object){
+    assert_is_subset('subgroup', svars(object))
+    length(unique(object$subgroup))==1
+}
+
+
+are_factor <- function(df) vapply(df, is.factor, logical(1))
+
+
+#' Create design
+#'
+#'  Create design matrix  for statistical analysis
+#' @param object      SummarizedExperiment
+#' @param formula     formula with svars
+#' @return design matrix
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_counts(file, plot=FALSE)
+#' create_design(object)
+#'
+#' object$subgroup <- 'billing16'
+#' create_design(object)
+#'
+#' file <- download_data('atkin18.somascan.adat')
+#' object <- read_somascan(file, plot=FALSE)
+#' create_design(object)
+#' create_design(object, ~ 0 + subgroup + Sex + T2D + age + bmi)
+#' object$subgroup <- 'atkin18'
+#' create_design(object)
+#' @export
+create_design <- function(
+    object,
+    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup
+){
+# Assert
+    assert_is_all_of(object, 'SummarizedExperiment')
+    formula <- enquo(formula)
+    formula <- eval_tidy(formula, sdata(object))
+    assert_is_subset(all.vars(formula), svars(object))
+    . <- NULL
+# Ensure that subgroup vector is a factor to preserve order of levels
+    object$subgroup %<>% factor() # required for '(Intercept)' -> factor1.level1
+    for (var in setdiff(all.vars(formula), 'subgroup')){
+        if (is.character(sdata(object)[[var]])){
+            sdata(object)[[var]] %<>% factor()
+        }
+    }
+# Create design matrix
+    myDesign <- model.matrix(formula,  data = sdata(object))
+# Rename: intercept -> factor1level1
+    factors <- svars(object)[are_factor(sdata(object))]
+    factor1 <- factors[1]
+    level1  <- levels(sdata(object)[[factor1]])[1]
+    colnames(myDesign) %<>% gsub('(Intercept)', level1, ., fixed = TRUE)
+# Rename regressors
+    for (var in factors) colnames(myDesign) %<>% gsub(var, '', ., fixed = TRUE)
+        # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
+        # For other cases it works wonderfully, so I keep it for now.
+        # If it gives too many issues, roll back to doing the dropping only
+        # for "subgroup" levels:
+        #colnames(myDesign) %<>% gsub('subgroup', '', ., fixed=TRUE)
+# Validify names
+    colnames(myDesign) %<>% gsub(':', '..', ., fixed = TRUE)
+    colnames(myDesign) %<>% make.names()
+# Return
+    return(myDesign)
+}
+
+
 #==============================================================================
 #
 #                is_valid_contrast
@@ -117,7 +581,7 @@ create_contrastmat <- function(
 
 #=============================================================================
 #
-#               matrify_subgroups
+#               subgroup_matrix
 #                   split_subgroup_levels
 #                       split_subgroup_values
 #                           split_values
@@ -141,20 +605,11 @@ split_subgroup_levels <- function(object){
 }
 
 
-#' Arrify (subgroup) levels
-#'
-#' Arrange (subgroup) levels in array
-#'
-#' @param x  subgroup levels (character vector)
-#' @param sep separator (string)
-#' @return array
-#' @examples
-#' arrify(x = c('wt',             'kd'))
-#' arrify(x = c('wt.t0',     'wt.t1',     'kd.t0',     'kd.t1'))
-#' arrify(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
-#'              'wt.t0.uM5', 'wt.t1.uM5', 'kd.t0.uM5', 'kd.t1.uM5'))
-#' @noRd
-arrify_subgroups <- function(x, sep=guess_sep(x)){
+#' @rdname subgroup_matrix
+#' @export
+subgroup_array <- function(object){
+    x <- subgroup_levels(object)
+    sep <- guess_sep(object)
     #x %<>% sort()
     dt <- data.table(subgroup = factor(x, x))
     components <- dt[, tstrsplit(subgroup, sep, fixed=TRUE)]
@@ -167,24 +622,32 @@ arrify_subgroups <- function(x, sep=guess_sep(x)){
     array(dt$subgroup, dim = nlevels, dimnames = levels)
 }
 
-#' Matrify subgrouplevels
+
+#' Get subgroup matrix
 #'
 #' Arrange (subgroup)levels in matrix
 #'
-#' @param x   subgrouplevels (character vector)
-#' @param sep separator (string)
+#' @param object SummarizedExperiment
 #' @return matrix
 #' @examples
-#' matrify_subgroups(x = c('BM_EM', 'BM_E', 'EM_E'))
-#' matrify_subgroups(x = c('wt', 'kd'))
-#' matrify_subgroups(x = c('wt.t0', 'wt.t1', 'kd.t0', 'kd.t1'))
-#' matrify_subgroups(x = c('wt.t0.uM0', 'wt.t1.uM0', 'kd.t0.uM0', 'kd.t1.uM0',
-#'                    'wt.t0.uM5', 'wt.t1.uM5', 'kd.t0.uM5', 'kd.t1.uM5'))
-#' file <- download_data('halama18.metabolon.xlsx')
-#' matrify_subgroups(x = subgroup_levels(read_metabolon(file, plot=FALSE)))
-#' @noRd
-matrify_subgroups <- function(x, sep=guess_sep(x)){
-    subgroup_array <- arrify_subgroups(x, sep)
+#' # Matrix
+#'     file <- download_data('halama18.metabolon.xlsx')
+#'     object <- read_metabolon(file, plot=FALSE)
+#'     subgroup_matrix(object)
+#' # Vector
+#'     require(magrittr)
+#'     file <-  download_data('billing19.proteingroups.txt')
+#'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
+#'                        'EM05_EM02', 'EM30_EM15')
+#'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
+#'     object$subgroup %<>% gsub('_STD', '', .)
+#'     subgroups <- c('EM00','EM01','EM02','EM05','EM15','EM30','BM00')
+#'     object$subgroup %<>% factor(subgroups)
+#'     contrasts <- c(col_contrasts(object), row_contrasts(object))
+#'     plot_contrastogram(object, contrasts=c(contrasts))
+#' @export
+subgroup_matrix <- function(object){
+    subgroup_array <- subgroup_array(object)
     if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
                       byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
     otherdims <- names(dim(subgroup_array)) %>% setdiff('V1')
@@ -192,14 +655,14 @@ matrify_subgroups <- function(x, sep=guess_sep(x)){
     colnames1 <- dimnames(subgroup_array)[otherdims] %>%
                 expand.grid()                        %>%
                 apply(1, paste0, collapse='.')
-    subgroup_matrix <- matrix(subgroup_array,
+    subgroupmat <- matrix(subgroup_array,
            nrow = nrow(subgroup_array), ncol = ncol1,
            dimnames=list(rownames(subgroup_array), colnames1))
-    subgroup_matrix %>% extract(nrow(.):1, )
+    subgroupmat %>% extract(nrow(.):1, )
     #dt <- split_subgroup_levels(object)
-    #subgroup_matrix <- as.matrix(data.table::dcast(
+    #subgroupmat <- as.matrix(data.table::dcast(
     #    dt, V1 ~ V2, value.var = 'subgroup'), rownames = 'V1')
-    #subgroup_matrix %>% extract(rev(order(rownames(.))), order(colnames(.)))
+    #subgroupmat %>% extract(rev(order(rownames(.))), order(colnames(.)))
 }
 
 
@@ -208,71 +671,74 @@ matrify_subgroups <- function(x, sep=guess_sep(x)){
 
 #=============================================================================
 #
-#               contrast_columns
-#               contrast_rows
+#               col_contrast_matrix
+#               row_contrast_matrix
 #
 #==============================================================================
 
 
-#' Contrast columns
-#'
-#' Contrast columns within a row
-#'
-#' Contrast timepoints within conc
-#'
-#' @param subgroup_matrix subgroup matrix (nconc x ntime)
-#' @return      contrast matrix: nconc x (ntime-1)
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' subgroup_matrix <- matrify_subgroups(subgroup_levels(object))
-#' contrast_columns(subgroup_matrix)
-#' @noRd
-contrast_columns <- function(subgroup_matrix, symbol = ' - '){
-
+#' @export
+#' @rdname col_contrasts
+col_contrast_matrix <- function(object, symbol = ' - '){
+    subgroupmat <- subgroup_matrix(object)
     contrastmat <- matrix(  sprintf('%s%s%s',
-                                    subgroup_matrix[, -1],
+                                    subgroupmat[, -1],
                                     symbol,
-                                    subgroup_matrix[, -ncol(subgroup_matrix)]),
-                            nrow = nrow(subgroup_matrix),
-                            ncol = ncol(subgroup_matrix)-1)
-
-    rownames(contrastmat) <- rownames(subgroup_matrix)
+                                    subgroupmat[, -ncol(subgroupmat)]),
+                            nrow = nrow(subgroupmat),
+                            ncol = ncol(subgroupmat)-1)
+    rownames(contrastmat) <- rownames(subgroupmat)
     colnames(contrastmat) <- sprintf('%s - %s',
-                            colnames(subgroup_matrix)[-1],
-                            colnames(subgroup_matrix)[-ncol(subgroup_matrix)])
+                            colnames(subgroupmat)[-1],
+                            colnames(subgroupmat)[-ncol(subgroupmat)])
     contrastmat
 }
 
 
-#' Contrast rows
-#'
-#' Contrast rows within a column
-#'
-#' Contrast concentrations within timepoint
-#'
-#' @param subgroup_matrix subgroup matrix: nconc x ntime
-#' @return      contrast matrix: (nconc-1) x ntime
+#' Row/Col contrasts
+#' @param object SummarizedExperiment
+#' @param symbol contrazst symbol (default " - ")
+#' @return  matrix (col_contrast_matrix) or vector (col_contrasts)
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' subgroup_matrix <- matrify_subgroups(subgroup_levels(object))
-#' contrast_rows(subgroup_matrix)
-#' @noRd
-contrast_rows <- function(subgroup_matrix, symbol = ' - '){
+#' object <- read_metabolon(file, plot=FALSE)
+#' subgroup_matrix(object)
+#' col_contrast_matrix(object)
+#' col_contrasts(object)
+#' row_contrast_matrix(object)
+#' row_contrasts(object)
+#' @export
+col_contrasts <- function(object){
+    col_contrmat   <- col_contrast_matrix(object)
+    col_contrnames <- col_contrast_matrix(object, '__')
+    c(structure(c(t(col_contrmat)), names = c(t(col_contrnames))))
+}
 
+
+#' @rdname col_contrasts
+#' @export
+row_contrast_matrix <- function(object, symbol = ' - '){
+    subgroupmat <- subgroup_matrix(object)
     contrastmat <- matrix(  sprintf('%s%s%s',
-                                  subgroup_matrix[-nrow(subgroup_matrix), ],
+                                  subgroupmat[-nrow(subgroupmat), ],
                                   symbol,
-                                  subgroup_matrix[-1, ]),
-                            nrow = nrow(subgroup_matrix)-1,
-                            ncol = ncol(subgroup_matrix))
-
-    colnames(contrastmat) <- colnames(subgroup_matrix)
+                                  subgroupmat[-1, ]),
+                            nrow = nrow(subgroupmat)-1,
+                            ncol = ncol(subgroupmat))
+    colnames(contrastmat) <- colnames(subgroupmat)
     rownames(contrastmat) <- sprintf('%s - %s',
-                            rownames(subgroup_matrix)[-nrow(subgroup_matrix)],
-                            rownames(subgroup_matrix)[-1])
+                            rownames(subgroupmat)[-nrow(subgroupmat)],
+                            rownames(subgroupmat)[-1])
     contrastmat
+}
+
+
+#' @rdname col_contrasts
+#' @export
+row_contrasts <- function(object){
+    row_contrmat   <- row_contrast_matrix(object)
+    row_contrnames <- row_contrast_matrix(object, '__')
+    c(structure(c(t(row_contrmat)), names = c(t(row_contrnames))))
 }
 
 
@@ -293,12 +759,11 @@ contrast_rows <- function(subgroup_matrix, symbol = ' - '){
 #' @param dim 1 (aggregate across rows) or 2 (aggregate across columns)
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' (x <- matrify_subgroups(subgroup_levels(object)))
-#' aggregate_contrasts(contrast_rows(x), 1)    # some conc across t
-#' aggregate_contrasts(contrast_rows(x), 2)    # concentrations at t
-#' aggregate_contrasts(contrast_columns(x), 2) # some time across conc
-#' aggregate_contrasts(contrast_columns(x), 1) # times at conc
+#' object <- read_metabolon(file, plot = FALSE)
+#' aggregate_contrasts(row_contrast_matrix(object), 1)    # some conc across t
+#' aggregate_contrasts(row_contrast_matrix(object), 2)    # concentrations at t
+#' aggregate_contrasts(col_contrast_matrix(object), 2) # some time across conc
+#' aggregate_contrasts(col_contrast_matrix(object), 1) # times at conc
 #' @noRd
 aggregate_contrasts <- function(contrastmat, dim){
     apply(contrastmat,
@@ -313,51 +778,6 @@ aggregate_col_contrasts <- function(contrastmat){
 
 aggregate_row_contrasts <- function(conc_contrastmat){
     aggregate_contrasts(conc_contrastmat, 1)
-}
-
-
-#=============================================================================
-#
-#               difference_contrasts
-#
-#==============================================================================
-
-
-#' Create diff contrasts
-#'
-#' Create vector with difference contrasts
-#'
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' difference_contrasts(object)
-#' @noRd
-difference_contrasts <- function(object){
-# Single subgroup
-    subgroups <- subgroup_levels(object)
-    if (assertive::is_scalar(subgroups)) return(
-        structure(subgroups, names=subgroups))
-# Row contrasts
-    subgroup_matrix <- matrify_subgroups(subgroups)
-    contrasts <- character(0)
-    if (nrow(subgroup_matrix)>1){
-        row_contrmat   <- contrast_rows(subgroup_matrix)
-        row_contrnames <- contrast_rows(subgroup_matrix, '__')
-        contrasts %<>% c(structure(c(row_contrmat), names = c(row_contrnames)))
-    }
-  # Column contrasts
-    if (ncol(subgroup_matrix)>1){
-        col_contrmat   <- contrast_columns(subgroup_matrix)
-        col_contrnames <- contrast_columns(subgroup_matrix, '__')
-        contrasts %<>% c(structure(c(col_contrmat), names = c(col_contrnames)))
-    }
-# Aggregated contrasts
-    # aggregated_col_contrasts <- aggregate_col_contrasts(col_contrmat)
-    # aggregated_row_contrasts <- aggregate_row_contrasts(row_contrmat)
-    # contrasts %<>% c(aggregated_col_contrasts)
-    # contrasts %<>% c(aggregated_row_contrasts))
-# Return
-    contrasts
 }
 
 
@@ -379,17 +799,17 @@ validify_contrast_names <- function(x){
 #' @param object SummarizedExperiment
 #' @return named character vector: contrast definitions
 #' @examples
-#' # STEM CELL COMPARISON
-#' require(magrittr)
-#' file <- download_data('billing16.proteingroups.txt')
-#' invert_subgroups <- c('EM_BM', 'EM_E', 'E_BM')
-#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
-#' default_contrasts(object)
+#' # Ratios
+#'     require(magrittr)
+#'     file <- download_data('billing16.proteingroups.txt')
+#'     inv <- c('EM_BM', 'EM_E', 'E_BM')
+#'     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#'     default_contrasts(object)
 #'
 #' # GLUTAMINASE
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' default_contrasts(object)
+#'     file <- download_data('halama18.metabolon.xlsx')
+#'     object <- read_metabolon(file, plot=FALSE)
+#'     default_contrasts(object)
 #' @export
 default_contrasts <- function(object){
 
@@ -402,7 +822,8 @@ default_contrasts <- function(object){
     # Difference contrasts for abundance data
     } else {
         message('\tGenerate difference contrasts')
-        contrasts <- difference_contrasts(object)
+        sep <- guess_sep(object)
+        contrasts <- c(col_contrasts(object), row_contrasts(object))
     }
 
     # Return
@@ -447,13 +868,13 @@ default_contrasts <- function(object){
 #'
 #' file <- download_data('billing19.proteingroups.txt')
 #' rm_subgroups<-c('BLANK_BM00','BM00_BM00','EM01_EM00','EM05_EM02','EM30_EM15')
-#' object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+#' object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
 #' contrasts <- c(EM01_EM00 = 'EM01_STD - EM00_STD')
 #' object %<>% add_limma(contrasts)
 #' sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
 #'
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_counts(file)
+#' object <- read_counts(file, plot=FALSE)
 #' contrasts <- c(EM01_EM00 = 'EM01 - EM00')
 #' object %<>% add_limma(contrasts)
 #' sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
@@ -510,7 +931,8 @@ add_limma <- function(object, contrasts = default_contrasts(object),
 
 #==============================================================================
 #
-#                    limma<-
+#                    limma & limma<-
+#                    extract_limma_dt
 #
 #==============================================================================
 
@@ -520,33 +942,67 @@ add_limma <- function(object, contrasts = default_contrasts(object),
 #' @param object SummarizedExperiment
 #' @param value list
 #' @return limma results (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.proteingroups.txt')
+#' inv <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' dim(limma(object))
+#' dim(limma(object[1:5, ]))
 #' @export
 setGeneric("limma", function(object)   standardGeneric("limma") )
 
+
 #' @rdname limma
-setMethod(
-    "limma",
-    signature("SummarizedExperiment"),
-    function(object) S4Vectors::metadata(object)$limma )
+setMethod("limma", signature("SummarizedExperiment"),
+function(object){
+    limma_array <- S4Vectors::metadata(object)$limma
+    if (is.null(limma_array)) NULL else limma_array[
+                                           fnames(object), , , drop=FALSE] })
 
 #' @rdname limma
 #' @export
 setGeneric("limma<-", function(object, value)  standardGeneric("limma<-") )
 
-#' @rdname limma
-setReplaceMethod(
-    "limma",
-    signature("SummarizedExperiment", "array"),
-    function(object, value){ metadata(object)$limma <- value; object})
 
 #' @rdname limma
-setReplaceMethod(
-    "limma",
-    signature("SummarizedExperiment", "NULL"),
-    function(object, value){object})
+setReplaceMethod("limma", signature("SummarizedExperiment", "array"),
+function(object, value){
+    metadata(object)$limma <- value
+    object  })
+
+
+#' @rdname limma
+setReplaceMethod("limma", signature("SummarizedExperiment", "NULL"),
+function(object, value) object)
 
 
 
+#' Extract limma datatable
+#' @param object SummarizedExperiment
+#' @return melted data.table
+#' @examples
+#' file <- download_data('billing16.proteingroups.txt')
+#' inv <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' extract_limma_dt(object)
+#' @noRd
+extract_limma_dt <- function(object){
+    . <- NULL
+    lapply(
+        c('effect', 'p', 'fdr', 'bonf'),
+        function(quantity){
+            data.table(
+                feature_id   = fnames(object),
+                feature_name = fdata(object)$feature_name,
+                adrop(limma(object)[, , quantity, drop=FALSE], drop=3)) %>%
+            data.table::melt.data.table(
+                id.vars       = c('feature_id', 'feature_name'),
+                variable.name = 'contrast',
+                value.name    = quantity)}) %>%
+    Reduce(function(x,y) merge(
+            x, y, by = c('feature_id', 'feature_name', 'contrast')), .)
+
+}
 
 #=============================================================================
 #
@@ -591,11 +1047,11 @@ default_color_var <- function(object){
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' rm_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-#' object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+#' object <- read_proteingroups(file, rm_subgroups = rm_subgroups, plot=FALSE)
 #' default_color_values(object, show = TRUE)
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, plot=FALSE)
 #' default_color_values(object, show = TRUE)
 #' @export
 default_color_values <- function(
@@ -617,7 +1073,7 @@ default_color_values <- function(
 
 default_color_values2 <- function(object){
     subgrouplevels <- subgroup_levels(object)
-    subgroupmatrix <- matrify_subgroups(subgrouplevels, sep=guess_sep(object))
+    subgroupmatrix <- subgroup_matrix(object)
     default_color_values(object, 'subgroup')[c(t(subgroupmatrix))]
 }
 
@@ -638,7 +1094,7 @@ compute_connections <- function(
               #colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
     sep <- guess_sep(object)
-    subgroupmatrix <- matrify_subgroups(subgroup_levels(object), sep)
+    subgroupmatrix <- subgroup_matrix(object)
     subgrouplevels <- c(t(subgroupmatrix))
     sizes <- colors <- matrix(0,
         nrow = length(subgrouplevels), ncol = length(subgrouplevels),
@@ -685,18 +1141,18 @@ compute_connections <- function(
 #'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
 #'     object$subgroup %<>% gsub('_STD', '', .)
 #'     object$subgroup %<>% factor(c('EM00','EM01','EM02','EM05','EM15','EM30','BM00'))
-#'     plot_contrastogram(object, contrasts=difference_contrasts(object))
+#'     contrasts <- c(col_contrasts(object), row_contrasts(object))
+#'     plot_contrastogram(object, contrasts=c(contrasts))
 #'
 #' # subgroup scalar
-#'    plot_contrastogram(object, contrasts=difference_contrasts(object)[1])
+#'    contrasts <- c(col_contrasts(object), row_contrasts(object))
+#'    plot_contrastogram(object, contrasts=contrasts[1])
 #'
 #' # Ratios: self-contrasts
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    invert <- c('EM_E', 'BM_E', 'BM_EM')
 #'    object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
 #'    plot_contrastogram(object)
-#'
-#'
 #' @export
 plot_contrastogram <- function(
   object, contrasts = default_contrasts(object),
@@ -733,3 +1189,175 @@ plot_contrastogram <- function(
 
 
 
+#==============================================================================
+#
+#          plot_volcano
+#              make_volcano_dt
+#                  top_down/top_up
+#                      nmax/nmin
+#
+#==============================================================================
+
+invwhich <- function(indices, totlength) is.element(seq_len(totlength), indices)
+
+#' Return nth max (min) value in vector
+#'
+#' Orders a vector and returns n'th ordered value.
+#' When vector length is smaller than n, returns last value.
+#'
+#' @param x numeric vector
+#' @param n integer
+#' @return value
+#' @examples
+#' nmax(c(1,2,3,4,5), 2)
+#' nmin(c(1,2,3,4,5), 2)
+#' @noRd
+nmax <- function(x, n) sort(x, decreasing = TRUE) %>% extract(min(length(.), n))
+nmin <- function(x, n) sort(x) %>% extract(min(length(.), n))
+
+top_down <- function(effect, fdr, mlp, ntop){
+   fdr_ok   <- fdr  < 0.05
+   coef_ok  <- effect < -1
+   coef_top <- if (any(fdr_ok)){  effect < nmin(effect[fdr_ok], ntop+1)
+               } else {           rep(FALSE, length(effect))            }
+   mlp_top  <- if (any(coef_ok)){ mlp  > nmax(mlp[coef_ok], ntop+1)
+               } else {           rep(FALSE, length(effect))            }
+   fdr_ok & coef_ok & (coef_top | mlp_top)
+}
+
+#' @examples
+#' file <- download_data("billing16.proteingroups.txt")
+#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
+#' effect <-      limma(object)[,1,'effect']
+#' fdr    <-      limma(object)[,1,'fdr']
+#' mlp    <- -log(limma(object)[,1,'p'])
+#' ntop   <- 3
+#' table(top_up(effect, fdr, mlp, ntop))
+#' table(top_down(effect, fdr, mlp, ntop))
+#' @noRd
+top_up <- function(effect, fdr, mlp, ntop){
+    fdr_ok   <- fdr  < 0.05
+    coef_ok  <- effect >  1
+    coef_top <- if(any(fdr_ok)){  effect > nmax(effect[fdr_ok], ntop+1)
+                } else {          rep(FALSE, length(effect)) }
+    mlp_top  <- if (any(coef_ok)){ mlp > nmax(mlp[coef_ok], ntop+1)
+                } else {           rep(FALSE, length(effect)) }
+    fdr_ok & coef_ok & (coef_top | mlp_top)
+}
+
+
+#' Create volcano datatable
+#' @param object SummarizedExperiment
+#' @param ntop   number: how many top features (either FC wise or p wise) to be annotated
+#' @return data.table
+#' @examples
+#' file <- download_data("billing16.proteingroups.txt")
+#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
+#' print(make_volcano_dt(object))
+#' @export
+make_volcano_dt <- function(object, ntop = 3){
+
+    effect <- p <- mlp <- topdown <- topup <- color <- fdr <- NULL
+
+    dt <- extract_limma_dt(object)
+    dt %<>% extract(!is.na(effect) & !is.na(p))
+    dt[, mlp  := -log10(p)]
+
+    # Prepare volcano datatable
+    # Note: Using effect <= 0 (rather than effect <0) is required.
+    #       Otherwise (the very few) features with effect=0 will have no effect for 'color'
+    dt[,topdown := top_down(effect, fdr, mlp, ntop), by='contrast']
+    dt[,topup   := top_up(  effect, fdr, mlp, ntop), by='contrast']
+    dt[effect<=0,            color := 'down']
+    dt[effect> 0,            color :=   'up']
+    dt[effect<=0 & fdr<0.05, color := 'down: fdr<0.05']
+    dt[effect> 0 & fdr<0.05, color :=   'up: fdr<0.05']
+    dt[topdown==TRUE,        color := 'down: top']
+    dt[topup  ==TRUE,        color :=   'up: top']
+    dt[,color := factor(color, c(
+        'down: top','down: fdr<0.05','down','up','up: fdr<0.05','up: top'))]
+    dt[]
+}
+
+#' Plot volcano
+#' @param object          SummarizedExperiment
+#' @param label           fvar for labeling top features
+#' @param contrastnames   character vector: contrasts for which to plot volcano
+#' @param nrow            number: n rows in faceted plot
+#' @param ntop            number: n top features to be annotated
+#' @param legend_position handed to \code{\link[ggplot2]{theme}} as 'legend.position'
+#' @return ggplot object
+#' @examples
+#' # metabolon intensities: complex design
+#'     file <- download_data('halama18.metabolon.xlsx')
+#'     object <- read_metabolon(file, plot=FALSE)
+#'     plot_volcano(object, contrastnames = names(col_contrasts(object)),nrow=4)
+#'     plot_volcano(object, contrastnames = names(row_contrasts(object)),nrow=3)
+#'
+#' # proteingroup LFQ intensities
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     object <- read_proteingroups(file)
+#'     plot_volcano(object)
+#'
+#' # proteingroup group ratios
+#'     file <- download_data("billing16.proteingroups.txt")
+#'     inv <- c('EM_E', 'BM_E', 'BM_EM')
+#'     object <- read_proteingroups(file, invert_subgroups=inv)
+#'     plot_volcano(object)
+#'
+#' # proteingroup internalstandard ratios
+#'     file <-  download_data('billing19.proteingroups.txt')
+#'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
+#'                        'EM05_EM02', 'EM30_EM15')
+#'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
+#'     require(magrittr)
+#'     object$subgroup %<>% gsub('_STD', '', .)
+#'     subgroups <- c('EM00','EM01','EM02','EM05','EM15','EM30','BM00')
+#'     object$subgroup %<>% factor(subgroups)
+#'     contrasts <- c(col_contrasts(object), row_contrasts(object))
+#'     require(magrittr)
+#'     object %<>% add_limma(contrasts = contrasts)
+#'     plot_volcano(object)
+#' @export
+plot_volcano <- function(object, label = feature_name,
+    contrastnames = colnames(limma(object)), nrow=1, ntop = 3,
+    legend_position = 'none'
+){
+# Assert
+    assert_is_all_of(object, "SummarizedExperiment")
+    assert_is_character(contrastnames)
+    assert_is_subset(contrastnames, colnames(limma(object)))
+# Initialize
+    topup <- topdown <- effect <- mlp <- color <- fname <- NULL
+    label <- enquo(label)
+    limma(object) %<>% extract(, contrastnames, , drop=FALSE)
+    point_dt <- make_volcano_dt(object, ntop = ntop)
+    colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100),
+                    hcl(h=120, l=c(100, 70, 20), c=100))
+    names(colorvalues) <- levels(point_dt$color)
+# Plot
+    txt_dt   <- data.table::copy(point_dt)[topup==TRUE | topdown==TRUE]
+    tmp_plot <- ggplot(point_dt) +
+                facet_wrap(~ contrast, nrow = nrow, scales = 'fixed') +
+                geom_point(aes(x=effect, y=mlp, color = color), na.rm = TRUE)
+    if (!quo_is_null(label)){
+        tmp_plot <- tmp_plot +
+                    geom_text_repel(
+                        data = txt_dt,
+                        aes(x=effect, y=mlp, label=!!label, color=color),
+                        #hjust = 'outward',
+                        na.rm = TRUE,
+                        show.legend = FALSE)}#,
+                        #direction = 'x'
+    tmp_plot <- tmp_plot +
+                theme_bw() +
+                scale_color_manual(values = colorvalues, name = NULL) +
+                xlab(expression(log[2](FC))) +
+                ylab(expression(-log[10](p)))
+   if(!is.null(legend_position)) tmp_plot <-
+       tmp_plot + theme(legend.position = legend_position)
+# Return
+   return(tmp_plot)
+}

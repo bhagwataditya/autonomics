@@ -1111,32 +1111,29 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #' @param plot                   TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
+#' # LFQ intensities
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     object <- read_proteingroups(file)
 #' # Subgroup ratios
 #'     file <- download_data('billing16.proteingroups.txt')
 #'     object <- read_proteingroups(file)
-#'
 #' # Invert subgroups
 #'     invert_subgroups <- c('EM_E','BM_E','BM_EM')
 #'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-#'
 #' # Intensities
 #'     object <- read_proteingroups(file, quantity = 'Intensity labeled')
-#'
 #' # Deconvolute proteingroups
 #'     fdata(object)[1:3, 1:4]
 #'     object <- read_proteingroups(file,quantity = 'Intensity labeled',
 #'         fastafile=download_data('uniprot_hsa_20140515.fasta'), plot=FALSE)
 #'     fdata(object)[1:3, 1:4]
-#'
 #' # Internal Standard Ratios
 #'     file <-  download_data('billing19.proteingroups.txt')
 #'     object <- read_proteingroups(file)
-#'
 #' # Rm subgroups
 #'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
 #'                        'EM05_EM02', 'EM30_EM15')
 #'     object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
-#'
 #' # Phosphosites
 #'     phosphofile <- download_data('billing19.phosphosites.txt')
 #'     read_phosphosites(phosphofile, file, rm_subgroups = rm_subgroups)

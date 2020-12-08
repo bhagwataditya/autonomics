@@ -26,10 +26,10 @@ Default color values
 \examples{
 file <- download_data('billing16.proteingroups.txt')
 rm_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+object <- read_proteingroups(file, rm_subgroups = rm_subgroups, plot=FALSE)
 default_color_values(object, show = TRUE)
 
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file)
+object <- read_metabolon(file, plot=FALSE)
 default_color_values(object, show = TRUE)
 }

@@ -34,16 +34,16 @@ Plot contrastogram
     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
     object$subgroup \%<>\% gsub('_STD', '', .)
     object$subgroup \%<>\% factor(c('EM00','EM01','EM02','EM05','EM15','EM30','BM00'))
-    plot_contrastogram(object, contrasts=difference_contrasts(object))
+    contrasts <- c(col_contrasts(object), row_contrasts(object))
+    plot_contrastogram(object, contrasts=c(contrasts))
 
 # subgroup scalar
-   plot_contrastogram(object, contrasts=difference_contrasts(object)[1])
+   contrasts <- c(col_contrasts(object), row_contrasts(object))
+   plot_contrastogram(object, contrasts=contrasts[1])
 
 # Ratios: self-contrasts
    file <- download_data('billing16.proteingroups.txt')
    invert <- c('EM_E', 'BM_E', 'BM_EM')
    object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
    plot_contrastogram(object)
-
-
 }

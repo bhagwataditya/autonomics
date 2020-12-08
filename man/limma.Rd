@@ -29,3 +29,10 @@ limma results (get) or updated object (set)
 \description{
 Get/Set limma results
 }
+\examples{
+file <- download_data('billing16.proteingroups.txt')
+inv <- c('EM_E', 'BM_E', 'BM_EM')
+object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+dim(limma(object))
+dim(limma(object[1:5, ]))
+}

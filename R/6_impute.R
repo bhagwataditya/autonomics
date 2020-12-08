@@ -261,10 +261,11 @@ venn_detects <- function(object){
 
 
 #' Impute systematic nondetects
-#' @param object SummarizedExperiment
-#' @param group  group svar
-#' @param fun    imputation function
-#' @param plot   TRUE or FALSE
+#' @param object   SummarizedExperiment
+#' @param group    group svar
+#' @param fun      imputation function
+#' @param plot     TRUE or FALSE
+#' @param verbose  TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
@@ -272,7 +273,7 @@ venn_detects <- function(object){
 #' impute_systematic_nondetects(object)
 #' @export
 impute_systematic_nondetects <- function(
-    object, group = subgroup, fun = halfnormimpute, plot = TRUE
+    object, group = subgroup, fun = halfnormimpute, plot = TRUE, verbose = TRUE
 ){
 # Process
     absent <- replicated <- systematic <- NULL
@@ -294,8 +295,13 @@ impute_systematic_nondetects <- function(
     assays(object)$exprs      <- dt2exprs(dt)[ff, ss]
     assays(object)$is_imputed <- dt2mat(data.table::dcast(
                     dt, feature_id ~ sample_id, value.var = 'is_imputed'))
+    fdata(object)$imputed <- rowAnys(assays(object)$is_imputed)
 # Plot
-    if (plot) print(plot_detects(object, group = !!group))
+    if (verbose) cmessage(
+        "\t\tImpute systematic nondetects for %d/%d features in %d/%d samples",
+        sum(rowAnys(is_imputed(object))), nrow(object),
+        sum(colAnys(is_imputed(object))), ncol(object))
+    if (plot)    print(plot_detects(object, group = !!group))
 # Return
     object
 }
