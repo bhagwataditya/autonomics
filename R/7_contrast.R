@@ -683,7 +683,7 @@ compute_connections <- function(
 #'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
 #'                        'EM05_EM02', 'EM30_EM15')
 #'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
-#'     object$subgroup %<>% stri_replace_first_fixed('_STD', '')
+#'     object$subgroup %<>% gsub('_STD', '', .)
 #'     object$subgroup %<>% factor(c('EM00','EM01','EM02','EM05','EM15','EM30','BM00'))
 #'     plot_contrastogram(object, contrasts=difference_contrasts(object))
 #'
