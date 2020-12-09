@@ -33,19 +33,21 @@ Plot volcano
 # proteingroup group ratios
     file <- download_data("billing16.proteingroups.txt")
     inv <- c('EM_E', 'BM_E', 'BM_EM')
-    object <- read_proteingroups(file, invert_subgroups=inv)
+    object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
     plot_volcano(object)
 
 # proteingroup LFQ intensities
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file)
+    object <- read_proteingroups(file, plot=FALSE)
     plot_volcano(object)
 
 # metabolon intensities: complex design
     file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file, plot=FALSE)
-    plot_volcano(object, contrastnames = names(col_contrasts(object)),nrow=4)
-    plot_volcano(object, contrastnames = names(row_contrasts(object)),nrow=3)
+    colcontrasts <- names(col_contrasts(object))
+    rowcontrasts <- names(row_contrasts(object))
+    plot_volcano(object, contrastnames=colcontrasts, nrow=4, ntop=1)
+    plot_volcano(object, contrastnames=rowcontrasts, nrow=3, ntop=1)
 
 # proteingroup internalstandard ratios
     file <-  download_data('billing19.proteingroups.txt')
@@ -57,7 +59,6 @@ Plot volcano
     subgroups <- c('EM00','EM01','EM02','EM05','EM15','EM30','BM00')
     object$subgroup \%<>\% factor(subgroups)
     contrasts <- c(col_contrasts(object), row_contrasts(object))
-    require(magrittr)
     object \%<>\% add_limma(contrasts = contrasts)
     plot_volcano(object)
 }
