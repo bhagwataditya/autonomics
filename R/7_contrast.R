@@ -1363,6 +1363,7 @@ plot_volcano <- function(
     names(colorvalues) <- levels(plotdt$significance)
 # Plot
     imputed <- NULL # fallback when plotdt misses "imputed"
+    significance <- NULL
     p <- ggplot(plotdt) +
         facet_wrap(~ contrast, nrow = nrow, scales = 'fixed') +
         geom_point( aes(x=effect, y=mlp, color = significance, shape=imputed),

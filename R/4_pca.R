@@ -635,7 +635,7 @@ biplot_covariates <- function(
     dimcols = 1, varcols = length(covariates), plot = TRUE
 ){
     x <- y <- NULL
-    plotdt <- prep_covariates(object, method = 'pca', ndim=ndim, verbose=FALSE)
+    plotdt <- prep_covariates(object, method = 'pca', ndim=ndim)
     plotlist <- list()
     for (covar in covariates){
         p <- plot_data(plotdt, geom = geom_point, x=x, y=y, color=!!sym(covar),
@@ -653,7 +653,7 @@ biplot_covariates <- function(
 prep_covariates <- function(object, method='pca', ndim=6){
 
     plotdt <- cbind(sdata(object)[FALSE,], x= character(0), y = character(0))
-    projdt <- data.table(sdata(get(method)(object, ndim=ndim)))
+    projdt <- data.table(sdata(get(method)(object, ndim=ndim, verbose=FALSE)))
     alldims <- names(projdt) %>% extract(stri_detect_fixed(., method)) %>%
                 stri_replace_first_fixed(method, '') %>% as.numeric()
     ndim <- min(c(max(alldims), ndim))
