@@ -977,32 +977,53 @@ function(object, value) object)
 
 
 
+#' Extract limma quantity
+#' @param object SummarizedExperiment
+#' @param quantity 'effect', 'p', 'fdr', 'bonf'
+#' @return melted data.table
+#' @examples
+#' file <- download_data('billing16.proteingroups.txt')
+#' inv <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' extract_limma_quantity(object)
+#' @noRd
+extract_limma_quantity <- function(object, quantity='p'){
+    fvars0 <- c('feature_id','feature_name','imputed')
+    fvars0 %<>% intersect(fvars(object))
+    dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
+    dt %<>% cbind(adrop(limma(object)[, , quantity, drop=FALSE], drop=3))
+    data.table::melt.data.table(
+      dt, id.vars = fvars0, variable.name = 'contrast', value.name = quantity)
+}
+
+merge_limma_quantities <- function(x, y){
+   names0 <- c('feature_id','feature_name','imputed', 'contrast')
+   names0 %<>% intersect(names(x)) %>% intersect(names(y))
+   merge(x, y, by = names0)
+}
+
+
 #' Extract limma datatable
 #' @param object SummarizedExperiment
 #' @return melted data.table
 #' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file)
+#' extract_limma_dt(object)
+#'
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
 #' extract_limma_dt(object)
 #' @noRd
 extract_limma_dt <- function(object){
-    . <- NULL
-    lapply(
-        c('effect', 'p', 'fdr', 'bonf'),
-        function(quantity){
-            data.table(
-                feature_id   = fnames(object),
-                feature_name = fdata(object)$feature_name,
-                adrop(limma(object)[, , quantity, drop=FALSE], drop=3)) %>%
-            data.table::melt.data.table(
-                id.vars       = c('feature_id', 'feature_name'),
-                variable.name = 'contrast',
-                value.name    = quantity)}) %>%
-    Reduce(function(x,y) merge(
-            x, y, by = c('feature_id', 'feature_name', 'contrast')), .)
-
+    Reduce( merge_limma_quantities,
+            mapply( extract_limma_quantity,
+                    quantity = c('effect', 'p', 'fdr', 'bonf'),
+                    MoreArgs = list(object=object),
+                    SIMPLIFY = FALSE ))
 }
+
 
 #=============================================================================
 #
@@ -1259,7 +1280,7 @@ top_up <- function(effect, fdr, mlp, ntop){
 #' @export
 make_volcano_dt <- function(object, ntop = 3){
 
-    effect <- p <- mlp <- topdown <- topup <- color <- fdr <- NULL
+    effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
 
     dt <- extract_limma_dt(object)
     dt %<>% extract(!is.na(effect) & !is.na(p))
@@ -1267,16 +1288,17 @@ make_volcano_dt <- function(object, ntop = 3){
 
     # Prepare volcano datatable
     # Note: Using effect <= 0 (rather than effect <0) is required.
-    #       Otherwise (the very few) features with effect=0 will have no effect for 'color'
-    dt[,topdown := top_down(effect, fdr, mlp, ntop), by='contrast']
-    dt[,topup   := top_up(  effect, fdr, mlp, ntop), by='contrast']
-    dt[effect<=0,            color := 'down']
-    dt[effect> 0,            color :=   'up']
-    dt[effect<=0 & fdr<0.05, color := 'down: fdr<0.05']
-    dt[effect> 0 & fdr<0.05, color :=   'up: fdr<0.05']
-    dt[topdown==TRUE,        color := 'down: top']
-    dt[topup  ==TRUE,        color :=   'up: top']
-    dt[,color := factor(color, c(
+    #       Otherwise (the very few) features with effect=0 will have no effect for 'significance'
+    by <- intersect(c('contrast', 'imputed'), names(dt))
+    dt[,topdown := top_down(effect, fdr, mlp, ntop), by=by]
+    dt[,topup   := top_up(  effect, fdr, mlp, ntop), by=by]
+    dt[effect<=0,            significance := 'down']
+    dt[effect> 0,            significance :=   'up']
+    dt[effect<=0 & fdr<0.05, significance := 'down: fdr<0.05']
+    dt[effect> 0 & fdr<0.05, significance :=   'up: fdr<0.05']
+    dt[topdown==TRUE,        significance := 'down: top']
+    dt[topup  ==TRUE,        significance :=   'up: top']
+    dt[,significance := factor(significance, c(
         'down: top','down: fdr<0.05','down','up','up: fdr<0.05','up: top'))]
     dt[]
 }
@@ -1287,25 +1309,24 @@ make_volcano_dt <- function(object, ntop = 3){
 #' @param contrastnames   character vector: contrasts for which to plot volcano
 #' @param nrow            number: n rows in faceted plot
 #' @param ntop            number: n top features to be annotated
-#' @param legend_position handed to \code{\link[ggplot2]{theme}} as 'legend.position'
 #' @return ggplot object
 #' @examples
-#' # metabolon intensities: complex design
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot=FALSE)
-#'     plot_volcano(object, contrastnames = names(col_contrasts(object)),nrow=4)
-#'     plot_volcano(object, contrastnames = names(row_contrasts(object)),nrow=3)
+#' # proteingroup group ratios
+#'     file <- download_data("billing16.proteingroups.txt")
+#'     inv <- c('EM_E', 'BM_E', 'BM_EM')
+#'     object <- read_proteingroups(file, invert_subgroups=inv)
+#'     plot_volcano(object)
 #'
 #' # proteingroup LFQ intensities
 #'     file <- download_data('fukuda20.proteingroups.txt')
 #'     object <- read_proteingroups(file)
 #'     plot_volcano(object)
 #'
-#' # proteingroup group ratios
-#'     file <- download_data("billing16.proteingroups.txt")
-#'     inv <- c('EM_E', 'BM_E', 'BM_EM')
-#'     object <- read_proteingroups(file, invert_subgroups=inv)
-#'     plot_volcano(object)
+#' # metabolon intensities: complex design
+#'     file <- download_data('halama18.metabolon.xlsx')
+#'     object <- read_metabolon(file, plot=FALSE)
+#'     plot_volcano(object, contrastnames = names(col_contrasts(object)),nrow=4)
+#'     plot_volcano(object, contrastnames = names(row_contrasts(object)),nrow=3)
 #'
 #' # proteingroup internalstandard ratios
 #'     file <-  download_data('billing19.proteingroups.txt')
@@ -1321,43 +1342,42 @@ make_volcano_dt <- function(object, ntop = 3){
 #'     object %<>% add_limma(contrasts = contrasts)
 #'     plot_volcano(object)
 #' @export
-plot_volcano <- function(object, label = feature_name,
-    contrastnames = colnames(limma(object)), nrow=1, ntop = 3,
-    legend_position = 'none'
+plot_volcano <- function(
+    object, contrastnames = colnames(limma(object)),
+    label = feature_name,
+    nrow  = 1, ntop = 3
 ){
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
     assert_is_character(contrastnames)
     assert_is_subset(contrastnames, colnames(limma(object)))
-# Initialize
-    topup <- topdown <- effect <- mlp <- color <- fname <- NULL
+    topup <- topdown <- effect <- mlp <- NULL
     label <- enquo(label)
+    shape <- enquo(shape)
+# Prepare
     limma(object) %<>% extract(, contrastnames, , drop=FALSE)
-    point_dt <- make_volcano_dt(object, ntop = ntop)
+    plotdt <- make_volcano_dt(object, ntop = ntop)
+    txtdt  <- copy(plotdt)[topup==TRUE | topdown==TRUE]
     colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100),
                     hcl(h=120, l=c(100, 70, 20), c=100))
-    names(colorvalues) <- levels(point_dt$color)
+    names(colorvalues) <- levels(plotdt$significance)
 # Plot
-    txt_dt   <- data.table::copy(point_dt)[topup==TRUE | topdown==TRUE]
-    tmp_plot <- ggplot(point_dt) +
-                facet_wrap(~ contrast, nrow = nrow, scales = 'fixed') +
-                geom_point(aes(x=effect, y=mlp, color = color), na.rm = TRUE)
+    imputed <- NULL # fallback when plotdt misses "imputed"
+    p <- ggplot(plotdt) +
+        facet_wrap(~ contrast, nrow = nrow, scales = 'fixed') +
+        geom_point( aes(x=effect, y=mlp, color = significance, shape=imputed),
+                    na.rm = TRUE)
     if (!quo_is_null(label)){
-        tmp_plot <- tmp_plot +
-                    geom_text_repel(
-                        data = txt_dt,
-                        aes(x=effect, y=mlp, label=!!label, color=color),
+        p <- p + geom_text_repel(
+                        data = txtdt,
+                        aes(x=effect, y=mlp, label=!!label, color=significance),
                         #hjust = 'outward',
                         na.rm = TRUE,
                         show.legend = FALSE)}#,
                         #direction = 'x'
-    tmp_plot <- tmp_plot +
-                theme_bw() +
-                scale_color_manual(values = colorvalues, name = NULL) +
-                xlab(expression(log[2](FC))) +
-                ylab(expression(-log[10](p)))
-   if(!is.null(legend_position)) tmp_plot <-
-       tmp_plot + theme(legend.position = legend_position)
-# Return
-   return(tmp_plot)
+    p + theme_bw() +
+        scale_color_manual(values = colorvalues, name = NULL) +
+        xlab(expression(log[2](FC))) +
+        ylab(expression(-log[10](p))) #+
+        #guides(color=FALSE)
 }

@@ -6,25 +6,22 @@
 \usage{
 plot_volcano(
   object,
-  label = feature_name,
   contrastnames = colnames(limma(object)),
+  label = feature_name,
   nrow = 1,
-  ntop = 3,
-  legend_position = "none"
+  ntop = 3
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{label}{fvar for labeling top features}
-
 \item{contrastnames}{character vector: contrasts for which to plot volcano}
+
+\item{label}{fvar for labeling top features}
 
 \item{nrow}{number: n rows in faceted plot}
 
 \item{ntop}{number: n top features to be annotated}
-
-\item{legend_position}{handed to \code{\link[ggplot2]{theme}} as 'legend.position'}
 }
 \value{
 ggplot object
@@ -33,22 +30,22 @@ ggplot object
 Plot volcano
 }
 \examples{
-# metabolon intensities: complex design
-    file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, plot=FALSE)
-    plot_volcano(object, contrastnames = names(col_contrasts(object)),nrow=4)
-    plot_volcano(object, contrastnames = names(row_contrasts(object)),nrow=3)
+# proteingroup group ratios
+    file <- download_data("billing16.proteingroups.txt")
+    inv <- c('EM_E', 'BM_E', 'BM_EM')
+    object <- read_proteingroups(file, invert_subgroups=inv)
+    plot_volcano(object)
 
 # proteingroup LFQ intensities
     file <- download_data('fukuda20.proteingroups.txt')
     object <- read_proteingroups(file)
     plot_volcano(object)
 
-# proteingroup group ratios
-    file <- download_data("billing16.proteingroups.txt")
-    inv <- c('EM_E', 'BM_E', 'BM_EM')
-    object <- read_proteingroups(file, invert_subgroups=inv)
-    plot_volcano(object)
+# metabolon intensities: complex design
+    file <- download_data('halama18.metabolon.xlsx')
+    object <- read_metabolon(file, plot=FALSE)
+    plot_volcano(object, contrastnames = names(col_contrasts(object)),nrow=4)
+    plot_volcano(object, contrastnames = names(row_contrasts(object)),nrow=3)
 
 # proteingroup internalstandard ratios
     file <-  download_data('billing19.proteingroups.txt')
