@@ -21,7 +21,7 @@ BugReports: https://bitbucket.org/graumannlabtools/autonomics
 URL: https://bitbucket.org/graumannlabtools/autonomics
 RoxygenNote: 7.1.1
 Imports: 
-  affy,
+  abind,
   AnnotationDbi, 
   assertive, 
   colorspace,
@@ -57,6 +57,7 @@ Imports:
   tools,
   utils
 Suggests: 
+  affy,
   BiocManager,
   hgu95av2cdf, 
   knitr,

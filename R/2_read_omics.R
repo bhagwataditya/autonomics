@@ -475,9 +475,14 @@ add_affy_fdata <- function(object){
 #' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 #' @export
 read_affymetrix <- function(celfiles){
+# Assert
+    if (!requireNamespace('affy', quietly = TRUE)){
+        stop("`BiocManager::install('affy')`. Then re-run.")
+        return(object)
+    }
 # read
     message('Read Affymetrix CEL files: ', basename(celfiles)[1], ', ...')
-    suppressWarnings(eset1 <- just.rma(filenames = celfiles))
+    suppressWarnings(eset1 <- affy::just.rma(filenames = celfiles))
     object <- makeSummarizedExperimentFromExpressionSet(eset1)
 # sdata
     snames(object) %<>% stri_replace_first_fixed('.CEL', '')
