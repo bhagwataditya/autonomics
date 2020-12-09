@@ -635,7 +635,7 @@ biplot_covariates <- function(
     dimcols = 1, varcols = length(covariates), plot = TRUE
 ){
     x <- y <- NULL
-    plotdt <- prep_covariates(object, method = 'pca', ndim=ndim)
+    plotdt <- prep_covariates(object, method = 'pca', ndim=ndim, verbose=FALSE)
     plotlist <- list()
     for (covar in covariates){
         p <- plot_data(plotdt, geom = geom_point, x=x, y=y, color=!!sym(covar),
