@@ -1354,7 +1354,6 @@ plot_volcano <- function(
     assert_is_subset(contrastnames, colnames(limma(object)))
     topup <- topdown <- effect <- mlp <- NULL
     label <- enquo(label)
-    shape <- enquo(shape)
 # Prepare
     limma(object) %<>% extract(, contrastnames, , drop=FALSE)
     plotdt <- make_volcano_dt(object, ntop = ntop)
