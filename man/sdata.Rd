@@ -5,6 +5,7 @@
 \alias{sdata,SummarizedExperiment-method}
 \alias{sdata<-}
 \alias{sdata<-,SummarizedExperiment,data.frame-method}
+\alias{sdata<-,SummarizedExperiment,DataFrame-method}
 \title{Get/Set sdata}
 \usage{
 sdata(object)
@@ -14,6 +15,8 @@ sdata(object)
 sdata(object) <- value
 
 \S4method{sdata}{SummarizedExperiment,data.frame}(object) <- value
+
+\S4method{sdata}{SummarizedExperiment,DataFrame}(object) <- value
 }
 \arguments{
 \item{object}{SummarizedExperiment, eSet, or EList}

@@ -268,6 +268,14 @@ setReplaceMethod(
         colData(object) <- DataFrame(value, check.names = FALSE)
         object })
 
+#' @rdname sdata
+setReplaceMethod(
+    'sdata',
+    signature('SummarizedExperiment', 'DataFrame'),
+    function(object, value){
+        colData(object) <- value
+        object })
+
 
 #=====================================================================
 #' @title Get/Set snames
