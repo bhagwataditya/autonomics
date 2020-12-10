@@ -405,6 +405,50 @@ plot_detects <- function(object, group = subgroup, fill = subgroup){
 }
 
 
+#' Plot quantifications
+#'
+#' A version of plot_detects that scales to big datasets
+#'
+#' @param object SummarizedExperiment
+#' @return ggplot object
+#' @examples
+#' file <- download_data("fukuda20.proteingroups.txt")
+#' object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
+#' plot_quantifications(object)
+#' @export
+plot_quantifications <- function(object){
+    object %<>% filter_samples(!is.na(subgroup), verbose=TRUE)
+    exprs(object) %<>% zero_to_na()
+    featuretypes <- get_subgroup_combinations(object)
+    dt <- sumexp_to_long_dt(object, svars = 'subgroup')
+    dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
+                    by = c('subgroup', 'feature_id'))
+    dt %<>% data.table::dcast.data.table(
+        feature_id ~ subgroup, value.var = 'quantified')
+    dt %<>% merge(featuretypes, by = setdiff(names(featuretypes), 'type'))
+    dt %<>% extract(,.(nfeature=.N),by='type')
+    dt %<>% merge(featuretypes,by='type')
+    dt[, ymax := cumsum(nfeature)]
+    dt[, ymin := c(0,ymax[-.N])]
+    dt %<>% data.table::melt.data.table(
+        id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
+        variable.name = 'subgroup', value.name='quantified')
+    dt$quantified %<>% as.factor()
+    nsampledt <- data.table(table(object$subgroup)) %>% set_names(c('subgroup', 'xmax'))
+    nsampledt[, xmax := cumsum(xmax)]
+    nsampledt[, xmin := c(0, xmax[-.N])]
+    dt %<>% merge(nsampledt, by = 'subgroup')
+    ggplot(dt) +
+        geom_rect(aes(xmin = xmin, xmax=xmax, ymin = ymin, ymax = ymax, fill=subgroup, alpha = quantified)) +
+        geom_segment(aes(x=xmin, xend=xmax, y = ymax, yend=ymax)) +
+        geom_segment(aes(x=xmin, xend=xmax, y = ymin, yend=ymin)) +
+        geom_segment(aes(x=xmax, xend=xmax, y = ymin, yend=ymax)) +
+        geom_segment(aes(x=xmin, xend=xmin, y = ymin, yend=ymax)) +
+        theme_minimal() + xlab('Samples') + ylab('Features') +
+        theme(panel.grid = element_blank()) + guides(alpha=FALSE)
+}
+
+
 #==============================================================================
 #
 #                           explore_imputations
