@@ -147,12 +147,17 @@ dt2sumexp  <- function(
 #' object <- matrix2sumexp(x)
 #' biplot(object, nloadings=0)
 #' @export
-matrix2sumexp <- function(x){
+matrix2sumexp <- function(x, sampledata=NULL){
     object <- SummarizedExperiment(list(exprs = x))
     fdata(object)$feature_id <- rownames(object)
     fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
-    object$subgroup <- 'subgroup1'
     #object %<>% add_designvars(designfile = NULL) # too slow for large matrices
+    if (is.null(sampledata)){
+        object$subgroup <- 'subgroup1'
+    } else {
+        assert_is_subset('sample_id', names(sampledata))
+        object %<>% merge_sdata(sampledata)
+    }
     object
 }

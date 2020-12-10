@@ -4,7 +4,7 @@
 \alias{matrix2sumexp}
 \title{Convert matrix into SummarizedExperiment}
 \usage{
-matrix2sumexp(x)
+matrix2sumexp(x, sampledata = NULL)
 }
 \arguments{
 \item{x}{matrix}
