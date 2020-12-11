@@ -405,6 +405,19 @@ plot_detects <- function(object, group = subgroup, fill = subgroup){
 }
 
 
+get_subgroup_combinations <- function(object){
+    subgroups <- subgroup_levels(object)
+    subgroups  %>%
+        lapply(function(x) c(0,1) %>% set_names(rep(x,2))) %>%
+        set_names(subgroups) %>%
+        expand.grid() %>%
+        data.table() %>%
+        extract(rev(order(rowSums(.)))) %>%
+        extract(, type := 0:(.N-1)) %>%
+        extract()
+}
+
+
 #' Plot quantifications
 #'
 #' A version of plot_detects that scales to big datasets
