@@ -1325,6 +1325,7 @@ make_volcano_dt <- function(object, ntop = 3){
 #' # metabolon intensities: complex design
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot=FALSE)
+#'     plot_volcano(object)
 #'     colcontrasts <- names(col_contrasts(object))
 #'     rowcontrasts <- names(row_contrasts(object))
 #'     plot_volcano(object, contrastnames=colcontrasts, nrow=4, ntop=1)

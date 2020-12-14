@@ -301,7 +301,7 @@ impute_systematic_nondetects <- function(
         "\t\tImpute systematic nondetects for %d/%d features in %d/%d samples",
         sum(rowAnys(is_imputed(object))), nrow(object),
         sum(colAnys(is_imputed(object))), ncol(object))
-    if (plot)    print(plot_sample_detections(object, group = !!group))
+    if (plot)    print(plot_detections(object, group = !!group))
 # Return
     object
 }
@@ -336,22 +336,50 @@ detect_order_features <- function(object){
 
 #==============================================================================
 #
-#                           plot_sample_detections
+#                           plot_detections
 #
 #==============================================================================
 
 
-#' @rdname plot_subgroup_detections
+#' @rdname plot_detections
 #' @export
 plot_detects <- function(...){
-    .Deprecated('plot_subgroup_detections')
-    plot_subgroup_detections(...)
+    .Deprecated('plot_detections')
+    plot_detections(...)
 }
 
 
-#' @rdname plot_subgroup_detections
+#' Plot detections
+#'
+#' Plot detections
+#'
+#' \code{plot_detections} plots feature x sample detections. It shows per
+#' feature/sample nondetects (white), imputes (light colored), and detects
+#' (full color).
+#'
+#' \code{plot_summarized_detections} gives an summarized view, plotting
+#' featuretype x subgroup detections. It visualizes the subgroup-wise nondetect
+#' structure often seen in mass spectrometry proteomics data (across e.g.
+#' different cell types)
+#' @param object   SummarizedExperiment
+#' @param group    group svar
+#' @param fill     fill svar
+#' @param ...      for backward compatibilty
+#' @return ggplot object
+#' @examples
+#' require(magrittr)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
+#' plot_summarized_detections(object)
+#' plot_detections(object)
+#' plot_detections(impute_systematic_nondetects(object, plot=FALSE))
+#'
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
+#' plot_summarized_detections(object)
+#' plot_detections(object)
 #' @export
-plot_sample_detections <- function(object, group = subgroup, fill = subgroup){
+plot_detections <- function(object, group = subgroup, fill = subgroup){
 # Process
     detection <- feature_id <- NULL
     set.seed(39)
@@ -399,7 +427,7 @@ plot_sample_detections <- function(object, group = subgroup, fill = subgroup){
 
 #==============================================================================
 #
-#                           plot_subgroup_detections
+#                           plot_summarized_detections
 #
 #==============================================================================
 
@@ -418,45 +446,17 @@ get_subgroup_combinations <- function(object){
 }
 
 
-#' @rdname plot_subgroup_detections
+#' @rdname plot_detections
 #' @export
 plot_quantifications <- function(...){
-    .Deprecated('plot_subgroup_detections')
-    plot_subgroup_detections(...)
+    .Deprecated('plot_summarized_detections')
+    plot_summarized_detections(...)
 }
 
 
-#' Plot sample_subgroup detections
-#'
-#' Plot sample/subgroup detections
-#'
-#' \code{plot_sample_detections} is fine-grained:
-#' it shows detections per sample
-#' and differentiates between nondetects, imputes, partialdetects
-#'
-#' \code{plot_subgroup_detections} is coarse-grained:
-#' it aggregates detections per subgroup
-#' and differentiates only between groupwise non-detects and (partial) detects
-#'
-#' @param object   SummarizedExperiment
-#' @param group    group svar
-#' @param fill     fill svar
-#' @param ...      for backward compatibilty
-#' @return ggplot object
-#' @examples
-#' require(magrittr)
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
-#' plot_subgroup_detections(object)
-#' plot_sample_detections(object)
-#' plot_sample_detections(impute_systematic_nondetects(object, plot=FALSE))
-#'
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
-#' plot_subgroup_detections(object)
-#' plot_sample_detections(object)
+#' @rdname plot_detections
 #' @export
-plot_subgroup_detections <- function(object, group=subgroup, fill=subgroup){
+plot_summarized_detections <- function(object, group=subgroup, fill=subgroup){
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
     fill <- enquo(fill);     fillstr <- as_name(fill)
@@ -526,7 +526,7 @@ explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
     legend <- gglegend(biplot(object))
 
     do_plot_sample_detections <- function(obj, ...){
-        plot_sample_detections(obj, ...) + guides(color=FALSE, fill=FALSE)
+        plot_detections(obj, ...) + guides(color=FALSE, fill=FALSE)
     }
 
     do_biplot <- function(obj, ...){
