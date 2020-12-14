@@ -62,7 +62,7 @@ sumexp_to_long_dt <- function(
     svars = intersect('subgroup', importomics::svars(object)),
     assay = 'exprs'
 ){
-    # Assert
+# Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(fid,   importomics::fvars(object))
     assert_is_subset(sid,   importomics::svars(object))
@@ -75,23 +75,28 @@ sumexp_to_long_dt <- function(
         fvars %<>% setdiff(common) # Avoid name clashes
         svars %<>% setdiff(common)
     }
-
-    # Extract & Return
+# Melt
+    melt <- data.table::melt.data.table
+    dt <- sumexp_to_wide_dt(object, fid, fvars, assay = assay)
+    dt %<>% melt(id.vars = unique(c(fid, fvars)), variable.name = sid,
+                value.name = 'value')
+# Merge
+    if ('is_imputed' %in% SummarizedExperiment::assayNames(object)){
+        idt <- sumexp_to_wide_dt(object, fid, fvars,assay="is_imputed")
+        idt %<>% melt(id.vars = unique(c(fid, fvars)), variable.name = sid,
+                    value.name = 'is_imputed')
+        dt %<>% merge(idt, by = c('feature_id','sample_id'))}
     sdata1 <- sdata(object)[, c('sample_id', svars), drop = FALSE]
-    dt  <-  sumexp_to_wide_dt(object, fid, fvars, assay = assay) %>%
-            data.table::melt.data.table(
-                id.vars       = unique(c(fid, fvars)),
-                variable.name = sid,
-                value.name    = 'value') %>%
-            # Note: unique is to avoid duplication of same fields in fid and fvars
-            merge(sdata1, by = sid) %>%
-            extract(, unique(c(fid, fvars, sid, svars, 'value')), with = FALSE)
-
-    # Encode fid/sid order
+    dt %<>% merge(sdata1, by=sid)
+    dt %<>% extract(, unique(c(fid, fvars, sid, svars, 'value')), with = FALSE)
+        # Note: unique is to avoid duplication of same fields in fid and fvars
+# Order
     dt[, (fid) := factor(get(fid), unique(fdata(object)[[fid]]))]
     dt[, (sid) := factor(get(sid), unique(sdata(object)[[sid]]))]
+# Return
     dt[]
 }
+
 
 #' @export
 #' @rdname sumexp_to_long_dt
