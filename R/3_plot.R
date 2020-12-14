@@ -560,7 +560,7 @@ plot_samples <- function(
             theme(legend.position='top')
     p2  <-  plot_sample_densities(object, fill = !!enquo(color), ...) +
             theme(legend.position='none')
-    p3 <- plot_detects(object) + theme(legend.position='none')
+    p3 <- plot_subgroup_detections(object) + theme(legend.position='none')
     p4 <- gglegend(p1)
     p1 <- p1 + theme(legend.position='none')
     pp <- grid.arrange( p4,

@@ -53,6 +53,14 @@ sumexp_to_wide_dt <- function(
 #'    sumexp_to_wide_dt(object)
 #'    sumexp_to_long_dt(object)
 #'    sumexp_to_subrep_dt(object)
+#'
+#' # Fukuda
+#'    require(magrittr)
+#'    file <- download_data('fukuda20.proteingroups.txt')
+#'    object <- read_proteingroups(file, impute=FALSE, plot=FALSE)
+#'    sumexp_to_long_dt(object)
+#'    object %<>% impute_systematic_nondetects(plot=FALSE)
+#'    sumexp_to_long_dt(object)
 #' @export
 sumexp_to_long_dt <- function(
     object,
@@ -82,13 +90,16 @@ sumexp_to_long_dt <- function(
                 value.name = 'value')
 # Merge
     if ('is_imputed' %in% SummarizedExperiment::assayNames(object)){
-        idt <- sumexp_to_wide_dt(object, fid, fvars,assay="is_imputed")
-        idt %<>% melt(id.vars = unique(c(fid, fvars)), variable.name = sid,
-                    value.name = 'is_imputed')
-        dt %<>% merge(idt, by = c('feature_id','sample_id'))}
-    sdata1 <- sdata(object)[, c('sample_id', svars), drop = FALSE]
+        idt <- sumexp_to_wide_dt(
+                    object, fid, fvars = character(0), assay = "is_imputed")
+        idt %<>% melt(id.vars = fid, variable.name=sid, value.name='is_imputed')
+        dt %<>% merge(idt, by = c(fid, sid))
+    }
+    sdata1 <- sdata(object)[, c(sid, svars), drop = FALSE]
     dt %<>% merge(sdata1, by=sid)
-    dt %<>% extract(, unique(c(fid, fvars, sid, svars, 'value')), with = FALSE)
+    cols <- intersect(unique(
+                c(fid, fvars, sid, svars, 'value', 'is_imputed')), names(dt))
+    dt %<>% extract(, cols, with = FALSE)
         # Note: unique is to avoid duplication of same fields in fid and fvars
 # Order
     dt[, (fid) := factor(get(fid), unique(fdata(object)[[fid]]))]
@@ -145,6 +156,7 @@ dt2sumexp  <- function(
 
 #' Convert matrix into SummarizedExperiment
 #' @param x matrix
+#' @param sampledata data.frame or DataFrame
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')

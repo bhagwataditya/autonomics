@@ -301,7 +301,7 @@ impute_systematic_nondetects <- function(
         "\t\tImpute systematic nondetects for %d/%d features in %d/%d samples",
         sum(rowAnys(is_imputed(object))), nrow(object),
         sum(colAnys(is_imputed(object))), ncol(object))
-    if (plot)    print(plot_detects(object, group = !!group))
+    if (plot)    print(plot_sample_detections(object, group = !!group))
 # Return
     object
 }
@@ -336,29 +336,22 @@ detect_order_features <- function(object){
 
 #==============================================================================
 #
-#                           plot_detects
+#                           plot_sample_detections
 #
 #==============================================================================
 
 
-#' Plot detects
-#' @param object   SummarizedExperiment
-#' @param group    subgroup
-#' @param fill     svar mapped to plot fill
-#' @return ggplot object
-#' @examples
-#' require(magrittr)
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
-#' plot_detects(object)
-#' object %<>% impute_systematic_nondetects(plot = FALSE)
-#' plot_detects(object)
-#'
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
-#' plot_detects(object)
+#' @rdname plot_subgroup_detections
 #' @export
-plot_detects <- function(object, group = subgroup, fill = subgroup){
+plot_detects <- function(...){
+    .Deprecated('plot_subgroup_detections')
+    plot_subgroup_detections(...)
+}
+
+
+#' @rdname plot_subgroup_detections
+#' @export
+plot_sample_detections <- function(object, group = subgroup, fill = subgroup){
 # Process
     detection <- feature_id <- NULL
     set.seed(39)
@@ -378,11 +371,8 @@ plot_detects <- function(object, group = subgroup, fill = subgroup){
     alpha <- NULL
     plotdt[,             detection := 'detect']
     plotdt[is.na(value), detection := 'nondetect']
-    if ('is_imputed' %in% names(assays(object))){
-        plotdt %<>% cbind(is_imputed =
-                          sumexp_to_long_dt(object, assay = 'is_imputed')$value)
-        plotdt[is_imputed==TRUE, detection := 'impute']
-    }
+    if ('is_imputed' %in% SummarizedExperiment::assayNames(object)){
+        plotdt[is_imputed==TRUE, detection := 'impute']}
     plotdt[, detection := factor(detection, c('nondetect', 'impute', 'detect'))]
     plotdt[, sample_id  := factor( sample_id, unique(snames(object)))]
     plotdt[, feature_id := factor(feature_id, rev(unique(fnames(object))))]
@@ -393,19 +383,29 @@ plot_detects <- function(object, group = subgroup, fill = subgroup){
     geom_tile(aes(x=sample_id, y=feature_id, fill=!!fill, alpha=detection)) +
     scale_fill_manual(values = colors) +
     scale_alpha_manual(values = c(nondetect=0, impute=0.3, detect = 1)) +
-    ylab('features') +
-    xlab('samples') +
+    ylab('Features') +
+    xlab('Samples') +
     ggtitle(sprintf('detects: %d full, %d random, %d systematic',
                     nfull, nrandom, nsystematic)) +
     theme_bw() +
     theme(  axis.text.y  = element_blank(), axis.ticks.y = element_blank(),
-            axis.text.x  = element_blank(), legend.title = element_blank()) +
+            axis.text.x  = element_text(angle = 90, vjust = 0.5),
+            legend.title = element_blank(),
+            panel.grid   = element_blank()) +
     geom_hline(yintercept = cumsum(c(nfull, nrandom, nsystematic))) +
     guides(alpha=FALSE)
+
 }
+
+#==============================================================================
+#
+#                           plot_subgroup_detections
+#
+#==============================================================================
 
 
 get_subgroup_combinations <- function(object){
+    type <- NULL
     subgroups <- subgroup_levels(object)
     subgroups  %>%
         lapply(function(x) c(0,1) %>% set_names(rep(x,2))) %>%
@@ -418,26 +418,61 @@ get_subgroup_combinations <- function(object){
 }
 
 
-#' Plot quantifications
+#' @rdname plot_subgroup_detections
+#' @export
+plot_quantifications <- function(...){
+    .Deprecated('plot_subgroup_detections')
+    plot_subgroup_detections(...)
+}
+
+
+#' Plot sample_subgroup detections
 #'
-#' A version of plot_detects that scales to big datasets
+#' Plot sample/subgroup detections
 #'
-#' @param object SummarizedExperiment
+#' \code{plot_sample_detections} is fine-grained:
+#' it shows detections per sample
+#' and differentiates between nondetects, imputes, partialdetects
+#'
+#' \code{plot_subgroup_detections} is coarse-grained:
+#' it aggregates detections per subgroup
+#' and differentiates only between groupwise non-detects and (partial) detects
+#'
+#' @param object   SummarizedExperiment
+#' @param group    group svar
+#' @param fill     fill svar
+#' @param ...      for backward compatibilty
 #' @return ggplot object
 #' @examples
-#' file <- download_data("fukuda20.proteingroups.txt")
-#' object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
-#' plot_quantifications(object)
+#' require(magrittr)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
+#' plot_subgroup_detections(object)
+#' plot_sample_detections(object)
+#' plot_sample_detections(impute_systematic_nondetects(object, plot=FALSE))
+#'
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
+#' plot_subgroup_detections(object)
+#' plot_sample_detections(object)
 #' @export
-plot_quantifications <- function(object){
-    object %<>% filter_samples(!is.na(subgroup), verbose=TRUE)
-    exprs(object) %<>% zero_to_na()
+plot_subgroup_detections <- function(object, group=subgroup, fill=subgroup){
+# Assert
+    assert_is_all_of(object, "SummarizedExperiment")
+    fill <- enquo(fill);     fillstr <- as_name(fill)
+    group <- enquo(group);   groupstr <- as_name(group)
+    assert_is_subset(groupstr, svars(object))
+    assert_is_subset(fillstr,  svars(object))
+    xmin <- xmax <- ymin <- ymax <- nfeature <- quantified <- NULL
+# Prepare
+    object %<>% filter_samples(!is.na(!!group), verbose=TRUE)
+    exprs(object) %<>% zero_to_na()  #### TODO fine-tune
     featuretypes <- get_subgroup_combinations(object)
-    dt <- sumexp_to_long_dt(object, svars = 'subgroup')
+    dt <- sumexp_to_long_dt(object, svars = groupstr)
     dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
-                    by = c('subgroup', 'feature_id'))
+                    by = c(groupstr, 'feature_id'))
     dt %<>% data.table::dcast.data.table(
-        feature_id ~ subgroup, value.var = 'quantified')
+        as.formula(paste0('feature_id ~ ', groupstr)), value.var = 'quantified')
     dt %<>% merge(featuretypes, by = setdiff(names(featuretypes), 'type'))
     dt %<>% extract(,.(nfeature=.N),by='type')
     dt %<>% merge(featuretypes,by='type')
@@ -445,20 +480,24 @@ plot_quantifications <- function(object){
     dt[, ymin := c(0,ymax[-.N])]
     dt %<>% data.table::melt.data.table(
         id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
-        variable.name = 'subgroup', value.name='quantified')
+        variable.name = groupstr, value.name='quantified')
     dt$quantified %<>% as.factor()
-    nsampledt <- data.table(table(object$subgroup)) %>% set_names(c('subgroup', 'xmax'))
+    nsampledt <- data.table(table(sdata(object)[[groupstr]])) %>%
+                set_names(c(groupstr, 'xmax'))
     nsampledt[, xmax := cumsum(xmax)]
     nsampledt[, xmin := c(0, xmax[-.N])]
-    dt %<>% merge(nsampledt, by = 'subgroup')
-    ggplot(dt) +
-        geom_rect(aes(xmin = xmin, xmax=xmax, ymin = ymin, ymax = ymax, fill=subgroup, alpha = quantified)) +
-        geom_segment(aes(x=xmin, xend=xmax, y = ymax, yend=ymax)) +
-        geom_segment(aes(x=xmin, xend=xmax, y = ymin, yend=ymin)) +
-        geom_segment(aes(x=xmax, xend=xmax, y = ymin, yend=ymax)) +
-        geom_segment(aes(x=xmin, xend=xmin, y = ymin, yend=ymax)) +
-        theme_minimal() + xlab('Samples') + ylab('Features') +
-        theme(panel.grid = element_blank()) + guides(alpha=FALSE)
+    dt %<>% merge(nsampledt, by = groupstr)
+# Plot
+    colors <- make_colors(slevels(object, fillstr))
+    ggplot(dt) + geom_rect(aes( xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
+                                fill=!!fill, alpha=quantified)) +
+                geom_segment(aes(x=xmin, xend=xmax, y = ymax, yend=ymax)) +
+                geom_segment(aes(x=xmin, xend=xmax, y = ymin, yend=ymin)) +
+                geom_segment(aes(x=xmax, xend=xmax, y = ymin, yend=ymax)) +
+                geom_segment(aes(x=xmin, xend=xmin, y = ymin, yend=ymax)) +
+                theme_minimal() + xlab('Samples') + ylab('Features') +
+                theme(panel.grid = element_blank()) + guides(alpha=FALSE) +
+                scale_fill_manual(values = colors)
 }
 
 
@@ -486,8 +525,8 @@ explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
     zeroed <- impute_systematic_nondetects(object, fun = zeroimpute, plot = FALSE)
     legend <- gglegend(biplot(object))
 
-    do_plot_detects <- function(obj, ...){
-        plot_detects(obj, ...) + guides(color=FALSE, fill=FALSE)
+    do_plot_sample_detections <- function(obj, ...){
+        plot_sample_detections(obj, ...) + guides(color=FALSE, fill=FALSE)
     }
 
     do_biplot <- function(obj, ...){
@@ -502,9 +541,9 @@ explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
         ggtitle(NULL)
     }
 
-    p1 <- do_plot_detects(object, ...)  + ggtitle('Original')
-    p2 <- do_plot_detects(imputed, ...) + ggtitle('Halfnorm imputed')
-    p3 <- do_plot_detects(zeroed, ...)  + ggtitle('Zero imputed')
+    p1 <- do_plot_sample_detections(object, ...)  + ggtitle('Original')
+    p2 <- do_plot_sample_detections(imputed, ...) + ggtitle('Halfnorm imputed')
+    p3 <- do_plot_sample_detections(zeroed, ...)  + ggtitle('Zero imputed')
     p4 <- do_plot_sample_densities(object,  ...)
     p5 <- do_plot_sample_densities(imputed, ...)
     p6 <- do_plot_sample_densities(zeroed,  ...)

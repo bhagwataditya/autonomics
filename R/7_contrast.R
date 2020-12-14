@@ -1180,7 +1180,7 @@ plot_contrastogram <- function(
   subgroup_colors = default_color_values2(object)
 ){
 # Initialize
-    V2 <- .N <- N <- NULL
+    V2 <- N <- NULL
 
 # Perform limma
     object %<>% add_limma(contrasts = contrasts)

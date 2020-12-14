@@ -23,7 +23,7 @@
 #' @importFrom assertive   has_names                    has_no_duplicates
 #' @importFrom assertive   is_empty_character   is_scalar   is_existing_file
 #' @importFrom colorspace  sequential_hcl
-#' @importFrom data.table  copy   data.table   fread   fwrite   setkeyv   set
+#' @importFrom data.table  copy   data.table   fread   fwrite  .N  setkeyv   set
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2
@@ -64,7 +64,7 @@
 #' @importFrom utils         installed.packages    unzip
 NULL
 
-utils::globalVariables('.')
+utils::globalVariables(c('.'))
 utils::globalVariables(c('subgroup', 'sample_id'))
 utils::globalVariables(c('feature_id', 'feature_name'))
 utils::globalVariables(c('pca1', 'pca2'))

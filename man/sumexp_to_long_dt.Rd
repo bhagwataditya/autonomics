@@ -66,4 +66,12 @@ Convert SummarizedExperiment into data.table
    sumexp_to_wide_dt(object)
    sumexp_to_long_dt(object)
    sumexp_to_subrep_dt(object)
+
+# Fukuda
+   require(magrittr)
+   file <- download_data('fukuda20.proteingroups.txt')
+   object <- read_proteingroups(file, impute=FALSE, plot=FALSE)
+   sumexp_to_long_dt(object)
+   object \%<>\% impute_systematic_nondetects(plot=FALSE)
+   sumexp_to_long_dt(object)
 }

@@ -8,6 +8,8 @@ matrix2sumexp(x, sampledata = NULL)
 }
 \arguments{
 \item{x}{matrix}
+
+\item{sampledata}{data.frame or DataFrame}
 }
 \value{
 SummarizedExperiment
