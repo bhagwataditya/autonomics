@@ -899,10 +899,17 @@ add_limma <- function(object, contrasts = default_contrasts(object),
         correlation  <- duplicateCorrelation(exprs(object), design,
                                      block = block)[['consensus.correlation']]}
 # Fit lm and compute contrasts
-    contrastmat <- create_contrastmat(object, contrasts, design)
     fit <- suppressWarnings(lmFit(object = exprs(object), design = design,
                                   block = block, correlation = correlation,
                                   weights = weights(object)))
+    object %<>% add_contrast_results(fit, contrasts)
+    return(object)
+}
+
+
+add_contrast_results <- function(object, fit, contrasts){
+    contrastmat <- create_contrastmat(object, contrasts, design)
+    metadata(object)$contrastmat <- contrastmat
     fit %<>% contrasts.fit(contrasts = contrastmat)
     limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
                         } else { c('effect','rank','t','se','p','fdr','bonf')}
@@ -1102,7 +1109,7 @@ true_names <- function(x) names(x[x])
 
 
 compute_connections <- function(
-    object, contrasts, subgroup_colors = default_color_values2(object)
+    object, subgroup_colors = default_color_values2(object)
 ){
 # subgroup matrix, difference contrasts, limma
     pvalues <- limma(object)[, , 'p',      drop=FALSE]
@@ -1123,7 +1130,7 @@ compute_connections <- function(
     labels <- matrix("0", nrow = nrow(sizes), ncol = ncol(sizes),
                      dimnames = dimnames(sizes))
 # Add contrast numbers
-    contrastmat <- create_contrastmat(object, contrasts)
+    contrastmat <- metadata(object)$contrastmat
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
         to   <- true_names(contrastvector>0)
@@ -1146,7 +1153,6 @@ compute_connections <- function(
 
 #' Plot contrastogram
 #' @param object SummarizedExperiment
-#' @param contrasts contrast vector
 #' @param subgroup_colors named color vector (names = subgroups)
 #' @examples
 #' # subgroup matrix
@@ -1176,15 +1182,15 @@ compute_connections <- function(
 #'    plot_contrastogram(object)
 #' @export
 plot_contrastogram <- function(
-  object, contrasts = default_contrasts(object),
-  subgroup_colors = default_color_values2(object)
+    object, subgroup_colors = default_color_values2(object)
 ){
 # Initialize
     V2 <- N <- NULL
 
 # Perform limma
-    object %<>% add_limma(contrasts = contrasts)
-    contrastogram_matrices <- compute_connections(object, contrasts, subgroup_colors = subgroup_colors)
+    #object %<>% add_limma(contrasts = contrasts)
+    contrastogram_matrices <- compute_connections(
+            object, subgroup_colors = subgroup_colors)
     sizes  <- contrastogram_matrices$sizes
     colors <- contrastogram_matrices$colors
     labels <- contrastogram_matrices$labels

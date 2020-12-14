@@ -4,16 +4,10 @@
 \alias{plot_contrastogram}
 \title{Plot contrastogram}
 \usage{
-plot_contrastogram(
-  object,
-  contrasts = default_contrasts(object),
-  subgroup_colors = default_color_values2(object)
-)
+plot_contrastogram(object, subgroup_colors = default_color_values2(object))
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{contrasts}{contrast vector}
 
 \item{subgroup_colors}{named color vector (names = subgroups)}
 }
