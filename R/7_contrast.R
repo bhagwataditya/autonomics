@@ -1036,80 +1036,16 @@ extract_limma_dt <- function(object){
 #
 #             plot_contrastogram
 #                 compute_connections
-#                     default_color_values2
-#                         default_color_values
-#                             default_color_var
 #
 #=============================================================================
 
-
-#' default color_var
-#' @param object SummarizedExperiment
-#' @return default value of color_var
-#' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' rm_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-#' object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
-#' default_color_var(object)
-#'
-#' file <- download_data('billing16.somascan.adat')
-#' object <- read_somascan(file)
-#' default_color_var(object)
-#'
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' default_color_var(object)
-#' @export
-default_color_var <- function(object){
-   if (     'block'    %in% svars(object))  'block'
-   else if ('subgroup' %in% svars(object))  'subgroup'
-   else                                      NULL
-}
-
-
-#' Default color values
-#' @param object     SummarizedExperiment
-#' @param color_var  string: svar mapped to color
-#' @param show       logical
-#' @return default color values vector
-#' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' rm_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-#' object <- read_proteingroups(file, rm_subgroups = rm_subgroups, plot=FALSE)
-#' default_color_values(object, show = TRUE)
-#'
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' default_color_values(object, show = TRUE)
-#' @export
-default_color_values <- function(
-   object,
-   color_var = default_color_var(object),
-   show = FALSE
-){
-# Assert
-    assert_is_valid_sumexp(object)
-    assert_is_subset(color_var, svars(object))
-# sep
-    sep              <- guess_sep(object, color_var)
-    color_var_levels <- slevels(object, color_var)
-# Make colors
-    color_values <- make_colors(color_var_levels, sep, show)
-    color_values[color_var_levels]
-}
-
-
-default_color_values2 <- function(object){
-    subgrouplevels <- subgroup_levels(object)
-    subgroupmatrix <- subgroup_matrix(object)
-    default_color_values(object, 'subgroup')[c(t(subgroupmatrix))]
-}
 
 true_names <- function(x) names(x[x])
 
 
 compute_connections <- function(
-    object, subgroup_colors = default_color_values2(object)
+    object,
+    colors = make_colors(subgroup_levels(object), guess_sep(object))
 ){
 # subgroup matrix, difference contrasts, limma
     pvalues <- limma(object)[, , 'p',      drop=FALSE]
