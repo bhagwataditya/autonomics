@@ -516,9 +516,11 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
     methody <- substr(ystr, 1, 3)
     xdim <- xstr %>% substr(4, nchar(.)) %>% as.numeric()
     ydim <- ystr %>% substr(4, nchar(.)) %>% as.numeric()
+    assert_is_subset(xstr, svars(object)); assert_is_subset(xstr, fvars(object))
+    assert_is_subset(ystr, svars(object)); assert_is_subset(ystr, fvars(object))
 
-    object %<>% get(methodx)(ndim=xdim, verbose = FALSE)
-    object %<>% get(methody)(ndim=ydim, verbose = FALSE)
+    #object %<>% get(methodx)(ndim=xdim, verbose = FALSE)
+    #object %<>% get(methody)(ndim=ydim, verbose = FALSE)
     color <- enquo(color)
     feature_label <- enquo(feature_label)
     dots  <- enquos(...)

@@ -4,12 +4,18 @@
 \alias{plot_contrastogram}
 \title{Plot contrastogram}
 \usage{
-plot_contrastogram(object, subgroup_colors = default_color_values2(object))
+plot_contrastogram(
+  object,
+  colors = make_colors(subgroup_levels(object), guess_sep(object)),
+  curve = 0.08
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroup_colors}{named color vector (names = subgroups)}
+\item{colors}{named color vector (names = subgroups)}
+
+\item{curve}{arrow curvature}
 }
 \description{
 Plot contrastogram
@@ -19,7 +25,6 @@ Plot contrastogram
    file <- download_data('halama18.metabolon.xlsx')
    object <- read_metabolon(file, plot=FALSE)
    plot_contrastogram(object)
-
 # subgroup vector
     require(magrittr)
     file <-  download_data('billing19.proteingroups.txt')
@@ -27,14 +32,13 @@ Plot contrastogram
                        'EM05_EM02', 'EM30_EM15')
     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
     object$subgroup \%<>\% gsub('_STD', '', .)
-    object$subgroup \%<>\% factor(c('EM00','EM01','EM02','EM05','EM15','EM30','BM00'))
-    contrasts <- c(col_contrasts(object), row_contrasts(object))
-    plot_contrastogram(object, contrasts=c(contrasts))
-
-# subgroup scalar
-   contrasts <- c(col_contrasts(object), row_contrasts(object))
-   plot_contrastogram(object, contrasts=contrasts[1])
-
+    object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
+    object \%<>\% add_limma(col_contrasts(object), plot=FALSE)
+    plot_contrastogram(object, curve=0.8)
+# subgroup vector
+    file <-  download_data('fukuda20.proteingroups.txt')
+    object <- read_proteingroups(file, plot=FALSE)
+    plot_contrastogram(object)
 # Ratios: self-contrasts
    file <- download_data('billing16.proteingroups.txt')
    invert <- c('EM_E', 'BM_E', 'BM_EM')

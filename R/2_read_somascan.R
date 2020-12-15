@@ -182,6 +182,7 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
 # Read
     object <- .read_somascan(file, fid_var=fid_var, sid_var = sid_var)
     object$sample_id %<>% make.unique()
+    formula <- enquo(formula)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
     object %<>% add_designvars(subgroup_var = subgroup_var, verbose = verbose)
@@ -202,8 +203,9 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     if (rm_na_svars)            sdata(object) %<>% rm_na_columns()
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     if (log2) object %<>% log2transform(verbose = TRUE)
-# Contrast
-    object %<>% add_limma(contrasts, formula = !!enquo(formula))
+# Analyze
+    object %<>% pca()
+    object %<>% add_limma(contrasts, formula = !!formula, plot=FALSE)
 # Plot
     if (plot) plot_samples(object)
 # Return

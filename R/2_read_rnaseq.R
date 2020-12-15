@@ -273,7 +273,7 @@ compute_precision_weights <- function(
 # Estimate precision weights
     has_block <- has_complete_block_values(object)
     weights   <- compute_precision_weights_once(
-                    object, formula = !!formula, plot = !has_block)
+                    object, formula = !!formula, plot = !has_block & plot)
 # Update precision weights using block correlation
     if (has_block){
         log2cpm <- log2(counts_to_cpm(counts(object)))
@@ -283,7 +283,7 @@ compute_precision_weights <- function(
         correlation %<>% extract2('consensus')
         weights <- compute_precision_weights_once(
                     object, formula = !!enquo(formula), block = object$block,
-                    correlation = correlation, plot = TRUE)
+                    correlation = correlation, plot = plot)
     }
 # Return
     dimnames(weights) <- dimnames(object)
@@ -361,12 +361,13 @@ preprocess_counts <- function(
     object,
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     filter_count = 10,
-    verbose      = TRUE
+    verbose      = TRUE,
+    plot         = TRUE
 ){
 # Filter lowly expressed features
     sdata(object)$libsize <- colSums(counts(object))
     object %<>% filter_low_count_features(
-                    filter_count, verbose = TRUE)
+                    filter_count, verbose = verbose)
     sdata(object)$libsize.filtered <- colSums(counts(object))
     sdata(object)$libsize.scaled   <- scaledlibsizes(counts(object))
 # Normalize: counts -> cpm
@@ -447,9 +448,12 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 # Add design. Preprocess
     object$sample_id <- sample_names
     object %<>% add_designvars(verbose = verbose)
-    object %<>% preprocess_counts(filter_count=filter_count, verbose=verbose)
+    object %<>% preprocess_counts(formula = !!formula,
+                  filter_count = filter_count, verbose = verbose, plot = plot)
 # Contrast
-    object %<>% add_limma(contrasts = contrasts, formula=!!enquo(formula))
+    object %<>% pca()
+    formula <- enquo(formula)
+    object %<>% add_limma(contrasts = contrasts, formula=!!formula, plot=FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return
@@ -515,15 +519,16 @@ read_counts <- function(
     assays(object)$exprs <- NULL
 # Prepare
     object %<>% add_designvars()
-    object %<>% preprocess_counts(
-        formula=!!formula, filter_count=filter_count, verbose=verbose)
+    object %<>% preprocess_counts(formula = !!formula,
+                    filter_count = filter_count, plot = plot, verbose = verbose)
     if (length(fname_col)>0){
         assert_is_subset(fname_col, fvars(object))
         fdata(object)$feature_name <- fdata(object)[[fname_col]]
         fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     }
 # Contrast
-    object %<>% add_limma(contrasts=contrasts, formula=!!formula)
+    object %<>% pca()
+    object %<>% add_limma(contrasts=contrasts, formula=!!formula, plot=FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return

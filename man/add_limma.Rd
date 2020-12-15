@@ -7,7 +7,9 @@
 add_limma(
   object,
   contrasts = default_contrasts(object),
-  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup
+  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
+  plot = TRUE,
+  ...
 )
 }
 \arguments{
@@ -17,6 +19,10 @@ add_limma(
 (automatically generated names are not always intuitive)}
 
 \item{formula}{formula to create design matrix (using svars)}
+
+\item{plot}{TRUE/FALSE}
+
+\item{...}{passed to plot_contrastogram}
 }
 \value{
 Updated SummarizedExperiment
@@ -46,15 +52,15 @@ object <- read_somascan(file)
 add_limma(object)
 
 file <- download_data('billing19.proteingroups.txt')
-rm_subgroups<-c('BLANK_BM00','BM00_BM00','EM01_EM00','EM05_EM02','EM30_EM15')
+rm_subgroups <- c(
+  'BLANK_BM00', 'BLANK_STD', 'BM00_BM00','EM01_EM00','EM05_EM02','EM30_EM15')
 object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
-contrasts <- c(EM01_EM00 = 'EM01_STD - EM00_STD')
+object$subgroup \%<>\% gsub('_STD', '', .)
+object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
+contrasts <- col_contrasts(object)
 object \%<>\% add_limma(contrasts)
-sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
 
 file <- download_data('billing19.rnacounts.txt')
 object <- read_counts(file, plot=FALSE)
-contrasts <- c(EM01_EM00 = 'EM01 - EM00')
-object \%<>\% add_limma(contrasts)
-sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
+object \%<>\% add_limma()
 }

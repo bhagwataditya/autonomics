@@ -1152,6 +1152,7 @@ read_proteingroups <- function(
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
     assert_is_a_bool(verbose)
+    formula <- enquo(formula)
 # Read
     object <- .read_proteingroups(proteinfile, quantity, designfile=designfile,
         rm_subgroups = rm_subgroups, invert_subgroups = invert_subgroups,
@@ -1162,8 +1163,9 @@ read_proteingroups <- function(
     object %<>% rename_proteingroup_fvars()
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
-# Contrast
-    object %<>% add_limma(contrasts=contrasts, formula=!!enquo(formula))
+# Analyze
+    object %<>% pca()
+    object %<>% add_limma(contrasts=contrasts, formula=!!formula, plot=FALSE)
 # Return
     if (plot)  plot_samples(object)
     object
@@ -1187,6 +1189,7 @@ read_phosphosites <- function(
     `Protein group IDs` <- `Localization prob` <- NULL
     assert_all_are_existing_files(c(phosphofile, proteinfile))
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
+    formula <- enquo(formula)
 # Read
     proteingroups <- .read_proteingroups(file=proteinfile, quantity = quantity,
         designfile = designfile, rm_subgroups = rm_subgroups,
@@ -1204,7 +1207,8 @@ read_phosphosites <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
 # Contrast
-    object %<>% add_limma(contrasts = contrasts, formula = !!enquo(formula))
+    object %<>% pca()
+    object %<>% add_limma(contrasts=contrasts, formula=!!formula, plot=FALSE)
 # Return
     if (plot)  plot_samples(object)
     object

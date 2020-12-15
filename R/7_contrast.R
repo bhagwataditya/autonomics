@@ -855,10 +855,12 @@ default_contrasts <- function(object){
 #'    \item {F}      vector (ngene)            : F    values (moderated F test)
 #'    \item {F.p}    vector (ngene)            : p    values (moderated F test)
 #' }
-#' @param object        SummarizedExperiment
-#' @param contrasts  contrast vector, preferably named
-#'                   (automatically generated names are not always intuitive)
+#' @param object    SummarizedExperiment
+#' @param contrasts contrast vector, preferably named
+#'                  (automatically generated names are not always intuitive)
 #' @param formula   formula to create design matrix (using svars)
+#' @param plot      TRUE/FALSE
+#' @param ...       passed to plot_contrastogram
 #' @return Updated SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -867,20 +869,25 @@ default_contrasts <- function(object){
 #' add_limma(object)
 #'
 #' file <- download_data('billing19.proteingroups.txt')
-#' rm_subgroups<-c('BLANK_BM00','BM00_BM00','EM01_EM00','EM05_EM02','EM30_EM15')
+#' rm_subgroups <- c(
+#'   'BLANK_BM00', 'BLANK_STD', 'BM00_BM00','EM01_EM00','EM05_EM02','EM30_EM15')
 #' object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
-#' contrasts <- c(EM01_EM00 = 'EM01_STD - EM00_STD')
+#' object$subgroup %<>% gsub('_STD', '', .)
+#' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
+#' contrasts <- col_contrasts(object)
 #' object %<>% add_limma(contrasts)
-#' sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
 #'
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_counts(file, plot=FALSE)
-#' contrasts <- c(EM01_EM00 = 'EM01 - EM00')
-#' object %<>% add_limma(contrasts)
-#' sum(limma(object)[,'EM01_EM00','bonf'] < 0.05, na.rm = TRUE)
+#' object %<>% add_limma()
 #' @export
-add_limma <- function(object, contrasts = default_contrasts(object),
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup){
+add_limma <- function(
+    object,
+    contrasts = default_contrasts(object),
+    formula   = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    plot      = TRUE,
+    ...
+){
 # Assert
     design <- create_design(object, formula=!!enquo(formula))
     assert_is_matrix(design)
@@ -902,12 +909,14 @@ add_limma <- function(object, contrasts = default_contrasts(object),
     fit <- suppressWarnings(lmFit(object = exprs(object), design = design,
                                   block = block, correlation = correlation,
                                   weights = weights(object)))
-    object %<>% add_contrast_results(fit, contrasts)
+    object %<>% add_contrast_results(fit, design, contrasts)
+# Plot/Return
+    if (plot) plot_contrastogram(object, ...)
     return(object)
 }
 
 
-add_contrast_results <- function(object, fit, contrasts){
+add_contrast_results <- function(object, fit, design, contrasts){
     contrastmat <- create_contrastmat(object, contrasts, design)
     metadata(object)$contrastmat <- contrastmat
     fit %<>% contrasts.fit(contrasts = contrastmat)
@@ -1060,11 +1069,11 @@ compute_connections <- function(
     sep <- guess_sep(object)
     subgroupmatrix <- subgroup_matrix(object)
     subgrouplevels <- c(t(subgroupmatrix))
-    sizes <- colors <- matrix(0,
+    arrowsizes <- arrowcolors <- matrix(0,
         nrow = length(subgrouplevels), ncol = length(subgrouplevels),
         dimnames = list(subgrouplevels, subgrouplevels))
-    labels <- matrix("0", nrow = nrow(sizes), ncol = ncol(sizes),
-                     dimnames = dimnames(sizes))
+    arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
+                     dimnames = dimnames(arrowsizes))
 # Add contrast numbers
     contrastmat <- metadata(object)$contrastmat
     for (contrastname in colnames(contrastmat)){
@@ -1074,28 +1083,30 @@ compute_connections <- function(
         ns <- nsignif[[contrastname]]
         nu <- nup[[contrastname]]
         nd <- ndown[[contrastname]]
-        sizes[ to, from] <- nu#ns
-        sizes[ from, to] <- nd#ns
-        colors[to, from] <- subgroup_colors[[to]]
-        colors[from, to] <- subgroup_colors[[from]]
-        labels[to, from] <- if (nu>0) nu else 0#paste0(nu,  " %up% phantom(.)") else "phantom(.)"
-        labels[from, to] <- if (nd>0) nd else 0#paste0(nd," %down% phantom(.)") else "phantom(.)"
+        arrowsizes[ to, from] <- nu#ns
+        arrowsizes[ from, to] <- nd#ns
+        arrowcolors[to, from] <- colors[[to]]
+        arrowcolors[from, to] <- colors[[from]]
+        arrowlabels[to, from] <- if (nu>0) nu else 0#paste0(nu,  " %up% phantom(.)") else "phantom(.)"
+        arrowlabels[from, to] <- if (nd>0) nd else 0#paste0(nd," %down% phantom(.)") else "phantom(.)"
     }
 # Return
-    #labels[colors==0] <- "0"
-    list(sizes = sizes, colors = colors, labels = labels)
+    #arrowlabels[arrowcolors==0] <- "0"
+    list(arrowsizes = arrowsizes,
+        arrowcolors = arrowcolors,
+        arrowlabels = arrowlabels)
 }
 
 
 #' Plot contrastogram
 #' @param object SummarizedExperiment
-#' @param subgroup_colors named color vector (names = subgroups)
+#' @param colors named color vector (names = subgroups)
+#' @param curve  arrow curvature
 #' @examples
 #' # subgroup matrix
 #'    file <- download_data('halama18.metabolon.xlsx')
 #'    object <- read_metabolon(file, plot=FALSE)
 #'    plot_contrastogram(object)
-#'
 #' # subgroup vector
 #'     require(magrittr)
 #'     file <-  download_data('billing19.proteingroups.txt')
@@ -1103,14 +1114,13 @@ compute_connections <- function(
 #'                        'EM05_EM02', 'EM30_EM15')
 #'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
 #'     object$subgroup %<>% gsub('_STD', '', .)
-#'     object$subgroup %<>% factor(c('EM00','EM01','EM02','EM05','EM15','EM30','BM00'))
-#'     contrasts <- c(col_contrasts(object), row_contrasts(object))
-#'     plot_contrastogram(object, contrasts=c(contrasts))
-#'
-#' # subgroup scalar
-#'    contrasts <- c(col_contrasts(object), row_contrasts(object))
-#'    plot_contrastogram(object, contrasts=contrasts[1])
-#'
+#'     object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
+#'     object %<>% add_limma(col_contrasts(object), plot=FALSE)
+#'     plot_contrastogram(object, curve=0.8)
+#' # subgroup vector
+#'     file <-  download_data('fukuda20.proteingroups.txt')
+#'     object <- read_proteingroups(file, plot=FALSE)
+#'     plot_contrastogram(object)
 #' # Ratios: self-contrasts
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    invert <- c('EM_E', 'BM_E', 'BM_EM')
@@ -1118,21 +1128,20 @@ compute_connections <- function(
 #'    plot_contrastogram(object)
 #' @export
 plot_contrastogram <- function(
-    object, subgroup_colors = default_color_values2(object)
+    object,
+    colors = make_colors(subgroup_levels(object), guess_sep(object)),
+    curve  = 0.08
 ){
 # Initialize
     V2 <- N <- NULL
-
-# Perform limma
-    #object %<>% add_limma(contrasts = contrasts)
+# Prepare
     contrastogram_matrices <- compute_connections(
-            object, subgroup_colors = subgroup_colors)
-    sizes  <- contrastogram_matrices$sizes
-    colors <- contrastogram_matrices$colors
-    labels <- contrastogram_matrices$labels
-    widths <- scales::rescale(sizes, c(0.01,30))
-
-# Plot diagram
+            object, colors = colors)
+    arrowsizes  <- contrastogram_matrices$arrowsizes
+    arrowcolors <- contrastogram_matrices$arrowcolors
+    arrowlabels <- contrastogram_matrices$arrowlabels
+    widths <- scales::rescale(arrowsizes, c(0.01,30))
+# Plot
     dt <- split_subgroup_levels(object)
     nrow <- dt[, data.table::uniqueN(V2)]
     nperrow <- dt[, .N, by = 'V1'][, N]
@@ -1140,14 +1149,23 @@ plot_contrastogram <- function(
     #dir.create('~/importomicscache/contrastogram')
     #pdf('~/importomicscache/contrastogram/directed_contrastogram.pdf',
     #width = 9, height = 9)
-    labels %<>% as.data.frame()
-    diagram::plotmat(labels, nperrow, relsize = 1, box.size = 0.05,
-    #diagram::plotmat(sizes, nperrow, relsize = 1, box.size = 0.05,
-        name = rownames(sizes), box.col = subgroup_colors,
-        box.type = 'square', arr.lwd = widths, shadow.size =0, # sqrt(sizes)
-        arr.lcol = colors, arr.col = colors)
-    #, arr.lcol = log2(1+diagram_matrix))
-    #dev.off()
+    arrowlabels %<>% as.data.frame()
+    diagram::plotmat(A          = arrowlabels,
+                    pos         = nperrow,
+                    curve       = curve,
+                    name        = rownames(arrowsizes),
+                    relsize     = 1,
+                    box.size    = 0.05,
+                    box.col     = colors[rownames(arrowsizes)],
+                    box.type    = 'square',
+                    box.prop    = 0.8,
+                    arr.lwd     = widths,
+                    shadow.size = 0, # sqrt(arrowsizes)
+                    arr.lcol    = arrowcolors,
+                    arr.col     = arrowcolors,
+                    arr.type    = 'triangle')
+      #, arr.lcol = log2(1+diagram_matrix))
+      #dev.off()
 }
 
 

@@ -246,6 +246,7 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     object <- .read_metabolon(
         file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var,
         subgroup_var = subgroup_var, fname_var = fname_var)
+    formula <- enquo(formula)
 # Prepare
     is_subgroup_col <- stri_detect_regex(svars(object), subgroup_var)
     subgroup_var <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
@@ -259,7 +260,8 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Contrast
-    object %<>% add_limma(contrasts = contrasts, formula = !!enquo(formula))
+    object %<>% pca()
+    object %<>% add_limma(contrasts = contrasts, formula=!!formula, plot=FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return
