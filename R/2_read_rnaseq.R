@@ -419,7 +419,8 @@ preprocess_counts <- function(
 read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
     filter_count = 10,
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts = default_contrasts(object), verbose = TRUE, plot = TRUE
+    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
+    verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(bamdir)
@@ -453,7 +454,8 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 # Contrast
     object %<>% pca()
     formula <- enquo(formula)
-    object %<>% add_limma(contrasts = contrasts, formula=!!formula, plot=FALSE)
+    object %<>% add_limma(contrasts = contrasts, rowcontrasts = rowcontrasts,
+                          formula = !!formula, plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return
@@ -491,7 +493,8 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 read_counts <- function(
     file, fid_col = 1, fname_col = character(0), filter_count = 10,
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts = default_contrasts(object), verbose = TRUE, plot = TRUE
+    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     assert_all_are_existing_files(file)
@@ -528,7 +531,8 @@ read_counts <- function(
     }
 # Contrast
     object %<>% pca()
-    object %<>% add_limma(contrasts=contrasts, formula=!!formula, plot=FALSE)
+    object %<>% add_limma(contrasts = contrasts, rowcontrasts = rowcontrasts,
+                          formula = !!formula, plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return

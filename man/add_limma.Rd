@@ -6,7 +6,8 @@
 \usage{
 add_limma(
   object,
-  contrasts = default_contrasts(object),
+  contrasts = layout_col_contrasts(object),
+  rowcontrasts = layout_row_contrasts(object),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   plot = TRUE,
   ...
@@ -48,7 +49,7 @@ This returns a list with components:
 \examples{
 require(magrittr)
 file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file)
+object <- read_somascan(file, plot=FALSE)
 add_limma(object)
 
 file <- download_data('billing19.proteingroups.txt')
@@ -57,10 +58,14 @@ rm_subgroups <- c(
 object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
 object$subgroup \%<>\% gsub('_STD', '', .)
 object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
-contrasts <- col_contrasts(object)
-object \%<>\% add_limma(contrasts)
+object \%<>\% add_limma()
 
 file <- download_data('billing19.rnacounts.txt')
 object <- read_counts(file, plot=FALSE)
+object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
 object \%<>\% add_limma()
+
+file <- download_data('halama18.metabolon.xlsx')
+object <- read_metabolon(file, plot = FALSE)
+object \%<>\%
 }

@@ -11,7 +11,8 @@ read_bam(
   nthreads = detectCores(),
   filter_count = 10,
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = default_contrasts(object),
+  contrasts = col_contrasts(object),
+  rowcontrasts = row_contrasts(object),
   verbose = TRUE,
   plot = TRUE
 )

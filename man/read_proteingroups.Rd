@@ -16,7 +16,8 @@ read_proteingroups(
   invert_subgroups = character(0),
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = default_contrasts(object),
+  contrasts = col_contrasts(object),
+  rowcontrasts = row_contrasts(object),
   verbose = TRUE,
   plot = TRUE
 )
@@ -33,7 +34,8 @@ read_phosphosites(
   fastafile = NULL,
   invert_subgroups = character(0),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = default_contrasts(object),
+  contrasts = col_contrasts(object),
+  rowcontrasts = row_contrasts(object),
   verbose = TRUE,
   plot = TRUE
 )

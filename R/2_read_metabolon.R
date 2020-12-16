@@ -240,7 +240,8 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     impute  = FALSE, add_kegg_pathways = FALSE,
     add_smiles = FALSE,
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts = default_contrasts(object), verbose = TRUE, plot = TRUE
+    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_metabolon(
@@ -261,7 +262,8 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Contrast
     object %<>% pca()
-    object %<>% add_limma(contrasts = contrasts, formula=!!formula, plot=FALSE)
+    object %<>% add_limma(contrasts = contrasts, row_contrasts = row_contrasts,
+                          formula   = !!formula, plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return

@@ -1145,7 +1145,8 @@ read_proteingroups <- function(
     fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts  = default_contrasts(object), verbose = TRUE, plot = TRUE
+    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
+    verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(proteinfile)
@@ -1165,7 +1166,8 @@ read_proteingroups <- function(
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
 # Analyze
     object %<>% pca()
-    object %<>% add_limma(contrasts=contrasts, formula=!!formula, plot=FALSE)
+    object %<>% add_limma(contrasts = contrasts, rowcontrasts = rowcontrasts,
+                          formula = !!formula, plot = FALSE)
 # Return
     if (plot)  plot_samples(object)
     object
@@ -1183,7 +1185,8 @@ read_phosphosites <- function(
     contaminants = FALSE, reverse = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts  = default_contrasts(object), verbose = TRUE, plot = TRUE
+    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
+    verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
@@ -1208,7 +1211,8 @@ read_phosphosites <- function(
     object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
 # Contrast
     object %<>% pca()
-    object %<>% add_limma(contrasts=contrasts, formula=!!formula, plot=FALSE)
+    object %<>% add_limma(contrasts = contrasts, rowcontrasts = rowcontrasts,
+                          formula = !!formula, plot = FALSE)
 # Return
     if (plot)  plot_samples(object)
     object

@@ -177,7 +177,8 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, log2 = TRUE,
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts = default_contrasts(object), verbose = TRUE, plot = TRUE
+    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_somascan(file, fid_var=fid_var, sid_var = sid_var)
@@ -205,7 +206,8 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     if (log2) object %<>% log2transform(verbose = TRUE)
 # Analyze
     object %<>% pca()
-    object %<>% add_limma(contrasts, formula = !!formula, plot=FALSE)
+    object %<>% add_limma(contrasts, rowcontrasts = rowcontrasts,
+                          formula = !!formula, plot = FALSE)
 # Plot
     if (plot) plot_samples(object)
 # Return

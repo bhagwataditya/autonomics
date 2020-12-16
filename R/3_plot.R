@@ -574,7 +574,7 @@ plot_samples <- function(
     object, x=pca1, y=pca2, color=subgroup, nloadings=0, plot=TRUE
 ){
     pcaplot  <-  biplot(object, x=!!enquo(x), y=!!enquo(y), color=!!enquo(color), nloadings = nloadings) +
-                theme(legend.position='top', legend.title=element_blank())
+                theme(legend.position='right', legend.title=element_blank())
     samples  <-  plot_sample_densities(object)  + theme(legend.position='none') + xlab(NULL) + ylab(NULL)
     features <-  plot_feature_densities(object) + theme(legend.position='none') + xlab(NULL) + ylab(NULL)
     detections <- plot_summarized_detections(object) + theme(legend.position='none')
@@ -582,7 +582,7 @@ plot_samples <- function(
     contrastnames <- sort(colnames(metadata(object)$contrastmat))
     colcontrastnames <- names(col_contrasts(object))
     if (all(colcontrastnames %in% contrastnames)) contrastnames <- colcontrastnames
-    volcanoes  <- plot_volcano(object, contrastnames = contrastnames, ntop = 1)
+    volcanoes  <- plot_volcano(object, ntop = 0)
 
     # Cairo::CairoPNG('contrastogram.png', width=480*7, height=480*7, dpi=400, pointsize=10)
     # plot_contrastogram(object)
@@ -592,13 +592,15 @@ plot_samples <- function(
     colors     <- gglegend(pcaplot)
     pcaplot    <- pcaplot    + theme(legend.position='none', axis.text.x = element_blank(), axis.text.y = element_blank())
     samples    <- samples    + theme(legend.position='none', axis.text.y = element_blank())
-    features   <- features   + theme(legend.position='none', axis.text.y = element_blank())
+    #features   <- features   + theme(legend.position='none', axis.text.y = element_blank())
     detections <- detections + theme(legend.position='none')
     volcanoes  <- volcanoes  + theme(legend.position='none')
 
-    pp <- grid.arrange(colors,
-                  arrangeGrob(detections, features, samples, pcaplot, ncol=4),
-                  volcanoes, ncol=1, heights = c(2,4,6))
+    pp <- grid.arrange( colors, #features, ncol=1),
+                        arrangeGrob(detections, samples, pcaplot, ncol=1),
+                        volcanoes,
+                        ncol=3,
+                        widths = c(2,4,6))
 
     if (plot) grid.draw(pp)
     pp

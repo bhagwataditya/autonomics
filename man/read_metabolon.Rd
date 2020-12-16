@@ -26,7 +26,8 @@ read_metabolon(
   add_kegg_pathways = FALSE,
   add_smiles = FALSE,
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = default_contrasts(object),
+  contrasts = col_contrasts(object),
+  rowcontrasts = row_contrasts(object),
   verbose = TRUE,
   plot = TRUE
 )

@@ -462,123 +462,6 @@ create_design <- function(
 }
 
 
-#==============================================================================
-#
-#                is_valid_contrast
-#                select_valid_contrast
-#                validify_contrasts
-#
-#==============================================================================
-
-
-#' Is a valid contrast?
-#' @param contrast contrast
-#' @param design   design
-#' @return logical
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' design <- create_design(object)
-#' contrast <- default_contrasts(object)[1]
-#' is_valid_contrast(contrast, design)
-#' @noRd
-is_valid_contrast <- function(contrast, design){
-  contrast %<>% as.character()
-  contrast %<>% stri_replace_all_fixed(' ', '')
-  contrast %<>% stri_replace_all_regex('(/[0-9]+)', '') %>%
-                stri_replace_all_fixed('(', '')         %>%
-                stri_replace_all_fixed(')', '')
-  terms <- strsplit(contrast, '[-+ ]+') %>% unlist() %>% unname()
-  all(terms %in% colnames(design))
-}
-
-
-#' Select valid contrasts
-#' @param  contrasts vector with contrast definitions
-#' @param  design    design matrix
-#' @param  verbose   whether or not to report
-#' @return subset of contrasts
-#' @noRd
-select_valid_contrasts <- function(contrasts, design, verbose = TRUE){
-  selector <- contrasts %>% vapply(is_valid_contrast, logical(1), design)
-  if (verbose){
-    cmessage('\t\tKeep %d valid contrasts (out of %d)',
-            sum(selector), length(selector))
-  }
-  contrasts[selector]
-}
-
-
-#' Validy subgroups and contrasts
-#' @param design    design matrix
-#' @param contrasts contrasts vector
-#' @return validified contrasts
-#' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' object  <- read_proteingroups(file)
-#' design  <- create_design(object)
-#' contrasts <- default_contrasts(object)
-#' validify_contrasts(contrasts, design)
-#' @noRd
-validify_contrasts <- function(contrasts, design){
-
-  # Assert valid inputs
-   assert_is_matrix(design)
-   assert_is_numeric(design)
-
-  # Validify contrast names
-  if (!has_names(contrasts)){
-    names(contrasts) <- make.names(contrasts)
-  }
-  assert_has_no_duplicates(names(contrasts))
-
-  # Select valid contrasts
-  contrasts %<>% select_valid_contrasts(design)
-  contrasts
-}
-
-
-#==============================================================================
-#
-#                       create_contrastmat
-#
-#==============================================================================
-
-
-#' Create contrast matrix
-#' @param object        SummarizedExperiment
-#' @param contrasts  vector of contrast definitions
-#' @param design     design matrix
-#' @return contrast matrix
-#' @examples
-#' # PROTEINGROUPS
-#' file <- download_data('billing16.proteingroups.txt')
-#' invert_subgroups <- c('BM_EM', 'EM_E', 'BM_E')
-#' object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-#' create_contrastmat(object)
-#'
-#' # RNACOUNTS
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_counts(file)
-#' create_contrastmat(object, c(EM0.8_0 = 'EM.8 - EM00'))
-#'
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' create_contrastmat(object)
-#' @export
-create_contrastmat <- function(
-    object, contrasts = default_contrasts(object),
-    design = create_design(object) # be explicit to disambiguate!
-){
-    if (!has_names(contrasts)) names(contrasts) <-make.names(contrasts)
-    if (length(contrasts) == 0)  return(NULL)
-    assert_has_no_duplicates(names(contrasts))
-    makeContrasts(contrasts = contrasts, levels = design) %>%
-    set_colnames(names(contrasts))
-}
-
-
-
 #=============================================================================
 #
 #               subgroup_matrix
@@ -671,28 +554,12 @@ subgroup_matrix <- function(object){
 
 #=============================================================================
 #
-#               col_contrast_matrix
-#               row_contrast_matrix
+#               layout_col_contrasts
+#               layout_row_contrasts
+#               col_contrast_defs
+#               row_contrast_defs
 #
 #==============================================================================
-
-
-#' @export
-#' @rdname col_contrasts
-col_contrast_matrix <- function(object, symbol = ' - '){
-    subgroupmat <- subgroup_matrix(object)
-    contrastmat <- matrix(  sprintf('%s%s%s',
-                                    subgroupmat[, -1],
-                                    symbol,
-                                    subgroupmat[, -ncol(subgroupmat)]),
-                            nrow = nrow(subgroupmat),
-                            ncol = ncol(subgroupmat)-1)
-    rownames(contrastmat) <- rownames(subgroupmat)
-    colnames(contrastmat) <- sprintf('%s - %s',
-                            colnames(subgroupmat)[-1],
-                            colnames(subgroupmat)[-ncol(subgroupmat)])
-    contrastmat
-}
 
 
 #' Row/Col contrasts
@@ -703,43 +570,73 @@ col_contrast_matrix <- function(object, symbol = ' - '){
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' subgroup_matrix(object)
-#' col_contrast_matrix(object)
+#' layout_col_contrasts(object)
+#' layout_row_contrasts(object)
 #' col_contrasts(object)
-#' row_contrast_matrix(object)
 #' row_contrasts(object)
 #' @export
-col_contrasts <- function(object){
-    col_contrmat   <- col_contrast_matrix(object)
-    col_contrnames <- col_contrast_matrix(object, '__')
-    c(structure(c(t(col_contrmat)), names = c(t(col_contrnames))))
+layout_col_contrasts <- function(object, symbol = ' - '){
+    subgroupmat <- subgroup_matrix(object)
+    if (ncol(subgroupmat)==1) return(matrix(, ncol=0, nrow=nrow(subgroupmat)))
+    colcontrasts <- matrix(  sprintf('%s%s%s',
+                                    subgroupmat[, -1],
+                                    symbol,
+                                    subgroupmat[, -ncol(subgroupmat)]),
+                            nrow = nrow(subgroupmat),
+                            ncol = ncol(subgroupmat)-1)
+    rownames(colcontrasts) <- rownames(subgroupmat)
+    colnames(colcontrasts) <- sprintf('%s - %s',
+                            colnames(subgroupmat)[-1],
+                            colnames(subgroupmat)[-ncol(subgroupmat)])
+    colcontrasts
 }
 
 
-#' @rdname col_contrasts
+#' @rdname layout_col_contrasts
 #' @export
-row_contrast_matrix <- function(object, symbol = ' - '){
+layout_row_contrasts <- function(object, symbol = ' - '){
     subgroupmat <- subgroup_matrix(object)
-    contrastmat <- matrix(  sprintf('%s%s%s',
+    if (nrow(subgroupmat)==1) return(matrix(, nrow=0, ncol=ncol(subgroupmat)))
+    rowcontrasts <- matrix(  sprintf('%s%s%s',
                                   subgroupmat[-nrow(subgroupmat), ],
                                   symbol,
                                   subgroupmat[-1, ]),
                             nrow = nrow(subgroupmat)-1,
                             ncol = ncol(subgroupmat))
-    colnames(contrastmat) <- colnames(subgroupmat)
-    rownames(contrastmat) <- sprintf('%s - %s',
+    colnames(rowcontrasts) <- colnames(subgroupmat)
+    rownames(rowcontrasts) <- sprintf('%s - %s',
                             rownames(subgroupmat)[-nrow(subgroupmat)],
                             rownames(subgroupmat)[-1])
-    contrastmat
+    rowcontrasts
 }
 
 
-#' @rdname col_contrasts
+#' Layout contrasts
+#' @examples
+#' layout_contrasts(contrastdefs = c('KD - WT'))
+#' layout_contrasts(contrastdefs = c('E - EM', 'BM - EM'))
+#' layout_contrasts(contrastdefs = c('KD.t0 - WT.t0', 'KD.t1 - WT.t1',
+#'                                   'WT.t1 - WT.t0', 'KD.t1 - KD.t1'), nrow=2)
+layout_contrasts <- function(contrastdefs, nrow=1){
+    matrix(contrastdefs, nrow=nrow, byrow = TRUE)
+}
+
+
+#' @rdname layout_col_contrasts
+#' @export
+col_contrasts <- function(object){
+    structure(  c(t(layout_col_contrasts(object))),
+        names = c(t(layout_col_contrasts(object, '_'))))
+}
+
+
+#' @rdname layout_col_contrasts
 #' @export
 row_contrasts <- function(object){
-    row_contrmat   <- row_contrast_matrix(object)
-    row_contrnames <- row_contrast_matrix(object, '__')
-    c(structure(c(t(row_contrmat)), names = c(t(row_contrnames))))
+    structure(  c(t(layout_row_contrasts(object))),
+        names = c(t(layout_row_contrasts(object, '_'))))
 }
+
 
 
 #=============================================================================
@@ -795,42 +692,6 @@ validify_contrast_names <- function(x){
 }
 
 
-#' Default contrasts
-#' @param object SummarizedExperiment
-#' @return named character vector: contrast definitions
-#' @examples
-#' # Ratios
-#'     require(magrittr)
-#'     file <- download_data('billing16.proteingroups.txt')
-#'     inv <- c('EM_BM', 'EM_E', 'E_BM')
-#'     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
-#'     default_contrasts(object)
-#'
-#' # GLUTAMINASE
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot=FALSE)
-#'     default_contrasts(object)
-#' @export
-default_contrasts <- function(object){
-
-    # Ratios themselves for ratio data
-    if (contains_ratios(object)){
-        message('\tGenerate contrasts from ratios')
-        return(
-            subgroup_levels(object) %>% set_names(validify_contrast_names(.)))
-
-    # Difference contrasts for abundance data
-    } else {
-        message('\tGenerate difference contrasts')
-        sep <- guess_sep(object)
-        contrasts <- c(col_contrasts(object), row_contrasts(object))
-    }
-
-    # Return
-    contrasts
-}
-
-
 #==============================================================================
 #
 #                            add_limma
@@ -865,7 +726,7 @@ default_contrasts <- function(object){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file)
+#' object <- read_somascan(file, plot=FALSE)
 #' add_limma(object)
 #'
 #' file <- download_data('billing19.proteingroups.txt')
@@ -874,28 +735,33 @@ default_contrasts <- function(object){
 #' object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
 #' object$subgroup %<>% gsub('_STD', '', .)
 #' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
-#' contrasts <- col_contrasts(object)
-#' object %<>% add_limma(contrasts)
+#' object %<>% add_limma()
 #'
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_counts(file, plot=FALSE)
+#' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
 #' object %<>% add_limma()
+#'
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' object %<>%
 #' @export
 add_limma <- function(
     object,
-    contrasts = default_contrasts(object),
-    formula   = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    plot      = TRUE,
+    contrasts    = layout_col_contrasts(object),
+    rowcontrasts = layout_row_contrasts(object),
+    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    plot         = TRUE,
     ...
 ){
 # Assert
-    design <- create_design(object, formula=!!enquo(formula))
-    assert_is_matrix(design)
-    assert_is_numeric(design)
-    assert_is_identical_to_true(unname(ncol(object)) == nrow(design))
+    assert_is_all_of(object, 'SummarizedExperiment')
     if (is.null(contrasts))    return(object)
-    contrasts %<>% validify_contrasts(design)
-    if (length(contrasts)==0) return(object)
+    if (is.vector(contrasts)) contrasts %<>% matrix(nrow=1)
+    designmat <- create_design(object, formula=!!enquo(formula))
+    metadata(object)$designmat    <- designmat
+    metadata(object)$contrasts    <- contrasts
+    metadata(object)$rowcontrasts <- rowcontrasts
 # Set block and correlation if required
     cmessage('\t\tRun limma')
     block <- NULL; correlation <- NULL
@@ -903,22 +769,33 @@ add_limma <- function(
     if (has_complete_block_values(object)){
         cmessage("\t\tBlock on svar 'block'")
         block <- my_sdata$block
-        correlation  <- duplicateCorrelation(exprs(object), design,
+        correlation  <- duplicateCorrelation(exprs(object), designmat,
                                      block = block)[['consensus.correlation']]}
 # Fit lm and compute contrasts
-    fit <- suppressWarnings(lmFit(object = exprs(object), design = design,
+    fit <- suppressWarnings(lmFit(object = exprs(object), design = designmat,
                                   block = block, correlation = correlation,
                                   weights = weights(object)))
-    object %<>% add_contrast_results(fit, design, contrasts)
+    object %<>% add_contrast_results(fit)
 # Plot/Return
-    if (plot) plot_contrastogram(object, ...)
+    if (plot)  plot_contrastogram(object)
     return(object)
 }
 
 
-add_contrast_results <- function(object, fit, design, contrasts){
-    contrastmat <- create_contrastmat(object, contrasts, design)
-    metadata(object)$contrastmat <- contrastmat
+contrast_defs <- function(object){
+    contrasts    <- metadata(object)$contrasts
+    rowcontrasts <- metadata(object)$rowcontrasts
+    contrastdefs <- c(c(t(contrasts)), c(t(rowcontrasts)))
+    contrastdefs
+}
+
+
+add_contrast_results <- function(object, fit){
+# contrastlayout
+    designmat    <- metadata(object)$designmat
+    contrastdefs <- contrast_defs(object)
+    contrastmat  <- makeContrasts(contrasts = contrastdefs, levels = designmat)
+# run limma
     fit %<>% contrasts.fit(contrasts = contrastmat)
     limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
                         } else { c('effect','rank','t','se','p','fdr','bonf')}
@@ -928,7 +805,7 @@ add_contrast_results <- function(object, fit, design, contrasts){
                                             quantity = limma_quantities))
     limma(object)[,,'effect'] <- fit$coefficients
     limma(object)[,,'rank'  ] <- apply(-abs(fit$coefficients), 2, rank)
-# Perform moderated t test
+# perform moderated t test
     if (!all(fit$df.residual==0)){
         fit %<>% eBayes()
         pp <- fit$p.value
@@ -1052,8 +929,7 @@ extract_limma_dt <- function(object){
 true_names <- function(x) names(x[x])
 
 compute_connections <- function(
-    object,
-    colors = make_colors(subgroup_levels(object), guess_sep(object))
+    object, colors = make_colors(subgroup_levels(object), guess_sep(object))
 ){
 # subgroup matrix, difference contrasts, limma
     pvalues <- limma(object)[, , 'p',      drop=FALSE]
@@ -1074,7 +950,11 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                      dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    contrastmat <- metadata(object)$contrastmat
+    designmat    <- metadata(object)$designmat
+    contrasts    <- metadata(object)$contrasts
+    rowcontrasts <- metadata(object)$rowcontrasts
+    contrastdefs <-  c( c(t(contrasts)), c(t(rowcontrasts)))
+    contrastmat  <- makeContrasts(contrasts = contrastdefs, levels = designmat)
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
         to   <- true_names(contrastvector>0)
@@ -1134,8 +1014,7 @@ plot_contrastogram <- function(
 # Initialize
     V2 <- N <- NULL
 # Prepare
-    contrastogram_matrices <- compute_connections(
-            object, colors = colors)
+    contrastogram_matrices <- compute_connections(object, colors = colors)
     arrowsizes  <- contrastogram_matrices$arrowsizes
     arrowcolors <- contrastogram_matrices$arrowcolors
     arrowlabels <- contrastogram_matrices$arrowlabels
@@ -1235,13 +1114,14 @@ top_up <- function(effect, fdr, mlp, ntop){
 #' file <- download_data("billing16.proteingroups.txt")
 #' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
-#' print(make_volcano_dt(object))
+#' print(make_volcano_dt(object, metadata(object)$contrasts))
 #' @export
-make_volcano_dt <- function(object, ntop = 3){
+make_volcano_dt <- function(object, contrasts, ntop = 3){
 
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
 
     dt <- extract_limma_dt(object)
+    dt %<>% extract(c(t(contrasts)), on="contrast")
     dt %<>% extract(!is.na(effect) & !is.na(p))
     dt[, mlp  := -log10(p)]
 
@@ -1263,17 +1143,20 @@ make_volcano_dt <- function(object, ntop = 3){
 }
 
 #' Plot volcano
-#' @param object          SummarizedExperiment
-#' @param label           fvar for labeling top features
-#' @param contrastnames   character vector: contrasts for which to plot volcano
-#' @param nrow            number: n rows in faceted plot
-#' @param ntop            number: n top features to be annotated
+#' @param object      SummarizedExperiment
+#' @param label       fvar for labeling top features
+#' @param contrasts   contrast layout matrix
+#' @param nrow        number: n rows in faceted plot
+#' @param ntop        number: n top features to be annotated
 #' @return ggplot object
 #' @examples
 #' # proteingroup group ratios
 #'     file <- download_data("billing16.proteingroups.txt")
 #'     inv <- c('EM_E', 'BM_E', 'BM_EM')
 #'     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#'     plot_volcano(object)
+#'     contrasts <- layout_contrasts(subgroup_levels(object))
+#'     object %<>% add_limma(contrasts = contrasts, plot = FALSE)
 #'     plot_volcano(object)
 #'
 #' # proteingroup LFQ intensities
@@ -1304,19 +1187,16 @@ make_volcano_dt <- function(object, ntop = 3){
 #'     plot_volcano(object)
 #' @export
 plot_volcano <- function(
-    object, contrastnames = colnames(limma(object)),
-    label = feature_name,
-    nrow  = 1, ntop = 3
+    object, contrasts = metadata(object)$contrasts,
+    label = feature_name, ntop = 3
 ){
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
-    assert_is_character(contrastnames)
-    assert_is_subset(contrastnames, colnames(limma(object)))
     topup <- topdown <- effect <- mlp <- NULL
     label <- enquo(label)
 # Prepare
-    limma(object) %<>% extract(, contrastnames, , drop=FALSE)
-    plotdt <- make_volcano_dt(object, ntop = ntop)
+    ncol <- ncol(contrasts)
+    plotdt <- make_volcano_dt(object, contrasts, ntop = ntop)
     txtdt  <- copy(plotdt)[topup==TRUE | topdown==TRUE]
     colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100),
                     hcl(h=120, l=c(100, 70, 20), c=100))
@@ -1325,7 +1205,7 @@ plot_volcano <- function(
     imputed <- NULL # fallback when plotdt misses "imputed"
     significance <- NULL
     p <- ggplot(plotdt) +
-        facet_wrap(~ contrast, nrow = nrow, scales = 'fixed') +
+        facet_wrap(~ contrast, ncol = ncol, scales = 'fixed') +
         geom_point( aes(x=effect, y=mlp, color = significance, shape=imputed),
                     na.rm = TRUE)
     if (!quo_is_null(label)){

@@ -21,7 +21,8 @@ read_somascan(
   rm_single_value_svars = FALSE,
   log2 = TRUE,
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = default_contrasts(object),
+  contrasts = col_contrasts(object),
+  rowcontrasts = row_contrasts(object),
   verbose = TRUE,
   plot = TRUE
 )

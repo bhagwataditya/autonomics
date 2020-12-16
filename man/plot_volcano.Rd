@@ -6,22 +6,21 @@
 \usage{
 plot_volcano(
   object,
-  contrastnames = colnames(limma(object)),
+  contrasts = metadata(object)$contrasts,
   label = feature_name,
-  nrow = 1,
   ntop = 3
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{contrastnames}{character vector: contrasts for which to plot volcano}
+\item{contrasts}{contrast layout matrix}
 
 \item{label}{fvar for labeling top features}
 
-\item{nrow}{number: n rows in faceted plot}
-
 \item{ntop}{number: n top features to be annotated}
+
+\item{nrow}{number: n rows in faceted plot}
 }
 \value{
 ggplot object
@@ -34,6 +33,9 @@ Plot volcano
     file <- download_data("billing16.proteingroups.txt")
     inv <- c('EM_E', 'BM_E', 'BM_EM')
     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+    plot_volcano(object)
+    contrasts <- layout_contrasts(subgroup_levels(object))
+    object \%<>\% add_limma(contrasts = contrasts, plot = FALSE)
     plot_volcano(object)
 
 # proteingroup LFQ intensities

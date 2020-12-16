@@ -4,7 +4,7 @@
 \alias{make_volcano_dt}
 \title{Create volcano datatable}
 \usage{
-make_volcano_dt(object, ntop = 3)
+make_volcano_dt(object, contrasts, ntop = 3)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -21,5 +21,5 @@ Create volcano datatable
 file <- download_data("billing16.proteingroups.txt")
 invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
 object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
-print(make_volcano_dt(object))
+print(make_volcano_dt(object, metadata(object)$contrasts))
 }
