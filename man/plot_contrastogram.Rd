@@ -7,7 +7,7 @@
 plot_contrastogram(
   object,
   colors = make_colors(subgroup_levels(object), guess_sep(object)),
-  curve = 0.08
+  curve = 0.1
 )
 }
 \arguments{

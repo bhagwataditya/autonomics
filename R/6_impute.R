@@ -498,7 +498,8 @@ plot_summarized_detections <- function(object, group=subgroup, fill=subgroup){
                 theme_minimal() + xlab('Samples') + ylab('Features') +
                 theme(panel.grid = element_blank()) + guides(alpha=FALSE) +
                 scale_fill_manual(values = colors) +
-                scale_alpha_manual(values=c(`0`=0, `1`=1))
+                scale_alpha_manual(values=c(`0`=0, `1`=1)) +
+                ggtitle('detections')
 }
 
 

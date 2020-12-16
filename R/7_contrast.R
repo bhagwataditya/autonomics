@@ -1051,7 +1051,6 @@ extract_limma_dt <- function(object){
 
 true_names <- function(x) names(x[x])
 
-
 compute_connections <- function(
     object,
     colors = make_colors(subgroup_levels(object), guess_sep(object))
@@ -1130,7 +1129,7 @@ compute_connections <- function(
 plot_contrastogram <- function(
     object,
     colors = make_colors(subgroup_levels(object), guess_sep(object)),
-    curve  = 0.08
+    curve  = 0.1
 ){
 # Initialize
     V2 <- N <- NULL
@@ -1340,6 +1339,7 @@ plot_volcano <- function(
     p + theme_bw() +
         scale_color_manual(values = colorvalues, name = NULL) +
         xlab(expression(log[2](FC))) +
-        ylab(expression(-log[10](p))) #+
+        ylab(expression(-log[10](p))) +
+        ggtitle('volcano')#+
         #guides(color=FALSE)
 }

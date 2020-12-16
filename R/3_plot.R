@@ -265,9 +265,9 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
-#' # Plot sample distributions
+#' # Plot distributions
 #'     plot_sample_densities(object)
-#'     plot_feature_densities(object[1:9, ])
+#'     plot_feature_densities(object)
 #' @export
 plot_densities <- function(object, group, fill, color = NULL,
     fixed = list(alpha = 0.5, na.rm = TRUE)
@@ -297,27 +297,44 @@ is_uniquely_empty <- function(x, y){
     ( is_empty(x) | !is_empty(y)) | (!is_empty(x) |  is_empty(y))
 }
 
-
 #' @rdname plot_densities
 #' @export
 plot_sample_densities <- function(
-    object, fill = subgroup, color = NULL, group = sample_id,
-    fixed = list(alpha=0.5, na.rm=TRUE)
-) plot_densities(
-    object, fill=!!enquo(fill), color=!!enquo(color), group=!!enquo(group),
-    fixed = fixed
-)
+    object,
+    fill = subgroup,
+    color = NULL,
+    group = sample_id,
+    fixed = list(alpha=0.5, na.rm=TRUE),
+    subsetter = if (ncol(object)<100){  seq_len(ncol(object))
+                } else {                sample(ncol(object), 9)}
+){
+    plot_densities( object[, subsetter],
+                    fill  = !!enquo(fill),
+                    color = !!enquo(color),
+                    group = !!enquo(group),
+                    fixed = fixed ) +
+    ggtitle("samples")
+}
 
 
 #' @rdname plot_densities
 #' @export
 plot_feature_densities <- function(
-    object, fill = feature_id, color = NULL, group = feature_id,
-    fixed = list(alpha=0.5, na.rm=TRUE)
-) plot_densities(
-    object, fill=!!enquo(fill), color=!!enquo(color), group=!!enquo(group),
-    fixed = fixed
-)
+    object,
+    fill = feature_id,
+    color = NULL,
+    group = feature_id,
+    fixed = list(alpha=0.5, na.rm=TRUE),
+    subsetter = if (nrow(object)<100){  seq_len(nrow(object))
+                } else {                sample(nrow(object), 9)}
+){
+    plot_densities( object[subsetter, ],
+                    fill  = !!enquo(fill),
+                    color = !!enquo(color),
+                    group = !!enquo(group),
+                    fixed = fixed) +
+    ggtitle("features")
+}
 
 #==============================================================================
 #
@@ -533,6 +550,7 @@ plot_subgroup_boxplots <- function(
     facet=!!enquo(facet), highlight=!!enquo(highlight), fixed=fixed
 )
 
+
 #' Plot samples
 #'
 #' Plots sample densities and scores
@@ -553,21 +571,37 @@ plot_subgroup_boxplots <- function(
 #' plot_samples(object)
 #' @export
 plot_samples <- function(
-    object, x=pca1, y=pca2, color=subgroup, nloadings=0, ..., plot=TRUE
+    object, x=pca1, y=pca2, color=subgroup, nloadings=0, plot=TRUE
 ){
-    p1  <-  biplot(object, x=!!enquo(x), y=!!enquo(y), color=!!enquo(color),
-                nloadings = nloadings, ...) +
-            theme(legend.position='top')
-    p2  <-  plot_sample_densities(object, fill = !!enquo(color), ...) +
-            theme(legend.position='none')
-    p3 <- plot_summarized_detections(object) + theme(legend.position='none')
-    p4 <- gglegend(p1)
-    p1 <- p1 + theme(legend.position='none')
-    pp <- grid.arrange( p4,
-                        arrangeGrob(grobs = list(p1, p2, p3), ncol = 3),
-                        ncol=1, heights = c(2,8))
+    pcaplot  <-  biplot(object, x=!!enquo(x), y=!!enquo(y), color=!!enquo(color), nloadings = nloadings) +
+                theme(legend.position='top', legend.title=element_blank())
+    samples  <-  plot_sample_densities(object)  + theme(legend.position='none') + xlab(NULL) + ylab(NULL)
+    features <-  plot_feature_densities(object) + theme(legend.position='none') + xlab(NULL) + ylab(NULL)
+    detections <- plot_summarized_detections(object) + theme(legend.position='none')
+
+    contrastnames <- sort(colnames(metadata(object)$contrastmat))
+    colcontrastnames <- names(col_contrasts(object))
+    if (all(colcontrastnames %in% contrastnames)) contrastnames <- colcontrastnames
+    volcanoes  <- plot_volcano(object, contrastnames = contrastnames, ntop = 1)
+
+    # Cairo::CairoPNG('contrastogram.png', width=480*7, height=480*7, dpi=400, pointsize=10)
+    # plot_contrastogram(object)
+    # dev.off()
+    # contrastogram <- grid::rasterGrob(png::readPNG('contrastogram.png'), interpolate = TRUE)
+
+    colors     <- gglegend(pcaplot)
+    pcaplot    <- pcaplot    + theme(legend.position='none', axis.text.x = element_blank(), axis.text.y = element_blank())
+    samples    <- samples    + theme(legend.position='none', axis.text.y = element_blank())
+    features   <- features   + theme(legend.position='none', axis.text.y = element_blank())
+    detections <- detections + theme(legend.position='none')
+    volcanoes  <- volcanoes  + theme(legend.position='none')
+
+    pp <- grid.arrange(colors,
+                  arrangeGrob(detections, features, samples, pcaplot, ncol=4),
+                  volcanoes, ncol=1, heights = c(2,4,6))
+
     if (plot) grid.draw(pp)
-    invisible(pp)
+    pp
 }
 
 

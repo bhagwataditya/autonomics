@@ -530,7 +530,7 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
     ylab  <- paste0(ystr, ' : ', metadata(object)[[methody]][[ystr]],'% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
-    p <- p + ggtitle(paste0(unique(c(methodx, methody)), collapse = '/'))
+    p <- p + ggtitle(paste0(xstr, ':', ystr))
     p %<>% add_loadings(
             object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
     p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
