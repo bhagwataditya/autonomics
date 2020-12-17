@@ -5,7 +5,7 @@
 \alias{sma}
 \alias{lda}
 \alias{pls}
-\title{Add PCA, SMA, LDA, or PLS}
+\title{Add PCA, SMA, LDA, PLS}
 \usage{
 pca(object, ndim = 2, minvar = 0, verbose = TRUE)
 
@@ -40,6 +40,9 @@ lda(object)  # Linear Discriminant Analysis
 sma(object)  # Spectral Map Analysis
 pca(object, ndim=3)
 pca(object, ndim=Inf, minvar=5)
+}
+\seealso{
+mofa
 }
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)

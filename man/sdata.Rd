@@ -3,20 +3,29 @@
 \name{sdata}
 \alias{sdata}
 \alias{sdata,SummarizedExperiment-method}
+\alias{sdata,MultiAssayExperiment-method}
 \alias{sdata<-}
 \alias{sdata<-,SummarizedExperiment,data.frame-method}
 \alias{sdata<-,SummarizedExperiment,DataFrame-method}
+\alias{sdata<-,MultiAssayExperiment,data.frame-method}
+\alias{sdata<-,MultiAssayExperiment,DataFrame-method}
 \title{Get/Set sdata}
 \usage{
 sdata(object)
 
 \S4method{sdata}{SummarizedExperiment}(object)
 
+\S4method{sdata}{MultiAssayExperiment}(object)
+
 sdata(object) <- value
 
 \S4method{sdata}{SummarizedExperiment,data.frame}(object) <- value
 
 \S4method{sdata}{SummarizedExperiment,DataFrame}(object) <- value
+
+\S4method{sdata}{MultiAssayExperiment,data.frame}(object) <- value
+
+\S4method{sdata}{MultiAssayExperiment,DataFrame}(object) <- value
 }
 \arguments{
 \item{object}{SummarizedExperiment, eSet, or EList}

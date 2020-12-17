@@ -6,10 +6,13 @@
 #' @importFrom assertive   assert_all_are_in_closed_range
 #' @importFrom assertive   assert_all_are_in_range
 #' @importFrom assertive   assert_all_are_less_than_or_equal_to
+#' @importFrom assertive   assert_all_are_not_matching_fixed
+#' @importFrom assertive   assert_all_are_true
 #' @importFrom assertive   assert_all_are_whole_numbers
 #' @importFrom assertive   assert_any_are_not_nan
 #' @importFrom assertive   assert_are_identical         assert_are_same_length
-#' @importFrom assertive   assert_engine                assert_has_no_duplicates
+#' @importFrom assertive   assert_engine
+#' @importFrom assertive   assert_has_names             assert_has_no_duplicates
 #' @importFrom assertive   assert_is_all_of             assert_is_any_of
 #' @importFrom assertive   assert_is_a_bool
 #' @importFrom assertive   assert_is_a_number           assert_is_a_string
@@ -41,6 +44,9 @@
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans
 #' @importFrom matrixStats   rowAlls   rowSds
 #' @importFrom methods       as
+#' @importFrom MultiAssayExperiment  colData       colData<-
+#' @importFrom MultiAssayExperiment  experiments   experiments<-
+#' @importFrom MultiAssayExperiment  MultiAssayExperiment
 #' @importFrom parallel      detectCores
 #' @importFrom readxl        read_excel   excel_sheets
 #' @importFrom rlang         as_string   enquo   eval_tidy   enexpr

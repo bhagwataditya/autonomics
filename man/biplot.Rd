@@ -14,7 +14,7 @@ biplot(
   feature_label = feature_name,
   ...,
   fixed = list(shape = 15, size = 3),
-  nloadings = 1
+  nloadings = 0
 )
 
 plot_biplot(...)

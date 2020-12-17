@@ -257,6 +257,12 @@ setMethod('sdata', signature('SummarizedExperiment'),
         # !! as.data.frame somehow somewhere performs a check.names
 
 #' @rdname sdata
+setMethod('sdata', signature('MultiAssayExperiment'),
+          function(object){
+              as(colData(object), "data.frame") })
+
+
+#' @rdname sdata
 #' @export
 setGeneric('sdata<-', function(object, value)  standardGeneric('sdata<-'))
 
@@ -272,6 +278,22 @@ setReplaceMethod(
 setReplaceMethod(
     'sdata',
     signature('SummarizedExperiment', 'DataFrame'),
+    function(object, value){
+        colData(object) <- value
+        object })
+
+#' @rdname sdata
+setReplaceMethod(
+    'sdata',
+    signature('MultiAssayExperiment', 'data.frame'),
+    function(object, value){
+        colData(object) <- DataFrame(value, check.names = FALSE)
+        object })
+
+#' @rdname sdata
+setReplaceMethod(
+    'sdata',
+    signature('MultiAssayExperiment', 'DataFrame'),
     function(object, value){
         colData(object) <- value
         object })

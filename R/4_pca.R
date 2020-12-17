@@ -115,7 +115,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 }
 
 
-#' Add PCA, SMA, LDA, or PLS
+#' Add PCA, SMA, LDA, PLS
 #'
 #' Perform a dimension reduction.
 #' Add sample scores, feature loadings, and dimension variances to object.
@@ -134,6 +134,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' sma(object)  # Spectral Map Analysis
 #' pca(object, ndim=3)
 #' pca(object, ndim=Inf, minvar=5)
+#' @seealso mofa
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
@@ -402,6 +403,98 @@ opls <- function(object, ndim = 2, minvar = 0){
 }
 
 
+#' Add MOFA
+#'
+#' Perform a platform-aggregating dimension reduction.
+#'
+#' Add sample scores, feature loadings, and dimension variances to object.
+#'
+#' @param object    MultiAssayExperiment
+#' @param mofafile  MOFA results file
+#' @param ndim      number
+#' @param minvar    number
+#' @param verbose   TRUE (default) or FALSE
+#' @return          SummarizedExperiment
+#' @examples
+#' somascan <-read_somascan( download_data('atkin18.somascan.adat'),plot=FALSE)
+#' metabolon<-read_metabolon(download_data('atkin18.metabolon.xlsx'),plot=FALSE)
+#' object <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
+#' object %<>% mofa()
+#' biplot(object, mofa1, mofa2)
+#' @export
+mofa <- function(
+    object, mofafile = file.path(tempdir(), 'mofaout.hdf'), verbose = FALSE
+){
+# Assert
+    if (!requireNamespace('MOFA2', quietly = TRUE)){
+        message("BiocManager::install('MOFA2'). Then re-run.")
+        return(object)}
+    lapply( names(experiments(object)),
+            function(i) assert_all_are_not_matching_fixed(
+                            rownames(experiments(object)[[i]]), '*'))
+# Run/Load mofa
+    assert_is_all_of(object, "MultiAssayExperiment")
+    if (file.exists(mofafile)){
+        if (verbose)  message('\t\tLoad ', mofafile)
+        mofaobj <- MOFA2::load_model(mofafile)
+    } else {
+        assert_is_all_of(object, "MultiAssayExperiment")
+        mofaobj <- MOFA2::prepare_mofa(MOFA2::create_mofa(object))
+        mofaobj %<>% MOFA2::run_mofa(outfile = mofafile)
+    }
+# Scores
+    scores <- mofaobj@expectations$Z$group1
+    scores %<>% extract(colData(object)$sample_id, ) # sumexps don't alway
+    colnames(scores) %<>% gsub('Factor', 'mofa', .)  # have same order!
+    colData(object) %<>% extract(
+                            , setdiff(names(.), colnames(scores)), drop=FALSE)
+    colData(object) %<>% cbind(scores)
+# Loadings
+    for (expname in names(experiments(object))){
+        loadings <- mofaobj@expectations$W[[expname]]
+        assert_are_identical(rownames(loadings),
+                            rownames(experiments(object)[[expname]]))
+        colnames(loadings) %<>% gsub('Factor', 'mofa', .)
+        rowData(experiments(object)[[expname]]) %<>% extract(
+                            , setdiff(names(.), colnames(loadings)), drop=FALSE)
+        rowData(experiments(object)[[expname]]) %<>% cbind(loadings)
+    }
+# Variances
+    variances <- rowSums(mofaobj@cache$variance_explained$r2_per_factor$group1)
+    names(variances) %<>% gsub('Factor', 'mofa', .)
+    metadata(object)$mofa <- variances
+# Return
+    object
+}
+
+
+#' Create MultiAssayExperiment from SummarizedExperiment list
+#' @param experiments named list of SummarizedExperiments
+#' @return MultiAssayExperiment
+#' @examples
+#' somascan <- read_somascan( download_data('atkin18.somascan.adat'),plot=FALSE)
+#' metabolon<- read_metabolon(download_data('atkin18.metabolon.xlsx'),plot=FALSE)
+#' experiments <- list(somascan=somascan, metabolon=metabolon)
+#' object <- sumexp2mae(experiments)
+#' @export
+sumexp2mae <- function(experiments){
+    assert_is_list(experiments)
+    assert_has_names(experiments)
+    for (experiment in experiments){
+        assert_is_all_of(experiment, 'SummarizedExperiment')
+        assert_is_subset(c('sample_id', 'subgroup'), svars(experiment))
+    }
+    extract_sdata <- function(sumexp){
+        extractvars <- c('sample_id', 'subgroup', 'replicate')
+        extractvars %<>% intersect(svars(sumexp))
+        sdata(sumexp)[, extractvars, drop=FALSE]
+    }
+    sdata1 <- unique(Reduce(rbind, lapply(experiments, extract_sdata)))
+    sdata1 %<>% extract(order(.$sample_id), )
+    assert_all_are_true(table(sdata1$sample_id)==1)
+    MultiAssayExperiment(experiments = experiments, colData = sdata1)
+}
+
 #=============================================================================
 #
 #           biplot
@@ -445,6 +538,8 @@ add_loadings <- function(
     label <- enquo(label)
     xstr <- rlang::as_name(x)
     ystr <- rlang::as_name(y)
+    assert_is_subset(xstr, names(rowData(object)))
+    assert_is_subset(ystr, names(rowData(object)))
 # Loadings
     xloadings <- fdata(object)[[xstr]]
     yloadings <- fdata(object)[[ystr]]
@@ -505,19 +600,17 @@ add_loadings <- function(
 #' @export
 biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
     feature_label = feature_name, ...,
-    fixed = list(shape=15, size=3), nloadings = 1
+    fixed = list(shape=15, size=3), nloadings = 0
 ){
     x     <- enquo(x)
     y     <- enquo(y)
     label <- enquo(label)
     xstr <- as_name(x)
     ystr <- as_name(y)
-    methodx <- substr(xstr, 1, 3)
-    methody <- substr(ystr, 1, 3)
-    xdim <- xstr %>% substr(4, nchar(.)) %>% as.numeric()
-    ydim <- ystr %>% substr(4, nchar(.)) %>% as.numeric()
-    assert_is_subset(xstr, svars(object)); assert_is_subset(xstr, fvars(object))
-    assert_is_subset(ystr, svars(object)); assert_is_subset(ystr, fvars(object))
+    methodx <- gsub('[0-9]+', '', xstr)
+    methody <- gsub('[0-9]+', '', ystr)
+    assert_is_subset(xstr, names(colData(object)))
+    assert_is_subset(ystr, names(colData(object)))
 
     #object %<>% get(methodx)(ndim=xdim, verbose = FALSE)
     #object %<>% get(methody)(ndim=ydim, verbose = FALSE)
@@ -526,8 +619,8 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
 
-    xlab  <- paste0(xstr, ' : ', metadata(object)[[methodx]][[xstr]],'% ')
-    ylab  <- paste0(ystr, ' : ', metadata(object)[[methody]][[ystr]],'% ')
+    xlab  <- paste0(xstr, ' : ', round(metadata(object)[[methodx]][[xstr]], 1),'% ')
+    ylab  <- paste0(ystr, ' : ', round(metadata(object)[[methody]][[ystr]], 1),'% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p <- p + ggtitle(paste0(xstr, ':', ystr))
