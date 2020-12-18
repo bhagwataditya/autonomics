@@ -514,6 +514,10 @@ sumexp2mae <- function(experiments){
 
 
 snf <- function(object, ndim = 2, plot = FALSE, ...){
+    # Assert
+    if (!requireNamespace('SNFtool', quietly = TRUE)){
+        message("BiocManager::install('SNFtool'). Then re-run.")
+        return(object)}
     assert_is_all_of(object, "MultiAssayExperiment")
     assert_all_are_true(Reduce('==', colnames(object)))
     affinitymatrices <- Map(

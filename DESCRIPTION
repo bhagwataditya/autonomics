@@ -69,4 +69,5 @@ Suggests:
   org.Hs.eg.db, 
   org.Mm.eg.db,
   ropls,
+  SNFtool,
   testthat
