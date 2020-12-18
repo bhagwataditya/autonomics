@@ -7,13 +7,13 @@
 \alias{pls}
 \title{Add PCA, SMA, LDA, PLS}
 \usage{
-pca(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE)
+pca(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
-sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE)
+sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
-lda(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE)
+lda(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
-pls(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE)
+pls(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -23,6 +23,10 @@ pls(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE)
 \item{minvar}{number}
 
 \item{verbose}{TRUE (default) or FALSE}
+
+\item{plot}{TRUE/FALSE}
+
+\item{...}{passed to biplot}
 }
 \value{
 SummarizedExperiment

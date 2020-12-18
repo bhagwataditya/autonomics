@@ -124,6 +124,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @param ndim    number
 #' @param minvar  number
 #' @param verbose TRUE (default) or FALSE
+#' @param plot    TRUE/FALSE
+#' @param ...     passed to biplot
 #' @return        SummarizedExperiment
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
@@ -137,7 +139,9 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @seealso mofa
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
-pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
+pca <- function(
+    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...
+){
 # Assert
     assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
@@ -176,7 +180,7 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
-    if (plot)  biplot(object, pca1, pca2)
+    if (plot)  print(biplot(object, pca1, pca2, ...))
     object
 }
 
@@ -184,7 +188,9 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
 
 #' @rdname pca
 #' @export
-sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
+sma <- function(
+    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
@@ -228,14 +234,16 @@ sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
-    if (plot)  biplot(object, sma1, sma2)
+    if (plot)  print(biplot(object, sma1, sma2, ...))
     object
 }
 
 
 #' @rdname pca
 #' @export
-lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
+lda <- function(
+    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
         message("BiocManager::install('MASS'). Then re-run.")
@@ -281,14 +289,16 @@ lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
 # Filter for minvar
     object %<>% .filter_minvar('lda', minvar)
 # Return
-    if (plot)  biplot(object, lda1, lda2)
+    if (plot)  print(biplot(object, lda1, lda2, ...))
     object
 }
 
 
 #' @rdname pca
 #' @export
-pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE){
+pls <- function(
+    object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -318,7 +328,7 @@ pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE){
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
-    if (plot)  biplot(object, pls1, pls2)
+    if (plot)  print(biplot(object, pls1, pls2, ...))
     object
 }
 
@@ -331,7 +341,7 @@ pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE){
 #' object <- read_metabolon(file)
 #' spls(object)
 #' @noRd
-spls <- function(object, ndim = 2, minvar = 0, plot = FALSE){
+spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -361,7 +371,7 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE){
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
-    if (plot)  biplot(spls1, spls2)
+    if (plot)  print(biplot(object, spls1, spls2, ...))
     object
 }
 
@@ -374,7 +384,9 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE){
 #' object <- read_metabolon(file)
 #' opls(object)
 #' @noRd
-opls <- function(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE){
+opls <- function(
+    object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
         message("BiocManager::install('ropls'). Then re-run.")
@@ -404,12 +416,12 @@ opls <- function(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE){
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
-    if (plot)  biplot(object, opls1, opls2)
+    if (plot)  print(biplot(object, opls1, opls2, ...))
     object
 }
 
 
-#' Add MOFA
+#' mofa/snf
 #'
 #' Perform a platform-aggregating dimension reduction.
 #'
@@ -421,17 +433,21 @@ opls <- function(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE){
 #' @param minvar    number
 #' @param verbose   TRUE/FALSE
 #' @param plot      TRUE/FALSE
-#' @return          SummarizedExperiment
+#' @param ...       passed to biplot
+#' @return          MultiAssayExperiment
 #' @examples
 #' somascan <-read_somascan( download_data('atkin18.somascan.adat'),plot=FALSE)
 #' metabolon<-read_metabolon(download_data('atkin18.metabolon.xlsx'),plot=FALSE)
 #' object <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
-#' object %<>% mofa()
-#' biplot(object, mofa1, mofa2)
+#' object %<>% mofa(plot=TRUE)
+#' object %<>%  snf(plot=TRUE)
+#' object$type <- substr(object$replicate,1,1)
+#' biplot(object, snf1, snf2, color=type)
+#' biplot(object, mofa1, mofa2, color=type)
 #' @export
 mofa <- function(
     object, mofafile = file.path(tempdir(), 'mofaout.hdf'),
-    verbose = FALSE, plot = FALSE
+    verbose = FALSE, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('MOFA2', quietly = TRUE)){
@@ -463,7 +479,7 @@ mofa <- function(
     names(variances) %<>% gsub('Factor', 'mofa', .)
     metadata(object)$mofa <- variances
 # Return
-    if (plot)  biplot(object, mofa1, mofa2)
+    if (plot)  print(biplot(object, mofa1, mofa2, ...))
     object
 }
 
@@ -483,6 +499,8 @@ sumexp2mae <- function(experiments){
         assert_is_all_of(experiment, 'SummarizedExperiment')
         assert_is_subset(c('sample_id', 'subgroup'), svars(experiment))
     }
+    for (i in seq_along(experiments))  experiments[[i]] %<>%
+                                            extract(, order(colnames(.)))
     extract_sdata <- function(sumexp){
         extractvars <- c('sample_id', 'subgroup', 'replicate')
         extractvars %<>% intersect(svars(sumexp))
@@ -493,6 +511,32 @@ sumexp2mae <- function(experiments){
     assert_all_are_true(table(sdata1$sample_id)==1)
     MultiAssayExperiment(experiments = experiments, colData = sdata1)
 }
+
+
+snf <- function(object, ndim = 2, plot = FALSE, ...){
+    assert_is_all_of(object, "MultiAssayExperiment")
+    assert_all_are_true(Reduce('==', colnames(object)))
+    affinitymatrices <- Map(
+        function(exp){  exprsmat <- exprs(experiments(object)[[exp]])
+                        k <- which(is.na(exprsmat), arr.ind=TRUE)
+                        exprsmat[k] <- rowMeans(exprsmat, na.rm=TRUE)[k[, 1]]
+                            # https://stackoverflow.com/questions/6918086
+                        exprsmat %<>% t()
+                        exprsmat %<>% SNFtool::standardNormalization()
+                        distmat <- SNFtool::dist2(exprsmat, exprsmat)
+                        SNFtool::affinityMatrix(distmat)},
+        names(experiments(object)))
+    fusedaffinities <- SNFtool::SNF(affinitymatrices)
+    mdsscores <- cmdscale(max(fusedaffinities) - fusedaffinities, k = ndim)
+    colnames(mdsscores) <- sprintf('snf%d', seq_len(ndim))
+    object %<>% merge_sdata(mdsscores)
+    metadata(object)$snf <-
+        structure(rep(NA, ndim), names = sprintf('snf%d', seq_len(ndim)))
+    if (plot)  print(biplot(object, x=snf1, y=snf2, ...))
+    object
+
+}
+
 
 #=============================================================================
 #

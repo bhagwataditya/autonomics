@@ -2,13 +2,14 @@
 % Please edit documentation in R/4_pca.R
 \name{mofa}
 \alias{mofa}
-\title{Add MOFA}
+\title{mofa/snf}
 \usage{
 mofa(
   object,
   mofafile = file.path(tempdir(), "mofaout.hdf"),
   verbose = FALSE,
-  plot = FALSE
+  plot = FALSE,
+  ...
 )
 }
 \arguments{
@@ -20,12 +21,14 @@ mofa(
 
 \item{plot}{TRUE/FALSE}
 
+\item{...}{passed to biplot}
+
 \item{ndim}{number}
 
 \item{minvar}{number}
 }
 \value{
-SummarizedExperiment
+MultiAssayExperiment
 }
 \description{
 Perform a platform-aggregating dimension reduction.
@@ -37,6 +40,9 @@ Add sample scores, feature loadings, and dimension variances to object.
 somascan <-read_somascan( download_data('atkin18.somascan.adat'),plot=FALSE)
 metabolon<-read_metabolon(download_data('atkin18.metabolon.xlsx'),plot=FALSE)
 object <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
-object \%<>\% mofa()
-biplot(object, mofa1, mofa2)
+object \%<>\% mofa(plot=TRUE)
+object \%<>\%  snf(plot=TRUE)
+object$type <- substr(object$replicate,1,1)
+biplot(object, snf1, snf2, color=type)
+biplot(object, mofa1, mofa2, color=type)
 }
