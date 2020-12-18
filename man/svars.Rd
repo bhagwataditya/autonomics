@@ -3,17 +3,23 @@
 \name{svars}
 \alias{svars}
 \alias{svars,SummarizedExperiment-method}
+\alias{svars,MultiAssayExperiment-method}
 \alias{svars<-}
 \alias{svars<-,SummarizedExperiment,character-method}
+\alias{svars<-,MultiAssayExperiment,character-method}
 \title{Get/Set svars}
 \usage{
 svars(object)
 
 \S4method{svars}{SummarizedExperiment}(object)
 
+\S4method{svars}{MultiAssayExperiment}(object)
+
 svars(object) <- value
 
 \S4method{svars}{SummarizedExperiment,character}(object) <- value
+
+\S4method{svars}{MultiAssayExperiment,character}(object) <- value
 }
 \arguments{
 \item{object}{SummarizedExperiment}

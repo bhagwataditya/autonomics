@@ -88,8 +88,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     if (!'sample_id' %in% names(df))  df$sample_id <- rownames(df)
     duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
-    sdata(object) %<>% merge(df, by = by, all.x = TRUE, sort = FALSE)
-    snames(object) <- object$sample_id # merging drops them!
+    sdata(object) %<>%  merge(df, by = by, all.x = TRUE, sort = FALSE) %>%
+                        set_rownames(rownames(sdata(object))) # merging drops!
     if ('subgroup'  %in% svars(object)) object$subgroup  %<>% as.character()
     if ('replicate' %in% svars(object)) object$replicate %<>% as.character()
     object
@@ -137,7 +137,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @seealso mofa
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
-pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
+pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
 # Assert
     assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
@@ -176,6 +176,7 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
+    if (plot)  biplot(object, pca1, pca2)
     object
 }
 
@@ -183,7 +184,7 @@ pca <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 
 #' @rdname pca
 #' @export
-sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
+sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
@@ -227,13 +228,14 @@ sma <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
+    if (plot)  biplot(object, sma1, sma2)
     object
 }
 
 
 #' @rdname pca
 #' @export
-lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
+lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
         message("BiocManager::install('MASS'). Then re-run.")
@@ -279,13 +281,14 @@ lda <- function(object, ndim = 2, minvar = 0, verbose = TRUE){
 # Filter for minvar
     object %<>% .filter_minvar('lda', minvar)
 # Return
+    if (plot)  biplot(object, lda1, lda2)
     object
 }
 
 
 #' @rdname pca
 #' @export
-pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE){
+pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -315,6 +318,7 @@ pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE){
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
+    if (plot)  biplot(object, pls1, pls2)
     object
 }
 
@@ -327,7 +331,7 @@ pls <- function(object, ndim = 2, minvar = 0, verbose = FALSE){
 #' object <- read_metabolon(file)
 #' spls(object)
 #' @noRd
-spls <- function(object, ndim = 2, minvar = 0){
+spls <- function(object, ndim = 2, minvar = 0, plot = FALSE){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
@@ -347,9 +351,9 @@ spls <- function(object, ndim = 2, minvar = 0){
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$explained_variance$X)
-    colnames(samples)  <- sprintf('pls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('spls%d', seq_len(ncol(samples)))
+    colnames(features) <- sprintf('spls%d', seq_len(ncol(features)))
+    names(variances)   <- sprintf('spls%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdata(samples)
     object %<>% merge_sdata(features)
@@ -357,6 +361,7 @@ spls <- function(object, ndim = 2, minvar = 0){
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
+    if (plot)  biplot(spls1, spls2)
     object
 }
 
@@ -369,7 +374,7 @@ spls <- function(object, ndim = 2, minvar = 0){
 #' object <- read_metabolon(file)
 #' opls(object)
 #' @noRd
-opls <- function(object, ndim = 2, minvar = 0){
+opls <- function(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
         message("BiocManager::install('ropls'). Then re-run.")
@@ -389,9 +394,9 @@ opls <- function(object, ndim = 2, minvar = 0){
     samples   <- pls_out@scoreMN
     features  <- pls_out@loadingMN
     variances <- round(pls_out@modelDF$R2X*100)
-    colnames(samples)  <- sprintf('pls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('opls%d', seq_len(ncol(samples)))
+    colnames(features) <- sprintf('opls%d', seq_len(ncol(features)))
+    names(variances)   <- sprintf('opls%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdata(samples)
     object %<>% merge_fdata(features)
@@ -399,6 +404,7 @@ opls <- function(object, ndim = 2, minvar = 0){
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
+    if (plot)  biplot(object, opls1, opls2)
     object
 }
 
@@ -413,7 +419,8 @@ opls <- function(object, ndim = 2, minvar = 0){
 #' @param mofafile  MOFA results file
 #' @param ndim      number
 #' @param minvar    number
-#' @param verbose   TRUE (default) or FALSE
+#' @param verbose   TRUE/FALSE
+#' @param plot      TRUE/FALSE
 #' @return          SummarizedExperiment
 #' @examples
 #' somascan <-read_somascan( download_data('atkin18.somascan.adat'),plot=FALSE)
@@ -423,17 +430,18 @@ opls <- function(object, ndim = 2, minvar = 0){
 #' biplot(object, mofa1, mofa2)
 #' @export
 mofa <- function(
-    object, mofafile = file.path(tempdir(), 'mofaout.hdf'), verbose = FALSE
+    object, mofafile = file.path(tempdir(), 'mofaout.hdf'),
+    verbose = FALSE, plot = FALSE
 ){
 # Assert
     if (!requireNamespace('MOFA2', quietly = TRUE)){
         message("BiocManager::install('MOFA2'). Then re-run.")
         return(object)}
-    lapply( names(experiments(object)),
-            function(i) assert_all_are_not_matching_fixed(
-                            rownames(experiments(object)[[i]]), '*'))
-# Run/Load mofa
     assert_is_all_of(object, "MultiAssayExperiment")
+    expnames <- names(experiments(object))
+    for (exp in expnames)   assert_all_are_not_matching_fixed(
+                                rownames(experiments(object)[[exp]]),'*')
+# Run/Load mofa
     if (file.exists(mofafile)){
         if (verbose)  message('\t\tLoad ', mofafile)
         mofaobj <- MOFA2::load_model(mofafile)
@@ -442,28 +450,20 @@ mofa <- function(
         mofaobj <- MOFA2::prepare_mofa(MOFA2::create_mofa(object))
         mofaobj %<>% MOFA2::run_mofa(outfile = mofafile)
     }
-# Scores
+# Add scores, loadings, variances
     scores <- mofaobj@expectations$Z$group1
-    scores %<>% extract(colData(object)$sample_id, ) # sumexps don't alway
-    colnames(scores) %<>% gsub('Factor', 'mofa', .)  # have same order!
-    colData(object) %<>% extract(
-                            , setdiff(names(.), colnames(scores)), drop=FALSE)
-    colData(object) %<>% cbind(scores)
-# Loadings
-    for (expname in names(experiments(object))){
-        loadings <- mofaobj@expectations$W[[expname]]
-        assert_are_identical(rownames(loadings),
-                            rownames(experiments(object)[[expname]]))
+    colnames(scores) %<>% gsub('Factor', 'mofa', .)
+    object %<>% merge_sdata(scores)
+    for (exp in expnames){
+        loadings <- mofaobj@expectations$W[[exp]]
         colnames(loadings) %<>% gsub('Factor', 'mofa', .)
-        rowData(experiments(object)[[expname]]) %<>% extract(
-                            , setdiff(names(.), colnames(loadings)), drop=FALSE)
-        rowData(experiments(object)[[expname]]) %<>% cbind(loadings)
+        experiments(object)[[exp]] %<>% merge_fdata(loadings)
     }
-# Variances
     variances <- rowSums(mofaobj@cache$variance_explained$r2_per_factor$group1)
     names(variances) %<>% gsub('Factor', 'mofa', .)
     metadata(object)$mofa <- variances
 # Return
+    if (plot)  biplot(object, mofa1, mofa2)
     object
 }
 
@@ -474,8 +474,7 @@ mofa <- function(
 #' @examples
 #' somascan <- read_somascan( download_data('atkin18.somascan.adat'),plot=FALSE)
 #' metabolon<- read_metabolon(download_data('atkin18.metabolon.xlsx'),plot=FALSE)
-#' experiments <- list(somascan=somascan, metabolon=metabolon)
-#' object <- sumexp2mae(experiments)
+#' object <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
 #' @export
 sumexp2mae <- function(experiments){
     assert_is_list(experiments)

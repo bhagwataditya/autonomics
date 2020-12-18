@@ -4,14 +4,21 @@
 \alias{mofa}
 \title{Add MOFA}
 \usage{
-mofa(object, mofafile = file.path(tempdir(), "mofaout.hdf"), verbose = FALSE)
+mofa(
+  object,
+  mofafile = file.path(tempdir(), "mofaout.hdf"),
+  verbose = FALSE,
+  plot = FALSE
+)
 }
 \arguments{
 \item{object}{MultiAssayExperiment}
 
 \item{mofafile}{MOFA results file}
 
-\item{verbose}{TRUE (default) or FALSE}
+\item{verbose}{TRUE/FALSE}
+
+\item{plot}{TRUE/FALSE}
 
 \item{ndim}{number}
 
@@ -32,5 +39,4 @@ metabolon<-read_metabolon(download_data('atkin18.metabolon.xlsx'),plot=FALSE)
 object <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
 object \%<>\% mofa()
 biplot(object, mofa1, mofa2)
-colData(object)$mofa
 }

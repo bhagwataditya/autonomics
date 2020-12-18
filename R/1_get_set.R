@@ -316,8 +316,7 @@ setReplaceMethod(
 setGeneric("snames",  function(object)   standardGeneric("snames"))
 
 #' @rdname snames
-setMethod(
-    'snames',
+setMethod('snames',
     signature("SummarizedExperiment"),
     function(object)   colnames(object))
 
@@ -425,23 +424,29 @@ setReplaceMethod(
 setGeneric("svars", function(object) standardGeneric("svars") )
 
 #' @rdname svars
-setMethod(
-    "svars",
-    signature("SummarizedExperiment"),
-    function(object)   names(colData((object))))
+setMethod("svars", signature("SummarizedExperiment"),
+function(object)   names(colData((object))))
+
+#' @rdname svars
+setMethod("svars", signature("MultiAssayExperiment"),
+function(object)   names(colData((object))))
 
 #' @rdname svars
 #' @export
 setGeneric("svars<-", function(object, value)  standardGeneric("svars<-") )
 
 #' @rdname svars
-setReplaceMethod(
-    "svars",
-    signature("SummarizedExperiment", "character"),
-    function(object, value){
-        names(colData(object)) <- value
-        object
-    })
+setReplaceMethod("svars", signature("SummarizedExperiment", "character"),
+function(object, value){
+    names(colData(object)) <- value
+    object
+})
 
+#' @rdname svars
+setReplaceMethod("svars", signature("MultiAssayExperiment", "character"),
+function(object, value){
+    names(colData(object)) <- value
+    object
+})
 
 

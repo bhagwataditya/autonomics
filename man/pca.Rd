@@ -7,13 +7,13 @@
 \alias{pls}
 \title{Add PCA, SMA, LDA, PLS}
 \usage{
-pca(object, ndim = 2, minvar = 0, verbose = TRUE)
+pca(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE)
 
-sma(object, ndim = 2, minvar = 0, verbose = TRUE)
+sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE)
 
-lda(object, ndim = 2, minvar = 0, verbose = TRUE)
+lda(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE)
 
-pls(object, ndim = 2, minvar = 0, verbose = FALSE)
+pls(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
