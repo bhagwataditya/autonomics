@@ -257,6 +257,7 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #' @param color       svar mapped to color
 #' @param group       svar mapped to group
 #' @param fixed       fixed aesthetics
+#' @param subsetter   subsetter for showing a subset of samples/features
 #' @seealso \code{\link{plot_sample_violins}}, \code{\link{plot_sample_boxplots}}
 #' @return  ggplot object
 #' @examples
@@ -559,7 +560,6 @@ plot_subgroup_boxplots <- function(
 #' @param y         svar mapped to biplot y *sym, default pca2)
 #' @param color     svar mapped to biplot color and density fill
 #' @param nloadings n loadings added to plot
-#' @param ...       passed to plot_data
 #' @param plot      whether to print plot
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
@@ -573,15 +573,12 @@ plot_subgroup_boxplots <- function(
 plot_samples <- function(
     object, x=pca1, y=pca2, color=subgroup, nloadings=0, plot=TRUE
 ){
-    pcaplot  <-  biplot(object, x=!!enquo(x), y=!!enquo(y), color=!!enquo(color), nloadings = nloadings) +
+    pcaplot  <-  biplot(object, x=pca1, y=pca2, color=!!enquo(color), nloadings = nloadings) +
                 theme(legend.position='right', legend.title=element_blank())
     samples  <-  plot_sample_densities(object)  + theme(legend.position='none') + xlab(NULL) + ylab(NULL)
     features <-  plot_feature_densities(object) + theme(legend.position='none') + xlab(NULL) + ylab(NULL)
     detections <- plot_summarized_detections(object) + theme(legend.position='none')
 
-    contrastnames <- sort(colnames(metadata(object)$contrastmat))
-    colcontrastnames <- names(col_contrasts(object))
-    if (all(colcontrastnames %in% contrastnames)) contrastnames <- colcontrastnames
     volcanoes  <- plot_volcano(object, ntop = 0)
 
     # Cairo::CairoPNG('contrastogram.png', width=480*7, height=480*7, dpi=400, pointsize=10)

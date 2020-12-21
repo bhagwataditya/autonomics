@@ -364,6 +364,7 @@ plot_detects <- function(...){
 #' @param object   SummarizedExperiment
 #' @param group    group svar
 #' @param fill     fill svar
+#' @param na_imputes whether to NA imputes prior to plottin (TRUE/FALSE)g
 #' @param ...      for backward compatibilty
 #' @return ggplot object
 #' @examples
@@ -456,7 +457,9 @@ plot_quantifications <- function(...){
 
 #' @rdname plot_detections
 #' @export
-plot_summarized_detections <- function(object, group=subgroup, fill=subgroup){
+plot_summarized_detections <- function(
+    object, group = subgroup, fill = subgroup, na_imputes = TRUE
+){
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
     fill <- enquo(fill);     fillstr <- as_name(fill)
@@ -469,6 +472,8 @@ plot_summarized_detections <- function(object, group=subgroup, fill=subgroup){
     exprs(object) %<>% zero_to_na()  #### TODO fine-tune
     featuretypes <- get_subgroup_combinations(object)
     dt <- sumexp_to_long_dt(object, svars = groupstr)
+    if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,
+                                                         value := NA]
     dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
                     by = c(groupstr, 'feature_id'))
     dt %<>% data.table::dcast.data.table(
@@ -482,8 +487,10 @@ plot_summarized_detections <- function(object, group=subgroup, fill=subgroup){
         id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
         variable.name = groupstr, value.name='quantified')
     dt$quantified %<>% as.factor()
-    nsampledt <- data.table(table(sdata(object)[[groupstr]])) %>%
-                set_names(c(groupstr, 'xmax'))
+
+    nsampledt <- data.table(sdata(object))[, .N, by=groupstr] %>%  # preserves
+                set_names(c(groupstr, 'xmax'))                  # factor order!
+    setorderv(nsampledt, groupstr)
     nsampledt[, xmax := cumsum(xmax)]
     nsampledt[, xmin := c(0, xmax[-.N])]
     dt %<>% merge(nsampledt, by = groupstr)
@@ -524,7 +531,8 @@ plot_summarized_detections <- function(object, group=subgroup, fill=subgroup){
 #' @export
 explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
     imputed     <- impute_systematic_nondetects(object, plot=FALSE)
-    zeroed <- impute_systematic_nondetects(object, fun = zeroimpute, plot = FALSE)
+    zeroed <- impute_systematic_nondetects(
+                object, fun = zeroimpute, plot = FALSE)
     legend <- gglegend(biplot(object))
 
     do_plot_sample_detections <- function(obj, ...){

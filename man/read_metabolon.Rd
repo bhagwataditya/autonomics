@@ -21,13 +21,11 @@ read_metabolon(
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
   subgroup_var = "Group",
   fname_var = "BIOCHEMICAL",
-  log2 = TRUE,
   impute = FALSE,
   add_kegg_pathways = FALSE,
   add_smiles = FALSE,
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = col_contrasts(object),
-  rowcontrasts = row_contrasts(object),
+  contrastdefs = contrast_subgroups(object),
   verbose = TRUE,
   plot = TRUE
 )
@@ -45,21 +43,19 @@ read_metabolon(
 
 \item{fname_var}{string: feature_name variable}
 
-\item{log2}{TRUE (default) or FALSE: log2 transform ?}
+\item{impute}{TRUE / FALSE}
 
-\item{impute}{TRUE or FALSE (default)}
+\item{add_kegg_pathways}{TRUE / FALSE}
 
-\item{add_kegg_pathways}{TRUE or FALSE (default)}
-
-\item{add_smiles}{TRUE or FALSE (default)}
+\item{add_smiles}{TRUE / FALSE}
 
 \item{formula}{formula to create design matrix (using svars)}
 
-\item{contrasts}{contrast vector}
+\item{contrastdefs}{contrastdef vector/matrix/list}
 
-\item{verbose}{TRUE (default) or FALSE}
+\item{verbose}{TRUE / FALSE}
 
-\item{plot}{TRUE (default) or FALSE}
+\item{plot}{TRUE / FALSE}
 }
 \value{
 SummarizedExperiment

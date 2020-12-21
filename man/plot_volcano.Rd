@@ -6,7 +6,7 @@
 \usage{
 plot_volcano(
   object,
-  contrasts = metadata(object)$contrasts,
+  contrastdefmat = contrastdefs(object)[[1]],
   label = feature_name,
   ntop = 3
 )
@@ -14,13 +14,11 @@ plot_volcano(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{contrasts}{contrast layout matrix}
+\item{contrastdefmat}{contrast layout matrix}
 
 \item{label}{fvar for labeling top features}
 
 \item{ntop}{number: n top features to be annotated}
-
-\item{nrow}{number: n rows in faceted plot}
 }
 \value{
 ggplot object
@@ -34,7 +32,7 @@ Plot volcano
     inv <- c('EM_E', 'BM_E', 'BM_EM')
     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
     plot_volcano(object)
-    contrasts <- layout_contrasts(subgroup_levels(object))
+    contrasts <- subgroup_matrix(object)
     object \%<>\% add_limma(contrasts = contrasts, plot = FALSE)
     plot_volcano(object)
 
@@ -47,21 +45,12 @@ Plot volcano
     file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file, plot=FALSE)
     plot_volcano(object)
-    colcontrasts <- names(col_contrasts(object))
-    rowcontrasts <- names(row_contrasts(object))
-    plot_volcano(object, contrastnames=colcontrasts, nrow=4, ntop=1)
-    plot_volcano(object, contrastnames=rowcontrasts, nrow=3, ntop=1)
 
 # proteingroup internalstandard ratios
     file <-  download_data('billing19.proteingroups.txt')
-    rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
-                       'EM05_EM02', 'EM30_EM15')
-    object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
-    require(magrittr)
-    object$subgroup \%<>\% gsub('_STD', '', .)
-    subgroups <- c('EM00','EM01','EM02','EM05','EM15','EM30','BM00')
-    object$subgroup \%<>\% factor(subgroups)
-    contrasts <- c(col_contrasts(object), row_contrasts(object))
-    object \%<>\% add_limma(contrasts = contrasts)
+    select_subgroups <-  c(sprintf(
+        '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+    object <- read_proteingroups(
+        file, select_subgroups = select_subgroups, plot = FALSE)
     plot_volcano(object)
 }

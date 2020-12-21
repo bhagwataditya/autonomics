@@ -9,7 +9,7 @@
 \usage{
 pca(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
-sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
+sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = TRUE, ...)
 
 lda(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
@@ -38,7 +38,7 @@ Add sample scores, feature loadings, and dimension variances to object.
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-pca(object)  # Principal Component Analysis
+pca(object, plot=TRUE)  # Principal Component Analysis
 pls(object)  # Partial Least Squares
 lda(object)  # Linear Discriminant Analysis
 sma(object)  # Spectral Map Analysis

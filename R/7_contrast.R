@@ -226,7 +226,7 @@ create_subgroup_values <- function(object, subgroup_var, verbose){
     if (is.null(values) | all(is.na(values)) | all(values=="")) values <-
          guess_subgroup_values(object$sample_id, verbose=verbose)
     if (all(is.na(values)) | all(values=="")) values[] <- 'subgroup1'
-    values
+    factor(values)
 }
 
 
@@ -331,9 +331,9 @@ get_default_designfile <- function(object){
 #'@examples
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
-#'    rm_subgroups <- c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
-#'                        'EM05_EM02', 'EM30_EM15')
-#'    object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+#'     select_subgroups <-  c(sprintf(
+#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+#'    object <- read_proteingroups(file, select_subgroups = select_subgroups)
 #'    add_designvars(object)
 #'
 #'    file <- download_data('billing16.proteingroups.txt')
@@ -496,7 +496,8 @@ subgroup_array <- function(object){
     #x %<>% sort()
     dt <- data.table(subgroup = factor(x, x))
     components <- dt[, tstrsplit(subgroup, sep, fixed=TRUE)]
-    for (i in 1:ncol(components)) components[[i]] %<>% factor(., levels=unique(.))
+    for (i in 1:ncol(components))   components[[i]] %<>%
+                                    factor(., levels=unique(.))
     dt %<>% cbind(components)
     data.table::setorderv(dt, rev(names(components)))
     levels  <- dt[, -1] %>% lapply(unique)
@@ -513,21 +514,9 @@ subgroup_array <- function(object){
 #' @param object SummarizedExperiment
 #' @return matrix
 #' @examples
-#' # Matrix
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot=FALSE)
-#'     subgroup_matrix(object)
-#' # Vector
-#'     require(magrittr)
-#'     file <-  download_data('billing19.proteingroups.txt')
-#'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
-#'                        'EM05_EM02', 'EM30_EM15')
-#'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
-#'     object$subgroup %<>% gsub('_STD', '', .)
-#'     subgroups <- c('EM00','EM01','EM02','EM05','EM15','EM30','BM00')
-#'     object$subgroup %<>% factor(subgroups)
-#'     contrasts <- c(col_contrasts(object), row_contrasts(object))
-#'     plot_contrastogram(object, contrasts=c(contrasts))
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot=FALSE)
+#' subgroup_matrix(object)
 #' @export
 subgroup_matrix <- function(object){
     subgroup_array <- subgroup_array(object)
@@ -554,8 +543,8 @@ subgroup_matrix <- function(object){
 
 #=============================================================================
 #
-#               layout_col_contrasts
-#               layout_row_contrasts
+#               contrast_subgroup_cols
+#               contrast_subgroup_rows
 #               col_contrast_defs
 #               row_contrast_defs
 #
@@ -564,23 +553,19 @@ subgroup_matrix <- function(object){
 
 #' Row/Col contrasts
 #' @param object SummarizedExperiment
-#' @param symbol contrazst symbol (default " - ")
-#' @return  matrix (col_contrast_matrix) or vector (col_contrasts)
+#' @return  matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' subgroup_matrix(object)
-#' layout_col_contrasts(object)
-#' layout_row_contrasts(object)
-#' col_contrasts(object)
-#' row_contrasts(object)
+#' contrast_subgroup_cols(object)
+#' contrast_subgroup_rows(object)
 #' @export
-layout_col_contrasts <- function(object, symbol = ' - '){
+contrast_subgroup_cols <- function(object){
     subgroupmat <- subgroup_matrix(object)
     if (ncol(subgroupmat)==1) return(matrix(, ncol=0, nrow=nrow(subgroupmat)))
-    colcontrasts <- matrix(  sprintf('%s%s%s',
+    colcontrasts <- matrix(  sprintf('%s - %s',
                                     subgroupmat[, -1],
-                                    symbol,
                                     subgroupmat[, -ncol(subgroupmat)]),
                             nrow = nrow(subgroupmat),
                             ncol = ncol(subgroupmat)-1)
@@ -592,14 +577,13 @@ layout_col_contrasts <- function(object, symbol = ' - '){
 }
 
 
-#' @rdname layout_col_contrasts
+#' @rdname contrast_subgroup_cols
 #' @export
-layout_row_contrasts <- function(object, symbol = ' - '){
+contrast_subgroup_rows <- function(object){
     subgroupmat <- subgroup_matrix(object)
     if (nrow(subgroupmat)==1) return(matrix(, nrow=0, ncol=ncol(subgroupmat)))
-    rowcontrasts <- matrix(  sprintf('%s%s%s',
+    rowcontrasts <- matrix(  sprintf('%s - %s',
                                   subgroupmat[-nrow(subgroupmat), ],
-                                  symbol,
                                   subgroupmat[-1, ]),
                             nrow = nrow(subgroupmat)-1,
                             ncol = ncol(subgroupmat))
@@ -610,98 +594,19 @@ layout_row_contrasts <- function(object, symbol = ' - '){
     rowcontrasts
 }
 
+contrast_subgroups <- function(object)  list(contrast_subgroup_cols(object),
+                                            contrast_subgroup_rows(object))
 
-#' Layout contrasts
-#' @examples
-#' layout_contrasts(contrastdefs = c('KD - WT'))
-#' layout_contrasts(contrastdefs = c('E - EM', 'BM - EM'))
-#' layout_contrasts(contrastdefs = c('KD.t0 - WT.t0', 'KD.t1 - WT.t1',
-#'                                   'WT.t1 - WT.t0', 'KD.t1 - KD.t1'), nrow=2)
-layout_contrasts <- function(contrastdefs, nrow=1){
-    matrix(contrastdefs, nrow=nrow, byrow = TRUE)
-}
-
-
-#' @rdname layout_col_contrasts
-#' @export
-col_contrasts <- function(object){
-    structure(  c(t(layout_col_contrasts(object))),
-        names = c(t(layout_col_contrasts(object, '_'))))
-}
-
-
-#' @rdname layout_col_contrasts
-#' @export
-row_contrasts <- function(object){
-    structure(  c(t(layout_row_contrasts(object))),
-        names = c(t(layout_row_contrasts(object, '_'))))
-}
-
-
-
-#=============================================================================
+#==============================================================================
 #
-#               aggregate_col_contrasts
-#               aggregate_row_contrasts
-#                   aggregate_contrasts
+#                            contrast
 #
 #==============================================================================
 
 
-#' Aggregate contrasts
+#' Contrast
 #'
-#' Aggregate row contrasts across columns (or column contrasts across rows)
-#'
-#' @param contrastmat contrast matrix
-#' @param dim 1 (aggregate across rows) or 2 (aggregate across columns)
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' aggregate_contrasts(row_contrast_matrix(object), 1)    # some conc across t
-#' aggregate_contrasts(row_contrast_matrix(object), 2)    # concentrations at t
-#' aggregate_contrasts(col_contrast_matrix(object), 2) # some time across conc
-#' aggregate_contrasts(col_contrast_matrix(object), 1) # times at conc
-#' @noRd
-aggregate_contrasts <- function(contrastmat, dim){
-    apply(contrastmat,
-          dim,
-          function(x){
-              paste0(sprintf('(%s)/%d', x, length(x)), collapse = ' + ')})
-}
-
-aggregate_col_contrasts <- function(contrastmat){
-    aggregate_contrasts(contrastmat, 2)
-}
-
-aggregate_row_contrasts <- function(conc_contrastmat){
-    aggregate_contrasts(conc_contrastmat, 1)
-}
-
-
-#=============================================================================
-#
-#               default_contrasts
-#
-#==============================================================================
-
-
-validify_contrast_names <- function(x){
-   x %>% gsub(' ', '',  ., fixed = TRUE) %>%
-         gsub('-', '_', ., fixed = TRUE) %>%
-         make.names()
-}
-
-
-#==============================================================================
-#
-#                            add_limma
-#
-#==============================================================================
-
-
-#' Add limma
-#'
-#' Run limma and add results
+#' Fit linear model and analyze contrasts
 #'
 #' Limma results can be easily accessed with limma(object).
 #' This returns a list with components:
@@ -716,12 +621,11 @@ validify_contrast_names <- function(x){
 #'    \item {F}      vector (ngene)            : F    values (moderated F test)
 #'    \item {F.p}    vector (ngene)            : p    values (moderated F test)
 #' }
-#' @param object    SummarizedExperiment
-#' @param contrasts contrast vector, preferably named
-#'                  (automatically generated names are not always intuitive)
-#' @param formula   formula to create design matrix (using svars)
-#' @param plot      TRUE/FALSE
-#' @param ...       passed to plot_contrastogram
+#' @param object       SummarizedExperiment
+#' @param contrastdefs contrastdef vector/matrix/list
+#' @param formula      formula to create design matrix (using svars)
+#' @param plot         TRUE/FALSE
+#' @param ...          passed to plot_contrastogram
 #' @return Updated SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -730,9 +634,10 @@ validify_contrast_names <- function(x){
 #' add_limma(object)
 #'
 #' file <- download_data('billing19.proteingroups.txt')
-#' rm_subgroups <- c(
-#'   'BLANK_BM00', 'BLANK_STD', 'BM00_BM00','EM01_EM00','EM05_EM02','EM30_EM15')
-#' object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
+#' select_subgroups <-  c(sprintf(
+#'     '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+#' object <- read_proteingroups(
+#'             file, select_subgroups = select_subgroups, plot = FALSE)
 #' object$subgroup %<>% gsub('_STD', '', .)
 #' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
 #' object %<>% add_limma()
@@ -744,24 +649,21 @@ validify_contrast_names <- function(x){
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>%
+#' object %<>% add_limma()
 #' @export
-add_limma <- function(
-    object,
-    contrasts    = layout_col_contrasts(object),
-    rowcontrasts = layout_row_contrasts(object),
-    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    plot         = TRUE,
-    ...
+add_limma <- function(object, contrastdefs = contrast_subgroups(object),
+    formula   = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    plot= TRUE, ...
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (is.null(contrasts))    return(object)
-    if (is.vector(contrasts)) contrasts %<>% matrix(nrow=1)
-    designmat <- create_design(object, formula=!!enquo(formula))
-    metadata(object)$designmat    <- designmat
-    metadata(object)$contrasts    <- contrasts
-    metadata(object)$rowcontrasts <- rowcontrasts
+    if (is.null(contrastdefs))    return(object)
+    if (is.character(contrastdefs)) contrastdefs %<>%
+                                        matrix(nrow=1, dimnames = list("", .))
+    if (is.matrix(contrastdefs))    contrastdefs %<>% list(colcontrasts=.)
+    designmat <- create_design(object, formula=formula)
+    designmat(object)    <- designmat
+    contrastdefs(object) <- contrastdefs
 # Set block and correlation if required
     cmessage('\t\tRun limma')
     block <- NULL; correlation <- NULL
@@ -782,23 +684,19 @@ add_limma <- function(
 }
 
 
-contrast_defs <- function(object){
-    contrasts    <- metadata(object)$contrasts
-    rowcontrasts <- metadata(object)$rowcontrasts
-    contrastdefs <- c(c(t(contrasts)), c(t(rowcontrasts)))
-    contrastdefs
+vectorize_contrastdefs <- function(contrastdefs){
+    unname(unlist(lapply(contrastdefs, function(x) na.exclude(c(t(x))))))
 }
 
 
 add_contrast_results <- function(object, fit){
-# contrastlayout
-    designmat    <- metadata(object)$designmat
-    contrastdefs <- contrast_defs(object)
-    contrastmat  <- makeContrasts(contrasts = contrastdefs, levels = designmat)
-# run limma
+# compute contrasts
+    contrastmat <- makeContrasts(
+                    contrasts = vectorize_contrastdefs(contrastdefs(object)),
+                    levels    = designmat(object))
     fit %<>% contrasts.fit(contrasts = contrastmat)
     limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
-                        } else { c('effect','rank','t','se','p','fdr','bonf')}
+                        } else { c('effect','rank','t','se','p','fdr','bonf') }
     limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
                             dimnames = list(feature  = rownames(fit),
                                             contrast = colnames(fit),
@@ -829,6 +727,63 @@ add_contrast_results <- function(object, fit){
 #
 #==============================================================================
 
+#' @title Get/set design matrix
+#' @param object SummarizedExperiment
+#' @param value list
+#' @return designmatrix (get) or SummarizedExperiment (set)
+#' @examples
+#' file <- download_data('billing16.proteingroups.txt')
+#' inv <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' designmat(object)
+#' @export
+setGeneric("designmat", function(object)   standardGeneric("designmat") )
+
+    #' @rdname designmat
+    #' @export
+    setGeneric("designmat<-",
+              function(object, value)  standardGeneric("designmat<-") )
+
+    #' @rdname designmat
+    setMethod("designmat", signature("SummarizedExperiment"),
+                function(object) metadata(object)$designmat)
+
+    #' @rdname designmat
+    setReplaceMethod("designmat",
+                    signature("SummarizedExperiment", "matrix"),
+                    function(object, value){
+                        metadata(object)$designmat <- value
+                        object  })
+
+
+#' @title Get/set contrastdefs
+#' @param object SummarizedExperiment
+#' @param value list
+#' @return contrastdefs (get) or SummarizedExperiment (set)
+#' @examples
+#' file <- download_data('billing16.proteingroups.txt')
+#' inv <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' contrastdefs(object)
+#' @export
+setGeneric("contrastdefs", function(object)   standardGeneric("contrastdefs") )
+
+    #' @rdname contrastdefs
+    setMethod("contrastdefs", signature("SummarizedExperiment"),
+                function(object) metadata(object)$contrastdefs)
+
+    #' @rdname contrastdefs
+    #' @export
+    setGeneric("contrastdefs<-",
+                function(object, value)  standardGeneric("contrastdefs<-") )
+
+    #' @rdname contrastdefs
+    setReplaceMethod("contrastdefs",
+                    signature("SummarizedExperiment", "list"),
+                    function(object, value){
+                        metadata(object)$contrastdefs <- value
+                        object  })
+
 
 #' @title Get/set limma results
 #' @description Get/Set limma results
@@ -848,7 +803,7 @@ setGeneric("limma", function(object)   standardGeneric("limma") )
 #' @rdname limma
 setMethod("limma", signature("SummarizedExperiment"),
 function(object){
-    limma_array <- S4Vectors::metadata(object)$limma
+    limma_array <- metadata(object)$limma
     if (is.null(limma_array)) NULL else limma_array[
                                            fnames(object), , , drop=FALSE] })
 
@@ -950,10 +905,10 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                      dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    designmat    <- metadata(object)$designmat
-    contrasts    <- metadata(object)$contrasts
-    rowcontrasts <- metadata(object)$rowcontrasts
-    contrastdefs <-  c( c(t(contrasts)), c(t(rowcontrasts)))
+    designmat    <- designmat(object)
+    colcontrasts <- contrastdefs(object)[[1]]
+    rowcontrasts <- contrastdefs(object)[[2]]
+    contrastdefs <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
     contrastmat  <- makeContrasts(contrasts = contrastdefs, levels = designmat)
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
@@ -966,8 +921,10 @@ compute_connections <- function(
         arrowsizes[ from, to] <- nd#ns
         arrowcolors[to, from] <- colors[[to]]
         arrowcolors[from, to] <- colors[[from]]
-        arrowlabels[to, from] <- if (nu>0) nu else 0#paste0(nu,  " %up% phantom(.)") else "phantom(.)"
-        arrowlabels[from, to] <- if (nd>0) nd else 0#paste0(nd," %down% phantom(.)") else "phantom(.)"
+        arrowlabels[to, from] <- if (nu>0) nu else 0
+                            #paste0(nu,  " %up% phantom(.)") else "phantom(.)"
+        arrowlabels[from, to] <- if (nd>0) nd else 0
+                            #paste0(nd," %down% phantom(.)") else "phantom(.)"
     }
 # Return
     #arrowlabels[arrowcolors==0] <- "0"
@@ -989,12 +946,13 @@ compute_connections <- function(
 #' # subgroup vector
 #'     require(magrittr)
 #'     file <-  download_data('billing19.proteingroups.txt')
-#'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
-#'                        'EM05_EM02', 'EM30_EM15')
-#'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
+#'     select_subgroups <-  c(sprintf(
+#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+#'     object <- read_proteingroups(
+#'                 file, select_subgroups = select_subgroups, plot = FALSE)
 #'     object$subgroup %<>% gsub('_STD', '', .)
 #'     object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
-#'     object %<>% add_limma(col_contrasts(object), plot=FALSE)
+#'     object %<>% add_limma(plot=FALSE)
 #'     plot_contrastogram(object, curve=0.8)
 #' # subgroup vector
 #'     file <-  download_data('fukuda20.proteingroups.txt')
@@ -1106,28 +1064,44 @@ top_up <- function(effect, fdr, mlp, ntop){
 }
 
 
+melt_contrastdefs <- function(contrastdefmat){
+    facetrow <- NULL
+    contrastdefdt <- data.table(contrastdefmat, facetrow = "")
+    if (!is.null(rownames(contrastdefmat))) contrastdefdt[,
+                                          facetrow := rownames(contrastdefmat)]
+    data.table::melt.data.table(
+        contrastdefdt,
+        id.vars       = 'facetrow',
+        variable.name = 'facetcol',
+        value.name    = 'contrast', by = 'contrast')
+}
+
+
 #' Create volcano datatable
-#' @param object SummarizedExperiment
-#' @param ntop   number: how many top features (either FC wise or p wise) to be annotated
+#' @param object          SummarizedExperiment
+#' @param contrastdefmat  contrastdef matrix
+#' @param ntop            no of top features to be annotated
 #' @return data.table
 #' @examples
 #' file <- download_data("billing16.proteingroups.txt")
-#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
-#' print(make_volcano_dt(object, metadata(object)$contrasts))
+#' inv <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_proteingroups(file, invert_subgroups=inv,
+#'             contrastdefs = c('E_EM', 'E_BM', 'EM_BM'))
+#' make_volcano_dt(object)
 #' @export
-make_volcano_dt <- function(object, contrasts, ntop = 3){
-
+make_volcano_dt <- function(
+    object, contrastdefmat = contrastdefs(object)[[1]], ntop = 3
+){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
-
     dt <- extract_limma_dt(object)
-    dt %<>% extract(c(t(contrasts)), on="contrast")
+    dt %<>% merge(melt_contrastdefs(contrastdefmat), by = 'contrast')
     dt %<>% extract(!is.na(effect) & !is.na(p))
     dt[, mlp  := -log10(p)]
 
     # Prepare volcano datatable
     # Note: Using effect <= 0 (rather than effect <0) is required.
-    #       Otherwise (the very few) features with effect=0 will have no effect for 'significance'
+    # Otherwise the (very few) features with effect=0 will have no effect for
+    # 'significance'
     by <- intersect(c('contrast', 'imputed'), names(dt))
     dt[,topdown := top_down(effect, fdr, mlp, ntop), by=by]
     dt[,topup   := top_up(  effect, fdr, mlp, ntop), by=by]
@@ -1143,11 +1117,10 @@ make_volcano_dt <- function(object, contrasts, ntop = 3){
 }
 
 #' Plot volcano
-#' @param object      SummarizedExperiment
-#' @param label       fvar for labeling top features
-#' @param contrasts   contrast layout matrix
-#' @param nrow        number: n rows in faceted plot
-#' @param ntop        number: n top features to be annotated
+#' @param object           SummarizedExperiment
+#' @param contrastdefmat   contrast layout matrix
+#' @param label            fvar for labeling top features
+#' @param ntop             number: n top features to be annotated
 #' @return ggplot object
 #' @examples
 #' # proteingroup group ratios
@@ -1155,7 +1128,7 @@ make_volcano_dt <- function(object, contrasts, ntop = 3){
 #'     inv <- c('EM_E', 'BM_E', 'BM_EM')
 #'     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
 #'     plot_volcano(object)
-#'     contrasts <- layout_contrasts(subgroup_levels(object))
+#'     contrasts <- subgroup_matrix(object)
 #'     object %<>% add_limma(contrasts = contrasts, plot = FALSE)
 #'     plot_volcano(object)
 #'
@@ -1168,26 +1141,17 @@ make_volcano_dt <- function(object, contrasts, ntop = 3){
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot=FALSE)
 #'     plot_volcano(object)
-#'     colcontrasts <- names(col_contrasts(object))
-#'     rowcontrasts <- names(row_contrasts(object))
-#'     plot_volcano(object, contrastnames=colcontrasts, nrow=4, ntop=1)
-#'     plot_volcano(object, contrastnames=rowcontrasts, nrow=3, ntop=1)
 #'
 #' # proteingroup internalstandard ratios
 #'     file <-  download_data('billing19.proteingroups.txt')
-#'     rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
-#'                        'EM05_EM02', 'EM30_EM15')
-#'     object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
-#'     require(magrittr)
-#'     object$subgroup %<>% gsub('_STD', '', .)
-#'     subgroups <- c('EM00','EM01','EM02','EM05','EM15','EM30','BM00')
-#'     object$subgroup %<>% factor(subgroups)
-#'     contrasts <- c(col_contrasts(object), row_contrasts(object))
-#'     object %<>% add_limma(contrasts = contrasts)
+#'     select_subgroups <-  c(sprintf(
+#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+#'     object <- read_proteingroups(
+#'         file, select_subgroups = select_subgroups, plot = FALSE)
 #'     plot_volcano(object)
 #' @export
 plot_volcano <- function(
-    object, contrasts = metadata(object)$contrasts,
+    object, contrastdefmat = contrastdefs(object)[[1]],
     label = feature_name, ntop = 3
 ){
 # Assert
@@ -1195,8 +1159,7 @@ plot_volcano <- function(
     topup <- topdown <- effect <- mlp <- NULL
     label <- enquo(label)
 # Prepare
-    ncol <- ncol(contrasts)
-    plotdt <- make_volcano_dt(object, contrasts, ntop = ntop)
+    plotdt <- make_volcano_dt(object, contrastdefmat, ntop = ntop)
     txtdt  <- copy(plotdt)[topup==TRUE | topdown==TRUE]
     colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100),
                     hcl(h=120, l=c(100, 70, 20), c=100))
@@ -1205,7 +1168,7 @@ plot_volcano <- function(
     imputed <- NULL # fallback when plotdt misses "imputed"
     significance <- NULL
     p <- ggplot(plotdt) +
-        facet_wrap(~ contrast, ncol = ncol, scales = 'fixed') +
+        facet_grid(facetrow ~ facetcol, scales = 'fixed') +
         geom_point( aes(x=effect, y=mlp, color = significance, shape=imputed),
                     na.rm = TRUE)
     if (!quo_is_null(label)){

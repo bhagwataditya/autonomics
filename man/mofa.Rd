@@ -22,10 +22,6 @@ mofa(
 \item{plot}{TRUE/FALSE}
 
 \item{...}{passed to biplot}
-
-\item{ndim}{number}
-
-\item{minvar}{number}
 }
 \value{
 MultiAssayExperiment

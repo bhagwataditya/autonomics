@@ -395,18 +395,17 @@ preprocess_counts <- function(
 #=============================================================================
 
 
-#' Read RNAseq BAM files into SummarizedExperiment
+#' Read RNAseq SAM/BAM files into SummarizedExperiment
 #'
-#' @param bamdir     string: path to SAM or BAM file directory
-#'                   (one SAM or BAM file per sample)
-#' @param paired     TRUE or FALSE (default): paired end reads?
-#' @param genome     string: either "mm10", "hg38" etc. or a GTF file
-#' @param nthreads   number of cores to be used by Rsubread::featureCounts()
-#' @param filter_count  number
-#' @param formula    formula to create design matrix (using svars)
-#' @param contrasts  contrast vector
-#' @param verbose    TRUE (default) / FALSE
-#' @param plot       TRUE (default) / FALSE
+#' @param bamdir        SAM/BAM dir path (string)
+#' @param paired        whether reads are paired end (TRUE/FALSE)
+#' @param genome        string: either "mm10", "hg38" etc. or a GTF file
+#' @param nthreads      no of cores to be used by Rsubread::featureCounts()
+#' @param filter_count  min feature count required by at least one sample
+#' @param formula       formula to create design matrix (using svars)
+#' @param contrastdefs  contrast definition vector/matrix/list
+#' @param verbose       TRUE/FALSE
+#' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # in-built genome
@@ -418,16 +417,17 @@ preprocess_counts <- function(
 #' @export
 read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
     filter_count = 10,
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
-    verbose = TRUE, plot = TRUE
+    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    contrastdefs = contrast_subgroups(object),
+    verbose      = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(bamdir)
     assert_is_a_bool(paired)
     assert_is_a_string(genome)
     assert_is_a_number(nthreads)
-    formula <- enquo(formula)
+    formula      <- enexpr(formula)
+    contrastdefs <- enexpr(contrastdefs)
 # Count reads
     files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
                         recursive = TRUE)
@@ -454,8 +454,8 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 # Contrast
     object %<>% pca()
     formula <- enquo(formula)
-    object %<>% add_limma(contrasts = contrasts, rowcontrasts = rowcontrasts,
-                          formula = !!formula, plot = FALSE)
+    object %<>% add_limma(formula = eval_tidy(formula),
+                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return
@@ -477,10 +477,10 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' @param filter_count number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
-#' @param formula   formula to create design matrix (using svars)
-#' @param contrasts  contrast vector
-#' @param verbose   TRUE (default) or FALSE
-#' @param plot      TRUE (default) / FALSE
+#' @param formula       formula to create design matrix (using svars)
+#' @param contrastdefs  contrastdef vector/matrix/list
+#' @param verbose       TRUE/FALSE
+#' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
@@ -492,13 +492,14 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' @export
 read_counts <- function(
     file, fid_col = 1, fname_col = character(0), filter_count = 10,
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
-    verbose = TRUE, plot = TRUE
+    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    contrastdefs = contrast_subgroups(object),
+    verbose      = TRUE, plot = TRUE
 ){
 # Read
     assert_all_are_existing_files(file)
-    formula <- enquo(formula)
+    formula      <- enexpr(formula)
+    contrastdefs    <- enexpr(contrastdefs)
     dt <- fread(file, integer64='numeric')
     if (is.character(fid_col)){
         assert_is_subset(fid_col, names(dt))
@@ -517,6 +518,8 @@ read_counts <- function(
                         fdata_rows = 2:nrow(dt),   fdata_cols = fdata_cols,
                         transpose  = FALSE,
                         verbose    = TRUE)
+    if ('gene_name' %in% fvars(object)) fvars(object) %<>%
+        stri_replace_first_fixed('gene_name', 'feature_name')
     metadata(object)$platform <- 'rnaseq'
     counts(object) <- exprs(object)
     assays(object)$exprs <- NULL
@@ -527,12 +530,13 @@ read_counts <- function(
     if (length(fname_col)>0){
         assert_is_subset(fname_col, fvars(object))
         fdata(object)$feature_name <- fdata(object)[[fname_col]]
-        fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
+        fdata(object) %<>% pull_columns(
+            intersect(c('feature_id', 'feature_name'), names(.)))
     }
 # Contrast
     object %<>% pca()
-    object %<>% add_limma(contrasts = contrasts, rowcontrasts = rowcontrasts,
-                          formula = !!formula, plot = FALSE)
+    object %<>% add_limma(formula = eval_tidy(formula),
+                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return

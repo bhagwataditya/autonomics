@@ -30,9 +30,9 @@ Center samples
 require(magrittr)
 require(matrixStats)
 file <- download_data('billing19.proteingroups.txt')
-rm_subgroups <- c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
-    'EM05_EM02', 'EM30_EM15')
-object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
+select_subgroups <-  c(sprintf(
+    '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+object <- read_proteingroups(file, select_subgroups = select_subgroups)
 object \%<>\% extract(, order(object$subgroup))
 fdata(object)$housekeeping <- FALSE
 fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE

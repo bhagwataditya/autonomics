@@ -45,13 +45,15 @@ ggplot object
 Biplot
 }
 \examples{
+require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
+object \%<>\% pca(plot=FALSE, ndim=4)
+object \%<>\% pls(plot=FALSE)
 biplot(object)
-biplot(object, x=pca1, y=pca2)
-biplot(object, x=pls1, y=pls2)
-biplot(object, x=pca3, y=pca4)
-biplot(object, nloadings = 0)
+biplot(object, pca3, pca4)
+biplot(object, pls1, pls2)
+biplot(object, nloadings=1)
 biplot(object, color = TIME_POINT)
 biplot(object, color = NULL)
 }

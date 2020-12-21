@@ -13,7 +13,12 @@ plot_detections(object, group = subgroup, fill = subgroup)
 
 plot_quantifications(...)
 
-plot_summarized_detections(object, group = subgroup, fill = subgroup)
+plot_summarized_detections(
+  object,
+  group = subgroup,
+  fill = subgroup,
+  na_imputes = TRUE
+)
 }
 \arguments{
 \item{...}{for backward compatibilty}
@@ -23,6 +28,8 @@ plot_summarized_detections(object, group = subgroup, fill = subgroup)
 \item{group}{group svar}
 
 \item{fill}{fill svar}
+
+\item{na_imputes}{whether to NA imputes prior to plottin (TRUE/FALSE)g}
 }
 \value{
 ggplot object

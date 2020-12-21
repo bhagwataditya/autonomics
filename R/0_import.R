@@ -26,7 +26,8 @@
 #' @importFrom assertive   has_names                    has_no_duplicates
 #' @importFrom assertive   is_empty_character   is_scalar   is_existing_file
 #' @importFrom colorspace  sequential_hcl
-#' @importFrom data.table  copy   data.table   fread   fwrite  .N  setkeyv   set
+#' @importFrom data.table  copy   data.table   fread   fwrite  .N
+#' @importFrom data.table  rbindlist   setkeyv   set
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2
@@ -56,7 +57,7 @@
 #' @importFrom R.utils       gunzip
 #' @importFrom S4Vectors     DataFrame   metadata   metadata<-
 #' @importFrom seqinr        read.fasta
-#' @importFrom stats         aggregate    approxfun   as.formula
+#' @importFrom stats         aggregate    approxfun   as.formula   cmdscale
 #' @importFrom stats         dist   hclust   lowess   median   model.matrix
 #' @importFrom stats         na.exclude   p.adjust qnorm   rnorm   sd
 #' @import     stringi

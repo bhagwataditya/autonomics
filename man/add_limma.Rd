@@ -2,12 +2,11 @@
 % Please edit documentation in R/7_contrast.R
 \name{add_limma}
 \alias{add_limma}
-\title{Add limma}
+\title{Contrast}
 \usage{
 add_limma(
   object,
-  contrasts = layout_col_contrasts(object),
-  rowcontrasts = layout_row_contrasts(object),
+  contrastdefs = contrast_subgroups(object),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   plot = TRUE,
   ...
@@ -16,8 +15,7 @@ add_limma(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{contrasts}{contrast vector, preferably named
-(automatically generated names are not always intuitive)}
+\item{contrastdefs}{contrastdef vector/matrix/list}
 
 \item{formula}{formula to create design matrix (using svars)}
 
@@ -29,7 +27,7 @@ add_limma(
 Updated SummarizedExperiment
 }
 \description{
-Run limma and add results
+Fit linear model and analyze contrasts
 }
 \details{
 Limma results can be easily accessed with limma(object).
@@ -53,9 +51,10 @@ object <- read_somascan(file, plot=FALSE)
 add_limma(object)
 
 file <- download_data('billing19.proteingroups.txt')
-rm_subgroups <- c(
-  'BLANK_BM00', 'BLANK_STD', 'BM00_BM00','EM01_EM00','EM05_EM02','EM30_EM15')
-object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
+select_subgroups <-  c(sprintf(
+    '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+object <- read_proteingroups(
+            file, select_subgroups = select_subgroups, plot = FALSE)
 object$subgroup \%<>\% gsub('_STD', '', .)
 object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
 object \%<>\% add_limma()
@@ -67,5 +66,5 @@ object \%<>\% add_limma()
 
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-object \%<>\%
+object \%<>\% add_limma()
 }

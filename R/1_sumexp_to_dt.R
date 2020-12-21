@@ -159,9 +159,11 @@ dt2sumexp  <- function(
 #' @param sampledata data.frame or DataFrame
 #' @return SummarizedExperiment
 #' @examples
+#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
 #' x <- exprs(read_metabolon(file, plot=FALSE))
 #' object <- matrix2sumexp(x)
+#' object %<>% pca()
 #' biplot(object, nloadings=0)
 #' @export
 matrix2sumexp <- function(x, sampledata=NULL){

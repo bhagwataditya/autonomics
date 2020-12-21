@@ -2,7 +2,7 @@
 % Please edit documentation in R/2_read_rnaseq.R
 \name{read_bam}
 \alias{read_bam}
-\title{Read RNAseq BAM files into SummarizedExperiment}
+\title{Read RNAseq SAM/BAM files into SummarizedExperiment}
 \usage{
 read_bam(
   bamdir,
@@ -11,37 +11,35 @@ read_bam(
   nthreads = detectCores(),
   filter_count = 10,
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = col_contrasts(object),
-  rowcontrasts = row_contrasts(object),
+  contrastdefs = contrast_subgroups(object),
   verbose = TRUE,
   plot = TRUE
 )
 }
 \arguments{
-\item{bamdir}{string: path to SAM or BAM file directory
-(one SAM or BAM file per sample)}
+\item{bamdir}{SAM/BAM dir path (string)}
 
-\item{paired}{TRUE or FALSE (default): paired end reads?}
+\item{paired}{whether reads are paired end (TRUE/FALSE)}
 
 \item{genome}{string: either "mm10", "hg38" etc. or a GTF file}
 
-\item{nthreads}{number of cores to be used by Rsubread::featureCounts()}
+\item{nthreads}{no of cores to be used by Rsubread::featureCounts()}
 
-\item{filter_count}{number}
+\item{filter_count}{min feature count required by at least one sample}
 
 \item{formula}{formula to create design matrix (using svars)}
 
-\item{contrasts}{contrast vector}
+\item{contrastdefs}{contrast definition vector/matrix/list}
 
-\item{verbose}{TRUE (default) / FALSE}
+\item{verbose}{TRUE/FALSE}
 
-\item{plot}{TRUE (default) / FALSE}
+\item{plot}{TRUE/FALSE}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Read RNAseq BAM files into SummarizedExperiment
+Read RNAseq SAM/BAM files into SummarizedExperiment
 }
 \examples{
 # in-built genome

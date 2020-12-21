@@ -19,47 +19,44 @@ read_somascan(
   feature_quality = c("FLAG", "PASS"),
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
-  log2 = TRUE,
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = col_contrasts(object),
-  rowcontrasts = row_contrasts(object),
+  contrastdefs = contrast_subgroups(object),
   verbose = TRUE,
   plot = TRUE
 )
 }
 \arguments{
-\item{file}{string: path to *.adat file}
+\item{file}{*.adat file path (string)}
 
-\item{fid_var}{string: feature_id   variable}
+\item{fid_var}{featureid fvar (string)}
 
-\item{sid_var}{string: sample_id    variable}
+\item{sid_var}{sampleid svar (string)}
 
-\item{subgroup_var}{string: subgroup     variable}
+\item{subgroup_var}{subgroup svar (string)}
 
-\item{fname_var}{string: feature_name variable}
+\item{fname_var}{featurename fvar (string)}
 
 \item{sample_type}{subset of c('Sample','QC','Buffer','Calibrator')}
 
 \item{feature_type}{subset of c('Protein',
-'Hybridization Control Elution', 'Rat Protein')}
+'Hybridization Control Elution',
+'Rat Protein')}
 
 \item{sample_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
 \item{feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
-\item{rm_na_svars}{TRUE (default) or FALSE: rm NA svars?}
+\item{rm_na_svars}{TRUE/FALSE}
 
-\item{rm_single_value_svars}{TRUE (default) or FALSE: rm single value svars?}
+\item{rm_single_value_svars}{TRUE/FALSE}
 
-\item{log2}{TRUE (default) or FALSE: log2 transform?}
+\item{formula}{design formula (using svars)}
 
-\item{formula}{formula to create design matrix (using svars)}
+\item{contrastdefs}{contrastdef vector/matrix/list}
 
-\item{contrasts}{named vector}
+\item{verbose}{TRUE/FALSE}
 
-\item{verbose}{TRUE (default) or FALSE}
-
-\item{plot}{TRUE (default) or FALSE}
+\item{plot}{TRUE/FALSE}
 }
 \value{
 Summarizedexperiment

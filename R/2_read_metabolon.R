@@ -209,22 +209,72 @@ pubchem_to_smiles <- function(x){
 #
 #=============================================================================
 
+#' @rdname stack
+#' @export
+rstack <- function(x, y){
+    ncolmax <- max(ncol(x), ncol(y))
+    if (ncol(x) < ncolmax)  x %<>% cbind(matrix(NA, nrow=nrow(x),
+                                                    ncol=ncolmax-ncol(x)))
+    if (ncol(y) < ncolmax)  y %<>% cbind(matrix(NA, nrow=nrow(y),
+                                                    ncol=ncolmax-ncol(y)))
+    stacked <- rbind(x, y)
+    rownames(stacked) <- sprintf('r%d', seq_len(nrow(stacked)))
+    colnames(stacked) <- sprintf('c%d', seq_len(ncol(stacked)))
+    stacked
+}
+
+
+#' @rdname stack
+#' @export
+cstack <- function(x, y){
+    nrowmax <- max(nrow(x), nrow(y))
+    if (nrow(x) < nrowmax)  x %<>% rbind(matrix(NA, ncol=ncol(x),
+                                                    nrow=nrowmax-nrow(x)))
+    if (nrow(y) < nrowmax)  y %<>% rbind(matrix(NA, ncol=ncol(y),
+                                                    nrow=nrowmax-nrow(y)))
+    stacked <- cbind(x, y)
+    rownames(stacked) <- sprintf('r%d', seq_len(nrow(stacked)))
+    colnames(stacked) <- sprintf('c%d', seq_len(ncol(stacked)))
+    stacked
+}
+
+
+#' stack matrices
+#'
+#' cbind/rbind matrices with incompatible dimensions
+#' @param x matrix
+#' @param y matrix
+#' @examples
+#' x <- matrix(c('a','b','c','d','e','f','g','h'), nrow=2, byrow=TRUE)
+#' y <- matrix(c('1','2','3','4','5','6','7','8'), nrow=4, byrow=TRUE)
+#' x
+#' y
+#' rstack(x,y)
+#' cstack(x,y)
+#'  stack(x,y)
+#' @export
+stack <- function(x, y){
+    rs <- rstack(x,y)
+    cs <- cstack(x,y)
+    if (sum(dim(rs)) <= sum(dim(cs)))  rs  else  cs
+
+}
+
 
 #' Read metabolon
-#' @param file         string: path to metabolon xlsx file
-#' @param sheet        number/string: xls sheet number or name
-#' @param fid_var      string: feature_id variable (ideally transcends dataset)
-#' @param sid_var      string: sample_id variable
-#' @param subgroup_var string: subgroup variable (human comprehensible)
-#' @param fname_var    string: feature_name variable
-#' @param log2         TRUE (default) or FALSE: log2 transform ?
-#' @param impute                TRUE or FALSE (default)
-#' @param add_kegg_pathways     TRUE or FALSE (default)
-#' @param add_smiles            TRUE or FALSE (default)
-#' @param formula                formula to create design matrix (using svars)
-#' @param contrasts             contrast vector
-#' @param verbose               TRUE (default) or FALSE
-#' @param plot                  TRUE (default) or FALSE
+#' @param file               string: path to metabolon xlsx file
+#' @param sheet              number/string: xls sheet number or name
+#' @param fid_var            string: feature_id variable (ideally transcends dataset)
+#' @param sid_var            string: sample_id variable
+#' @param subgroup_var       string: subgroup variable (human comprehensible)
+#' @param fname_var          string: feature_name variable
+#' @param impute             TRUE / FALSE
+#' @param add_kegg_pathways  TRUE / FALSE
+#' @param add_smiles         TRUE / FALSE
+#' @param formula            formula to create design matrix (using svars)
+#' @param contrastdefs       contrastdef vector/matrix/list
+#' @param verbose            TRUE / FALSE
+#' @param plot               TRUE / FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # GLUTAMINASE
@@ -236,18 +286,18 @@ pubchem_to_smiles <- function(x){
 #' @export
 read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL', log2 = TRUE,
-    impute  = FALSE, add_kegg_pathways = FALSE,
-    add_smiles = FALSE,
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
-    verbose = TRUE, plot = TRUE
+    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL',
+    impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
+    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    contrastdefs = contrast_subgroups(object),
+    verbose      = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_metabolon(
         file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var,
         subgroup_var = subgroup_var, fname_var = fname_var)
-    formula <- enquo(formula)
+    formula      <- enexpr(formula)
+    contrastdefs <- enexpr(contrastdefs)
 # Prepare
     is_subgroup_col <- stri_detect_regex(svars(object), subgroup_var)
     subgroup_var <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
@@ -256,14 +306,14 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
-    if (log2)               object %<>% log2transform(verbose = TRUE)
+    object %<>% log2transform(verbose = TRUE)
     if (impute)             object %<>% impute_systematic_nondetects()
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Contrast
     object %<>% pca()
-    object %<>% add_limma(contrasts = contrasts, row_contrasts = row_contrasts,
-                          formula   = !!formula, plot = FALSE)
+    object %<>% add_limma(formula = eval_tidy(formula),
+                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return

@@ -25,8 +25,6 @@ plot_samples(
 \item{nloadings}{n loadings added to plot}
 
 \item{plot}{whether to print plot}
-
-\item{...}{passed to plot_data}
 }
 \description{
 Plots sample densities and scores

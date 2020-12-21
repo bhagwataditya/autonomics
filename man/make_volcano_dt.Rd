@@ -4,12 +4,14 @@
 \alias{make_volcano_dt}
 \title{Create volcano datatable}
 \usage{
-make_volcano_dt(object, contrasts, ntop = 3)
+make_volcano_dt(object, contrastdefmat = contrastdefs(object)[[1]], ntop = 3)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{ntop}{number: how many top features (either FC wise or p wise) to be annotated}
+\item{contrastdefmat}{contrastdef matrix}
+
+\item{ntop}{no of top features to be annotated}
 }
 \value{
 data.table
@@ -19,7 +21,8 @@ Create volcano datatable
 }
 \examples{
 file <- download_data("billing16.proteingroups.txt")
-invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
-print(make_volcano_dt(object, metadata(object)$contrasts))
+inv <- c('EM_E', 'BM_E', 'BM_EM')
+object <- read_proteingroups(file, invert_subgroups=inv,
+            contrastdefs = c('E_EM', 'E_BM', 'EM_BM'))
+make_volcano_dt(object)
 }

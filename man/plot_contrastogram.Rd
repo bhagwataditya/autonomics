@@ -28,12 +28,13 @@ Plot contrastogram
 # subgroup vector
     require(magrittr)
     file <-  download_data('billing19.proteingroups.txt')
-    rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
-                       'EM05_EM02', 'EM30_EM15')
-    object <- read_proteingroups(file, rm_subgroups=rm_subgroups, plot=FALSE)
+    select_subgroups <-  c(sprintf(
+        '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+    object <- read_proteingroups(
+                file, select_subgroups = select_subgroups, plot = FALSE)
     object$subgroup \%<>\% gsub('_STD', '', .)
     object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
-    object \%<>\% add_limma(col_contrasts(object), plot=FALSE)
+    object \%<>\% add_limma(plot=FALSE)
     plot_contrastogram(object, curve=0.8)
 # subgroup vector
     file <-  download_data('fukuda20.proteingroups.txt')

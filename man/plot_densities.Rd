@@ -44,6 +44,8 @@ plot_feature_densities(
 \item{color}{svar mapped to color}
 
 \item{fixed}{fixed aesthetics}
+
+\item{subsetter}{subsetter for showing a subset of samples/features}
 }
 \value{
 ggplot object

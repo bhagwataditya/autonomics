@@ -90,8 +90,8 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     sdata(object)[duplicate_cols] <- NULL
     sdata(object) %<>%  merge(df, by = by, all.x = TRUE, sort = FALSE) %>%
                         set_rownames(rownames(sdata(object))) # merging drops!
-    if ('subgroup'  %in% svars(object)) object$subgroup  %<>% as.character()
-    if ('replicate' %in% svars(object)) object$replicate %<>% as.character()
+    if ('subgroup'  %in% svars(object)) object$subgroup  #%<>% as.character()
+    if ('replicate' %in% svars(object)) object$replicate #%<>% as.character()
     object
 }
 
@@ -130,7 +130,7 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' pca(object)  # Principal Component Analysis
+#' pca(object, plot=TRUE)  # Principal Component Analysis
 #' pls(object)  # Partial Least Squares
 #' lda(object)  # Linear Discriminant Analysis
 #' sma(object)  # Spectral Map Analysis
@@ -180,7 +180,8 @@ pca <- function(
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
-    if (plot)  print(biplot(object, pca1, pca2, ...))
+    pca1 <- pca2 <- NULL
+    if (plot)  print(biplot(object, sym(pca1), pca2, ...))
     object
 }
 
@@ -189,7 +190,7 @@ pca <- function(
 #' @rdname pca
 #' @export
 sma <- function(
-    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...
+    object, ndim = 2, minvar = 0, verbose = TRUE, plot = TRUE, ...
 ){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
@@ -234,6 +235,7 @@ sma <- function(
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
+    sma1 <- sma2 <- NULL
     if (plot)  print(biplot(object, sma1, sma2, ...))
     object
 }
@@ -289,6 +291,7 @@ lda <- function(
 # Filter for minvar
     object %<>% .filter_minvar('lda', minvar)
 # Return
+    lda1 <- lda2 <- NULL
     if (plot)  print(biplot(object, lda1, lda2, ...))
     object
 }
@@ -328,6 +331,7 @@ pls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
+    pls1 <- pls2 <- NULL
     if (plot)  print(biplot(object, pls1, pls2, ...))
     object
 }
@@ -371,6 +375,7 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
+    spls1 <- spls2 <- NULL
     if (plot)  print(biplot(object, spls1, spls2, ...))
     object
 }
@@ -416,6 +421,7 @@ opls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
+    opls1 <- opls2 <- NULL
     if (plot)  print(biplot(object, opls1, opls2, ...))
     object
 }
@@ -429,8 +435,6 @@ opls <- function(
 #'
 #' @param object    MultiAssayExperiment
 #' @param mofafile  MOFA results file
-#' @param ndim      number
-#' @param minvar    number
 #' @param verbose   TRUE/FALSE
 #' @param plot      TRUE/FALSE
 #' @param ...       passed to biplot
@@ -479,6 +483,7 @@ mofa <- function(
     names(variances) %<>% gsub('Factor', 'mofa', .)
     metadata(object)$mofa <- variances
 # Return
+    mofa1 <- mofa2 <- NULL
     if (plot)  print(biplot(object, mofa1, mofa2, ...))
     object
 }
@@ -488,9 +493,11 @@ mofa <- function(
 #' @param experiments named list of SummarizedExperiments
 #' @return MultiAssayExperiment
 #' @examples
-#' somascan <- read_somascan( download_data('atkin18.somascan.adat'),plot=FALSE)
-#' metabolon<- read_metabolon(download_data('atkin18.metabolon.xlsx'),plot=FALSE)
-#' object <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
+#' somascanfile  <- download_data('atkin18.somascan.adat')
+#' metabolonfile <- download_data('atkin18.metabolon.xlsx')
+#' somascan      <- read_somascan(somascanfile, plot=FALSE)
+#' metabolon     <- read_metabolon(metabolonfile,plot=FALSE)
+#' object        <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
 #' @export
 sumexp2mae <- function(experiments){
     assert_is_list(experiments)
@@ -536,6 +543,7 @@ snf <- function(object, ndim = 2, plot = FALSE, ...){
     object %<>% merge_sdata(mdsscores)
     metadata(object)$snf <-
         structure(rep(NA, ndim), names = sprintf('snf%d', seq_len(ndim)))
+    snf1 <- snf2 <- NULL
     if (plot)  print(biplot(object, x=snf1, y=snf2, ...))
     object
 
@@ -635,13 +643,15 @@ add_loadings <- function(
 #' @param nloadings      number of loadings per half-axis to plot
 #' @return ggplot object
 #' @examples
+#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
+#' object %<>% pca(plot=FALSE, ndim=4)
+#' object %<>% pls(plot=FALSE)
 #' biplot(object)
-#' biplot(object, x=pca1, y=pca2)
-#' biplot(object, x=pls1, y=pls2)
-#' biplot(object, x=pca3, y=pca4)
-#' biplot(object, nloadings = 0)
+#' biplot(object, pca3, pca4)
+#' biplot(object, pls1, pls2)
+#' biplot(object, nloadings=1)
 #' biplot(object, color = TIME_POINT)
 #' biplot(object, color = NULL)
 #' @export
@@ -666,8 +676,10 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
 
-    xlab  <- paste0(xstr, ' : ', round(metadata(object)[[methodx]][[xstr]], 1),'% ')
-    ylab  <- paste0(ystr, ' : ', round(metadata(object)[[methody]][[ystr]], 1),'% ')
+    xvar <- round(metadata(object)[[methodx]][[xstr]], 1)
+    yvar <- round(metadata(object)[[methody]][[ystr]], 1)
+    xlab  <- paste0(xstr, ' : ', xvar,'% ')
+    ylab  <- paste0(ystr, ' : ', yvar,'% ')
 
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p <- p + ggtitle(paste0(xstr, ':', ystr))

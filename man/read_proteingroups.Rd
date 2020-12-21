@@ -9,15 +9,14 @@ read_proteingroups(
   proteinfile,
   quantity = guess_maxquant_quantity(proteinfile),
   designfile = default_designfile(proteinfile, "maxquant", quantity),
-  rm_subgroups = character(0),
+  select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
   fastafile = NULL,
   invert_subgroups = character(0),
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = col_contrasts(object),
-  rowcontrasts = row_contrasts(object),
+  contrastdefs = contrast_subgroups(object),
   verbose = TRUE,
   plot = TRUE
 )
@@ -27,21 +26,20 @@ read_phosphosites(
   proteinfile = paste0(dirname(phosphofile), "/proteinGroups.txt"),
   quantity = guess_maxquant_quantity(phosphofile),
   designfile = default_designfile(proteinfile, "maxquant", quantity),
-  rm_subgroups = character(0),
+  select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
   min_localization_prob = 0.75,
   fastafile = NULL,
   invert_subgroups = character(0),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrasts = col_contrasts(object),
-  rowcontrasts = row_contrasts(object),
+  contrastdefs = contrast_subgroups(object),
   verbose = TRUE,
   plot = TRUE
 )
 }
 \arguments{
-\item{proteinfile}{proteingroups.txt path}
+\item{proteinfile}{proteingroups file path}
 
 \item{quantity}{string: "Ratio normalized",
 "Ratio",
@@ -51,31 +49,31 @@ read_phosphosites(
 "Intensity labeled",
 "Intensity"}
 
-\item{designfile}{path to designfile}
+\item{designfile}{designfile path}
 
-\item{rm_subgroups}{character vector: subgroups to be removed}
+\item{select_subgroups}{subgroups to be selected (character vector)}
 
-\item{contaminants}{return contaminants? (defaultFALSE)}
+\item{contaminants}{whether to return contaminants (TRUE/FALSE)}
 
-\item{reverse}{return reverse peptides? (default FALSE)}
+\item{reverse}{whether to return reverse peptides (TRUE/FALSE)}
 
 \item{fastafile}{NULL or fastafile (to deconvolute proteingroups)}
 
-\item{invert_subgroups}{character vector: subgroups to be inverted}
+\item{invert_subgroups}{subgroups to be inverted (character vector)}
 
-\item{impute}{TRUE or FALSE (default)}
+\item{impute}{whether to impute consistent nondetects (TRUE/FALSE)}
 
 \item{formula}{formula to create design matrix (using svars)}
 
-\item{contrasts}{contrasts vector}
+\item{contrastdefs}{contrast definition vector/matrix/list}
 
-\item{verbose}{TRUE (default) or FALSE}
+\item{verbose}{TRUE/FALSE}
 
-\item{plot}{TRUE or FALSE}
+\item{plot}{TRUE/FALSE}
 
-\item{phosphofile}{phospho(STY)Sites.txt path}
+\item{phosphofile}{phosphosites  file path}
 
-\item{min_localization_prob}{number (default 0.75): min site loc. prob.}
+\item{min_localization_prob}{min site localization probability (number)}
 }
 \value{
 SummarizedExperiment
@@ -87,27 +85,31 @@ Read proteingroups/phosphosites
 # LFQ intensities
     file <- download_data('fukuda20.proteingroups.txt')
     object <- read_proteingroups(file)
-# Subgroup ratios
+
+# Ratios: invert if required
     file <- download_data('billing16.proteingroups.txt')
-    object <- read_proteingroups(file)
-# Invert subgroups
-    invert_subgroups <- c('EM_E','BM_E','BM_EM')
-    object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-# Intensities
+    inv <- c('EM_E','BM_E','BM_EM')
+    object <- read_proteingroups(file, invert_subgroups = inv,
+                                 contrastdefs = c('E_EM', 'E_BM', 'EM_BM'))
+
+# Unnormalized Intensities: specify quantity
     object <- read_proteingroups(file, quantity = 'Intensity labeled')
+
+# Internal Standard Ratios: rm meaningless ratios
+    file <-  download_data('billing19.proteingroups.txt')
+    select_subgroups <-  c(sprintf(
+        '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+    object <- read_proteingroups(file, select_subgroups = select_subgroups)
+
+# Phosphosites
+    phosphofile <- download_data('billing19.phosphosites.txt')
+    proteinfile <- download_data('billing19.proteingroups.txt')
+    read_phosphosites(phosphofile, proteinfile,
+                        select_subgroups = select_subgroups)
+
 # Deconvolute proteingroups
     fdata(object)[1:3, 1:4]
     object <- read_proteingroups(file,quantity = 'Intensity labeled',
         fastafile=download_data('uniprot_hsa_20140515.fasta'), plot=FALSE)
     fdata(object)[1:3, 1:4]
-# Internal Standard Ratios
-    file <-  download_data('billing19.proteingroups.txt')
-    object <- read_proteingroups(file)
-# Rm subgroups
-    rm_subgroups <-  c('BLANK_BM00', 'BLANK_STD', 'BM00_BM00', 'EM01_EM00',
-                       'EM05_EM02', 'EM30_EM15')
-    object <- read_proteingroups(file, rm_subgroups = rm_subgroups)
-# Phosphosites
-    phosphofile <- download_data('billing19.phosphosites.txt')
-    read_phosphosites(phosphofile, file, rm_subgroups = rm_subgroups)
 }

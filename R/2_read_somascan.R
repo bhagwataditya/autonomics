@@ -148,23 +148,23 @@ rm_single_value_columns <- function(df){
 #'
 #' Read data from somascan adat file
 #'
-#' @param file         string: path to *.adat file
-#' @param fid_var      string: feature_id   variable
-#' @param sid_var      string: sample_id    variable
-#' @param subgroup_var string: subgroup     variable
-#' @param fname_var    string: feature_name variable
-#' @param sample_type  subset of c('Sample','QC','Buffer','Calibrator')
-#' @param feature_type subset of c('Protein',
-#'                              'Hybridization Control Elution', 'Rat Protein')
-#' @param sample_quality         subset of c('PASS', 'FLAG', 'FAIL')
-#' @param feature_quality        subset of c('PASS', 'FLAG', 'FAIL')
-#' @param rm_na_svars            TRUE (default) or FALSE: rm NA svars?
-#' @param rm_single_value_svars  TRUE (default) or FALSE: rm single value svars?
-#' @param log2                   TRUE (default) or FALSE: log2 transform?
-#' @param formula                formula to create design matrix (using svars)
-#' @param contrasts              named vector
-#' @param verbose                TRUE (default) or FALSE
-#' @param plot                   TRUE (default) or FALSE
+#' @param file                  *.adat file path (string)
+#' @param fid_var               featureid fvar (string)
+#' @param sid_var               sampleid svar (string)
+#' @param subgroup_var          subgroup svar (string)
+#' @param fname_var             featurename fvar (string)
+#' @param sample_type           subset of c('Sample','QC','Buffer','Calibrator')
+#' @param feature_type          subset of c('Protein',
+#'                                       'Hybridization Control Elution',
+#'                                       'Rat Protein')
+#' @param sample_quality        subset of c('PASS', 'FLAG', 'FAIL')
+#' @param feature_quality       subset of c('PASS', 'FLAG', 'FAIL')
+#' @param rm_na_svars           TRUE/FALSE
+#' @param rm_single_value_svars TRUE/FALSE
+#' @param formula               design formula (using svars)
+#' @param contrastdefs          contrastdef vector/matrix/list
+#' @param verbose               TRUE/FALSE
+#' @param plot                  TRUE/FALSE
 #' @return Summarizedexperiment
 #' @examples
 #' # HYPOGLYCEMIA
@@ -175,15 +175,16 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     subgroup_var = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
-    rm_na_svars = FALSE, rm_single_value_svars = FALSE, log2 = TRUE,
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrasts = col_contrasts(object), rowcontrasts = row_contrasts(object),
-    verbose = TRUE, plot = TRUE
+    rm_na_svars = FALSE, rm_single_value_svars = FALSE,
+    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    contrastdefs = contrast_subgroups(object),
+    verbose      = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_somascan(file, fid_var=fid_var, sid_var = sid_var)
     object$sample_id %<>% make.unique()
-    formula <- enquo(formula)
+    formula      <- enexpr(formula)
+    contrastdefs <- enexpr(contrastdefs)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
     object %<>% add_designvars(subgroup_var = subgroup_var, verbose = verbose)
@@ -196,18 +197,17 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     assert_is_character(feature_quality)
     assert_is_a_bool(rm_na_svars)
     assert_is_a_bool(rm_single_value_svars)
-    assert_is_a_bool(log2)
     object %<>% filter_sample_type(    sample_type,     verbose)
     object %<>% filter_sample_quality( sample_quality,  verbose)
     object %<>% filter_feature_type(   feature_type,    verbose)
     object %<>% filter_feature_quality(feature_quality, verbose)
     if (rm_na_svars)            sdata(object) %<>% rm_na_columns()
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
-    if (log2) object %<>% log2transform(verbose = TRUE)
+    object %<>% log2transform(verbose = TRUE)
 # Analyze
     object %<>% pca()
-    object %<>% add_limma(contrasts, rowcontrasts = rowcontrasts,
-                          formula = !!formula, plot = FALSE)
+    object %<>% add_limma(formula = eval_tidy(formula),
+                    contrastsdefs = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
     if (plot) plot_samples(object)
 # Return
