@@ -11,7 +11,7 @@ Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.
              person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",   role = "sad"))
 Description: 
   Importomics is a package for intuitive and generic cross-platform analysis of omics data.
-License: GPL-2
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
@@ -64,10 +64,8 @@ Suggests:
   knitr,
   MASS,
   mixOmics,
-  MOFA2,
   mpm,
   org.Hs.eg.db, 
   org.Mm.eg.db,
   ropls,
-  SNFtool,
   testthat

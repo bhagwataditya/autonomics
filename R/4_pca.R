@@ -65,6 +65,8 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #
 #=============================================================================
 
+#' @rdname merge_sdata
+#' @export
 merge_fdata <- function(object, df, by = 'feature_id'){
     df %<>% as.data.frame() # convert matrix
     if (!'feature_id' %in% names(df))  df$feature_id <- rownames(df)
@@ -76,13 +78,19 @@ merge_fdata <- function(object, df, by = 'feature_id'){
 }
 
 
-#'@examples
+#' Merge sample/feature data
+#' @param object  SummarizedExperiment
+#' @param df      data.frame
+#' @param by      string
+#' @return        SummarizedExperiment
+#' @examples
+#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
 #' sdata(object)
-#' @noRd
+#'@export
 merge_sdata <- function(object, df, by = 'sample_id'){
     df %<>% as.data.frame() # convert matrix to df
     if (!'sample_id' %in% names(df))  df$sample_id <- rownames(df)
@@ -136,7 +144,6 @@ merge_sdata <- function(object, df, by = 'sample_id'){
 #' sma(object)  # Spectral Map Analysis
 #' pca(object, ndim=3)
 #' pca(object, ndim=Inf, minvar=5)
-#' @seealso mofa
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
@@ -181,7 +188,7 @@ pca <- function(
     object %<>% .filter_minvar('pca', minvar)
 # Return
     pca1 <- pca2 <- NULL
-    if (plot)  print(biplot(object, sym(pca1), pca2, ...))
+    if (plot)  print(biplot(object, pca1, pca2, ...))
     object
 }
 
@@ -427,127 +434,8 @@ opls <- function(
 }
 
 
-#' mofa/snf
-#'
-#' Perform a platform-aggregating dimension reduction.
-#'
-#' Add sample scores, feature loadings, and dimension variances to object.
-#'
-#' @param object    MultiAssayExperiment
-#' @param mofafile  MOFA results file
-#' @param verbose   TRUE/FALSE
-#' @param plot      TRUE/FALSE
-#' @param ...       passed to biplot
-#' @return          MultiAssayExperiment
-#' @examples
-#' somascan <-read_somascan( download_data('atkin18.somascan.adat'),plot=FALSE)
-#' metabolon<-read_metabolon(download_data('atkin18.metabolon.xlsx'),plot=FALSE)
-#' object <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
-#' object %<>% mofa(plot=TRUE)
-#' object %<>%  snf(plot=TRUE)
-#' object$type <- substr(object$replicate,1,1)
-#' biplot(object, snf1, snf2, color=type)
-#' biplot(object, mofa1, mofa2, color=type)
-#' @export
-mofa <- function(
-    object, mofafile = file.path(tempdir(), 'mofaout.hdf'),
-    verbose = FALSE, plot = FALSE, ...
-){
-# Assert
-    if (!requireNamespace('MOFA2', quietly = TRUE)){
-        message("BiocManager::install('MOFA2'). Then re-run.")
-        return(object)}
-    assert_is_all_of(object, "MultiAssayExperiment")
-    expnames <- names(experiments(object))
-    for (exp in expnames)   assert_all_are_not_matching_fixed(
-                                rownames(experiments(object)[[exp]]),'*')
-# Run/Load mofa
-    if (file.exists(mofafile)){
-        if (verbose)  message('\t\tLoad ', mofafile)
-        mofaobj <- MOFA2::load_model(mofafile)
-    } else {
-        assert_is_all_of(object, "MultiAssayExperiment")
-        mofaobj <- MOFA2::prepare_mofa(MOFA2::create_mofa(object))
-        mofaobj %<>% MOFA2::run_mofa(outfile = mofafile)
-    }
-# Add scores, loadings, variances
-    scores <- mofaobj@expectations$Z$group1
-    colnames(scores) %<>% gsub('Factor', 'mofa', .)
-    object %<>% merge_sdata(scores)
-    for (exp in expnames){
-        loadings <- mofaobj@expectations$W[[exp]]
-        colnames(loadings) %<>% gsub('Factor', 'mofa', .)
-        experiments(object)[[exp]] %<>% merge_fdata(loadings)
-    }
-    variances <- rowSums(mofaobj@cache$variance_explained$r2_per_factor$group1)
-    names(variances) %<>% gsub('Factor', 'mofa', .)
-    metadata(object)$mofa <- variances
-# Return
-    mofa1 <- mofa2 <- NULL
-    if (plot)  print(biplot(object, mofa1, mofa2, ...))
-    object
-}
 
 
-#' Create MultiAssayExperiment from SummarizedExperiment list
-#' @param experiments named list of SummarizedExperiments
-#' @return MultiAssayExperiment
-#' @examples
-#' somascanfile  <- download_data('atkin18.somascan.adat')
-#' metabolonfile <- download_data('atkin18.metabolon.xlsx')
-#' somascan      <- read_somascan(somascanfile, plot=FALSE)
-#' metabolon     <- read_metabolon(metabolonfile,plot=FALSE)
-#' object        <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
-#' @export
-sumexp2mae <- function(experiments){
-    assert_is_list(experiments)
-    assert_has_names(experiments)
-    for (experiment in experiments){
-        assert_is_all_of(experiment, 'SummarizedExperiment')
-        assert_is_subset(c('sample_id', 'subgroup'), svars(experiment))
-    }
-    for (i in seq_along(experiments))  experiments[[i]] %<>%
-                                            extract(, order(colnames(.)))
-    extract_sdata <- function(sumexp){
-        extractvars <- c('sample_id', 'subgroup', 'replicate')
-        extractvars %<>% intersect(svars(sumexp))
-        sdata(sumexp)[, extractvars, drop=FALSE]
-    }
-    sdata1 <- unique(Reduce(rbind, lapply(experiments, extract_sdata)))
-    sdata1 %<>% extract(order(.$sample_id), )
-    assert_all_are_true(table(sdata1$sample_id)==1)
-    MultiAssayExperiment(experiments = experiments, colData = sdata1)
-}
-
-
-snf <- function(object, ndim = 2, plot = FALSE, ...){
-    # Assert
-    if (!requireNamespace('SNFtool', quietly = TRUE)){
-        message("BiocManager::install('SNFtool'). Then re-run.")
-        return(object)}
-    assert_is_all_of(object, "MultiAssayExperiment")
-    assert_all_are_true(Reduce('==', colnames(object)))
-    affinitymatrices <- Map(
-        function(exp){  exprsmat <- exprs(experiments(object)[[exp]])
-                        k <- which(is.na(exprsmat), arr.ind=TRUE)
-                        exprsmat[k] <- rowMeans(exprsmat, na.rm=TRUE)[k[, 1]]
-                            # https://stackoverflow.com/questions/6918086
-                        exprsmat %<>% t()
-                        exprsmat %<>% SNFtool::standardNormalization()
-                        distmat <- SNFtool::dist2(exprsmat, exprsmat)
-                        SNFtool::affinityMatrix(distmat)},
-        names(experiments(object)))
-    fusedaffinities <- SNFtool::SNF(affinitymatrices)
-    mdsscores <- cmdscale(max(fusedaffinities) - fusedaffinities, k = ndim)
-    colnames(mdsscores) <- sprintf('snf%d', seq_len(ndim))
-    object %<>% merge_sdata(mdsscores)
-    metadata(object)$snf <-
-        structure(rep(NA, ndim), names = sprintf('snf%d', seq_len(ndim)))
-    snf1 <- snf2 <- NULL
-    if (plot)  print(biplot(object, x=snf1, y=snf2, ...))
-    object
-
-}
 
 
 #=============================================================================

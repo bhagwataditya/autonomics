@@ -45,9 +45,6 @@ sma(object)  # Spectral Map Analysis
 pca(object, ndim=3)
 pca(object, ndim=Inf, minvar=5)
 }
-\seealso{
-mofa
-}
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)
 }

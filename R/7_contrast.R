@@ -1124,6 +1124,7 @@ make_volcano_dt <- function(
 #' @return ggplot object
 #' @examples
 #' # proteingroup group ratios
+#'     require(magrittr)
 #'     file <- download_data("billing16.proteingroups.txt")
 #'     inv <- c('EM_E', 'BM_E', 'BM_EM')
 #'     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)

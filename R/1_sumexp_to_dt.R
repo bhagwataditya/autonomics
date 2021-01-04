@@ -180,3 +180,36 @@ matrix2sumexp <- function(x, sampledata=NULL){
     }
     object
 }
+
+
+#' Create MultiAssayExperiment from SummarizedExperiment list
+#' @param experiments named list of SummarizedExperiments
+#' @return MultiAssayExperiment
+#' @examples
+#' somascanfile  <- download_data('atkin18.somascan.adat')
+#' metabolonfile <- download_data('atkin18.metabolon.xlsx')
+#' somascan      <- read_somascan(somascanfile, plot=FALSE)
+#' metabolon     <- read_metabolon(metabolonfile,plot=FALSE)
+#' object        <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
+#' @export
+sumexp2mae <- function(experiments){
+    assert_is_list(experiments)
+    assert_has_names(experiments)
+    for (experiment in experiments){
+        assert_is_all_of(experiment, 'SummarizedExperiment')
+        assert_is_subset(c('sample_id', 'subgroup'), svars(experiment))
+    }
+    for (i in seq_along(experiments))  experiments[[i]] %<>%
+                                            extract(, order(colnames(.)))
+    extract_sdata <- function(sumexp){
+        extractvars <- c('sample_id', 'subgroup', 'replicate')
+        extractvars %<>% intersect(svars(sumexp))
+        sdata(sumexp)[, extractvars, drop=FALSE]
+    }
+    sdata1 <- unique(Reduce(rbind, lapply(experiments, extract_sdata)))
+    sdata1 %<>% extract(order(.$sample_id), )
+    assert_all_are_true(table(sdata1$sample_id)==1)
+    MultiAssayExperiment(experiments = experiments, colData = sdata1)
+}
+
+

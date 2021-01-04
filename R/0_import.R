@@ -57,7 +57,7 @@
 #' @importFrom R.utils       gunzip
 #' @importFrom S4Vectors     DataFrame   metadata   metadata<-
 #' @importFrom seqinr        read.fasta
-#' @importFrom stats         aggregate    approxfun   as.formula   cmdscale
+#' @importFrom stats         aggregate    approxfun   as.formula
 #' @importFrom stats         dist   hclust   lowess   median   model.matrix
 #' @importFrom stats         na.exclude   p.adjust qnorm   rnorm   sd
 #' @import     stringi
