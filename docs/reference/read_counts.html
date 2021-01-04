@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,14 +124,16 @@
     <p>Read tsv file with rnaseq counts into SummarizedExperiment</p>
     </div>
 
-    <pre class="usage"><span class='fu'>read_counts</span>(
-  <span class='kw'>file</span>,
-  fid_col = <span class='fl'>1</span>,
-  fname_col = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
-  filter_features_min_count = <span class='fl'>10</span>,
-  verbose = <span class='fl'>TRUE</span>,
-  plot = <span class='fl'>TRUE</span>
-)</pre>
+    <pre class="usage"><span class='fu'>read_counts</span><span class='op'>(</span>
+  <span class='va'>file</span>,
+  fid_col <span class='op'>=</span> <span class='fl'>1</span>,
+  fname_col <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span><span class='op'>(</span><span class='fl'>0</span><span class='op'>)</span>,
+  filter_count <span class='op'>=</span> <span class='fl'>10</span>,
+  formula <span class='op'>=</span> <span class='kw'>if</span> <span class='op'>(</span><span class='fu'>single_subgroup</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>~</span><span class='fl'>1</span> <span class='kw'>else</span> <span class='op'>~</span><span class='fl'>0</span> <span class='op'>+</span> <span class='va'>subgroup</span>,
+  contrastdefs <span class='op'>=</span> <span class='fu'>contrast_subgroups</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>,
+  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  plot <span class='op'>=</span> <span class='cn'>TRUE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -149,18 +151,26 @@
       <td><p>string or number: feature name variable</p></td>
     </tr>
     <tr>
-      <th>filter_features_min_count</th>
+      <th>filter_count</th>
       <td><p>number (default 10): filter out features
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with <code><a href='https://rdrr.io/pkg/edgeR/man/filterByExpr.html'>filterByExpr</a></code></p></td>
     </tr>
     <tr>
+      <th>formula</th>
+      <td><p>formula to create design matrix (using svars)</p></td>
+    </tr>
+    <tr>
+      <th>contrastdefs</th>
+      <td><p>contrastdef vector/matrix/list</p></td>
+    </tr>
+    <tr>
       <th>verbose</th>
-      <td><p>TRUE (default) or FALSE</p></td>
+      <td><p>TRUE/FALSE</p></td>
     </tr>
     <tr>
       <th>plot</th>
-      <td><p>TRUE (default) / FALSE</p></td>
+      <td><p>TRUE/FALSE</p></td>
     </tr>
     </table>
 
@@ -177,18 +187,28 @@ performed with <code><a href='https://rdrr.io/pkg/edgeR/man/filterByExpr.html'>f
     <div class='dont-index'><p>merge_sdata, merge_fdata</p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'billing19.rnacounts.txt'</span>)
-<span class='fu'>read_counts</span>(<span class='kw'>file</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/billing19/billing19.rnacounts.txt</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values: EM00_R1 =&gt; EM00</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: EM00_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Write design (update if required!): ~/importomicscache/datasets/billing19/billing19.rnacounts.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Keep 21990/56268 features: count &gt;= 10 in at least some samples</span></div><div class='output co'>#&gt; <span class='message'>		TMM normalize and log2transform</span></div><div class='output co'>#&gt; <span class='message'>		Return object: counts(object)  = counts</span></div><div class='output co'>#&gt; <span class='message'>		               exprs(object)   = log2cpm</span></div><div class='output co'>#&gt; <span class='message'>		               weights(object) = voom weights (see plot)</span></div><div class='output co'>#&gt; <span class='message'>		               object$subgroup = subgroup values</span></div><div class='img'><img src='read_counts-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_counts-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing16.rnacounts.txt'</span><span class='op'>)</span>
+<span class='fu'>read_counts</span><span class='op'>(</span><span class='va'>file</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/billing16/billing16.rnacounts.txt</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/billing16/billing16.rnacounts.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Keep 67/58734 features: count &gt;= 10 in at least some samples</span></div><div class='output co'>#&gt; <span class='message'>		TMM normalize and log2transform</span></div><div class='output co'>#&gt; <span class='message'>		Return object: counts(object)  = counts</span></div><div class='output co'>#&gt; <span class='message'>		               exprs(object)   = log2cpm</span></div><div class='output co'>#&gt; <span class='message'>		               weights(object) = voom weights (see plot)</span></div><div class='output co'>#&gt; <span class='message'>		               object$subgroup = subgroup values</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='output co'>#&gt; <span class='message'>		Retain 11/11 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='read_counts-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_counts-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
+#&gt; dim: 67 11 
+#&gt; metadata(7): analysis file ... contrastdefs limma
+#&gt; assays(3): counts exprs weights
+#&gt; rownames(67): ENSG00000227232 ENSG00000268903 ... ENSG00000198912
+#&gt;   ENSG00000196581
+#&gt; rowData names(8): feature_id gene_id ... F F.p
+#&gt; colnames(11): BM_R1 BM_R2 ... EM_R2 EM_R3
+#&gt; colData names(8): sample_id subgroup ... pca1 pca2</div><div class='input'>
+<span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing19.rnacounts.txt'</span><span class='op'>)</span>
+<span class='fu'>read_counts</span><span class='op'>(</span><span class='va'>file</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/billing19/billing19.rnacounts.txt</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/billing19/billing19.rnacounts.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Keep 21990/56268 features: count &gt;= 10 in at least some samples</span></div><div class='output co'>#&gt; <span class='message'>		TMM normalize and log2transform</span></div><div class='output co'>#&gt; <span class='message'>		Return object: counts(object)  = counts</span></div><div class='output co'>#&gt; <span class='message'>		               exprs(object)   = log2cpm</span></div><div class='output co'>#&gt; <span class='message'>		               weights(object) = voom weights (see plot)</span></div><div class='output co'>#&gt; <span class='message'>		               object$subgroup = subgroup values</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 21990/21990 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='output co'>#&gt; <span class='message'>		Retain 24/24 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='read_counts-3.png' alt='' width='700' height='433' /></div><div class='img'><img src='read_counts-4.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; class: SummarizedExperiment 
 #&gt; dim: 21990 24 
-#&gt; metadata(3): analysis file platform
+#&gt; metadata(7): analysis file ... contrastdefs limma
 #&gt; assays(3): counts exprs weights
 #&gt; rownames(21990): ENSG00000000003.14 ENSG00000000005.5 ...
 #&gt;   ENSG00000283667.1 ENSG00000283674.1
-#&gt; rowData names(5): feature_id gene_id gene_name gene_type locus
+#&gt; rowData names(9): feature_id gene_id ... F F.p
 #&gt; colnames(24): EM00_R1 EM00_R2 ... BM_R2 BM_R3
-#&gt; colData names(6): sample_id subgroup ... libsize.filtered
-#&gt;   libsize.scaled</div></pre>
+#&gt; colData names(8): sample_id subgroup ... pca1 pca2</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

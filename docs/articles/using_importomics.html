@@ -39,7 +39,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -84,32 +84,32 @@
     
     
 <p><img src="https://bitbucket.org/graumannlabtools/importomics/downloads/read_prepro_analyze.png"></p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># Install</span>
-    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">'remotes'</span>)
-    <span class="kw">remotes</span>::<span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">'bhagwataditya/importomics'</span>,  
-                             repos = <span class="kw">BiocManager</span>::<span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/repositories.html">repositories</a></span>(), 
-                             dependencies = <span class="fl">TRUE</span>, upgrade = <span class="fl">FALSE</span>)
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Install</span>
+    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">'remotes'</span><span class="op">)</span>
+    <span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span><span class="op">(</span><span class="st">'bhagwataditya/importomics'</span>,  
+                             repos <span class="op">=</span> <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/repositories.html">repositories</a></span><span class="op">(</span><span class="op">)</span>, 
+                             dependencies <span class="op">=</span> <span class="cn">TRUE</span>, upgrade <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
                              
 <span class="co"># Run</span>
-    <span class="kw">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span>(<span class="st">'stemcells.bam.zip'</span>)                           <span class="co"># RNAseq BAM</span>
-    <span class="fu"><a href="../reference/read_bam.html">read_bam</a></span>(<span class="kw">file</span>)
+    <span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span><span class="op">(</span><span class="st">'billing16.bam.zip'</span><span class="op">)</span>                      <span class="co"># RNAseq BAM</span>
+    <span class="fu"><a href="../reference/read_bam.html">read_bam</a></span><span class="op">(</span><span class="va">file</span>, paired <span class="op">=</span> <span class="cn">TRUE</span>, genome <span class="op">=</span> <span class="st">'hg38'</span><span class="op">)</span>
     
-    <span class="kw">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span>(<span class="st">'stemcells.rnacounts.txt'</span>)                     <span class="co"># RNAseq counts</span>
-    <span class="fu"><a href="../reference/read_counts.html">read_counts</a></span>(<span class="kw">file</span>)
+    <span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span><span class="op">(</span><span class="st">'billing16.rnacounts.txt'</span><span class="op">)</span>                <span class="co"># RNAseq counts</span>
+    <span class="fu"><a href="../reference/read_counts.html">read_counts</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span>
         
-    <span class="kw">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span>(<span class="st">'glutaminase.metabolon.xlsx'</span>)                  <span class="co"># Metabolon xlsx</span>
-    <span class="fu"><a href="../reference/read_metabolon.html">read_metabolon</a></span>(<span class="kw">file</span>)
+    <span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span><span class="op">(</span><span class="st">'halama18.metabolon.xlsx'</span><span class="op">)</span>                <span class="co"># Metabolon xlsx</span>
+    <span class="fu"><a href="../reference/.read_metabolon.html">read_metabolon</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span>
     
-    <span class="kw">proteingroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span>(<span class="st">'differentiation.proteinGroups.txt'</span>)  <span class="co"># LCMSMS Proteingroups</span>
-    <span class="fu"><a href="../reference/read_proteingroups.html">read_proteingroups</a></span>(<span class="kw">proteingroups</span>)
+    <span class="va">rm_subgroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'BLANK_BM00'</span>, <span class="st">'BM00_BM00'</span>, <span class="st">'EM01_EM00'</span>, <span class="st">'EM05_EM02'</span>, <span class="st">'EM30_EM15'</span><span class="op">)</span>
+    <span class="va">proteingroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span><span class="op">(</span><span class="st">'billing19.proteingroups.txt'</span><span class="op">)</span>   <span class="co"># LCMSMS Proteingroups</span>
+    <span class="fu"><a href="../reference/read_proteingroups.html">read_proteingroups</a></span><span class="op">(</span><span class="va">proteingroups</span>, rm_subgroups <span class="op">=</span> <span class="va">rm_subgroups</span><span class="op">)</span>
     
-    <span class="kw">phosphosites</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span>(<span class="st">'differentiation.phosphoSites.txt'</span>)    <span class="co"># LCMSMS Phosphosites</span>
-    <span class="fu"><a href="../reference/read_proteingroups.html">read_phosphosites</a></span>(<span class="kw">phosphosites</span>, <span class="kw">proteingroupss</span>)
+    <span class="va">phosphosites</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span><span class="op">(</span><span class="st">'billing19.phosphosites.txt'</span><span class="op">)</span>     <span class="co"># LCMSMS Phosphosites</span>
+    <span class="fu"><a href="../reference/read_proteingroups.html">read_phosphosites</a></span><span class="op">(</span><span class="va">phosphosites</span>, <span class="va">proteingroups</span>, rm_subgroup <span class="op">=</span> <span class="va">rm_subgroups</span><span class="op">)</span>
     
-    <span class="kw">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span>(<span class="st">'hypoglycemia.somascan.adat'</span>)                  <span class="co"># SOMAscan adat</span>
-    <span class="fu"><a href="../reference/read_somascan.html">read_somascan</a></span>(<span class="kw">file</span>)
-</pre></div>
+    <span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span><span class="op">(</span><span class="st">'atkin18.somascan.adat'</span><span class="op">)</span>                  <span class="co"># SOMAscan adat</span>
+    <span class="fu"><a href="../reference/.read_somascan.html">read_somascan</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span></code></pre></div>
 <div id="read" class="section level1">
 <h1 class="hasAnchor">
 <a href="#read" class="anchor"></a>Read</h1>
@@ -159,14 +159,18 @@
 <h1 class="hasAnchor">
 <a href="#explore" class="anchor"></a>Explore</h1>
 <p>After these steps, the data is ready for statistical analysis. As a first analysis step, each of the importers plots the principal component analysis biplot. The subgroup extraction and decomposition in the previous step is used for coloring: the first subfactor is mapped to color hue and the second to luminance. This allows to get an easy-to-comprehend overview of the dataset, as shown below for the glutaminase dataset from Halama et al. (2018), which investigates the effect of different concentrations of glutaminase inhibitor (Untreated, Vehicle, 5 uM, 10 uM) at different time points (10h, 24h, 48h, 72h)</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">require</a></span>(<span class="kw"><a href="https://bitbucket.org/graumannlabtools/autonomics">importomics</a></span>, quietly = <span class="fl">TRUE</span>)
-<span class="kw">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span>(<span class="st">'glutaminase.metabolon.xlsx'</span>)
-<span class="kw">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_metabolon.html">read_metabolon</a></span>(<span class="kw">file</span>) 
-<span class="co">##  Read: ~/importomicscache/datasets/glutaminase/glutaminase.metabolon.xlsx</span>
-<span class="co">##      Guess replicate values from sampleids: UT_h10_R1 =&gt; R1</span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va"><a href="https://bitbucket.org/graumannlabtools/autonomics">importomics</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+<span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/download_data.html">download_data</a></span><span class="op">(</span><span class="st">'halama18.metabolon.xlsx'</span><span class="op">)</span>
+<span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/.read_metabolon.html">read_metabolon</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span> 
+<span class="co">##  Read: ~/importomicscache/datasets/halama18/halama18.metabolon.xlsx</span>
+<span class="co">##      Infer design from sample_ids</span>
+<span class="co">##      Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span>
 <span class="co">##      Log2 transform</span>
-</pre></div>
+<span class="co">##  Add PCA</span>
+<span class="co">##      Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span>
+<span class="co">##      Run limma</span>
+<span class="co">##      Retain 96/96 samples: ~!is.na(~subgroup)</span></code></pre></div>
 <p><img src="using_importomics_files/figure-html/unnamed-chunk-3-1.png" width="95%"></p>
 </div>
 <div id="transform" class="section level1">

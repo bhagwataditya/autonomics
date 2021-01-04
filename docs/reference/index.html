@@ -79,7 +79,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -140,9 +140,9 @@
       <tr>
         
         <td>
-          <p><code><a href="aggregate_contrasts.html">aggregate_contrasts()</a></code> </p>
+          <p><code><a href="add_limma.html">add_limma()</a></code> </p>
         </td>
-        <td><p>Aggregate contrasts</p></td>
+        <td><p>Contrast</p></td>
       </tr><tr>
         
         <td>
@@ -158,7 +158,7 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="biplot.html">plot_biplot()</a></code> <code><a href="biplot.html">biplot()</a></code> </p>
+          <p><code><a href="biplot.html">biplot()</a></code> <code><a href="biplot.html">plot_biplot()</a></code> </p>
         </td>
         <td><p>Biplot</p></td>
       </tr><tr>
@@ -176,9 +176,21 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="contrastdefs.html">contrastdefs()</a></code> <code><a href="contrastdefs.html">`contrastdefs&lt;-`()</a></code> <code><a href="contrastdefs.html">set_contrastdefs()</a></code> </p>
+          <p><code><a href="center.html">center()</a></code> </p>
         </td>
-        <td><p>Get/Set contrast definitions</p></td>
+        <td><p>Center samples</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="contrastdefs.html">contrastdefs()</a></code> <code><a href="contrastdefs.html">`contrastdefs&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/set contrastdefs</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="contrast_subgroup_cols.html">contrast_subgroup_cols()</a></code> <code><a href="contrast_subgroup_cols.html">contrast_subgroup_rows()</a></code> </p>
+        </td>
+        <td><p>Row/Col contrasts</p></td>
       </tr><tr>
         
         <td>
@@ -188,21 +200,21 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="create_design.html">create_design()</a></code> <code><a href="create_design.html">create_design_matrix()</a></code> </p>
+          <p><code><a href="create_design.html">create_design()</a></code> </p>
         </td>
         <td><p>Create design</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="default_contrasts.html">default_contrasts()</a></code> </p>
-        </td>
-        <td><p>Default contrasts</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="demultiplex.html">demultiplex()</a></code> </p>
         </td>
         <td><p>Demultiplex snames</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="designmat.html">designmat()</a></code> <code><a href="designmat.html">`designmat&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/set design matrix</p></td>
       </tr><tr>
         
         <td>
@@ -266,6 +278,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="filter_replicated.html">filter_replicated()</a></code> </p>
+        </td>
+        <td><p>Filter for replicated features</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="filter_samples.html">filter_samples()</a></code> </p>
         </td>
         <td><p>Filter samples on condition</p></td>
@@ -314,15 +332,21 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="halfnormimpute.html">halfnormimpute()</a></code> <code><a href="halfnormimpute.html">zeroimpute()</a></code> </p>
+          <p><code><a href="halfnormimpute.html">normimpute()</a></code> <code><a href="halfnormimpute.html">halfnormimpute()</a></code> <code><a href="halfnormimpute.html">zeroimpute()</a></code> </p>
         </td>
-        <td><p>Random draw from half-normal distribution</p></td>
+        <td><p>Impute from half-normal distribution around 0</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="impute_systematic_nondetects.html">impute_systematic_nondetects()</a></code> </p>
         </td>
         <td><p>Impute systematic nondetects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="inf_to_na.html">inf_to_na()</a></code> </p>
+        </td>
+        <td><p>Convert Inf to NA</p></td>
       </tr><tr>
         
         <td>
@@ -350,9 +374,45 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="make_volcano_dt.html">make_volcano_dt()</a></code> </p>
+        </td>
+        <td><p>Create volcano datatable</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="matrix2sumexp.html">matrix2sumexp()</a></code> </p>
+        </td>
+        <td><p>Convert matrix into SummarizedExperiment</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="MAXQUANT_PATTERNS.html">MAXQUANT_PATTERNS</a></code> </p>
         </td>
         <td><p>maxquant patterns</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="merge_sdata.html">merge_fdata()</a></code> <code><a href="merge_sdata.html">merge_sdata()</a></code> </p>
+        </td>
+        <td><p>Merge sample/feature data</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="minusinf_to_na.html">minusinf_to_na()</a></code> </p>
+        </td>
+        <td><p>Convert -Inf to NA</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="nan_to_na.html">nan_to_na()</a></code> </p>
+        </td>
+        <td><p>Convert NaN to NA</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="na_to_zero.html">na_to_zero()</a></code> </p>
+        </td>
+        <td><p>Convert NA to zero</p></td>
       </tr><tr>
         
         <td>
@@ -364,7 +424,13 @@
         <td>
           <p><code><a href="pca.html">pca()</a></code> <code><a href="pca.html">sma()</a></code> <code><a href="pca.html">lda()</a></code> <code><a href="pca.html">pls()</a></code> </p>
         </td>
-        <td><p>Add PCA, SMA, LDA, or PLS</p></td>
+        <td><p>Add PCA, SMA, LDA, PLS</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_boxplots.html">plot_boxplots()</a></code> <code><a href="plot_boxplots.html">plot_sample_boxplots()</a></code> <code><a href="plot_boxplots.html">plot_feature_boxplots()</a></code> <code><a href="plot_boxplots.html">plot_subgroup_boxplots()</a></code> </p>
+        </td>
+        <td><p>Plot sample/feature boxplots</p></td>
       </tr><tr>
         
         <td>
@@ -380,13 +446,19 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_detects.html">plot_detects()</a></code> </p>
+          <p><code><a href="plot_densities.html">plot_densities()</a></code> <code><a href="plot_densities.html">plot_sample_densities()</a></code> <code><a href="plot_densities.html">plot_feature_densities()</a></code> </p>
         </td>
-        <td><p>Plot detects</p></td>
+        <td><p>Plot sample/feature densities</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_features.html">plot_features()</a></code> <code><a href="plot_features.html">plot_feature_boxplots()</a></code> <code><a href="plot_features.html">plot_feature_profiles()</a></code> </p>
+          <p><code><a href="plot_detections.html">plot_detects()</a></code> <code><a href="plot_detections.html">plot_detections()</a></code> <code><a href="plot_detections.html">plot_quantifications()</a></code> <code><a href="plot_detections.html">plot_summarized_detections()</a></code> </p>
+        </td>
+        <td><p>Plot detections</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plot_features.html">plot_features()</a></code> <code><a href="plot_features.html">plot_feature_profiles()</a></code> </p>
         </td>
         <td><p>Plot features</p></td>
       </tr><tr>
@@ -398,21 +470,15 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_sample_boxplots.html">plot_sample_boxplots()</a></code> </p>
+          <p><code><a href="plot_violins.html">plot_violins()</a></code> <code><a href="plot_violins.html">plot_sample_violins()</a></code> <code><a href="plot_violins.html">plot_feature_violins()</a></code> <code><a href="plot_violins.html">plot_subgroup_violins()</a></code> </p>
         </td>
-        <td><p>Plot sample boxplots</p></td>
+        <td><p>Plot sample/feature violins</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_sample_densities.html">plot_sample_densities()</a></code> </p>
+          <p><code><a href="plot_volcano.html">plot_volcano()</a></code> </p>
         </td>
-        <td><p>Plot sample densities</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_sample_violins.html">plot_sample_violins()</a></code> </p>
-        </td>
-        <td><p>Plot sample violins</p></td>
+        <td><p>Plot volcano</p></td>
       </tr><tr>
         
         <td>
@@ -424,7 +490,7 @@
         <td>
           <p><code><a href="read_bam.html">read_bam()</a></code> </p>
         </td>
-        <td><p>Read RNAseq BAM files into SummarizedExperiment</p></td>
+        <td><p>Read RNAseq SAM/BAM files into SummarizedExperiment</p></td>
       </tr><tr>
         
         <td>
@@ -434,7 +500,7 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="read_metabolon.html">read_metabolon()</a></code> </p>
+          <p><code><a href="read_metabolon.html">.read_metabolon()</a></code> <code><a href="read_metabolon.html">read_metabolon()</a></code> </p>
         </td>
         <td><p>Read metabolon</p></td>
       </tr><tr>
@@ -452,7 +518,7 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="read_somascan.html">read_somascan()</a></code> </p>
+          <p><code><a href="read_somascan.html">.read_somascan()</a></code> <code><a href="read_somascan.html">read_somascan()</a></code> </p>
         </td>
         <td><p>Read somascan</p></td>
       </tr><tr>
@@ -482,9 +548,27 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="split_extract.html">nfactors()</a></code> <code><a href="split_extract.html">split_extract()</a></code> </p>
+        </td>
+        <td><p>stri_split and extract</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="standardize_maxquant_snames.html">standardize_maxquant_snames()</a></code> </p>
         </td>
         <td><p>Standardize maxquant snames</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="subgroup_matrix.html">subgroup_array()</a></code> <code><a href="subgroup_matrix.html">subgroup_matrix()</a></code> </p>
+        </td>
+        <td><p>Get subgroup matrix</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="sumexp2mae.html">sumexp2mae()</a></code> </p>
+        </td>
+        <td><p>Create MultiAssayExperiment from SummarizedExperiment list</p></td>
       </tr><tr>
         
         <td>
@@ -515,6 +599,12 @@
           <p><code><a href="weights.html">weights()</a></code> <code><a href="weights.html">`weights&lt;-`()</a></code> </p>
         </td>
         <td><p>Get/Set weights</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="zero_to_na.html">zero_to_na()</a></code> </p>
+        </td>
+        <td><p>Switch between nondetect representations</p></td>
       </tr>
     </tbody>
     </table>

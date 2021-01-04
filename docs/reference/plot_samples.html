@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,15 +124,14 @@
     <p>Plots sample densities and scores</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_samples</span>(
-  <span class='kw'>object</span>,
-  x = <span class='kw'>pca1</span>,
-  y = <span class='kw'>pca2</span>,
-  color = <span class='kw'>subgroup</span>,
-  nloadings = <span class='fl'>0</span>,
-  <span class='kw'>...</span>,
-  plot = <span class='fl'>TRUE</span>
-)</pre>
+    <pre class="usage"><span class='fu'>plot_samples</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  x <span class='op'>=</span> <span class='va'>pca1</span>,
+  y <span class='op'>=</span> <span class='va'>pca2</span>,
+  color <span class='op'>=</span> <span class='va'>subgroup</span>,
+  nloadings <span class='op'>=</span> <span class='fl'>0</span>,
+  plot <span class='op'>=</span> <span class='cn'>TRUE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -154,21 +153,36 @@
       <td><p>svar mapped to biplot color and density fill</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>passed to plot_data</p></td>
+      <th>nloadings</th>
+      <td><p>n loadings added to plot</p></td>
+    </tr>
+    <tr>
+      <th>plot</th>
+      <td><p>whether to print plot</p></td>
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>gtable returned by <code><a href='https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html'>arrangeGrob</a></code></p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'halama18.metabolon.xlsx'</span>)
-<span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_metabolon.html'>read_metabolon</a></span>(<span class='kw'>file</span>, plot = <span class='fl'>FALSE</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: UT_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='input'><span class='fu'>plot_samples</span>(<span class='kw'>object</span>)
-</div><div class='img'><img src='plot_samples-1.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'fukuda20.proteingroups.txt'</span>)
-<span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span>(<span class='kw'>file</span>, plot = <span class='fl'>FALSE</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/fukuda20/fukuda20.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 188 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: LFQ intensity 30dpt_1  -&gt;  30dpt_1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/fukuda20/fukuda20.proteingroups.LFQ.intensity.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6/6 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 15654/41112 values (in NA/6852 features and 6/6 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6735/6852 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6692/6735 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6583/6692 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/6583 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/4428 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='input'><span class='fu'>plot_samples</span>(<span class='kw'>object</span>)
-</div><div class='img'><img src='plot_samples-2.png' alt='' width='700' height='433' /></div></pre>
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>plot_samples</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Retain 96/96 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='plot_samples-1.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; TableGrob (1 x 3) "arrange": 3 grobs
+#&gt;   z     cells    name              grob
+#&gt; 1 1 (1-1,1-1) arrange gtable[guide-box]
+#&gt; 2 2 (1-1,2-2) arrange   gtable[arrange]
+#&gt; 3 3 (1-1,3-3) arrange    gtable[layout]</div><div class='input'>
+<span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/fukuda20/fukuda20.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 376 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: LFQ intensity dpt30_1  -&gt;  dpt30_1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/fukuda20/fukuda20.proteingroups.LFQ.intensity.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 15654/41112 values (in 3998/6852 features and 6/6 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6735/6852 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6692/6735 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6583/6692 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/6583 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/4428 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>		Impute systematic nondetects for 806/4428 features in 6/6 samples</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 4428/4428 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>plot_samples</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Retain 6/6 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='plot_samples-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt; TableGrob (1 x 3) "arrange": 3 grobs
+#&gt;   z     cells    name              grob
+#&gt; 1 1 (1-1,1-1) arrange gtable[guide-box]
+#&gt; 2 2 (1-1,2-2) arrange   gtable[arrange]
+#&gt; 3 3 (1-1,3-3) arrange    gtable[layout]</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

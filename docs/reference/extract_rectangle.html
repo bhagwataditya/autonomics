@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,39 +124,39 @@
     <p>Extract rectangle from omics file, data.table, or matrix</p>
     </div>
 
-    <pre class="usage"><span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, <span class='kw'>...</span>)
+    <pre class="usage"><span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for character</span>
-<span class='fu'>extract_rectangle</span>(
-  <span class='kw'>x</span>,
-  rows = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'>nrows</span>(<span class='kw'>x</span>, sheet = <span class='kw'>sheet</span>)),
-  cols = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'>ncols</span>(<span class='kw'>x</span>, sheet = <span class='kw'>sheet</span>)),
-  verbose = <span class='fl'>FALSE</span>,
-  transpose = <span class='fl'>FALSE</span>,
-  drop = <span class='fl'>FALSE</span>,
-  sheet = <span class='fl'>1</span>,
-  <span class='kw'>...</span>
-)
+<span class='fu'>extract_rectangle</span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  rows <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fu'>nrows</span><span class='op'>(</span><span class='va'>x</span>, sheet <span class='op'>=</span> <span class='va'>sheet</span><span class='op'>)</span><span class='op'>)</span>,
+  cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fu'>ncols</span><span class='op'>(</span><span class='va'>x</span>, sheet <span class='op'>=</span> <span class='va'>sheet</span><span class='op'>)</span><span class='op'>)</span>,
+  verbose <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  transpose <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  drop <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  sheet <span class='op'>=</span> <span class='fl'>1</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span>
 
 <span class='co'># S3 method for data.table</span>
-<span class='fu'>extract_rectangle</span>(
-  <span class='kw'>x</span>,
-  rows = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span>(<span class='kw'>x</span>)),
-  cols = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>ncol</a></span>(<span class='kw'>x</span>)),
-  transpose = <span class='fl'>FALSE</span>,
-  drop = <span class='fl'>FALSE</span>,
-  <span class='kw'>...</span>
-)
+<span class='fu'>extract_rectangle</span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  rows <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span>,
+  cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>ncol</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span>,
+  transpose <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  drop <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span>
 
 <span class='co'># S3 method for matrix</span>
-<span class='fu'>extract_rectangle</span>(
-  <span class='kw'>x</span>,
-  rows = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span>(<span class='kw'>x</span>)),
-  cols = <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>ncol</a></span>(<span class='kw'>x</span>)),
-  transpose = <span class='fl'>FALSE</span>,
-  drop = <span class='fl'>FALSE</span>,
-  <span class='kw'>...</span>
-)</pre>
+<span class='fu'>extract_rectangle</span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  rows <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span>,
+  cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>ncol</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span>,
+  transpose <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  drop <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -203,71 +203,71 @@
     <pre class="examples"><div class='input'><span class='co'># FROM FILE: extract_rectangle.character</span>
 <span class='co'>#=======================================</span>
 <span class='co'># exprs</span>
-   <span class='fu'><a href='https://rdrr.io/r/base/library.html'>require</a></span>(<span class='kw'>magrittr</span>)
-   <span class='kw'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'halama18.metabolon.xlsx'</span>)
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet = <span class='fl'>2</span>) <span class='op'>%&gt;%</span>
-   <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
+   <span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
+   <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols <span class='op'>=</span> <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+   <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;            V1       V2       V3
 #&gt; [1,]   521506   686519   416956
 #&gt; [2,] 30118532 42668528 16990806
 #&gt; [3,]  3225116  4539651  1398753</div><div class='input'>
 <span class='co'># fids</span>
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols = <span class='fl'>5</span>, sheet = <span class='fl'>2</span>)     <span class='op'>%&gt;%</span>
-   <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, )
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols <span class='op'>=</span> <span class='fl'>5</span>, sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>     <span class='op'>%&gt;%</span>
+   <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] 52603 52457 52609</div><div class='input'>
 <span class='co'># sids</span>
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>2</span>, cols = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet = <span class='fl'>2</span>)      <span class='op'>%&gt;%</span>
-   <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(,<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>2</span>, cols <span class='op'>=</span> <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>      <span class='op'>%&gt;%</span>
+   <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span>,<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;      V1      V2      V3 
 #&gt; 2839692 2839693 2839694 </div><div class='input'>
 <span class='co'># fdata</span>
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>10</span><span class='op'>:</span><span class='fl'>401</span>, cols = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>14</span>,  sheet = <span class='fl'>2</span>) <span class='op'>%&gt;%</span>
-   <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>10</span><span class='op'>:</span><span class='fl'>401</span>, cols <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>14</span>,  sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+   <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;      V1                  V2                                V3             
 #&gt; [1,] "PATHWAY_SORTORDER" "BIOCHEMICAL"                     "SUPER_PATHWAY"
 #&gt; [2,] "1575"              "1,2-dilinoleoyl-GPC (18:2/18:2)" "Lipid"        
 #&gt; [3,] "1514"              "1,2-dioleoyl-GPC (18:1/18:1)*"   "Lipid"        </div><div class='input'>
 <span class='co'># sdata</span>
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,   cols = <span class='fl'>14</span><span class='op'>:</span><span class='fl'>86</span>, sheet = <span class='fl'>2</span>,
-   transpose = <span class='fl'>TRUE</span>) <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,   cols <span class='op'>=</span> <span class='fl'>14</span><span class='op'>:</span><span class='fl'>86</span>, sheet <span class='op'>=</span> <span class='fl'>2</span>,
+   transpose <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;    [,1]          [,2]        [,3]               
 #&gt; V1 "SAMPLE_NAME" "SAMPLE_ID" "CLIENT_IDENTIFIER"
-#&gt; V2 "WCQA-06197"  "2839692"   "UT_h10_R1"        
-#&gt; V3 "WCQA-06198"  "2839693"   "UT_h10_R2"        </div><div class='input'>
+#&gt; V2 "WCQA-06197"  "2839692"   "ctrl_h10_R1"      
+#&gt; V3 "WCQA-06198"  "2839693"   "ctrl_h10_R2"      </div><div class='input'>
 <span class='co'># FROM MATRIX: extract_rectangle.matrix</span>
 <span class='co'>#======================================</span>
 <span class='co'># exprs</span>
-   <span class='kw'>x</span> <span class='op'>&lt;-</span><span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'halama18.metabolon.xlsx'</span>) <span class='op'>%&gt;%</span>
-       <span class='fu'>extract_rectangle</span>(sheet = <span class='fl'>2</span>)
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet = <span class='fl'>2</span>) <span class='op'>%&gt;%</span>
-   <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
+   <span class='va'>x</span> <span class='op'>&lt;-</span><span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+       <span class='fu'>extract_rectangle</span><span class='op'>(</span>sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols <span class='op'>=</span> <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+   <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;      V15        V16        V17       
 #&gt; [1,] "521506"   "686519"   "416956"  
 #&gt; [2,] "30118532" "42668528" "16990806"
 #&gt; [3,] "3225116"  "4539651"  "1398753" </div><div class='input'>
 <span class='co'># fids</span>
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols = <span class='fl'>5</span>,     sheet = <span class='fl'>2</span>) <span class='op'>%&gt;%</span>
-   <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, )
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>11</span><span class='op'>:</span><span class='fl'>401</span>, cols <span class='op'>=</span> <span class='fl'>5</span>,     sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+   <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "52603" "52457" "52609"</div><div class='input'>
 <span class='co'># sids</span>
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>2</span>,      cols = <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet = <span class='fl'>2</span>) <span class='op'>%&gt;%</span>
-   <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(,<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>2</span>,      cols <span class='op'>=</span> <span class='fl'>15</span><span class='op'>:</span><span class='fl'>86</span>, sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+   <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span>,<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;       V15       V16       V17 
 #&gt; "2839692" "2839693" "2839694" </div><div class='input'>
 <span class='co'># fdata</span>
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>10</span><span class='op'>:</span><span class='fl'>401</span>, cols = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>14</span>,  sheet = <span class='fl'>2</span>) <span class='op'>%&gt;%</span>
-   <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>10</span><span class='op'>:</span><span class='fl'>401</span>, cols <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>14</span>,  sheet <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+   <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;      V1                  V2                                V3             
 #&gt; [1,] "PATHWAY_SORTORDER" "BIOCHEMICAL"                     "SUPER_PATHWAY"
 #&gt; [2,] "1575"              "1,2-dilinoleoyl-GPC (18:2/18:2)" "Lipid"        
 #&gt; [3,] "1514"              "1,2-dioleoyl-GPC (18:1/18:1)*"   "Lipid"        </div><div class='input'>
 <span class='co'># sdata</span>
-   <span class='fu'>extract_rectangle</span>(<span class='kw'>x</span>, rows = <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,   cols = <span class='fl'>14</span><span class='op'>:</span><span class='fl'>86</span>, sheet = <span class='fl'>2</span>,
-   transpose = <span class='fl'>TRUE</span>) <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/pkg/magrittr/man/aliases.html'>extract</a></span>(<span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>)
+   <span class='fu'>extract_rectangle</span><span class='op'>(</span><span class='va'>x</span>, rows <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span>,   cols <span class='op'>=</span> <span class='fl'>14</span><span class='op'>:</span><span class='fl'>86</span>, sheet <span class='op'>=</span> <span class='fl'>2</span>,
+   transpose <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;     [,1]          [,2]        [,3]               
 #&gt; V14 "SAMPLE_NAME" "SAMPLE_ID" "CLIENT_IDENTIFIER"
-#&gt; V15 "WCQA-06197"  "2839692"   "UT_h10_R1"        
-#&gt; V16 "WCQA-06198"  "2839693"   "UT_h10_R2"        </div></pre>
+#&gt; V15 "WCQA-06197"  "2839692"   "ctrl_h10_R1"      
+#&gt; V16 "WCQA-06198"  "2839693"   "ctrl_h10_R2"      </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

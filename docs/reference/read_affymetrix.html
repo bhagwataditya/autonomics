@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,7 +124,7 @@
     <p>Read affymetrix microarray</p>
     </div>
 
-    <pre class="usage"><span class='fu'>read_affymetrix</span>(<span class='kw'>celfiles</span>)</pre>
+    <pre class="usage"><span class='fu'>read_affymetrix</span><span class='op'>(</span><span class='va'>celfiles</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -140,33 +140,20 @@
     <p>RangedSummarizedExperiment</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>require</a></span>(<span class='kw'>magrittr</span>)
-<span class='kw'>url</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span>(<span class='st'>'http://www.bioconductor.org/help/publications/2003/'</span>,
-                <span class='st'>'Chiaretti/chiaretti2/T33.tgz'</span>)
-<span class='kw'>localfile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span>(<span class='st'>'~/importomicscache'</span>, <span class='fu'><a href='https://rdrr.io/r/base/basename.html'>basename</a></span>(<span class='kw'>url</span>))
-<span class='co'>if</span> (<span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/files.html'>file.exists</a></span>(<span class='kw'>localfile</span>)){
-    <span class='fu'><a href='https://rdrr.io/r/utils/download.file.html'>download.file</a></span>(<span class='kw'>url</span>, destfile = <span class='kw'>localfile</span>)
-    <span class='fu'><a href='https://rdrr.io/r/utils/untar.html'>untar</a></span>(<span class='kw'>localfile</span>, exdir = <span class='fu'><a href='https://rdrr.io/r/base/path.expand.html'>path.expand</a></span>(<span class='st'>'~/importomicscache'</span>))
-}
-<span class='kw'>localfile</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/substr.html'>substr</a></span>(<span class='fl'>1</span>, <span class='fu'><a href='https://rdrr.io/r/base/nchar.html'>nchar</a></span>(<span class='kw'>.</span>)<span class='op'>-</span><span class='fl'>4</span>)
-<span class='co'>if</span> (<span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span>(<span class='st'>"BiocManager"</span>, quietly = <span class='fl'>TRUE</span>)){
-    <span class='fu'><a href='https://rdrr.io/r/utils/install.packages.html'>install.packages</a></span>(<span class='st'>'BiocManager'</span>)
-}
-<span class='kw'>BiocManager</span>::<span class='fu'><a href='https://rdrr.io/pkg/BiocManager/man/install.html'>install</a></span>(<span class='st'>'hgu95av2.db'</span>)
-</div><div class='output co'>#&gt; <span class='message'>Bioconductor version 3.11 (BiocManager 1.30.10), R 4.0.2 (2020-06-22)</span></div><div class='output co'>#&gt; <span class='message'>Installing package(s) 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>installing the source package 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>Installation path not writeable, unable to update packages: codetools,</span>
-#&gt; <span class='message'>  KernSmooth, MASS, mgcv, nlme, survival</span></div><div class='output co'>#&gt; <span class='message'>Old packages: 'ade4', 'affyio', 'backports', 'Biobase', 'BiocParallel',</span>
-#&gt; <span class='message'>  'BiocStyle', 'biomaRt', 'Biostrings', 'bit64', 'bookdown', 'callr', 'cli',</span>
-#&gt; <span class='message'>  'clipr', 'colorspace', 'covr', 'cpp11', 'data.table', 'dbplyr',</span>
-#&gt; <span class='message'>  'DelayedArray', 'devtools', 'diagram', 'digest', 'downlit', 'DT', 'ellipsis',</span>
-#&gt; <span class='message'>  'ff', 'fields', 'foreach', 'Formula', 'generics', 'GenomicAlignments',</span>
-#&gt; <span class='message'>  'GenomicRanges', 'glue', 'htmlTable', 'htmlwidgets', 'igraph', 'IRanges',</span>
-#&gt; <span class='message'>  'iterators', 'karyoploteR', 'knitr', 'labeling', 'limma', 'magick',</span>
-#&gt; <span class='message'>  'matrixStats', 'mixOmics', 'openssl', 'preprocessCore', 'ps', 'R6', 'ragg',</span>
-#&gt; <span class='message'>  'Rcpp', 'RcppArmadillo', 'reticulate', 'rlang', 'rmarkdown', 'Rsamtools',</span>
-#&gt; <span class='message'>  'RSQLite', 'rstudioapi', 'Rsubread', 'rtracklayer', 'S4Vectors', 'sandwich',</span>
-#&gt; <span class='message'>  'segmented', 'seqinr', 'sp', 'stringdist', 'stringi', 'systemfonts',</span>
-#&gt; <span class='message'>  'testthat', 'tibble', 'tinytex', 'usethis', 'withr', 'xfun', 'XML',</span>
-#&gt; <span class='message'>  'XVector', 'zlibbioc'</span></div><div class='input'><span class='fu'>read_affymetrix</span>(celfiles = <span class='fu'><a href='https://rdrr.io/r/base/list.files.html'>list.files</a></span>(<span class='kw'>localfile</span>, full.names = <span class='fl'>TRUE</span>))
+    <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
+<span class='va'>url</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='st'>'http://www.bioconductor.org/help/publications/2003/'</span>,
+                <span class='st'>'Chiaretti/chiaretti2/T33.tgz'</span><span class='op'>)</span>
+<span class='va'>localfile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='st'>'~/importomicscache'</span>, <span class='fu'><a href='https://rdrr.io/r/base/basename.html'>basename</a></span><span class='op'>(</span><span class='va'>url</span><span class='op'>)</span><span class='op'>)</span>
+<span class='kw'>if</span> <span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/files.html'>file.exists</a></span><span class='op'>(</span><span class='va'>localfile</span><span class='op'>)</span><span class='op'>)</span><span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/r/utils/download.file.html'>download.file</a></span><span class='op'>(</span><span class='va'>url</span>, destfile <span class='op'>=</span> <span class='va'>localfile</span><span class='op'>)</span>
+    <span class='fu'><a href='https://rdrr.io/r/utils/untar.html'>untar</a></span><span class='op'>(</span><span class='va'>localfile</span>, exdir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/path.expand.html'>path.expand</a></span><span class='op'>(</span><span class='st'>'~/importomicscache'</span><span class='op'>)</span><span class='op'>)</span>
+<span class='op'>}</span>
+<span class='va'>localfile</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/substr.html'>substr</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fu'><a href='https://rdrr.io/r/base/nchar.html'>nchar</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span><span class='op'>-</span><span class='fl'>4</span><span class='op'>)</span>
+<span class='kw'>if</span> <span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span><span class='op'>(</span><span class='st'>"BiocManager"</span>, quietly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span><span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/r/utils/install.packages.html'>install.packages</a></span><span class='op'>(</span><span class='st'>'BiocManager'</span><span class='op'>)</span>
+<span class='op'>}</span>
+<span class='fu'>BiocManager</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/BiocManager/man/install.html'>install</a></span><span class='op'>(</span><span class='st'>'hgu95av2.db'</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>Bioconductor version 3.12 (BiocManager 1.30.10), R 4.0.3 (2020-10-10)</span></div><div class='output co'>#&gt; <span class='message'>Installing package(s) 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>installing the source package 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>Installation path not writeable, unable to update packages: foreign, Matrix</span></div><div class='output co'>#&gt; <span class='message'>Old packages: 'cowplot', 'data.table', 'ggplot2', 'rlang'</span></div><div class='input'><span class='fu'>read_affymetrix</span><span class='op'>(</span>celfiles <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.files.html'>list.files</a></span><span class='op'>(</span><span class='va'>localfile</span>, full.names <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='message'>Read Affymetrix CEL files: 01003.CEL, ...</span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; </div><div class='output co'>#&gt; class: RangedSummarizedExperiment 
 #&gt; dim: 12625 33 
 #&gt; metadata(3): experimentData annotation protocolData

@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,24 +124,23 @@
     <p>Convert SummarizedExperiment into data.table</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sumexp_to_wide_dt</span>(
-  <span class='kw'>object</span>,
-  fid = <span class='st'>"feature_id"</span>,
-  fvars = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
-  assay = <span class='st'>"exprs"</span>
-)
+    <pre class="usage"><span class='fu'>sumexp_to_wide_dt</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  fid <span class='op'>=</span> <span class='st'>"feature_id"</span>,
+  fvars <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/setops.html'>intersect</a></span><span class='op'>(</span><span class='st'>"feature_name"</span>, <span class='fu'>importomics</span><span class='fu'>::</span><span class='fu'><a href='fvars.html'>fvars</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>,
+  assay <span class='op'>=</span> <span class='st'>"exprs"</span>
+<span class='op'>)</span>
 
-<span class='fu'>sumexp_to_long_dt</span>(
-  <span class='kw'>object</span>,
-  fid = <span class='st'>"feature_id"</span>,
-  fvars = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
-  sid = <span class='st'>"sample_id"</span>,
-  svars = <span class='co'>if</span> (<span class='st'>"subgroup"</span> <span class='op'>%in%</span> <span class='kw'>importomics</span>::<span class='fu'><a href='svars.html'>svars</a></span>(<span class='kw'>object</span>)) {     <span class='st'>"subgroup"</span> } <span class='co'>else</span> {  
-      <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>) },
-  assay = <span class='st'>"exprs"</span>
-)
+<span class='fu'>sumexp_to_long_dt</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  fid <span class='op'>=</span> <span class='st'>"feature_id"</span>,
+  fvars <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/setops.html'>intersect</a></span><span class='op'>(</span><span class='st'>"feature_name"</span>, <span class='fu'>importomics</span><span class='fu'>::</span><span class='fu'><a href='fvars.html'>fvars</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>,
+  sid <span class='op'>=</span> <span class='st'>"sample_id"</span>,
+  svars <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/setops.html'>intersect</a></span><span class='op'>(</span><span class='st'>"subgroup"</span>, <span class='fu'>importomics</span><span class='fu'>::</span><span class='fu'><a href='svars.html'>svars</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>,
+  assay <span class='op'>=</span> <span class='st'>"exprs"</span>
+<span class='op'>)</span>
 
-<span class='fu'>sumexp_to_subrep_dt</span>(<span class='kw'>object</span>)</pre>
+<span class='fu'>sumexp_to_subrep_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -157,6 +156,10 @@
     <tr>
       <th>fvars</th>
       <td><p>additional fvars to include in table</p></td>
+    </tr>
+    <tr>
+      <th>assay</th>
+      <td><p>matrix in assays(object) to be used</p></td>
     </tr>
     <tr>
       <th>sid</th>
@@ -183,183 +186,195 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># Stem cell comparison</span>
-    <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'billing16.proteingroups.txt'</span>)
-    <span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span>(<span class='kw'>file</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/billing16/billing16.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/billing16/billing16.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9/9 samples: ~!subgroup %in% rm_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7156/7877 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='img'><img src='sumexp_to_long_dt-1.png' alt='' width='700' height='433' /></div><div class='input'>    <span class='fu'>sumexp_to_wide_dt</span>(<span class='kw'>object</span>)
-</div><div class='output co'>#&gt;       feature_id     EM_E.R1     BM_E.R1     BM_EM.R1     E_BM.R2    EM_BM.R2
-#&gt;    1:          0 -3.79748323 -3.01952130  0.135797512  3.08302610 -0.36421775
-#&gt;    2:          1 -0.25504672  0.23216954  0.471759742  0.36446037 -1.78667138
-#&gt;    3:          2 -0.33783097 -0.09578953  0.282024581 -0.32261354 -0.34422687
-#&gt;    4:          3  0.92941229  1.28486943  0.588132944 -0.73535548 -0.84718057
-#&gt;    5:          4  0.34891224  0.33159058  0.161823203  0.50039417 -0.90522344
-#&gt;   ---                                                                        
-#&gt; 7152:       8620  0.21747890 -0.11469116 -0.223676992 -1.50996392  0.17440642
-#&gt; 7153:       8621 -0.92779814 -0.70618224  0.009203827  1.35957739 -0.05713648
-#&gt; 7154:       8622  0.07244885  0.58890049  0.280362490 -0.08399733 -0.15169856
-#&gt; 7155:       8623  0.55846357  0.03745251 -0.509737951  0.53196778 -0.89665679
-#&gt; 7156:       8624  1.16722945  1.80900277  0.661293556 -1.47405142 -1.64805513
-#&gt;           EM_E.R2    BM_EM.R3     E_EM.R3    E_BM.R3
-#&gt;    1: -3.65433566 -0.08672185  2.57247741  2.6421239
-#&gt;    2: -1.88517991 -0.12173765 -0.36914725  0.1843438
-#&gt;    3:  0.01235413  0.11822681 -0.08681377 -0.2207151
-#&gt;    4:  0.21871918  0.58851677 -0.84339628 -1.2154793
-#&gt;    5: -1.30878746  0.52516685 -0.10238781  0.2242873
-#&gt;   ---                                               
-#&gt; 7152:  1.47969621 -0.10551979 -2.00179005 -1.7052411
-#&gt; 7153: -1.37650767 -0.42784763  1.28380327  1.6610655
-#&gt; 7154:  0.05658353 -0.19313980 -0.98279071 -0.3783443
-#&gt; 7155: -0.72225324 -0.35188434  0.62816700  1.4550181
-#&gt; 7156:  0.83979838  0.91808087 -0.97293090 -2.1073681</div><div class='input'>    <span class='fu'>sumexp_to_long_dt</span>(<span class='kw'>object</span>)
-</div><div class='output co'>#&gt;        feature_id sample_id subgroup       value
-#&gt;     1:          0   BM_E.R1     BM_E -3.01952130
-#&gt;     2:          1   BM_E.R1     BM_E  0.23216954
-#&gt;     3:          2   BM_E.R1     BM_E -0.09578953
-#&gt;     4:          3   BM_E.R1     BM_E  1.28486943
-#&gt;     5:          4   BM_E.R1     BM_E  0.33159058
-#&gt;    ---                                          
-#&gt; 64400:       8620   E_EM.R3     E_EM -2.00179005
-#&gt; 64401:       8621   E_EM.R3     E_EM  1.28380327
-#&gt; 64402:       8622   E_EM.R3     E_EM -0.98279071
-#&gt; 64403:       8623   E_EM.R3     E_EM  0.62816700
-#&gt; 64404:       8624   E_EM.R3     E_EM -0.97293090</div><div class='input'>    <span class='fu'>sumexp_to_subrep_dt</span>(<span class='kw'>object</span>)
-</div><div class='output co'>#&gt;        feature_id subgroup         R1         R2          R3
-#&gt;     1:          0     BM_E -3.0195213         NA          NA
-#&gt;     2:          0    BM_EM  0.1357975         NA -0.08672185
-#&gt;     3:          0    EM_BM         NA -0.3642178          NA
-#&gt;     4:          0     EM_E -3.7974832 -3.6543357          NA
-#&gt;     5:          0     E_BM         NA  3.0830261  2.64212392
+    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing16.proteingroups.txt'</span><span class='op'>)</span>
+    <span class='va'>invert_subgroups</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'EM_E'</span>, <span class='st'>'BM_E'</span>, <span class='st'>'EM_BM'</span><span class='op'>)</span>
+    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, invert_subgroups <span class='op'>=</span> <span class='va'>invert_subgroups</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/billing16/billing16.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/billing16/billing16.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Invert subgroups EM_E, BM_E, EM_BM</span></div><div class='output co'>#&gt; <span class='message'>			exprs    : -3.8 -&gt; 3.8</span></div><div class='output co'>#&gt; <span class='message'>			subgroups: EM_E -&gt; E_EM</span></div><div class='output co'>#&gt; <span class='message'>			sampleids: EM_E.R1 -&gt; E_EM.R1</span></div><div class='output co'>#&gt; <span class='message'>		Order on subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7165/7877 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7165/7165 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9/9 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='sumexp_to_long_dt-1.png' alt='' width='700' height='433' /></div><div class='input'>    <span class='fu'>sumexp_to_wide_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;       feature_id feature_name     BM_EM.R1    BM_EM.R2    BM_EM.R3     E_BM.R1
+#&gt;    1:          0        RBM47  0.135797512  0.36421775 -0.08672185  3.01952130
+#&gt;    2:          1        TTC26  0.471759742  1.78667138 -0.12173765 -0.23216954
+#&gt;    3:          2         UBA6  0.282024581  0.34422687  0.11822681  0.09578953
+#&gt;    4:          3        ESYT2  0.588132944  0.84718057  0.58851677 -1.28486943
+#&gt;    5:          4    UHRF1BP1L  0.161823203  0.90522344  0.52516685 -0.33159058
+#&gt;   ---                                                                         
+#&gt; 7161:       8620        ACIN1 -0.223676992 -0.17440642 -0.10551979  0.11469116
+#&gt; 7162:       8621         &lt;NA&gt;  0.009203827  0.05713648 -0.42784763  0.70618224
+#&gt; 7163:       8622         &lt;NA&gt;  0.280362490  0.15169856 -0.19313980 -0.58890049
+#&gt; 7164:       8623        RPS10 -0.509737951  0.89665679 -0.35188434 -0.03745251
+#&gt; 7165:       8624         &lt;NA&gt;  0.661293556  1.64805513  0.91808087 -1.80900277
+#&gt;           E_BM.R2    E_BM.R3     E_EM.R1     E_EM.R2     E_EM.R3
+#&gt;    1:  3.08302610  2.6421239  3.79748323  3.65433566  2.57247741
+#&gt;    2:  0.36446037  0.1843438  0.25504672  1.88517991 -0.36914725
+#&gt;    3: -0.32261354 -0.2207151  0.33783097 -0.01235413 -0.08681377
+#&gt;    4: -0.73535548 -1.2154793 -0.92941229 -0.21871918 -0.84339628
+#&gt;    5:  0.50039417  0.2242873 -0.34891224  1.30878746 -0.10238781
+#&gt;   ---                                                           
+#&gt; 7161: -1.50996392 -1.7052411 -0.21747890 -1.47969621 -2.00179005
+#&gt; 7162:  1.35957739  1.6610655  0.92779814  1.37650767  1.28380327
+#&gt; 7163: -0.08399733 -0.3783443 -0.07244885 -0.05658353 -0.98279071
+#&gt; 7164:  0.53196778  1.4550181 -0.55846357  0.72225324  0.62816700
+#&gt; 7165: -1.47405142 -2.1073681 -1.16722945 -0.83979838 -0.97293090</div><div class='input'>    <span class='fu'>sumexp_to_long_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;        feature_id feature_name sample_id subgroup      value
+#&gt;     1:          0        RBM47  BM_EM.R1    BM_EM  0.1357975
+#&gt;     2:          1        TTC26  BM_EM.R1    BM_EM  0.4717597
+#&gt;     3:          2         UBA6  BM_EM.R1    BM_EM  0.2820246
+#&gt;     4:          3        ESYT2  BM_EM.R1    BM_EM  0.5881329
+#&gt;     5:          4    UHRF1BP1L  BM_EM.R1    BM_EM  0.1618232
 #&gt;    ---                                                      
-#&gt; 42932:       8624    BM_EM  0.6612936         NA  0.91808087
-#&gt; 42933:       8624    EM_BM         NA -1.6480551          NA
-#&gt; 42934:       8624     EM_E  1.1672295  0.8397984          NA
-#&gt; 42935:       8624     E_BM         NA -1.4740514 -2.10736806
-#&gt; 42936:       8624     E_EM         NA         NA -0.97293090</div><div class='input'>
+#&gt; 64481:       8620        ACIN1   E_EM.R3     E_EM -2.0017901
+#&gt; 64482:       8621         &lt;NA&gt;   E_EM.R3     E_EM  1.2838033
+#&gt; 64483:       8622         &lt;NA&gt;   E_EM.R3     E_EM -0.9827907
+#&gt; 64484:       8623        RPS10   E_EM.R3     E_EM  0.6281670
+#&gt; 64485:       8624         &lt;NA&gt;   E_EM.R3     E_EM -0.9729309</div><div class='input'>    <span class='fu'>sumexp_to_subrep_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;        feature_id subgroup          R1         R2          R3
+#&gt;     1:          0    BM_EM  0.13579751  0.3642178 -0.08672185
+#&gt;     2:          0     E_BM  3.01952130  3.0830261  2.64212392
+#&gt;     3:          0     E_EM  3.79748323  3.6543357  2.57247741
+#&gt;     4:          1    BM_EM  0.47175974  1.7866714 -0.12173765
+#&gt;     5:          1     E_BM -0.23216954  0.3644604  0.18434378
+#&gt;    ---                                                       
+#&gt; 21491:       8623     E_BM -0.03745251  0.5319678  1.45501810
+#&gt; 21492:       8623     E_EM -0.55846357  0.7222532  0.62816700
+#&gt; 21493:       8624    BM_EM  0.66129356  1.6480551  0.91808087
+#&gt; 21494:       8624     E_BM -1.80900277 -1.4740514 -2.10736806
+#&gt; 21495:       8624     E_EM -1.16722945 -0.8397984 -0.97293090</div><div class='input'>
 <span class='co'># Glutaminase</span>
-   <span class='fu'><a href='https://rdrr.io/r/base/library.html'>require</a></span>(<span class='kw'>magrittr</span>)
-   <span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'halama18.metabolon.xlsx'</span>)
-   <span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_metabolon.html'>read_metabolon</a></span>(<span class='kw'>file</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: UT_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='img'><img src='sumexp_to_long_dt-2.png' alt='' width='700' height='433' /></div><div class='input'>   <span class='kw'>object</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='pca.html'>pca</a></span>()
-</div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='input'>   <span class='fu'>sumexp_to_wide_dt</span>(<span class='kw'>object</span>)
-</div><div class='output co'>#&gt;      feature_id UT_h10_R1 UT_h10_R2 UT_h10_R3 UT_h10_R4 UT_h10_R5 UT_h10_R6
-#&gt;   1:      52603  18.99232  19.38894  18.66954        NA  17.57336        NA
-#&gt;   2:      52457  24.84415  25.34667  24.01825  24.37881  24.88714  24.95678
-#&gt;   3:      52609  21.62092  22.11415  20.41571  21.07359  21.18091  21.36478
-#&gt;   4:      52619  18.90190  19.08920  17.88599  18.56502  18.48854  19.12532
-#&gt;   5:      52472  19.50494  20.18570  19.63676  20.19212  20.21933  20.36398
+   <span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
+   <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
+   <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='output co'>#&gt; <span class='message'>		Retain 96/96 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='sumexp_to_long_dt-2.png' alt='' width='700' height='433' /></div><div class='input'>   <span class='fu'>sumexp_to_wide_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;      feature_id                        feature_name ctrl_h10_R1 ctrl_h10_R2
+#&gt;   1:      52603     1,2-dilinoleoyl-GPC (18:2/18:2)    18.99232    19.38894
+#&gt;   2:      52457       1,2-dioleoyl-GPC (18:1/18:1)*    24.84415    25.34667
+#&gt;   3:      52609        1,2-dioleoyl-GPE (18:1/18:1)    21.62092    22.11415
+#&gt;   4:      52619        1,2-dioleoyl-GPI (18:1/18:1)    18.90190    19.08920
+#&gt;   5:      52472 1,2-dipalmitoleoyl-GPC (16:1/16:1)*    19.50494    20.18570
 #&gt;  ---                                                                       
-#&gt; 387:      52665  17.73917  17.89270  18.68912  18.09998  18.42879  18.84276
-#&gt; 388:      54831  29.14374  29.18713  29.27577  29.31881  29.27204  29.20039
-#&gt; 389:      54832  25.10165  24.94564  24.95739  25.05271  25.00798  24.80883
-#&gt; 390:      54834  23.96172  23.65238  23.01624  23.86981  23.77307  23.53884
-#&gt; 391:      54859  14.98406  14.54930  14.94741  15.46662  16.09119  15.42659
-#&gt;      Veh_h10_R1 Veh_h10_R2 Veh_h10_R3 Veh_h10_R4 Veh_h10_R5 Veh_h10_R6
-#&gt;   1:         NA   17.83332   18.69232   19.11015   18.28252   18.96979
-#&gt;   2:   25.21137   24.99833   24.65733   25.14916   24.22576   24.72163
-#&gt;   3:   22.48760   22.00183   21.05998   21.97687   20.54153   21.12701
-#&gt;   4:   19.31514   19.08490   18.71230   19.02706   18.53761   18.49486
-#&gt;   5:   20.28267   20.15711   19.93245   20.50204   19.94983   20.43843
-#&gt;  ---                                                                  
-#&gt; 387:   17.51745   18.23782   17.88105         NA   18.40894   18.18548
-#&gt; 388:   29.01047   29.08071   29.32354   28.99497   29.36413   29.22267
-#&gt; 389:   24.95512   24.88497   25.04240   24.73684   24.99641   24.85027
-#&gt; 390:   23.71740   23.63064   23.87586   23.46423   23.83065   23.60324
-#&gt; 391:   15.47659         NA   15.57722   15.52221   15.40111   14.82843
-#&gt;      uM05_h10_R1 uM05_h10_R2 uM05_h10_R3 uM05_h10_R4 uM05_h10_R5 uM05_h10_R6
-#&gt;   1:    19.19253    18.83181    18.76227          NA    18.88216    18.06259
-#&gt;   2:    24.76813    24.74257    24.70972    24.97715    24.93070    25.07501
-#&gt;   3:    21.61089    21.08502    21.25630    21.86545    21.63885    22.06022
-#&gt;   4:    19.35217    18.98534    18.90837    19.40726    18.82146    19.35514
-#&gt;   5:    20.23743    19.96098    19.99538    20.44566    19.82527    20.67043
+#&gt; 387:      52665                           X - 24435    17.73917    17.89270
+#&gt; 388:      54831                           X - 24803    29.14374    29.18713
+#&gt; 389:      54832                           X - 24804    25.10165    24.94564
+#&gt; 390:      54834                           X - 24806    23.96172    23.65238
+#&gt; 391:      54859                           X - 24831    14.98406    14.54930
+#&gt;      ctrl_h10_R3 ctrl_h10_R4 ctrl_h10_R5 ctrl_h10_R6 dmso_h10_R1 dmso_h10_R2
+#&gt;   1:    18.66954          NA    17.57336          NA          NA    17.83332
+#&gt;   2:    24.01825    24.37881    24.88714    24.95678    25.21137    24.99833
+#&gt;   3:    20.41571    21.07359    21.18091    21.36478    22.48760    22.00183
+#&gt;   4:    17.88599    18.56502    18.48854    19.12532    19.31514    19.08490
+#&gt;   5:    19.63676    20.19212    20.21933    20.36398    20.28267    20.15711
 #&gt;  ---                                                                        
-#&gt; 387:          NA    19.16983    18.85428    18.60408    18.85497    18.56613
-#&gt; 388:    29.17441    29.32297    29.24205    29.07805    29.28723    29.31451
-#&gt; 389:    24.92284    24.93056    25.04022    25.01261    25.00101    25.07063
-#&gt; 390:    23.66366    23.71328    23.76346    23.71880    23.71766    23.81976
-#&gt; 391:    14.50134    15.22701    15.19714    15.43681    15.13306    15.03476
-#&gt;      uM10_h10_R1 uM10_h10_R2 uM10_h10_R3 uM10_h10_R4 uM10_h10_R5 uM10_h10_R6
-#&gt;   1:          NA          NA          NA          NA    18.85789          NA
-#&gt;   2:    25.18045    24.67706    24.45270    25.03382    24.84904    25.18552
-#&gt;   3:    21.87363    21.14553    20.54771    21.68621    21.12488    21.90925
-#&gt;   4:    19.29744    18.96223    18.81221    19.37863    18.96814    19.44163
-#&gt;   5:    20.57496    19.98950    20.27572    20.63228    20.38084    20.50319
+#&gt; 387:    18.68912    18.09998    18.42879    18.84276    17.51745    18.23782
+#&gt; 388:    29.27577    29.31881    29.27204    29.20039    29.01047    29.08071
+#&gt; 389:    24.95739    25.05271    25.00798    24.80883    24.95512    24.88497
+#&gt; 390:    23.01624    23.86981    23.77307    23.53884    23.71740    23.63064
+#&gt; 391:    14.94741    15.46662    16.09119    15.42659    15.47659          NA
+#&gt;      dmso_h10_R3 dmso_h10_R4 dmso_h10_R5 dmso_h10_R6 uM05_h10_R1 uM05_h10_R2
+#&gt;   1:    18.69232    19.11015    18.28252    18.96979    19.19253    18.83181
+#&gt;   2:    24.65733    25.14916    24.22576    24.72163    24.76813    24.74257
+#&gt;   3:    21.05998    21.97687    20.54153    21.12701    21.61089    21.08502
+#&gt;   4:    18.71230    19.02706    18.53761    18.49486    19.35217    18.98534
+#&gt;   5:    19.93245    20.50204    19.94983    20.43843    20.23743    19.96098
 #&gt;  ---                                                                        
-#&gt; 387:          NA    18.15463    18.28979    17.12434    18.14136    18.08622
-#&gt; 388:    29.22638    29.17146    29.24109    29.14011    29.09358    29.20035
-#&gt; 389:    25.06702    24.95695    24.99889    24.97599    24.78961    24.96980
-#&gt; 390:    23.85120    23.76072    23.71309    23.75603    23.55769    23.71897
-#&gt; 391:          NA    15.08443    15.55651    15.03312    16.33097    15.29803
-#&gt;      UT_h24_R1 UT_h24_R2 UT_h24_R3 UT_h24_R4 UT_h24_R5 UT_h24_R6 Veh_h24_R1
-#&gt;   1:  17.70863  19.11020  19.77244  19.16927  18.82192  19.24894   19.29239
-#&gt;   2:  24.39907  24.86653  24.97980  25.27091  24.58600  24.96372   24.44388
-#&gt;   3:  21.05958  21.32970  21.49162  21.91791  21.07818  21.28580   20.96314
-#&gt;   4:  18.34995  18.93970  18.72507  19.17137  18.28006  18.91885   18.46107
-#&gt;   5:  20.03452  20.48990  20.58896  20.77077  20.52523  20.65863   19.61985
-#&gt;  ---                                                                       
-#&gt; 387:  17.52841  18.10642  18.73497  18.74719  17.53640  18.49112         NA
-#&gt; 388:  29.60832  29.55688  29.33744  29.52112  29.65849  29.59806   29.45635
-#&gt; 389:  25.58587  25.72772  25.48877  25.70662  25.46718  25.61377   25.16097
-#&gt; 390:  24.26908  24.44883  24.24682  24.49368  24.18036  24.45976   23.96479
-#&gt; 391:  14.48596  15.29002  15.38387  15.58267  15.24897  15.29207   15.40537
-#&gt;      Veh_h24_R2 Veh_h24_R3 Veh_h24_R4 Veh_h24_R5 Veh_h24_R6 uM05_h24_R1
-#&gt;   1:   19.04255   19.54602   19.70389         NA   19.38008    19.24901
-#&gt;   2:   24.68418   24.87993   25.63125   24.94417   24.97935    25.10408
-#&gt;   3:   21.61610   21.32751   22.14872   21.47232   21.89473    21.18844
-#&gt;   4:   19.12914   19.05012   19.40409   18.88527   18.99128    19.22627
-#&gt;   5:   20.34009   20.51827   20.72634   20.49449   20.97482    19.57384
-#&gt;  ---                                                                   
-#&gt; 387:   17.44896   18.98204   17.88848   18.29467   18.24042    18.62658
-#&gt; 388:   29.31730   29.48529   29.26495   29.61932   29.44810    29.47412
-#&gt; 389:   25.14879   25.64153   25.44959   25.79893   25.55656    25.45794
-#&gt; 390:   23.89519   24.41877   24.10902   24.54017   24.27304    24.19556
-#&gt; 391:   15.28750   15.64999   15.92114   15.96698   15.45754    15.39396
-#&gt;      uM05_h24_R2 uM05_h24_R3 uM05_h24_R4 uM05_h24_R5 uM05_h24_R6 uM10_h24_R1
-#&gt;   1:    19.88421          NA    20.36983          NA          NA    20.08826
-#&gt;   2:    25.19943    25.02874    25.15572    24.94527    24.85353    24.25138
-#&gt;   3:    21.42085    21.41185    21.98446    21.42210    21.65713    20.67838
-#&gt;   4:    19.30017    19.25601    19.23775    19.26172    19.48462    18.99942
-#&gt;   5:    20.95411    20.68476    20.89403    20.26912    20.36186    20.14573
+#&gt; 387:    17.88105          NA    18.40894    18.18548          NA    19.16983
+#&gt; 388:    29.32354    28.99497    29.36413    29.22267    29.17441    29.32297
+#&gt; 389:    25.04240    24.73684    24.99641    24.85027    24.92284    24.93056
+#&gt; 390:    23.87586    23.46423    23.83065    23.60324    23.66366    23.71328
+#&gt; 391:    15.57722    15.52221    15.40111    14.82843    14.50134    15.22701
+#&gt;      uM05_h10_R3 uM05_h10_R4 uM05_h10_R5 uM05_h10_R6 uM10_h10_R1 uM10_h10_R2
+#&gt;   1:    18.76227          NA    18.88216    18.06259          NA          NA
+#&gt;   2:    24.70972    24.97715    24.93070    25.07501    25.18045    24.67706
+#&gt;   3:    21.25630    21.86545    21.63885    22.06022    21.87363    21.14553
+#&gt;   4:    18.90837    19.40726    18.82146    19.35514    19.29744    18.96223
+#&gt;   5:    19.99538    20.44566    19.82527    20.67043    20.57496    19.98950
 #&gt;  ---                                                                        
-#&gt; 387:    18.07042    18.60097    18.55700    18.37051    18.57674    17.23905
-#&gt; 388:    29.36553    29.43982    29.35638    29.21674    29.26930    29.50766
-#&gt; 389:    25.31904    25.29898    25.29961    25.15618    25.13414    25.40989
-#&gt; 390:    24.05896    24.02870    24.02744    23.91941    23.85056    24.23071
-#&gt; 391:    15.31995    15.05320    15.71137    15.57092    15.10308    15.13671
-#&gt;      uM10_h24_R2 uM10_h24_R3 uM10_h24_R4 uM10_h24_R5 uM10_h24_R6 UT_h48_R1
-#&gt;   1:    19.20179          NA    19.22054          NA    19.14959        NA
-#&gt;   2:    25.04253    24.40400    24.94532    25.48156    25.53966  25.07303
-#&gt;   3:    21.31971    20.46961    21.21517    21.83107    21.93548  21.65559
-#&gt;   4:    19.45193    19.09921    19.34996    19.74993    20.08139  18.64596
-#&gt;   5:    20.53118    20.49628    20.52564    20.78001    20.57697  20.78580
-#&gt;  ---                                                                      
-#&gt; 387:    18.08963    18.87579    17.04099    18.58378    18.86735  18.76521
-#&gt; 388:    29.31689    29.45315    29.29303    29.30751    29.31280  29.63338
-#&gt; 389:    25.30002    25.30248    25.13501    25.33987    25.43035  26.00435
-#&gt; 390:    24.04210    24.00394    23.87655    24.03198    24.18406  24.68924
-#&gt; 391:    15.14736    14.92096    14.52424    15.27048    15.68346  16.07293
-#&gt;      UT_h48_R2 UT_h48_R3 UT_h48_R4 UT_h48_R5 UT_h48_R6 Veh_h48_R1 Veh_h48_R2
-#&gt;   1:  19.99224  19.01545  17.22378  19.12899  19.42698         NA         NA
-#&gt;   2:  26.13305  24.79365  23.14357  25.47004  25.70423   25.34630   25.48373
-#&gt;   3:  22.43814  21.00401  19.69284  21.77693  22.11487   21.78369   21.82556
-#&gt;   4:  19.54358  18.60308  17.42100  18.81295  19.35612   19.11433   19.17100
-#&gt;   5:  21.58188  19.56994  18.94901  20.84800  21.36738   20.90207   20.96583
+#&gt; 387:    18.85428    18.60408    18.85497    18.56613          NA    18.15463
+#&gt; 388:    29.24205    29.07805    29.28723    29.31451    29.22638    29.17146
+#&gt; 389:    25.04022    25.01261    25.00101    25.07063    25.06702    24.95695
+#&gt; 390:    23.76346    23.71880    23.71766    23.81976    23.85120    23.76072
+#&gt; 391:    15.19714    15.43681    15.13306    15.03476          NA    15.08443
+#&gt;      uM10_h10_R3 uM10_h10_R4 uM10_h10_R5 uM10_h10_R6 ctrl_h24_R1 ctrl_h24_R2
+#&gt;   1:          NA          NA    18.85789          NA    17.70863    19.11020
+#&gt;   2:    24.45270    25.03382    24.84904    25.18552    24.39907    24.86653
+#&gt;   3:    20.54771    21.68621    21.12488    21.90925    21.05958    21.32970
+#&gt;   4:    18.81221    19.37863    18.96814    19.44163    18.34995    18.93970
+#&gt;   5:    20.27572    20.63228    20.38084    20.50319    20.03452    20.48990
 #&gt;  ---                                                                        
-#&gt; 387:  18.92744  18.64507        NA  18.50729  19.11717   18.29778   19.06557
-#&gt; 388:  29.71784  29.80133  28.40501  29.71041  29.84425   29.57324   29.66360
-#&gt; 389:  26.26124  26.11955  24.78943  26.02167  26.36434   25.85139   25.89011
-#&gt; 390:  24.88776  24.88290  23.40763  24.75566  25.02361   24.56915   24.66762
-#&gt; 391:  15.95497  15.36745  14.95551  16.01755  15.92112   15.28070   15.28955
-#&gt;      Veh_h48_R3 Veh_h48_R4 Veh_h48_R5 Veh_h48_R6 uM05_h48_R1 uM05_h48_R2
-#&gt;   1:   19.07319         NA   19.20883   19.59633    19.03600          NA
-#&gt;   2:   25.46195   24.87086   24.85667   25.86476    25.25932    25.53002
-#&gt;   3:   21.65558   21.24624   21.29014   22.25434    21.49845    21.89425
-#&gt;   4:   18.74219   18.49608   18.80210   19.33361    19.58555    19.46689
-#&gt;   5:   21.06323   20.62822   20.82461   21.40290    20.37544    20.38003
-#&gt;  ---                                                                    
-#&gt; 387:   18.63226   17.77531   18.76327   18.66356    18.59555    19.12285
-#&gt; 388:   29.63300   29.24133   29.90697   29.86424    29.47310    29.50182
-#&gt; 389:   25.89138   25.65269   26.08236   26.29025    25.59320    25.54048
-#&gt; 390:   24.62910   24.33789   24.80194   24.93052    24.42485    24.30380
-#&gt; 391:   15.71647   15.09836   16.21896   15.65489    15.61416    15.07740
+#&gt; 387:    18.28979    17.12434    18.14136    18.08622    17.52841    18.10642
+#&gt; 388:    29.24109    29.14011    29.09358    29.20035    29.60832    29.55688
+#&gt; 389:    24.99889    24.97599    24.78961    24.96980    25.58587    25.72772
+#&gt; 390:    23.71309    23.75603    23.55769    23.71897    24.26908    24.44883
+#&gt; 391:    15.55651    15.03312    16.33097    15.29803    14.48596    15.29002
+#&gt;      ctrl_h24_R3 ctrl_h24_R4 ctrl_h24_R5 ctrl_h24_R6 dmso_h24_R1 dmso_h24_R2
+#&gt;   1:    19.77244    19.16927    18.82192    19.24894    19.29239    19.04255
+#&gt;   2:    24.97980    25.27091    24.58600    24.96372    24.44388    24.68418
+#&gt;   3:    21.49162    21.91791    21.07818    21.28580    20.96314    21.61610
+#&gt;   4:    18.72507    19.17137    18.28006    18.91885    18.46107    19.12914
+#&gt;   5:    20.58896    20.77077    20.52523    20.65863    19.61985    20.34009
+#&gt;  ---                                                                        
+#&gt; 387:    18.73497    18.74719    17.53640    18.49112          NA    17.44896
+#&gt; 388:    29.33744    29.52112    29.65849    29.59806    29.45635    29.31730
+#&gt; 389:    25.48877    25.70662    25.46718    25.61377    25.16097    25.14879
+#&gt; 390:    24.24682    24.49368    24.18036    24.45976    23.96479    23.89519
+#&gt; 391:    15.38387    15.58267    15.24897    15.29207    15.40537    15.28750
+#&gt;      dmso_h24_R3 dmso_h24_R4 dmso_h24_R5 dmso_h24_R6 uM05_h24_R1 uM05_h24_R2
+#&gt;   1:    19.54602    19.70389          NA    19.38008    19.24901    19.88421
+#&gt;   2:    24.87993    25.63125    24.94417    24.97935    25.10408    25.19943
+#&gt;   3:    21.32751    22.14872    21.47232    21.89473    21.18844    21.42085
+#&gt;   4:    19.05012    19.40409    18.88527    18.99128    19.22627    19.30017
+#&gt;   5:    20.51827    20.72634    20.49449    20.97482    19.57384    20.95411
+#&gt;  ---                                                                        
+#&gt; 387:    18.98204    17.88848    18.29467    18.24042    18.62658    18.07042
+#&gt; 388:    29.48529    29.26495    29.61932    29.44810    29.47412    29.36553
+#&gt; 389:    25.64153    25.44959    25.79893    25.55656    25.45794    25.31904
+#&gt; 390:    24.41877    24.10902    24.54017    24.27304    24.19556    24.05896
+#&gt; 391:    15.64999    15.92114    15.96698    15.45754    15.39396    15.31995
+#&gt;      uM05_h24_R3 uM05_h24_R4 uM05_h24_R5 uM05_h24_R6 uM10_h24_R1 uM10_h24_R2
+#&gt;   1:          NA    20.36983          NA          NA    20.08826    19.20179
+#&gt;   2:    25.02874    25.15572    24.94527    24.85353    24.25138    25.04253
+#&gt;   3:    21.41185    21.98446    21.42210    21.65713    20.67838    21.31971
+#&gt;   4:    19.25601    19.23775    19.26172    19.48462    18.99942    19.45193
+#&gt;   5:    20.68476    20.89403    20.26912    20.36186    20.14573    20.53118
+#&gt;  ---                                                                        
+#&gt; 387:    18.60097    18.55700    18.37051    18.57674    17.23905    18.08963
+#&gt; 388:    29.43982    29.35638    29.21674    29.26930    29.50766    29.31689
+#&gt; 389:    25.29898    25.29961    25.15618    25.13414    25.40989    25.30002
+#&gt; 390:    24.02870    24.02744    23.91941    23.85056    24.23071    24.04210
+#&gt; 391:    15.05320    15.71137    15.57092    15.10308    15.13671    15.14736
+#&gt;      uM10_h24_R3 uM10_h24_R4 uM10_h24_R5 uM10_h24_R6 ctrl_h48_R1 ctrl_h48_R2
+#&gt;   1:          NA    19.22054          NA    19.14959          NA    19.99224
+#&gt;   2:    24.40400    24.94532    25.48156    25.53966    25.07303    26.13305
+#&gt;   3:    20.46961    21.21517    21.83107    21.93548    21.65559    22.43814
+#&gt;   4:    19.09921    19.34996    19.74993    20.08139    18.64596    19.54358
+#&gt;   5:    20.49628    20.52564    20.78001    20.57697    20.78580    21.58188
+#&gt;  ---                                                                        
+#&gt; 387:    18.87579    17.04099    18.58378    18.86735    18.76521    18.92744
+#&gt; 388:    29.45315    29.29303    29.30751    29.31280    29.63338    29.71784
+#&gt; 389:    25.30248    25.13501    25.33987    25.43035    26.00435    26.26124
+#&gt; 390:    24.00394    23.87655    24.03198    24.18406    24.68924    24.88776
+#&gt; 391:    14.92096    14.52424    15.27048    15.68346    16.07293    15.95497
+#&gt;      ctrl_h48_R3 ctrl_h48_R4 ctrl_h48_R5 ctrl_h48_R6 dmso_h48_R1 dmso_h48_R2
+#&gt;   1:    19.01545    17.22378    19.12899    19.42698          NA          NA
+#&gt;   2:    24.79365    23.14357    25.47004    25.70423    25.34630    25.48373
+#&gt;   3:    21.00401    19.69284    21.77693    22.11487    21.78369    21.82556
+#&gt;   4:    18.60308    17.42100    18.81295    19.35612    19.11433    19.17100
+#&gt;   5:    19.56994    18.94901    20.84800    21.36738    20.90207    20.96583
+#&gt;  ---                                                                        
+#&gt; 387:    18.64507          NA    18.50729    19.11717    18.29778    19.06557
+#&gt; 388:    29.80133    28.40501    29.71041    29.84425    29.57324    29.66360
+#&gt; 389:    26.11955    24.78943    26.02167    26.36434    25.85139    25.89011
+#&gt; 390:    24.88290    23.40763    24.75566    25.02361    24.56915    24.66762
+#&gt; 391:    15.36745    14.95551    16.01755    15.92112    15.28070    15.28955
+#&gt;      dmso_h48_R3 dmso_h48_R4 dmso_h48_R5 dmso_h48_R6 uM05_h48_R1 uM05_h48_R2
+#&gt;   1:    19.07319          NA    19.20883    19.59633    19.03600          NA
+#&gt;   2:    25.46195    24.87086    24.85667    25.86476    25.25932    25.53002
+#&gt;   3:    21.65558    21.24624    21.29014    22.25434    21.49845    21.89425
+#&gt;   4:    18.74219    18.49608    18.80210    19.33361    19.58555    19.46689
+#&gt;   5:    21.06323    20.62822    20.82461    21.40290    20.37544    20.38003
+#&gt;  ---                                                                        
+#&gt; 387:    18.63226    17.77531    18.76327    18.66356    18.59555    19.12285
+#&gt; 388:    29.63300    29.24133    29.90697    29.86424    29.47310    29.50182
+#&gt; 389:    25.89138    25.65269    26.08236    26.29025    25.59320    25.54048
+#&gt; 390:    24.62910    24.33789    24.80194    24.93052    24.42485    24.30380
+#&gt; 391:    15.71647    15.09836    16.21896    15.65489    15.61416    15.07740
 #&gt;      uM05_h48_R3 uM05_h48_R4 uM05_h48_R5 uM05_h48_R6 uM10_h48_R1 uM10_h48_R2
 #&gt;   1:    19.45371          NA          NA    19.41957          NA    19.02594
 #&gt;   2:    25.02213    25.22178    24.69857    25.56934    24.70172    25.33320
@@ -372,90 +387,132 @@
 #&gt; 389:    25.46930    25.47159    25.46065    25.50009    25.24857    25.27813
 #&gt; 390:    23.44196    24.22178    24.19904    24.26663    24.06624    24.03918
 #&gt; 391:    14.79111    15.23459    15.57793    15.47785    14.85531          NA
-#&gt;      uM10_h48_R3 uM10_h48_R4 uM10_h48_R5 uM10_h48_R6 UT_h72_R1 UT_h72_R2
-#&gt;   1:    19.27211          NA    18.43700          NA  18.80835  19.23607
-#&gt;   2:    24.45696    24.69906    24.43698    24.50142  25.23447  25.67475
-#&gt;   3:    20.61537    21.05731    20.67223    20.73771  21.39341  21.84937
-#&gt;   4:    19.25383    19.46040    19.34430    19.28624  19.11071  19.66285
-#&gt;   5:    19.25077    20.28331    19.81534    20.02069  21.28149  21.60119
-#&gt;  ---                                                                    
-#&gt; 387:    18.68069    17.93684          NA    18.90036  16.93655  18.76861
-#&gt; 388:    29.29412    29.21785    29.22725    29.36910  29.81281  29.86910
-#&gt; 389:    25.10236    24.88803    25.09895    25.01903  26.21053  26.45271
-#&gt; 390:    23.83043    23.64741    23.80564    23.73495  24.95659  25.09206
-#&gt; 391:    15.18770    14.61108    15.24581          NA  15.91576  15.91775
-#&gt;      UT_h72_R3 UT_h72_R4 UT_h72_R5 UT_h72_R6 Veh_h72_R1 Veh_h72_R2 Veh_h72_R3
-#&gt;   1:  18.38594  18.96210  19.01259  19.29477         NA         NA   18.86124
-#&gt;   2:  25.25881  25.62399  25.20258  25.49661   25.54115   26.01759   25.44173
-#&gt;   3:  21.33885  21.85555  21.51878  21.77208   21.65984   22.12125   21.60617
-#&gt;   4:  19.28699  19.39552  19.07936  19.23515   19.32393   19.54200   19.22588
-#&gt;   5:  18.55454  21.41672  21.56486  21.61699   21.38514   21.38826   21.24226
-#&gt;  ---                                                                         
-#&gt; 387:  18.71301  18.80890  18.50568  18.80146   19.04318   18.58986   19.05328
-#&gt; 388:  30.05769  29.85472  30.01280  30.10209   29.88957   29.58973   29.97986
-#&gt; 389:  26.64345  26.44403  26.61268  26.72233   26.30796   26.22811   26.72889
-#&gt; 390:  25.36073  25.14809  25.26398  25.34949   24.96753   24.87130   25.39130
-#&gt; 391:  15.98560  16.69603  16.66900  16.10427   16.22566   16.07487   15.70247
-#&gt;      Veh_h72_R4 Veh_h72_R5 Veh_h72_R6 uM05_h72_R1 uM05_h72_R2 uM05_h72_R3
-#&gt;   1:   19.48363   19.10366   19.44723    18.23362    18.43668    18.56417
-#&gt;   2:   25.80629   26.22775   26.39788    24.03817    24.05548    24.78171
-#&gt;   3:   22.24469   22.32799   22.48638    20.50873    20.32956    21.29270
-#&gt;   4:   19.75309   19.76216   19.97636    18.48733    18.92954    19.10673
-#&gt;   5:   21.69472   20.86013   21.79059    18.79187    18.48447    20.86083
-#&gt;  ---                                                                     
-#&gt; 387:   18.91649   19.58480   20.19031    17.43793    18.42358    18.76734
-#&gt; 388:   29.99837   30.01378   29.97388    29.48849    29.18000    29.51604
-#&gt; 389:   26.91261   26.79010   26.93781    25.31128    25.03988    25.63511
-#&gt; 390:   25.50657   25.41409   25.61034    24.04631    23.78350    24.31286
-#&gt; 391:   16.56256   16.63441   16.05822    15.12884    15.31409    15.49654
-#&gt;      uM05_h72_R4 uM05_h72_R5 uM05_h72_R6 uM10_h72_R1 uM10_h72_R2 uM10_h72_R3
-#&gt;   1:    19.05370    18.95538          NA    19.57007    19.01428    19.01860
-#&gt;   2:    25.44633    24.80649    25.26333    24.93346    25.13668    24.68060
-#&gt;   3:    21.61265    21.02592    21.44317    21.32465    21.61214    20.57024
-#&gt;   4:    19.64141    19.08365    19.57020    19.34057    19.88230    19.35258
-#&gt;   5:    20.88251    20.84180    20.98681    20.83255    20.52466    20.46478
+#&gt;      uM10_h48_R3 uM10_h48_R4 uM10_h48_R5 uM10_h48_R6 ctrl_h72_R1 ctrl_h72_R2
+#&gt;   1:    19.27211          NA    18.43700          NA    18.80835    19.23607
+#&gt;   2:    24.45696    24.69906    24.43698    24.50142    25.23447    25.67475
+#&gt;   3:    20.61537    21.05731    20.67223    20.73771    21.39341    21.84937
+#&gt;   4:    19.25383    19.46040    19.34430    19.28624    19.11071    19.66285
+#&gt;   5:    19.25077    20.28331    19.81534    20.02069    21.28149    21.60119
 #&gt;  ---                                                                        
-#&gt; 387:    18.11127    19.00841    19.00087    18.48010    18.70717    18.66482
-#&gt; 388:    29.50778    29.57228    29.64018    29.32011    29.16631    29.47748
-#&gt; 389:    25.86414    25.78610    25.81141    25.08688    25.04628    25.47484
-#&gt; 390:    24.66157    24.52752    24.54762    23.86905    23.84629    24.25003
-#&gt; 391:    15.87977    16.36419    15.77123    15.32295    15.45105    15.35218
-#&gt;      uM10_h72_R4 uM10_h72_R5 uM10_h72_R6
-#&gt;   1:          NA          NA          NA
-#&gt;   2:    24.17759    24.86749    25.07103
-#&gt;   3:    20.61491    21.27776    21.74500
-#&gt;   4:    19.02780    19.43114    19.88114
-#&gt;   5:    19.67439    20.20220    20.61377
-#&gt;  ---                                    
-#&gt; 387:          NA    18.83441    18.92331
-#&gt; 388:    28.63753    29.03451    29.28583
-#&gt; 389:    24.58456    24.98506    25.09338
-#&gt; 390:    23.28372    23.67875    23.79727
-#&gt; 391:    14.83930    15.72558    15.31288</div><div class='input'>   <span class='fu'>sumexp_to_long_dt</span>(<span class='kw'>object</span>)
-</div><div class='output co'>#&gt;        feature_id   sample_id subgroup    value
-#&gt;     1:      52603   UT_h10_R1   UT_h10 18.99232
-#&gt;     2:      52457   UT_h10_R1   UT_h10 24.84415
-#&gt;     3:      52609   UT_h10_R1   UT_h10 21.62092
-#&gt;     4:      52619   UT_h10_R1   UT_h10 18.90190
-#&gt;     5:      52472   UT_h10_R1   UT_h10 19.50494
-#&gt;    ---                                         
-#&gt; 37532:      52665 uM10_h72_R6 uM10_h72 18.92331
-#&gt; 37533:      54831 uM10_h72_R6 uM10_h72 29.28583
-#&gt; 37534:      54832 uM10_h72_R6 uM10_h72 25.09338
-#&gt; 37535:      54834 uM10_h72_R6 uM10_h72 23.79727
-#&gt; 37536:      54859 uM10_h72_R6 uM10_h72 15.31288</div><div class='input'>   <span class='fu'>sumexp_to_subrep_dt</span>(<span class='kw'>object</span>)
+#&gt; 387:    18.68069    17.93684          NA    18.90036    16.93655    18.76861
+#&gt; 388:    29.29412    29.21785    29.22725    29.36910    29.81281    29.86910
+#&gt; 389:    25.10236    24.88803    25.09895    25.01903    26.21053    26.45271
+#&gt; 390:    23.83043    23.64741    23.80564    23.73495    24.95659    25.09206
+#&gt; 391:    15.18770    14.61108    15.24581          NA    15.91576    15.91775
+#&gt;      ctrl_h72_R3 ctrl_h72_R4 ctrl_h72_R5 ctrl_h72_R6 dmso_h72_R1 dmso_h72_R2
+#&gt;   1:    18.38594    18.96210    19.01259    19.29477          NA          NA
+#&gt;   2:    25.25881    25.62399    25.20258    25.49661    25.54115    26.01759
+#&gt;   3:    21.33885    21.85555    21.51878    21.77208    21.65984    22.12125
+#&gt;   4:    19.28699    19.39552    19.07936    19.23515    19.32393    19.54200
+#&gt;   5:    18.55454    21.41672    21.56486    21.61699    21.38514    21.38826
+#&gt;  ---                                                                        
+#&gt; 387:    18.71301    18.80890    18.50568    18.80146    19.04318    18.58986
+#&gt; 388:    30.05769    29.85472    30.01280    30.10209    29.88957    29.58973
+#&gt; 389:    26.64345    26.44403    26.61268    26.72233    26.30796    26.22811
+#&gt; 390:    25.36073    25.14809    25.26398    25.34949    24.96753    24.87130
+#&gt; 391:    15.98560    16.69603    16.66900    16.10427    16.22566    16.07487
+#&gt;      dmso_h72_R3 dmso_h72_R4 dmso_h72_R5 dmso_h72_R6 uM05_h72_R1 uM05_h72_R2
+#&gt;   1:    18.86124    19.48363    19.10366    19.44723    18.23362    18.43668
+#&gt;   2:    25.44173    25.80629    26.22775    26.39788    24.03817    24.05548
+#&gt;   3:    21.60617    22.24469    22.32799    22.48638    20.50873    20.32956
+#&gt;   4:    19.22588    19.75309    19.76216    19.97636    18.48733    18.92954
+#&gt;   5:    21.24226    21.69472    20.86013    21.79059    18.79187    18.48447
+#&gt;  ---                                                                        
+#&gt; 387:    19.05328    18.91649    19.58480    20.19031    17.43793    18.42358
+#&gt; 388:    29.97986    29.99837    30.01378    29.97388    29.48849    29.18000
+#&gt; 389:    26.72889    26.91261    26.79010    26.93781    25.31128    25.03988
+#&gt; 390:    25.39130    25.50657    25.41409    25.61034    24.04631    23.78350
+#&gt; 391:    15.70247    16.56256    16.63441    16.05822    15.12884    15.31409
+#&gt;      uM05_h72_R3 uM05_h72_R4 uM05_h72_R5 uM05_h72_R6 uM10_h72_R1 uM10_h72_R2
+#&gt;   1:    18.56417    19.05370    18.95538          NA    19.57007    19.01428
+#&gt;   2:    24.78171    25.44633    24.80649    25.26333    24.93346    25.13668
+#&gt;   3:    21.29270    21.61265    21.02592    21.44317    21.32465    21.61214
+#&gt;   4:    19.10673    19.64141    19.08365    19.57020    19.34057    19.88230
+#&gt;   5:    20.86083    20.88251    20.84180    20.98681    20.83255    20.52466
+#&gt;  ---                                                                        
+#&gt; 387:    18.76734    18.11127    19.00841    19.00087    18.48010    18.70717
+#&gt; 388:    29.51604    29.50778    29.57228    29.64018    29.32011    29.16631
+#&gt; 389:    25.63511    25.86414    25.78610    25.81141    25.08688    25.04628
+#&gt; 390:    24.31286    24.66157    24.52752    24.54762    23.86905    23.84629
+#&gt; 391:    15.49654    15.87977    16.36419    15.77123    15.32295    15.45105
+#&gt;      uM10_h72_R3 uM10_h72_R4 uM10_h72_R5 uM10_h72_R6
+#&gt;   1:    19.01860          NA          NA          NA
+#&gt;   2:    24.68060    24.17759    24.86749    25.07103
+#&gt;   3:    20.57024    20.61491    21.27776    21.74500
+#&gt;   4:    19.35258    19.02780    19.43114    19.88114
+#&gt;   5:    20.46478    19.67439    20.20220    20.61377
+#&gt;  ---                                                
+#&gt; 387:    18.66482          NA    18.83441    18.92331
+#&gt; 388:    29.47748    28.63753    29.03451    29.28583
+#&gt; 389:    25.47484    24.58456    24.98506    25.09338
+#&gt; 390:    24.25003    23.28372    23.67875    23.79727
+#&gt; 391:    15.35218    14.83930    15.72558    15.31288</div><div class='input'>   <span class='fu'>sumexp_to_long_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;        feature_id                        feature_name   sample_id subgroup
+#&gt;     1:      52603     1,2-dilinoleoyl-GPC (18:2/18:2) ctrl_h10_R1 ctrl_h10
+#&gt;     2:      52457       1,2-dioleoyl-GPC (18:1/18:1)* ctrl_h10_R1 ctrl_h10
+#&gt;     3:      52609        1,2-dioleoyl-GPE (18:1/18:1) ctrl_h10_R1 ctrl_h10
+#&gt;     4:      52619        1,2-dioleoyl-GPI (18:1/18:1) ctrl_h10_R1 ctrl_h10
+#&gt;     5:      52472 1,2-dipalmitoleoyl-GPC (16:1/16:1)* ctrl_h10_R1 ctrl_h10
+#&gt;    ---                                                                    
+#&gt; 37532:      52665                           X - 24435 uM10_h72_R6 uM10_h72
+#&gt; 37533:      54831                           X - 24803 uM10_h72_R6 uM10_h72
+#&gt; 37534:      54832                           X - 24804 uM10_h72_R6 uM10_h72
+#&gt; 37535:      54834                           X - 24806 uM10_h72_R6 uM10_h72
+#&gt; 37536:      54859                           X - 24831 uM10_h72_R6 uM10_h72
+#&gt;           value
+#&gt;     1: 18.99232
+#&gt;     2: 24.84415
+#&gt;     3: 21.62092
+#&gt;     4: 18.90190
+#&gt;     5: 19.50494
+#&gt;    ---         
+#&gt; 37532: 18.92331
+#&gt; 37533: 29.28583
+#&gt; 37534: 25.09338
+#&gt; 37535: 23.79727
+#&gt; 37536: 15.31288</div><div class='input'>   <span class='fu'>sumexp_to_subrep_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;       feature_id subgroup       R1       R2       R3       R4       R5       R6
-#&gt;    1:      52603   UT_h10 18.99232 19.38894 18.66954       NA 17.57336       NA
-#&gt;    2:      52603   UT_h24 17.70863 19.11020 19.77244 19.16927 18.82192 19.24894
-#&gt;    3:      52603   UT_h48       NA 19.99224 19.01545 17.22378 19.12899 19.42698
-#&gt;    4:      52603   UT_h72 18.80835 19.23607 18.38594 18.96210 19.01259 19.29477
-#&gt;    5:      52603  Veh_h10       NA 17.83332 18.69232 19.11015 18.28252 18.96979
+#&gt;    1:      52603 ctrl_h10 18.99232 19.38894 18.66954       NA 17.57336       NA
+#&gt;    2:      52603 ctrl_h24 17.70863 19.11020 19.77244 19.16927 18.82192 19.24894
+#&gt;    3:      52603 ctrl_h48       NA 19.99224 19.01545 17.22378 19.12899 19.42698
+#&gt;    4:      52603 ctrl_h72 18.80835 19.23607 18.38594 18.96210 19.01259 19.29477
+#&gt;    5:      52603 dmso_h10       NA 17.83332 18.69232 19.11015 18.28252 18.96979
 #&gt;   ---                                                                          
 #&gt; 6252:      54859 uM05_h72 15.12884 15.31409 15.49654 15.87977 16.36419 15.77123
 #&gt; 6253:      54859 uM10_h10       NA 15.08443 15.55651 15.03312 16.33097 15.29803
 #&gt; 6254:      54859 uM10_h24 15.13671 15.14736 14.92096 14.52424 15.27048 15.68346
 #&gt; 6255:      54859 uM10_h48 14.85531       NA 15.18770 14.61108 15.24581       NA
-#&gt; 6256:      54859 uM10_h72 15.32295 15.45105 15.35218 14.83930 15.72558 15.31288</div></pre>
+#&gt; 6256:      54859 uM10_h72 15.32295 15.45105 15.35218 14.83930 15.72558 15.31288</div><div class='input'>
+<span class='co'># Fukuda</span>
+   <span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
+   <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
+   <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, impute<span class='op'>=</span><span class='cn'>FALSE</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/fukuda20/fukuda20.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 376 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: LFQ intensity dpt30_1  -&gt;  dpt30_1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/fukuda20/fukuda20.proteingroups.LFQ.intensity.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 15654/41112 values (in 3998/6852 features and 6/6 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6735/6852 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6692/6735 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6583/6692 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/6583 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 4428/4428 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>   <span class='fu'>sumexp_to_long_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;        feature_id   feature_name sample_id subgroup    value
+#&gt;     1:          1       b3galtla   Adult_1    Adult 31.48879
+#&gt;     2:          3           rem1   Adult_1    Adult 28.72498
+#&gt;     3:          5         sept7a   Adult_1    Adult 29.12204
+#&gt;     4:          6          paics   Adult_1    Adult 29.44101
+#&gt;     5:          7 si:dkey-5n18.1   Adult_1    Adult 29.36590
+#&gt;    ---                                                      
+#&gt; 26564:       6845 si:dkey-96g2.1   dpt30_3    dpt30 30.31160
+#&gt; 26565:       6846     im:7148292   dpt30_3    dpt30 28.80375
+#&gt; 26566:       6847     zgc:114181   dpt30_3    dpt30 31.54968
+#&gt; 26567:       6848          sypl1   dpt30_3    dpt30 28.91980
+#&gt; 26568:       6851         tigarb   dpt30_3    dpt30 29.91413</div><div class='input'>   <span class='va'>object</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='impute_systematic_nondetects.html'>impute_systematic_nondetects</a></span><span class='op'>(</span>plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Filter 4428/4428 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>		Impute systematic nondetects for 806/4428 features in 6/6 samples</span></div><div class='input'>   <span class='fu'>sumexp_to_long_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;        feature_id   feature_name sample_id subgroup    value is_imputed
+#&gt;     1:          1       b3galtla   Adult_1    Adult 31.48879      FALSE
+#&gt;     2:          3           rem1   Adult_1    Adult 28.72498      FALSE
+#&gt;     3:          5         sept7a   Adult_1    Adult 29.12204      FALSE
+#&gt;     4:          6          paics   Adult_1    Adult 29.44101      FALSE
+#&gt;     5:          7 si:dkey-5n18.1   Adult_1    Adult 29.36590      FALSE
+#&gt;    ---                                                                 
+#&gt; 26564:       6845 si:dkey-96g2.1   dpt30_3    dpt30 30.31160      FALSE
+#&gt; 26565:       6846     im:7148292   dpt30_3    dpt30 28.80375      FALSE
+#&gt; 26566:       6847     zgc:114181   dpt30_3    dpt30 31.54968      FALSE
+#&gt; 26567:       6848          sypl1   dpt30_3    dpt30 28.91980      FALSE
+#&gt; 26568:       6851         tigarb   dpt30_3    dpt30 29.91413      FALSE</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,12 +124,10 @@
     <p>Create design matrix  for statistical analysis</p>
     </div>
 
-    <pre class="usage"><span class='fu'>create_design</span>(
-  <span class='kw'>object</span>,
-  formula = <span class='co'>if</span> (<span class='fu'>single_subgroup</span>(<span class='kw'>object</span>)) <span class='op'>~</span><span class='fl'>1</span> <span class='co'>else</span> <span class='op'>~</span><span class='fl'>0</span> <span class='op'>+</span> <span class='kw'>subgroup</span>
-)
-
-<span class='fu'>create_design_matrix</span>(<span class='kw'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>create_design</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  formula <span class='op'>=</span> <span class='kw'>if</span> <span class='op'>(</span><span class='fu'>single_subgroup</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>~</span><span class='fl'>1</span> <span class='kw'>else</span> <span class='op'>~</span><span class='fl'>0</span> <span class='op'>+</span> <span class='va'>subgroup</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -142,10 +140,6 @@
       <th>formula</th>
       <td><p>formula with svars</p></td>
     </tr>
-    <tr>
-      <th>...</th>
-      <td><p>backward compatibility</p></td>
-    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -153,153 +147,190 @@
     <p>design matrix</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'atkin18.somascan.adat'</span>)
-<span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_somascan.html'>read_somascan</a></span>(<span class='kw'>file</span>, plot=<span class='fl'>FALSE</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/atkin18/atkin18.somascan.adat</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: D05.t0 =&gt; D05</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample types</span>
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing16.rnacounts.txt'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_counts.html'>read_counts</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/billing16/billing16.rnacounts.txt</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/importomicscache/datasets/billing16/billing16.rnacounts.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Keep 67/58734 features: count &gt;= 10 in at least some samples</span></div><div class='output co'>#&gt; <span class='message'>		TMM normalize and log2transform</span></div><div class='output co'>#&gt; <span class='message'>		Return object: counts(object)  = counts</span></div><div class='output co'>#&gt; <span class='message'>		               exprs(object)   = log2cpm</span></div><div class='output co'>#&gt; <span class='message'>		               weights(object) = voom weights (see plot)</span></div><div class='output co'>#&gt; <span class='message'>		               object$subgroup = subgroup values</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;       BM E EM
+#&gt; BM_R1  1 0  0
+#&gt; BM_R2  1 0  0
+#&gt; BM_R3  1 0  0
+#&gt; BM_R4  1 0  0
+#&gt; BM_R5  1 0  0
+#&gt; E_R1   0 1  0
+#&gt; E_R2   0 1  0
+#&gt; E_R3   0 1  0
+#&gt; EM_R1  0 0  1
+#&gt; EM_R2  0 0  1
+#&gt; EM_R3  0 0  1
+#&gt; attr(,"assign")
+#&gt; [1] 1 1 1
+#&gt; attr(,"contrasts")
+#&gt; attr(,"contrasts")$subgroup
+#&gt; [1] "contr.treatment"
+#&gt; </div><div class='input'>
+<span class='va'>object</span><span class='op'>$</span><span class='va'>subgroup</span> <span class='op'>&lt;-</span> <span class='st'>'billing16'</span>
+<span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;       billing16
+#&gt; BM_R1         1
+#&gt; BM_R2         1
+#&gt; BM_R3         1
+#&gt; BM_R4         1
+#&gt; BM_R5         1
+#&gt; E_R1          1
+#&gt; E_R2          1
+#&gt; E_R3          1
+#&gt; EM_R1         1
+#&gt; EM_R2         1
+#&gt; EM_R3         1
+#&gt; attr(,"assign")
+#&gt; [1] 0</div><div class='input'>
+<span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'atkin18.somascan.adat'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_somascan.html'>read_somascan</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/atkin18/atkin18.somascan.adat</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: t0.C15 =&gt; C15</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample types</span>
 #&gt; <span class='message'>		Sample </span>
 #&gt; <span class='message'>		    67 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 samples: ~SampleType %in% ~sample_type</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample qualities ("RowCheck")</span>
 #&gt; <span class='message'>		PASS </span>
 #&gt; <span class='message'>		  67 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 samples: ~RowCheck %in% ~sample_quality</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Feature qualities ("ColCheck")</span>
 #&gt; <span class='message'>		FAIL PASS </span>
-#&gt; <span class='message'>		   4 1125 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 1125/1129 features: ~ColCheck %in% ~feature_quality</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='input'><span class='fu'>create_design</span>(<span class='kw'>object</span>)
+#&gt; <span class='message'>		   4 1125 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 1125/1129 features: ~ColCheck %in% ~feature_quality</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 1125/1125 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;        t0 t1 t2 t3
-#&gt; D05.t0  1  0  0  0
-#&gt; D14.t0  1  0  0  0
-#&gt; D16.t3  0  0  0  1
-#&gt; D05.t2  0  0  1  0
-#&gt; D16.t0  1  0  0  0
-#&gt; C03.t0  1  0  0  0
-#&gt; C01.t1  0  1  0  0
-#&gt; D14.t3  0  0  0  1
-#&gt; C10.t1  0  1  0  0
-#&gt; C01.t0  1  0  0  0
-#&gt; D14.t2  0  0  1  0
-#&gt; C02.t1  0  1  0  0
-#&gt; D18.t3  0  0  0  1
-#&gt; D16.t1  0  1  0  0
-#&gt; D11.t0  1  0  0  0
-#&gt; C15.t1  0  1  0  0
-#&gt; C15.t0  1  0  0  0
-#&gt; D14.t1  0  1  0  0
-#&gt; D18.t2  0  0  1  0
-#&gt; D06.t1  0  1  0  0
-#&gt; D08.t0  1  0  0  0
-#&gt; D11.t2  0  0  1  0
-#&gt; C03.t3  0  0  0  1
-#&gt; D17.t3  0  0  0  1
-#&gt; D09.t0  1  0  0  0
-#&gt; D19.t1  0  1  0  0
-#&gt; C02.t2  0  0  1  0
-#&gt; C02.t3  0  0  0  1
-#&gt; C15.t2  0  0  1  0
-#&gt; C02.t0  1  0  0  0
-#&gt; D19.t3  0  0  0  1
-#&gt; C04.t0  1  0  0  0
-#&gt; D18.t1  0  1  0  0
-#&gt; D06.t2  0  0  1  0
-#&gt; C03.t1  0  1  0  0
-#&gt; D17.t1  0  1  0  0
-#&gt; D06.t0  1  0  0  0
-#&gt; D11.t1  0  1  0  0
-#&gt; D06.t3  0  0  0  1
-#&gt; D08.t1  0  1  0  0
-#&gt; D18.t0  1  0  0  0
-#&gt; D11.t3  0  0  0  1
-#&gt; D17.t2  0  0  1  0
-#&gt; C04.t3  0  0  0  1
-#&gt; D19.t2  0  0  1  0
-#&gt; C12.t3  0  0  0  1
-#&gt; D19.t0  1  0  0  0
-#&gt; C04.t2  0  0  1  0
-#&gt; C04.t1  0  1  0  0
-#&gt; C12.t1  0  1  0  0
-#&gt; C10.t0  1  0  0  0
-#&gt; D17.t0  1  0  0  0
-#&gt; D05.t3  0  0  0  1
-#&gt; D09.t1  0  1  0  0
-#&gt; D05.t1  0  1  0  0
-#&gt; C12.t0  1  0  0  0
-#&gt; D09.t3  0  0  0  1
-#&gt; C03.t2  0  0  1  0
-#&gt; C15.t3  0  0  0  1
-#&gt; D08.t3  0  0  0  1
-#&gt; C10.t2  0  0  1  0
-#&gt; C12.t2  0  0  1  0
-#&gt; D08.t2  0  0  1  0
-#&gt; D16.t2  0  0  1  0
-#&gt; D09.t2  0  0  1  0
-#&gt; C01.t3  0  0  0  1
-#&gt; C10.t3  0  0  0  1
+#&gt; t0.C15  1  0  0  0
+#&gt; t0.D14  1  0  0  0
+#&gt; t3.D16  0  0  0  1
+#&gt; t2.D05  0  0  1  0
+#&gt; t0.D16  1  0  0  0
+#&gt; t0.C03  1  0  0  0
+#&gt; t1.C01  0  1  0  0
+#&gt; t3.D14  0  0  0  1
+#&gt; t1.C10  0  1  0  0
+#&gt; t0.C01  1  0  0  0
+#&gt; t2.D14  0  0  1  0
+#&gt; t1.C02  0  1  0  0
+#&gt; t3.D18  0  0  0  1
+#&gt; t1.D16  0  1  0  0
+#&gt; t0.D11  1  0  0  0
+#&gt; t1.C15  0  1  0  0
+#&gt; t0.D05  1  0  0  0
+#&gt; t1.D14  0  1  0  0
+#&gt; t2.D18  0  0  1  0
+#&gt; t1.D06  0  1  0  0
+#&gt; t0.D08  1  0  0  0
+#&gt; t2.D11  0  0  1  0
+#&gt; t3.C03  0  0  0  1
+#&gt; t3.D17  0  0  0  1
+#&gt; t0.D09  1  0  0  0
+#&gt; t1.D19  0  1  0  0
+#&gt; t2.C02  0  0  1  0
+#&gt; t3.C02  0  0  0  1
+#&gt; t2.C15  0  0  1  0
+#&gt; t0.C02  1  0  0  0
+#&gt; t3.D19  0  0  0  1
+#&gt; t0.C04  1  0  0  0
+#&gt; t1.D18  0  1  0  0
+#&gt; t2.D06  0  0  1  0
+#&gt; t1.C03  0  1  0  0
+#&gt; t1.D17  0  1  0  0
+#&gt; t0.D06  1  0  0  0
+#&gt; t1.D11  0  1  0  0
+#&gt; t3.D06  0  0  0  1
+#&gt; t1.D08  0  1  0  0
+#&gt; t0.D18  1  0  0  0
+#&gt; t3.D11  0  0  0  1
+#&gt; t2.D17  0  0  1  0
+#&gt; t3.C04  0  0  0  1
+#&gt; t2.D19  0  0  1  0
+#&gt; t3.C12  0  0  0  1
+#&gt; t0.D19  1  0  0  0
+#&gt; t2.C04  0  0  1  0
+#&gt; t1.C04  0  1  0  0
+#&gt; t1.C12  0  1  0  0
+#&gt; t0.C10  1  0  0  0
+#&gt; t0.D17  1  0  0  0
+#&gt; t3.D05  0  0  0  1
+#&gt; t1.D09  0  1  0  0
+#&gt; t1.D05  0  1  0  0
+#&gt; t0.C12  1  0  0  0
+#&gt; t3.D09  0  0  0  1
+#&gt; t2.C03  0  0  1  0
+#&gt; t3.C15  0  0  0  1
+#&gt; t3.D08  0  0  0  1
+#&gt; t2.C10  0  0  1  0
+#&gt; t2.C12  0  0  1  0
+#&gt; t2.D08  0  0  1  0
+#&gt; t2.D16  0  0  1  0
+#&gt; t2.D09  0  0  1  0
+#&gt; t3.C01  0  0  0  1
+#&gt; t3.C10  0  0  0  1
 #&gt; attr(,"assign")
 #&gt; [1] 1 1 1 1
 #&gt; attr(,"contrasts")
 #&gt; attr(,"contrasts")$subgroup
 #&gt; [1] "contr.treatment"
-#&gt; </div><div class='input'><span class='fu'>create_design</span>(<span class='kw'>object</span>, <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>+</span> <span class='kw'>subgroup</span> <span class='op'>+</span> <span class='kw'>Sex</span> <span class='op'>+</span> <span class='kw'>T2D</span> <span class='op'>+</span> <span class='kw'>age</span> <span class='op'>+</span> <span class='kw'>bmi</span>)
+#&gt; </div><div class='input'><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span>, <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>+</span> <span class='va'>subgroup</span> <span class='op'>+</span> <span class='va'>Sex</span> <span class='op'>+</span> <span class='va'>T2D</span> <span class='op'>+</span> <span class='va'>age</span> <span class='op'>+</span> <span class='va'>bmi</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;        t0 t1 t2 t3 M D age   bmi
-#&gt; D05.t0  1  0  0  0 1 1  53 31.98
-#&gt; D14.t0  1  0  0  0 1 1  57 26.46
-#&gt; D16.t3  0  0  0  1 1 1  42 46.00
-#&gt; D05.t2  0  0  1  0 1 1  53 31.98
-#&gt; D16.t0  1  0  0  0 1 1  42 46.00
-#&gt; C03.t0  1  0  0  0 1 0  43 27.15
-#&gt; C01.t1  0  1  0  0 1 0  40 34.66
-#&gt; D14.t3  0  0  0  1 1 1  57 26.46
-#&gt; C10.t1  0  1  0  0 0 0  56 32.81
-#&gt; C01.t0  1  0  0  0 1 0  40 34.66
-#&gt; D14.t2  0  0  1  0 1 1  57 26.46
-#&gt; C02.t1  0  1  0  0 1 0  53 32.70
-#&gt; D18.t3  0  0  0  1 1 1  40 42.60
-#&gt; D16.t1  0  1  0  0 1 1  42 46.00
-#&gt; D11.t0  1  0  0  0 1 1  51 35.99
-#&gt; C15.t1  0  1  0  0 1 0  39 23.47
-#&gt; C15.t0  1  0  0  0 1 0  39 23.47
-#&gt; D14.t1  0  1  0  0 1 1  57 26.46
-#&gt; D18.t2  0  0  1  0 1 1  40 42.60
-#&gt; D06.t1  0  1  0  0 0 1  46 40.31
-#&gt; D11.t2  0  0  1  0 1 1  51 35.99
-#&gt; C03.t3  0  0  0  1 1 0  43 27.15
-#&gt; D17.t3  0  0  0  1 1 1  43 35.64
-#&gt; D09.t0  1  0  0  0 0 1  42 37.22
-#&gt; D19.t1  0  1  0  0 1 1  49 27.52
-#&gt; C02.t2  0  0  1  0 1 0  53 32.70
-#&gt; C02.t3  0  0  0  1 1 0  53 32.70
-#&gt; C15.t2  0  0  1  0 1 0  39 23.47
-#&gt; C02.t0  1  0  0  0 1 0  53 32.70
-#&gt; D19.t3  0  0  0  1 1 1  49 27.52
-#&gt; C04.t0  1  0  0  0 1 0  52 23.39
-#&gt; D18.t1  0  1  0  0 1 1  40 42.60
-#&gt; D06.t2  0  0  1  0 0 1  46 40.31
-#&gt; C03.t1  0  1  0  0 1 0  43 27.15
-#&gt; D17.t1  0  1  0  0 1 1  43 35.64
-#&gt; D06.t0  1  0  0  0 0 1  46 40.31
-#&gt; D11.t1  0  1  0  0 1 1  51 35.99
-#&gt; D06.t3  0  0  0  1 0 1  46 40.31
-#&gt; D18.t0  1  0  0  0 1 1  40 42.60
-#&gt; D11.t3  0  0  0  1 1 1  51 35.99
-#&gt; D17.t2  0  0  1  0 1 1  43 35.64
-#&gt; C04.t3  0  0  0  1 1 0  52 23.39
-#&gt; D19.t2  0  0  1  0 1 1  49 27.52
-#&gt; C12.t3  0  0  0  1 0 0  45 29.32
-#&gt; D19.t0  1  0  0  0 1 1  49 27.52
-#&gt; C04.t2  0  0  1  0 1 0  52 23.39
-#&gt; C04.t1  0  1  0  0 1 0  52 23.39
-#&gt; C12.t1  0  1  0  0 0 0  45 29.32
-#&gt; C10.t0  1  0  0  0 0 0  56 32.81
-#&gt; D17.t0  1  0  0  0 1 1  43 35.64
-#&gt; D05.t3  0  0  0  1 1 1  53 31.98
-#&gt; D09.t1  0  1  0  0 0 1  42 37.22
-#&gt; D05.t1  0  1  0  0 1 1  53 31.98
-#&gt; C12.t0  1  0  0  0 0 0  45 29.32
-#&gt; D09.t3  0  0  0  1 0 1  42 37.22
-#&gt; C03.t2  0  0  1  0 1 0  43 27.15
-#&gt; C15.t3  0  0  0  1 1 0  39 23.47
-#&gt; C10.t2  0  0  1  0 0 0  56 32.81
-#&gt; C12.t2  0  0  1  0 1 0  45 29.32
-#&gt; D16.t2  0  0  1  0 1 1  42 46.00
-#&gt; D09.t2  0  0  1  0 0 1  42 37.22
-#&gt; C01.t3  0  0  0  1 1 0  40 34.60
-#&gt; C10.t3  0  0  0  1 0 0  56 32.81
+#&gt; t0.C15  1  0  0  0 1 0  39 23.47
+#&gt; t0.D14  1  0  0  0 1 1  57 26.46
+#&gt; t3.D16  0  0  0  1 1 1  42 46.00
+#&gt; t2.D05  0  0  1  0 1 1  53 31.98
+#&gt; t0.D16  1  0  0  0 1 1  42 46.00
+#&gt; t0.C03  1  0  0  0 1 0  43 27.15
+#&gt; t1.C01  0  1  0  0 1 0  40 34.66
+#&gt; t3.D14  0  0  0  1 1 1  57 26.46
+#&gt; t1.C10  0  1  0  0 0 0  56 32.81
+#&gt; t0.C01  1  0  0  0 1 0  40 34.66
+#&gt; t2.D14  0  0  1  0 1 1  57 26.46
+#&gt; t1.C02  0  1  0  0 1 0  53 32.70
+#&gt; t3.D18  0  0  0  1 1 1  40 42.60
+#&gt; t1.D16  0  1  0  0 1 1  42 46.00
+#&gt; t0.D11  1  0  0  0 1 1  51 35.99
+#&gt; t1.C15  0  1  0  0 1 0  39 23.47
+#&gt; t0.D05  1  0  0  0 1 0  53 31.98
+#&gt; t1.D14  0  1  0  0 1 1  57 26.46
+#&gt; t2.D18  0  0  1  0 1 1  40 42.60
+#&gt; t1.D06  0  1  0  0 0 1  46 40.31
+#&gt; t2.D11  0  0  1  0 1 1  51 35.99
+#&gt; t3.C03  0  0  0  1 1 0  43 27.15
+#&gt; t3.D17  0  0  0  1 1 1  43 35.64
+#&gt; t0.D09  1  0  0  0 0 1  42 37.22
+#&gt; t1.D19  0  1  0  0 1 1  49 27.52
+#&gt; t2.C02  0  0  1  0 1 0  53 32.70
+#&gt; t3.C02  0  0  0  1 1 0  53 32.70
+#&gt; t2.C15  0  0  1  0 1 0  39 23.47
+#&gt; t0.C02  1  0  0  0 1 0  53 32.70
+#&gt; t3.D19  0  0  0  1 1 1  49 27.52
+#&gt; t0.C04  1  0  0  0 1 0  52 23.39
+#&gt; t1.D18  0  1  0  0 1 1  40 42.60
+#&gt; t2.D06  0  0  1  0 0 1  46 40.31
+#&gt; t1.C03  0  1  0  0 1 0  43 27.15
+#&gt; t1.D17  0  1  0  0 1 1  43 35.64
+#&gt; t0.D06  1  0  0  0 0 1  46 40.31
+#&gt; t1.D11  0  1  0  0 1 1  51 35.99
+#&gt; t3.D06  0  0  0  1 0 1  46 40.31
+#&gt; t0.D18  1  0  0  0 1 1  40 42.60
+#&gt; t3.D11  0  0  0  1 1 1  51 35.99
+#&gt; t2.D17  0  0  1  0 1 1  43 35.64
+#&gt; t3.C04  0  0  0  1 1 0  52 23.39
+#&gt; t2.D19  0  0  1  0 1 1  49 27.52
+#&gt; t3.C12  0  0  0  1 0 0  45 29.32
+#&gt; t0.D19  1  0  0  0 1 1  49 27.52
+#&gt; t2.C04  0  0  1  0 1 0  52 23.39
+#&gt; t1.C04  0  1  0  0 1 0  52 23.39
+#&gt; t1.C12  0  1  0  0 0 0  45 29.32
+#&gt; t0.C10  1  0  0  0 0 0  56 32.81
+#&gt; t0.D17  1  0  0  0 1 1  43 35.64
+#&gt; t3.D05  0  0  0  1 1 1  53 31.98
+#&gt; t1.D09  0  1  0  0 0 1  42 37.22
+#&gt; t1.D05  0  1  0  0 1 1  53 31.98
+#&gt; t0.C12  1  0  0  0 0 0  45 29.32
+#&gt; t3.D09  0  0  0  1 0 1  42 37.22
+#&gt; t2.C03  0  0  1  0 1 0  43 27.15
+#&gt; t3.C15  0  0  0  1 1 0  39 23.47
+#&gt; t2.C10  0  0  1  0 0 0  56 32.81
+#&gt; t2.C12  0  0  1  0 1 0  45 29.32
+#&gt; t2.D16  0  0  1  0 1 1  42 46.00
+#&gt; t2.D09  0  0  1  0 0 1  42 37.22
+#&gt; t3.C01  0  0  0  1 1 0  40 34.60
+#&gt; t3.C10  0  0  0  1 0 0  56 32.81
 #&gt; attr(,"assign")
 #&gt; [1] 1 1 1 1 2 3 4 5
 #&gt; attr(,"contrasts")
@@ -311,7 +342,78 @@
 #&gt; 
 #&gt; attr(,"contrasts")$T2D
 #&gt; [1] "contr.treatment"
-#&gt; </div></pre>
+#&gt; </div><div class='input'><span class='va'>object</span><span class='op'>$</span><span class='va'>subgroup</span> <span class='op'>&lt;-</span> <span class='st'>'atkin18'</span>
+<span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;        atkin18
+#&gt; t0.C15       1
+#&gt; t0.D14       1
+#&gt; t3.D16       1
+#&gt; t2.D05       1
+#&gt; t0.D16       1
+#&gt; t0.C03       1
+#&gt; t1.C01       1
+#&gt; t3.D14       1
+#&gt; t1.C10       1
+#&gt; t0.C01       1
+#&gt; t2.D14       1
+#&gt; t1.C02       1
+#&gt; t3.D18       1
+#&gt; t1.D16       1
+#&gt; t0.D11       1
+#&gt; t1.C15       1
+#&gt; t0.D05       1
+#&gt; t1.D14       1
+#&gt; t2.D18       1
+#&gt; t1.D06       1
+#&gt; t0.D08       1
+#&gt; t2.D11       1
+#&gt; t3.C03       1
+#&gt; t3.D17       1
+#&gt; t0.D09       1
+#&gt; t1.D19       1
+#&gt; t2.C02       1
+#&gt; t3.C02       1
+#&gt; t2.C15       1
+#&gt; t0.C02       1
+#&gt; t3.D19       1
+#&gt; t0.C04       1
+#&gt; t1.D18       1
+#&gt; t2.D06       1
+#&gt; t1.C03       1
+#&gt; t1.D17       1
+#&gt; t0.D06       1
+#&gt; t1.D11       1
+#&gt; t3.D06       1
+#&gt; t1.D08       1
+#&gt; t0.D18       1
+#&gt; t3.D11       1
+#&gt; t2.D17       1
+#&gt; t3.C04       1
+#&gt; t2.D19       1
+#&gt; t3.C12       1
+#&gt; t0.D19       1
+#&gt; t2.C04       1
+#&gt; t1.C04       1
+#&gt; t1.C12       1
+#&gt; t0.C10       1
+#&gt; t0.D17       1
+#&gt; t3.D05       1
+#&gt; t1.D09       1
+#&gt; t1.D05       1
+#&gt; t0.C12       1
+#&gt; t3.D09       1
+#&gt; t2.C03       1
+#&gt; t3.C15       1
+#&gt; t3.D08       1
+#&gt; t2.C10       1
+#&gt; t2.C12       1
+#&gt; t2.D08       1
+#&gt; t2.D16       1
+#&gt; t2.D09       1
+#&gt; t3.C01       1
+#&gt; t3.C10       1
+#&gt; attr(,"assign")
+#&gt; [1] 0</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,16 +124,16 @@
     <p>Biplot batch corrections</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plot_corrections</span>(<span class='kw'>...</span>)
+    <pre class="usage"><span class='fu'>plot_corrections</span><span class='op'>(</span><span class='va'>...</span><span class='op'>)</span>
 
-<span class='fu'>biplot_corrections</span>(
-  <span class='kw'>object</span>,
-  method = <span class='st'>"pca"</span>,
-  color = <span class='kw'>subgroup</span>,
-  covariates = <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span>(<span class='fl'>0</span>),
-  varcols = <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>ceiling</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='fl'>1</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='kw'>covariates</span>))),
-  plot = <span class='fl'>TRUE</span>
-)</pre>
+<span class='fu'>biplot_corrections</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  method <span class='op'>=</span> <span class='st'>"pca"</span>,
+  color <span class='op'>=</span> <span class='va'>subgroup</span>,
+  covariates <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span><span class='op'>(</span><span class='fl'>0</span><span class='op'>)</span>,
+  varcols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>ceiling</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>covariates</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>,
+  plot <span class='op'>=</span> <span class='cn'>TRUE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -176,9 +176,9 @@
     <div class='dont-index'><p>biplot_covariates</p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span>(<span class='st'>'atkin18.metabolon.xlsx'</span>)
-<span class='kw'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_metabolon.html'>read_metabolon</a></span>(<span class='kw'>file</span>, plot = <span class='fl'>FALSE</span>)
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/atkin18/atkin18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values: t0.S01 =&gt; t0</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: t0.S01 =&gt; S01</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='input'><span class='fu'>biplot_corrections</span>(<span class='kw'>object</span>,  covariates = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>'SEX'</span>, <span class='st'>'T2D'</span>, <span class='st'>'SUB'</span>, <span class='st'>'SET'</span>))
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'atkin18.metabolon.xlsx'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/atkin18/atkin18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values: t0.C01 =&gt; t0</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: t0.C01 =&gt; C01</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 975/975 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>biplot_corrections</span><span class='op'>(</span><span class='va'>object</span>,  covariates <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'SEX'</span>, <span class='st'>'T2D'</span>, <span class='st'>'SUB'</span>, <span class='st'>'SET'</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='warning'>Warning: Partial NA coefficients for 10 probe(s)</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Partial NA coefficients for 9 probe(s)</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Partial NA coefficients for 220 probe(s)</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Partial NA coefficients for 4 probe(s)</span></div><div class='img'><img src='biplot_corrections-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
