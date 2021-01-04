@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Read affymetrix microarray — read_affymetrix • importomics</title>
+<title>Read affymetrix microarray — read_affymetrix • autonomics</title>
 
 
 <!-- jquery -->
@@ -71,7 +71,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">importomics</a>
+        <a class="navbar-link" href="../index.html">autonomics</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
       </span>
     </div>
@@ -95,7 +95,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">importomics</a>
+      <a href="../articles/using_importomics.html">autonomics</a>
     </li>
   </ul>
 </li>
@@ -143,10 +143,10 @@
     <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
 <span class='va'>url</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='st'>'http://www.bioconductor.org/help/publications/2003/'</span>,
                 <span class='st'>'Chiaretti/chiaretti2/T33.tgz'</span><span class='op'>)</span>
-<span class='va'>localfile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='st'>'~/importomicscache'</span>, <span class='fu'><a href='https://rdrr.io/r/base/basename.html'>basename</a></span><span class='op'>(</span><span class='va'>url</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>localfile</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='st'>'~/autonomicscache'</span>, <span class='fu'><a href='https://rdrr.io/r/base/basename.html'>basename</a></span><span class='op'>(</span><span class='va'>url</span><span class='op'>)</span><span class='op'>)</span>
 <span class='kw'>if</span> <span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/files.html'>file.exists</a></span><span class='op'>(</span><span class='va'>localfile</span><span class='op'>)</span><span class='op'>)</span><span class='op'>{</span>
     <span class='fu'><a href='https://rdrr.io/r/utils/download.file.html'>download.file</a></span><span class='op'>(</span><span class='va'>url</span>, destfile <span class='op'>=</span> <span class='va'>localfile</span><span class='op'>)</span>
-    <span class='fu'><a href='https://rdrr.io/r/utils/untar.html'>untar</a></span><span class='op'>(</span><span class='va'>localfile</span>, exdir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/path.expand.html'>path.expand</a></span><span class='op'>(</span><span class='st'>'~/importomicscache'</span><span class='op'>)</span><span class='op'>)</span>
+    <span class='fu'><a href='https://rdrr.io/r/utils/untar.html'>untar</a></span><span class='op'>(</span><span class='va'>localfile</span>, exdir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/path.expand.html'>path.expand</a></span><span class='op'>(</span><span class='st'>'~/autonomicscache'</span><span class='op'>)</span><span class='op'>)</span>
 <span class='op'>}</span>
 <span class='va'>localfile</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/substr.html'>substr</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fu'><a href='https://rdrr.io/r/base/nchar.html'>nchar</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span><span class='op'>-</span><span class='fl'>4</span><span class='op'>)</span>
 <span class='kw'>if</span> <span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span><span class='op'>(</span><span class='st'>"BiocManager"</span>, quietly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span><span class='op'>{</span>

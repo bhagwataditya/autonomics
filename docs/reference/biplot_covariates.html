@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Biplot covariates — plot_covariates • importomics</title>
+<title>Biplot covariates — plot_covariates • autonomics</title>
 
 
 <!-- jquery -->
@@ -71,7 +71,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">importomics</a>
+        <a class="navbar-link" href="../index.html">autonomics</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
       </span>
     </div>
@@ -95,7 +95,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">importomics</a>
+      <a href="../articles/using_importomics.html">autonomics</a>
     </li>
   </ul>
 </li>
@@ -183,7 +183,7 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'atkin18.metabolon.xlsx'</span><span class='op'>)</span>
 <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/importomicscache/datasets/atkin18/atkin18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values: t0.C01 =&gt; t0</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: t0.C01 =&gt; C01</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 975/975 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>biplot_covariates</span><span class='op'>(</span><span class='va'>object</span>, ndim <span class='op'>=</span> <span class='fl'>12</span>, dimcols <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/atkin18/atkin18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess subgroup values: t0.C01 =&gt; t0</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: t0.C01 =&gt; C01</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 975/975 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>biplot_covariates</span><span class='op'>(</span><span class='va'>object</span>, ndim <span class='op'>=</span> <span class='fl'>12</span>, dimcols <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
 </div><div class='input'><span class='fu'>biplot_covariates</span><span class='op'>(</span><span class='va'>object</span>, covariates <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'SEX'</span>, <span class='st'>'T2D'</span>, <span class='st'>'SUB'</span>, <span class='st'>'SET'</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='input'><span class='fu'>biplot_covariates</span><span class='op'>(</span><span class='va'>object</span>, covariates <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'SEX'</span>, <span class='st'>'T2D'</span>, <span class='st'>'SUB'</span>, <span class='st'>'SET'</span><span class='op'>)</span>, ndim<span class='op'>=</span><span class='fl'>2</span><span class='op'>)</span>
 </div><div class='input'><span class='fu'>biplot_covariates</span><span class='op'>(</span><span class='va'>object</span>, covariates <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'subgroup'</span><span class='op'>)</span>, dimcols <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>

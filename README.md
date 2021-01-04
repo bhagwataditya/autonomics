@@ -1,15 +1,15 @@
 ---
-title: importomics
+title: autonomics
 subtitle: generifying and intuifying cross-platform omics analysis
 ---
 
-![ ](https://bitbucket.org/graumannlabtools/importomics/downloads/read_prepro_analyze.png)
+![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png)
 
 
 ```
 # Install
     install.packages('remotes')
-    remotes::install_github('bhagwataditya/importomics',  
+    remotes::install_github('bhagwataditya/autonomics',  
                              repos = BiocManager::repositories(), 
                              dependencies = TRUE, upgrade = FALSE)
                              
