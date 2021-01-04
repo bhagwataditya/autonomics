@@ -157,7 +157,7 @@ extract_rectangle.character <- function(x, rows=seq_len(nrows(x, sheet=sheet)),
                 integer64  = 'numeric',
                 skip       = row1-1,
                 nrows      = 1+rown-row1,
-                select     = col1:coln) }
+                select     = seq(col1,coln)) }
 
     # Extract rectangle
     extract_rectangle.data.table(dt, transpose = transpose, drop = drop)

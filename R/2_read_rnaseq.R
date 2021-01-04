@@ -291,7 +291,9 @@ compute_precision_weights <- function(
 }
 
 
-explicitly_compute_precision_weights_once <- function(object, formula, plot = TRUE, ...){
+explicitly_compute_precision_weights_once <- function(
+    object, formula, plot = TRUE, ...
+){
 # Extract
     log2cpm  <- exprs(object)
     lib.size <- scaledlibsizes(counts(object))
@@ -450,7 +452,7 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
     object$sample_id <- sample_names
     object %<>% add_designvars(verbose = verbose)
     object %<>% preprocess_counts(formula = !!formula,
-                  filter_count = filter_count, verbose = verbose, plot = plot)
+                    filter_count = filter_count, verbose = verbose, plot = plot)
 # Contrast
     object %<>% pca()
     formula <- enquo(formula)
@@ -490,12 +492,10 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' read_counts(file)
 #' @seealso merge_sdata, merge_fdata
 #' @export
-read_counts <- function(
-    file, fid_col = 1, fname_col = character(0), filter_count = 10,
-    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object),
-    verbose      = TRUE, plot = TRUE
-){
+read_counts <- function(file, fid_col = 1,
+    fname_col = character(0), filter_count = 10,
+    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
+    contrastdefs = contrast_subgroups(object), verbose = TRUE, plot = TRUE){
 # Read
     assert_all_are_existing_files(file)
     formula      <- enexpr(formula)
@@ -516,8 +516,7 @@ read_counts <- function(
                         expr_rows  = 2:nrow(dt),   expr_cols  = expr_cols,
                         fvar_rows  = 1,            fvar_cols  = fdata_cols,
                         fdata_rows = 2:nrow(dt),   fdata_cols = fdata_cols,
-                        transpose  = FALSE,
-                        verbose    = TRUE)
+                        transpose  = FALSE, verbose    = TRUE)
     if ('gene_name' %in% fvars(object)) fvars(object) %<>%
         stri_replace_first_fixed('gene_name', 'feature_name')
     metadata(object)$platform <- 'rnaseq'

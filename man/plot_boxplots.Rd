@@ -72,7 +72,8 @@ Plot sample/feature boxplots
     file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
     object \%<>\% extract(, order(.$subgroup))
-    fdata(object) \%<>\% cbind(control=.$feature_name \%in\% c('biotin','phosphate'))
+    fdata(object) \%<>\% cbind(
+                        control=.$feature_name \%in\% c('biotin','phosphate'))
 # plot
     plot_boxplots(object[1:9,], x = feature_id, fill = feature_id)
     plot_boxplots(object[,1:9], x = sample_id,  fill = sample_id )
@@ -85,5 +86,6 @@ Plot sample/feature boxplots
     plot_subgroup_boxplots(object[1:4, ])
 }
 \seealso{
-\code{\link{plot_sample_densities}}, \code{\link{plot_sample_violins}}
+\code{\link{plot_sample_densities}},
+         \code{\link{plot_sample_violins}}
 }

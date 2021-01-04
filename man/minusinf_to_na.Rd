@@ -17,3 +17,8 @@ matrix
 \description{
 Convert -Inf to NA
 }
+\examples{
+x <- matrix(c(-Inf, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
+x
+minusinf_to_na(x)
+}

@@ -17,3 +17,8 @@ Updated matrix
 \description{
 Switch between nondetect representations
 }
+\examples{
+x <- matrix(c(0, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
+x
+zero_to_na(x)
+}

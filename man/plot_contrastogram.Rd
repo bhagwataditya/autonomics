@@ -17,6 +17,9 @@ plot_contrastogram(
 
 \item{curve}{arrow curvature}
 }
+\value{
+list returned by \code{\link[diagram]{plotmat}}
+}
 \description{
 Plot contrastogram
 }

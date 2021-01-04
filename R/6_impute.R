@@ -9,6 +9,10 @@
 #' @param x    matrix
 #' @param verbose   logical(1)
 #' @return Updated matrix
+#' @examples
+#' x <- matrix(c(0, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
+#' x
+#' zero_to_na(x)
 #' @export
 zero_to_na <- function(x, verbose = FALSE){
     selector <- x == 0
@@ -17,8 +21,8 @@ zero_to_na <- function(x, verbose = FALSE){
                     paste0('\t\tReplace 0 -> NA for %d/%d values ',
                             '(in %d/%d features and %d/%d samples)'),
                     sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
-                    sum(rowAnys(selector)), nrow(x),
-                    sum(colAnys(selector)), ncol(x))
+                    sum(rowAnys(selector), na.rm=TRUE), nrow(x),
+                    sum(colAnys(selector), na.rm=TRUE), ncol(x))
         x[selector] <- NA_real_
     }
     x
@@ -55,9 +59,9 @@ nan_to_na <- function(x, verbose = FALSE){
 #' @param verbose TRUE/FALSE
 #' @return matrix
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' x <- exprs(read_metabolon(file))
-#' na_to_zero(x, verbose = TRUE)
+#' x <- matrix(c(NA, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
+#' x
+#' na_to_zero(x)
 #' @export
 na_to_zero <- function(x, verbose = FALSE){
     selector <- is.na(x)
@@ -78,8 +82,12 @@ na_to_zero <- function(x, verbose = FALSE){
 #' @param x matrix
 #' @param verbose TRUE/FALSE
 #' @return matrix
+#' @examples
+#' x <- matrix(c(-Inf, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
+#' x
+#' inf_to_na(x)
 #' @export
-inf_to_na <- function(x, verbose){
+inf_to_na <- function(x, verbose = FALSE){
     selector <- is.infinite(x)
     if (any(c(selector), na.rm = TRUE)){
         if (verbose) cmessage(
@@ -99,6 +107,10 @@ inf_to_na <- function(x, verbose){
 #' @param x matrix
 #' @param verbose TRUE/FALSE
 #' @return matrix
+#' @examples
+#' x <- matrix(c(-Inf, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
+#' x
+#' minusinf_to_na(x)
 #' @export
 minusinf_to_na <- function(x, verbose = FALSE){
     selector <- x==-Inf
@@ -239,7 +251,7 @@ is_full_detect <- function(object){
 #' Venn diagram full/systematic/random detects
 #'
 #' @param object SummarizedExperiment
-#' @return NULL
+#' @return  \code{NULL}
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
@@ -286,7 +298,6 @@ impute_systematic_nondetects <- function(
                 , absent     := all(is.na(value)),    c('feature_id', groupstr)
             ][  , replicated := sum(!is.na(value))>1, c('feature_id', groupstr)
             ][  , systematic := any(absent) & any(replicated), 'feature_id']
-    set.seed(39)
     dt[, is_imputed := systematic & absent]
     dt[, value := fun(value, is_imputed), by='feature_id']
 # Update object
@@ -383,7 +394,6 @@ plot_detects <- function(...){
 plot_detections <- function(object, group = subgroup, fill = subgroup){
 # Process
     detection <- feature_id <- NULL
-    set.seed(39)
     group <- enquo(group);         fill     <- enquo(fill)
     groupstr <- as_name(group);    fillstr  <- as_name(fill)
 # Reorder samples
@@ -457,9 +467,8 @@ plot_quantifications <- function(...){
 
 #' @rdname plot_detections
 #' @export
-plot_summarized_detections <- function(
-    object, group = subgroup, fill = subgroup, na_imputes = TRUE
-){
+plot_summarized_detections <- function(object, group = subgroup,
+                                        fill = subgroup, na_imputes = TRUE){
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
     fill <- enquo(fill);     fillstr <- as_name(fill)
@@ -473,7 +482,7 @@ plot_summarized_detections <- function(
     featuretypes <- get_subgroup_combinations(object)
     dt <- sumexp_to_long_dt(object, svars = groupstr)
     if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,
-                                                         value := NA]
+                                                        value := NA]
     dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
                     by = c(groupstr, 'feature_id'))
     dt %<>% data.table::dcast.data.table(
@@ -487,7 +496,6 @@ plot_summarized_detections <- function(
         id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
         variable.name = groupstr, value.name='quantified')
     dt$quantified %<>% as.factor()
-
     nsampledt <- data.table(sdata(object))[, .N, by=groupstr] %>%  # preserves
                 set_names(c(groupstr, 'xmax'))                  # factor order!
     setorderv(nsampledt, groupstr)

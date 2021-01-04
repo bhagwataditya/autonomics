@@ -26,6 +26,9 @@ plot_samples(
 
 \item{plot}{whether to print plot}
 }
+\value{
+gtable returned by \code{\link[gridExtra]{arrangeGrob}}
+}
 \description{
 Plots sample densities and scores
 }

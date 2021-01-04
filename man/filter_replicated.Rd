@@ -4,7 +4,7 @@
 \alias{filter_replicated}
 \title{Filter for replicated features}
 \usage{
-filter_replicated(object, comparator = `>`, lod = 0, n = 2)
+filter_replicated(object, comparator = `>`, lod = 0, n = 2, verbose = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -14,10 +14,18 @@ filter_replicated(object, comparator = `>`, lod = 0, n = 2)
 \item{lod}{number: limit of detection}
 
 \item{n}{number: number of replicates above lod}
+
+\item{verbose}{TRUE/FALSE}
 }
 \value{
 SummarizedExperiment
 }
 \description{
 Filter for replicated features
+}
+\examples{
+require(magrittr)
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file, )
+object \%<>\% filter_replicated()
 }

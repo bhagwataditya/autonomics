@@ -189,18 +189,27 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' @param comparator string
 #' @param lod        number: limit of detection
 #' @param n          number: number of replicates above lod
+#' @param verbose    TRUE/FALSE
 #' @return  SummarizedExperiment
+#' @examples
+#' require(magrittr)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, )
+#' object %<>% filter_replicated()
 #' @export
-filter_replicated  <- function(object, comparator = `>`, lod=0, n=2){
+filter_replicated  <- function(
+    object, comparator = `>`, lod=0, n=2, verbose=TRUE
+){
     assert_is_all_of(object, "SummarizedExperiment")
-    assertive::assert_is_function(comparator)
+    assert_is_function(comparator)
     assert_is_a_number(lod)
     assert_is_a_number(n)
 
     nreplicates <- rowSums(comparator(exprs(object), lod), na.rm=TRUE)
     idx <- nreplicates >= n
-    cmessage('\tRetain %d/%d features replicated in at least %d samples',
-                    sum(idx), length(idx), n)
+    if (verbose) cmessage(
+        '\tRetain %d/%d features replicated in at least %d samples',
+        sum(idx), length(idx), n)
     object[idx, ]
 }
 

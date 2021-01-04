@@ -10,20 +10,21 @@
 #' @importFrom assertive   assert_all_are_true
 #' @importFrom assertive   assert_all_are_whole_numbers
 #' @importFrom assertive   assert_any_are_not_nan
-#' @importFrom assertive   assert_are_identical         assert_are_same_length
+#' @importFrom assertive   assert_are_identical     assert_are_same_length
 #' @importFrom assertive   assert_engine
-#' @importFrom assertive   assert_has_names             assert_has_no_duplicates
-#' @importFrom assertive   assert_is_all_of             assert_is_any_of
+#' @importFrom assertive   assert_has_names         assert_has_no_duplicates
+#' @importFrom assertive   assert_is_all_of         assert_is_any_of
 #' @importFrom assertive   assert_is_a_bool
-#' @importFrom assertive   assert_is_a_number           assert_is_a_string
-#' @importFrom assertive   assert_is_character          assert_is_data.frame
-#' @importFrom assertive   assert_is_identical_to_true  assert_is_list
-#' @importFrom assertive   assert_is_logical            assert_is_non_empty
-#' @importFrom assertive   assert_is_non_scalar         assert_is_not_null
-#' @importFrom assertive   assert_is_matrix             assert_is_numeric
-#' @importFrom assertive   assert_is_of_length          assert_is_subset
-#' @importFrom assertive   false                        get_name_in_parent
-#' @importFrom assertive   has_names                    has_no_duplicates
+#' @importFrom assertive   assert_is_a_number       assert_is_a_string
+#' @importFrom assertive   assert_is_character      assert_is_data.frame
+#' @importFrom assertive   assert_is_function       assert_is_identical_to_true
+#' @importFrom assertive   assert_is_list
+#' @importFrom assertive   assert_is_logical        assert_is_non_empty
+#' @importFrom assertive   assert_is_non_scalar     assert_is_not_null
+#' @importFrom assertive   assert_is_matrix         assert_is_numeric
+#' @importFrom assertive   assert_is_of_length      assert_is_subset
+#' @importFrom assertive   false                    get_name_in_parent
+#' @importFrom assertive   has_names                has_no_duplicates
 #' @importFrom assertive   is_empty_character   is_scalar   is_existing_file
 #' @importFrom colorspace  sequential_hcl
 #' @importFrom data.table  copy   data.table   fread   fwrite  .N

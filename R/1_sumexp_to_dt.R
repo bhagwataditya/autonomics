@@ -144,9 +144,9 @@ dt2sumexp  <- function(
 ){
     exprs1 <- dt2exprs(dt)
     sdata1 <- dt2DF(dt[, .SD[1], by = 'sample_id' ])[, c('sample_id',  svars),
-                                                     drop = FALSE]
+                                                        drop = FALSE ]
     fdata1 <- dt2DF(dt[, .SD[1], by = 'feature_id'])[, c('feature_id', fvars),
-                                                     drop = FALSE]
+                                                        drop = FALSE ]
     SummarizedExperiment(
         assays = list(exprs = exprs1),
         rowData = fdata1,

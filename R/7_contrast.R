@@ -224,7 +224,7 @@ guess_replicate_values <- function(x, sep = guess_sep(x), verbose=TRUE){
 create_subgroup_values <- function(object, subgroup_var, verbose){
     values <- svalues(object, subgroup_var)
     if (is.null(values) | all(is.na(values)) | all(values=="")) values <-
-         guess_subgroup_values(object$sample_id, verbose=verbose)
+        guess_subgroup_values(object$sample_id, verbose=verbose)
     if (all(is.na(values)) | all(values=="")) values[] <- 'subgroup1'
     factor(values)
 }
@@ -496,7 +496,7 @@ subgroup_array <- function(object){
     #x %<>% sort()
     dt <- data.table(subgroup = factor(x, x))
     components <- dt[, tstrsplit(subgroup, sep, fixed=TRUE)]
-    for (i in 1:ncol(components))   components[[i]] %<>%
+    for (i in seq_len(ncol(components)))   components[[i]] %<>%
                                     factor(., levels=unique(.))
     dt %<>% cbind(components)
     data.table::setorderv(dt, rev(names(components)))
@@ -521,15 +521,15 @@ subgroup_array <- function(object){
 subgroup_matrix <- function(object){
     subgroup_array <- subgroup_array(object)
     if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
-                      byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
+        byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
     otherdims <- names(dim(subgroup_array)) %>% setdiff('V1')
     ncol1   <- Reduce('*', dim(subgroup_array)[otherdims])
     colnames1 <- dimnames(subgroup_array)[otherdims] %>%
                 expand.grid()                        %>%
                 apply(1, paste0, collapse='.')
     subgroupmat <- matrix(subgroup_array,
-           nrow = nrow(subgroup_array), ncol = ncol1,
-           dimnames=list(rownames(subgroup_array), colnames1))
+                        nrow = nrow(subgroup_array), ncol = ncol1,
+                        dimnames=list(rownames(subgroup_array), colnames1))
     subgroupmat %>% extract(nrow(.):1, )
     #dt <- split_subgroup_levels(object)
     #subgroupmat <- as.matrix(data.table::dcast(
@@ -583,8 +583,8 @@ contrast_subgroup_rows <- function(object){
     subgroupmat <- subgroup_matrix(object)
     if (nrow(subgroupmat)==1) return(matrix(, nrow=0, ncol=ncol(subgroupmat)))
     rowcontrasts <- matrix(  sprintf('%s - %s',
-                                  subgroupmat[-nrow(subgroupmat), ],
-                                  subgroupmat[-1, ]),
+                                    subgroupmat[-nrow(subgroupmat), ],
+                                    subgroupmat[-1, ]),
                             nrow = nrow(subgroupmat)-1,
                             ncol = ncol(subgroupmat))
     colnames(rowcontrasts) <- colnames(subgroupmat)
@@ -672,11 +672,11 @@ add_limma <- function(object, contrastdefs = contrast_subgroups(object),
         cmessage("\t\tBlock on svar 'block'")
         block <- my_sdata$block
         correlation  <- duplicateCorrelation(exprs(object), designmat,
-                                     block = block)[['consensus.correlation']]}
+                            block = block)[['consensus.correlation']]}
 # Fit lm and compute contrasts
     fit <- suppressWarnings(lmFit(object = exprs(object), design = designmat,
-                                  block = block, correlation = correlation,
-                                  weights = weights(object)))
+                                block = block, correlation = correlation,
+                                weights = weights(object)))
     object %<>% add_contrast_results(fit)
 # Plot/Return
     if (plot)  plot_contrastogram(object)
@@ -739,21 +739,23 @@ add_contrast_results <- function(object, fit){
 #' @export
 setGeneric("designmat", function(object)   standardGeneric("designmat") )
 
-    #' @rdname designmat
-    #' @export
-    setGeneric("designmat<-",
-              function(object, value)  standardGeneric("designmat<-") )
 
-    #' @rdname designmat
-    setMethod("designmat", signature("SummarizedExperiment"),
-                function(object) metadata(object)$designmat)
+#' @rdname designmat
+#' @export
+setGeneric("designmat<-",
+function(object, value)  standardGeneric("designmat<-") )
 
-    #' @rdname designmat
-    setReplaceMethod("designmat",
-                    signature("SummarizedExperiment", "matrix"),
-                    function(object, value){
-                        metadata(object)$designmat <- value
-                        object  })
+
+#' @rdname designmat
+setMethod("designmat", signature("SummarizedExperiment"),
+function(object) metadata(object)$designmat)
+
+
+#' @rdname designmat
+setReplaceMethod("designmat", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    metadata(object)$designmat <- value
+    object  })
 
 
 #' @title Get/set contrastdefs
@@ -768,21 +770,23 @@ setGeneric("designmat", function(object)   standardGeneric("designmat") )
 #' @export
 setGeneric("contrastdefs", function(object)   standardGeneric("contrastdefs") )
 
-    #' @rdname contrastdefs
-    setMethod("contrastdefs", signature("SummarizedExperiment"),
-                function(object) metadata(object)$contrastdefs)
 
-    #' @rdname contrastdefs
-    #' @export
-    setGeneric("contrastdefs<-",
-                function(object, value)  standardGeneric("contrastdefs<-") )
+#' @rdname contrastdefs
+setMethod("contrastdefs", signature("SummarizedExperiment"),
+function(object) metadata(object)$contrastdefs)
 
-    #' @rdname contrastdefs
-    setReplaceMethod("contrastdefs",
-                    signature("SummarizedExperiment", "list"),
-                    function(object, value){
-                        metadata(object)$contrastdefs <- value
-                        object  })
+
+#' @rdname contrastdefs
+#' @export
+setGeneric("contrastdefs<-",
+function(object, value)  standardGeneric("contrastdefs<-") )
+
+
+#' @rdname contrastdefs
+setReplaceMethod("contrastdefs", signature("SummarizedExperiment", "list"),
+function(object, value){
+    metadata(object)$contrastdefs <- value
+    object  })
 
 
 #' @title Get/set limma results
@@ -805,7 +809,7 @@ setMethod("limma", signature("SummarizedExperiment"),
 function(object){
     limma_array <- metadata(object)$limma
     if (is.null(limma_array)) NULL else limma_array[
-                                           fnames(object), , , drop=FALSE] })
+                                            fnames(object), , , drop=FALSE] })
 
 #' @rdname limma
 #' @export
@@ -841,13 +845,14 @@ extract_limma_quantity <- function(object, quantity='p'){
     dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
     dt %<>% cbind(adrop(limma(object)[, , quantity, drop=FALSE], drop=3))
     data.table::melt.data.table(
-      dt, id.vars = fvars0, variable.name = 'contrast', value.name = quantity)
+        dt, id.vars = fvars0, variable.name = 'contrast', value.name = quantity)
 }
 
+
 merge_limma_quantities <- function(x, y){
-   names0 <- c('feature_id','feature_name','imputed', 'contrast')
-   names0 %<>% intersect(names(x)) %>% intersect(names(y))
-   merge(x, y, by = names0)
+    names0 <- c('feature_id','feature_name','imputed', 'contrast')
+    names0 %<>% intersect(names(x)) %>% intersect(names(y))
+    merge(x, y, by = names0)
 }
 
 
@@ -890,11 +895,11 @@ compute_connections <- function(
     pvalues <- limma(object)[, , 'p',      drop=FALSE]
     effects <- limma(object)[, , 'effect', drop=FALSE]
     nsignif <- apply(pvalues < 0.05, 2, sum, na.rm=TRUE)
-               #colSums( pvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
+                #colSums( pvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
     nup     <- apply(pvalues < 0.05 & effects>0, 2, sum, na.rm=TRUE)
-              #colSums((pvalues < 0.05) & (effects > 0), na.rm=TRUE)
+                #colSums((pvalues < 0.05) & (effects > 0), na.rm=TRUE)
     ndown   <- apply(pvalues < 0.05 & effects<0, 2, sum, na.rm=TRUE)
-              #colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
+                #colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
     sep <- guess_sep(object)
     subgroupmatrix <- subgroup_matrix(object)
@@ -903,7 +908,7 @@ compute_connections <- function(
         nrow = length(subgrouplevels), ncol = length(subgrouplevels),
         dimnames = list(subgrouplevels, subgrouplevels))
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
-                     dimnames = dimnames(arrowsizes))
+                        dimnames = dimnames(arrowsizes))
 # Add contrast numbers
     designmat    <- designmat(object)
     colcontrasts <- contrastdefs(object)[[1]]
@@ -938,6 +943,7 @@ compute_connections <- function(
 #' @param object SummarizedExperiment
 #' @param colors named color vector (names = subgroups)
 #' @param curve  arrow curvature
+#' @return list returned by \code{\link[diagram]{plotmat}}
 #' @examples
 #' # subgroup matrix
 #'    file <- download_data('halama18.metabolon.xlsx')
@@ -1000,8 +1006,8 @@ plot_contrastogram <- function(
                     arr.lcol    = arrowcolors,
                     arr.col     = arrowcolors,
                     arr.type    = 'triangle')
-      #, arr.lcol = log2(1+diagram_matrix))
-      #dev.off()
+    #, arr.lcol = log2(1+diagram_matrix))
+    #dev.off()
 }
 
 
@@ -1033,13 +1039,13 @@ nmax <- function(x, n) sort(x, decreasing = TRUE) %>% extract(min(length(.), n))
 nmin <- function(x, n) sort(x) %>% extract(min(length(.), n))
 
 top_down <- function(effect, fdr, mlp, ntop){
-   fdr_ok   <- fdr  < 0.05
-   coef_ok  <- effect < -1
-   coef_top <- if (any(fdr_ok)){  effect < nmin(effect[fdr_ok], ntop+1)
-               } else {           rep(FALSE, length(effect))            }
-   mlp_top  <- if (any(coef_ok)){ mlp  > nmax(mlp[coef_ok], ntop+1)
-               } else {           rep(FALSE, length(effect))            }
-   fdr_ok & coef_ok & (coef_top | mlp_top)
+    fdr_ok   <- fdr  < 0.05
+    coef_ok  <- effect < -1
+    coef_top <- if (any(fdr_ok)){  effect < nmin(effect[fdr_ok], ntop+1)
+                } else {           rep(FALSE, length(effect))            }
+    mlp_top  <- if (any(coef_ok)){ mlp  > nmax(mlp[coef_ok], ntop+1)
+                } else {           rep(FALSE, length(effect))            }
+    fdr_ok & coef_ok & (coef_top | mlp_top)
 }
 
 #' @examples
@@ -1068,7 +1074,7 @@ melt_contrastdefs <- function(contrastdefmat){
     facetrow <- NULL
     contrastdefdt <- data.table(contrastdefmat, facetrow = "")
     if (!is.null(rownames(contrastdefmat))) contrastdefdt[,
-                                          facetrow := rownames(contrastdefmat)]
+                                        facetrow := rownames(contrastdefmat)]
     data.table::melt.data.table(
         contrastdefdt,
         id.vars       = 'facetrow',

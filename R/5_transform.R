@@ -76,7 +76,7 @@ zscore <- function(object, verbose = FALSE){
 #'                         plot_sample_densities(center(object, housekeeping)))
 #' @export
 center <- function(object, selector = rep(TRUE, nrow(object))==TRUE,
-                   fun = 'median', verbose = TRUE
+                    fun = 'median', verbose = TRUE
 ){
     selector <- enexpr(selector)
     selector <- rlang::eval_tidy(selector, data = fdata(object))

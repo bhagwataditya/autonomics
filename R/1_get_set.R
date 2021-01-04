@@ -12,24 +12,24 @@
 #' @export
 setGeneric("analysis", function(object) standardGeneric("analysis"))
 
+
 #' @rdname analysis
 #' @export
-setMethod(
-    "analysis",
-    signature("SummarizedExperiment"),
-    function(object) metadata(object)$analysis)
+setMethod("analysis", signature("SummarizedExperiment"),
+function(object) metadata(object)$analysis)
+
 
 #' @rdname analysis
 #' @export
 setGeneric("analysis<-", function(object, value)  standardGeneric("analysis<-"))
 
+
 #' @rdname analysis
-setReplaceMethod(
-    "analysis",
-    signature("SummarizedExperiment", "list"),
-    function(object, value){
-        metadata(object)$analysis <- value
-        object})
+setReplaceMethod("analysis", signature("SummarizedExperiment", "list"),
+function(object, value){
+    metadata(object)$analysis <- value
+    object})
+
 
 #' @title Get/Set exprs
 #' @description Get / Set exprs matrix
@@ -44,31 +44,29 @@ setReplaceMethod(
 #' @export
 setGeneric('exprs',  function(object)   standardGeneric("exprs"))
 
+
 #' @rdname exprs
-setMethod(
-    "exprs",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$exprs)
+setMethod("exprs", signature("SummarizedExperiment"),
+function(object)   assays(object)$exprs)
+
 
 #' @rdname exprs
 #' @export
 setGeneric('exprs<-',   function(object, value) standardGeneric("exprs<-"))
 
-#' @rdname exprs
-setReplaceMethod(
-    "exprs",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$exprs <- value
-        object })
 
 #' @rdname exprs
-setReplaceMethod(
-    "exprs",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$exprs[] <- value
-        object })
+setReplaceMethod("exprs", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$exprs <- value
+    object })
+
+
+#' @rdname exprs
+setReplaceMethod("exprs", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$exprs[] <- value
+    object })
 
 
 #==============================================================================
@@ -89,7 +87,7 @@ setGeneric('fdata',   function(object)   standardGeneric('fdata'))
 
 #' @rdname fdata
 setMethod('fdata',  signature('SummarizedExperiment'),
-    function(object) as(rowData(object), "data.frame"))
+function(object) as(rowData(object), "data.frame"))
     # do not use as.data.frame !
     # that somehow somewhere performs a check.names operation!
 
@@ -101,12 +99,10 @@ setMethod('fdata',  signature('SummarizedExperiment'),
 setGeneric('fdata<-',   function(object, value)  standardGeneric('fdata<-'))
 
 #' @rdname fdata
-setReplaceMethod(
-    'fdata',
-    signature('SummarizedExperiment', 'data.frame'),
-    function(object, value){
-        rowData(object) <- DataFrame(value, check.names = FALSE)
-        object })
+setReplaceMethod('fdata', signature('SummarizedExperiment', 'data.frame'),
+function(object, value){
+    rowData(object) <- DataFrame(value, check.names = FALSE)
+    object })
 
 
 #==============================================================================
@@ -126,6 +122,7 @@ flevels <- function(object, fvar){
 }
 
 
+
 #==============================================================================
 #' @title Get/Set fnames
 #' @description Get/Set feature names
@@ -142,24 +139,23 @@ flevels <- function(object, fvar){
 #' @export
 setGeneric("fnames", function(object)   standardGeneric("fnames"))
 
+
 #' @rdname fnames
-setMethod(
-    "fnames",
-    signature("SummarizedExperiment"),
-    function(object)   rownames(object))
+setMethod("fnames", signature("SummarizedExperiment"),
+function(object)   rownames(object))
+
 
 #' @rdname fnames
 #' @export
-setGeneric(
-    "fnames<-",
-    function(object, value)   standardGeneric("fnames<-"))
+setGeneric("fnames<-",
+function(object, value)   standardGeneric("fnames<-"))
+
 
 #' @rdname fnames
-setReplaceMethod(
-    "fnames",
-    signature("SummarizedExperiment", "character"),
-    function(object, value){  rownames(object) <- value
-        object})
+setReplaceMethod("fnames", signature("SummarizedExperiment", "character"),
+function(object, value){  rownames(object) <- value
+    object})
+
 
 
 #==============================================================================
@@ -214,22 +210,21 @@ fid_values <- function(object) fvalues(object, 'feature_id')
 #' @export
 setGeneric("fvars", function(object)   standardGeneric("fvars"))
 
+
 #' @rdname fvars
-setMethod(
-    "fvars",
-    signature("SummarizedExperiment"),
-    function(object) names(rowData(object)))
+setMethod("fvars", signature("SummarizedExperiment"),
+function(object) names(rowData(object)))
+
 
 #' @rdname fvars
 #' @export
 setGeneric("fvars<-", function(object, value)  standardGeneric("fvars<-") )
 
+
 #' @rdname fvars
-setReplaceMethod(
-    "fvars",
-    signature("SummarizedExperiment", "character"),
-    function(object, value){ names(rowData(object)) <- value
-                            object })
+setReplaceMethod("fvars", signature("SummarizedExperiment", "character"),
+function(object, value){ names(rowData(object)) <- value
+                        object })
 
 
 
@@ -248,18 +243,18 @@ setReplaceMethod(
 #' @rdname sdata
 #' @export
 setGeneric('sdata',
-    function(object){ standardGeneric('sdata')})
+function(object) standardGeneric('sdata'))
+
 
 #' @rdname sdata
 setMethod('sdata', signature('SummarizedExperiment'),
-    function(object){
-        as(colData(object), "data.frame") })
-        # !! as.data.frame somehow somewhere performs a check.names
+function(object) as(colData(object), "data.frame"))
+    # !! as.data.frame somehow somewhere performs a check.names
+
 
 #' @rdname sdata
 setMethod('sdata', signature('MultiAssayExperiment'),
-          function(object){
-              as(colData(object), "data.frame") })
+function(object)  as(colData(object), "data.frame"))
 
 
 #' @rdname sdata
@@ -267,36 +262,30 @@ setMethod('sdata', signature('MultiAssayExperiment'),
 setGeneric('sdata<-', function(object, value)  standardGeneric('sdata<-'))
 
 #' @rdname sdata
-setReplaceMethod(
-    'sdata',
-    signature('SummarizedExperiment', 'data.frame'),
-    function(object, value){
-        colData(object) <- DataFrame(value, check.names = FALSE)
-        object })
+setReplaceMethod('sdata', signature('SummarizedExperiment', 'data.frame'),
+function(object, value){
+    colData(object) <- DataFrame(value, check.names = FALSE)
+    object })
 
 #' @rdname sdata
-setReplaceMethod(
-    'sdata',
-    signature('SummarizedExperiment', 'DataFrame'),
-    function(object, value){
-        colData(object) <- value
-        object })
+setReplaceMethod('sdata',
+signature('SummarizedExperiment', 'DataFrame'),
+function(object, value){
+    colData(object) <- value
+    object })
 
 #' @rdname sdata
-setReplaceMethod(
-    'sdata',
-    signature('MultiAssayExperiment', 'data.frame'),
-    function(object, value){
-        colData(object) <- DataFrame(value, check.names = FALSE)
-        object })
+setReplaceMethod('sdata', signature('MultiAssayExperiment', 'data.frame'),
+function(object, value){
+    colData(object) <- DataFrame(value, check.names = FALSE)
+    object })
 
 #' @rdname sdata
-setReplaceMethod(
-    'sdata',
-    signature('MultiAssayExperiment', 'DataFrame'),
-    function(object, value){
-        colData(object) <- value
-        object })
+setReplaceMethod('sdata', signature('MultiAssayExperiment', 'DataFrame'),
+function(object, value){
+    colData(object) <- value
+    object })
+
 
 
 #=====================================================================
@@ -315,6 +304,7 @@ setReplaceMethod(
 #' @export
 setGeneric("snames",  function(object)   standardGeneric("snames"))
 
+
 #' @rdname snames
 setMethod('snames',
     signature("SummarizedExperiment"),
@@ -324,13 +314,13 @@ setMethod('snames',
 #' @export
 setGeneric("snames<-", function(object, value)  standardGeneric("snames<-"))
 
+
 #' @rdname snames
-setReplaceMethod(
-    "snames",
-    signature("SummarizedExperiment", "character"),
-    function(object, value){
-        colnames(object)  <- value
-        object })
+setReplaceMethod("snames", signature("SummarizedExperiment", "character"),
+function(object, value){
+    colnames(object)  <- value
+    object })
+
 
 
 #=========================================================
@@ -390,21 +380,21 @@ sampleid_values <- function(object){
     svalues(object, 'sample_id')
 }
 
+
 # Set
 #====
 #' @rdname svalues
 #' @export
-setGeneric(
-    'svalues<-',
-    function(object, svar, value)  standardGeneric('svalues<-'))
+setGeneric('svalues<-',
+function(object, svar, value)  standardGeneric('svalues<-'))
+
 
 #' @rdname svalues
-setReplaceMethod(
-    'svalues',
-    signature('SummarizedExperiment', 'character', "ANY"),
-    function(object, svar, value){
-        colData(object)[svar] <- value
-        object })
+setReplaceMethod('svalues', signature('SummarizedExperiment','character',"ANY"),
+function(object, svar, value){
+    colData(object)[svar] <- value
+    object })
+
 
 
 #=========================================================================

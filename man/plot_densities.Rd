@@ -64,5 +64,6 @@ Plot sample/feature densities
     plot_feature_densities(object)
 }
 \seealso{
-\code{\link{plot_sample_violins}}, \code{\link{plot_sample_boxplots}}
+\code{\link{plot_sample_violins}},
+         \code{\link{plot_sample_boxplots}}
 }

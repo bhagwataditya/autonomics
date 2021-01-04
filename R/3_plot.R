@@ -258,7 +258,8 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #' @param group       svar mapped to group
 #' @param fixed       fixed aesthetics
 #' @param subsetter   subsetter for showing a subset of samples/features
-#' @seealso \code{\link{plot_sample_violins}}, \code{\link{plot_sample_boxplots}}
+#' @seealso \code{\link{plot_sample_violins}},
+#'          \code{\link{plot_sample_boxplots}}
 #' @return  ggplot object
 #' @examples
 #' # Read data
@@ -395,7 +396,8 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     xstr         <- as_name(x)
     fillstr      <- if (quo_is_null(fill))      character(0) else as_name(fill)
     colorstr     <- if (quo_is_null(color))     character(0) else as_name(color)
-    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(highlight)
+    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
+                                                                    highlight)
 # Prepare
     plotvars <- unique(c('feature_name', fillstr, colorstr, highlightstr))
     plottedsvars <- intersect(plotvars, svars(object))
@@ -403,7 +405,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
 # Plot
     p <- plot_data(dt, geom = geom_violin, x = !!x, y = value,
-                   fill = !!fill, color= !!color, group=!!group, fixed = fixed)
+                fill = !!fill, color= !!color, group=!!group, fixed = fixed)
     p %<>% add_highlights(!!highlight, geom = geom_point)
     p <- p + facet_wrap(vars(!!facet), scales = "free_y")
     # Finish
@@ -432,8 +434,8 @@ plot_feature_violins <- function(
     object, x = feature_id, fill = feature_name, color = NULL, highlight = NULL,
     fixed = list(na.rm=TRUE)
 ) plot_violins(
-     object, x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color),
-     highlight=!!enquo(highlight), fixed = fixed
+    object, x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color),
+    highlight=!!enquo(highlight), fixed = fixed
 )
 
 #' @rdname plot_violins
@@ -466,14 +468,16 @@ plot_subgroup_violins <- function(
 #' @param highlight   fvar expressing which feature should be highlighted
 #' @param fixed       fixed aesthetics
 #' @return  ggplot object
-#' @seealso \code{\link{plot_sample_densities}}, \code{\link{plot_sample_violins}}
+#' @seealso \code{\link{plot_sample_densities}},
+#'          \code{\link{plot_sample_violins}}
 #' @examples
 #' # data
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
-#'     fdata(object) %<>% cbind(control=.$feature_name %in% c('biotin','phosphate'))
+#'     fdata(object) %<>% cbind(
+#'                         control=.$feature_name %in% c('biotin','phosphate'))
 #' # plot
 #'     plot_boxplots(object[1:9,], x = feature_id, fill = feature_id)
 #'     plot_boxplots(object[,1:9], x = sample_id,  fill = sample_id )
@@ -497,9 +501,10 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
     highlight <- enquo(highlight)
     facet     <- enquo(facet)
     xstr         <- as_name(x)
-    fillstr      <- if (quo_is_null(fill))      character(0) else as_name(fill)
-    colorstr     <- if (quo_is_null(color))     character(0) else as_name(color)
-    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(highlight)
+    fillstr      <- if (quo_is_null(fill))   character(0) else as_name(fill)
+    colorstr     <- if (quo_is_null(color))  character(0) else as_name(color)
+    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
+                                                                    highlight)
 # Prepare
     plotvars <- unique(c('feature_name', xstr, fillstr, colorstr, highlightstr))
     plottedsvars <- intersect(plotvars, svars(object))
@@ -507,7 +512,7 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
     dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
 # Plot
     p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
-                   fill = !!fill, color = !!color, fixed = fixed)
+                fill = !!fill, color = !!color, fixed = fixed)
     p %<>% add_highlights(!!highlight, geom = geom_point, fixed_color="darkred")
     p <- p + facet_wrap(vars(!!facet), scales = 'free_y')
 # Finish
@@ -561,6 +566,7 @@ plot_subgroup_boxplots <- function(
 #' @param color     svar mapped to biplot color and density fill
 #' @param nloadings n loadings added to plot
 #' @param plot      whether to print plot
+#' @return gtable returned by \code{\link[gridExtra]{arrangeGrob}}
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
@@ -573,32 +579,37 @@ plot_subgroup_boxplots <- function(
 plot_samples <- function(
     object, x=pca1, y=pca2, color=subgroup, nloadings=0, plot=TRUE
 ){
-    pcaplot  <-  biplot(object, x=pca1, y=pca2, color=!!enquo(color), nloadings = nloadings) +
+    pcaplot <-  biplot( object, x=pca1, y=pca2, color=!!enquo(color),
+                        nloadings = nloadings) +
                 theme(legend.position='right', legend.title=element_blank())
-    samples  <-  plot_sample_densities(object)  + theme(legend.position='none') + xlab(NULL) + ylab(NULL)
-    features <-  plot_feature_densities(object) + theme(legend.position='none') + xlab(NULL) + ylab(NULL)
-    detections <- plot_summarized_detections(object) + theme(legend.position='none')
-
+    samples    <- plot_sample_densities(object)  +
+                    theme(legend.position='none') + xlab(NULL) + ylab(NULL)
+    features   <- plot_feature_densities(object) +
+                    theme(legend.position='none') + xlab(NULL) + ylab(NULL)
+    detections <- plot_summarized_detections(object) +
+                    theme(legend.position='none')
     volcanoes  <- plot_volcano(object, ntop = 0)
-
-    # Cairo::CairoPNG('contrastogram.png', width=480*7, height=480*7, dpi=400, pointsize=10)
+    # Cairo::CairoPNG(
+    #    'contrastogram.png', width=480*7, height=480*7, dpi=400, pointsize=10)
     # plot_contrastogram(object)
     # dev.off()
-    # contrastogram <- grid::rasterGrob(png::readPNG('contrastogram.png'), interpolate = TRUE)
+    # contrastogram <- grid::rasterGrob(
+    #    png::readPNG('contrastogram.png'), interpolate = TRUE)
+    colors  <- gglegend(pcaplot)
+    pcaplot <- pcaplot + theme(legend.position='none',
+                axis.text.x = element_blank(), axis.text.y = element_blank())
 
-    colors     <- gglegend(pcaplot)
-    pcaplot    <- pcaplot    + theme(legend.position='none', axis.text.x = element_blank(), axis.text.y = element_blank())
-    samples    <- samples    + theme(legend.position='none', axis.text.y = element_blank())
-    #features   <- features   + theme(legend.position='none', axis.text.y = element_blank())
+    samples <- samples + theme(legend.position='none',
+                                axis.text.y = element_blank())
+    #features <- features   +
+    #            theme(legend.position='none', axis.text.y = element_blank())
     detections <- detections + theme(legend.position='none')
     volcanoes  <- volcanoes  + theme(legend.position='none')
-
     pp <- grid.arrange( colors, #features, ncol=1),
                         arrangeGrob(detections, samples, pcaplot, ncol=1),
                         volcanoes,
                         ncol=3,
                         widths = c(2,4,6))
-
     if (plot) grid.draw(pp)
     pp
 }
@@ -670,6 +681,4 @@ plot_features <- function(
 plot_feature_profiles <- function(...){
     plot_features(geom = geom_point, ...)
 }
-
-
 

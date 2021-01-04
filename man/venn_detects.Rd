@@ -9,6 +9,9 @@ venn_detects(object)
 \arguments{
 \item{object}{SummarizedExperiment}
 }
+\value{
+\code{NULL}
+}
 \description{
 Venn diagram full/systematic/random detects
 }

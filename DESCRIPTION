@@ -9,14 +9,16 @@ Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.
              person("Richard",  "Cotton",    email = "richierocks@gmail.com",           role = "ctb"),
              person("Laure",    "Cougnaud",  email = "laure.cougnaud@openanalytics.eu", role = "ctb"),
              person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",   role = "sad"))
-Description: 
-  Importomics is a package for intuitive and generic cross-platform analysis of omics data.
+Description:
+  This package offers a generic and intuitive solution for cross-platform omics data analysis.
+  It contains functions for import, preprocessing, exploration, contrast analysis and visualization of omics data.
+  It follows a tidy, functional programming paradigm.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
-biocViews: Software, DataImport, GeneExpression, Transcription, 
-           RNASeq, MassSpectrometry, DimensionReduction, PrincipalComponent
+biocViews: DataImport, DimensionReduction, GeneExpression, MassSpectrometry, 
+            Preprocessing, PrincipalComponent, RNASeq, Software, Transcription
 BugReports: https://bitbucket.org/graumannlabtools/autonomics 
 URL: https://bitbucket.org/graumannlabtools/autonomics
 RoxygenNote: 7.1.1

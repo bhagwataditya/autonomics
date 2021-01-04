@@ -196,14 +196,11 @@ pca <- function(
 
 #' @rdname pca
 #' @export
-sma <- function(
-    object, ndim = 2, minvar = 0, verbose = TRUE, plot = TRUE, ...
-){
+sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=TRUE, ...){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
-        return(object)
-    }
+        return(object)}
     assert_is_valid_sumexp(object)
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
@@ -250,14 +247,11 @@ sma <- function(
 
 #' @rdname pca
 #' @export
-lda <- function(
-    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...
-){
+lda <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
         message("BiocManager::install('MASS'). Then re-run.")
-        return(object)
-    }
+        return(object)}
     assert_is_valid_sumexp(object)
     nsubgroup <- length(subgroup_levels(object))
     if (is.infinite(ndim))  ndim <- nsubgroup - 1

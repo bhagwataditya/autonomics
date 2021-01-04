@@ -209,8 +209,6 @@ pubchem_to_smiles <- function(x){
 #
 #=============================================================================
 
-#' @rdname stack
-#' @export
 rstack <- function(x, y){
     ncolmax <- max(ncol(x), ncol(y))
     if (ncol(x) < ncolmax)  x %<>% cbind(matrix(NA, nrow=nrow(x),
@@ -224,8 +222,6 @@ rstack <- function(x, y){
 }
 
 
-#' @rdname stack
-#' @export
 cstack <- function(x, y){
     nrowmax <- max(nrow(x), nrow(y))
     if (nrow(x) < nrowmax)  x %<>% rbind(matrix(NA, ncol=ncol(x),
@@ -252,7 +248,7 @@ cstack <- function(x, y){
 #' rstack(x,y)
 #' cstack(x,y)
 #'  stack(x,y)
-#' @export
+#' @noRd
 stack <- function(x, y){
     rs <- rstack(x,y)
     cs <- cstack(x,y)
@@ -262,19 +258,19 @@ stack <- function(x, y){
 
 
 #' Read metabolon
-#' @param file               string: path to metabolon xlsx file
-#' @param sheet              number/string: xls sheet number or name
-#' @param fid_var            string: feature_id variable (ideally transcends dataset)
-#' @param sid_var            string: sample_id variable
-#' @param subgroup_var       string: subgroup variable (human comprehensible)
-#' @param fname_var          string: feature_name variable
-#' @param impute             TRUE / FALSE
+#' @param file          string: path to metabolon xlsx file
+#' @param sheet         number/string: xls sheet number or name
+#' @param fid_var       string: feature_id variable (ideally transcends dataset)
+#' @param sid_var       string: sample_id variable
+#' @param subgroup_var  string: subgroup variable (human comprehensible)
+#' @param fname_var     string: feature_name variable
+#' @param impute        TRUE / FALSE
 #' @param add_kegg_pathways  TRUE / FALSE
-#' @param add_smiles         TRUE / FALSE
-#' @param formula            formula to create design matrix (using svars)
-#' @param contrastdefs       contrastdef vector/matrix/list
-#' @param verbose            TRUE / FALSE
-#' @param plot               TRUE / FALSE
+#' @param add_smiles    TRUE / FALSE
+#' @param formula       formula to create design matrix (using svars)
+#' @param contrastdefs  contrastdef vector/matrix/list
+#' @param verbose       TRUE / FALSE
+#' @param plot          TRUE / FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # GLUTAMINASE
