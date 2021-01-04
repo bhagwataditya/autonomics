@@ -1,4 +1,4 @@
-Package: importomics
+Package: autonomics
 Type: Package
 Title: Generifying and intuifying cross-platform omics analysis
 Version: 0.99.0

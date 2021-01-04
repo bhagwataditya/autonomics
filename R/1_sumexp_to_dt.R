@@ -3,7 +3,7 @@
 sumexp_to_wide_dt <- function(
     object,
     fid   = 'feature_id',
-    fvars = intersect('feature_name', importomics::fvars(object)),
+    fvars = intersect('feature_name', autonomics::fvars(object)),
     assay = 'exprs'
 ){
 
@@ -65,17 +65,17 @@ sumexp_to_wide_dt <- function(
 sumexp_to_long_dt <- function(
     object,
     fid   = 'feature_id',
-    fvars = intersect('feature_name', importomics::fvars(object)),
+    fvars = intersect('feature_name', autonomics::fvars(object)),
     sid   = 'sample_id',
-    svars = intersect('subgroup', importomics::svars(object)),
+    svars = intersect('subgroup', autonomics::svars(object)),
     assay = 'exprs'
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(fid,   importomics::fvars(object))
-    assert_is_subset(sid,   importomics::svars(object))
-    assert_is_subset(fvars, importomics::fvars(object))
-    assert_is_subset(svars, importomics::svars(object))
+    assert_is_subset(fid,   autonomics::fvars(object))
+    assert_is_subset(sid,   autonomics::svars(object))
+    assert_is_subset(fvars, autonomics::fvars(object))
+    assert_is_subset(svars, autonomics::svars(object))
     common <- intersect(svars, fvars)
     if (length(common) > 0){
         message('\t\tRemove clashing svars/fvars: ',

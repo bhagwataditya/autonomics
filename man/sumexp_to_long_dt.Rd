@@ -9,16 +9,16 @@
 sumexp_to_wide_dt(
   object,
   fid = "feature_id",
-  fvars = intersect("feature_name", importomics::fvars(object)),
+  fvars = intersect("feature_name", autonomics::fvars(object)),
   assay = "exprs"
 )
 
 sumexp_to_long_dt(
   object,
   fid = "feature_id",
-  fvars = intersect("feature_name", importomics::fvars(object)),
+  fvars = intersect("feature_name", autonomics::fvars(object)),
   sid = "sample_id",
-  svars = intersect("subgroup", importomics::svars(object)),
+  svars = intersect("subgroup", autonomics::svars(object)),
   assay = "exprs"
 )
 

@@ -1,6 +1,6 @@
 #' Available autonomics datasets
 #' @noRd
-IMPORTOMICS_DATASETS <- c(
+AUTONOMICS_DATASETS <- c(
     'uniprot_hsa_20140515.fasta',
     'billing16.bam.zip',
     'billing16.rnacounts.txt',
@@ -42,12 +42,12 @@ IMPORTOMICS_DATASETS <- c(
 #'     download_data('halama18.metabolon.xlsx')      # metabolon intensities
 #' @export
 download_data <- function(
-    file, localdir = '~/importomicscache/datasets', unzip = TRUE
+    file, localdir = '~/autonomicscache/datasets', unzip = TRUE
 ){
-    assert_is_subset(file, IMPORTOMICS_DATASETS)
+    assert_is_subset(file, AUTONOMICS_DATASETS)
     . <- NULL
 
-    bitbucket <- 'https://bitbucket.org/graumannlabtools/importomics/downloads'
+    bitbucket <- 'https://bitbucket.org/graumannlabtools/autonomics/downloads'
     localdir  %<>% paste(vapply(
         stri_split_fixed(file, '.'), extract, character(1), 1), sep = '/')
     dir.create(localdir, showWarnings = FALSE, recursive = TRUE)

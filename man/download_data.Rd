@@ -4,7 +4,7 @@
 \alias{download_data}
 \title{Download example datasets}
 \usage{
-download_data(file, localdir = "~/importomicscache/datasets", unzip = TRUE)
+download_data(file, localdir = "~/autonomicscache/datasets", unzip = TRUE)
 }
 \arguments{
 \item{file}{name of file to download}

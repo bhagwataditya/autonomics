@@ -50,7 +50,7 @@ make_gtf_url <- function(organism, release){
 download_gtf <- function(
     organism,
     release = 100,
-    gtffile = sprintf("~/importomicscache/gtf/%s",
+    gtffile = sprintf("~/autonomicscache/gtf/%s",
         basename(make_gtf_url(organism, release) %>% substr(1, nchar(.)-3)))
 ){
     assert_is_subset(organism,

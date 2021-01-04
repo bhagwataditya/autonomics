@@ -988,8 +988,8 @@ plot_contrastogram <- function(
     nrow <- dt[, data.table::uniqueN(V2)]
     nperrow <- dt[, .N, by = 'V1'][, N]
     if (all(nperrow==1)) nperrow %<>% length()
-    #dir.create('~/importomicscache/contrastogram')
-    #pdf('~/importomicscache/contrastogram/directed_contrastogram.pdf',
+    #dir.create('~/autonomicscache/contrastogram')
+    #pdf('~/autonomicscache/contrastogram/directed_contrastogram.pdf',
     #width = 9, height = 9)
     arrowlabels %<>% as.data.frame()
     diagram::plotmat(A          = arrowlabels,
