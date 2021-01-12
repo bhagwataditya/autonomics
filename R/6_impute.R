@@ -292,7 +292,7 @@ impute_systematic_nondetects <- function(
     group <- enquo(group)
     groupstr <- as_name(group)
 # Filter
-    object %<>% filter_exprs_replicated_in_some_subgroup()
+    object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
 # Impute
     dt  <-  sumexp_to_long_dt(object)[
                 , absent     := all(is.na(value)),    c('feature_id', groupstr)
