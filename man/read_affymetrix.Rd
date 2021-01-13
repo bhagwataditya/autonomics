@@ -25,9 +25,9 @@ if (!file.exists(localfile)){
     untar(localfile, exdir = path.expand('~/autonomicscache'))
 }
 localfile \%<>\% substr(1, nchar(.)-4)
-if (!requireNamespace("BiocManager", quietly = TRUE)){
-    install.packages('BiocManager')
-}
-BiocManager::install('hgu95av2.db')
+if (!requireNamespace("BiocManager", quietly = TRUE))  install.packages(
+                                                            'BiocManager')
+if (!requireNamespace("hgu95av2.db", quietly = TRUE))  BiocManager::install(
+                                                            'hgu95av2.db')
 read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 }
