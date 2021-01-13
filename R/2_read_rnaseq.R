@@ -455,7 +455,6 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
                     filter_count = filter_count, verbose = verbose, plot = plot)
 # Contrast
     object %<>% pca()
-    formula <- enquo(formula)
     object %<>% add_limma(formula = eval_tidy(formula),
                     contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
