@@ -1189,7 +1189,12 @@ plot_volcano <- function(
     imputed <- NULL # fallback when plotdt misses "imputed"
     significance <- NULL
     p <- ggplot(plotdt) +
-        facet_grid(facetrow ~ facetcol, scales = 'fixed') +
+        facet_grid(
+            rows = if (all(stri_isempty(plotdt$facetrow))) {NULL} else {
+                vars(facetrow)},
+            cols = if (all(stri_isempty(plotdt$facetcol))) {NULL} else {
+                vars(facetcol)},
+            scales = 'fixed') +
         geom_point( aes(x=effect, y=mlp, color = significance, shape=imputed),
                     na.rm = TRUE)
     if (!quo_is_null(label)){
