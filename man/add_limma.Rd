@@ -15,7 +15,15 @@ add_limma(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{contrastdefs}{contrastdef vector/matrix/list}
+\item{contrastdefs}{contrastdef vector / matrix / list:
+\itemize{
+\item{c("t1-t0", "t2-t1", "t3-t2")}
+\item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
+     c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE)}
+\item{list(matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
+     c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
+     matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
+     nrow=1, byrow=TRUE))}}}
 
 \item{formula}{formula to create design matrix (using svars)}
 
