@@ -69,5 +69,6 @@ Suggests:
   mpm,
   org.Hs.eg.db, 
   org.Mm.eg.db,
+  remotes,
   ropls,
   testthat
