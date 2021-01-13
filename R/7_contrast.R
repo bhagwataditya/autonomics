@@ -604,7 +604,7 @@ contrast_subgroups <- function(object)  list(contrast_subgroup_cols(object),
 #==============================================================================
 
 contrvec2mat  <- function(contrastdefs)  matrix(
-                   contrastdefs, nrow=1, dimnames=list("", .))
+                   contrastdefs, nrow=1, dimnames=list("", contrastdefs))
 
 contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 
