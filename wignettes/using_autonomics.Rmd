@@ -1,6 +1,6 @@
 ---
 title: "autonomics"
-subtitle: "generic and intuitive cross-platform data analysis"
+subtitle: "Generic & intuitive cross-platform data analysis"
 output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{using_autonomics}
@@ -14,61 +14,67 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE)
 ```
 <!-- ![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png) -->
 
+# Install / Load
+
 ```{r, eval=FALSE}
 # Install
-    install.packages('remotes')
-    remotes::install_github('bhagwataditya/autonomics',  
-                             repos = BiocManager::repositories(), 
-                             dependencies = TRUE, upgrade = FALSE)
+install.packages('remotes')
+remotes::install_github('bhagwataditya/autonomics',  
+                         repos = BiocManager::repositories(), 
+                         dependencies = TRUE, upgrade = FALSE)
 ```
 
-# Automated importers
-
-## rnaseq bam {-}
-
 ```{r}
+# Load 
 require(autonomics)
-file <- download_data('billing16.bam.zip')
-read_bam(file, paired = TRUE, genome = 'hg38')
 ```
 
-## rnaseq counts {-}
+# Read (and preprocess/analyze for free)
 
-```{r}
-    file <- download_data('billing16.rnacounts.txt')
-    read_counts(file)
-```
-
-## proteingroups {-}
-
-```{r}
-    proteingroups <- download_data('billing19.proteingroups.txt')
-    select_subgroups <- c('EM00_STD', 'EM01_STD', 'EM02_STD',
-                          'EM05_STD', 'EM15_STD', 'EM30_STD', 'BM00_STD')
-    read_proteingroups(proteingroups, select_subgroups = select_subgroups)
-```
-
-## phosphosites {-}
-
-```{r}
-    phosphosites <- download_data('billing19.phosphosites.txt')
-    read_phosphosites(phosphosites, proteingroups, select_subgroups = select_subgroups)
-```
-
-
-## metabolon {-}
+## Metabolon {-}
                              
 ```{r}
-    file <- download_data('halama18.metabolon.xlsx')
-    read_metabolon(file)
+file <- download_data('halama18.metabolon.xlsx')
+object <- read_metabolon(file)
 ```
 
 
-## somascan {-}
+## Somascan {-}
 
 ```{r}
-    file <- download_data('atkin18.somascan.adat')                  # SOMAscan adat
-    read_somascan(file)
+file <- download_data('atkin18.somascan.adat')                  # SOMAscan adat
+object <- read_somascan(file)
+```
+
+## Proteingroups {-}
+
+```{r}
+proteingroups <- download_data('billing19.proteingroups.txt')
+select_subgroups <- c('EM00_STD', 'EM01_STD', 'EM02_STD',
+                        'EM05_STD', 'EM15_STD', 'EM30_STD', 'BM00_STD')
+object <- read_proteingroups(proteingroups, select_subgroups = select_subgroups)
+```
+
+## Phosphosites {-}
+
+```{r}
+phosphosites <- download_data('billing19.phosphosites.txt')
+object <- read_phosphosites(phosphosites, proteingroups, select_subgroups = select_subgroups)
+```
+
+## RNAseq counts {-}
+
+```{r}
+file <- download_data('billing16.rnacounts.txt')
+object <- read_counts(file)
+```
+
+## RNAseq BAM {-}
+
+```{r}
+file <- download_data('billing16.bam.zip')
+object <- read_bam(file, paired = TRUE, genome = 'hg38')
+##
 ```
 
 

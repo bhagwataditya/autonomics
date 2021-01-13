@@ -358,7 +358,7 @@ add_designvars <- function(object, subgroup_var = NULL,
 # Read
     dt <- if (file_exists(designfile)){
             if (verbose) message(
-                '\t\tRead design (update if required!): ', designfile)
+                '\t\tRead design (update if required!):\n\t\t\t', designfile)
             fread(designfile)
         } else {
             if (verbose) message(
@@ -677,7 +677,7 @@ add_limma <- function(object, contrastdefs = contrast_subgroups(object),
     designmat(object)    <- designmat
     contrastdefs(object) <- contrastdefs
 # Set block and correlation if required
-    cmessage('\t\tRun limma')
+    cmessage('\t\tAdd limma')
     block <- NULL; correlation <- NULL
     my_sdata <- sdata(object)
     if (has_complete_block_values(object)){

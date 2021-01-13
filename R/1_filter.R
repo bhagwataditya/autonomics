@@ -67,7 +67,7 @@ filter_features <- function(object, condition, verbose = FALSE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose) message('\t\tRetain ',
+    if (verbose) message('\t\t\tRetain ',
         sum(idx), '/', length(idx), ' features: ', expr_text(condition))
     object %<>% extract(idx,)
     fdata(object) %<>% droplevels()
@@ -89,7 +89,7 @@ rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
     selector <- rowAnys(exprs(object) != 0, na.rm = TRUE)
     if (verbose) message(
-                    '\t\tRetain ', sum(selector), '/', length(selector),
+                    '\t\t\tRetain ', sum(selector), '/', length(selector),
                     ' features: non-zero, non-NA, and non-NaN for some sample')
     object %<>% extract(selector, )
     if (!is.null(analysis(object))) {
@@ -115,7 +115,7 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 
     # Restrict to available values
     selector <- is_available_in_all_samples(object)
-    if (verbose)  message('\t\tUse ', sum(selector), '/', length(selector),
+    if (verbose)  message('\t\t\tUse ', sum(selector), '/', length(selector),
                             ' features with available value for each sample')
     object %<>% extract(selector, )
     if (!is.null(analysis(object))) {
@@ -208,7 +208,7 @@ filter_replicated  <- function(
     nreplicates <- rowSums(comparator(exprs(object), lod), na.rm=TRUE)
     idx <- nreplicates >= n
     if (verbose) cmessage(
-        '\tRetain %d/%d features replicated in at least %d samples',
+        '\t\t\tRetain %d/%d features replicated in at least %d samples',
         sum(idx), length(idx), n)
     object[idx, ]
 }
@@ -237,7 +237,7 @@ filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose) if (verbose) message('\t\tRetain ', sum(idx), '/', length(idx),
+    if (verbose) if (verbose) message('\t\t\tRetain ', sum(idx), '/', length(idx),
                                         ' samples: ', expr_text(condition))
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
@@ -258,7 +258,7 @@ filter_samples_available_for_some_feature <- function(object, verbose = FALSE){
     subsetter <- is_available_for_some_feature(object)
     if (any(!subsetter)){
         if (verbose) cmessage(
-            '\t\tRetain %d/%d samples with a value available for some feature',
+            '\t\t\tRetain %d/%d samples with a value available for some feature',
             sum(subsetter), length(subsetter))
     object %<>% extract(, subsetter)
     }

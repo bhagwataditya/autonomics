@@ -56,8 +56,6 @@
 filter_sample_type <- function(object, sample_type, verbose){
     if ('SampleType' %in% svars(object)){ # missing in older versions
         SampleType <- NULL
-        message('\t\t========================================================')
-        cmessage_df('\t\t%s', table(`Sample types` = sdata(object)$SampleType))
         object %<>% filter_samples(
             SampleType %in% !!enquo(sample_type), verbose = TRUE)
     }
@@ -68,9 +66,6 @@ filter_sample_type <- function(object, sample_type, verbose){
 filter_sample_quality <- function(object, sample_quality, verbose){
     if ('RowCheck'   %in% svars(object)){ # sample quality
         RowCheck <- NULL
-        message('\t\t========================================================')
-        cmessage_df('\t\t%s',
-            table(`Sample qualities ("RowCheck")` = sdata(object)$RowCheck))
         object %<>% filter_samples(
             RowCheck %in% !!enquo(sample_quality), verbose = TRUE)
     }
@@ -80,8 +75,6 @@ filter_sample_quality <- function(object, sample_quality, verbose){
 filter_feature_type <- function(object, feature_type, verbose){
     if ('Type'       %in% fvars(object)){ # feature type
         Type <- NULL
-        message('\t\t========================================================')
-        cmessage_df('\t\t%s', table(`Type` = fdata(object)$Type))
         object %<>% filter_features(
             Type %in% !!enquo(feature_type), verbose = TRUE)
     }
@@ -92,12 +85,8 @@ filter_feature_type <- function(object, feature_type, verbose){
 filter_feature_quality <- function(object, feature_quality, verbose){
     if ('ColCheck'   %in% fvars(object)){ # feature quality
         ColCheck <- NULL
-        message('\t\t========================================================')
-        cmessage_df('\t\t%s',
-            table(`Feature qualities ("ColCheck")` = fdata(object)$ColCheck))
         object %<>% filter_features(
             ColCheck %in% !!enquo(feature_quality), verbose = TRUE)
-        message('\t\t========================================================')
     }
     object
 }

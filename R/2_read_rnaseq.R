@@ -144,27 +144,23 @@ entrezg_to_symbol <- function(x, genome){
 
 
 count_reads <- function(files, paired, nthreads, genome){
-
-    # Common args
+# Common args
     . <- NULL
     args <- list(files = files, isPaired = paired, nthreads = nthreads)
-
-    # Inbuilt genome
+# Inbuilt genome
     if (genome %in% c('mm10', 'mm9', 'hg38', 'hg19')){
         args %<>% c(list(annot.inbuilt = genome))
         fcounts <- do.call(featureCounts, args)
         fcounts$annotation$gene_name <-
             entrezg_to_symbol(fcounts$annotation$GeneID, genome)
-
-    # User GTF
+# User GTF
     } else {
         assert_all_are_existing_files(genome)
         args %<>% c(list(annot.ext = genome, isGTFAnnotationFile = TRUE,
                         GTF.attrType.extra  = 'gene_name'))
         fcounts <- do.call(featureCounts, args)
     }
-
-    # Rename, Select, Return
+# Rename, Select, Return
     names(fcounts$annotation) %<>% gsub('GeneID',   'feature_id',   .)
     names(fcounts$annotation) %<>% gsub('gene_name', 'feature_name', .)
     fcounts$annotation %<>% extract(,

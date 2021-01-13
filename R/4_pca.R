@@ -157,7 +157,7 @@ pca <- function(
     assert_is_a_number(minvar)
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
-    if (verbose)  message('\tAdd PCA')
+    if (verbose)  message('\t\tAdd PCA')
 # Prepare
     tmpobj <- object
     exprs(tmpobj) %<>% inf_to_na(verbose=verbose)
