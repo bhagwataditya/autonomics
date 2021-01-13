@@ -603,6 +603,11 @@ contrast_subgroups <- function(object)  list(contrast_subgroup_cols(object),
 #
 #==============================================================================
 
+contrvec2mat  <- function(contrastdefs)  matrix(
+                   contrastdefs, nrow=1, dimnames=list("", .))
+
+contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
+
 
 #' Contrast
 #'
@@ -622,7 +627,15 @@ contrast_subgroups <- function(object)  list(contrast_subgroup_cols(object),
 #'    \item {F.p}    vector (ngene)            : p    values (moderated F test)
 #' }
 #' @param object       SummarizedExperiment
-#' @param contrastdefs contrastdef vector/matrix/list
+#' @param contrastdefs contrastdef vector / matrix / list:
+#' \itemize{
+#' \item{c("t1-t0", "t2-t1", "t3-t2")}
+#' \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
+#'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE)}
+#' \item{list(matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
+#'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
+#'      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
+#'      nrow=1, byrow=TRUE))}}
 #' @param formula      formula to create design matrix (using svars)
 #' @param plot         TRUE/FALSE
 #' @param ...          passed to plot_contrastogram
@@ -658,9 +671,8 @@ add_limma <- function(object, contrastdefs = contrast_subgroups(object),
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     if (is.null(contrastdefs))    return(object)
-    if (is.character(contrastdefs)) contrastdefs %<>%
-                                        matrix(nrow=1, dimnames = list("", .))
-    if (is.matrix(contrastdefs))    contrastdefs %<>% list(colcontrasts=.)
+    if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
+    if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
     designmat <- create_design(object, formula=formula)
     designmat(object)    <- designmat
     contrastdefs(object) <- contrastdefs
@@ -1123,6 +1135,7 @@ make_volcano_dt <- function(
 }
 
 #' Plot volcano
+#'
 #' @param object           SummarizedExperiment
 #' @param contrastdefmat   contrast layout matrix
 #' @param label            fvar for labeling top features
@@ -1163,6 +1176,7 @@ plot_volcano <- function(
 ){
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
+    assert_is_matrix(contrastdefmat)
     topup <- topdown <- effect <- mlp <- NULL
     label <- enquo(label)
 # Prepare
