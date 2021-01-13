@@ -1,0 +1,102 @@
+---
+title: "autonomics"
+subtitle: "generic and intuitive cross-platform data analysis"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{using_autonomics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=TRUE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE)
+#str(knitr::opts_chunk$get())
+```
+<!-- ![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png) -->
+
+```{r, eval=FALSE}
+# Install
+    install.packages('remotes')
+    remotes::install_github('bhagwataditya/autonomics',  
+                             repos = BiocManager::repositories(), 
+                             dependencies = TRUE, upgrade = FALSE)
+```
+
+# Automated importers
+
+## rnaseq bam {-}
+
+```{r}
+require(autonomics)
+file <- download_data('billing16.bam.zip')
+read_bam(file, paired = TRUE, genome = 'hg38')
+```
+
+## rnaseq counts {-}
+
+```{r}
+    file <- download_data('billing16.rnacounts.txt')
+    read_counts(file)
+```
+
+## proteingroups {-}
+
+```{r}
+    proteingroups <- download_data('billing19.proteingroups.txt')
+    select_subgroups <- c('EM00_STD', 'EM01_STD', 'EM02_STD',
+                          'EM05_STD', 'EM15_STD', 'EM30_STD', 'BM00_STD')
+    read_proteingroups(proteingroups, select_subgroups = select_subgroups)
+```
+
+## phosphosites {-}
+
+```{r}
+    phosphosites <- download_data('billing19.phosphosites.txt')
+    read_phosphosites(phosphosites, proteingroups, select_subgroups = select_subgroups)
+```
+
+
+## metabolon {-}
+                             
+```{r}
+    file <- download_data('halama18.metabolon.xlsx')
+    read_metabolon(file)
+```
+
+
+## somascan {-}
+
+```{r}
+    file <- download_data('atkin18.somascan.adat')                  # SOMAscan adat
+    read_somascan(file)
+```
+
+
+```{r, fig.width=7, fig.height=4, out.width="95%"}
+require(autonomics, quietly = TRUE)
+file <- download_data('halama18.metabolon.xlsx')
+object <- read_metabolon(file) 
+```
+
+# Transform
+
+# Explore
+
+# Contrast 
+
+# Connect
+
+
+
+# References
+
+A. Halama, M. Kulinski, S. Dib, S.B. Zaghlool, K.S. Siveen, A. Iskandarani, J. Zierer 3, K.S. Prabhu, N.J. Satheesh, A.M. Bhagwat, S. Uddin, G. Kastenmüller, O. Elemento, S.S. Gross, K. Suhre (2018). Accelerated lipid catabolism and autophagy are cancer survival mechanisms under inhibited glutaminolysis. Cancer Lett., 430:133-147. doi:10.1016/j.canlet.2018.05.017
+
+
+
+
+
+
+
+
+

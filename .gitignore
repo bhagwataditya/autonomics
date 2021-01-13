@@ -4,4 +4,8 @@
 .Ruserdata
 importomics.Rproj
 .Rhistory
-vignettes/using_importomics_cache
+paper
+wignettes/using_autonomics_cache
+wignettes/using_autonomics_files
+wignettes/html
+wignettes/using_autonomics.html
