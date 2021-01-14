@@ -133,6 +133,21 @@ sumexp_to_subrep_dt <- function(object){
     subrepdt
 }
 
+#' data.table to matrix
+#'
+#' Convert data.table to matrix
+#'
+#' Takes first column to be matrix rownames and \cr
+#' remaining columns to be matrix values
+#' @param dt data.table
+#' @return matrix
+#' @examples
+#' dt <- data.table::data.table(
+#'         gene    = c('ENSG001', 'ENSG002', 'ENSG003'),
+#'         sampleA = c(1787, 10, 432),
+#'         sampleB = c(1143,  3, 268))
+#' dt2mat(dt)
+#' @export
 dt2mat    <- function(dt) dt[,-1] %>% as.matrix() %>% set_rownames(dt[[1]])
 dt2DF     <- function(dt) DataFrame(dt, row.names = dt[[1]])
 dt2exprs  <- function(dt) dt2mat(data.table::dcast(
