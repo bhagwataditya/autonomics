@@ -298,7 +298,7 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     is_subgroup_col <- stri_detect_regex(svars(object), subgroup_var)
     subgroup_var <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
                     } else {                    sid_var }
-    object %<>% add_designvars(subgroup_var, verbose = verbose)
+    object %<>% add_coldata(subgroup_var, verbose = verbose)
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))

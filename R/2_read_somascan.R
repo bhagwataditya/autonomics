@@ -176,7 +176,7 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     contrastdefs <- enexpr(contrastdefs)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
-    object %<>% add_designvars(subgroup_var = subgroup_var, verbose = verbose)
+    object %<>% add_coldata(subgroup_var = subgroup_var, verbose = verbose)
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     SampleType <- RowCheck <- Type <- ColCheck <- NULL

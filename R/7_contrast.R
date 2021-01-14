@@ -257,7 +257,7 @@ create_replicate_values <- function(object, subgroup_var, verbose){
 
 #=============================================================================
 #
-#               add_designvars
+#               add_coldata
 #                   file_exists
 #                   get_default_designfile
 #                       default_designfile
@@ -334,12 +334,12 @@ get_default_designfile <- function(object){
 #'     select_subgroups <-  c(sprintf(
 #'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
 #'    object <- read_proteingroups(file, select_subgroups = select_subgroups)
-#'    add_designvars(object)
+#'    add_coldata(object)
 #'
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    invert_subgroups <- c('EM_E', 'E_BM', 'EM_BM')
 #'    object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-#'    add_designvars(object)
+#'    add_coldata(object)
 #'
 #' # SOMASCAN
 #'     file <- download_data('atkin18.somascan.adat')
@@ -351,7 +351,7 @@ get_default_designfile <- function(object){
 #'
 #' # RNACOUNTS
 #'@noRd
-add_designvars <- function(object, subgroup_var = NULL,
+add_coldata <- function(object, subgroup_var = NULL,
     designfile = get_default_designfile(object),
     verbose = TRUE
 ){

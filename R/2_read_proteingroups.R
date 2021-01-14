@@ -1051,7 +1051,7 @@ add_maxquant_designvars <- function(
     snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
     object %<>% standardize_maxquant_snames(verbose = verbose)
     object %<>% demultiplex(verbose = verbose)
-    object %<>% add_designvars(designfile = designfile, verbose = verbose)
+    object %<>% add_coldata(designfile = designfile, verbose = verbose)
     object
 }
 

@@ -446,7 +446,7 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
     rowData(object)  <- fcounts$annotation
 # Add design. Preprocess
     object$sample_id <- sample_names
-    object %<>% add_designvars(verbose = verbose)
+    object %<>% add_coldata(verbose = verbose)
     object %<>% preprocess_counts(formula = !!formula,
                     filter_count = filter_count, verbose = verbose, plot = plot)
 # Contrast
@@ -518,7 +518,7 @@ read_counts <- function(file, fid_col = 1,
     counts(object) <- exprs(object)
     assays(object)$exprs <- NULL
 # Prepare
-    object %<>% add_designvars()
+    object %<>% add_coldata()
     object %<>% preprocess_counts(formula = !!formula,
                     filter_count = filter_count, plot = plot, verbose = verbose)
     if (length(fname_col)>0){
