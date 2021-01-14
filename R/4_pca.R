@@ -60,14 +60,14 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 
 #=============================================================================
 #
-#                               merge_sdata
-#                               merge_fdata
+#                               merge_coldata
+#                               merge_rowdata
 #
 #=============================================================================
 
-#' @rdname merge_sdata
+#' @rdname merge_coldata
 #' @export
-merge_fdata <- function(object, df, by = 'feature_id'){
+merge_rowdata <- function(object, df, by = 'feature_id'){
     df %<>% as.data.frame() # convert matrix
     if (!'feature_id' %in% names(df))  df$feature_id <- rownames(df)
     duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
@@ -75,6 +75,13 @@ merge_fdata <- function(object, df, by = 'feature_id'){
     fdata(object) %<>% merge(df, by = by, all.x = TRUE, sort = FALSE)
     fnames(object) <- fdata(object)$feature_id # merging drops them!
     object
+}
+
+#' @rdname merge_coldata
+#' @export
+merge_fdata <- function(...){
+    .Deprecated('merge_rowdata')
+    merge_rowdata(...)
 }
 
 
@@ -87,11 +94,11 @@ merge_fdata <- function(object, df, by = 'feature_id'){
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
+#' object %<>% merge_coldata( data.frame(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
 #' sdata(object)
 #'@export
-merge_sdata <- function(object, df, by = 'sample_id'){
+merge_coldata <- function(object, df, by = 'sample_id'){
     df %<>% as.data.frame() # convert matrix to df
     if (!'sample_id' %in% names(df))  df$sample_id <- rownames(df)
     duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
@@ -101,6 +108,13 @@ merge_sdata <- function(object, df, by = 'sample_id'){
     if ('subgroup'  %in% svars(object)) object$subgroup  #%<>% as.character()
     if ('replicate' %in% svars(object)) object$replicate #%<>% as.character()
     object
+}
+
+#' @rdname merge_coldata
+#' @export
+merge_sdata <- function(...){
+    .Deprecated('merge_coldata')
+    merge_coldata(...)
 }
 
 
@@ -181,8 +195,8 @@ pca <- function(
     colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    object %<>% merge_coldata(samples)
+    object %<>% merge_rowdata(features)
     metadata(object)$pca <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
@@ -233,8 +247,8 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=TRUE, ...){
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    object %<>% merge_coldata(samples)
+    object %<>% merge_rowdata(features)
     metadata(object)$sma <- variances
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
@@ -286,8 +300,8 @@ lda <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Merge
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    object %<>% merge_coldata(samples)
+    object %<>% merge_rowdata(features)
     metadata(object)$sma <- variances
 # Filter for minvar
     object %<>% .filter_minvar('lda', minvar)
@@ -326,8 +340,8 @@ pls <- function(
     colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    object %<>% merge_coldata(samples)
+    object %<>% merge_rowdata(features)
     metadata(object)$pls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
@@ -370,8 +384,8 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
     colnames(features) <- sprintf('spls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('spls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_sdata(features)
+    object %<>% merge_coldata(samples)
+    object %<>% merge_rowdata(features)
     metadata(object)$spls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
@@ -416,8 +430,8 @@ opls <- function(
     colnames(features) <- sprintf('opls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('opls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    object %<>% merge_coldata(samples)
+    object %<>% merge_rowdata(features)
     metadata(object)$opls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)

@@ -369,7 +369,7 @@ add_designvars <- function(object, subgroup_var = NULL,
             replicate = create_replicate_values(object, subgroup_var, verbose))
         }
 # Add to object
-    object %<>% merge_sdata(dt)
+    object %<>% merge_coldata(dt)
     sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
 # Write
     if (!is.null(designfile)){

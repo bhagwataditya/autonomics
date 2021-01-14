@@ -53,5 +53,5 @@ file <- download_data('billing19.rnacounts.txt')
 read_counts(file)
 }
 \seealso{
-merge_sdata, merge_fdata
+merge_coldata, merge_rowdata
 }

@@ -191,7 +191,7 @@ matrix2sumexp <- function(x, sampledata=NULL){
         object$subgroup <- 'subgroup1'
     } else {
         assert_is_subset('sample_id', names(sampledata))
-        object %<>% merge_sdata(sampledata)
+        object %<>% merge_coldata(sampledata)
     }
     object
 }

@@ -485,7 +485,7 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #'
 #' file <- download_data('billing19.rnacounts.txt')
 #' read_counts(file)
-#' @seealso merge_sdata, merge_fdata
+#' @seealso merge_coldata, merge_rowdata
 #' @export
 read_counts <- function(file, fid_col = 1,
     fname_col = character(0), filter_count = 10,
