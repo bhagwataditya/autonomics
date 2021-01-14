@@ -23,6 +23,8 @@ merge_sdata(...)
 \item{by.x}{merge var in object}
 
 \item{by.y}{merge var in df}
+
+\item{...}{used to maintain deprecated merge_(s|f)data}
 }
 \value{
 SummarizedExperiment

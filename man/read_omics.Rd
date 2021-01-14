@@ -80,11 +80,11 @@ Read omics data from rectangular file
                    transpose  = FALSE)
 # LCMSMS PROTEINGROUPS
    file <- download_data('billing19.proteingroups.txt')
-   read_omics(file,fid_rows   = 2:9783,  fid_cols   = 383,
+   read_omics(file,fid_rows   = 2:9044,  fid_cols   = 383,
                    sid_rows   = 1,       sid_cols   = seq(124, 316, by = 6),
-                   expr_rows  = 2:9783,  expr_cols  = seq(124, 316, by = 6),
+                   expr_rows  = 2:9044,  expr_cols  = seq(124, 316, by = 6),
                    fvar_rows  = 1,       fvar_cols  = c(2, 6, 7, 383),
-                   fdata_rows = 2:9783,  fdata_cols = c(2, 6, 7, 383),
+                   fdata_rows = 2:9044,  fdata_cols = c(2, 6, 7, 383),
                    transpose  = FALSE)
 # SOMASCAN
    file <- download_data('billing16.somascan.adat')
