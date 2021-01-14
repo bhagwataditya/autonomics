@@ -860,7 +860,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     'Potential contaminant', 'Contaminant')
 
 .read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file),
-    designfile = default_designfile(file, 'maxquant', quantity),
+    colfile = default_colfile(file, 'maxquant', quantity),
     select_subgroups = NULL, invert_subgroups = character(0),
     verbose=TRUE
 ){
@@ -889,7 +889,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 
 # Samples: parse/filter
     if (verbose)  message('\tPrepare samples')
-    object %<>% add_maxquant_designvars(verbose=verbose, designfile=designfile)
+    object %<>% add_maxquant_coldata(verbose=verbose, colfile=colfile)
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
 # Transform
@@ -908,7 +908,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 
 .read_phosphosites <- function(
     file, quantity = guess_maxquant_quantity(file),
-    designfile = default_designfile(file, 'maxquant', quantity),
+    colfile = default_colfile(file, 'maxquant', quantity),
     select_subgroups = subgroup_levels(object), invert_subgroups = character(0),
     verbose=TRUE
 ){
@@ -937,7 +937,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     metadata(object)$platform <- 'maxquant'
 # Samples: Parse/Filter
     if (verbose)  message('\tPrepare samples')
-    object %<>% add_maxquant_designvars(verbose=verbose, designfile=designfile)
+    object %<>% add_maxquant_coldata(verbose=verbose, colfile=colfile)
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
 # Log2 transform
@@ -1045,13 +1045,13 @@ rename_phospho_fvars <- function(object){
 #
 #==============================================================================
 
-add_maxquant_designvars <- function(
-    object, designfile = default_designfile(object), verbose
+add_maxquant_coldata <- function(
+    object, colfile = default_colfile(object), verbose
 ){
     snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
     object %<>% standardize_maxquant_snames(verbose = verbose)
     object %<>% demultiplex(verbose = verbose)
-    object %<>% add_coldata(designfile = designfile, verbose = verbose)
+    object %<>% add_coldata(colfile = colfile, verbose = verbose)
     object
 }
 
@@ -1115,7 +1115,7 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #' @param min_localization_prob min site localization probability (number)
 #' @param select_subgroups  subgroups to be selected (character vector)
 #' @param invert_subgroups  subgroups to be inverted (character vector)
-#' @param designfile        designfile path
+#' @param colfile       colfile path
 #' @param impute            whether to impute consistent nondetects (TRUE/FALSE)
 #' @param formula           formula to create design matrix (using svars)
 #' @param contrastdefs      contrast definition vector/matrix/list
@@ -1156,7 +1156,7 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #' @export
 read_proteingroups <- function(
     proteinfile, quantity = guess_maxquant_quantity(proteinfile),
-    designfile = default_designfile(proteinfile, 'maxquant', quantity),
+    colfile = default_colfile(proteinfile, 'maxquant', quantity),
     select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
@@ -1172,8 +1172,8 @@ read_proteingroups <- function(
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
 # Read
-    object <- .read_proteingroups(proteinfile, quantity, designfile=designfile,
-        select_subgroups = select_subgroups,
+    object <- .read_proteingroups(proteinfile, quantity,
+        colfile = colfile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose = verbose)
 # Prepare
     object %<>% filter_maxquant_features(reverse = reverse,
@@ -1197,7 +1197,7 @@ read_phosphosites <- function(
     phosphofile,
     proteinfile = paste0(dirname(phosphofile), '/proteinGroups.txt'),
     quantity = guess_maxquant_quantity(phosphofile),
-    designfile = default_designfile(proteinfile, 'maxquant', quantity),
+    colfile = default_colfile(proteinfile, 'maxquant', quantity),
     select_subgroups = NULL,
     contaminants = FALSE, reverse = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
@@ -1213,10 +1213,10 @@ read_phosphosites <- function(
     contrastdefs <- enexpr(contrastdefs)
 # Read
     proteingroups <- .read_proteingroups(file=proteinfile, quantity = quantity,
-        designfile = designfile, select_subgroups = select_subgroups,
+        colfile = colfile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose=verbose)
     object  <- .read_phosphosites(file = phosphofile, quantity = quantity,
-        designfile = designfile, select_subgroups = select_subgroups,
+        colfile = colfile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose = verbose)
     object %<>% filter_maxquant_features(
                     reverse = reverse, contaminants = contaminants,

@@ -9,6 +9,9 @@ read_counts(
   fid_col = 1,
   fname_col = character(0),
   filter_count = 10,
+  colfile = NULL,
+  by.x = "sample_id",
+  by.y = "sample_id",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
   verbose = TRUE,
@@ -25,6 +28,12 @@ read_counts(
 \item{filter_count}{number (default 10): filter out features
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
+
+\item{colfile}{coldata file (string) or NULL}
+
+\item{by.x}{merge var in file}
+
+\item{by.y}{merge var in colfile}
 
 \item{formula}{formula to create design matrix (using svars)}
 

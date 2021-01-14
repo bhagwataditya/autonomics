@@ -474,6 +474,9 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' @param filter_count number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
+#' @param colfile       coldata file (string) or NULL
+#' @param by.x          merge var in file
+#' @param by.y          merge var in colfile
 #' @param formula       formula to create design matrix (using svars)
 #' @param contrastdefs  contrastdef vector/matrix/list
 #' @param verbose       TRUE/FALSE
@@ -489,6 +492,7 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' @export
 read_counts <- function(file, fid_col = 1,
     fname_col = character(0), filter_count = 10,
+    colfile = NULL, by.x = 'sample_id', by.y = 'sample_id',
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object), verbose = TRUE, plot = TRUE){
 # Read
@@ -518,7 +522,7 @@ read_counts <- function(file, fid_col = 1,
     counts(object) <- exprs(object)
     assays(object)$exprs <- NULL
 # Prepare
-    object %<>% add_coldata()
+    object %<>% add_coldata(colfile = colfile, by.x = by.x, by.y = by.y)
     object %<>% preprocess_counts(formula = !!formula,
                     filter_count = filter_count, plot = plot, verbose = verbose)
     if (length(fname_col)>0){

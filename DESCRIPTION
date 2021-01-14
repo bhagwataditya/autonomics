@@ -62,7 +62,7 @@ Imports:
 Suggests: 
   affy,
   BiocManager,
-  hgu95av2cdf, 
+  hgu95av2.db, 
   knitr,
   MASS,
   mixOmics,

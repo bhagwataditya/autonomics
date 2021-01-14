@@ -7,11 +7,11 @@
 \alias{merge_sdata}
 \title{Merge sample/feature data}
 \usage{
-merge_rowdata(object, df, by = "feature_id")
+merge_rowdata(object, df, by.x = "feature_id", by.y = "feature_id")
 
 merge_fdata(...)
 
-merge_coldata(object, df, by = "sample_id")
+merge_coldata(object, df, by.x = "sample_id", by.y = "sample_id")
 
 merge_sdata(...)
 }
@@ -20,7 +20,9 @@ merge_sdata(...)
 
 \item{df}{data.frame}
 
-\item{by}{string}
+\item{by.x}{merge var in object}
+
+\item{by.y}{merge var in df}
 }
 \value{
 SummarizedExperiment

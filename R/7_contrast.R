@@ -259,8 +259,8 @@ create_replicate_values <- function(object, subgroup_var, verbose){
 #
 #               add_coldata
 #                   file_exists
-#                   get_default_designfile
-#                       default_designfile
+#                   get_default_colfile
+#                       default_colfile
 #
 #=============================================================================
 
@@ -272,61 +272,65 @@ file_exists <- function(file){
                             return(FALSE)
 }
 
-default_designfile <- function(file, platform = NULL, quantity = NULL){
+default_colfile <- function(file, platform = NULL, quantity = NULL){
 
     # Initialize
     if (is.null(platform))  platform <- ''
     if (is.null(quantity))  quantity <- ''
 
-    # No designfile for SOMASCAN and METABOLON
+    # No colfile for SOMASCAN and METABOLON
     if (platform %in% c('metabolon', 'somascan')) return(NULL)
 
     # Take basename file
-    designfile <- tools::file_path_sans_ext(file)
+    colfile <- tools::file_path_sans_ext(file)
 
     # Append quantity for MaxQuant files
     if (platform == 'maxquant'){
-        designfile %<>% paste(make.names(quantity), sep = '.')
+        colfile %<>% paste(make.names(quantity), sep = '.')
     }
 
     # Add .design.tx
-    designfile %<>% paste0('.design.txt')
-    designfile
+    colfile %<>% paste0('.design.txt')
+    colfile
 }
 
 
 #' @param object        SummarizedExperiment
 #' @param subgroup_var  subgroup svar or NULL
-#' @param designfile    design file path (to read/write) or NULL (don't write)
+#' @param colfile   coldata file path (to read/write) or NULL (don't write)
 #' @param verbose       TRUE (default) or FALSE
 #'@examples
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
 #'    object <- read_proteingroups(file)
-#'    get_default_designfile(object)
+#'    get_default_colfile(object)
 #'
 #' # SOMASCAN
 #'     inputfile <- download_data('atkin18.somascan.adat')
-#'     default_designfile(inputfile, platform = 'somascan')
+#'     default_colfile(inputfile, platform = 'somascan')
 #'
 #' # METABOLON
 #'     file <- download_data('atkin18.metabolon.xlsx')
-#'     default_designfile(inputfile, platform = 'metabolon')
+#'     default_colfile(inputfile, platform = 'metabolon')
 #'
 #' # RNACOUNTS
 #'@noRd
-get_default_designfile <- function(object){
+get_default_colfile <- function(object){
     file     <- metadata(object)$file
     platform <- metadata(object)$platform
     quantity <- metadata(object)$quantity
 
-    default_designfile(file, platform, quantity)
+    default_colfile(file, platform, quantity)
 }
 
-
+#' Add coldata
+#'
+#' Add coldata from file or sampleids
 #' @param object        SummarizedExperiment
 #' @param subgroup_var  subgroup svar or NULL
-#' @param designfile    design file path (to read/write) or NULL (don't write)
+#' @param colfile   colfile path
+#' @param by.x          merge var in object
+#' @param by.y          merge var in colfile
 #' @param verbose       TRUE (default) or FALSE
 #'@examples
 #'# PROTEINGROUPS
@@ -351,15 +355,14 @@ get_default_designfile <- function(object){
 #'
 #' # RNACOUNTS
 #'@noRd
-add_coldata <- function(object, subgroup_var = NULL,
-    designfile = get_default_designfile(object),
-    verbose = TRUE
+add_coldata <- function(object, subgroup_var = NULL, colfile = NULL,
+    by.x = 'sample_id', by.y = 'sample_id', verbose = TRUE
 ){
 # Read
-    dt <- if (file_exists(designfile)){
+    dt <- if (file_exists(colfile)){
             if (verbose) message(
-                '\t\tRead design (update if required!):\n\t\t\t', designfile)
-            fread(designfile)
+                '\t\tRead design (update if required!):\n\t\t\t', colfile)
+            fread(colfile)
         } else {
             if (verbose) message(
                 '\t\tInfer design from sample_ids')
@@ -369,16 +372,16 @@ add_coldata <- function(object, subgroup_var = NULL,
             replicate = create_replicate_values(object, subgroup_var, verbose))
         }
 # Add to object
-    object %<>% merge_coldata(dt)
+    object %<>% merge_coldata(dt, by.x = by.x, by.y = by.y)
     sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
 # Write
-    if (!is.null(designfile)){
-        if (!file.exists(designfile)){
-            if (verbose) message('\t\tWrite design (update if required!): ',
-                            designfile)
-            fwrite(dt, designfile, sep = '\t', row.names = FALSE)
-        }
-    }
+    #if (!is.null(colfile)){
+    #    if (!file.exists(colfile)){
+    #        if (verbose) message('\t\tWrite design (update if required!): ',
+    #                        colfile)
+    #        fwrite(dt, colfile, sep = '\t', row.names = FALSE)
+    #    }
+    #}
 # Return
     object
 }
@@ -1177,7 +1180,7 @@ plot_volcano <- function(
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
     assert_is_matrix(contrastdefmat)
-    topup <- topdown <- effect <- mlp <- NULL
+    topup <- topdown <- effect <- mlp <- facetrow <- facetcol <- NULL
     label <- enquo(label)
 # Prepare
     plotdt <- make_volcano_dt(object, contrastdefmat, ntop = ntop)

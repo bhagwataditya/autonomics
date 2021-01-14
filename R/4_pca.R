@@ -67,12 +67,13 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 
 #' @rdname merge_coldata
 #' @export
-merge_rowdata <- function(object, df, by = 'feature_id'){
+merge_rowdata <- function(object, df, by.x = 'feature_id', by.y = 'feature_id'){
     df %<>% as.data.frame() # convert matrix
     if (!'feature_id' %in% names(df))  df$feature_id <- rownames(df)
     duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
     fdata(object)[duplicate_cols] <- NULL
-    fdata(object) %<>% merge(df, by = by, all.x = TRUE, sort = FALSE)
+    fdata(object) %<>%
+        merge(df, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
     fnames(object) <- fdata(object)$feature_id # merging drops them!
     object
 }
@@ -88,7 +89,9 @@ merge_fdata <- function(...){
 #' Merge sample/feature data
 #' @param object  SummarizedExperiment
 #' @param df      data.frame
-#' @param by      string
+#' @param by.x    merge var in object
+#' @param by.y    merge var in df
+#' @param ...     used to maintain deprecated merge_(s|f)data
 #' @return        SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -98,13 +101,14 @@ merge_fdata <- function(...){
 #'                                     number = seq_along(object$sample_id)))
 #' sdata(object)
 #'@export
-merge_coldata <- function(object, df, by = 'sample_id'){
+merge_coldata <- function(object, df, by.x = 'sample_id', by.y = 'sample_id'){
     df %<>% as.data.frame() # convert matrix to df
     if (!'sample_id' %in% names(df))  df$sample_id <- rownames(df)
     duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
-    sdata(object) %<>%  merge(df, by = by, all.x = TRUE, sort = FALSE) %>%
-                        set_rownames(rownames(sdata(object))) # merging drops!
+    sdata(object) %<>%
+        merge(df, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE) %>%
+        set_rownames(rownames(sdata(object))) # merging drops!
     if ('subgroup'  %in% svars(object)) object$subgroup  #%<>% as.character()
     if ('replicate' %in% svars(object)) object$replicate #%<>% as.character()
     object
