@@ -10,7 +10,7 @@
   fid_col = 1,
   fname_col = character(0),
   filter_count = 10,
-  colfile = NULL,
+  coldatafile = NULL,
   by.x = "sample_id",
   by.y = "sample_id",
   subgroup_var = "subgroup"
@@ -21,7 +21,7 @@ read_rnaseq_counts(
   fid_col = 1,
   fname_col = character(0),
   filter_count = 10,
-  colfile = NULL,
+  coldatafile = NULL,
   by.x = "sample_id",
   by.y = "sample_id",
   subgroup_var = "subgroup",
@@ -42,11 +42,11 @@ read_rnaseq_counts(
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
 
-\item{colfile}{coldata file (string) or NULL}
+\item{coldatafile}{coldata file (string) or NULL}
 
 \item{by.x}{merge var in file}
 
-\item{by.y}{merge var in colfile}
+\item{by.y}{merge var in coldatafile}
 
 \item{formula}{formula to create design matrix (using svars)}
 
@@ -70,6 +70,7 @@ File format: header row
 \examples{
 file <- download_data('billing16.rnacounts.txt')
 read_rnaseq_counts(file)
+.read_rnaseq_counts(file)
 
 file <- download_data('billing19.rnacounts.txt')
 read_rnaseq_counts(file)

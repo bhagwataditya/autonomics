@@ -4,12 +4,16 @@
 \alias{write_coldata}
 \title{Write coldata}
 \usage{
-write_coldata(object, colfile = get_default_colfile(object), verbose = TRUE)
+write_coldata(
+  object,
+  coldatafile = get_default_coldatafile(object),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{colfile}{coldata file}
+\item{coldatafile}{coldata file}
 
 \item{verbose}{TRUE/FALSE}
 }

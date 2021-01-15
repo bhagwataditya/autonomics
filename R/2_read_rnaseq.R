@@ -483,7 +483,7 @@ read_rnaseq_bams <- function(
 #' @export
 .read_rnaseq_counts <- function(
     file, fid_col = 1, fname_col = character(0), filter_count = 10,
-    colfile=NULL, by.x='sample_id', by.y='sample_id', subgroup_var='subgroup'
+    coldatafile=NULL, by.x='sample_id', by.y='sample_id', subgroup_var='subgroup'
 ){
     assert_all_are_existing_files(file)
     dt <- fread(file, integer64='numeric')
@@ -507,7 +507,7 @@ read_rnaseq_bams <- function(
     counts(object) <- exprs(object)
     assays(object)$exprs <- NULL
     object %<>% add_coldata(
-        colfile = colfile, by.x = by.x, by.y = by.y, subgroup_var=subgroup_var)
+        coldatafile = coldatafile, by.x = by.x, by.y = by.y, subgroup_var=subgroup_var)
     object
 }
 
@@ -526,9 +526,9 @@ read_rnaseq_bams <- function(
 #' @param filter_count number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
-#' @param colfile       coldata file (string) or NULL
+#' @param coldatafile       coldata file (string) or NULL
 #' @param by.x          merge var in file
-#' @param by.y          merge var in colfile
+#' @param by.y          merge var in coldatafile
 #' @param formula       formula to create design matrix (using svars)
 #' @param contrastdefs  contrastdef vector/matrix/list
 #' @param verbose       TRUE/FALSE
@@ -537,6 +537,7 @@ read_rnaseq_bams <- function(
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
 #' read_rnaseq_counts(file)
+#' .read_rnaseq_counts(file)
 #'
 #' file <- download_data('billing19.rnacounts.txt')
 #' read_rnaseq_counts(file)
@@ -545,7 +546,7 @@ read_rnaseq_bams <- function(
 read_rnaseq_counts <- function(
     file, fid_col = 1,
     fname_col = character(0), filter_count = 10,
-    colfile=NULL, by.x='sample_id', by.y='sample_id', subgroup_var='subgroup',
+    coldatafile=NULL, by.x='sample_id', by.y='sample_id', subgroup_var='subgroup',
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object), verbose = TRUE, plot = TRUE
 ){
@@ -555,7 +556,7 @@ read_rnaseq_counts <- function(
 # Read
     object <- .read_rnaseq_counts(
         file, fid_col=fid_col, fname_col=fname_col, filter_count=filter_count,
-        colfile=colfile, by.x=by.x, by.y=by.y)
+        coldatafile=coldatafile, by.x=by.x, by.y=by.y)
     object %<>% preprocess_counts(formula = !!formula,
                     filter_count = filter_count, plot = plot, verbose = verbose)
     if (length(fname_col)>0){

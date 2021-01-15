@@ -172,8 +172,8 @@ split_extract <- function(x, i, sep=guess_sep(x)){
 #
 #               add_coldata
 #                   file_exists
-#                   get_default_colfile
-#                       default_colfile
+#                   get_default_coldatafile
+#                       default_coldatafile
 #
 #=============================================================================
 
@@ -185,69 +185,69 @@ file_exists <- function(file){
                             return(FALSE)
 }
 
-default_colfile <- function(file, platform = NULL, quantity = NULL){
+default_coldatafile <- function(file, platform = NULL, quantity = NULL){
 
     # Initialize
     if (is.null(platform))  platform <- ''
     if (is.null(quantity))  quantity <- ''
 
-    # No colfile for SOMASCAN and METABOLON
+    # No coldatafile for SOMASCAN and METABOLON
     if (platform %in% c('metabolon', 'somascan')) return(NULL)
 
     # Take basename file
-    colfile <- tools::file_path_sans_ext(file)
+    coldatafile <- tools::file_path_sans_ext(file)
 
     # Append quantity for MaxQuant files
     if (platform == 'maxquant'){
-        colfile %<>% paste(make.names(quantity), sep = '.')
+        coldatafile %<>% paste(make.names(quantity), sep = '.')
     }
 
     # Add .design.tx
-    colfile %<>% paste0('.design.txt')
-    colfile
+    coldatafile %<>% paste0('.design.txt')
+    coldatafile
 }
 
 
 #' @param object        SummarizedExperiment
 #' @param subgroup_var  subgroup svar or NULL
-#' @param colfile   coldata file path (to read/write) or NULL (don't write)
+#' @param coldatafile   coldata file path (to read/write) or NULL (don't write)
 #' @param verbose       TRUE (default) or FALSE
 #'@examples
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
 #'    object <- read_proteingroups(file)
-#'    get_default_colfile(object)
+#'    get_default_coldatafile(object)
 #'
 #' # SOMASCAN
 #'     inputfile <- download_data('atkin18.somascan.adat')
-#'     default_colfile(inputfile, platform = 'somascan')
+#'     default_coldatafile(inputfile, platform = 'somascan')
 #'
 #' # METABOLON
 #'     file <- download_data('atkin18.metabolon.xlsx')
-#'     default_colfile(inputfile, platform = 'metabolon')
+#'     default_coldatafile(inputfile, platform = 'metabolon')
 #'
 #' # RNACOUNTS
 #'@noRd
-get_default_colfile <- function(object){
+get_default_coldatafile <- function(object){
     file     <- metadata(object)$file
     platform <- metadata(object)$platform
     quantity <- metadata(object)$quantity
 
-    default_colfile(file, platform, quantity)
+    default_coldatafile(file, platform, quantity)
 }
 
 
 #' Write coldata
 #' @param object   SummarizedExperiment
-#' @param colfile  coldata file
+#' @param coldatafile  coldata file
 #' @param verbose  TRUE/FALSE
 #' @export
 write_coldata <- function(
-    object, colfile = get_default_colfile(object), verbose = TRUE
+    object, coldatafile = get_default_coldatafile(object), verbose = TRUE
 ){
     if (verbose) message('\t\tWrite coldata - update with `merge_coldata(.)`: ',
-                         colfile)
-    fwrite(sdata(object), colfile, sep = '\t', row.names = FALSE)
+                         coldatafile)
+    fwrite(sdata(object), coldatafile, sep = '\t', row.names = FALSE)
 }
 
 
@@ -256,9 +256,9 @@ write_coldata <- function(
 #' Add coldata from file or sampleids
 #' @param object        SummarizedExperiment
 #' @param subgroup_var  subgroup svar or NULL
-#' @param colfile   colfile path
+#' @param coldatafile   coldatafile path
 #' @param by.x          merge var in object
-#' @param by.y          merge var in colfile
+#' @param by.y          merge var in coldatafile
 #' @param verbose       TRUE (default) or FALSE
 #'@examples
 #'# PROTEINGROUPS
@@ -285,23 +285,22 @@ write_coldata <- function(
 #'     file <- download_data('billing19.rnacounts.txt')
 #'     .read_rnaseq_counts()
 #'@noRd
-add_coldata <- function(object, subgroup_var = 'subgroup', colfile = NULL,
+add_coldata <- function(object, subgroup_var = 'subgroup', coldatafile = NULL,
     by.x = 'sample_id', by.y = 'sample_id', verbose = TRUE
 ){
 # Create subgroup values
-    if (file_exists(colfile)){                             # from file
+    if (file_exists(coldatafile)){                             # from file
         if (verbose) message(
-            '\t\tRead coldata from (update if required!):\n\t\t\t', colfile)
-        dt <- fread(colfile)
+            '\t\tRead coldata from (update if required!):\n\t\t\t', coldatafile)
+        dt <- fread(coldatafile)
         dt$subgroup <- dt[[subgroup_var]]
         if (subgroup_var %in% names(dt)) setnames(dt, subgroup_var, 'subgroup')
 
-    } else if (nfactors(object$sample_id)>1) {             # from sampleids
+    } else if ((nfactors(x <- object$sample_id))>1) {             # from sampleids
         if (verbose) message('\t\tInfer subgroup from sample_ids')
-        dt <- data.table(
-            sample_id = object$sample_id,
-            subgroup  = split_extract(object$sample_id, seq_len(nfactors(x)-1)),
-            replicate = split_extract(object$sample_id, nfactors(x)))
+        dt <- data.table(sample_id = x,
+                        subgroup   = split_extract(x, seq_len(nfactors(x)-1)),
+                        replicate  = split_extract(x, nfactors(x)))
 
     } else if (!is.null(basename(metadata(object)$file))){ # from filename
         dt <- data.table(subgroup = basename(metadata(object)$file))
