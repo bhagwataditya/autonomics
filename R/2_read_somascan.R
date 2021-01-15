@@ -140,7 +140,7 @@ rm_single_value_columns <- function(df){
 #' @param file                  *.adat file path (string)
 #' @param fid_var               featureid fvar (string)
 #' @param sid_var               sampleid svar (string)
-#' @param subgroup_var          subgroup svar (string)
+#' @param subgroupvar          subgroup svar (string)
 #' @param fname_var             featurename fvar (string)
 #' @param sample_type           subset of c('Sample','QC','Buffer','Calibrator')
 #' @param feature_type          subset of c('Protein',
@@ -161,7 +161,7 @@ rm_single_value_columns <- function(df){
 #'     read_somascan(file)
 #' @export
 read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
-    subgroup_var = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
+    subgroupvar = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE,
@@ -176,7 +176,7 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     contrastdefs <- enexpr(contrastdefs)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
-    object %<>% add_coldata(subgroup_var = subgroup_var, verbose = verbose)
+    object %<>% add_coldata(subgroupvar = subgroupvar, verbose = verbose)
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     SampleType <- RowCheck <- Type <- ColCheck <- NULL

@@ -209,7 +209,7 @@ default_coldatafile <- function(file, platform = NULL, quantity = NULL){
 
 
 #' @param object        SummarizedExperiment
-#' @param subgroup_var  subgroup svar or NULL
+#' @param subgroupvar  subgroup svar or NULL
 #' @param coldatafile   coldata file path (to read/write) or NULL (don't write)
 #' @param verbose       TRUE (default) or FALSE
 #'@examples

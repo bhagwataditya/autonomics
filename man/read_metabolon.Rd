@@ -10,7 +10,7 @@
   sheet = find_origscale_sheet(file),
   fid_var = "(COMP|COMP_ID)",
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
-  subgroup_var = "Group",
+  subgroupvar = "Group",
   fname_var = "BIOCHEMICAL"
 )
 
@@ -19,7 +19,7 @@ read_metabolon(
   sheet = find_origscale_sheet(file),
   fid_var = "(COMP|COMP_ID)",
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
-  subgroup_var = "Group",
+  subgroupvar = "Group",
   fname_var = "BIOCHEMICAL",
   impute = FALSE,
   add_kegg_pathways = FALSE,
@@ -39,7 +39,7 @@ read_metabolon(
 
 \item{sid_var}{string: sample_id variable}
 
-\item{subgroup_var}{string: subgroup variable (human comprehensible)}
+\item{subgroupvar}{string: subgroup variable (human comprehensible)}
 
 \item{fname_var}{string: feature_name variable}
 

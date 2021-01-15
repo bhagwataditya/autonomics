@@ -11,7 +11,7 @@ read_somascan(
   file,
   fid_var = "SeqId",
   sid_var = "SampleId",
-  subgroup_var = "SampleGroup",
+  subgroupvar = "SampleGroup",
   fname_var = "EntrezGeneSymbol",
   sample_type = "Sample",
   feature_type = "Protein",
@@ -32,7 +32,7 @@ read_somascan(
 
 \item{sid_var}{sampleid svar (string)}
 
-\item{subgroup_var}{subgroup svar (string)}
+\item{subgroupvar}{subgroup svar (string)}
 
 \item{fname_var}{featurename fvar (string)}
 

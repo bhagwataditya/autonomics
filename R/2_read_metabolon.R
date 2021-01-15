@@ -18,7 +18,7 @@ find_origscale_sheet <- function(file){
 #' @export
 .read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL'
+    subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL'
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -262,7 +262,7 @@ stack <- function(x, y){
 #' @param sheet         number/string: xls sheet number or name
 #' @param fid_var       string: feature_id variable (ideally transcends dataset)
 #' @param sid_var       string: sample_id variable
-#' @param subgroup_var  string: subgroup variable (human comprehensible)
+#' @param subgroupvar  string: subgroup variable (human comprehensible)
 #' @param fname_var     string: feature_name variable
 #' @param impute        TRUE / FALSE
 #' @param add_kegg_pathways  TRUE / FALSE
@@ -282,7 +282,7 @@ stack <- function(x, y){
 #' @export
 read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    subgroup_var = 'Group', fname_var    = 'BIOCHEMICAL',
+    subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
@@ -291,14 +291,14 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
 # Read
     object <- .read_metabolon(
         file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var,
-        subgroup_var = subgroup_var, fname_var = fname_var)
+        subgroupvar = subgroupvar, fname_var = fname_var)
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
 # Prepare
-    is_subgroup_col <- stri_detect_regex(svars(object), subgroup_var)
-    subgroup_var <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
+    is_subgroup_col <- stri_detect_regex(svars(object), subgroupvar)
+    subgroupvar <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
                     } else {                    sid_var }
-    object %<>% add_coldata(subgroup_var, verbose = verbose)
+    object %<>% add_coldata(subgroupvar, verbose = verbose)
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
