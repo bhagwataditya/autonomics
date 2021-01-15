@@ -116,7 +116,7 @@ merge_coldata <- function(object, df, by = 'sample_id', verbose=TRUE){
     sdata(object)[duplicate_cols] <- NULL
     sdata(object) %<>% merge(
         df, by.x = 'sample_id', by.y=by, all.x=TRUE, sort=FALSE)
-    rownames(object) <- object$sample_id # merging drops rownames
+    rownames(sdata(object)) <- sdata(object)$sample_id # merging drops rownames
     object
 }
 
