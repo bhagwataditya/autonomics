@@ -101,15 +101,16 @@ merge_fdata <- function(...){
 #' sdata(object)
 #'@export
 merge_coldata <- function(object, df, by = 'sample_id'){
-    df %<>% as.data.frame() # convert matrix to df
-    if (!'sample_id' %in% names(df))  df$sample_id <- rownames(df)
+    df %<>% as.data.frame() %>% as.data.table() # convert matrix to df
+    ndupids <- sum(duplicated(df$sample_id))
+    if (ndupids>0)  warning(ndupids,' duplicated `', by,
+                            '` values: keep only first instance')
+    df %<>% unique(by = by) # sampleids should be unique
     duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
     sdata(object) %<>%
-        merge(df, by.x = 'sample_id', by.y = by, all.x=TRUE, sort=FALSE) %>%
-        set_rownames(rownames(sdata(object))) # merging drops!
-    if ('subgroup'  %in% svars(object)) object$subgroup  #%<>% as.character()
-    if ('replicate' %in% svars(object)) object$replicate #%<>% as.character()
+        merge(df, by.x = 'sample_id', by.y=by, all.x=TRUE, sort=FALSE) %>%
+        set_rownames(.$sample_id) # merging drops rownames
     object
 }
 
