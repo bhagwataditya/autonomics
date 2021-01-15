@@ -76,9 +76,9 @@ merge_rowdata <- function(object, df, by = 'feature_id', verbose=TRUE){
                  ' rowdata rows after removing duplicate `', by, '` entries')
     duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
     fdata(object)[duplicate_cols] <- NULL
-    fdata(object) %<>%
-        merge(df, by.x = 'feature_id', by.y=by, all.x=TRUE, sort=FALSE) %>%
-        set_rownames(.[[by]]) # merging drops rownames
+    fdata(object) %<>% merge(
+        df, by.x = 'feature_id', by.y=by, all.x=TRUE, sort=FALSE)
+    rownames(fdata(object)) <- object$feature_id
     object
 }
 
@@ -114,9 +114,9 @@ merge_coldata <- function(object, df, by = 'sample_id', verbose=TRUE){
                     ' coldata rows after removing duplicate `', by, '` entries')
     duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
-    sdata(object) %<>%
-        merge(df, by.x = 'sample_id', by.y=by, all.x=TRUE, sort=FALSE) %>%
-        set_rownames(.[[by]]) # merging drops rownames
+    sdata(object) %<>% merge(
+        df, by.x = 'sample_id', by.y=by, all.x=TRUE, sort=FALSE)
+    rownames(object) <- object$sample_id # merging drops rownames
     object
 }
 
