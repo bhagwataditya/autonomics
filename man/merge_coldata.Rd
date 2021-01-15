@@ -7,11 +7,11 @@
 \alias{merge_sdata}
 \title{Merge sample/feature data}
 \usage{
-merge_rowdata(object, df, by = "feature_id")
+merge_rowdata(object, df, by = "feature_id", verbose = TRUE)
 
 merge_fdata(...)
 
-merge_coldata(object, df, by = "sample_id")
+merge_coldata(object, df, by = "sample_id", verbose = TRUE)
 
 merge_sdata(...)
 }
@@ -21,6 +21,8 @@ merge_sdata(...)
 \item{df}{data.frame}
 
 \item{by}{df merge var}
+
+\item{verbose}{TRUE/FALSE}
 
 \item{...}{used to maintain deprecated merge_(s|f)data}
 }
