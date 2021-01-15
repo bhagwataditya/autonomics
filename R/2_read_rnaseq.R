@@ -508,13 +508,14 @@ read_rnaseq_bams <- function(
                         dt[, -fid_col, with = FALSE], is.integer, logical(1)))))
     object <- read_omics(
         file,
-        fid_rows   = 2:nrow(dt),   fid_cols   = fid_col,
-        sid_rows   = 1,            sid_cols   = expr_cols,
-        expr_rows  = 2:nrow(dt),   expr_cols  = expr_cols,
-        fvar_rows  = 1,            fvar_cols  = fdata_cols,
-        fdata_rows = 2:nrow(dt),   fdata_cols = fdata_cols,
-        transpose  = FALSE, verbose    = TRUE,
-        coldatafile, sampleidvar = sampleidvar, subgroupvar = subgroupvar)
+        fid_rows    = 2:nrow(dt),   fid_cols     = fid_col,
+        sid_rows    = 1,            sid_cols     = expr_cols,
+        expr_rows   = 2:nrow(dt),   expr_cols    = expr_cols,
+        fvar_rows   =  1,           fvar_cols    = fdata_cols,
+        fdata_rows  = 2:nrow(dt),   fdata_cols   = fdata_cols,
+        transpose   = FALSE,        coldatafile  = coldatafile,
+        sampleidvar = sampleidvar,  subgroupvar  = subgroupvar,
+        verbose     = TRUE)
 
     if ('gene_name' %in% fvars(object)) fvars(object) %<>%
         stri_replace_first_fixed('gene_name', 'feature_name')
