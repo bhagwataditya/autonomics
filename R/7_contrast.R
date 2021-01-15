@@ -259,7 +259,7 @@ write_coldata <- function(
 #' @param sampleidvar  sampleidvar or NULL
 #' @param subgroupvar  subgroupvar or NULL
 #' @param verbose      TRUE (default) or FALSE
-#'@examples
+#' @examples
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
 #'     select_subgroups <-  c(sprintf(
@@ -283,7 +283,7 @@ write_coldata <- function(
 #' # RNACOUNTS
 #'     file <- download_data('billing19.rnacounts.txt')
 #'     .read_rnaseq_counts()
-#'@noRd
+#'@export
 add_coldata <- function(object, coldatafile = NULL,
     sampleidvar = 'sample_id', subgroupvar = character(0), verbose = TRUE
 ){
