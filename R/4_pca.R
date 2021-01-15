@@ -70,9 +70,8 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 merge_rowdata <- function(object, df, by = 'feature_id', verbose=TRUE){
     df %<>% as.data.table(keep.rownames = TRUE)
     if (!by %in% names(df))  setnames(df, 'rn', by) # matrix -> dt !
-    n0 <- nrow(df)
     df %<>% unique(by = by) # keys should be unique!
-    if (verbose) message('\t\tRetain', nrow(df)-n0,
+    if (verbose) message('\t\tRetain', nrow(df),
                  ' rowdata rows after removing duplicate `', by, '` entries')
     duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
     fdata(object)[duplicate_cols] <- NULL
@@ -108,9 +107,8 @@ merge_fdata <- function(...){
 merge_coldata <- function(object, df, by = 'sample_id', verbose=TRUE){
     df %<>% as.data.table(keep.rownames = TRUE)
     if (!by %in% names(df))  setnames(df, 'rn', by)  # matrix -> dt !
-    n0 <- nrow(df)
     df %<>% unique(by = by) # keys should be unique!
-    if (verbose) message('Retain\t\t', nrow(df)-n0,
+    if (verbose) message('\t\tRetain', nrow(df),
                     ' coldata rows after removing duplicate `', by, '` entries')
     duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
