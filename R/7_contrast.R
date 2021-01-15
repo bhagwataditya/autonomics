@@ -313,7 +313,9 @@ add_coldata <- function(object, coldatafile = NULL,
         }
     }
 # Return
-    sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
+    leadcols <- c('sample_id', 'subgroup', 'replicate')
+    leadcols %<>% intersect(svars(object))
+    sdata(object) %<>% pull_columns(leadcols)
     object
 }
 
