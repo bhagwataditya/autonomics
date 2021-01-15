@@ -78,7 +78,7 @@ merge_rowdata <- function(object, df, by = 'feature_id', verbose=TRUE){
     fdata(object)[duplicate_cols] <- NULL
     fdata(object) %<>% merge(
         df, by.x = 'feature_id', by.y=by, all.x=TRUE, sort=FALSE)
-    rownames(fdata(object)) <- object$feature_id
+    rownames(fdata(object)) <- fdata(object)$feature_id
     object
 }
 
