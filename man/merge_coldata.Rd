@@ -7,7 +7,7 @@
 \alias{merge_sdata}
 \title{Merge sample/feature data}
 \usage{
-merge_rowdata(object, df, by.x = "feature_id", by.y = "feature_id")
+merge_rowdata(object, df, by = "feature_id")
 
 merge_fdata(...)
 
@@ -20,9 +20,9 @@ merge_sdata(...)
 
 \item{df}{data.frame}
 
-\item{...}{used to maintain deprecated merge_(s|f)data}
-
 \item{by}{df merge var}
+
+\item{...}{used to maintain deprecated merge_(s|f)data}
 }
 \value{
 SummarizedExperiment

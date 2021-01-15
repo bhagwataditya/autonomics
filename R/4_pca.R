@@ -67,13 +67,13 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 
 #' @rdname merge_coldata
 #' @export
-merge_rowdata <- function(object, df, by.x = 'feature_id', by.y = 'feature_id'){
+merge_rowdata <- function(object, df, by = 'feature_id'){
     df %<>% as.data.frame() # convert matrix
-    if (!'feature_id' %in% names(df))  df$feature_id <- rownames(df)
+    if (!by %in% names(df))  df[[by]] <- rownames(df)
     duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
     fdata(object)[duplicate_cols] <- NULL
     fdata(object) %<>%
-        merge(df, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
+        merge(df, by.x = 'feature_id', by.y = by, all.x = TRUE, sort = FALSE)
     fnames(object) <- fdata(object)$feature_id # merging drops them!
     object
 }
@@ -101,7 +101,8 @@ merge_fdata <- function(...){
 #' sdata(object)
 #'@export
 merge_coldata <- function(object, df, by = 'sample_id'){
-    df %<>% as.data.frame() %>% as.data.table() # convert matrix to df
+    df %<>% as.data.frame() # convert matrix
+    if (!by %in% names(df))  df[[by]] <- rownames(df)
     ndupids <- sum(duplicated(df$sample_id))
     if (ndupids>0)  warning(ndupids,' duplicated `', by,
                             '` values: keep only first instance')
