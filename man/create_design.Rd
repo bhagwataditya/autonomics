@@ -22,7 +22,7 @@ Create design matrix  for statistical analysis
 }
 \examples{
 file <- download_data('billing16.rnacounts.txt')
-object <- read_counts(file, plot=FALSE)
+object <- read_rnaseq_counts(file, plot=FALSE)
 create_design(object)
 
 object$subgroup <- 'billing16'

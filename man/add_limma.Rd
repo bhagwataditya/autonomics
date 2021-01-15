@@ -68,7 +68,7 @@ object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
 object \%<>\% add_limma()
 
 file <- download_data('billing19.rnacounts.txt')
-object <- read_counts(file, plot=FALSE)
+object <- read_rnaseq_counts(file, plot=FALSE)
 object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
 object \%<>\% add_limma()
 

@@ -136,8 +136,6 @@ guess_sep.SummarizedExperiment <- function(
 
 #=============================================================================
 #
-#                   guess_subgroup_values
-#                   guess_replicate_values
 #                       nfactors
 #                       split_extract
 #
@@ -167,91 +165,6 @@ nfactors <- function(x, sep = guess_sep(x)){
 split_extract <- function(x, i, sep=guess_sep(x)){
     factors <- stri_split_fixed(x, sep)
     vapply(factors, function(y) paste0(y[i], collapse=sep), character(1))
-}
-
-#' Guess subgroup/replicate values
-#' @param x       sampleid values (string vector)
-#' @param sep     subfactor separator (string)
-#' @param verbose boolean
-#' @return character(n)
-#' @examples
-#' require(magrittr)
-#' x <- c("EM00", "EM01", "EM02")
-#' guess_subgroup_values(x)
-#'
-#' x <- c("EM_R1", "EM_R2", "EM_R3")
-#' guess_subgroup_values(x)
-#'
-#' x <- c("UT_10h_R1", "UT_10h_R2", "UT_10h_R3")
-#' guess_subgroup_values(x)
-#' guess_replicate_values(x)
-#'
-#' x <- c("EM00_STD.R1", "EM01_STD.R1", "EM01_EM00.R1")
-#' guess_subgroup_values(x)
-#' guess_replicate_values(x)
-#' @export
-guess_subgroup_values <- function(x, sep = guess_sep(x), verbose=TRUE){
-    y <-  if (is.null(sep)){  x
-            } else {         split_extract(x, seq_len(nfactors(x)-1), sep) }
-    if (verbose)   message('\t\tGuess subgroup values: ', x[1], ' => ', y[1])
-    y
-}
-
-
-#' @rdname guess_subgroup_values
-#' @export
-guess_replicate_values <- function(x, sep = guess_sep(x), verbose=TRUE){
-    y  <-  if (is.null(sep)){   x
-            } else {            split_extract(x, nfactors(x,sep), sep) }
-    if (verbose)   message('\t\tGuess replicate values: ', x[1], ' => ', y[1])
-    y
-}
-
-
-#=============================================================================
-#
-#                     create_subgroup_values
-#                     create_replicate_values
-#
-#=============================================================================
-
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' create_subgroup_values(object, subgroup_var=NULL,  verbose=TRUE)
-#' create_replicate_values(object, subgroup_var=NULL, verbose=TRUE)
-#' @noRd
-create_subgroup_values <- function(object, subgroup_var, verbose){
-    values <- svalues(object, subgroup_var)
-    if (is.null(values) | all(is.na(values)) | all(values=="")) values <-
-        guess_subgroup_values(object$sample_id, verbose=verbose)
-    if (all(is.na(values)) | all(values=="")) values[] <- 'subgroup1'
-    factor(values)
-}
-
-
-create_replicate_values <- function(object, subgroup_var, verbose){
-    sampleid_values <- sdata(object)$sample_id
-    if (is.null(subgroup_var)){
-        replicate_values <- guess_replicate_values(
-                                sampleid_values, verbose=FALSE)
-    } else if (all(is.na(slevels(object, subgroup_var)))){
-        replicate_values <- guess_replicate_values(
-                                sampleid_values, verbose=FALSE)
-    } else {
-        subgroup_values <- sdata(object)[[subgroup_var]]
-        replicate_values <- rep('', length(subgroup_values))
-        for (i in seq_along(subgroup_values)){
-            replicate_values[i] <-
-                sampleid_values[i] %>%
-                stri_replace_first_fixed(subgroup_values[i], '') %>%
-                stri_replace_all_regex('^[._ ]', '') %>%
-                stri_replace_all_regex('[._ ]$', '')
-        }
-    }
-    if (verbose)   message('\t\tGuess replicate values from sampleids: ',
-                            sampleid_values[1], ' => ', replicate_values[1])
-    replicate_values
 }
 
 
@@ -323,6 +236,21 @@ get_default_colfile <- function(object){
     default_colfile(file, platform, quantity)
 }
 
+
+#' Write coldata
+#' @param object   SummarizedExperiment
+#' @param colfile  coldata file
+#' @param verbose  TRUE/FALSE
+#' @export
+write_coldata <- function(
+    object, colfile = get_default_colfile(object), verbose = TRUE
+){
+    if (verbose) message('\t\tWrite coldata - update with `merge_coldata(.)`: ',
+                         colfile)
+    fwrite(sdata(object), colfile, sep = '\t', row.names = FALSE)
+}
+
+
 #' Add coldata
 #'
 #' Add coldata from file or sampleids
@@ -354,34 +282,36 @@ get_default_colfile <- function(object){
 #'     read_metabolon(file)
 #'
 #' # RNACOUNTS
+#'     file <- download_data('billing19.rnacounts.txt')
+#'     .read_rnaseq_counts()
 #'@noRd
-add_coldata <- function(object, subgroup_var = NULL, colfile = NULL,
+add_coldata <- function(object, subgroup_var = 'subgroup', colfile = NULL,
     by.x = 'sample_id', by.y = 'sample_id', verbose = TRUE
 ){
-# Read
-    dt <- if (file_exists(colfile)){
-            if (verbose) message(
-                '\t\tRead design (update if required!):\n\t\t\t', colfile)
-            fread(colfile)
-        } else {
-            if (verbose) message(
-                '\t\tInfer design from sample_ids')
-            data.table(
+# Create subgroup values
+    if (file_exists(colfile)){                             # from file
+        if (verbose) message(
+            '\t\tRead coldata from (update if required!):\n\t\t\t', colfile)
+        dt <- fread(colfile)
+        dt$subgroup <- dt[[subgroup_var]]
+        if (subgroup_var %in% names(dt)) setnames(dt, subgroup_var, 'subgroup')
+
+    } else if (nfactors(object$sample_id)>1) {             # from sampleids
+        if (verbose) message('\t\tInfer subgroup from sample_ids')
+        dt <- data.table(
             sample_id = object$sample_id,
-            subgroup  = create_subgroup_values( object, subgroup_var, verbose),
-            replicate = create_replicate_values(object, subgroup_var, verbose))
-        }
+            subgroup  = split_extract(object$sample_id, seq_len(nfactors(x)-1)),
+            replicate = split_extract(object$sample_id, nfactors(x)))
+
+    } else if (!is.null(basename(metadata(object)$file))){ # from filename
+        dt <- data.table(subgroup = basename(metadata(object)$file))
+
+    } else {                                               # 'subgroup1'
+        dt <- data.table(subgroup = 'subgroup1')
+    }
 # Add to object
     object %<>% merge_coldata(dt, by.x = by.x, by.y = by.y)
     sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
-# Write
-    #if (!is.null(colfile)){
-    #    if (!file.exists(colfile)){
-    #        if (verbose) message('\t\tWrite design (update if required!): ',
-    #                        colfile)
-    #        fwrite(dt, colfile, sep = '\t', row.names = FALSE)
-    #    }
-    #}
 # Return
     object
 }
@@ -413,7 +343,7 @@ are_factor <- function(df) vapply(df, is.factor, logical(1))
 #' @return design matrix
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_counts(file, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' create_design(object)
 #'
 #' object$subgroup <- 'billing16'
@@ -659,7 +589,7 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' object %<>% add_limma()
 #'
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_counts(file, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
 #' object %<>% add_limma()
 #'

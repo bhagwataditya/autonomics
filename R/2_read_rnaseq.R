@@ -193,7 +193,7 @@ scaledlibsizes <- function(counts){
 #' @param scaled_libsizes  numeric vector: scaled library sizes
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_counts(file)
+#' object <- read_rnaseq_counts(file)
 #'
 #' scaled_libsizes <- scaledlibsizes(exprs(object))
 #' cpm <- counts_to_cpm(counts(object), scaled_libsizes)
@@ -244,7 +244,7 @@ compute_precision_weights_once <- function(
 #' @param ...     passed to limma::voom() -> limma::lmFit()
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_counts(file, plot = FALSE)
+#' object <- read_rnaseq_counts(file, plot = FALSE)
 #' compute_precision_weights(object)[1:3, 1:3]
 #'
 #' object$subgroup <- 'billing16'
@@ -254,7 +254,7 @@ compute_precision_weights_once <- function(
 #' compute_precision_weights(object)[1:3, 1:3]
 #'
 #' file <- download_file('billing19.rnacounts.txt')
-#' object <- read_counts(file)
+#' object <- read_rnaseq_counts(file)
 #' counts(object) <- exprs(object)
 #' compute_precision_weights(object)[1:3, 1:3]
 #' @noRd
@@ -387,10 +387,45 @@ preprocess_counts <- function(
 
 #=============================================================================
 #
-#                           read_bam
-#                           read_counts
+#                           read_rnaseq_bams
 #
 #=============================================================================
+
+
+#' @rdname read_rnaseq_bams
+#' @export
+.read_rnaseq_bams <- function(
+    bamdir, paired, genome, nthreads = detectCores(), filter_count = 10,
+    verbose = TRUE
+){
+# Assert
+    assert_all_are_existing_files(bamdir)
+    assert_is_a_bool(paired)
+    assert_is_a_string(genome)
+    assert_is_a_number(nthreads)
+# Count reads
+    files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
+                        recursive = TRUE)
+    fcounts <- count_reads(files, paired, nthreads=nthreads, genome=genome)
+# Forge SummarizedExperiment
+    filenames   <- basename(file_path_sans_ext(files))
+    subdirnames <- basename(dirname(files))
+    sample_names <- if (has_no_duplicates(filenames)){           filenames
+                    } else if (has_no_duplicates(subdirnames)){  subdirnames
+                    } else {           paste0(subdirnames, '_', filenames)}
+    object <- SummarizedExperiment(assays = list(
+                counts = fcounts$counts %>% set_colnames(sample_names)))
+    metadata(object)$platform <- 'rnaseq'
+    metadata(object)$file <- bamdir
+# Add rowdata/coldata
+    message("\t\tAdd fdata")
+    fcounts$annotation$feature_id %<>% as.character()
+    rowData(object)  <- fcounts$annotation
+    object$sample_id <- sample_names
+    object %<>% add_coldata(verbose = verbose)
+# Return
+    object
+}
 
 
 #' Read RNAseq SAM/BAM files into SummarizedExperiment
@@ -408,54 +443,71 @@ preprocess_counts <- function(
 #' @examples
 #' # in-built genome
 #' bamdir <- download_data("billing16.bam.zip")
-#' # object <- read_bam(bamdir, paired=TRUE, genome="hg38")
+#' # object <- read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
+#' # object <- .read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
 #' # gtffile <- download_gtf("Homo sapiens")
-#' # object <- read_bam(bamdir, paired=TRUE, genome=gtffile)
+#' # object <- read_rnaseq_bams(bamdir, paired=TRUE, genome=gtffile)
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
-read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
-    filter_count = 10,
+read_rnaseq_bams <- function(
+    bamdir, paired, genome, nthreads = detectCores(), filter_count = 10,
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
-    verbose      = TRUE, plot = TRUE
+    verbose = TRUE, plot = TRUE
 ){
-# Assert
-    assert_all_are_existing_files(bamdir)
-    assert_is_a_bool(paired)
-    assert_is_a_string(genome)
-    assert_is_a_number(nthreads)
+# Read
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
-# Count reads
-    files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
-                        recursive = TRUE)
-    fcounts <- count_reads(files, paired, nthreads=nthreads, genome=genome)
-# Forge SummarizedExperiment
-    filenames   <- basename(file_path_sans_ext(files))
-    subdirnames <- basename(dirname(files))
-    sample_names <- if (has_no_duplicates(filenames)){           filenames
-                    } else if (has_no_duplicates(subdirnames)){  subdirnames
-                    } else {           paste0(subdirnames, '_', filenames)}
-    object <- SummarizedExperiment(assays = list(
-                counts = fcounts$counts %>% set_colnames(sample_names)))
-    metadata(object)$platform <- 'rnaseq'
-    metadata(object)$file <- bamdir
-# Add fdata
-    message("\t\tAdd fdata")
-    fcounts$annotation$feature_id %<>% as.character()
-    rowData(object)  <- fcounts$annotation
-# Add design. Preprocess
-    object$sample_id <- sample_names
-    object %<>% add_coldata(verbose = verbose)
+    object <- .read_rnaseq_bams(bamdir=bamdir, paired=paired, genome=genome,
+                        nthreads=nthreads, filter_count=filter_count)
+# Preprocess/Analyze
     object %<>% preprocess_counts(formula = !!formula,
-                    filter_count = filter_count, verbose = verbose, plot = plot)
-# Contrast
+                  filter_count = filter_count, verbose = verbose, plot = plot)
     object %<>% pca()
     object %<>% add_limma(formula = eval_tidy(formula),
-                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
-# Plot
+                          contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
+# Plot/Return
     if (plot)  plot_samples(object)
-# Return
+    object
+}
+
+
+#=============================================================================
+#
+#                           read_rnaseq_counts
+#
+#=============================================================================
+
+
+#' @rdname read_rnaseq_counts
+#' @export
+.read_rnaseq_counts <- function(
+    file, fid_col = 1, fname_col = character(0), filter_count = 10,
+    colfile=NULL, by.x='sample_id', by.y='sample_id', subgroup_var='subgroup'
+){
+    assert_all_are_existing_files(file)
+    dt <- fread(file, integer64='numeric')
+    if (is.character(fid_col)){
+        assert_is_subset(fid_col, names(dt))
+        fid_col <- which(names(dt)==fid_col)
+    }
+    expr_cols  <- which(unname(vapply(dt, is.integer, logical(1))))
+    fdata_cols <- c(fid_col, 1 + which(unname(!vapply(
+                        dt[, -fid_col, with = FALSE], is.integer, logical(1)))))
+    object <- read_omics(file,
+                        fid_rows   = 2:nrow(dt),   fid_cols   = fid_col,
+                        sid_rows   = 1,            sid_cols   = expr_cols,
+                        expr_rows  = 2:nrow(dt),   expr_cols  = expr_cols,
+                        fvar_rows  = 1,            fvar_cols  = fdata_cols,
+                        fdata_rows = 2:nrow(dt),   fdata_cols = fdata_cols,
+                        transpose  = FALSE, verbose    = TRUE)
+    if ('gene_name' %in% fvars(object)) fvars(object) %<>%
+        stri_replace_first_fixed('gene_name', 'feature_name')
+    metadata(object)$platform <- 'rnaseq'
+    counts(object) <- exprs(object)
+    assays(object)$exprs <- NULL
+    object %<>% add_coldata(
+        colfile = colfile, by.x = by.x, by.y = by.y, subgroup_var=subgroup_var)
     object
 }
 
@@ -484,53 +536,33 @@ read_bam <- function(bamdir, paired, genome, nthreads = detectCores(),
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' read_counts(file)
+#' read_rnaseq_counts(file)
 #'
 #' file <- download_data('billing19.rnacounts.txt')
-#' read_counts(file)
+#' read_rnaseq_counts(file)
 #' @seealso merge_coldata, merge_rowdata
 #' @export
-read_counts <- function(file, fid_col = 1,
+read_rnaseq_counts <- function(
+    file, fid_col = 1,
     fname_col = character(0), filter_count = 10,
-    colfile = NULL, by.x = 'sample_id', by.y = 'sample_id',
+    colfile=NULL, by.x='sample_id', by.y='sample_id', subgroup_var='subgroup',
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object), verbose = TRUE, plot = TRUE){
-# Read
-    assert_all_are_existing_files(file)
+    contrastdefs = contrast_subgroups(object), verbose = TRUE, plot = TRUE
+){
+# Initialize
     formula      <- enexpr(formula)
-    contrastdefs    <- enexpr(contrastdefs)
-    dt <- fread(file, integer64='numeric')
-    if (is.character(fid_col)){
-        assert_is_subset(fid_col, names(dt))
-        fid_col <- which(names(dt)==fid_col)
-    }
-    expr_cols  <- which(unname(vapply(dt, is.integer, logical(1))))
-    fdata_cols <- c(fid_col, 1 + which(unname(!vapply(
-                                        dt[, -fid_col, with = FALSE],
-                                        is.integer,
-                                        logical(1)))))
-    object <- read_omics(file,
-                        fid_rows   = 2:nrow(dt),   fid_cols   = fid_col,
-                        sid_rows   = 1,            sid_cols   = expr_cols,
-                        expr_rows  = 2:nrow(dt),   expr_cols  = expr_cols,
-                        fvar_rows  = 1,            fvar_cols  = fdata_cols,
-                        fdata_rows = 2:nrow(dt),   fdata_cols = fdata_cols,
-                        transpose  = FALSE, verbose    = TRUE)
-    if ('gene_name' %in% fvars(object)) fvars(object) %<>%
-        stri_replace_first_fixed('gene_name', 'feature_name')
-    metadata(object)$platform <- 'rnaseq'
-    counts(object) <- exprs(object)
-    assays(object)$exprs <- NULL
-# Prepare
-    object %<>% add_coldata(colfile = colfile, by.x = by.x, by.y = by.y)
+    contrastdefs <- enexpr(contrastdefs)
+# Read
+    object <- .read_rnaseq_counts(
+        file, fid_col=fid_col, fname_col=fname_col, filter_count=filter_count,
+        colfile=colfile, by.x=by.x, by.y=by.y)
     object %<>% preprocess_counts(formula = !!formula,
                     filter_count = filter_count, plot = plot, verbose = verbose)
     if (length(fname_col)>0){
         assert_is_subset(fname_col, fvars(object))
         fdata(object)$feature_name <- fdata(object)[[fname_col]]
         fdata(object) %<>% pull_columns(
-            intersect(c('feature_id', 'feature_name'), names(.)))
-    }
+            intersect(c('feature_id', 'feature_name'), names(.)))}
 # Contrast
     object %<>% pca()
     object %<>% add_limma(formula = eval_tidy(formula),
@@ -551,7 +583,7 @@ read_counts <- function(file, fid_col = 1,
 #' @return count matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_counts(file)
+#' object <- read_rnaseq_counts(file)
 #' counts(object) <- exprs(object)
 #' counts(object)[1:3, 1:3]
 #' @rdname counts
