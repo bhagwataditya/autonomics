@@ -284,68 +284,9 @@ numerify   <- function(df){
 #
 #==============================================================================
 
-
-#' Read omics data from rectangular file
-#' @param file       string: name of text (txt, csv, tsv, adat) or
-#'                           excel (xls, xlsx) file
-#' @param sheet      integer/string: only relevant for excel files
-#' @param fid_rows   numeric vector: featureid rows
-#' @param fid_cols   numeric vector: featureid cols
-#' @param sid_rows   numeric vector: sampleid rows
-#' @param sid_cols   numeric vector: sampleid cols
-#' @param expr_rows  numeric vector: expr rows
-#' @param expr_cols  numeric vector: expr cols
-#' @param fvar_rows  numeric vector: fvar rows
-#' @param fvar_cols  numeric vector: fvar cols
-#' @param svar_rows  numeric vector: svar rows
-#' @param svar_cols  numeric vector: svar cols
-#' @param fdata_rows numeric vector: fdata rows
-#' @param fdata_cols numeric vector: fdata cols
-#' @param sdata_rows numeric vector: sdata rows
-#' @param sdata_cols numeric vector: sdata cols
-#' @param transpose  TRUE or FALSE (default)
-#' @param verbose    TRUE (default) or FALSE
-#' @return SummarizedExperiment
-#' @examples
-#' # RNASEQ
-#'    file <- download_data('billing16.rnacounts.txt')
-#'    read_omics(file,fid_rows   = 2:58736,   fid_cols   = 1,
-#'                    sid_rows   = 1,         sid_cols   = 4:14,
-#'                    expr_rows  = 2:58736,   expr_cols  = 4:14,
-#'                    fvar_rows  = 1,         fvar_cols  = 1:3,
-#'                    fdata_rows = 2:58736,   fdata_cols = 1:3,
-#'                    transpose  = FALSE)
-#' # LCMSMS PROTEINGROUPS
-#'    file <- download_data('billing19.proteingroups.txt')
-#'    read_omics(file,fid_rows   = 2:9044,  fid_cols   = 383,
-#'                    sid_rows   = 1,       sid_cols   = seq(124, 316, by = 6),
-#'                    expr_rows  = 2:9044,  expr_cols  = seq(124, 316, by = 6),
-#'                    fvar_rows  = 1,       fvar_cols  = c(2, 6, 7, 383),
-#'                    fdata_rows = 2:9044,  fdata_cols = c(2, 6, 7, 383),
-#'                    transpose  = FALSE)
-#' # SOMASCAN
-#'    file <- download_data('billing16.somascan.adat')
-#'    read_omics(file,fid_rows   = 21,       fid_cols   = 19:1146,
-#'                    sid_rows   = 30:40,    sid_cols   = 4,
-#'                    expr_rows  = 30:40,    expr_cols  = 19:1146,
-#'                    fvar_rows  = 21:28,    fvar_cols  = 18,
-#'                    svar_rows  = 29,       svar_cols  = 1:17,
-#'                    fdata_rows = 21:28,    fdata_cols = 19:1146,
-#'                    sdata_rows = 30:40,    sdata_cols = 1:17,
-#'                    transpose  = TRUE)
-#' # METABOLON
-#'    file <- download_data('halama18.metabolon.xlsx')
-#'    read_omics(file, sheet = 2,
-#'                    fid_rows   = 11:401,    fid_cols   = 5,
-#'                    sid_rows   = 3,         sid_cols   = 15:86,
-#'                    expr_rows  = 11:401,    expr_cols  = 15:86,
-#'                    fvar_rows  = 10,        fvar_cols  = 1:14,
-#'                    svar_rows  = 1:10,      svar_cols  = 14,
-#'                    fdata_rows = 11:401,    fdata_cols = 1:14,
-#'                    sdata_rows = 1:10,      sdata_cols = 15:86,
-#'                    transpose  = FALSE)
+#' @rdname read_omics
 #' @export
-read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
+.read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
     expr_rows, expr_cols, fvar_rows  = NULL, fvar_cols = NULL, svar_rows = NULL,
     svar_cols  = NULL, fdata_rows = NULL,  fdata_cols = NULL, sdata_rows = NULL,
     sdata_cols = NULL, transpose  = FALSE, verbose    = TRUE){
@@ -392,6 +333,92 @@ read_omics <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
     metadata(object)$analysis  <-list(
         nfeatures = c(all = nrow(exprs1)), nsamples  = c(all = ncol(exprs1)))
     metadata(object)$file <- file
+    object
+}
+
+
+#' Read omics data from rectangular file
+#' @param file       string: name of text (txt, csv, tsv, adat) or
+#'                           excel (xls, xlsx) file
+#' @param sheet      integer/string: only relevant for excel files
+#' @param fid_rows   numeric vector: featureid rows
+#' @param fid_cols   numeric vector: featureid cols
+#' @param sid_rows   numeric vector: sampleid rows
+#' @param sid_cols   numeric vector: sampleid cols
+#' @param expr_rows  numeric vector: expr rows
+#' @param expr_cols  numeric vector: expr cols
+#' @param fvar_rows  numeric vector: fvar rows
+#' @param fvar_cols  numeric vector: fvar cols
+#' @param svar_rows  numeric vector: svar rows
+#' @param svar_cols  numeric vector: svar cols
+#' @param fdata_rows numeric vector: fdata rows
+#' @param fdata_cols numeric vector: fdata cols
+#' @param sdata_rows numeric vector: sdata rows
+#' @param sdata_cols numeric vector: sdata cols
+#' @param transpose  TRUE or FALSE (default)
+#' @param coldatafile coldatafile or NULL
+#' @param sampleidvar sampleidvar in coldatafile
+#' @param subgroupvar subgroupvar in coldatafile
+#' @param verbose    TRUE (default) or FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' # RNASEQ
+#'    file <- download_data('billing16.rnacounts.txt')
+#'    read_omics(file,fid_rows   = 2:58736,   fid_cols   = 1,
+#'                    sid_rows   = 1,         sid_cols   = 4:14,
+#'                    expr_rows  = 2:58736,   expr_cols  = 4:14,
+#'                    fvar_rows  = 1,         fvar_cols  = 1:3,
+#'                    fdata_rows = 2:58736,   fdata_cols = 1:3,
+#'                    transpose  = FALSE)
+#' # LCMSMS PROTEINGROUPS
+#'    file <- download_data('billing19.proteingroups.txt')
+#'    read_omics(file,fid_rows   = 2:9044,  fid_cols   = 383,
+#'                    sid_rows   = 1,       sid_cols   = seq(124, 316, by = 6),
+#'                    expr_rows  = 2:9044,  expr_cols  = seq(124, 316, by = 6),
+#'                    fvar_rows  = 1,       fvar_cols  = c(2, 6, 7, 383),
+#'                    fdata_rows = 2:9044,  fdata_cols = c(2, 6, 7, 383),
+#'                    transpose  = FALSE)
+#' # SOMASCAN
+#'    file <- download_data('billing16.somascan.adat')
+#'    read_omics(file,fid_rows   = 21,       fid_cols   = 19:1146,
+#'                    sid_rows   = 30:40,    sid_cols   = 4,
+#'                    expr_rows  = 30:40,    expr_cols  = 19:1146,
+#'                    fvar_rows  = 21:28,    fvar_cols  = 18,
+#'                    svar_rows  = 29,       svar_cols  = 1:17,
+#'                    fdata_rows = 21:28,    fdata_cols = 19:1146,
+#'                    sdata_rows = 30:40,    sdata_cols = 1:17,
+#'                    transpose  = TRUE)
+#' # METABOLON
+#'    file <- download_data('halama18.metabolon.xlsx')
+#'    read_omics(file, sheet = 2,
+#'                    fid_rows   = 11:401,    fid_cols   = 5,
+#'                    sid_rows   = 3,         sid_cols   = 15:86,
+#'                    expr_rows  = 11:401,    expr_cols  = 15:86,
+#'                    fvar_rows  = 10,        fvar_cols  = 1:14,
+#'                    svar_rows  = 1:10,      svar_cols  = 14,
+#'                    fdata_rows = 11:401,    fdata_cols = 1:14,
+#'                    sdata_rows = 1:10,      sdata_cols = 15:86,
+#'                    transpose  = FALSE)
+#' @export
+read_omics <- function(
+    file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
+    expr_rows, expr_cols, fvar_rows  = NULL, fvar_cols = NULL, svar_rows = NULL,
+    svar_cols  = NULL, fdata_rows = NULL,  fdata_cols = NULL, sdata_rows = NULL,
+    sdata_cols = NULL, transpose  = FALSE,
+    coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = character(0),
+    verbose = TRUE
+){
+    object <- .read_omics(file, sheet=sheet,
+                        fid_rows   = fid_rows,   fid_cols   = fid_cols,
+                        sid_rows   = sid_rows,   sid_cols   = sid_cols,
+                        expr_rows  = expr_rows,  expr_cols  = expr_cols,
+                        fvar_rows  = fvar_rows,  fvar_cols  = fvar_cols,
+                        svar_rows  = svar_rows,  svar_cols  = svar_cols,
+                        fdata_rows = fdata_rows, fdata_cols = fdata_cols,
+                        sdata_rows = sdata_rows, sdata_cols = sdata_cols,
+                        transpose  = transpose,  verbose    = verbose)
+    object %<>% add_coldata(coldatafile = coldatafile, sampleidvar= sampleidvar,
+                            subgroupvar = subgroupvar, verbose    = verbose)
     object
 }
 

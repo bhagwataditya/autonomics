@@ -11,6 +11,9 @@
   genome,
   nthreads = detectCores(),
   filter_count = 10,
+  coldatafile = NULL,
+  sampleidvar = "sample_id",
+  subgroupvar = "subgroup",
   verbose = TRUE
 )
 
@@ -20,6 +23,9 @@ read_rnaseq_bams(
   genome,
   nthreads = detectCores(),
   filter_count = 10,
+  coldatafile = NULL,
+  sampleidvar = "sample_id",
+  subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
   verbose = TRUE,

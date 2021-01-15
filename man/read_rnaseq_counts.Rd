@@ -11,9 +11,8 @@
   fname_col = character(0),
   filter_count = 10,
   coldatafile = NULL,
-  by.x = "sample_id",
-  by.y = "sample_id",
-  subgroup_var = "subgroup"
+  sampleidvar = "sample_id",
+  subgroupvar = "subgroup"
 )
 
 read_rnaseq_counts(
@@ -22,9 +21,8 @@ read_rnaseq_counts(
   fname_col = character(0),
   filter_count = 10,
   coldatafile = NULL,
-  by.x = "sample_id",
-  by.y = "sample_id",
-  subgroup_var = "subgroup",
+  sampleidvar = "sample_id",
+  subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
   verbose = TRUE,
@@ -42,11 +40,11 @@ read_rnaseq_counts(
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
 
-\item{coldatafile}{coldata file (string) or NULL}
+\item{coldatafile}{coldatafile path (or NULL)}
 
-\item{by.x}{merge var in file}
+\item{sampleidvar}{sampleidvar in coldatafile}
 
-\item{by.y}{merge var in coldatafile}
+\item{subgroupvar}{subgroupvar in coldatafile}
 
 \item{formula}{formula to create design matrix (using svars)}
 

@@ -254,12 +254,11 @@ write_coldata <- function(
 #' Add coldata
 #'
 #' Add coldata from file or sampleids
-#' @param object        SummarizedExperiment
-#' @param subgroup_var  subgroup svar or NULL
-#' @param coldatafile   coldatafile path
-#' @param by.x          merge var in object
-#' @param by.y          merge var in coldatafile
-#' @param verbose       TRUE (default) or FALSE
+#' @param object       SummarizedExperiment
+#' @param coldatafile  coldatafile path
+#' @param sampleidvar  sampleidvar or NULL
+#' @param subgroupvar  subgroupvar or NULL
+#' @param verbose      TRUE (default) or FALSE
 #'@examples
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
@@ -285,33 +284,36 @@ write_coldata <- function(
 #'     file <- download_data('billing19.rnacounts.txt')
 #'     .read_rnaseq_counts()
 #'@noRd
-add_coldata <- function(object, subgroup_var = 'subgroup', coldatafile = NULL,
-    by.x = 'sample_id', by.y = 'sample_id', verbose = TRUE
+add_coldata <- function(object, coldatafile = NULL,
+    sampleidvar = 'sample_id', subgroupvar = character(0), verbose = TRUE
 ){
-# Create subgroup values
-    if (file_exists(coldatafile)){                             # from file
+# Merge coldatafile
+    if (file_exists(coldatafile)){
         if (verbose) message(
             '\t\tRead coldata from (update if required!):\n\t\t\t', coldatafile)
         dt <- fread(coldatafile)
-        dt$subgroup <- dt[[subgroup_var]]
-        if (subgroup_var %in% names(dt)) setnames(dt, subgroup_var, 'subgroup')
-
-    } else if ((nfactors(x <- object$sample_id))>1) {             # from sampleids
-        if (verbose) message('\t\tInfer subgroup from sample_ids')
-        dt <- data.table(sample_id = x,
-                        subgroup   = split_extract(x, seq_len(nfactors(x)-1)),
-                        replicate  = split_extract(x, nfactors(x)))
-
-    } else if (!is.null(basename(metadata(object)$file))){ # from filename
-        dt <- data.table(subgroup = basename(metadata(object)$file))
-
-    } else {                                               # 'subgroup1'
-        dt <- data.table(subgroup = 'subgroup1')
+        assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
+        object %<>% merge_coldata(dt, by = sampleidvar)
     }
-# Add to object
-    object %<>% merge_coldata(dt, by.x = by.x, by.y = by.y)
-    sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
+# Rename sampleidvar/subgroupvar
+    svars(object) %<>% stri_replace_first_fixed(sampleidvar, 'sample_id')
+    if (length(subgroupvar)==1)  svars(object) %<>%
+        stri_replace_first_fixed(subgroupvar, 'subgroup')
+# Add subgroup if required
+    if (!'subgroup' %in% svars(object)){
+        x <- object$sample_id
+        if (nfactors(x)>1){                                      # sampleids
+            if (verbose) message('\t\tInfer subgroup from sample_ids')
+            object$subgroup  <- split_extract(x, seq_len(nfactors(x)-1))
+            object$replicate <- split_extract(x, nfactors(x))
+        } else if (!is.null(basename(metadata(object)$file))){   # filename
+            object$subgroup <- basename(metadata(object)$file)
+        } else {
+            object$subgroup <- 'subgroup1'                       # 'subgroup1'
+        }
+    }
 # Return
+    sdata(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate'))
     object
 }
 
