@@ -359,6 +359,7 @@ preprocess_counts <- function(
     object,
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     filter_count = 10,
+    voomweight   = TRUE,
     verbose      = TRUE,
     plot         = TRUE
 ){
@@ -366,19 +367,22 @@ preprocess_counts <- function(
     sdata(object)$libsize <- colSums(counts(object))
     object %<>% filter_low_count_features(
                     filter_count, verbose = verbose)
-    sdata(object)$libsize.filtered <- colSums(counts(object))
-    sdata(object)$libsize.scaled   <- scaledlibsizes(counts(object))
-# Normalize: counts -> cpm
+    object$libsize.filtered <- colSums(counts(object))
+    object$libsize.scaled   <- scaledlibsizes(counts(object))
+# Normalize: counts -> cpm -> log2cpm
     if (verbose) message('\t\tTMM normalize and log2transform')
-    exprs(object) <- counts(object) %>% counts_to_cpm() %>% log2()
+    exprs(object)<- counts(object) %>%
+                    counts_to_cpm(scaled_libsizes = object$libsize.scaled) %>%
+                    log2()
 # Compute and add precision weights
-    assays(object)$weights <- compute_precision_weights(
-        object, formula = !!enquo(formula), plot = plot)
+    if (voomweight)  assays(object)$weights <- compute_precision_weights(
+                            object, formula = !!enquo(formula), plot = plot)
 # Return
     if (verbose){
         message('\t\tReturn object: counts(object)  = counts')
         message('\t\t               exprs(object)   = log2cpm')
-        message('\t\t               weights(object) = voom weights (see plot)')
+        if (voomweight) message(
+                '\t\t               weights(object) = voom weights (see plot)')
         message('\t\t               object$subgroup = subgroup values')
     }
     object
@@ -440,6 +444,7 @@ preprocess_counts <- function(
 #' @param filter_count  min feature count required by at least one sample
 #' @param formula       formula to create design matrix (using svars)
 #' @param contrastdefs  contrast definition vector/matrix/list
+#' @param voomweight    TRUE/FALSE
 #' @param verbose       TRUE/FALSE
 #' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
@@ -457,7 +462,7 @@ read_rnaseq_bams <- function(
     coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
-    verbose = TRUE, plot = TRUE
+    voomweight = TRUE, verbose = TRUE, plot = TRUE
 ){
 # Read
     formula      <- enexpr(formula)
@@ -473,6 +478,7 @@ read_rnaseq_bams <- function(
 # Preprocess/Analyze
     object %<>% preprocess_counts(formula    = !!formula,
                                 filter_count = filter_count,
+                                voomweight   = voomweight,
                                 verbose      = verbose,
                                 plot         = plot)
     object %<>% pca()
@@ -545,6 +551,7 @@ read_rnaseq_bams <- function(
 #' @param subgroupvar   subgroupvar in coldatafile
 #' @param formula       formula to create design matrix (using svars)
 #' @param contrastdefs  contrastdef vector/matrix/list
+#' @param voomweight    TRUE/FALSE
 #' @param verbose       TRUE/FALSE
 #' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
@@ -562,7 +569,8 @@ read_rnaseq_counts <- function(
     fname_col = character(0), filter_count = 10,
     coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object), verbose = TRUE, plot = TRUE
+    contrastdefs = contrast_subgroups(object),
+    voomweight = TRUE, verbose = TRUE, plot = TRUE
 ){
 # Initialize
     formula      <- enexpr(formula)
@@ -573,7 +581,8 @@ read_rnaseq_counts <- function(
                 filter_count = filter_count, coldatafile = coldatafile,
                 sampleidvar = sampleidvar, subgroupvar = subgroupvar)
     object %<>% preprocess_counts(formula = !!formula,
-                    filter_count = filter_count, plot = plot, verbose = verbose)
+                    filter_count = filter_count, voomweight = voomweight,
+                    plot = plot, verbose = verbose)
     if (length(fname_col)>0){
         assert_is_subset(fname_col, fvars(object))
         fdata(object)$feature_name <- fdata(object)[[fname_col]]

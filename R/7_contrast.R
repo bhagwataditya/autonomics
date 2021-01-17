@@ -290,7 +290,7 @@ add_coldata <- function(object, coldatafile = NULL,
 # Merge coldatafile
     if (file_exists(coldatafile)){
         if (verbose) message(
-            '\t\tRead coldata from (update if required!):\n\t\t\t', coldatafile)
+            '\t\tRead coldata from (update if required!):', coldatafile)
         dt <- fread(coldatafile)
         assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
         object %<>% merge_coldata(dt, by = sampleidvar)
@@ -312,6 +312,8 @@ add_coldata <- function(object, coldatafile = NULL,
             object$subgroup <- 'subgroup1'                       # 'subgroup1'
         }
     }
+# Make.names
+    object$subgroup %<>% make.names() # otherwise issue in add_limma (fixable?)
 # Return
     leadcols <- c('sample_id', 'subgroup', 'replicate')
     leadcols %<>% intersect(svars(object))

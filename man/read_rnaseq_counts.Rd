@@ -25,6 +25,7 @@ read_rnaseq_counts(
   subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
+  voomweight = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -49,6 +50,8 @@ performed with \code{\link[edgeR]{filterByExpr}}}
 \item{formula}{formula to create design matrix (using svars)}
 
 \item{contrastdefs}{contrastdef vector/matrix/list}
+
+\item{voomweight}{TRUE/FALSE}
 
 \item{verbose}{TRUE/FALSE}
 

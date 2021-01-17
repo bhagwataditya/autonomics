@@ -28,6 +28,7 @@ read_rnaseq_bams(
   subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
+  voomweight = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -48,6 +49,8 @@ read_rnaseq_bams(
 \item{formula}{formula to create design matrix (using svars)}
 
 \item{contrastdefs}{contrast definition vector/matrix/list}
+
+\item{voomweight}{TRUE/FALSE}
 
 \item{plot}{TRUE/FALSE}
 }
