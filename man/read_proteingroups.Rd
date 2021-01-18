@@ -108,6 +108,9 @@ Read proteingroups/phosphosites
                         select_subgroups = select_subgroups)
 
 # Deconvolute proteingroups
+    file <-  download_data('billing16.proteingroups.txt')
+    object <- read_proteingroups(file,quantity = 'Intensity labeled',
+        fastafile=download_data('uniprot_hsa_20140515.fasta'), plot=FALSE)
     fdata(object)[1:3, 1:4]
     object <- read_proteingroups(file,quantity = 'Intensity labeled',
         fastafile=download_data('uniprot_hsa_20140515.fasta'), plot=FALSE)

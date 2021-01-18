@@ -445,8 +445,8 @@ merge_fdata <- function(object, dt, featureidvar = 'feature_id', verbose=TRUE){
     assert_is_all_of(object,'SummarizedExperiment')
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
     dt %<>% as.data.table(keep.rownames=TRUE)
-    if ('feature_id' %in% names(dt)) dt[, rn := NULL] else  setnames(dt, 'rn',
-                                                                 'feature_id')
+    if (!'feature_id' %in% names(dt)) setnames(dt, 'rn', 'feature_id')
+    if ('rn' %in% names(dt)) dt[, rn := NULL]
     n0 <- nrow(dt)
     dt %<>% unique(by = featureidvar) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
@@ -486,8 +486,8 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
 # Convert dt to data.table
     dt %<>% as.data.table(keep.rownames=TRUE)
-    if ('sample_id' %in% names(dt))  dt[, rn := NULL]  else  setnames(dt, 'rn',
-                                                                  'sample_id')
+    if (!'sample_id' %in% names(dt))  setnames(dt, 'rn', 'sample_id')
+    if ('rn' %in% names(dt))  dt[, rn := NULL]
     assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
     n0 <- nrow(dt)
 # Rm duplicate rows
