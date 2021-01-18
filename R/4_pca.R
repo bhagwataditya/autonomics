@@ -60,14 +60,14 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 
 #=============================================================================
 #
-#                               merge_coldata
-#                               merge_rowdata
+#                               merge_sdata
+#                               merge_fdata
 #
 #=============================================================================
 
-#' @rdname merge_coldata
+#' @rdname merge_sdata
 #' @export
-merge_rowdata <- function(object, df, by = 'feature_id', verbose=TRUE){
+merge_fdata <- function(object, df, by = 'feature_id', verbose=TRUE){
     assert_is_all_of(object,'SummarizedExperiment')
     assert_is_any_of(df,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
     df <- if (is.matrix(df)){ data.table(feature_id = rownames(df), df)
@@ -75,7 +75,7 @@ merge_rowdata <- function(object, df, by = 'feature_id', verbose=TRUE){
     n0 <- nrow(df)
     df %<>% unique(by = by) # keys should be unique!
     if (n0>nrow(df) & verbose)  message('\t\tRetain ', nrow(df),
-                 ' rowdata rows after removing duplicate `', by, '` entries')
+                 ' fdata rows after removing duplicate `', by, '` entries')
     duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
     fdata(object)[duplicate_cols] <- NULL
     fdata(object) %<>% merge(df, by.x = 'feature_id', by.y = by, all.x = TRUE,
@@ -83,14 +83,6 @@ merge_rowdata <- function(object, df, by = 'feature_id', verbose=TRUE){
     rownames(fdata(object)) <- fdata(object)$feature_id
     object
 }
-
-#' @rdname merge_coldata
-#' @export
-merge_fdata <- function(...){
-    .Deprecated('merge_rowdata')
-    merge_rowdata(...)
-}
-
 
 #' Merge column/row data
 #' @param object  SummarizedExperiment
@@ -103,11 +95,11 @@ merge_fdata <- function(...){
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% merge_coldata( data.frame(sample_id = object$sample_id,
+#' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
 #' sdata(object)
 #'@export
-merge_coldata <- function(object, df, by = 'sample_id', verbose=TRUE){
+merge_sdata <- function(object, df, by = 'sample_id', verbose=TRUE){
     assert_is_all_of(object,'SummarizedExperiment')
     assert_is_any_of(df,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
     df <- if (is.matrix(df)){ data.table(sample_id = rownames(df), df)
@@ -115,7 +107,7 @@ merge_coldata <- function(object, df, by = 'sample_id', verbose=TRUE){
     n0 <- nrow(df)
     df %<>% unique(by = by) # keys should be unique!
     if (n0>nrow(df) & verbose)  message('\t\tRetain ', nrow(df),
-                    ' coldata rows after removing duplicate `', by, '` entries')
+                    ' sdata rows after removing duplicate `', by, '` entries')
     duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
     sdata(object) %<>% merge(df, by.x = 'sample_id', by.y = by, all.x = TRUE,
@@ -123,14 +115,6 @@ merge_coldata <- function(object, df, by = 'sample_id', verbose=TRUE){
     rownames(sdata(object)) <- sdata(object)$sample_id # merging drops rownames
     object
 }
-
-#' @rdname merge_coldata
-#' @export
-merge_sdata <- function(...){
-    .Deprecated('merge_coldata')
-    merge_coldata(...)
-}
-
 
 #============================================================================
 #
@@ -209,8 +193,8 @@ pca <- function(
     colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_coldata(samples)
-    object %<>% merge_rowdata(features)
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$pca <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
@@ -261,8 +245,8 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=TRUE, ...){
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Add
-    object %<>% merge_coldata(samples)
-    object %<>% merge_rowdata(features)
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$sma <- variances
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
@@ -314,8 +298,8 @@ lda <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Merge
-    object %<>% merge_coldata(samples)
-    object %<>% merge_rowdata(features)
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$sma <- variances
 # Filter for minvar
     object %<>% .filter_minvar('lda', minvar)
@@ -354,8 +338,8 @@ pls <- function(
     colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_coldata(samples)
-    object %<>% merge_rowdata(features)
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$pls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
@@ -398,8 +382,8 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
     colnames(features) <- sprintf('spls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('spls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_coldata(samples)
-    object %<>% merge_rowdata(features)
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$spls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
@@ -444,8 +428,8 @@ opls <- function(
     colnames(features) <- sprintf('opls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('opls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_coldata(samples)
-    object %<>% merge_rowdata(features)
+    object %<>% merge_sdata(samples)
+    object %<>% merge_fdata(features)
     metadata(object)$opls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)

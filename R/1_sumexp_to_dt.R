@@ -186,12 +186,12 @@ matrix2sumexp <- function(x, sampledata=NULL){
     fdata(object)$feature_id <- rownames(object)
     fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
-    #object %<>% add_coldata(samplefile = NULL) # too slow for large matrices
+    #object %<>% add_sdata(samplefile = NULL) # too slow for large matrices
     if (is.null(sampledata)){
         object$subgroup <- 'subgroup1'
     } else {
         assert_is_subset('sample_id', names(sampledata))
-        object %<>% merge_coldata(sampledata)
+        object %<>% merge_sdata(sampledata)
     }
     object
 }

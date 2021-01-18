@@ -44,11 +44,11 @@ read_rnaseq_bams(
 
 \item{filter_count}{min feature count required by at least one sample}
 
-\item{samplefile}{coldata file}
+\item{samplefile}{sample file}
 
-\item{sampleidvar}{coldata sampleid}
+\item{sampleidvar}{sampleid var}
 
-\item{subgroupvar}{coldata subgroup}
+\item{subgroupvar}{subgroup var}
 
 \item{verbose}{TRUE/FALSE}
 

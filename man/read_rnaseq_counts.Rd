@@ -38,11 +38,11 @@ read_rnaseq_counts(
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
 
-\item{samplefile}{coldata file}
+\item{samplefile}{sample file}
 
-\item{sampleidvar}{coldata sampleid}
+\item{sampleidvar}{sampleid var}
 
-\item{subgroupvar}{coldata subgroup}
+\item{subgroupvar}{subgroup var}
 
 \item{fname_col}{string or number: feature name variable}
 
@@ -76,5 +76,5 @@ file <- download_data('billing19.rnacounts.txt')
 read_rnaseq_counts(file)
 }
 \seealso{
-merge_coldata, merge_rowdata
+merge_sdata, merge_fdata
 }

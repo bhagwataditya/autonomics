@@ -422,12 +422,12 @@ preprocess_counts <- function(
                 counts = fcounts$counts %>% set_colnames(sample_names)))
     metadata(object)$platform <- 'rnaseq'
     metadata(object)$file <- bamdir
-# Add rowdata/coldata
+# Add sample/feature data
     message("\t\tAdd fdata")
     fcounts$annotation$feature_id %<>% as.character()
     rowData(object)  <- fcounts$annotation
     object$sample_id <- sample_names
-    object %<>% add_coldata( samplefile = samplefile,
+    object %<>% add_sdata( samplefile = samplefile,
         sampleidvar = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
 # Return
     object
@@ -435,19 +435,19 @@ preprocess_counts <- function(
 
 
 #' Read RNAseq SAM/BAM files into SummarizedExperiment
-#' @param bamdir            SAM/BAM dir path (string)
-#' @param paired            whether reads are paired end (TRUE/FALSE)
-#' @param genome            string: either "mm10", "hg38" etc. or a GTF file
-#' @param nthreads          no of cores to be used by Rsubread::featureCounts()
-#' @param filter_count      min feature count required by at least one sample
-#' @param samplefile      coldata file
-#' @param sampleidvar  coldata sampleid
-#' @param subgroupvar  coldata subgroup
-#' @param formula           formula to create design matrix (using svars)
-#' @param contrastdefs      contrast definition vector/matrix/list
-#' @param voomweight        TRUE/FALSE
-#' @param verbose           TRUE/FALSE
-#' @param plot              TRUE/FALSE
+#' @param bamdir        SAM/BAM dir path (string)
+#' @param paired        whether reads are paired end (TRUE/FALSE)
+#' @param genome        string: either "mm10", "hg38" etc. or a GTF file
+#' @param nthreads      no of cores to be used by Rsubread::featureCounts()
+#' @param filter_count  min feature count required by at least one sample
+#' @param samplefile    sample file
+#' @param sampleidvar   sampleid var
+#' @param subgroupvar   subgroup var
+#' @param formula       formula to create design matrix (using svars)
+#' @param contrastdefs  contrast definition vector/matrix/list
+#' @param voomweight    TRUE/FALSE
+#' @param verbose       TRUE/FALSE
+#' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # in-built genome
@@ -516,15 +516,16 @@ read_rnaseq_bams <- function(
                         dt[, -fid_col, with = FALSE], is.integer, logical(1)))))
     dt <- fread(file)
     idx <- vapply(dt, is.numeric, logical(1))
-    rowdata1 <- dt[, !idx, with = FALSE]
-    if (is.numeric(fid_col))       names(rowdata1)[fid_col] <- 'feature_id'
-    if (is.character(fid_col))  setnames(rowdata1, fid_col,    'feature_id')
-    rowdata1 %<>% DataFrame(row.names = .$feature_id)
+    fdata1 <- dt[, !idx, with = FALSE]
+    if (is.numeric(fid_col))       names(fdata1)[fid_col] <- 'feature_id'
+    if (is.character(fid_col))  setnames(fdata1, fid_col,    'feature_id')
+    fdata1 %<>% DataFrame(row.names = .$feature_id)
     counts1  <- data.matrix(dt[,  idx, with = FALSE])
-    rownames(counts1) <- rowdata1$feature_id
+    rownames(counts1) <- fdata1$feature_id
     object <- matrix2sumexp(counts1)
-    object %<>% merge_rowdata(rowdata1)
-    object %<>% add_coldata(samplefile = samplefile,
+    object$subgroup <- NULL # added in add_sdata
+    object %<>% merge_fdata(fdata1)
+    object %<>% add_sdata(samplefile = samplefile,
         sampleidvar = sampleidvar, subgroupvar=subgroupvar)
     # object <- read_omics(file,
     #                     fid_rows     = 2:nrow(dt),   fid_cols     = fid_col,
@@ -554,20 +555,20 @@ read_rnaseq_bams <- function(
 #'              feature annotations in first few columns
 #'              feature counts      in next columns
 #'
-#' @param file              string: path to rnaseq counts file
-#' @param fid_col           number of name of column with feature identifiers
-#' @param fname_col         string or number: feature name variable
-#' @param filter_count      number (default 10): filter out features
+#' @param file          string: path to rnaseq counts file
+#' @param fid_col       number of name of column with feature identifiers
+#' @param fname_col     string or number: feature name variable
+#' @param filter_count  number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
-#' @param samplefile      coldata file
-#' @param sampleidvar  coldata sampleid
-#' @param subgroupvar  coldata subgroup
-#' @param formula           formula to create design matrix (using svars)
-#' @param contrastdefs      contrastdef vector/matrix/list
-#' @param voomweight        TRUE/FALSE
-#' @param verbose           TRUE/FALSE
-#' @param plot              TRUE/FALSE
+#' @param samplefile    sample file
+#' @param sampleidvar   sampleid var
+#' @param subgroupvar   subgroup var
+#' @param formula       formula to create design matrix (using svars)
+#' @param contrastdefs  contrastdef vector/matrix/list
+#' @param voomweight    TRUE/FALSE
+#' @param verbose       TRUE/FALSE
+#' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
@@ -576,7 +577,7 @@ read_rnaseq_bams <- function(
 #'
 #' file <- download_data('billing19.rnacounts.txt')
 #' read_rnaseq_counts(file)
-#' @seealso merge_coldata, merge_rowdata
+#' @seealso merge_sdata, merge_fdata
 #' @export
 read_rnaseq_counts <- function(
     file, fid_col = 1, fname_col = 1, filter_count = 10, samplefile = NULL,

@@ -889,7 +889,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 
 # Samples: parse/filter
     if (verbose)  message('\tPrepare samples')
-    object %<>% add_maxquant_coldata(verbose=verbose, samplefile=samplefile)
+    object %<>% add_maxquant_sdata(verbose=verbose, samplefile=samplefile)
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
 # Transform
@@ -937,7 +937,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     metadata(object)$platform <- 'maxquant'
 # Samples: Parse/Filter
     if (verbose)  message('\tPrepare samples')
-    object %<>% add_maxquant_coldata(verbose=verbose, samplefile=samplefile)
+    object %<>% add_maxquant_sdata(verbose=verbose, samplefile=samplefile)
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
 # Log2 transform
@@ -1045,13 +1045,13 @@ rename_phospho_fvars <- function(object){
 #
 #==============================================================================
 
-add_maxquant_coldata <- function(
+add_maxquant_sdata <- function(
     object, samplefile = default_samplefile(object), verbose
 ){
     snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
     object %<>% standardize_maxquant_snames(verbose = verbose)
     object %<>% demultiplex(verbose = verbose)
-    object %<>% add_coldata(samplefile = samplefile, verbose = verbose)
+    object %<>% add_sdata(samplefile = samplefile, verbose = verbose)
     object
 }
 

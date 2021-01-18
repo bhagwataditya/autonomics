@@ -170,7 +170,7 @@ split_extract <- function(x, i, sep=guess_sep(x)){
 
 #=============================================================================
 #
-#               add_coldata
+#               add_sdata
 #                   file_exists
 #                   get_default_samplefile
 #                       default_samplefile
@@ -234,23 +234,23 @@ get_default_samplefile <- function(object){
 }
 
 
-#' Write coldata
-#' @param object   SummarizedExperiment
-#' @param samplefile  coldata file
-#' @param verbose  TRUE/FALSE
+#' Write sdata
+#' @param object      SummarizedExperiment
+#' @param samplefile  sample file
+#' @param verbose     TRUE/FALSE
 #' @export
-write_coldata <- function(
+write_sdata <- function(
     object, samplefile = get_default_samplefile(object), verbose = TRUE
 ){
-    if (verbose) message('\t\tWrite coldata - update with `merge_coldata(.)`: ',
+    if (verbose) message('\t\tWrite sdata - update with `merge_sdata(.)`: ',
                          samplefile)
     fwrite(sdata(object), samplefile, sep = '\t', row.names = FALSE)
 }
 
 
-#' Add coldata
+#' Add sdata
 #'
-#' Add coldata from file or sampleids
+#' Add sdata from file or sampleids
 #' @param object       SummarizedExperiment
 #' @param samplefile  samplefile path
 #' @param sampleidvar  sampleidvar or NULL
@@ -262,12 +262,12 @@ write_coldata <- function(
 #'     select_subgroups <-  c(sprintf(
 #'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
 #'    object <- read_proteingroups(file, select_subgroups = select_subgroups)
-#'    add_coldata(object)
+#'    add_sdata(object)
 #'
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    invert_subgroups <- c('EM_E', 'E_BM', 'EM_BM')
 #'    object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-#'    add_coldata(object)
+#'    add_sdata(object)
 #'
 #' # SOMASCAN
 #'     file <- download_data('atkin18.somascan.adat')
@@ -281,17 +281,17 @@ write_coldata <- function(
 #'     file <- download_data('billing19.rnacounts.txt')
 #'     .read_rnaseq_counts()
 #'@export
-add_coldata <- function(object, samplefile = NULL,
+add_sdata <- function(object, samplefile = NULL,
     sampleidvar = 'sample_id', subgroupvar = character(0),
     verbose = TRUE
 ){
 # Merge samplefile
     if (file_exists(samplefile)){
         if (verbose) message(
-            '\t\tRead coldata from (update if required!):', samplefile)
+            '\t\tRead sdata from (update if required!):', samplefile)
         dt <- fread(samplefile)
         assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
-        object %<>% merge_coldata(dt, by = sampleidvar)
+        object %<>% merge_sdata(dt, by = sampleidvar)
     }
 # Rename sampleidvar/subgroupvar
     svars(object) %<>% stri_replace_first_fixed(sampleidvar, 'sample_id')

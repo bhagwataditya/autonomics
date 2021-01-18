@@ -417,7 +417,7 @@ read_omics <- function(
                         fdata_rows = fdata_rows, fdata_cols = fdata_cols,
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
-    object %<>% add_coldata(samplefile = samplefile, sampleidvar= sampleidvar,
+    object %<>% add_sdata(samplefile = samplefile, sampleidvar= sampleidvar,
                             subgroupvar = subgroupvar, verbose    = verbose)
     object
 }
@@ -425,7 +425,7 @@ read_omics <- function(
 
 #=============================================================================
 #
-#                        add_coldata
+#                        add_sdata
 #
 #=============================================================================
 
