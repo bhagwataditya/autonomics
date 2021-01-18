@@ -80,15 +80,13 @@ has_identical_values <- function(x) length(unique(x))==1
 #'    # object <- read_proteingroups(object)
 #'    # guess_sep(object)
 #' @export
-guess_sep <- function (x, ...) {
-    UseMethod("guess_sep", x)
-}
+guess_sep <- function (x, ...)  UseMethod("guess_sep", x)
 
 
 #' @rdname guess_sep
 #' @export
 guess_sep.character <- function(
-    x, separators = c('.', ' ', '_'), verbose = FALSE, ...
+    x, separators = c('.', '_'), verbose = FALSE, ...
 ){
 # Initialize
     . <- NULL
@@ -125,8 +123,7 @@ guess_sep.factor <- function(x, ...)  guess_sep.character(levels(x))
 #' @rdname guess_sep
 #' @export
 guess_sep.SummarizedExperiment <- function(
-    x, var = 'sample_id', separators =  c('.', '_', ' '),
-    verbose = FALSE, ...
+    x, var = 'sample_id', separators =  c('.', '_'), verbose = FALSE, ...
 ){
     assert_is_subset(var, c(svars(x), fvars(x)))
     (if (var %in% svars(x)) slevels(x, var) else flevels(x, var)) %>%

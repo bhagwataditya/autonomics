@@ -880,98 +880,91 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     'Gene names', 'Positions within proteins', 'Localization prob', 'Reverse',
     'Potential contaminant', 'Contaminant')
 
-.read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file),
-    samplefile = default_samplefile(file, 'maxquant', quantity),
+#' Read maxquant file
+#' @param file              proteingroups/phosphosites file
+#' @param quantity          value in MAXQUANT_PATTERNS
+#' @param samplefile        sample file
+#' @param sampleidvar       sampleid var
+#' @param subgroupvar       subgroup var
+#' @param select_subgroups  character vector
+#' @param invert_subgroups  character vector
+#' @param verbose           TRUE/FALSE
+#' @examples
+#' # LFQ INTENSITIES
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     object <- .read_maxquant(file)
+#'     samplefile <- create_samplefile(object, default_samplefile(file))
+#'     object <- .read_maxquant(file, samplefile=samplefile)
+#'
+#' # LABEL RATIOS
+#'     file <- download_data('billing16.proteingroups.txt')
+#'     inv <- c('EM_E','BM_E','BM_EM')
+#'     object <- .read_maxquant(file, invert_subgroups = inv)
+#'
+#' # LABEL INTENSITIES
+#'     object <- .read_maxquant(file, quantity = 'Intensity labeled')
+#'
+#' # SELECTED LABEL RATIOS
+#'     file <-  download_data('billing19.proteingroups.txt')
+#'     select_subgroups <-  c(sprintf(
+#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+#'     object <- .read_maxquant(file, select_subgroups = select_subgroups)
+#'
+#' # PHOSPHO RATIOS
+#'     file <- download_data('billing19.phosphosites.txt')
+#'     .read_maxquant(file, select_subgroups = select_subgroups)
+#'
+#' @export
+.read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
+    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
     select_subgroups = NULL, invert_subgroups = character(0),
-    verbose=TRUE
-){
-# Scan
-    dt <- fread(file, integer64 = 'numeric', header = FALSE)
-    columns <- as.character(dt[1])
-    fvars <- intersect(columns, PROTEINGROUP_FVARS)
-    fid_rows <- 2:nrow(dt);    fid_cols <- which(columns == 'id')
-    sid_rows <- 1;             pattern  <- MAXQUANT_PATTERNS[[quantity]]
-    sid_cols <- which(stri_detect_regex(columns, pattern))
-    expr_rows  <- 2:nrow(dt);  expr_cols  <- sid_cols
-    fvar_rows  <- 1;           fvar_cols  <- match(fvars, columns)
-    fdata_rows <- 2:nrow(dt);  fdata_cols <- fvar_cols
+    verbose = TRUE){
 # Read
-    object <- read_omics(file,
-                        fid_rows   = fid_rows,    fid_cols   = fid_cols,
-                        sid_rows   = sid_rows,    sid_cols   = sid_cols,
-                        expr_rows  = expr_rows,   expr_cols  = expr_cols,
-                        fvar_rows  = fvar_rows,   fvar_cols  = fvar_cols,
-                        fdata_rows = fdata_rows,  fdata_cols = fdata_cols,
-                        transpose  = FALSE,       verbose    = verbose)
-# Features: parse/filter
-    if (verbose)  message('\tPrepare samples')
-    if ('Gene names' %in% fvars(object))    fvars(object) %<>%
-        stri_replace_first_fixed('Gene names', 'feature_name')
-
-# Samples: parse/filter
-    if (verbose)  message('\tPrepare samples')
-    object %<>% add_maxquant_sdata(verbose=verbose, samplefile=samplefile)
+    assert_all_are_existing_files(file)
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
+    assert_is_a_bool(verbose)
+    phospho <- stri_detect_fixed(basename(file), 'phospho')
+    if (verbose) message('\tRead ', file)
+    names1 <- names(fread(file, integer64 = 'numeric', nrows=1))
+    fids1  <- fread(file, select = 'id')[[1]]
+    FVARS <- if (phospho) PHOSPHOSITE_FVARS else PROTEINGROUP_FVARS
+    fdata1 <- fread(file, select = intersect(FVARS, names1))
+    setnames(fdata1, 'id', 'feature_id')
+    if ('Gene names' %in% names(fdata1)) setnames(fdata1, 'Gene names',
+                                                        'feature_name')
+    select <- names1 %>%
+            extract(stri_detect_regex(., MAXQUANT_PATTERNS[[quantity]]))
+    if (phospho)  select %<>% extract(stri_endswith_fixed(., '___1'))
+    exprs1 <- data.matrix(fread(file, select = select))
+# Rm NA fids
+    idx <- !is.na(fids1)
+    fids1 <- fids1[idx]; fdata1 <- fdata1[idx, ]; exprs1 <- exprs1[idx, ]
+    rownames(exprs1) <- fids1  # first na need to be removed!
+# Simplify maxquant snames
+    sids1 <- colnames(exprs1)
+    if (phospho) sids1 %<>% stri_replace_last_fixed('___1', '')
+    sids1 %<>% standardize_maxquant_snames(quantity)
+    sids1 %<>% demultiplex()
+    colnames(exprs1) <- sids1
+# Create sumexp
+    object <- matrix2sumexp(exprs1, featuredata = fdata1)
+    object$subgroup <- NULL
+    object %<>% merge_samplefile(samplefile = samplefile,
+                        sampleidvar = sampleidvar, subgroupvar  = subgroupvar)
+    object %<>% add_subgroup(verbose=verbose)
+# Filter/Transform
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
-# Transform
-    if (verbose)  message('\tLog2 transform')
     exprs(object) %<>% zero_to_na(verbose = verbose)
-    exprs(object) %<>% nan_to_na(verbose = verbose)
+    exprs(object) %<>% nan_to_na( verbose = verbose)
     object %<>% log2transform(verbose=verbose)
     object %<>% invert(invert_subgroups)
 # Return
     metadata(object)$quantity <- quantity
     metadata(object)$platform <- 'maxquant'
+    metadata(object)$file     <- file
     object
 }
-
-
-
-.read_phosphosites <- function(
-    file, quantity = guess_maxquant_quantity(file),
-    samplefile = default_samplefile(file, 'maxquant', quantity),
-    select_subgroups = subgroup_levels(object), invert_subgroups = character(0),
-    verbose=TRUE
-){
-# Scan
-    dt <- fread(file, integer64 = 'numeric', header = FALSE)
-    columns <- as.character(dt[1])
-    value_cols <- phospho_expr_columns(columns, quantity)
-    fvars <- intersect(columns, PHOSPHOSITE_FVARS)
-    fvar_cols  <- which(columns %in% fvars)
-    fid_rows   <- 2:nrow(dt);     fid_cols   <- which(columns == 'id')
-    sid_rows   <- 1;              sid_cols   <- value_cols
-    expr_rows  <- 2:nrow(dt);     expr_cols  <- value_cols
-    fvar_rows  <- 1;              fvar_cols  <- fvar_cols
-    fdata_rows <- 2:nrow(dt);     fdata_cols <- fvar_cols
-# Read
-    object  <- read_omics(file,
-                        fid_rows   = fid_rows,    fid_cols   = fid_cols,
-                        sid_rows   = sid_rows,    sid_cols   = sid_cols,
-                        expr_rows  = expr_rows,   expr_cols  = expr_cols,
-                        fvar_rows  = fvar_rows,   fvar_cols  = fvar_cols,
-                        fdata_rows = fdata_rows,  fdata_cols = fdata_cols,
-                        transpose  = FALSE,       verbose    = verbose)
-    snames(object)   %<>% stri_replace_all_fixed('___1', '')
-    object$sample_id %<>% stri_replace_all_fixed('___1', '')
-    metadata(object)$quantity <- quantity
-    metadata(object)$platform <- 'maxquant'
-# Samples: Parse/Filter
-    if (verbose)  message('\tPrepare samples')
-    object %<>% add_maxquant_sdata(verbose=verbose, samplefile=samplefile)
-    object %<>% filter_maxquant_samples(
-                    select_subgroups = select_subgroups, verbose)
-# Log2 transform
-    if (verbose)  message('\tLog2 transform')
-    exprs(object) %<>% zero_to_na(verbose = verbose)
-    exprs(object) %<>% nan_to_na(verbose = verbose)
-    object %<>% log2transform(verbose=verbose)
-    object %<>% invert(invert_subgroups)
-# Return
-    object
-}
-
-
 
 
 #==============================================================================
@@ -1177,7 +1170,7 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #' @export
 read_proteingroups <- function(
     proteinfile, quantity = guess_maxquant_quantity(proteinfile),
-    samplefile = default_samplefile(proteinfile, 'maxquant', quantity),
+    samplefile = default_samplefile(proteinfile),
     select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
@@ -1187,13 +1180,11 @@ read_proteingroups <- function(
 ){
 # Assert
     assert_all_are_existing_files(proteinfile)
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
-    assert_is_a_bool(verbose)
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
 # Read
-    object <- .read_proteingroups(proteinfile, quantity,
+    object <- .read_maxquant(proteinfile, quantity,
         samplefile = samplefile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose = verbose)
 # Prepare
@@ -1217,7 +1208,7 @@ read_phosphosites <- function(
     phosphofile,
     proteinfile = paste0(dirname(phosphofile), '/proteinGroups.txt'),
     quantity = guess_maxquant_quantity(phosphofile),
-    samplefile = default_samplefile(proteinfile, 'maxquant', quantity),
+    samplefile = default_samplefile(proteinfile),
     select_subgroups = NULL,
     contaminants = FALSE, reverse = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
@@ -1232,10 +1223,10 @@ read_phosphosites <- function(
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
 # Read
-    proteingroups <- .read_proteingroups(file=proteinfile, quantity = quantity,
+    proteingroups <- .read_maxquant(file=proteinfile, quantity = quantity,
         samplefile = samplefile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose=verbose)
-    object  <- .read_phosphosites(file = phosphofile, quantity = quantity,
+    object  <- .read_maxquant(file = phosphofile, quantity = quantity,
         samplefile = samplefile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose = verbose)
     object %<>% filter_maxquant_features(
@@ -1300,7 +1291,7 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
     phospho_dt %<>% extract(,
                         .(  phospho_value = unique(phospho_value),
                             protein_value = median(protein_value, na.rm = TRUE),
-                            subgroup      = subgroup),
+                            subgroup      = unique(subgroup)),
                         by = c('phospho_id', 'sample_id') )
     phospho_dt[ is.na(protein_value), protein_value := 0 ]
 # compute occupancy

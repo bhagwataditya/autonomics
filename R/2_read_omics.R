@@ -483,10 +483,10 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
     if (is.null(dt))  return(object)
     assert_is_all_of(object,'SummarizedExperiment')
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-    assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
 # Convert dt to data.table
     dt <- if (is.matrix(dt)){ data.table(sample_id = rownames(dt), dt)
         } else { as.data.table(dt) }
+    assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
     n0 <- nrow(dt)
 # Rm duplicate rows
     dt %<>% unique(by = sampleidvar) # keys should be unique!

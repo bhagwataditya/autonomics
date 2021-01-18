@@ -308,10 +308,12 @@ impute_systematic_nondetects <- function(
                     dt, feature_id ~ sample_id, value.var = 'is_imputed'))
     fdata(object)$imputed <- rowAnys(assays(object)$is_imputed)
 # Plot
-    if (verbose) cmessage(
+    nrowimputed <- sum(rowAnys(is_imputed(object)))
+    ncolimputed <- sum(colAnys(is_imputed(object)))
+    if (verbose & nrowimputed>0)  cmessage(
         "\t\tImpute systematic nondetects for %d/%d features in %d/%d samples",
-        sum(rowAnys(is_imputed(object))), nrow(object),
-        sum(colAnys(is_imputed(object))), ncol(object))
+        nrowimputed, nrow(object),
+        ncolimputed, ncol(object))
     if (plot)    print(plot_detections(object, group = !!group))
 # Return
     object
