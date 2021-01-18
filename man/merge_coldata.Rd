@@ -5,7 +5,7 @@
 \alias{merge_fdata}
 \alias{merge_coldata}
 \alias{merge_sdata}
-\title{Merge sample/feature data}
+\title{Merge column/row data}
 \usage{
 merge_rowdata(object, df, by = "feature_id", verbose = TRUE)
 
@@ -18,7 +18,7 @@ merge_sdata(...)
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{df}{data.frame}
+\item{df}{data.frame, data.table, DataFrame}
 
 \item{by}{df merge var}
 
@@ -30,7 +30,7 @@ merge_sdata(...)
 SummarizedExperiment
 }
 \description{
-Merge sample/feature data
+Merge column/row data
 }
 \examples{
 require(magrittr)

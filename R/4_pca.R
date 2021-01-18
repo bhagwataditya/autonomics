@@ -68,16 +68,18 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' @rdname merge_coldata
 #' @export
 merge_rowdata <- function(object, df, by = 'feature_id', verbose=TRUE){
-    df %<>% as.data.table(keep.rownames = TRUE)
-    if (!by %in% names(df))  setnames(df, 'rn', by) # matrix -> dt !
+    assert_is_all_of(object,'SummarizedExperiment')
+    assert_is_any_of(df,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
+    df <- if (is.matrix(df)){ data.table(feature_id = rownames(df), df)
+        } else { as.data.table(df) }
     n0 <- nrow(df)
     df %<>% unique(by = by) # keys should be unique!
     if (n0>nrow(df) & verbose)  message('\t\tRetain ', nrow(df),
                  ' rowdata rows after removing duplicate `', by, '` entries')
     duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
     fdata(object)[duplicate_cols] <- NULL
-    fdata(object) %<>% merge(
-        df, by.x = 'feature_id', by.y=by, all.x=TRUE, sort=FALSE)
+    fdata(object) %<>% merge(df, by.x = 'feature_id', by.y = by, all.x = TRUE,
+                            sort = FALSE)
     rownames(fdata(object)) <- fdata(object)$feature_id
     object
 }
@@ -90,9 +92,9 @@ merge_fdata <- function(...){
 }
 
 
-#' Merge sample/feature data
+#' Merge column/row data
 #' @param object  SummarizedExperiment
-#' @param df      data.frame
+#' @param df      data.frame, data.table, DataFrame
 #' @param by      df merge var
 #' @param verbose TRUE/FALSE
 #' @param ...     used to maintain deprecated merge_(s|f)data
@@ -106,16 +108,18 @@ merge_fdata <- function(...){
 #' sdata(object)
 #'@export
 merge_coldata <- function(object, df, by = 'sample_id', verbose=TRUE){
-    df %<>% as.data.table(keep.rownames = TRUE)
-    if (!by %in% names(df))  setnames(df, 'rn', by)  # matrix -> dt !
+    assert_is_all_of(object,'SummarizedExperiment')
+    assert_is_any_of(df,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
+    df <- if (is.matrix(df)){ data.table(sample_id = rownames(df), df)
+        } else { as.data.table(df) }
     n0 <- nrow(df)
     df %<>% unique(by = by) # keys should be unique!
     if (n0>nrow(df) & verbose)  message('\t\tRetain ', nrow(df),
                     ' coldata rows after removing duplicate `', by, '` entries')
     duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
-    sdata(object) %<>% merge(
-        df, by.x = 'sample_id', by.y=by, all.x=TRUE, sort=FALSE)
+    sdata(object) %<>% merge(df, by.x = 'sample_id', by.y = by, all.x = TRUE,
+                            sort = FALSE)
     rownames(sdata(object)) <- sdata(object)$sample_id # merging drops rownames
     object
 }
