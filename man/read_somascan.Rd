@@ -5,12 +5,17 @@
 \alias{read_somascan}
 \title{Read somascan}
 \usage{
-.read_somascan(file, fid_var = "SeqId", sid_var = "SampleId")
+.read_somascan(
+  file,
+  fidvar = "SeqId",
+  sidvar = "SampleId",
+  subgroupvar = "SampleGroup"
+)
 
 read_somascan(
   file,
-  fid_var = "SeqId",
-  sid_var = "SampleId",
+  fidvar = "SeqId",
+  sidvar = "SampleId",
   subgroupvar = "SampleGroup",
   fname_var = "EntrezGeneSymbol",
   sample_type = "Sample",
@@ -28,9 +33,9 @@ read_somascan(
 \arguments{
 \item{file}{*.adat file path (string)}
 
-\item{fid_var}{featureid fvar (string)}
+\item{fidvar}{featureid fvar (string)}
 
-\item{sid_var}{sampleid svar (string)}
+\item{sidvar}{sampleid svar (string)}
 
 \item{subgroupvar}{subgroup svar (string)}
 

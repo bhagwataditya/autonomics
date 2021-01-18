@@ -527,6 +527,7 @@ read_rnaseq_bams <- function(
     object %<>% merge_fdata(fdata1)
     object %<>% merge_samplefile(samplefile = samplefile,
         sampleidvar = sampleidvar, subgroupvar=subgroupvar)
+    object %<>% add_subgroup()
     # object <- read_omics(file,
     #                     fid_rows     = 2:nrow(dt),   fid_cols     = fid_col,
     #                     sid_rows     = 1,            sid_cols     = expr_cols,

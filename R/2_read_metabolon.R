@@ -49,7 +49,11 @@ find_origscale_sheet <- function(file){
                 sdata_rows = svar_rows,     sdata_cols = sdata_cols,
                 transpose  = FALSE, verbose    = TRUE)
     metadata(object)$platform <- 'metabolon'
-# Update fdata                        Group   HMDB_ID -> HMDB_ID
+# Update sdata/fdata                        Group   HMDB_ID -> HMDB_ID
+    subgroupcol <- which(stri_detect_fixed(svars(object), subgroupvar))
+    assertive::assert_all_are_less_than_or_equal_to(length(subgroupcol),1)
+    if (length(subgroupcol)==1) svars(object)[subgroupcol] <- 'subgroup'
+    object %<>% add_subgroup()
     fvars(object) %<>% stri_replace_first_regex('Group[ ]+', '')
 # Return
     object

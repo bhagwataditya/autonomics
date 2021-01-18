@@ -6,11 +6,13 @@
 
 #' @rdname read_somascan
 #' @export
-.read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId'){
+.read_somascan <- function(
+    file, fidvar = 'SeqId', sidvar = 'SampleId', subgroupvar = 'SampleGroup'
+){
 # Assert
     assert_all_are_existing_files(file)
-    assert_is_a_string(fid_var)
-    assert_is_a_string(sid_var)
+    assert_is_a_string(fidvar)
+    assert_is_a_string(sidvar)
     . <- NULL
 # Understand file structure
     content <- readLines(file)
@@ -23,10 +25,10 @@
         stri_extract_first_regex('^\\t+') %>% stri_count_fixed('\t') %>% add(1)
     fid_cols <- (1+f_col):n_col
     fid_rows <- content[f_row:(s_row-1)] %>% stri_extract_first_words() %>%
-        equals(fid_var) %>% which() %>% add(f_row-1)
+        equals(fidvar) %>% which() %>% add(f_row-1)
     sid_rows <- (1+s_row):n_row
     sid_cols <- content %>% extract(s_row) %>% stri_extract_all_words() %>%
-                unlist() %>% equals(sid_var) %>% which()
+                unlist() %>% equals(sidvar) %>% which()
 # Read
     object <- read_omics(file,
         fid_rows   = fid_rows,          fid_cols   = fid_cols,
@@ -37,7 +39,14 @@
         svar_rows  =  s_row,            svar_cols  = seq_len(f_col-1),
         sdata_rows = (s_row+1):n_row,   sdata_cols = seq_len(f_col-1),
         transpose  = TRUE, verbose    = TRUE)
+# Add metadata/subgroup
     metadata(object)$platform <- 'somascan'
+    if (subgroupvar %in% svars(object)){
+        values <- sdata(object)[[subgroupvar]]
+       if (all(!is.na(values)) & all(values != ""))  svars(object) %<>%
+            stri_replace_first_fixed('SampleGroup', subgroupvar)
+    }
+    object %<>% add_subgroup()
     object
 }
 
@@ -138,8 +147,8 @@ rm_single_value_columns <- function(df){
 #' Read data from somascan adat file
 #'
 #' @param file                  *.adat file path (string)
-#' @param fid_var               featureid fvar (string)
-#' @param sid_var               sampleid svar (string)
+#' @param fidvar               featureid fvar (string)
+#' @param sidvar               sampleid svar (string)
 #' @param subgroupvar          subgroup svar (string)
 #' @param fname_var             featurename fvar (string)
 #' @param sample_type           subset of c('Sample','QC','Buffer','Calibrator')
@@ -160,7 +169,7 @@ rm_single_value_columns <- function(df){
 #'     file <- download_data('atkin18.somascan.adat')
 #'     read_somascan(file)
 #' @export
-read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
+read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     subgroupvar = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
@@ -170,13 +179,13 @@ read_somascan <- function(file, fid_var = 'SeqId', sid_var = 'SampleId',
     verbose      = TRUE, plot = TRUE
 ){
 # Read
-    object <- .read_somascan(file, fid_var=fid_var, sid_var = sid_var)
+    object <- .read_somascan(
+        file, fidvar = fidvar, sidvar = sidvar, subgroupvar = subgroupvar)
     object$sample_id %<>% make.unique()
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
-    object %<>% merge_samplefile(subgroupvar = subgroupvar, verbose = verbose)
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     SampleType <- RowCheck <- Type <- ColCheck <- NULL

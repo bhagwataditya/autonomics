@@ -32,22 +32,6 @@ Add sdata from file or sampleids
     select_subgroups <-  c(sprintf(
         '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
    object <- read_proteingroups(file, select_subgroups = select_subgroups)
-   merge_samplefile(object)
-
-   file <- download_data('billing16.proteingroups.txt')
-   invert_subgroups <- c('EM_E', 'E_BM', 'EM_BM')
-   object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-   merge_samplefile(object)
-
-# SOMASCAN
-    file <- download_data('atkin18.somascan.adat')
-    read_somascan(file)
-
-# METABOLON
-    file <- download_data('atkin18.metabolon.xlsx')
-    read_metabolon(file)
-
-# RNACOUNTS
-    file <- download_data('billing19.rnacounts.txt')
-    .read_rnaseq_counts()
+   samplefile <- create_samplefile(object, default_samplefile(file))
+   merge_samplefile(object, samplefile)
 }

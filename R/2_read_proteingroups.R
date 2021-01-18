@@ -935,7 +935,7 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     select <- names1 %>%
             extract(stri_detect_regex(., MAXQUANT_PATTERNS[[quantity]]))
     if (phospho)  select %<>% extract(stri_endswith_fixed(., '___1'))
-    exprs1 <- data.matrix(fread(file, select = select))
+    exprs1 <- data.matrix(fread(file, select = select, integer64 = 'numeric'))
 # Rm NA fids
     idx <- !is.na(fids1)
     fids1 <- fids1[idx]; fdata1 <- fdata1[idx, ]; exprs1 <- exprs1[idx, ]

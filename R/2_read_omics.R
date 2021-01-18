@@ -444,8 +444,9 @@ merge_fdata <- function(object, dt, featureidvar = 'feature_id', verbose=TRUE){
     if (is.null(dt))  return(object)
     assert_is_all_of(object,'SummarizedExperiment')
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-    dt <- if (is.matrix(dt)){ data.table(feature_id = rownames(dt), dt)
-        } else { as.data.table(dt) }
+    dt %<>% as.data.table(keep.rownames=TRUE)
+    if ('feature_id' %in% names(dt)) dt[, rn := NULL] else  setnames(dt, 'rn',
+                                                                 'feature_id')
     n0 <- nrow(dt)
     dt %<>% unique(by = featureidvar) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
@@ -484,8 +485,9 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
     assert_is_all_of(object,'SummarizedExperiment')
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
 # Convert dt to data.table
-    dt <- if (is.matrix(dt)){ data.table(sample_id = rownames(dt), dt)
-        } else { as.data.table(dt) }
+    dt %<>% as.data.table(keep.rownames=TRUE)
+    if ('sample_id' %in% names(dt))  dt[, rn := NULL]  else  setnames(dt, 'rn',
+                                                                  'sample_id')
     assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
     n0 <- nrow(dt)
 # Rm duplicate rows
@@ -522,24 +524,8 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
 #'     select_subgroups <-  c(sprintf(
 #'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
 #'    object <- read_proteingroups(file, select_subgroups = select_subgroups)
-#'    merge_samplefile(object)
-#'
-#'    file <- download_data('billing16.proteingroups.txt')
-#'    invert_subgroups <- c('EM_E', 'E_BM', 'EM_BM')
-#'    object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-#'    merge_samplefile(object)
-#'
-#' # SOMASCAN
-#'     file <- download_data('atkin18.somascan.adat')
-#'     read_somascan(file)
-#'
-#' # METABOLON
-#'     file <- download_data('atkin18.metabolon.xlsx')
-#'     read_metabolon(file)
-#'
-#' # RNACOUNTS
-#'     file <- download_data('billing19.rnacounts.txt')
-#'     .read_rnaseq_counts()
+#'    samplefile <- create_samplefile(object, default_samplefile(file))
+#'    merge_samplefile(object, samplefile)
 #'@export
 merge_samplefile <- function(object, samplefile = NULL,
     sampleidvar = 'sample_id', subgroupvar = character(0), verbose = TRUE
