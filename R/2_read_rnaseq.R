@@ -400,7 +400,7 @@ preprocess_counts <- function(
 #' @export
 .read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(), filter_count = 10,
-    coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
     verbose = TRUE
 ){
 # Assert
@@ -427,7 +427,7 @@ preprocess_counts <- function(
     fcounts$annotation$feature_id %<>% as.character()
     rowData(object)  <- fcounts$annotation
     object$sample_id <- sample_names
-    object %<>% add_coldata( coldatafile = coldatafile,
+    object %<>% add_coldata( samplefile = samplefile,
         sampleidvar = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
 # Return
     object
@@ -440,7 +440,7 @@ preprocess_counts <- function(
 #' @param genome            string: either "mm10", "hg38" etc. or a GTF file
 #' @param nthreads          no of cores to be used by Rsubread::featureCounts()
 #' @param filter_count      min feature count required by at least one sample
-#' @param coldatafile      coldata file
+#' @param samplefile      coldata file
 #' @param sampleidvar  coldata sampleid
 #' @param subgroupvar  coldata subgroup
 #' @param formula           formula to create design matrix (using svars)
@@ -460,7 +460,7 @@ preprocess_counts <- function(
 #' @export
 read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(), filter_count = 10,
-    coldatafile = NULL, sampleidvar = 'sample_id',
+    samplefile = NULL, sampleidvar = 'sample_id',
     subgroupvar = 'subgroup',
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
@@ -474,7 +474,7 @@ read_rnaseq_bams <- function(
                                 genome            = genome,
                                 nthreads          = nthreads,
                                 filter_count      = filter_count,
-                                coldatafile      = coldatafile,
+                                samplefile      = samplefile,
                                 sampleidvar  = sampleidvar,
                                 subgroupvar  = subgroupvar)
 # Preprocess/Analyze
@@ -503,7 +503,7 @@ read_rnaseq_bams <- function(
 #' @export
 .read_rnaseq_counts <- function(
     file, fid_col = 1, filter_count = 10,
-    coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup'
+    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup'
 ){
     assert_all_are_existing_files(file)
     dt <- fread(file, integer64='numeric')
@@ -524,7 +524,7 @@ read_rnaseq_bams <- function(
     rownames(counts1) <- rowdata1$feature_id
     object <- matrix2sumexp(counts1)
     object %<>% merge_rowdata(rowdata1)
-    object %<>% add_coldata(coldatafile = coldatafile,
+    object %<>% add_coldata(samplefile = samplefile,
         sampleidvar = sampleidvar, subgroupvar=subgroupvar)
     # object <- read_omics(file,
     #                     fid_rows     = 2:nrow(dt),   fid_cols     = fid_col,
@@ -533,7 +533,7 @@ read_rnaseq_bams <- function(
     #                     fvar_rows    =  1,           fvar_cols    = fdata_cols,
     #                     fdata_rows   = 2:nrow(dt),   fdata_cols   = fdata_cols,
     #                     transpose    = FALSE,
-    #                 coldatafile     =  coldatafile,
+    #                 samplefile     =  samplefile,
     #                 sampleidvar = sampleidvar,
     #                 subgroupvar = subgroupvar,
     #                 verbose          = TRUE)
@@ -560,7 +560,7 @@ read_rnaseq_bams <- function(
 #' @param filter_count      number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
-#' @param coldatafile      coldata file
+#' @param samplefile      coldata file
 #' @param sampleidvar  coldata sampleid
 #' @param subgroupvar  coldata subgroup
 #' @param formula           formula to create design matrix (using svars)
@@ -579,7 +579,7 @@ read_rnaseq_bams <- function(
 #' @seealso merge_coldata, merge_rowdata
 #' @export
 read_rnaseq_counts <- function(
-    file, fid_col = 1, fname_col = 1, filter_count = 10, coldatafile = NULL,
+    file, fid_col = 1, fname_col = 1, filter_count = 10, samplefile = NULL,
     sampleidvar = 'sample_id', subgroupvar = 'subgroup',
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
@@ -591,7 +591,7 @@ read_rnaseq_counts <- function(
 # Read
     object <- .read_rnaseq_counts(
         file, fid_col = fid_col,
-        filter_count = filter_count, coldatafile = coldatafile,
+        filter_count = filter_count, samplefile = samplefile,
         sampleidvar = sampleidvar, subgroupvar=subgroupvar)
     object %<>% preprocess_counts(formula = !!formula,
                     filter_count = filter_count, voomweight = voomweight,

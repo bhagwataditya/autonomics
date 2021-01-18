@@ -11,7 +11,7 @@
   genome,
   nthreads = detectCores(),
   filter_count = 10,
-  coldatafile = NULL,
+  samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = "subgroup",
   verbose = TRUE
@@ -23,7 +23,7 @@ read_rnaseq_bams(
   genome,
   nthreads = detectCores(),
   filter_count = 10,
-  coldatafile = NULL,
+  samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
@@ -44,7 +44,7 @@ read_rnaseq_bams(
 
 \item{filter_count}{min feature count required by at least one sample}
 
-\item{coldatafile}{coldata file}
+\item{samplefile}{coldata file}
 
 \item{sampleidvar}{coldata sampleid}
 

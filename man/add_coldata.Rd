@@ -6,7 +6,7 @@
 \usage{
 add_coldata(
   object,
-  coldatafile = NULL,
+  samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = character(0),
   verbose = TRUE
@@ -15,7 +15,7 @@ add_coldata(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{coldatafile}{coldatafile path}
+\item{samplefile}{samplefile path}
 
 \item{sampleidvar}{sampleidvar or NULL}
 

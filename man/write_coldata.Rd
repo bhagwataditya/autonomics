@@ -6,14 +6,14 @@
 \usage{
 write_coldata(
   object,
-  coldatafile = get_default_coldatafile(object),
+  samplefile = get_default_samplefile(object),
   verbose = TRUE
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{coldatafile}{coldata file}
+\item{samplefile}{coldata file}
 
 \item{verbose}{TRUE/FALSE}
 }

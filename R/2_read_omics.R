@@ -356,9 +356,9 @@ numerify   <- function(df){
 #' @param sdata_rows numeric vector: sdata rows
 #' @param sdata_cols numeric vector: sdata cols
 #' @param transpose  TRUE or FALSE (default)
-#' @param coldatafile coldatafile or NULL
-#' @param sampleidvar sampleidvar in coldatafile
-#' @param subgroupvar subgroupvar in coldatafile
+#' @param samplefile samplefile or NULL
+#' @param sampleidvar sampleidvar in samplefile
+#' @param subgroupvar subgroupvar in samplefile
 #' @param verbose    TRUE (default) or FALSE
 #' @return SummarizedExperiment
 #' @examples
@@ -405,7 +405,7 @@ read_omics <- function(
     expr_rows, expr_cols, fvar_rows  = NULL, fvar_cols = NULL, svar_rows = NULL,
     svar_cols  = NULL, fdata_rows = NULL,  fdata_cols = NULL, sdata_rows = NULL,
     sdata_cols = NULL, transpose  = FALSE,
-    coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = character(0),
+    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = character(0),
     verbose = TRUE
 ){
     object <- .read_omics(file, sheet=sheet,
@@ -417,7 +417,7 @@ read_omics <- function(
                         fdata_rows = fdata_rows, fdata_cols = fdata_cols,
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
-    object %<>% add_coldata(coldatafile = coldatafile, sampleidvar= sampleidvar,
+    object %<>% add_coldata(samplefile = samplefile, sampleidvar= sampleidvar,
                             subgroupvar = subgroupvar, verbose    = verbose)
     object
 }

@@ -9,7 +9,7 @@
   file,
   fid_col = 1,
   filter_count = 10,
-  coldatafile = NULL,
+  samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = "subgroup"
 )
@@ -19,7 +19,7 @@ read_rnaseq_counts(
   fid_col = 1,
   fname_col = 1,
   filter_count = 10,
-  coldatafile = NULL,
+  samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
@@ -38,7 +38,7 @@ read_rnaseq_counts(
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
 
-\item{coldatafile}{coldata file}
+\item{samplefile}{coldata file}
 
 \item{sampleidvar}{coldata sampleid}
 

@@ -172,8 +172,8 @@ split_extract <- function(x, i, sep=guess_sep(x)){
 #
 #               add_coldata
 #                   file_exists
-#                   get_default_coldatafile
-#                       default_coldatafile
+#                   get_default_samplefile
+#                       default_samplefile
 #
 #=============================================================================
 
@@ -185,26 +185,26 @@ file_exists <- function(file){
                             return(FALSE)
 }
 
-default_coldatafile <- function(file, platform = NULL, quantity = NULL){
+default_samplefile <- function(file, platform = NULL, quantity = NULL){
 
     # Initialize
     if (is.null(platform))  platform <- ''
     if (is.null(quantity))  quantity <- ''
 
-    # No coldatafile for SOMASCAN and METABOLON
+    # No samplefile for SOMASCAN and METABOLON
     if (platform %in% c('metabolon', 'somascan')) return(NULL)
 
     # Take basename file
-    coldatafile <- tools::file_path_sans_ext(file)
+    samplefile <- tools::file_path_sans_ext(file)
 
     # Append quantity for MaxQuant files
     if (platform == 'maxquant'){
-        coldatafile %<>% paste(make.names(quantity), sep = '.')
+        samplefile %<>% paste(make.names(quantity), sep = '.')
     }
 
     # Add .design.tx
-    coldatafile %<>% paste0('.design.txt')
-    coldatafile
+    samplefile %<>% paste0('.design.txt')
+    samplefile
 }
 
 
@@ -213,38 +213,38 @@ default_coldatafile <- function(file, platform = NULL, quantity = NULL){
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
 #'    object <- read_proteingroups(file)
-#'    get_default_coldatafile(object)
+#'    get_default_samplefile(object)
 #'
 #' # SOMASCAN
 #'     inputfile <- download_data('atkin18.somascan.adat')
-#'     default_coldatafile(inputfile, platform = 'somascan')
+#'     default_samplefile(inputfile, platform = 'somascan')
 #'
 #' # METABOLON
 #'     file <- download_data('atkin18.metabolon.xlsx')
-#'     default_coldatafile(inputfile, platform = 'metabolon')
+#'     default_samplefile(inputfile, platform = 'metabolon')
 #'
 #' # RNACOUNTS
 #'@noRd
-get_default_coldatafile <- function(object){
+get_default_samplefile <- function(object){
     file     <- metadata(object)$file
     platform <- metadata(object)$platform
     quantity <- metadata(object)$quantity
 
-    default_coldatafile(file, platform, quantity)
+    default_samplefile(file, platform, quantity)
 }
 
 
 #' Write coldata
 #' @param object   SummarizedExperiment
-#' @param coldatafile  coldata file
+#' @param samplefile  coldata file
 #' @param verbose  TRUE/FALSE
 #' @export
 write_coldata <- function(
-    object, coldatafile = get_default_coldatafile(object), verbose = TRUE
+    object, samplefile = get_default_samplefile(object), verbose = TRUE
 ){
     if (verbose) message('\t\tWrite coldata - update with `merge_coldata(.)`: ',
-                         coldatafile)
-    fwrite(sdata(object), coldatafile, sep = '\t', row.names = FALSE)
+                         samplefile)
+    fwrite(sdata(object), samplefile, sep = '\t', row.names = FALSE)
 }
 
 
@@ -252,7 +252,7 @@ write_coldata <- function(
 #'
 #' Add coldata from file or sampleids
 #' @param object       SummarizedExperiment
-#' @param coldatafile  coldatafile path
+#' @param samplefile  samplefile path
 #' @param sampleidvar  sampleidvar or NULL
 #' @param subgroupvar  subgroupvar or NULL
 #' @param verbose      TRUE (default) or FALSE
@@ -281,15 +281,15 @@ write_coldata <- function(
 #'     file <- download_data('billing19.rnacounts.txt')
 #'     .read_rnaseq_counts()
 #'@export
-add_coldata <- function(object, coldatafile = NULL,
+add_coldata <- function(object, samplefile = NULL,
     sampleidvar = 'sample_id', subgroupvar = character(0),
     verbose = TRUE
 ){
-# Merge coldatafile
-    if (file_exists(coldatafile)){
+# Merge samplefile
+    if (file_exists(samplefile)){
         if (verbose) message(
-            '\t\tRead coldata from (update if required!):', coldatafile)
-        dt <- fread(coldatafile)
+            '\t\tRead coldata from (update if required!):', samplefile)
+        dt <- fread(samplefile)
         assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
         object %<>% merge_coldata(dt, by = sampleidvar)
     }

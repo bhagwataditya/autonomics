@@ -24,9 +24,9 @@ fwrite(coldata1, "~/autonomicscache/datasets/tcga/TCGA-LIHC/lihc.coldata1.tsv", 
 
 # Test read_rnaseq_counts
 file         <- "~/autonomicscache/datasets/tcga/TCGA-LIHC/lihc.counts.tsv"
-coldatafile <- "~/autonomicscache/datasets/tcga/TCGA-LIHC/lihc.coldata1.tsv"
-.read_rnaseq_counts(file = file,  coldatafile = coldatafile,
+samplefile <- "~/autonomicscache/datasets/tcga/TCGA-LIHC/lihc.coldata1.tsv"
+.read_rnaseq_counts(file = file,  samplefile = samplefile,
                     sampleidvar = 'barcode', subgroupvar = 'definition')
 
-read_rnaseq_counts(file = file, coldatafile = coldatafile,
+read_rnaseq_counts(file = file, samplefile = samplefile,
                     sampleidvar = 'barcode', subgroupvar = 'definition')

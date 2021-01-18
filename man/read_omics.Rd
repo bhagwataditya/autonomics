@@ -44,7 +44,7 @@ read_omics(
   sdata_rows = NULL,
   sdata_cols = NULL,
   transpose = FALSE,
-  coldatafile = NULL,
+  samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = character(0),
   verbose = TRUE
@@ -88,11 +88,11 @@ excel (xls, xlsx) file}
 
 \item{verbose}{TRUE (default) or FALSE}
 
-\item{coldatafile}{coldatafile or NULL}
+\item{samplefile}{samplefile or NULL}
 
-\item{sampleidvar}{sampleidvar in coldatafile}
+\item{sampleidvar}{sampleidvar in samplefile}
 
-\item{subgroupvar}{subgroupvar in coldatafile}
+\item{subgroupvar}{subgroupvar in samplefile}
 }
 \value{
 SummarizedExperiment

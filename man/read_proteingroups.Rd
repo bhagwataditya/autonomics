@@ -8,7 +8,7 @@
 read_proteingroups(
   proteinfile,
   quantity = guess_maxquant_quantity(proteinfile),
-  coldatafile = default_coldatafile(proteinfile, "maxquant", quantity),
+  samplefile = default_samplefile(proteinfile, "maxquant", quantity),
   select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
@@ -25,7 +25,7 @@ read_phosphosites(
   phosphofile,
   proteinfile = paste0(dirname(phosphofile), "/proteinGroups.txt"),
   quantity = guess_maxquant_quantity(phosphofile),
-  coldatafile = default_coldatafile(proteinfile, "maxquant", quantity),
+  samplefile = default_samplefile(proteinfile, "maxquant", quantity),
   select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
@@ -49,7 +49,7 @@ read_phosphosites(
 "Intensity labeled",
 "Intensity"}
 
-\item{coldatafile}{coldatafile path}
+\item{samplefile}{samplefile path}
 
 \item{select_subgroups}{subgroups to be selected (character vector)}
 
