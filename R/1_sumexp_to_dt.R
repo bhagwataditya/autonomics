@@ -181,18 +181,19 @@ dt2sumexp  <- function(
 #' object %<>% pca()
 #' biplot(object, nloadings=0)
 #' @export
-matrix2sumexp <- function(x, sampledata=NULL){
+matrix2sumexp <- function(
+    x, sampledata = NULL, sampleidvar = 'sample_id',  subgroupvar = 'subgroup',
+    featuredata = NULL
+){
+# exprs
     object <- SummarizedExperiment(list(exprs = x))
-    fdata(object)$feature_id <- rownames(object)
-    fdata(object)$feature_name <- rownames(object)
-    sdata(object)$sample_id    <- colnames(object)
-    #object %<>% add_sdata(samplefile = NULL) # too slow for large matrices
-    if (is.null(sampledata)){
-        object$subgroup <- 'subgroup1'
-    } else {
-        assert_is_subset('sample_id', names(sampledata))
-        object %<>% merge_sdata(sampledata)
-    }
+    sdata(object)$sample_id  <- colnames(object)
+    fdata(object)$feature_id <- fdata(object)$feature_name <- rownames(object)
+# sdata
+    object %<>% merge_sdata(sampledata)
+    object %<>% merge_fdata(featuredata)
+    object$subgroup <- 'subgroup1'
+# return
     object
 }
 

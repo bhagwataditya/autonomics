@@ -4,7 +4,13 @@
 \alias{matrix2sumexp}
 \title{Convert matrix into SummarizedExperiment}
 \usage{
-matrix2sumexp(x, sampledata = NULL)
+matrix2sumexp(
+  x,
+  sampledata = NULL,
+  sampleidvar = "sample_id",
+  subgroupvar = "subgroup",
+  featuredata = NULL
+)
 }
 \arguments{
 \item{x}{matrix}

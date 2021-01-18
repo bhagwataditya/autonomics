@@ -58,64 +58,6 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 
 
 
-#=============================================================================
-#
-#                               merge_sdata
-#                               merge_fdata
-#
-#=============================================================================
-
-#' @rdname merge_sdata
-#' @export
-merge_fdata <- function(object, df, by = 'feature_id', verbose=TRUE){
-    assert_is_all_of(object,'SummarizedExperiment')
-    assert_is_any_of(df,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-    df <- if (is.matrix(df)){ data.table(feature_id = rownames(df), df)
-        } else { as.data.table(df) }
-    n0 <- nrow(df)
-    df %<>% unique(by = by) # keys should be unique!
-    if (n0>nrow(df) & verbose)  message('\t\tRetain ', nrow(df),
-                 ' fdata rows after removing duplicate `', by, '` entries')
-    duplicate_cols <- setdiff(intersect(fvars(object), names(df)), 'feature_id')
-    fdata(object)[duplicate_cols] <- NULL
-    fdata(object) %<>% merge(df, by.x = 'feature_id', by.y = by, all.x = TRUE,
-                            sort = FALSE)
-    rownames(fdata(object)) <- fdata(object)$feature_id
-    object
-}
-
-#' Merge column/row data
-#' @param object  SummarizedExperiment
-#' @param df      data.frame, data.table, DataFrame
-#' @param by      df merge var
-#' @param verbose TRUE/FALSE
-#' @param ...     used to maintain deprecated merge_(s|f)data
-#' @return        SummarizedExperiment
-#' @examples
-#' require(magrittr)
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
-#'                                     number = seq_along(object$sample_id)))
-#' sdata(object)
-#'@export
-merge_sdata <- function(object, df, by = 'sample_id', verbose=TRUE){
-    assert_is_all_of(object,'SummarizedExperiment')
-    assert_is_any_of(df,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-    df <- if (is.matrix(df)){ data.table(sample_id = rownames(df), df)
-        } else { as.data.table(df) }
-    n0 <- nrow(df)
-    df %<>% unique(by = by) # keys should be unique!
-    if (n0>nrow(df) & verbose)  message('\t\tRetain ', nrow(df),
-                    ' sdata rows after removing duplicate `', by, '` entries')
-    duplicate_cols <- setdiff(intersect(svars(object), names(df)), 'sample_id')
-    sdata(object)[duplicate_cols] <- NULL
-    sdata(object) %<>% merge(df, by.x = 'sample_id', by.y = by, all.x = TRUE,
-                            sort = FALSE)
-    rownames(sdata(object)) <- sdata(object)$sample_id # merging drops rownames
-    object
-}
-
 #============================================================================
 #
 #               pca sma lda pls spls ropls

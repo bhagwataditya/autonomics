@@ -1,6 +1,6 @@
 #' @importFrom abind       adrop
 #' @importFrom AnnotationDbi mapIds
-#' @importFrom assertive   assert_all_are_existing_files
+#' @importFrom assertive   assert_all_are_dirs   assert_all_are_existing_files
 #' @importFrom assertive   assert_all_are_finite
 #' @importFrom assertive   assert_all_are_greater_than
 #' @importFrom assertive   assert_all_are_in_closed_range

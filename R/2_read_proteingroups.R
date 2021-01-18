@@ -841,6 +841,27 @@ arrange_samples_ <- function(x, svars){
 
 #==============================================================================
 #
+#                       create_maxquant_samplefile
+#
+#==============================================================================
+
+
+#' Create maxquant samplefile
+#' @param file        proteingroups/phosphosite file
+#' @param samplefile  sample file
+#' @param verbose     TRUE/FALSE
+#' @param quantity    maxquant quantity
+#' @return samplefile
+#' @export
+create_samplefile <- function(object, samplefile, verbose = TRUE){
+    if (verbose) message('\tCreate samplefile: ', samplefile)
+    assert_all_are_dirs(dirname(samplefile))
+    fwrite(sdata(object), samplefile, sep = '\t', row.names = FALSE)
+    return(samplefile)
+}
+
+#==============================================================================
+#
 #                            .read_proteingroups
 #                            .read_phosphosites
 #
@@ -1051,7 +1072,7 @@ add_maxquant_sdata <- function(
     snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
     object %<>% standardize_maxquant_snames(verbose = verbose)
     object %<>% demultiplex(verbose = verbose)
-    object %<>% add_sdata(samplefile = samplefile, verbose = verbose)
+    object %<>% merge_samplefile(samplefile = samplefile, verbose = verbose)
     object
 }
 
@@ -1189,7 +1210,6 @@ read_proteingroups <- function(
     if (plot)  plot_samples(object)
     object
 }
-
 
 #' @rdname read_proteingroups
 #' @export

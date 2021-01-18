@@ -427,7 +427,7 @@ preprocess_counts <- function(
     fcounts$annotation$feature_id %<>% as.character()
     rowData(object)  <- fcounts$annotation
     object$sample_id <- sample_names
-    object %<>% add_sdata( samplefile = samplefile,
+    object %<>% merge_samplefile( samplefile = samplefile,
         sampleidvar = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
 # Return
     object
@@ -523,9 +523,9 @@ read_rnaseq_bams <- function(
     counts1  <- data.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1$feature_id
     object <- matrix2sumexp(counts1)
-    object$subgroup <- NULL # added in add_sdata
+    object$subgroup <- NULL # added in merge_samplefile
     object %<>% merge_fdata(fdata1)
-    object %<>% add_sdata(samplefile = samplefile,
+    object %<>% merge_samplefile(samplefile = samplefile,
         sampleidvar = sampleidvar, subgroupvar=subgroupvar)
     # object <- read_omics(file,
     #                     fid_rows     = 2:nrow(dt),   fid_cols     = fid_col,

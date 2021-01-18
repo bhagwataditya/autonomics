@@ -417,7 +417,7 @@ read_omics <- function(
                         fdata_rows = fdata_rows, fdata_cols = fdata_cols,
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
-    object %<>% add_sdata(samplefile = samplefile, sampleidvar= sampleidvar,
+        object %<>% merge_samplefile(samplefile = samplefile, sampleidvar= sampleidvar,
                             subgroupvar = subgroupvar, verbose    = verbose)
     object
 }
@@ -425,7 +425,7 @@ read_omics <- function(
 
 #=============================================================================
 #
-#                        add_sdata
+#                        merge_samplefile
 #
 #=============================================================================
 
@@ -436,16 +436,142 @@ split_values <- function(x){
     dt[, data.table::tstrsplit(x, sep) ]
 }
 
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' split_subgroup_values(object)
-#' @noRd
-split_subgroup_values <- function(object){
-    subgroupvalues <- subgroup_values(object)
-    cbind(subgroup = subgroupvalues, split_values(subgroupvalues))
+
+
+#' @rdname merge_sdata
+#' @export
+merge_fdata <- function(object, dt, featureidvar = 'feature_id', verbose=TRUE){
+    if (is.null(dt))  return(object)
+    assert_is_all_of(object,'SummarizedExperiment')
+    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
+    dt <- if (is.matrix(dt)){ data.table(feature_id = rownames(dt), dt)
+        } else { as.data.table(dt) }
+    n0 <- nrow(dt)
+    dt %<>% unique(by = featureidvar) # keys should be unique!
+    if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
+         ' fdata rows after removing duplicate `', featureidvar, '` entries')
+    duplicate_cols <- setdiff(intersect(fvars(object), names(dt)), 'feature_id')
+    fdata(object)[duplicate_cols] <- NULL
+    fdata(object) %<>% merge(
+        dt, by.x = 'feature_id', by.y = featureidvar, all.x = TRUE, sort=FALSE)
+    rownames(fdata(object)) <- fdata(object)$feature_id
+    object
 }
 
+
+
+#' Merge sample/feature data
+#' @param object        SummarizedExperiment
+#' @param df            data.frame, data.table, DataFrame
+#' @param sampleidvar   sampleid var
+#' @param featureidvar  featureid var
+#' @param verbose       TRUE/FALSE
+#' @param ...           used to maintain deprecated merge_(s|f)data
+#' @return              SummarizedExperiment
+#' @examples
+#' require(magrittr)
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
+#'                                     number = seq_along(object$sample_id)))
+#' sdata(object)
+#'@export
+merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
+    subgroupvar = character(0), verbose=TRUE
+){
+# Assert
+    if (is.null(dt))  return(object)
+    assert_is_all_of(object,'SummarizedExperiment')
+    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
+    assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
+# Convert dt to data.table
+    dt <- if (is.matrix(dt)){ data.table(sample_id = rownames(dt), dt)
+        } else { as.data.table(dt) }
+    n0 <- nrow(dt)
+# Rm duplicate rows
+    dt %<>% unique(by = sampleidvar) # keys should be unique!
+    if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
+            ' sdata rows after removing duplicate `', sampleidvar, '` entries')
+    if (length(subgroupvar)>0)  setnames(dt, subgroupvar, 'subgroup')
+# Rm duplicate cols
+    duplicate_cols <- setdiff(intersect(svars(object), names(dt)), 'sample_id')
+    sdata(object)[duplicate_cols] <- NULL
+# Merge
+    sdata(object) %<>% merge(
+        dt, by.x = 'sample_id', by.y = sampleidvar, all.x = TRUE, sort = FALSE)
+    rownames(sdata(object)) <- sdata(object)$sample_id # merging drops rownames
+# Return
+    leadcols <- c('sample_id', 'subgroup', 'replicate')
+    leadcols %<>% intersect(svars(object))
+    sdata(object) %<>% pull_columns(leadcols)
+    object
+}
+
+
+#' Merge sample file
+#'
+#' Add sdata from file or sampleids
+#' @param object       SummarizedExperiment
+#' @param samplefile  samplefile path
+#' @param sampleidvar  sampleidvar or NULL
+#' @param subgroupvar  subgroupvar or NULL
+#' @param verbose      TRUE (default) or FALSE
+#' @examples
+#'# PROTEINGROUPS
+#'    file <- download_data('billing19.proteingroups.txt')
+#'     select_subgroups <-  c(sprintf(
+#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+#'    object <- read_proteingroups(file, select_subgroups = select_subgroups)
+#'    merge_samplefile(object)
+#'
+#'    file <- download_data('billing16.proteingroups.txt')
+#'    invert_subgroups <- c('EM_E', 'E_BM', 'EM_BM')
+#'    object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
+#'    merge_samplefile(object)
+#'
+#' # SOMASCAN
+#'     file <- download_data('atkin18.somascan.adat')
+#'     read_somascan(file)
+#'
+#' # METABOLON
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     read_metabolon(file)
+#'
+#' # RNACOUNTS
+#'     file <- download_data('billing19.rnacounts.txt')
+#'     .read_rnaseq_counts()
+#'@export
+merge_samplefile <- function(object, samplefile = NULL,
+    sampleidvar = 'sample_id', subgroupvar = character(0), verbose = TRUE
+){
+    if (file_exists(samplefile)){
+        if (verbose) message(
+            '\t\tMerge sdata: ', samplefile)
+        dt <- fread(samplefile)
+        object %<>% merge_sdata(dt, sampleidvar = sampleidvar,
+                                subgroupvar = subgroupvar, verbose = verbose)
+    }
+    object
+}
+
+add_subgroup <- function(object, verbose=TRUE){
+# Add subgroup if required
+    if (!'subgroup' %in% svars(object)){
+        x <- object$sample_id
+        sep <- guess_sep(x)
+        nfactor <- nfactors(x)
+        if (nfactor>1){                                      # sampleids
+            if (verbose) message('\t\tInfer subgroup from sample_ids')
+            object$subgroup  <- split_extract(x, seq_len(nfactor-1))
+            object$replicate <- split_extract(x, nfactor)
+        } else if (!is.null(basename(metadata(object)$file))){   # filename
+            object$subgroup <- basename(metadata(object)$file)
+        } else {
+            object$subgroup <- 'subgroup1'}                      # 'subgroup1'
+    }
+    object$subgroup %<>% make.names() # otherwise issue in add_limma (fixable?)
+    object
+}
 
 
 #==============================================================================

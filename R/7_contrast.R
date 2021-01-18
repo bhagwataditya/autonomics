@@ -170,9 +170,8 @@ split_extract <- function(x, i, sep=guess_sep(x)){
 
 #=============================================================================
 #
-#               add_sdata
+#               merge_samplefile
 #                   file_exists
-#                   get_default_samplefile
 #                       default_samplefile
 #
 #=============================================================================
@@ -185,140 +184,15 @@ file_exists <- function(file){
                             return(FALSE)
 }
 
-default_samplefile <- function(file, platform = NULL, quantity = NULL){
-
-    # Initialize
-    if (is.null(platform))  platform <- ''
-    if (is.null(quantity))  quantity <- ''
-
-    # No samplefile for SOMASCAN and METABOLON
-    if (platform %in% c('metabolon', 'somascan')) return(NULL)
-
-    # Take basename file
+#' Default samplefile
+#' @param file data file
+#' @return sample file
+#' @export
+default_samplefile <- function(file){
     samplefile <- tools::file_path_sans_ext(file)
-
-    # Append quantity for MaxQuant files
-    if (platform == 'maxquant'){
-        samplefile %<>% paste(make.names(quantity), sep = '.')
-    }
-
-    # Add .design.tx
-    samplefile %<>% paste0('.design.txt')
+    samplefile %<>% paste0('.samples.txt')
     samplefile
 }
-
-
-#' @param object            SummarizedExperiment
-#'@examples
-#'# PROTEINGROUPS
-#'    file <- download_data('billing19.proteingroups.txt')
-#'    object <- read_proteingroups(file)
-#'    get_default_samplefile(object)
-#'
-#' # SOMASCAN
-#'     inputfile <- download_data('atkin18.somascan.adat')
-#'     default_samplefile(inputfile, platform = 'somascan')
-#'
-#' # METABOLON
-#'     file <- download_data('atkin18.metabolon.xlsx')
-#'     default_samplefile(inputfile, platform = 'metabolon')
-#'
-#' # RNACOUNTS
-#'@noRd
-get_default_samplefile <- function(object){
-    file     <- metadata(object)$file
-    platform <- metadata(object)$platform
-    quantity <- metadata(object)$quantity
-
-    default_samplefile(file, platform, quantity)
-}
-
-
-#' Write sdata
-#' @param object      SummarizedExperiment
-#' @param samplefile  sample file
-#' @param verbose     TRUE/FALSE
-#' @export
-write_sdata <- function(
-    object, samplefile = get_default_samplefile(object), verbose = TRUE
-){
-    if (verbose) message('\t\tWrite sdata - update with `merge_sdata(.)`: ',
-                         samplefile)
-    fwrite(sdata(object), samplefile, sep = '\t', row.names = FALSE)
-}
-
-
-#' Add sdata
-#'
-#' Add sdata from file or sampleids
-#' @param object       SummarizedExperiment
-#' @param samplefile  samplefile path
-#' @param sampleidvar  sampleidvar or NULL
-#' @param subgroupvar  subgroupvar or NULL
-#' @param verbose      TRUE (default) or FALSE
-#' @examples
-#'# PROTEINGROUPS
-#'    file <- download_data('billing19.proteingroups.txt')
-#'     select_subgroups <-  c(sprintf(
-#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
-#'    object <- read_proteingroups(file, select_subgroups = select_subgroups)
-#'    add_sdata(object)
-#'
-#'    file <- download_data('billing16.proteingroups.txt')
-#'    invert_subgroups <- c('EM_E', 'E_BM', 'EM_BM')
-#'    object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
-#'    add_sdata(object)
-#'
-#' # SOMASCAN
-#'     file <- download_data('atkin18.somascan.adat')
-#'     read_somascan(file)
-#'
-#' # METABOLON
-#'     file <- download_data('atkin18.metabolon.xlsx')
-#'     read_metabolon(file)
-#'
-#' # RNACOUNTS
-#'     file <- download_data('billing19.rnacounts.txt')
-#'     .read_rnaseq_counts()
-#'@export
-add_sdata <- function(object, samplefile = NULL,
-    sampleidvar = 'sample_id', subgroupvar = character(0),
-    verbose = TRUE
-){
-# Merge samplefile
-    if (file_exists(samplefile)){
-        if (verbose) message(
-            '\t\tRead sdata from (update if required!):', samplefile)
-        dt <- fread(samplefile)
-        assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
-        object %<>% merge_sdata(dt, by = sampleidvar)
-    }
-# Rename sampleidvar/subgroupvar
-    svars(object) %<>% stri_replace_first_fixed(sampleidvar, 'sample_id')
-    if (length(subgroupvar)==1)  svars(object) %<>%
-        stri_replace_first_fixed(subgroupvar, 'subgroup')
-# Add subgroup if required
-    if (!'subgroup' %in% svars(object)){
-        x <- object$sample_id
-        if (nfactors(x)>1){                                      # sampleids
-            if (verbose) message('\t\tInfer subgroup from sample_ids')
-            object$subgroup  <- split_extract(x, seq_len(nfactors(x)-1))
-            object$replicate <- split_extract(x, nfactors(x))
-        } else if (!is.null(basename(metadata(object)$file))){   # filename
-            object$subgroup <- basename(metadata(object)$file)
-        } else {
-            object$subgroup <- 'subgroup1'                       # 'subgroup1'
-        }
-    }
-# Make.names
-    object$subgroup %<>% make.names() # otherwise issue in add_limma (fixable?)
-# Return
-    leadcols <- c('sample_id', 'subgroup', 'replicate')
-    leadcols %<>% intersect(svars(object))
-    sdata(object) %<>% pull_columns(leadcols)
-    object
-}
-
 
 
 #==============================================================================

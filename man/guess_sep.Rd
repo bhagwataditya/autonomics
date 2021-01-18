@@ -9,17 +9,11 @@
 \usage{
 guess_sep(x, ...)
 
-\method{guess_sep}{character}(x, separators = c(".", " ", "_"), verbose = FALSE, ...)
+\method{guess_sep}{character}(x, separators = c(".", "_"), verbose = FALSE, ...)
 
 \method{guess_sep}{factor}(x, ...)
 
-\method{guess_sep}{SummarizedExperiment}(
-  x,
-  var = "sample_id",
-  separators = c(".", "_", " "),
-  verbose = FALSE,
-  ...
-)
+\method{guess_sep}{SummarizedExperiment}(x, var = "sample_id", separators = c(".", "_"), verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{character vector or SummarizedExperiment}
