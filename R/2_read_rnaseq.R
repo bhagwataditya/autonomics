@@ -400,7 +400,7 @@ preprocess_counts <- function(
 #' @export
 .read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(), filter_count = 10,
-    coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    coldata_file = NULL, coldata_sampleid = 'sample_id', coldata_subgroup = 'subgroup',
     verbose = TRUE
 ){
 # Assert
@@ -428,25 +428,27 @@ preprocess_counts <- function(
     rowData(object)  <- fcounts$annotation
     object$sample_id <- sample_names
     object %<>% add_coldata(
-        coldatafile = coldatafile, sampleidvar = sampleidvar,
-        subgroupvar = subgroupvar, verbose     = verbose)
+        coldata_file = coldata_file, coldata_sampleid = coldata_sampleid,
+        coldata_subgroup = coldata_subgroup, verbose     = verbose)
 # Return
     object
 }
 
 
 #' Read RNAseq SAM/BAM files into SummarizedExperiment
-#'
-#' @param bamdir        SAM/BAM dir path (string)
-#' @param paired        whether reads are paired end (TRUE/FALSE)
-#' @param genome        string: either "mm10", "hg38" etc. or a GTF file
-#' @param nthreads      no of cores to be used by Rsubread::featureCounts()
-#' @param filter_count  min feature count required by at least one sample
-#' @param formula       formula to create design matrix (using svars)
-#' @param contrastdefs  contrast definition vector/matrix/list
-#' @param voomweight    TRUE/FALSE
-#' @param verbose       TRUE/FALSE
-#' @param plot          TRUE/FALSE
+#' @param bamdir            SAM/BAM dir path (string)
+#' @param paired            whether reads are paired end (TRUE/FALSE)
+#' @param genome            string: either "mm10", "hg38" etc. or a GTF file
+#' @param nthreads          no of cores to be used by Rsubread::featureCounts()
+#' @param filter_count      min feature count required by at least one sample
+#' @param coldata_file      coldata file
+#' @param coldata_sampleid  coldata sampleid
+#' @param coldata_subgroup  coldata subgroup
+#' @param formula           formula to create design matrix (using svars)
+#' @param contrastdefs      contrast definition vector/matrix/list
+#' @param voomweight        TRUE/FALSE
+#' @param verbose           TRUE/FALSE
+#' @param plot              TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # in-built genome
@@ -459,7 +461,8 @@ preprocess_counts <- function(
 #' @export
 read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(), filter_count = 10,
-    coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    coldata_file = NULL, coldata_sampleid = 'sample_id',
+    coldata_subgroup = 'subgroup',
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
     voomweight = TRUE, verbose = TRUE, plot = TRUE
@@ -467,14 +470,14 @@ read_rnaseq_bams <- function(
 # Read
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
-    object <- .read_rnaseq_bams(bamdir       = bamdir,
-                                paired       = paired,
-                                genome       = genome,
-                                nthreads     = nthreads,
-                                filter_count = filter_count,
-                                coldatafile  = NULL,
-                                sampleidvar  = 'sample_id',
-                                subgroupvar  = 'subgroup')
+    object <- .read_rnaseq_bams(bamdir            = bamdir,
+                                paired            = paired,
+                                genome            = genome,
+                                nthreads          = nthreads,
+                                filter_count      = filter_count,
+                                coldata_file      = coldata_file,
+                                coldata_sampleid  = coldata_sample_id,
+                                coldata_subgroup  = coldata_subgroup)
 # Preprocess/Analyze
     object %<>% preprocess_counts(formula    = !!formula,
                                 filter_count = filter_count,
@@ -483,7 +486,7 @@ read_rnaseq_bams <- function(
                                 plot         = plot)
     object %<>% pca()
     object %<>% add_limma(formula = eval_tidy(formula),
-                          contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
+                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
 # Plot/Return
     if (plot)  plot_samples(object)
     object
@@ -500,8 +503,8 @@ read_rnaseq_bams <- function(
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_counts <- function(
-    file, fid_col = 1, fname_col = character(0), filter_count = 10,
-    coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup'
+    file, fid_col = 1, filter_count = 10,
+    coldata_file = NULL, coldata_sampleid = 'sample_id', coldata_subgroup = 'subgroup'
 ){
     assert_all_are_existing_files(file)
     dt <- fread(file, integer64='numeric')
@@ -512,19 +515,29 @@ read_rnaseq_bams <- function(
     expr_cols  <- which(unname(vapply(dt, is.integer, logical(1))))
     fdata_cols <- c(fid_col, 1 + which(unname(!vapply(
                         dt[, -fid_col, with = FALSE], is.integer, logical(1)))))
-    object <- read_omics(
-        file,
-        fid_rows    = 2:nrow(dt),   fid_cols     = fid_col,
-        sid_rows    = 1,            sid_cols     = expr_cols,
-        expr_rows   = 2:nrow(dt),   expr_cols    = expr_cols,
-        fvar_rows   =  1,           fvar_cols    = fdata_cols,
-        fdata_rows  = 2:nrow(dt),   fdata_cols   = fdata_cols,
-        transpose   = FALSE,        coldatafile  = coldatafile,
-        sampleidvar = sampleidvar,  subgroupvar  = subgroupvar,
-        verbose     = TRUE)
-
-    if ('gene_name' %in% fvars(object)) fvars(object) %<>%
-        stri_replace_first_fixed('gene_name', 'feature_name')
+    dt <- fread(file)
+    idx <- vapply(dt, is.numeric, logical(1))
+    rowdata1 <- dt[, !idx, with = FALSE]
+    if (is.numeric(fid_col))       names(rowdata1)[fid_col] <- 'feature_id'
+    if (is.character(fid_col))  setnames(rowdata1, fid_col,    'feature_id')
+    rowdata1 %<>% DataFrame(row.names = .$feature_id)
+    counts1  <- data.matrix(dt[,  idx, with = FALSE])
+    rownames(counts1) <- rowdata1$feature_id
+    object <- matrix2sumexp(counts1)
+    object %<>% merge_rowdata(rowdata1)
+    # object <- read_omics(file,
+    #                     fid_rows     = 2:nrow(dt),   fid_cols     = fid_col,
+    #                     sid_rows     = 1,            sid_cols     = expr_cols,
+    #                     expr_rows    = 2:nrow(dt),   expr_cols    = expr_cols,
+    #                     fvar_rows    =  1,           fvar_cols    = fdata_cols,
+    #                     fdata_rows   = 2:nrow(dt),   fdata_cols   = fdata_cols,
+    #                     transpose    = FALSE,
+    #                 coldata_file     =  coldata_file,
+    #                 coldata_sampleid = coldata_sampleid,
+    #                 coldata_subgroup = coldata_subgroup,
+    #                 verbose          = TRUE)
+    # if ('gene_name' %in% fvars(object)) fvars(object) %<>%
+    #     stri_replace_first_fixed('gene_name', 'feature_name')
     metadata(object)$platform <- 'rnaseq'
     counts(object) <- exprs(object)
     assays(object)$exprs <- NULL
@@ -540,20 +553,20 @@ read_rnaseq_bams <- function(
 #'              feature annotations in first few columns
 #'              feature counts      in next columns
 #'
-#' @param file      string: path to rnaseq counts file
-#' @param fid_col   number of name of column with feature identifiers
-#' @param fname_col string or number: feature name variable
-#' @param filter_count number (default 10): filter out features
+#' @param file              string: path to rnaseq counts file
+#' @param fid_col           number of name of column with feature identifiers
+#' @param fname_col         string or number: feature name variable
+#' @param filter_count      number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
-#' @param coldatafile   coldatafile path (or NULL)
-#' @param sampleidvar   sampleidvar in coldatafile
-#' @param subgroupvar   subgroupvar in coldatafile
-#' @param formula       formula to create design matrix (using svars)
-#' @param contrastdefs  contrastdef vector/matrix/list
-#' @param voomweight    TRUE/FALSE
-#' @param verbose       TRUE/FALSE
-#' @param plot          TRUE/FALSE
+#' @param coldata_file      coldata file
+#' @param coldata_sampleid  coldata sampleid
+#' @param coldata_subgroup  coldata subgroup
+#' @param formula           formula to create design matrix (using svars)
+#' @param contrastdefs      contrastdef vector/matrix/list
+#' @param voomweight        TRUE/FALSE
+#' @param verbose           TRUE/FALSE
+#' @param plot              TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
@@ -565,9 +578,8 @@ read_rnaseq_bams <- function(
 #' @seealso merge_coldata, merge_rowdata
 #' @export
 read_rnaseq_counts <- function(
-    file, fid_col = 1,
-    fname_col = character(0), filter_count = 10,
-    coldatafile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    file, fid_col = 1, fname_col = 1, filter_count = 10, coldata_file = NULL,
+    coldata_sampleid = 'sample_id', coldata_subgroup = 'subgroup',
     formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
     voomweight = TRUE, verbose = TRUE, plot = TRUE
@@ -577,9 +589,9 @@ read_rnaseq_counts <- function(
     contrastdefs <- enexpr(contrastdefs)
 # Read
     object <- .read_rnaseq_counts(
-                file, fid_col = fid_col, fname_col = fname_col,
-                filter_count = filter_count, coldatafile = coldatafile,
-                sampleidvar = sampleidvar, subgroupvar = subgroupvar)
+                file, fid_col = fid_col,
+                filter_count = filter_count, coldata_file = coldata_file,
+                coldata_sampleid = coldata_sampleid, coldata_subgroup = coldata_subgroup)
     object %<>% preprocess_counts(formula = !!formula,
                     filter_count = filter_count, voomweight = voomweight,
                     plot = plot, verbose = verbose)

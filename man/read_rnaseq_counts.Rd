@@ -8,21 +8,20 @@
 .read_rnaseq_counts(
   file,
   fid_col = 1,
-  fname_col = character(0),
   filter_count = 10,
-  coldatafile = NULL,
-  sampleidvar = "sample_id",
-  subgroupvar = "subgroup"
+  coldata_file = NULL,
+  coldata_sampleid = "sample_id",
+  coldata_subgroup = "subgroup"
 )
 
 read_rnaseq_counts(
   file,
   fid_col = 1,
-  fname_col = character(0),
+  fname_col = 1,
   filter_count = 10,
-  coldatafile = NULL,
-  sampleidvar = "sample_id",
-  subgroupvar = "subgroup",
+  coldata_file = NULL,
+  coldata_sampleid = "sample_id",
+  coldata_subgroup = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
   voomweight = TRUE,
@@ -35,17 +34,17 @@ read_rnaseq_counts(
 
 \item{fid_col}{number of name of column with feature identifiers}
 
-\item{fname_col}{string or number: feature name variable}
-
 \item{filter_count}{number (default 10): filter out features
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
 
-\item{coldatafile}{coldatafile path (or NULL)}
+\item{coldata_file}{coldata file}
 
-\item{sampleidvar}{sampleidvar in coldatafile}
+\item{coldata_sampleid}{coldata sampleid}
 
-\item{subgroupvar}{subgroupvar in coldatafile}
+\item{coldata_subgroup}{coldata subgroup}
+
+\item{fname_col}{string or number: feature name variable}
 
 \item{formula}{formula to create design matrix (using svars)}
 
