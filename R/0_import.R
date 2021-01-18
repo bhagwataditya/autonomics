@@ -27,8 +27,8 @@
 #' @importFrom assertive   has_names                has_no_duplicates
 #' @importFrom assertive   is_empty_character   is_scalar   is_existing_file
 #' @importFrom colorspace  sequential_hcl
-#' @importFrom data.table  copy   data.table   fread   fwrite  .N
-#' @importFrom data.table  rbindlist   setkeyv   set
+#' @importFrom data.table  as.data.table   copy   data.table   fread   fwrite
+#' @importFrom data.table  .N   rbindlist   setkeyv   set
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2

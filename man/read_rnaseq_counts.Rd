@@ -9,9 +9,9 @@
   file,
   fid_col = 1,
   filter_count = 10,
-  coldata_file = NULL,
-  coldata_sampleid = "sample_id",
-  coldata_subgroup = "subgroup"
+  coldatafile = NULL,
+  sampleidvar = "sample_id",
+  subgroupvar = "subgroup"
 )
 
 read_rnaseq_counts(
@@ -19,9 +19,9 @@ read_rnaseq_counts(
   fid_col = 1,
   fname_col = 1,
   filter_count = 10,
-  coldata_file = NULL,
-  coldata_sampleid = "sample_id",
-  coldata_subgroup = "subgroup",
+  coldatafile = NULL,
+  sampleidvar = "sample_id",
+  subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
   voomweight = TRUE,
@@ -38,11 +38,11 @@ read_rnaseq_counts(
 with less than 10 counts (in the smallest library) across samples. Filtering
 performed with \code{\link[edgeR]{filterByExpr}}}
 
-\item{coldata_file}{coldata file}
+\item{coldatafile}{coldata file}
 
-\item{coldata_sampleid}{coldata sampleid}
+\item{sampleidvar}{coldata sampleid}
 
-\item{coldata_subgroup}{coldata subgroup}
+\item{subgroupvar}{coldata subgroup}
 
 \item{fname_col}{string or number: feature name variable}
 

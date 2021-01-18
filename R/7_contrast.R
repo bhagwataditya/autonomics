@@ -208,10 +208,7 @@ default_coldatafile <- function(file, platform = NULL, quantity = NULL){
 }
 
 
-#' @param object        SummarizedExperiment
-#' @param subgroupvar  subgroup svar or NULL
-#' @param coldatafile   coldata file path (to read/write) or NULL (don't write)
-#' @param verbose       TRUE (default) or FALSE
+#' @param object            SummarizedExperiment
 #'@examples
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
@@ -285,7 +282,8 @@ write_coldata <- function(
 #'     .read_rnaseq_counts()
 #'@export
 add_coldata <- function(object, coldatafile = NULL,
-    sampleidvar = 'sample_id', subgroupvar = character(0), verbose = TRUE
+    sampleidvar = 'sample_id', subgroupvar = character(0),
+    verbose = TRUE
 ){
 # Merge coldatafile
     if (file_exists(coldatafile)){
