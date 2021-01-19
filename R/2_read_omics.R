@@ -556,6 +556,7 @@ add_subgroup <- function(object, verbose=TRUE){
             object$subgroup <- 'subgroup1'}                      # 'subgroup1'
     }
     object$subgroup %<>% make.names() # otherwise issue in add_limma (fixable?)
+    object$subgroup %<>% factor()
     object
 }
 

@@ -514,13 +514,13 @@ read_rnaseq_bams <- function(
     expr_cols  <- which(unname(vapply(dt, is.integer, logical(1))))
     fdata_cols <- c(fid_col, 1 + which(unname(!vapply(
                         dt[, -fid_col, with = FALSE], is.integer, logical(1)))))
-    dt <- fread(file)
+    dt <- fread(file, integer64 = 'numeric')
     idx <- vapply(dt, is.numeric, logical(1))
     fdata1 <- dt[, !idx, with = FALSE]
     if (is.numeric(fid_col))       names(fdata1)[fid_col] <- 'feature_id'
     if (is.character(fid_col))  setnames(fdata1, fid_col,    'feature_id')
     fdata1 %<>% DataFrame(row.names = .$feature_id)
-    counts1  <- data.matrix(dt[,  idx, with = FALSE])
+    counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1$feature_id
     object <- matrix2sumexp(counts1)
     object$subgroup <- NULL # added in merge_samplefile

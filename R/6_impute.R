@@ -258,7 +258,7 @@ is_full_detect <- function(object){
 #' venn_detects(object)
 #' @export
 venn_detects <- function(object){
-    limma::vennDiagram(data.matrix(cbind(
+    limma::vennDiagram(as.matrix(cbind(
         systematic = is_systematic_detect(object),
         random     = is_random_detect(object),
         full       = is_full_detect(object))))

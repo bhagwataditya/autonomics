@@ -917,13 +917,13 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 #' @export
 .read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
     samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
-    select_subgroups = NULL, invert_subgroups = character(0),
-    verbose = TRUE){
+    select_subgroups = NULL, invert_subgroups = character(0), verbose = TRUE){
 # Read
     assert_all_are_existing_files(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     assert_is_a_bool(verbose)
-    phospho <- stri_detect_fixed(basename(file), 'phospho')
+    phospho <- stri_detect_fixed(
+                    basename(file), 'phospho', case_insensitive=TRUE)
     if (verbose) message('\tRead ', file)
     names1 <- names(fread(file, integer64 = 'numeric', nrows=1))
     fids1  <- fread(file, select = 'id')[[1]]
@@ -935,11 +935,12 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     select <- names1 %>%
             extract(stri_detect_regex(., MAXQUANT_PATTERNS[[quantity]]))
     if (phospho)  select %<>% extract(stri_endswith_fixed(., '___1'))
-    exprs1 <- data.matrix(fread(file, select = select, integer64 = 'numeric'))
-# Rm NA fids
-    idx <- !is.na(fids1)
-    fids1 <- fids1[idx]; fdata1 <- fdata1[idx, ]; exprs1 <- exprs1[idx, ]
-    rownames(exprs1) <- fids1  # first na need to be removed!
+    exprs1 <- as.matrix(fread(file, select = select, integer64 = 'numeric'))
+    if (is.character(exprs1)){
+        message("File contains strings rather than numbers - convert")
+        storage.mode(exprs1) <- 'numeric'}
+    assertive::assert_all_are_non_missing_nor_empty_character(fids1)
+    rownames(exprs1) <- fids1
 # Simplify maxquant snames
     sids1 <- colnames(exprs1)
     if (phospho) sids1 %<>% stri_replace_last_fixed('___1', '')
@@ -1059,26 +1060,10 @@ rename_phospho_fvars <- function(object){
 #
 #==============================================================================
 
-add_maxquant_sdata <- function(
-    object, samplefile = default_samplefile(object), verbose
-){
-    snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
-    object %<>% standardize_maxquant_snames(verbose = verbose)
-    object %<>% demultiplex(verbose = verbose)
-    object %<>% merge_samplefile(samplefile = samplefile, verbose = verbose)
-    object
-}
-
-
 filter_maxquant_samples <- function(object, select_subgroups, verbose){
     object %<>% filter_samples_available_for_some_feature(verbose = verbose)
-    if (!is.null(select_subgroups)){
-        object %<>% filter_samples(subgroup %in% select_subgroups,
-                                    verbose = verbose)
-        object$subgroup %<>% factor(select_subgroups)
-    } else {
-        object$subgroup %<>% factor()
-    }
+    if (!is.null(select_subgroups))  object %<>%
+        filter_samples(subgroup %in% select_subgroups, verbose = verbose)
     object
 }
 
@@ -1301,7 +1286,7 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
     phospho_dt[, occupancy := phospho_value - protein_value]
     phospho_dt %<>% data.table::dcast(
                         phospho_id ~ sample_id, value.var = 'occupancy')
-    occupancy_mat <- data.matrix(phospho_dt[, -1])
+    occupancy_mat <- dt2mat(phospho_dt)
     rownames(occupancy_mat) <- phospho_dt[[1]]
     occupancy_mat %<>% extract(, snames(phosphosites))
     occupancy_mat %<>% extract(fnames(phosphosites), )
