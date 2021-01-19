@@ -101,7 +101,11 @@ pull_columns <- function(df, first_cols, verbose = TRUE){
         first_cols %<>% extract(idx)
     }
 
-    df[, c(first_cols, setdiff(names(df), first_cols)), drop = FALSE]
+    if (data.table::is.data.table(df)){
+        df[, c(first_cols, setdiff(names(df), first_cols)), with = FALSE]
+    } else {
+        df[, c(first_cols, setdiff(names(df), first_cols)), drop = FALSE]
+    }
 }
 
 

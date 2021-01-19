@@ -249,9 +249,11 @@ create_design <- function(
     }
 # Create design matrix
     myDesign <- model.matrix(formula,  data = sdata(object))
-# Rename: intercept -> factor1level1
-    factors <- svars(object)[are_factor(sdata(object))]
-    factor1 <- factors[1]
+# Rename "(Intercept)" column
+    if (ncol(myDesign)==1){ colnames(myDesign) <- 'subgroup1'
+                            return(myDesign) }
+    factors <- svars(object)[are_factor(sdata(object))] # Rename intercept
+    factor1 <- factors[1]                               # to factor1level1
     level1  <- levels(sdata(object)[[factor1]])[1]
     colnames(myDesign) %<>% gsub('(Intercept)', level1, ., fixed = TRUE)
 # Rename regressors
@@ -370,6 +372,7 @@ subgroup_matrix <- function(object){
 #' @export
 contrast_subgroup_cols <- function(object){
     subgroupmat <- subgroup_matrix(object)
+    if (is_scalar(subgroupmat))  return(subgroupmat)
     if (ncol(subgroupmat)==1) return(matrix(, ncol=0, nrow=nrow(subgroupmat)))
     colcontrasts <- matrix(  sprintf('%s - %s',
                                     subgroupmat[, -1],
@@ -444,8 +447,8 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #'      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
 #'      nrow=1, byrow=TRUE))}}
 #' @param formula      formula to create design matrix (using svars)
+#' @param block     block svar (or NULL)
 #' @param plot         TRUE/FALSE
-#' @param ...          passed to plot_contrastogram
 #' @return Updated SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -470,33 +473,42 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' @export
 add_limma <- function(object, contrastdefs = contrast_subgroups(object),
     formula   = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    plot= TRUE, ...
+    block = NULL, verbose = TRUE, plot =  TRUE
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     if (is.null(contrastdefs))    return(object)
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
     if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
-    designmat <- create_design(object, formula=formula)
-    designmat(object)    <- designmat
+    design <- create_design(object, formula=formula)
+    design(object)    <- design
     contrastdefs(object) <- contrastdefs
 # Set block and correlation if required
     cmessage('\t\tAdd limma')
-    block <- NULL; correlation <- NULL
-    my_sdata <- sdata(object)
-    if (has_complete_block_values(object)){
-        cmessage("\t\tBlock on svar 'block'")
-        block <- my_sdata$block
-        correlation  <- duplicateCorrelation(exprs(object), designmat,
-                            block = block)[['consensus.correlation']]}
+    object %<>% add_blockcor(block, design, verbose)
+    blockcor <- metadata(object)$blockcor
 # Fit lm and compute contrasts
-    fit <- suppressWarnings(lmFit(object = exprs(object), design = designmat,
-                                block = block, correlation = correlation,
-                                weights = weights(object)))
+    fit <- suppressWarnings(lmFit(object = exprs(object), design = design,
+              block = block, correlation = blockcorr,
+              weights = weights(object)))
     object %<>% add_contrast_results(fit)
 # Plot/Return
     if (plot)  plot_contrastogram(object)
+    cmessage_df('\t\t\t%s', extract_limma_summary(object))
     return(object)
+}
+
+
+add_blockcor <- function(object, block, design, verbose){
+    if (!is.null(block)){
+        if (is.null(metadata(object)$blockcor)){
+            if (verbose)  message('\t\t\t\tCompute block correlation')
+            metadata(object)$blockcor <- duplicateCorrelation(
+                exprs(object), design, block = block
+            )$consensus.correlation
+        }
+    }
+    object
 }
 
 
@@ -509,7 +521,7 @@ add_contrast_results <- function(object, fit){
 # compute contrasts
     contrastmat <- makeContrasts(
                     contrasts = vectorize_contrastdefs(contrastdefs(object)),
-                    levels    = designmat(object))
+                    levels    = design(object))
     fit %<>% contrasts.fit(contrasts = contrastmat)
     limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
                         } else { c('effect','rank','t','se','p','fdr','bonf') }
@@ -546,31 +558,31 @@ add_contrast_results <- function(object, fit){
 #' @title Get/set design matrix
 #' @param object SummarizedExperiment
 #' @param value list
-#' @return designmatrix (get) or SummarizedExperiment (set)
+#' @return design (get) or SummarizedExperiment (set)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
-#' designmat(object)
+#' design(object)
 #' @export
-setGeneric("designmat", function(object)   standardGeneric("designmat") )
+setGeneric("design", function(object)   standardGeneric("design") )
 
 
-#' @rdname designmat
+#' @rdname design
 #' @export
-setGeneric("designmat<-",
-function(object, value)  standardGeneric("designmat<-") )
+setGeneric("design<-",
+function(object, value)  standardGeneric("design<-") )
 
 
-#' @rdname designmat
-setMethod("designmat", signature("SummarizedExperiment"),
-function(object) metadata(object)$designmat)
+#' @rdname design
+setMethod("design", signature("SummarizedExperiment"),
+function(object) metadata(object)$design)
 
 
-#' @rdname designmat
-setReplaceMethod("designmat", signature("SummarizedExperiment", "matrix"),
+#' @rdname design
+setReplaceMethod("design", signature("SummarizedExperiment", "matrix"),
 function(object, value){
-    metadata(object)$designmat <- value
+    metadata(object)$design <- value
     object  })
 
 
@@ -693,6 +705,39 @@ extract_limma_dt <- function(object){
                     SIMPLIFY = FALSE ))
 }
 
+#' Extract contrast analysis summary
+#' @param object SummarizedExperiment
+#' @examples
+#' # RNASEQCOUNTS
+#'     # ~ 0 + subgroup
+#'         file <- download_data('billing19.rnacounts.txt')
+#'         object <- read_rnaseq_counts(file, plot=FALSE)
+#'         extract_limma_summary(object)
+#'
+#'     # ~ 0 + subgroups | weights
+#'         weights(object) <- NULL
+#'         object %<>% add_limma(plot=FALSE)
+#'         extract_limma_summary(object)
+#'
+#' # METABOLON
+#'     # ~ 0 + subgroup
+#'           file <- download_data('atkin18.metabolon.xlsx')
+#'           object <- read_metabolon(file, plot=FALSE)
+#'           extract_limma_summary(object)
+#'
+#'    # ~ 0 + subgroup | block
+#'           svars(object) %<>% stri_replace_first_fixed('SUB', 'block')
+#'           object %<>% add_limma(plot=FALSE)
+#'           extract_limma_summary(object)
+#'
+#'    # ~ 0 + subgroup + t2d | block
+#'           object %<>% add_limma(formula=~0+subgroup+T2D, plot=FALSE)
+#'           extract_limma_summary(object)
+#' @export
+extract_limma_summary <- function(object)  extract_limma_dt(object)[,
+    .(ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
+      nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
+     by='contrast']
 
 #=============================================================================
 #
@@ -726,11 +771,11 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    designmat    <- designmat(object)
+    design    <- design(object)
     colcontrasts <- contrastdefs(object)[[1]]
     rowcontrasts <- contrastdefs(object)[[2]]
     contrastdefs <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
-    contrastmat  <- makeContrasts(contrasts = contrastdefs, levels = designmat)
+    contrastmat  <- makeContrasts(contrasts = contrastdefs, levels = design)
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
         to   <- true_names(contrastvector>0)

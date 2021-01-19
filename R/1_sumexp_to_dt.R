@@ -4,7 +4,7 @@ sumexp_to_wide_dt <- function(
     object,
     fid   = 'feature_id',
     fvars = intersect('feature_name', autonomics::fvars(object)),
-    assay = 'exprs'
+    assay = assayNames(object)[1]
 ){
 
     # Assert
@@ -68,7 +68,7 @@ sumexp_to_long_dt <- function(
     fvars = intersect('feature_name', autonomics::fvars(object)),
     sid   = 'sample_id',
     svars = intersect('subgroup', autonomics::svars(object)),
-    assay = 'exprs'
+    assay = assayNames(object)[1]
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -96,7 +96,7 @@ sumexp_to_long_dt <- function(
         dt %<>% merge(idt, by = c(fid, sid))
     }
     sdata1 <- sdata(object)[, c(sid, svars), drop = FALSE]
-    dt %<>% merge(sdata1, by=sid)
+    dt %<>% merge(sdata1, by = sid)
     cols <- intersect(unique(
                 c(fid, fvars, sid, svars, 'value', 'is_imputed')), names(dt))
     dt %<>% extract(, cols, with = FALSE)
@@ -182,17 +182,25 @@ dt2sumexp  <- function(
 #' biplot(object, nloadings=0)
 #' @export
 matrix2sumexp <- function(
-    x, sampledata = NULL, sampleidvar = 'sample_id',  subgroupvar = 'subgroup',
-    featuredata = NULL
+    x,
+    sampledata     = NULL,
+    sampleidvar    = if (is.null(sampledata))   NULL else names(sampledata)[1],
+    subgroupvar    = NULL,
+    featuredata    = NULL,
+    featureidvar   = if (is.null(featuredata)) NULL else names(featuredata)[1],
+    featurenamevar = NULL
 ){
 # exprs
     object <- SummarizedExperiment(list(exprs = x))
-    sdata(object)$sample_id  <- colnames(object)
-    fdata(object)$feature_id <- fdata(object)$feature_name <- rownames(object)
+    fdata(object)$feature_id   <- rownames(object)
+    fdata(object)$feature_name <- rownames(object)
+    sdata(object)$sample_id    <- colnames(object)
 # sdata
-    object %<>% merge_sdata(sampledata)
-    object %<>% merge_fdata(featuredata)
-    object$subgroup <- 'subgroup1'
+    object %<>% add_subgroup()
+    object %<>% merge_sdata(
+        sampledata, sampleidvar = sampleidvar, subgroupvar = subgroupvar)
+    object %<>% merge_fdata(
+        featuredata, featureidvar = featureidvar, featurenamevar=featurenamevar)
 # return
     object
 }

@@ -19,7 +19,7 @@ exprs(object) <- value
 \S4method{exprs}{SummarizedExperiment,numeric}(object) <- value
 }
 \arguments{
-\item{object}{SummarizedExperiment, ExpressionSet, EList}
+\item{object}{SummarizedExperiment}
 
 \item{value}{ratio matrix (features x samples)}
 }
@@ -31,7 +31,9 @@ Get / Set exprs matrix
 }
 \examples{
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- .read_maxquant(file)
+exprs(object)[1:3, 1:3]
+
 exprs(object) <- 0
-object
+exprs(object)[1:3, 1:3]
 }

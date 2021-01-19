@@ -1,7 +1,8 @@
 #' Available autonomics datasets
 #' @noRd
 AUTONOMICS_DATASETS <- c(
-    'uniprot_hsa_20140515.fasta',
+    'atkin18.somascan.adat',
+    'atkin18.metabolon.xlsx',
     'billing16.bam.zip',
     'billing16.rnacounts.txt',
     'billing16.proteingroups.txt',
@@ -10,9 +11,8 @@ AUTONOMICS_DATASETS <- c(
     'billing19.proteingroups.txt',
     'billing19.phosphosites.txt',
     'fukuda20.proteingroups.txt',
-    'atkin18.somascan.adat',
-    'atkin18.metabolon.xlsx',
-    'halama18.metabolon.xlsx')
+    'halama18.metabolon.xlsx',
+    'uniprot_hsa_20140515.fasta')
 
 #' Download example datasets
 #' @param file      name of file to download

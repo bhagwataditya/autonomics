@@ -438,30 +438,6 @@ split_values <- function(x){
 
 
 
-#' @rdname merge_sdata
-#' @export
-merge_fdata <- function(object, dt, featureidvar = 'feature_id', verbose=TRUE){
-# Assert
-    if (is.null(dt))  return(object)
-    assert_is_all_of(object,'SummarizedExperiment')
-    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-# Convert dt to data.table  (as.data.frame required to avoid error!)
-    dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
-    if (!'feature_id' %in% names(dt)) setnames(dt, 'rn', 'feature_id')
-    if ('rn' %in% names(dt)) dt[, rn := NULL]
-    n0 <- nrow(dt)
-    dt %<>% unique(by = featureidvar) # keys should be unique!
-    if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
-         ' fdata rows after removing duplicate `', featureidvar, '` entries')
-    duplicate_cols <- setdiff(intersect(fvars(object), names(dt)), 'feature_id')
-    fdata(object)[duplicate_cols] <- NULL
-    fdata(object) %<>% merge(
-        dt, by.x = 'feature_id', by.y = featureidvar, all.x = TRUE, sort=FALSE)
-    rownames(fdata(object)) <- fdata(object)$feature_id
-    object
-}
-
-
 
 #' Merge sample/feature data
 #' @param object        SummarizedExperiment
@@ -479,8 +455,8 @@ merge_fdata <- function(object, dt, featureidvar = 'feature_id', verbose=TRUE){
 #'                                     number = seq_along(object$sample_id)))
 #' sdata(object)
 #'@export
-merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
-    subgroupvar = character(0), verbose=TRUE
+merge_sdata <- function(object, dt, sampleidvar = names(dt)[1],
+    subgroupvar = NULL, verbose=TRUE
 ){
 # Assert
     if (is.null(dt))  return(object)
@@ -488,15 +464,14 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
 # Convert dt to data.table  (as.data.frame required to avoid error!)
     dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
-    if (!'sample_id' %in% names(dt))  setnames(dt, 'rn', 'sample_id')
-    if ('rn' %in% names(dt))  dt[, rn := NULL]
-    assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
+    if (!sampleidvar %in% names(dt))  setnames(dt, 'rn', sampleidvar)
+    if ('rn' %in% names(dt) & sampleidvar != 'rn')  dt[, rn := NULL]
     n0 <- nrow(dt)
-# Rm duplicate rows
+# Rm duplicate keys
     dt %<>% unique(by = sampleidvar) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
             ' sdata rows after removing duplicate `', sampleidvar, '` entries')
-    if (length(subgroupvar)>0)  setnames(dt, subgroupvar, 'subgroup')
+    if (!is.null(subgroupvar))  setnames(dt, subgroupvar, 'subgroup')
 # Rm duplicate cols
     duplicate_cols <- setdiff(intersect(svars(object), names(dt)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
@@ -511,6 +486,36 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
     object
 }
 
+merge_fdata <- function(object, dt, featureidvar = names(dt)[1],
+    featurenamevar = NULL, verbose=TRUE
+){
+# Assert
+    if (is.null(dt))  return(object)
+    assert_is_all_of(object,'SummarizedExperiment')
+    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
+# Convert dt to data.table  (as.data.frame required to avoid error!)
+    dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
+    if (!featureidvar %in% names(dt))  setnames(dt, 'rn', featureidvar)
+    if ('rn' %in% names(dt) & featureidvar != 'rn')  dt[, rn := NULL]
+    n0 <- nrow(dt)
+# Rm duplicate keys
+    dt %<>% unique(by = featureidvar) # keys should be unique!
+    if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
+            ' fdata rows after removing duplicate `', featureidvar, '` entries')
+    if (!is.null(featurenamevar))  setnames(dt, featurenamevar, 'feature_name')
+# Rm duplicate cols
+    duplicate_cols <- setdiff(intersect(svars(object), names(dt)), 'feature_id')
+    fdata(object)[duplicate_cols] <- NULL
+# Merge
+    fdata(object) %<>% merge(
+        dt, by.x = 'feature_id', by.y = featureidvar, all.x = TRUE, sort = FALSE)
+    rownames(fdata(object)) <- fdata(object)$feature_id # merging drops rownames
+# Return
+    leadcols <- c('feature_id', 'feature_name')
+    leadcols %<>% intersect(svars(object))
+    fdata(object) %<>% pull_columns(leadcols)
+    object
+}
 
 #' Merge sample file
 #'
@@ -532,32 +537,47 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
 #'    merge_samplefile(object, samplefile)
 #'@export
 merge_samplefile <- function(object, samplefile = NULL,
-    sampleidvar = 'sample_id', subgroupvar = character(0), verbose = TRUE
+    sampleidvar = NULL, subgroupvar = NULL, verbose = TRUE
 ){
     if (file_exists(samplefile)){
         if (verbose) message(
             '\t\tMerge sdata: ', samplefile)
         dt <- fread(samplefile)
+        if (is.null(sampleidvar))  sampleidvar <- names(dt)[1]
         object %<>% merge_sdata(dt, sampleidvar = sampleidvar,
                                 subgroupvar = subgroupvar, verbose = verbose)
     }
     object
 }
 
+#' @rdname merge_samplefile
+#' @export
+merge_featurefile <- function(object, featurefile = NULL,
+    featureidvar = NULL, featurenamevar = NULL, verbose = TRUE
+){
+    if (file_exists(featurefile)){
+        if (verbose) message(
+            '\t\tMerge fdata: ', featurefile)
+        dt <- fread(featurefile)
+        if (is.null(featureidvar))  featureidvar <- names(dt)[1]
+        object %<>% merge_fdata(dt, featureidvar = featureidvar,
+                                featurenamevar = featurenamevar, verbose = verbose)
+    }
+    object
+}
+
 add_subgroup <- function(object, verbose=TRUE){
 # Add subgroup if required
-    if (!'subgroup' %in% svars(object)){
-        x <- object$sample_id
-        sep <- guess_sep(x)
-        nfactor <- nfactors(x)
-        if (nfactor>1){                                      # sampleids
-            if (verbose) message('\t\tInfer subgroup from sample_ids')
-            object$subgroup  <- split_extract(x, seq_len(nfactor-1))
-            object$replicate <- split_extract(x, nfactor)
-        } else if (!is.null(basename(metadata(object)$file))){   # filename
-            object$subgroup <- basename(metadata(object)$file)
-        } else {
-            object$subgroup <- 'subgroup1'}                      # 'subgroup1'
+    x <- object$sample_id
+    sep <- guess_sep(x)
+    if (sep=='NOSEP'){
+        object$subgroup <- 'subgroup1'
+        return(object)
+    } else {
+        nfactor <- nfactors(x, sep)
+        if (verbose) message('\t\tInfer subgroup from sample_ids')
+        object$subgroup  <- split_extract(x, seq_len(nfactor-1), sep)
+        object$replicate <- split_extract(x, nfactor, sep)
     }
     object$subgroup %<>% make.names() # otherwise issue in add_limma (fixable?)
     object$subgroup %<>% factor()

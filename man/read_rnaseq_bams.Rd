@@ -10,7 +10,6 @@
   paired,
   genome,
   nthreads = detectCores(),
-  filter_count = 10,
   samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = "subgroup",
@@ -22,12 +21,14 @@ read_rnaseq_bams(
   paired,
   genome,
   nthreads = detectCores(),
-  filter_count = 10,
   samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
+  filter_count = 10,
+  tmm = TRUE,
+  cpm = TRUE,
   voomweight = TRUE,
   verbose = TRUE,
   plot = TRUE
@@ -42,8 +43,6 @@ read_rnaseq_bams(
 
 \item{nthreads}{no of cores to be used by Rsubread::featureCounts()}
 
-\item{filter_count}{min feature count required by at least one sample}
-
 \item{samplefile}{sample file}
 
 \item{sampleidvar}{sampleid var}
@@ -56,7 +55,13 @@ read_rnaseq_bams(
 
 \item{contrastdefs}{contrast definition vector/matrix/list}
 
-\item{voomweight}{TRUE/FALSE}
+\item{filter_count}{min feature count required by at least one sample}
+
+\item{tmm}{TRUE/FALSE: tmm-correct library sizes?}
+
+\item{cpm}{TRUE/FALSE: compute counts per million?}
+
+\item{voomweight}{TRUE/FALSE: compute voom precision weights?}
 
 \item{plot}{TRUE/FALSE}
 }

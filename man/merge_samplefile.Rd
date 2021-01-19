@@ -2,13 +2,22 @@
 % Please edit documentation in R/2_read_omics.R
 \name{merge_samplefile}
 \alias{merge_samplefile}
+\alias{merge_featurefile}
 \title{Merge sample file}
 \usage{
 merge_samplefile(
   object,
   samplefile = NULL,
-  sampleidvar = "sample_id",
-  subgroupvar = character(0),
+  sampleidvar = NULL,
+  subgroupvar = NULL,
+  verbose = TRUE
+)
+
+merge_featurefile(
+  object,
+  featurefile = NULL,
+  featureidvar = NULL,
+  featurenamevar = NULL,
   verbose = TRUE
 )
 }

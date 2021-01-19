@@ -6,6 +6,7 @@
 \alias{weights<-}
 \alias{weights<-,SummarizedExperiment,matrix-method}
 \alias{weights<-,SummarizedExperiment,numeric-method}
+\alias{weights<-,SummarizedExperiment,NULL-method}
 \title{Get/Set weights}
 \usage{
 weights(object, ...)
@@ -17,6 +18,8 @@ weights(object) <- value
 \S4method{weights}{SummarizedExperiment,matrix}(object) <- value
 
 \S4method{weights}{SummarizedExperiment,numeric}(object) <- value
+
+\S4method{weights}{SummarizedExperiment,`NULL`}(object) <- value
 }
 \arguments{
 \item{object}{SummarizedExperiment}

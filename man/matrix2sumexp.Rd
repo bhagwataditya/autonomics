@@ -7,9 +7,11 @@
 matrix2sumexp(
   x,
   sampledata = NULL,
-  sampleidvar = "sample_id",
-  subgroupvar = "subgroup",
-  featuredata = NULL
+  sampleidvar = if (is.null(sampledata)) NULL else names(sampledata)[1],
+  subgroupvar = NULL,
+  featuredata = NULL,
+  featureidvar = if (is.null(featuredata)) NULL else names(featuredata)[1],
+  featurenamevar = NULL
 )
 }
 \arguments{

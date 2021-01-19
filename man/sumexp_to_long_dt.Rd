@@ -10,7 +10,7 @@ sumexp_to_wide_dt(
   object,
   fid = "feature_id",
   fvars = intersect("feature_name", autonomics::fvars(object)),
-  assay = "exprs"
+  assay = assayNames(object)[1]
 )
 
 sumexp_to_long_dt(
@@ -19,7 +19,7 @@ sumexp_to_long_dt(
   fvars = intersect("feature_name", autonomics::fvars(object)),
   sid = "sample_id",
   svars = intersect("subgroup", autonomics::svars(object)),
-  assay = "exprs"
+  assay = assayNames(object)[1]
 )
 
 sumexp_to_subrep_dt(object)

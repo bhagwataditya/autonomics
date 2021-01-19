@@ -1,3 +1,187 @@
+#=========================================================================
+#
+#                           Getters/Setters
+#
+#=========================================================================
+
+#' @title Get/Set counts
+#' @description Get / Set counts matrix
+#' @param object SummarizedExperiment
+#' @param value count matrix (features x samples)
+#' @return count matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' counts(object) <- exprs(object)
+#' counts(object)[1:3, 1:3]
+#' @rdname counts
+#' @export
+setGeneric('counts',   function(object)   standardGeneric("counts"))
+
+#' @rdname counts
+setMethod(
+    "counts",
+    signature("SummarizedExperiment"),
+    function(object)   assays(object)$counts)
+
+#' @rdname counts
+#' @export
+setGeneric('counts<-',   function(object, value)   standardGeneric("counts<-"))
+
+#' @rdname counts
+setReplaceMethod(
+    "counts",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$counts <- value
+        object })
+
+#' @rdname counts
+setReplaceMethod(
+    "counts",
+    signature("SummarizedExperiment", "numeric"),
+    function(object, value){
+        assays(object)$counts[] <- value
+        object })
+
+
+#' @title Get/Set cpm
+#' @description Get / Set cpm matrix
+#' @param object SummarizedExperiment
+#' @param value cpm matrix (features x samples)
+#' @return cpm matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' cpm(object) <- exprs(object)
+#' cpm(object)[1:3, 1:3]
+#' @rdname cpm
+#' @export
+setGeneric('cpm',   function(object)   standardGeneric("cpm"))
+
+#' @rdname cpm
+setMethod(
+    "cpm",
+    signature("SummarizedExperiment"),
+    function(object)   assays(object)$cpm)
+
+#' @rdname cpm
+#' @export
+setGeneric('cpm<-',   function(object, value)   standardGeneric("cpm<-"))
+
+#' @rdname cpm
+setReplaceMethod(
+    "cpm",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$cpm <- value
+        object })
+
+#' @rdname cpm
+setReplaceMethod(
+    "cpm",
+    signature("SummarizedExperiment", "numeric"),
+    function(object, value){
+        assays(object)$cpm[] <- value
+        object })
+
+
+#' @title Get/Set log2cpm
+#' @description Get / Set cpm matrix
+#' @param object SummarizedExperiment
+#' @param value log2cpm matrix (features x samples)
+#' @return log2cpm matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' log2cpm(object) <- exprs(object)
+#' log2cpm(object)[1:3, 1:3]
+#' @rdname log2cpm
+#' @export
+setGeneric('log2cpm',   function(object)   standardGeneric("log2cpm"))
+
+#' @rdname log2cpm
+setMethod(
+    "log2cpm",
+    signature("SummarizedExperiment"),
+    function(object)   assays(object)$log2cpm)
+
+#' @rdname log2cpm
+#' @export
+setGeneric('log2cpm<-',   function(object, value)   standardGeneric("log2cpm<-"))
+
+#' @rdname log2cpm
+setReplaceMethod(
+    "log2cpm",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$log2cpm <- value
+        object })
+
+#' @rdname log2cpm
+setReplaceMethod(
+    "log2cpm",
+    signature("SummarizedExperiment", "numeric"),
+    function(object, value){
+        assays(object)$log2cpm[] <- value
+        object })
+
+
+
+#' @title Get/Set weights
+#' @description Get/Set weight matrix
+#' @param object SummarizedExperiment
+#' @param value ratio matrix (features x samples)
+#' @param ... addtional params
+#' @return weight matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.proteingroups.txt')
+#' object <- read_proteingroups(file)
+#' weights(object)[1:3, 1:2]
+#' weights(object) <- 1; weights(object)[1:3, 1:2]
+#' @rdname weights
+#' @export
+setGeneric('weights', function(object)   standardGeneric("weights"))
+
+#' @rdname weights
+setMethod(
+    "weights",
+    signature("SummarizedExperiment"),
+    function(object)   assays(object)$weights)
+
+
+#' @rdname weights
+#' @export
+setGeneric('weights<-', function(object, value) standardGeneric("weights<-"))
+
+#' @rdname weights
+setReplaceMethod(
+    "weights",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$weights <- value
+        object })
+
+#' @rdname weights
+setReplaceMethod(
+    "weights",
+    signature("SummarizedExperiment", "numeric"),
+    function(object, value){
+        if (!'weights' %in% names(assays(object))){
+            assays(object)$weights <- matrix(
+            1, nrow=nrow(object), ncol=ncol(object), dimnames=dimnames(object))
+        }
+        assays(object)$weights[] <- value
+        object })
+
+#' @rdname weights
+setReplaceMethod(
+    "weights",
+    signature("SummarizedExperiment", "NULL"),
+    function(object, value){
+        assays(object)$weights <- NULL
+        object })
+
 #=========================================================
 #
 #         download_gtf (alternative: biomartr::getGTF)
@@ -171,6 +355,81 @@ count_reads <- function(files, paired, nthreads, genome){
     fcounts
 }
 
+#==============================================================================
+#
+#                        .read_rnaseq_counts
+#                        .read_rnaseq_bams
+#
+#==============================================================================
+
+#' @rdname read_rnaseq_bams
+#' @export
+.read_rnaseq_bams <- function(
+    bamdir, paired, genome, nthreads = detectCores(),
+    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    verbose = TRUE
+){
+# Assert
+    assert_all_are_existing_files(bamdir)
+    assert_is_a_bool(paired)
+    assert_is_a_string(genome)
+    assert_is_a_number(nthreads)
+# Count reads
+    files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
+                        recursive = TRUE)
+    fcounts <- count_reads(files, paired, nthreads=nthreads, genome=genome)
+# Forge SummarizedExperiment
+    filenames   <- basename(file_path_sans_ext(files))
+    subdirnames <- basename(dirname(files))
+    sample_names <- if (has_no_duplicates(filenames)){           filenames
+                    } else if (has_no_duplicates(subdirnames)){  subdirnames
+                    } else {           paste0(subdirnames, '_', filenames)}
+    object <- SummarizedExperiment(assays = list(
+                counts = fcounts$counts %>% set_colnames(sample_names)))
+    metadata(object)$platform <- 'rnaseq'
+    metadata(object)$file <- bamdir
+# Add sample/feature data
+    message("\t\tAdd fdata")
+    fcounts$annotation$feature_id %<>% as.character()
+    rowData(object)  <- fcounts$annotation
+    object$sample_id <- sample_names
+    object %<>% merge_samplefile( samplefile = samplefile,
+        sampleidvar = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
+# Return
+    object
+}
+
+#' @rdname read_rnaseq_counts
+#' @export
+.read_rnaseq_counts <- function(file, fid_col = 1,
+    samplefile  = NULL, sampleidvar  = NULL, subgroupvar = NULL,
+    featurefile = NULL, featureidvar = NULL, featurenamevar = NULL,
+    verbose = TRUE
+){
+# scan
+    assert_all_are_existing_files(file)
+    if (verbose)  message('\tRead ', file)
+    dt <- fread(file, integer64 = 'numeric')
+    if (is.numeric(fid_col)) fid_col <- names(dt)[fid_col]
+    idx <- vapply(dt, is.integer, logical(1))
+    fdata1   <- dt[, !idx, with = FALSE]
+    counts1  <- as.matrix(dt[,  idx, with = FALSE])
+    rownames(counts1) <- fdata1[[fid_col]]
+    object <- matrix2sumexp(counts1, featuredata = fdata1, featureidvar=fid_col)
+    assayNames(object)[1] <- 'counts'
+# sumexp
+    object %<>% merge_samplefile(samplefile = samplefile,
+                     sampleidvar = sampleidvar, subgroupvar = subgroupvar)
+    object %<>% merge_featurefile(featurefile = featurefile,
+                     featureidvar = featureidvar, featurenamevar=featurenamevar)
+    metadata(object)$platform <- 'rnaseq'
+    object$subgroup %<>% make.names()
+    object$subgroup %<>% factor()
+    object
+}
+
+
+
 
 #=============================================================================
 #
@@ -214,80 +473,13 @@ cpm_to_counts <- function(cpm, scaled_libsizes){
 
 #=============================================================================
 #
-#                  compute_precision_weights
-#                      compute_precision_weights_once
+#                  compute_voom_weights
+#                      compute_voom_weights
 #
 #=============================================================================
 
-compute_precision_weights_once <- function(
-    object,
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    plot    = TRUE, ...
-){
-    counts   <- counts(object)
-    scaled_libsizes <- scaledlibsizes(counts)
 
-    design <- create_design(object, formula=!!enquo(formula))
-    counts %>%
-    voom(design = design, lib.size = scaled_libsizes, plot = plot, ...) %>%
-    extract2('weights') %>%
-    set_rownames(rownames(object)) %>%
-    set_colnames(colnames(object))
-}
-
-
-#' Compute voom precision weights
-#' @param object  SummarizedExperiment: exprs(.) returns log2cpm, counts(.)
-#'                returns raw counts.
-#' @param formula                formula to create design matrix (using svars)
-#' @param plot    TRUE (default) or FALSE
-#' @param ...     passed to limma::voom() -> limma::lmFit()
-#' @examples
-#' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot = FALSE)
-#' compute_precision_weights(object)[1:3, 1:3]
-#'
-#' object$subgroup <- 'billing16'
-#' compute_precision_weights(object)[1:3, 1:3]
-#'
-#' object$subgroup <- object$sample_id
-#' compute_precision_weights(object)[1:3, 1:3]
-#'
-#' file <- download_file('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
-#' counts(object) <- exprs(object)
-#' compute_precision_weights(object)[1:3, 1:3]
-#' @noRd
-compute_precision_weights <- function(
-    object,
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    plot    = TRUE
-){
-# Assert & message
-    assert_is_not_null(counts(object))
-    formula <- enquo(formula)
-# Estimate precision weights
-    has_block <- has_complete_block_values(object)
-    weights   <- compute_precision_weights_once(
-                    object, formula = !!formula, plot = !has_block & plot)
-# Update precision weights using block correlation
-    if (has_block){
-        log2cpm <- log2(counts_to_cpm(counts(object)))
-        correlation <-  duplicateCorrelation(
-                            log2cpm, design = create_design(object, !!formula),
-                            block = object$block, weights = weights)
-        correlation %<>% extract2('consensus')
-        weights <- compute_precision_weights_once(
-                    object, formula = !!enquo(formula), block = object$block,
-                    correlation = correlation, plot = plot)
-    }
-# Return
-    dimnames(weights) <- dimnames(object)
-    weights
-}
-
-
-explicitly_compute_precision_weights_once <- function(
+explicitly_compute_voom_weights <- function(
     object, formula, plot = TRUE, ...
 ){
 # Extract
@@ -336,102 +528,90 @@ explicitly_compute_precision_weights_once <- function(
 
 #==============================================================================
 #
-#                   preprocess_counts
+#                   preprocess_rnaseq_counts
 #                       filter_low_count_features
 #
 #==============================================================================
 
-filter_low_count_features <- function(object,filter_count,verbose){
-    idx <- filterByExpr(counts(object),
-                        group     = object$subgroup,
-                        lib.size  = scaledlibsizes(counts(object)),
-                        min.count = filter_count)
-
-    if (verbose) message('\t\tKeep ', sum(idx), '/', length(idx),
-                ' features: count >= ',
-                filter_count, ' in at least some samples')
-
-    object[idx, ]
-}
-
-
-preprocess_counts <- function(
-    object,
-    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    filter_count = 10,
-    voomweight   = TRUE,
-    verbose      = TRUE,
-    plot         = TRUE
+#' @param object     SummarizedExperiment
+#' @param formula    formula
+#' @param block      blocK var or NULL
+#' @param min_count  min count
+#' @param tmm        TRUE/FALSE
+#' @param cpm        TRUE/FALSE
+#' @param voomweight TRUE/FALSE
+#' @param verbose    TRUE/FALSE
+#' @param plot       TRUE/FALSE
+#' @export
+preprocess_rnaseq_counts <- function(object, formula, block = NULL,
+    min_count = 10, tmm = TRUE, cpm  = TRUE, voomweight = TRUE,
+    verbose = TRUE, plot = TRUE
 ){
-# Filter lowly expressed features
-    sdata(object)$libsize <- colSums(counts(object))
-    object %<>% filter_low_count_features(
-                    filter_count, verbose = verbose)
-    object$libsize.filtered <- colSums(counts(object))
-    object$libsize.scaled   <- scaledlibsizes(counts(object))
-# Normalize: counts -> cpm -> log2cpm
-    if (verbose) message('\t\tTMM normalize and log2transform')
-    exprs(object)<- counts(object) %>%
-                    counts_to_cpm(scaled_libsizes = object$libsize.scaled) %>%
-                    log2()
-# Compute and add precision weights
-    if (voomweight)  assays(object)$weights <- compute_precision_weights(
-                            object, formula = !!enquo(formula), plot = plot)
-# Return
-    if (verbose){
-        message('\t\tReturn object: counts(object)  = counts')
-        message('\t\t               exprs(object)   = log2cpm')
-        if (voomweight) message(
-                '\t\t               weights(object) = voom weights (see plot)')
-        message('\t\t               object$subgroup = subgroup values')
+# filter
+    if (verbose) message('\t\tPreprocess')
+    design <- create_design(object, formula)
+    object$lib.size <- colSums(counts(object))
+    idx <- filterByExpr(counts(object),
+                        design    = design, # group = object$subgroup,
+                        lib.size  = object$lib.size,
+                        min.count = min_count)
+    if (verbose) message('\t\tKeep ', sum(idx), '/', length(idx),
+            ' features: count >= ', min_count, ' in at least some samples')
+    object %<>% extract(idx, )
+# tmm
+    if (tmm){   if (verbose)  message('\t\t\ttmm lib.size')
+                object$lib.size <- scaledlibsizes(counts(object)) }
+# cpm
+    if (cpm){   if (verbose)  message('\t\t\tcpm')
+                cpm(object) <- counts_to_cpm(counts(object), object$lib.size)
+                assays(object) %<>% extract(c('cpm', 'counts')) }
+# log2
+    if (verbose)  message('\t\t\tlog2')
+    cpm(object) %<>% log2()
+    assayNames(object) %<>% stri_replace_first_fixed('cpm', 'log2cpm')
+# voom
+    if (verbose)  message('\t\t\tvoom')
+    object %<>% add_voom(design, verbose=verbose, plot = plot & !is.null(block))
+    if (!is.null(block)){
+        if (verbose)  message('\t\t\t\tvoom with block')
+        object %<>% add_voom(design, block=block, verbose=verbose, plot=plot)
     }
+# Return
     object
 }
+
+add_voom <- function(
+    object, design, block = NULL, verbose = TRUE, plot = TRUE
+){
+    n0 <- ncol(object)
+    object %<>% extract(, rownames(design))
+    if (verbose & nrow(object)<n0)  message('\t\t\t\tRetain ',
+            ncol(object), '/', n0, ' samples with subgroup definitions')
+
+    object %<>% add_blockcor(block = block, design=design, verbose=verbose)
+    blockvalues <- if (is.null(block)) NULL else sdata(object)[[block]]
+    blockcor <- metadata(object)$blockcor
+    weights <- voom(counts(object),
+                            design      = design,
+                            lib.size    = object$lib.size,
+                            block       = blockvalues,
+                            correlation = blockcor,
+                            plot        = plot
+                        )$weights
+    rownames(weights) <- rownames(object)
+    colnames(weights) <- colnames(object)
+    weights(object) <- weights
+    object
+}
+
 
 
 #=============================================================================
 #
 #                           read_rnaseq_bams
+#                           read_rnaseq_counts
 #
 #=============================================================================
-
-
-#' @rdname read_rnaseq_bams
-#' @export
-.read_rnaseq_bams <- function(
-    bamdir, paired, genome, nthreads = detectCores(), filter_count = 10,
-    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
-    verbose = TRUE
-){
-# Assert
-    assert_all_are_existing_files(bamdir)
-    assert_is_a_bool(paired)
-    assert_is_a_string(genome)
-    assert_is_a_number(nthreads)
-# Count reads
-    files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
-                        recursive = TRUE)
-    fcounts <- count_reads(files, paired, nthreads=nthreads, genome=genome)
-# Forge SummarizedExperiment
-    filenames   <- basename(file_path_sans_ext(files))
-    subdirnames <- basename(dirname(files))
-    sample_names <- if (has_no_duplicates(filenames)){           filenames
-                    } else if (has_no_duplicates(subdirnames)){  subdirnames
-                    } else {           paste0(subdirnames, '_', filenames)}
-    object <- SummarizedExperiment(assays = list(
-                counts = fcounts$counts %>% set_colnames(sample_names)))
-    metadata(object)$platform <- 'rnaseq'
-    metadata(object)$file <- bamdir
-# Add sample/feature data
-    message("\t\tAdd fdata")
-    fcounts$annotation$feature_id %<>% as.character()
-    rowData(object)  <- fcounts$annotation
-    object$sample_id <- sample_names
-    object %<>% merge_samplefile( samplefile = samplefile,
-        sampleidvar = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
-# Return
-    object
-}
 
 
 #' Read RNAseq SAM/BAM files into SummarizedExperiment
@@ -439,13 +619,15 @@ preprocess_counts <- function(
 #' @param paired        whether reads are paired end (TRUE/FALSE)
 #' @param genome        string: either "mm10", "hg38" etc. or a GTF file
 #' @param nthreads      no of cores to be used by Rsubread::featureCounts()
-#' @param filter_count  min feature count required by at least one sample
 #' @param samplefile    sample file
 #' @param sampleidvar   sampleid var
 #' @param subgroupvar   subgroup var
 #' @param formula       formula to create design matrix (using svars)
 #' @param contrastdefs  contrast definition vector/matrix/list
-#' @param voomweight    TRUE/FALSE
+#' @param filter_count  min feature count required by at least one sample
+#' @param tmm           TRUE/FALSE: tmm-correct library sizes?
+#' @param cpm           TRUE/FALSE: compute counts per million?
+#' @param voomweight    TRUE/FALSE: compute voom precision weights?
 #' @param verbose       TRUE/FALSE
 #' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
@@ -459,30 +641,31 @@ preprocess_counts <- function(
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_bams <- function(
-    bamdir, paired, genome, nthreads = detectCores(), filter_count = 10,
+    bamdir, paired, genome, nthreads = detectCores(),
     samplefile = NULL, sampleidvar = 'sample_id',
     subgroupvar = 'subgroup',
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object),
-    voomweight = TRUE, verbose = TRUE, plot = TRUE
+    contrastdefs = contrast_subgroups(object), filter_count = 10,
+    tmm = TRUE, cpm = TRUE, voomweight = TRUE, verbose = TRUE, plot=TRUE
 ){
 # Read
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
-    object <- .read_rnaseq_bams(bamdir            = bamdir,
-                                paired            = paired,
-                                genome            = genome,
-                                nthreads          = nthreads,
-                                filter_count      = filter_count,
-                                samplefile      = samplefile,
-                                sampleidvar  = sampleidvar,
-                                subgroupvar  = subgroupvar)
+    object <- .read_rnaseq_bams(bamdir      = bamdir,
+                                paired      = paired,
+                                genome      = genome,
+                                nthreads    = nthreads,
+                                samplefile  = samplefile,
+                                sampleidvar = sampleidvar,
+                                subgroupvar = subgroupvar)
 # Preprocess/Analyze
-    object %<>% preprocess_counts(formula    = !!formula,
-                                filter_count = filter_count,
-                                voomweight   = voomweight,
-                                verbose      = verbose,
-                                plot         = plot)
+    object %<>% preprocess_rnaseq_counts(formula  = !!formula,
+                                min_count  = min_count,
+                                tmm        = tmm,
+                                cpm        = cpm,
+                                voomweight = voomweight,
+                                verbose    = verbose,
+                                plot       = plot)
     object %<>% pca()
     object %<>% add_limma(formula = eval_tidy(formula),
                     contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
@@ -491,61 +674,6 @@ read_rnaseq_bams <- function(
     object
 }
 
-
-#=============================================================================
-#
-#                           read_rnaseq_counts
-#
-#=============================================================================
-
-
-#' @rdname read_rnaseq_counts
-#' @export
-.read_rnaseq_counts <- function(
-    file, fid_col = 1, filter_count = 10,
-    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup'
-){
-    assert_all_are_existing_files(file)
-    dt <- fread(file, integer64='numeric')
-    if (is.character(fid_col)){
-        assert_is_subset(fid_col, names(dt))
-        fid_col <- which(names(dt)==fid_col)
-    }
-    expr_cols  <- which(unname(vapply(dt, is.integer, logical(1))))
-    fdata_cols <- c(fid_col, 1 + which(unname(!vapply(
-                        dt[, -fid_col, with = FALSE], is.integer, logical(1)))))
-    dt <- fread(file, integer64 = 'numeric')
-    idx <- vapply(dt, is.numeric, logical(1))
-    fdata1 <- dt[, !idx, with = FALSE]
-    if (is.numeric(fid_col))       names(fdata1)[fid_col] <- 'feature_id'
-    if (is.character(fid_col))  setnames(fdata1, fid_col,    'feature_id')
-    fdata1 %<>% DataFrame(row.names = .$feature_id)
-    counts1  <- as.matrix(dt[,  idx, with = FALSE])
-    rownames(counts1) <- fdata1$feature_id
-    object <- matrix2sumexp(counts1)
-    object$subgroup <- NULL # added in merge_samplefile
-    object %<>% merge_fdata(fdata1)
-    object %<>% merge_samplefile(samplefile = samplefile,
-        sampleidvar = sampleidvar, subgroupvar=subgroupvar)
-    object %<>% add_subgroup()
-    # object <- read_omics(file,
-    #                     fid_rows     = 2:nrow(dt),   fid_cols     = fid_col,
-    #                     sid_rows     = 1,            sid_cols     = expr_cols,
-    #                     expr_rows    = 2:nrow(dt),   expr_cols    = expr_cols,
-    #                     fvar_rows    =  1,           fvar_cols    = fdata_cols,
-    #                     fdata_rows   = 2:nrow(dt),   fdata_cols   = fdata_cols,
-    #                     transpose    = FALSE,
-    #                 samplefile     =  samplefile,
-    #                 sampleidvar = sampleidvar,
-    #                 subgroupvar = subgroupvar,
-    #                 verbose          = TRUE)
-    # if ('gene_name' %in% fvars(object)) fvars(object) %<>%
-    #     stri_replace_first_fixed('gene_name', 'feature_name')
-    metadata(object)$platform <- 'rnaseq'
-    counts(object) <- exprs(object)
-    assays(object)$exprs <- NULL
-    object
-}
 
 
 #' Read RNAseq counts
@@ -559,7 +687,6 @@ read_rnaseq_bams <- function(
 #' @param file          string: path to rnaseq counts file
 #' @param fid_col       number of name of column with feature identifiers
 #' @param fname_col     string or number: feature name variable
-#' @param filter_count  number (default 10): filter out features
 #' with less than 10 counts (in the smallest library) across samples. Filtering
 #' performed with \code{\link[edgeR]{filterByExpr}}
 #' @param samplefile    sample file
@@ -567,44 +694,80 @@ read_rnaseq_bams <- function(
 #' @param subgroupvar   subgroup var
 #' @param formula       formula to create design matrix (using svars)
 #' @param contrastdefs  contrastdef vector/matrix/list
-#' @param voomweight    TRUE/FALSE
+#' @param min_count     number (default 10): filter out features
+#' @param tmm           TRUE/FALSE: tmm-correct library sizes?
+#' @param cpm           TRUE/FALSE: compute counts per million?
+#' @param voomweight    TRUE/FALSE: compute voom precision weights?
 #' @param verbose       TRUE/FALSE
 #' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
-#' read_rnaseq_counts(file)
-#' .read_rnaseq_counts(file)
+#' # BILLING19
+#'     # ~ 0 + subgroup
+#'     file <- download_data('billing19.rnacounts.txt')
+#'     object <- read_rnaseq_counts(file)
+#'     extract_limma_summary(object)
 #'
-#' file <- download_data('billing19.rnacounts.txt')
-#' read_rnaseq_counts(file)
-#' @seealso merge_sdata, merge_fdata
+#'     # ~ 0 + subgroups | weights
+#'     weights(object) <- NULL
+#'     object %<>% add_limma(plot=FALSE)
+#'     extract_limma_summary(object)
+#'
+#'# GSE161731
+#'    # Download
+#'    require(magrittr)
+#'    require(GEOquery)
+#'    basedir <- '~/autonomicscache/datasets'
+#'    subdir  <- '~/autonomicscache/datasets/GSE161731'
+#'    if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
+#'    file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
+#'    samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+#'
+#'    # Read
+#'    .read_rnaseq_counts(file)
+#'    .read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id')
+#'    .read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id',
+#'                         subgroupvar = 'cohort')
+#'
+#'    # Read and analyze
+#'    read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id')
+#'    read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id',
+#'                        subgroupvar = 'cohort')
+#'
+#'    # Read and analyze with block effect
+#'    object <- .read_rnaseq_counts(file, samplefile = samplefile,
+#'                          sampleidvar = 'rna_id', subgroupvar = 'cohort')
+#'    object %<>% filter_samples(
+#'          subject_id %in% names(which(table(subject_id)>1)), verbose=TRUE)
+#'    object %<>% pca(plot=TRUE)
+#'    object %<>% filter_samples(subgroup != 'healthy')
+#'    object %<>% pca(plot=TRUE)
+#'    tail(fnames(object)) == tail(fdata(object)$feature_id)  # NEEDS FIX!
+#'    preprocess_rnaseq_counts(object, subgroupvar = 'cohort', block = 'subject_id')
+#'
+#'    read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id', subgroupvar = 'cohort', block = 'subject_id')
+#'    read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id', subgroupvar = 'gender')
 #' @export
 read_rnaseq_counts <- function(
-    file, fid_col = 1, fname_col = 1, filter_count = 10, samplefile = NULL,
-    sampleidvar = 'sample_id', subgroupvar = 'subgroup',
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object),
-    voomweight = TRUE, verbose = TRUE, plot = TRUE
+    file, fid_col = 1,
+    samplefile = NULL, sampleidvar = NULL, subgroupvar = NULL, block = NULL,
+    featurefile = NULL, featureidvar = NULL, featurenamevar = NULL,
+    formula = if (is.null(subgroupvar)) ~ 1 else ~ 0 + subgroup,
+    contrastdefs = contrast_subgroups(object), min_count = 10,
+    tmm = TRUE, cpm = TRUE, voomweight = TRUE, verbose = TRUE, plot=TRUE
 ){
 # Initialize
-    formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
 # Read
     object <- .read_rnaseq_counts(
-        file, fid_col = fid_col,
-        filter_count = filter_count, samplefile = samplefile,
-        sampleidvar = sampleidvar, subgroupvar=subgroupvar)
-    object %<>% preprocess_counts(formula = !!formula,
-                    filter_count = filter_count, voomweight = voomweight,
-                    plot = plot, verbose = verbose)
-    if (length(fname_col)>0){
-        fdata(object)$feature_name <- fdata(object)[[fname_col]]
-        fdata(object) %<>% pull_columns(
-            intersect(c('feature_id', 'feature_name'), names(.)))}
+                    file, fid_col = fid_col, samplefile = samplefile,
+                    sampleidvar = sampleidvar, subgroupvar = subgroupvar)
+    object %<>% preprocess_rnaseq_counts(formula = formula, block = block,
+                    min_count = min_count, tmm = tmm, cpm = cpm,
+                    voomweight = voomweight, plot = plot, verbose = verbose)
 # Contrast
     object %<>% pca()
-    object %<>% add_limma(formula = eval_tidy(formula),
+    object %<>% add_limma(formula = formula, block = block,
                     contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
@@ -612,96 +775,4 @@ read_rnaseq_counts <- function(
     object
 }
 
-
-#=========================================================================
-
-#' @title Get/Set counts
-#' @description Get / Set counts matrix
-#' @param object SummarizedExperiment
-#' @param value count matrix (features x samples)
-#' @return count matrix (get) or updated object (set)
-#' @examples
-#' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
-#' counts(object) <- exprs(object)
-#' counts(object)[1:3, 1:3]
-#' @rdname counts
-#' @export
-setGeneric('counts',   function(object)   standardGeneric("counts"))
-
-#' @rdname counts
-setMethod(
-    "counts",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$counts)
-
-#' @rdname counts
-#' @export
-setGeneric('counts<-',   function(object, value)   standardGeneric("counts<-"))
-
-#' @rdname counts
-setReplaceMethod(
-    "counts",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$counts <- value
-        object })
-
-#' @rdname counts
-setReplaceMethod(
-    "counts",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$counts[] <- value
-        object })
-
-
-
-
-#=========================================================================
-#' @title Get/Set weights
-#' @description Get/Set weight matrix
-#' @param object SummarizedExperiment
-#' @param value ratio matrix (features x samples)
-#' @param ... addtional params
-#' @return weight matrix (get) or updated object (set)
-#' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
-#' weights(object)[1:3, 1:2]
-#' weights(object) <- 1; weights(object)[1:3, 1:2]
-#' @rdname weights
-#' @export
-setGeneric('weights', function(object)   standardGeneric("weights"))
-
-#' @rdname weights
-setMethod(
-    "weights",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$weights)
-
-
-#' @rdname weights
-#' @export
-setGeneric('weights<-', function(object, value) standardGeneric("weights<-"))
-
-#' @rdname weights
-setReplaceMethod(
-    "weights",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$weights <- value
-        object })
-
-#' @rdname weights
-setReplaceMethod(
-    "weights",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        if (!'weights' %in% names(assays(object))){
-            assays(object)$weights <- matrix(
-            1, nrow=nrow(object), ncol=ncol(object), dimnames=dimnames(object))
-        }
-        assays(object)$weights[] <- value
-        object })
 

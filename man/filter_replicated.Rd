@@ -24,6 +24,7 @@ SummarizedExperiment
 Filter for replicated features
 }
 \examples{
+# FUKUDA20
 require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, )

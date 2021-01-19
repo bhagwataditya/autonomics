@@ -8,22 +8,30 @@
 .read_rnaseq_counts(
   file,
   fid_col = 1,
-  filter_count = 10,
   samplefile = NULL,
-  sampleidvar = "sample_id",
-  subgroupvar = "subgroup"
+  sampleidvar = NULL,
+  subgroupvar = NULL,
+  featurefile = NULL,
+  featureidvar = NULL,
+  featurenamevar = NULL,
+  verbose = TRUE
 )
 
 read_rnaseq_counts(
   file,
   fid_col = 1,
-  fname_col = 1,
-  filter_count = 10,
   samplefile = NULL,
-  sampleidvar = "sample_id",
-  subgroupvar = "subgroup",
-  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
+  sampleidvar = NULL,
+  subgroupvar = NULL,
+  block = NULL,
+  featurefile = NULL,
+  featureidvar = NULL,
+  featurenamevar = NULL,
+  formula = if (is.null(subgroupvar)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
+  min_count = 10,
+  tmm = TRUE,
+  cpm = TRUE,
   voomweight = TRUE,
   verbose = TRUE,
   plot = TRUE
@@ -34,27 +42,31 @@ read_rnaseq_counts(
 
 \item{fid_col}{number of name of column with feature identifiers}
 
-\item{filter_count}{number (default 10): filter out features
-with less than 10 counts (in the smallest library) across samples. Filtering
-performed with \code{\link[edgeR]{filterByExpr}}}
-
 \item{samplefile}{sample file}
 
 \item{sampleidvar}{sampleid var}
 
 \item{subgroupvar}{subgroup var}
 
-\item{fname_col}{string or number: feature name variable}
+\item{verbose}{TRUE/FALSE}
 
 \item{formula}{formula to create design matrix (using svars)}
 
 \item{contrastdefs}{contrastdef vector/matrix/list}
 
-\item{voomweight}{TRUE/FALSE}
+\item{min_count}{number (default 10): filter out features}
 
-\item{verbose}{TRUE/FALSE}
+\item{tmm}{TRUE/FALSE: tmm-correct library sizes?}
+
+\item{cpm}{TRUE/FALSE: compute counts per million?}
+
+\item{voomweight}{TRUE/FALSE: compute voom precision weights?}
 
 \item{plot}{TRUE/FALSE}
+
+\item{fname_col}{string or number: feature name variable
+with less than 10 counts (in the smallest library) across samples. Filtering
+performed with \code{\link[edgeR]{filterByExpr}}}
 }
 \value{
 SummarizedExperiment
@@ -68,13 +80,49 @@ File format: header row
              feature counts      in next columns
 }
 \examples{
-file <- download_data('billing16.rnacounts.txt')
-read_rnaseq_counts(file)
-.read_rnaseq_counts(file)
+# BILLING19
+    # ~ 0 + subgroup
+    file <- download_data('billing19.rnacounts.txt')
+    object <- read_rnaseq_counts(file)
+    extract_limma_summary(object)
 
-file <- download_data('billing19.rnacounts.txt')
-read_rnaseq_counts(file)
-}
-\seealso{
-merge_sdata, merge_fdata
+    # ~ 0 + subgroups | weights
+    weights(object) <- NULL
+    object \%<>\% add_limma(plot=FALSE)
+    extract_limma_summary(object)
+
+# GSE161731
+   # Download
+   require(magrittr)
+   require(GEOquery)
+   basedir <- '~/autonomicscache/datasets'
+   subdir  <- '~/autonomicscache/datasets/GSE161731'
+   if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
+   file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
+   samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+
+   # Read
+   .read_rnaseq_counts(file)
+   .read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id')
+   .read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id',
+                        subgroupvar = 'cohort')
+
+   # Read and analyze
+   read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id')
+   read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id',
+                       subgroupvar = 'cohort')
+
+   # Read and analyze with block effect
+   object <- .read_rnaseq_counts(file, samplefile = samplefile,
+                         sampleidvar = 'rna_id', subgroupvar = 'cohort')
+   object \%<>\% filter_samples(
+         subject_id \%in\% names(which(table(subject_id)>1)), verbose=TRUE)
+   object \%<>\% pca(plot=TRUE)
+   object \%<>\% filter_samples(subgroup != 'healthy')
+   object \%<>\% pca(plot=TRUE)
+   tail(fnames(object)) == tail(fdata(object)$feature_id)  # NEEDS FIX!
+   preprocess_rnaseq_counts(object, subgroupvar = 'cohort', block = 'subject_id')
+
+   read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id', subgroupvar = 'cohort', block = 'subject_id')
+   read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id', subgroupvar = 'gender')
 }

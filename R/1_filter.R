@@ -88,7 +88,7 @@ rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # . != 0 needed due to stupid behaviour of rowAnys
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
     selector <- rowAnys(exprs(object) != 0, na.rm = TRUE)
-    if (verbose) message(
+    if (verbose & sum(selector)<length(selector))  message(
                     '\t\t\tRetain ', sum(selector), '/', length(selector),
                     ' features: non-zero, non-NA, and non-NaN for some sample')
     object %<>% extract(selector, )
@@ -192,6 +192,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' @param verbose    TRUE/FALSE
 #' @return  SummarizedExperiment
 #' @examples
+#' # FUKUDA20
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, )
@@ -237,8 +238,9 @@ filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose) if (verbose) message('\t\t\tRetain ', sum(idx), '/', length(idx),
-                                        ' samples: ', expr_text(condition))
+    if (verbose & sum(idx)<length(idx)) message(
+        '\t\t\tRetain ', sum(idx), '/', length(idx),
+        ' samples: ', expr_text(condition))
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
     if (record && !is.null(analysis(object))) {

@@ -64,7 +64,8 @@
 #' @import     stringi
 #' @importFrom tidyr         separate_rows
 #' @importFrom tools         file_ext   file_path_sans_ext
-#' @importFrom SummarizedExperiment  assays   assays<-   SummarizedExperiment
+#' @importFrom SummarizedExperiment  assays  assays<-  assayNames  assayNames<-
+#' @importFrom SummarizedExperiment  SummarizedExperiment
 #' @importFrom SummarizedExperiment  rowData   rowData<-   colData   colData<-
 #' @importFrom SummarizedExperiment  makeSummarizedExperimentFromExpressionSet
 #' @importFrom utils         adist   capture.output   count.fields

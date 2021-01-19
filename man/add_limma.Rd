@@ -8,8 +8,9 @@ add_limma(
   object,
   contrastdefs = contrast_subgroups(object),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  plot = TRUE,
-  ...
+  block = NULL,
+  verbose = TRUE,
+  plot = TRUE
 )
 }
 \arguments{
@@ -27,9 +28,9 @@ add_limma(
 
 \item{formula}{formula to create design matrix (using svars)}
 
-\item{plot}{TRUE/FALSE}
+\item{block}{block svar (or NULL)}
 
-\item{...}{passed to plot_contrastogram}
+\item{plot}{TRUE/FALSE}
 }
 \value{
 Updated SummarizedExperiment

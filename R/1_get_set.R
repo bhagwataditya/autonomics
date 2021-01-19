@@ -33,21 +33,23 @@ function(object, value){
 
 #' @title Get/Set exprs
 #' @description Get / Set exprs matrix
-#' @param object SummarizedExperiment, ExpressionSet, EList
+#' @param object SummarizedExperiment
 #' @param value ratio matrix (features x samples)
 #' @return exprs matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- .read_maxquant(file)
+#' exprs(object)[1:3, 1:3]
+#'
 #' exprs(object) <- 0
-#' object
+#' exprs(object)[1:3, 1:3]
 #' @export
 setGeneric('exprs',  function(object)   standardGeneric("exprs"))
 
 
 #' @rdname exprs
 setMethod("exprs", signature("SummarizedExperiment"),
-function(object)   assays(object)$exprs)
+function(object)   assays(object)[[1]])
 
 
 #' @rdname exprs
@@ -58,14 +60,14 @@ setGeneric('exprs<-',   function(object, value) standardGeneric("exprs<-"))
 #' @rdname exprs
 setReplaceMethod("exprs", signature("SummarizedExperiment", "matrix"),
 function(object, value){
-    assays(object)$exprs <- value
+    assays(object)[[1]] <- value
     object })
 
 
 #' @rdname exprs
 setReplaceMethod("exprs", signature("SummarizedExperiment", "numeric"),
 function(object, value){
-    assays(object)$exprs[] <- value
+    assays(object)[[1]][] <- value
     object })
 
 
