@@ -49,9 +49,8 @@ Plot volcano
 
 # proteingroup internalstandard ratios
     file <-  download_data('billing19.proteingroups.txt')
-    select_subgroups <-  c(sprintf(
-        '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
-    object <- read_proteingroups(
-        file, select_subgroups = select_subgroups, plot = FALSE)
+    select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+    select \%<>\% paste0('_STD')
+    object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
     plot_volcano(object)
 }

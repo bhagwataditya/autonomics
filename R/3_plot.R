@@ -42,8 +42,9 @@ add_color_scale <- function(p, color = subgroup, data){
         color_var <- as_name(color)
         assert_is_subset(color_var, names(data))
         values0 <- data[[color_var]]
+        assertive::assert_is_factor(values0)
         if (!is.numeric(values0)){
-            levels0 <- unique(values0)
+            levels0 <- levels(values0)
             colors0 <- make_colors(levels0, sep = guess_sep(levels0))
             p <- p + scale_color_manual(values = colors0)
         }

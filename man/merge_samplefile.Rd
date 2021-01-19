@@ -29,9 +29,11 @@ Add sdata from file or sampleids
 \examples{
 # PROTEINGROUPS
    file <- download_data('billing19.proteingroups.txt')
-    select_subgroups <-  c(sprintf(
-        '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
-   object <- read_proteingroups(file, select_subgroups = select_subgroups)
-   samplefile <- create_samplefile(object, default_samplefile(file))
+   select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+   select \%<>\% paste0('_STD')
+   object <- read_proteingroups(file, select_subgroups = select)
+   samplefile <- paste0(tempdir(),'/', basename(file_path_sans_ext(file)))
+   samplefile \%<>\% paste0('.samples.txt')
+   invisible(create_samplefile(object, samplefile))
    merge_samplefile(object, samplefile)
 }

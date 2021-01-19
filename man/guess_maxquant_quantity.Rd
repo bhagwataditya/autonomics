@@ -32,22 +32,22 @@ character vector, dataframe, or SummarizedExperiment.
     guess_maxquant_quantity(x)
 
 # character vector
-    x <- "Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"
+    x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
     guess_maxquant_quantity(x)
 
-    x <- "Ratio M/L STD(L)_EM00(M)_EM01(H)_R1"
+    x <- "Ratio M/L STD(L)_E00(M)_E01(H)_R1"
     guess_maxquant_quantity(x)
 
-    x <- "LFQ intensity EM00.R1"
+    x <- "LFQ intensity E00.R1"
     guess_maxquant_quantity(x)
 
-    x <- "Reporter intensity corrected 0 STD(0)EM00(1)EM01(2)_R1"
+    x <- "Reporter intensity corrected 0 STD(0)E00(1)E01(2)_R1"
     guess_maxquant_quantity(x)
 
-    x <- "Reporter intensity 0 STD(0)EM00(1)EM01(2)_R1"
+    x <- "Reporter intensity 0 STD(0)E00(1)E01(2)_R1"
     guess_maxquant_quantity(x)
 
-    x <- "Intensity H STD(L)_EM00(M)_EM01(H)_R1"
+    x <- "Intensity H STD(L)_E00(M)_E01(H)_R1"
     guess_maxquant_quantity(x)
 
 # dataframe

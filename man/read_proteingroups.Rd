@@ -97,8 +97,8 @@ Read proteingroups/phosphosites
 
 # Internal Standard Ratios: rm meaningless ratios
     file <-  download_data('billing19.proteingroups.txt')
-    select_subgroups <-  c(sprintf(
-        '\%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+    select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')))
+    select_subgroups \%<>\% paste0('_STD')
     object <- read_proteingroups(file, select_subgroups = select_subgroups)
 
 # Phosphosites

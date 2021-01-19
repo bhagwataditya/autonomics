@@ -38,22 +38,22 @@ MAXQUANT_PATTERNS <- c(
 #'     guess_maxquant_quantity(x)
 #'
 #' # character vector
-#'     x <- "Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"
+#'     x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
 #'     guess_maxquant_quantity(x)
 #'
-#'     x <- "Ratio M/L STD(L)_EM00(M)_EM01(H)_R1"
+#'     x <- "Ratio M/L STD(L)_E00(M)_E01(H)_R1"
 #'     guess_maxquant_quantity(x)
 #'
-#'     x <- "LFQ intensity EM00.R1"
+#'     x <- "LFQ intensity E00.R1"
 #'     guess_maxquant_quantity(x)
 #'
-#'     x <- "Reporter intensity corrected 0 STD(0)EM00(1)EM01(2)_R1"
+#'     x <- "Reporter intensity corrected 0 STD(0)E00(1)E01(2)_R1"
 #'     guess_maxquant_quantity(x)
 #'
-#'     x <- "Reporter intensity 0 STD(0)EM00(1)EM01(2)_R1"
+#'     x <- "Reporter intensity 0 STD(0)E00(1)E01(2)_R1"
 #'     guess_maxquant_quantity(x)
 #'
-#'     x <- "Intensity H STD(L)_EM00(M)_EM01(H)_R1"
+#'     x <- "Intensity H STD(L)_E00(M)_E01(H)_R1"
 #'     guess_maxquant_quantity(x)
 #'
 #' # dataframe
@@ -131,16 +131,16 @@ guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
 #' @return character vector or SummarizedExperiment
 #' @examples
 #' # character vector
-#'    x <- "Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"
+#'    x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
 #'    standardize_maxquant_snames(x)
 #'
-#'    x <- "Ratio M/L STD(L)_EM00(M)_EM01(H)_R1"
+#'    x <- "Ratio M/L STD(L)_E00(M)_E01(H)_R1"
 #'    standardize_maxquant_snames(x)
 #'
 #'    x <-'LFQ intensity STD_R1'
 #'    standardize_maxquant_snames(x)
 #'
-#'    x <- 'LFQ intensity L STD(L)_EM00(M)_EM01(H)_R1'
+#'    x <- 'LFQ intensity L STD(L)_E00(M)_E01(H)_R1'
 #'    standardize_maxquant_snames(x)
 #'
 #'    x <-'Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
@@ -222,21 +222,21 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #' @examples
 #' # character vector
 #'    # Alternate multiplexing forms supported
-#'    demultiplex("STD(L)_EM00(M)_EM01(H)_R1{M/L}") # Label Ratio
+#'    demultiplex("STD(L)_E00(M)_E01(H)_R1{M/L}") # Label Ratio
 #'    demultiplex('A(0)_B(1)_C(2)_D(3)_R1{0}'     ) # Reporter intensity
-#'    demultiplex('STD(L)_EM00(M)_EM01(H)_R1{L}')   # Label Intensity
+#'    demultiplex('STD(L)_E00(M)_E01(H)_R1{L}')   # Label Intensity
 #'
 #'    # Alternate separators supported
-#'    demultiplex('STD(L)_EM00(M)_EM01(H)_R1{L}')   # underscore
-#'    demultiplex('STD(L).EM00(M).EM01(H).R1{L}')   # dot
-#'    demultiplex('STD(L)EM00(M)EM01(H).R1{L}')     # no separator
+#'    demultiplex('STD(L)_E00(M)_E01(H)_R1{L}')   # underscore
+#'    demultiplex('STD(L).E00(M).E01(H).R1{L}')   # dot
+#'    demultiplex('STD(L)E00(M)E01(H).R1{L}')     # no separator
 #'
 #'    # Composite snames supported
 #'    demultiplex("WT.t0(L)_WT.t1(M)_WT.t2(H)_R1{H/L}")
 #'
 #'    # Uniqueness ensured by appending labels when necessary
-#'    demultiplex(c("STD(L).BM00(M).BM00(H).R10{M/L}",
-#'                        "STD(L).BM00(M).BM00(H).R10{H/L}"))
+#'    demultiplex(c("STD(L).M00(M).M00(H).R10{M/L}",
+#'                        "STD(L).M00(M).M00(H).R10{H/L}"))
 #'
 #'    # Uniplexed snames are returned unchanged
 #'    demultiplex(c('STD_R1', 'EM0_R1'))
@@ -272,8 +272,8 @@ are_all_identical <- function(y){
 #'
 #' @param x character vector: e.g. "STD(L)_EM00(M)_EM01(H)_R1{M/L}"
 #' @examples
-#' x <- "STD(L)_EM00(M)_EM01(H)_R1{M/L}"
-#' extract_multiplexes(x)     # STD(L)_EM00(M)_EM01(H)_R1
+#' x <- "STD(L)_E00(M)_E01(H)_R1{M/L}"
+#' extract_multiplexes(x)     # STD(L)_E00(M)_E01(H)_R1
 #' extract_channels(x) #                           M/L
 #' @noRd
 extract_multiplexes <- function(x){
@@ -286,9 +286,9 @@ extract_channels <- function(x){
 }
 
 #' Separate samples from labels
-#' @param multiplexes character vector: e.g. "STD(L)_EM00(M)_EM01(H)_R1"
+#' @param multiplexes character vector: e.g. "STD(L)_E00(M)_E01(H)_R1"
 #' @examples
-#' x <- "STD(L)_EM00(M)_EM01(H)_R1"
+#' x <- "STD(L)_E00(M)_E01(H)_R1"
 #' extract_labels(x)
 #' extract_samples(x)
 #' @noRd
@@ -314,8 +314,8 @@ extract_biosamples <- function(multiplexes, labels){
 #' @param labels  list of char vectors (see examples)
 #' @return TRUE or FALSE
 #' @examples
-#' samples <- list(c("STD", "EM00", "EM01", "_R1" ),
-#'                 c("STD", "EM00", "EM01", "_R2"))
+#' samples <- list(c("STD", "E00", "E01", "_R1" ),
+#'                 c("STD", "E00", "E01", "_R2"))
 #' labels  <- list(c("L", "M", "H"),
 #'                 c("L", "M", "H"))
 #' are_equally_multiplexed(samples, labels)
@@ -328,11 +328,11 @@ are_equally_multiplexed <- function(samples, labels){
 
 
 #' Extract/Drop replicate
-#' @param samples list of char vectors: list(c("STD", "EM00", "EM01", "_R1" ))
+#' @param samples list of char vectors: list(c("STD", "E00", "E01", "_R1" ))
 #' @param labels  list of char vectors: list(c("L", "M", "H"))
 #' @return character vector: "_R1"
 #' @examples
-#' samples <- list(c("STD", "EM00", "EM01", "_R1" ))
+#' samples <- list(c("STD", "E00", "E01", "_R1" ))
 #' labels  <- list(c("L", "M", "H"))
 #' extract_replicates(samples, labels) # "_R1"
 #' drop_replicates(samples, labels)
@@ -376,8 +376,8 @@ stri_split_fixed_extract <- function(x, split, i){
 #' @return character vector
 #' @examples
 #' channels <- c('M/L', 'H/L')
-#' biosamples <- list(c(  L = 'STD', M = 'EM00', H = 'EM01'),
-#'                 c(  L = 'STD', M = 'EM00', H = 'EM01'))
+#' biosamples <- list(c(  L = 'STD', M = 'E00', H = 'E01'),
+#'                 c(  L = 'STD', M = 'E00', H = 'E01'))
 #' replicate <- c('_R1', '_R2')
 #' extract_channel_samples(channels, biosamples, replicate)
 #' @noRd
@@ -906,8 +906,8 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 #'
 #' # SELECTED LABEL RATIOS
 #'     file <-  download_data('billing19.proteingroups.txt')
-#'     select_subgroups <-  c(sprintf(
-#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+#'     select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')))
+#'     select_subgroups %<>% paste0('_STD')
 #'     object <- .read_maxquant(file, select_subgroups = select_subgroups)
 #'
 #' # PHOSPHO RATIOS
@@ -917,16 +917,16 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 #' @export
 .read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
     samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
-    select_subgroups = NULL, invert_subgroups = character(0),
-    verbose = TRUE){
+    select_subgroups = NULL, invert_subgroups = character(0), verbose = TRUE){
 # Read
     assert_all_are_existing_files(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     assert_is_a_bool(verbose)
-    phospho <- stri_detect_fixed(basename(file), 'phospho')
+    phospho <- stri_detect_fixed(
+                    basename(file), 'phospho', case_insensitive=TRUE)
     if (verbose) message('\tRead ', file)
     names1 <- names(fread(file, integer64 = 'numeric', nrows=1))
-    fids1  <- fread(file, select = 'id')[[1]]
+    fids1  <- fread(file, select = 'id', colClasses = 'character')[[1]]
     FVARS <- if (phospho) PHOSPHOSITE_FVARS else PROTEINGROUP_FVARS
     fdata1 <- fread(file, select = intersect(FVARS, names1))
     setnames(fdata1, 'id', 'feature_id')
@@ -935,11 +935,12 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
     select <- names1 %>%
             extract(stri_detect_regex(., MAXQUANT_PATTERNS[[quantity]]))
     if (phospho)  select %<>% extract(stri_endswith_fixed(., '___1'))
-    exprs1 <- data.matrix(fread(file, select = select, integer64 = 'numeric'))
-# Rm NA fids
-    idx <- !is.na(fids1)
-    fids1 <- fids1[idx]; fdata1 <- fdata1[idx, ]; exprs1 <- exprs1[idx, ]
-    rownames(exprs1) <- fids1  # first na need to be removed!
+    exprs1 <- as.matrix(fread(file, select = select, integer64 = 'numeric'))
+    if (is.character(exprs1)){
+        message("File contains strings rather than numbers - convert")
+        storage.mode(exprs1) <- 'numeric'}
+    assertive::assert_all_are_non_missing_nor_empty_character(fids1)
+    rownames(exprs1) <- fids1
 # Simplify maxquant snames
     sids1 <- colnames(exprs1)
     if (phospho) sids1 %<>% stri_replace_last_fixed('___1', '')
@@ -1059,26 +1060,10 @@ rename_phospho_fvars <- function(object){
 #
 #==============================================================================
 
-add_maxquant_sdata <- function(
-    object, samplefile = default_samplefile(object), verbose
-){
-    snames(object) %<>% stri_replace_last_fixed('___1', '') # PHOSPHOSITES
-    object %<>% standardize_maxquant_snames(verbose = verbose)
-    object %<>% demultiplex(verbose = verbose)
-    object %<>% merge_samplefile(samplefile = samplefile, verbose = verbose)
-    object
-}
-
-
 filter_maxquant_samples <- function(object, select_subgroups, verbose){
     object %<>% filter_samples_available_for_some_feature(verbose = verbose)
-    if (!is.null(select_subgroups)){
-        object %<>% filter_samples(subgroup %in% select_subgroups,
-                                    verbose = verbose)
-        object$subgroup %<>% factor(select_subgroups)
-    } else {
-        object$subgroup %<>% factor()
-    }
+    if (!is.null(select_subgroups))  object %<>%
+        filter_samples(subgroup %in% select_subgroups, verbose = verbose)
     object
 }
 
@@ -1152,8 +1137,8 @@ transform_maxquant <- function(object, impute, verbose, plot){
 #'
 #' # Internal Standard Ratios: rm meaningless ratios
 #'     file <-  download_data('billing19.proteingroups.txt')
-#'     select_subgroups <-  c(sprintf(
-#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
+#'     select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')))
+#'     select_subgroups %<>% paste0('_STD')
 #'     object <- read_proteingroups(file, select_subgroups = select_subgroups)
 #'
 #' # Phosphosites
@@ -1301,7 +1286,7 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
     phospho_dt[, occupancy := phospho_value - protein_value]
     phospho_dt %<>% data.table::dcast(
                         phospho_id ~ sample_id, value.var = 'occupancy')
-    occupancy_mat <- data.matrix(phospho_dt[, -1])
+    occupancy_mat <- dt2mat(phospho_dt)
     rownames(occupancy_mat) <- phospho_dt[[1]]
     occupancy_mat %<>% extract(, snames(phosphosites))
     occupancy_mat %<>% extract(fnames(phosphosites), )

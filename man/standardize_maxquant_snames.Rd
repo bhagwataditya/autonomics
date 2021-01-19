@@ -42,16 +42,16 @@ Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 }
 \examples{
 # character vector
-   x <- "Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"
+   x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
    standardize_maxquant_snames(x)
 
-   x <- "Ratio M/L STD(L)_EM00(M)_EM01(H)_R1"
+   x <- "Ratio M/L STD(L)_E00(M)_E01(H)_R1"
    standardize_maxquant_snames(x)
 
    x <-'LFQ intensity STD_R1'
    standardize_maxquant_snames(x)
 
-   x <- 'LFQ intensity L STD(L)_EM00(M)_EM01(H)_R1'
+   x <- 'LFQ intensity L STD(L)_E00(M)_E01(H)_R1'
    standardize_maxquant_snames(x)
 
    x <-'Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'

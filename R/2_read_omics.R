@@ -441,10 +441,12 @@ split_values <- function(x){
 #' @rdname merge_sdata
 #' @export
 merge_fdata <- function(object, dt, featureidvar = 'feature_id', verbose=TRUE){
+# Assert
     if (is.null(dt))  return(object)
     assert_is_all_of(object,'SummarizedExperiment')
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-    dt %<>% as.data.table(keep.rownames=TRUE)
+# Convert dt to data.table  (as.data.frame required to avoid error!)
+    dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
     if (!'feature_id' %in% names(dt)) setnames(dt, 'rn', 'feature_id')
     if ('rn' %in% names(dt)) dt[, rn := NULL]
     n0 <- nrow(dt)
@@ -484,8 +486,8 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
     if (is.null(dt))  return(object)
     assert_is_all_of(object,'SummarizedExperiment')
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-# Convert dt to data.table
-    dt %<>% as.data.table(keep.rownames=TRUE)
+# Convert dt to data.table  (as.data.frame required to avoid error!)
+    dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
     if (!'sample_id' %in% names(dt))  setnames(dt, 'rn', 'sample_id')
     if ('rn' %in% names(dt))  dt[, rn := NULL]
     assert_is_subset(c(sampleidvar, subgroupvar), names(dt))
@@ -521,10 +523,12 @@ merge_sdata <- function(object, dt, sampleidvar = 'sample_id',
 #' @examples
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
-#'     select_subgroups <-  c(sprintf(
-#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
-#'    object <- read_proteingroups(file, select_subgroups = select_subgroups)
-#'    samplefile <- create_samplefile(object, default_samplefile(file))
+#'    select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+#'    select %<>% paste0('_STD')
+#'    object <- read_proteingroups(file, select_subgroups = select)
+#'    samplefile <- paste0(tempdir(),'/', basename(file_path_sans_ext(file)))
+#'    samplefile %<>% paste0('.samples.txt')
+#'    invisible(create_samplefile(object, samplefile))
 #'    merge_samplefile(object, samplefile)
 #'@export
 merge_samplefile <- function(object, samplefile = NULL,
@@ -556,6 +560,7 @@ add_subgroup <- function(object, verbose=TRUE){
             object$subgroup <- 'subgroup1'}                      # 'subgroup1'
     }
     object$subgroup %<>% make.names() # otherwise issue in add_limma (fixable?)
+    object$subgroup %<>% factor()
     object
 }
 

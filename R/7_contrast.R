@@ -454,12 +454,9 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' add_limma(object)
 #'
 #' file <- download_data('billing19.proteingroups.txt')
-#' select_subgroups <-  c(sprintf(
-#'     '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
-#' object <- read_proteingroups(
-#'             file, select_subgroups = select_subgroups, plot = FALSE)
-#' object$subgroup %<>% gsub('_STD', '', .)
-#' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
+#' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+#' select %<>% paste0('_STD')
+#' object <- read_proteingroups(file, select_subgroups = select, plot = FALSE)
 #' object %<>% add_limma()
 #'
 #' file <- download_data('billing19.rnacounts.txt')
@@ -771,12 +768,9 @@ compute_connections <- function(
 #' # subgroup vector
 #'     require(magrittr)
 #'     file <-  download_data('billing19.proteingroups.txt')
-#'     select_subgroups <-  c(sprintf(
-#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
-#'     object <- read_proteingroups(
-#'                 file, select_subgroups = select_subgroups, plot = FALSE)
-#'     object$subgroup %<>% gsub('_STD', '', .)
-#'     object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
+#'     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+#'     select %<>% paste0('_STD')
+#'     object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
 #'     object %<>% add_limma(plot=FALSE)
 #'     plot_contrastogram(object, curve=0.8)
 #' # subgroup vector
@@ -971,10 +965,9 @@ make_volcano_dt <- function(
 #'
 #' # proteingroup internalstandard ratios
 #'     file <-  download_data('billing19.proteingroups.txt')
-#'     select_subgroups <-  c(sprintf(
-#'         '%s_STD', c('EM00','EM01', 'EM02','EM05','EM15','EM30', 'BM00')))
-#'     object <- read_proteingroups(
-#'         file, select_subgroups = select_subgroups, plot = FALSE)
+#'     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+#'     select %<>% paste0('_STD')
+#'     object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
 #'     plot_volcano(object)
 #' @export
 plot_volcano <- function(
