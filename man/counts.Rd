@@ -6,6 +6,7 @@
 \alias{counts<-}
 \alias{counts<-,SummarizedExperiment,matrix-method}
 \alias{counts<-,SummarizedExperiment,numeric-method}
+\alias{counts<-,SummarizedExperiment,NULL-method}
 \title{Get/Set counts}
 \usage{
 counts(object)
@@ -17,6 +18,8 @@ counts(object) <- value
 \S4method{counts}{SummarizedExperiment,matrix}(object) <- value
 
 \S4method{counts}{SummarizedExperiment,numeric}(object) <- value
+
+\S4method{counts}{SummarizedExperiment,`NULL`}(object) <- value
 }
 \arguments{
 \item{object}{SummarizedExperiment}

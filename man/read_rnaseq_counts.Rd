@@ -30,9 +30,13 @@ read_rnaseq_counts(
   formula = if (is.null(subgroupvar)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
   min_count = 10,
-  tmm = TRUE,
+  pseudocount = 0.5,
+  genesize = NULL,
   cpm = TRUE,
-  voomweight = TRUE,
+  voom = TRUE,
+  log2 = TRUE,
+  pca = TRUE,
+  limma = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -56,28 +60,29 @@ read_rnaseq_counts(
 
 \item{min_count}{number (default 10): filter out features}
 
-\item{tmm}{TRUE/FALSE: tmm-correct library sizes?}
+\item{pseudocount}{number}
 
-\item{cpm}{TRUE/FALSE: compute counts per million?}
+\item{genesize}{NULL or fvar}
 
-\item{voomweight}{TRUE/FALSE: compute voom precision weights?}
+\item{cpm}{TRUE/FALSE: compute counts per million (scaled) reads?}
+
+\item{voom}{TRUE/FALSE: compute voom precision weights?}
+
+\item{log2}{TRUE/FALSE}
+
+\item{pca}{TRUE/FALSE  run pca?}
+
+\item{limma}{TRUE/FALSE: run contrast analysis?}
 
 \item{plot}{TRUE/FALSE}
 
-\item{fname_col}{string or number: feature name variable
-with less than 10 counts (in the smallest library) across samples. Filtering
-performed with \code{\link[edgeR]{filterByExpr}}}
+\item{fname_col}{string or number: feature name variable}
 }
 \value{
 SummarizedExperiment
 }
 \description{
 Read tsv file with rnaseq counts into SummarizedExperiment
-}
-\details{
-File format: header row
-             feature annotations in first few columns
-             feature counts      in next columns
 }
 \examples{
 # BILLING19

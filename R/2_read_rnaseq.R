@@ -44,6 +44,54 @@ setReplaceMethod(
         assays(object)$counts[] <- value
         object })
 
+#' @rdname counts
+setReplaceMethod(
+    "counts",
+    signature("SummarizedExperiment", "NULL"),
+    function(object, value){
+        assays(object)$counts <- NULL
+        object })
+
+#' @title Get/Set log2counts
+#' @description Get / Set log2counts matrix
+#' @param object SummarizedExperiment
+#' @param value count matrix (features x samples)
+#' @return count matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' log2counts(object) <- exprs(object)
+#' log2counts(object)[1:3, 1:3]
+#' @rdname log2counts
+#' @export
+setGeneric('log2counts',   function(object)   standardGeneric("log2counts"))
+
+#' @rdname log2counts
+setMethod(
+    "log2counts",
+    signature("SummarizedExperiment"),
+    function(object)   assays(object)$log2counts)
+
+#' @rdname log2counts
+#' @export
+setGeneric('log2counts<-',   function(object, value)   standardGeneric("log2counts<-"))
+
+#' @rdname log2counts
+setReplaceMethod(
+    "log2counts",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$log2counts <- value
+        object })
+
+#' @rdname log2counts
+setReplaceMethod(
+    "log2counts",
+    signature("SummarizedExperiment", "numeric"),
+    function(object, value){
+        assays(object)$counts[] <- value
+        object })
+
 
 #' @title Get/Set cpm
 #' @description Get / Set cpm matrix
@@ -86,8 +134,9 @@ setReplaceMethod(
         object })
 
 
+
 #' @title Get/Set log2cpm
-#' @description Get / Set cpm matrix
+#' @description Get / Set log2cpm matrix
 #' @param object SummarizedExperiment
 #' @param value log2cpm matrix (features x samples)
 #' @return log2cpm matrix (get) or updated object (set)
@@ -124,6 +173,90 @@ setReplaceMethod(
     signature("SummarizedExperiment", "numeric"),
     function(object, value){
         assays(object)$log2cpm[] <- value
+        object })
+
+
+
+#' @title Get/Set tpm
+#' @description Get / Set tpm matrix
+#' @param object SummarizedExperiment
+#' @param value tpm matrix (features x samples)
+#' @return tpm matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' tpm(object) <- exprs(object)
+#' tpm(object)[1:3, 1:3]
+#' @rdname tpm
+#' @export
+setGeneric('tpm',   function(object)   standardGeneric("tpm"))
+
+#' @rdname tpm
+setMethod(
+    "tpm",
+    signature("SummarizedExperiment"),
+    function(object)   assays(object)$tpm)
+
+#' @rdname tpm
+#' @export
+setGeneric('tpm<-',   function(object, value)   standardGeneric("tpm<-"))
+
+#' @rdname tpm
+setReplaceMethod(
+    "tpm",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$tpm <- value
+        object })
+
+#' @rdname tpm
+setReplaceMethod(
+    "tpm",
+    signature("SummarizedExperiment", "numeric"),
+    function(object, value){
+        assays(object)$tpm[] <- value
+        object })
+
+
+
+#' @title Get/Set log2tpm
+#' @description Get / Set log2tpm matrix
+#' @param object SummarizedExperiment
+#' @param value log2tpm matrix (features x samples)
+#' @return log2tpm matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' log2tpm(object) <- exprs(object)
+#' log2tpm(object)[1:3, 1:3]
+#' @rdname log2tpm
+#' @export
+setGeneric('log2tpm',   function(object)   standardGeneric("log2tpm"))
+
+#' @rdname log2tpm
+setMethod(
+    "log2tpm",
+    signature("SummarizedExperiment"),
+    function(object)   assays(object)$log2tpm)
+
+#' @rdname log2tpm
+#' @export
+setGeneric('log2tpm<-',   function(object, value)   standardGeneric("log2tpm<-"))
+
+#' @rdname log2tpm
+setReplaceMethod(
+    "log2tpm",
+    signature("SummarizedExperiment", "matrix"),
+    function(object, value){
+        assays(object)$log2tpm <- value
+        object })
+
+#' @rdname log2tpm
+setReplaceMethod(
+    "log2tpm",
+    signature("SummarizedExperiment", "numeric"),
+    function(object, value){
+        assays(object)$log2tpm[] <- value
         object })
 
 
@@ -446,29 +579,44 @@ scaledlibsizes <- function(counts){
 }
 
 
-#' Convert between counts and cpm (counts per million scaled reads)
-#' @param counts           count matrix
-#' @param cpm              cpm matrix (counts per million scaled reads)
-#' @param scaled_libsizes  numeric vector: scaled library sizes
+#' Convert between counts and cpm
+#' @param counts     count matrix
+#' @param cpm        cpm matrix: counts per million (scaled) reads
+#' @param lib.sizes  numeric vector: (scaled) library sizes
+#' @return matrix
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
-#'
-#' scaled_libsizes <- scaledlibsizes(exprs(object))
-#' cpm <- counts_to_cpm(counts(object), scaled_libsizes)
-#'
-#' counts  <- cpm_to_counts(cpm, scaled_libsizes)
+#' object <- .read_rnaseq_counts(file)
+#' lib.size <- scaledlibsizes(exprs(object))
+#' cpm <- counts_to_cpm(counts(object), lib.size)
+#' counts  <- cpm_to_counts(cpm, lib.size)
 #' sum(counts(object) - counts)
-#' @return cpm matrix
-#' @noRd
-counts_to_cpm <- function(counts, scaled_libsizes = scaledlibsizes(counts)){
-    t(t(counts + 0.5)/(scaled_libsizes + 1) * 1e+06)
+#' @export
+counts_to_cpm <- function(counts, lib.size = scaledlibsizes(counts)){
+    t(t(counts)/(lib.size + 1)) * 1e6
 }
 
 
-#' @noRd
-cpm_to_counts <- function(cpm, scaled_libsizes){
-    1e-06 * t(t(cpm) * (scaled_libsizes + 1)) - 0.5
+#' @rdname counts_to_cpm
+#' @export
+cpm_to_counts <- function(cpm, lib.size){
+    1e-6 * t(t(cpm) * (lib.size + 1))
+}
+
+
+#' counts to tpm
+#' @param counts    count matrix
+#' @param genesize  genesize vector (kilobase)
+#' @return tpm matrix
+#' @examples
+#' file <- download_data('billing19.rnacounts.txt')
+#' object <- .read_rnaseq_counts(file)
+#' counts_to_cpm(counts(object), gene.size=1)
+#' @export
+counts_to_tpm <- function(counts, genesize){
+    counts  %<>% '/'(genesize)
+    lib.size <- matrixStats::colSums2(counts)
+    t(t(counts)/lib.size) * 1e6
 }
 
 #=============================================================================
@@ -534,24 +682,25 @@ explicitly_compute_voom_weights <- function(
 #==============================================================================
 
 #' Preprocess RNAseq counts
-#' @param object     SummarizedExperiment
-#' @param formula    formula
-#' @param block      blocK var or NULL
-#' @param min_count  min count
-#' @param tmm        TRUE/FALSE
-#' @param cpm        TRUE/FALSE
-#' @param voomweight TRUE/FALSE
-#' @param verbose    TRUE/FALSE
-#' @param plot       TRUE/FALSE
+#' @param object       SummarizedExperiment
+#' @param formula      formula
+#' @param block        blocK var or NULL
+#' @param min_count    min count
+#' @param pseudocount  TRUE/FALSE
+#' @param genesize     NULL or fvar
+#' @param cpm          TRUE/FALSE
+#' @param voom         TRUE/FALSE
+#' @param verbose      TRUE/FALSE
+#' @param plot         TRUE/FALSE
 #' @export
 preprocess_rnaseq_counts <- function(object, formula, block = NULL,
-    min_count = 10, tmm = TRUE, cpm  = TRUE, voomweight = TRUE,
-    verbose = TRUE, plot = TRUE
+    min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, 
+    voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE
 ){
 # filter
     if (verbose) message('\t\tPreprocess')
     design <- create_design(object, formula)
-    object$lib.size <- colSums(counts(object))
+    object$lib.size <- matrixStats::colSums2(counts(object))
     idx <- filterByExpr(counts(object),
                         design    = design, # group = object$subgroup,
                         lib.size  = object$lib.size,
@@ -559,46 +708,67 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
     if (verbose) message('\t\tKeep ', sum(idx), '/', length(idx),
             ' features: count >= ', min_count, ' in at least some samples')
     object %<>% extract(idx, )
-# tmm
-    if (tmm){   if (verbose)  message('\t\t\ttmm lib.size')
-                object$lib.size <- scaledlibsizes(counts(object)) }
-# cpm
-    if (cpm){   if (verbose)  message('\t\t\tcpm')
-                cpm(object) <- counts_to_cpm(counts(object), object$lib.size)
-                assays(object) %<>% extract(c('cpm', 'counts')) }
-# log2
-    if (verbose)  message('\t\t\tlog2')
-    cpm(object) %<>% log2()
-    assayNames(object) %<>% stri_replace_first_fixed('cpm', 'log2cpm')
-# voom
-    if (verbose)  message('\t\t\tvoom')
-    object %<>% add_voom(design, verbose=verbose, plot = plot & !is.null(block))
-    if (!is.null(block)){
-        if (verbose)  message('\t\t\t\tvoom with block')
-        object %<>% add_voom(design, block=block, verbose=verbose, plot=plot)
+# pseudocount
+    if (pseudocount>0){
+        if (verbose)  message('\t\t\tadd pseudocount ', pseudocount)
+        counts(object) %<>% add(pseudocount) }
+# tpm
+    if (!is.null(genesize)){
+        assert_is_subset(genesize, fvars(object))
+        if (verbose)  message('\t\t\ttpm')
+        tpm(object) <- counts_to_tpm(counts(object), fdata(object)[[genesize]])
     }
+# cpm
+    if (cpm){
+        if (verbose)  message('\t\t\tcpm')
+        if (verbose)  message('\t\t\t\ttmm-scale lib.sizes')
+        object$lib.size <- scaledlibsizes(counts(object))
+        cpm(object) <- counts_to_cpm(counts(object), object$lib.size)
+        other <- setdiff(assayNames(object), 'cpm')
+        assays(object) %<>% extract(c('cpm', other)) }
+# voom (counts) & blockcor (log2(cpm))
+    if (voom){
+        if (verbose)  message('\t\t\tvoom')
+        object %<>% add_voom(design, verbose=verbose, plot = plot & !is.null(block))
+        if (!is.null(block)){
+            if (verbose)  message('\t\t\t\tvoom with block')
+            object %<>% add_voom(design, block=block, verbose=verbose, plot=plot) }}
+# log2
+    if (log2){
+	    if (verbose)  message('\t\t\tlog2')
+        for (i in seq_along(assays(object))){
+            assays(    object)[[i]] %<>% log2()
+            assayNames(object)[[i]] %<>% paste0('log2', .) }}
 # Return
     object
 }
 
+
 add_voom <- function(
     object, design, block = NULL, verbose = TRUE, plot = TRUE
 ){
+# Retain samples with subgroups
     n0 <- ncol(object)
     object %<>% extract(, rownames(design))
     if (verbose & nrow(object)<n0)  message('\t\t\t\tRetain ',
             ncol(object), '/', n0, ' samples with subgroup definitions')
-
-    object %<>% add_blockcor(block = block, design=design, verbose=verbose)
-    blockvalues <- if (is.null(block)) NULL else sdata(object)[[block]]
-    blockcor <- metadata(object)$blockcor
+# Prepare block
+    if (!is.null(block)){
+        assert_is_subset(block, svars(object))
+        block <- sdata(object)[[block]]
+        if (is.null(metadata(object)$blockcor)){
+            if (verbose)  cmessage('\t\t\t\tCompute block correlations')
+            metadata(object)$blockcor <- duplicateCorrelation(
+                log2(cpm(object)), design=design, block=block
+            )$consensus.correlation }}
+# Run voom
     weights <- voom(counts(object),
-                            design      = design,
-                            lib.size    = object$lib.size,
-                            block       = blockvalues,
-                            correlation = blockcor,
-                            plot        = plot
-                        )$weights
+                    design      = design,
+                    lib.size    = object$lib.size,
+                    block       = block,
+                    correlation = metadata(object)$blockcor,
+                    plot        = plot)$weights
+# Add/Return
     rownames(weights) <- rownames(object)
     colnames(weights) <- colnames(object)
     weights(object) <- weights
@@ -625,10 +795,11 @@ add_voom <- function(
 #' @param subgroupvar   subgroup var
 #' @param formula       formula to create design matrix (using svars)
 #' @param contrastdefs  contrast definition vector/matrix/list
-#' @param filter_count  min feature count required by at least one sample
-#' @param tmm           TRUE/FALSE: tmm-correct library sizes?
+#' @param min_count     min feature count required by at least one sample
+#' @param genesize      NULL or fvar
 #' @param cpm           TRUE/FALSE: compute counts per million?
-#' @param voomweight    TRUE/FALSE: compute voom precision weights?
+#' @param voom          TRUE/FALSE: compute voom precision weights?
+#' @param log2          TRUE/FALSE
 #' @param verbose       TRUE/FALSE
 #' @param plot          TRUE/FALSE
 #' @return SummarizedExperiment
@@ -646,8 +817,8 @@ read_rnaseq_bams <- function(
     samplefile = NULL, sampleidvar = 'sample_id',
     subgroupvar = 'subgroup',
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object), filter_count = 10,
-    tmm = TRUE, cpm = TRUE, voomweight = TRUE, verbose = TRUE, plot=TRUE
+    contrastdefs = contrast_subgroups(object), min_count = 10,
+    genesize = NULL, cpm = TRUE, voom = TRUE, log2 = TRUE, verbose = TRUE, plot=TRUE
 ){
 # Read
     formula      <- enexpr(formula)
@@ -662,9 +833,10 @@ read_rnaseq_bams <- function(
 # Preprocess/Analyze
     object %<>% preprocess_rnaseq_counts(formula  = !!formula,
                                 min_count  = min_count,
-                                tmm        = tmm,
+                                genesize   = genesize,
                                 cpm        = cpm,
-                                voomweight = voomweight,
+                                voom       = voom,
+                                log2       = log2,
                                 verbose    = verbose,
                                 plot       = plot)
     object %<>% pca()
@@ -681,26 +853,24 @@ read_rnaseq_bams <- function(
 #'
 #' Read tsv file with rnaseq counts into SummarizedExperiment
 #'
-#' File format: header row
-#'              feature annotations in first few columns
-#'              feature counts      in next columns
-#'
 #' @param file          string: path to rnaseq counts file
 #' @param fid_col       number of name of column with feature identifiers
 #' @param fname_col     string or number: feature name variable
-#' with less than 10 counts (in the smallest library) across samples. Filtering
-#' performed with \code{\link[edgeR]{filterByExpr}}
 #' @param samplefile    sample file
 #' @param sampleidvar   sampleid var
 #' @param subgroupvar   subgroup var
 #' @param formula       formula to create design matrix (using svars)
 #' @param contrastdefs  contrastdef vector/matrix/list
 #' @param min_count     number (default 10): filter out features
-#' @param tmm           TRUE/FALSE: tmm-correct library sizes?
-#' @param cpm           TRUE/FALSE: compute counts per million?
-#' @param voomweight    TRUE/FALSE: compute voom precision weights?
-#' @param verbose       TRUE/FALSE
-#' @param plot          TRUE/FALSE
+#' @param pseudocount   number
+#' @param genesize     NULL or fvar 
+#' @param cpm      TRUE/FALSE: compute counts per million (scaled) reads?
+#' @param voom     TRUE/FALSE: compute voom precision weights?
+#' @param log2     TRUE/FALSE
+#' @param pca      TRUE/FALSE  run pca?
+#' @param limma    TRUE/FALSE: run contrast analysis?
+#' @param verbose  TRUE/FALSE
+#' @param plot     TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' # BILLING19
@@ -755,20 +925,22 @@ read_rnaseq_counts <- function(
     featurefile = NULL, featureidvar = NULL, featurenamevar = NULL,
     formula = if (is.null(subgroupvar)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object), min_count = 10,
-    tmm = TRUE, cpm = TRUE, voomweight = TRUE, verbose = TRUE, plot=TRUE
+    pseudocount = 0.5, genesize = NULL, cpm = TRUE, voom = TRUE, log2 = TRUE,
+    pca = TRUE, limma = TRUE, verbose = TRUE, plot = TRUE
 ){
 # Initialize
     contrastdefs <- enexpr(contrastdefs)
 # Read
     object <- .read_rnaseq_counts(
-                    file, fid_col = fid_col, samplefile = samplefile,
-                    sampleidvar = sampleidvar, subgroupvar = subgroupvar)
+                  file, fid_col = fid_col, samplefile = samplefile,
+                  sampleidvar = sampleidvar, subgroupvar = subgroupvar)
     object %<>% preprocess_rnaseq_counts(formula = formula, block = block,
-                    min_count = min_count, tmm = tmm, cpm = cpm,
-                    voomweight = voomweight, plot = plot, verbose = verbose)
+                  min_count = min_count, pseudocount = pseudocount, 
+                  genesize = genesize, cpm = cpm, voom = voom, log2 = log2,
+                  plot = plot, verbose = verbose)
 # Contrast
-    object %<>% pca()
-    object %<>% add_limma(formula = formula, block = block,
+    if (pca)   object %<>% pca()
+    if (limma) object %<>% add_limma(formula = formula, block = block,
                     contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)

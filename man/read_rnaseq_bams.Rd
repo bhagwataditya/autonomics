@@ -26,10 +26,11 @@ read_rnaseq_bams(
   subgroupvar = "subgroup",
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
-  filter_count = 10,
-  tmm = TRUE,
+  min_count = 10,
+  genesize = NULL,
   cpm = TRUE,
-  voomweight = TRUE,
+  voom = TRUE,
+  log2 = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -55,13 +56,15 @@ read_rnaseq_bams(
 
 \item{contrastdefs}{contrast definition vector/matrix/list}
 
-\item{filter_count}{min feature count required by at least one sample}
+\item{min_count}{min feature count required by at least one sample}
 
-\item{tmm}{TRUE/FALSE: tmm-correct library sizes?}
+\item{genesize}{NULL or fvar}
 
 \item{cpm}{TRUE/FALSE: compute counts per million?}
 
-\item{voomweight}{TRUE/FALSE: compute voom precision weights?}
+\item{voom}{TRUE/FALSE: compute voom precision weights?}
+
+\item{log2}{TRUE/FALSE}
 
 \item{plot}{TRUE/FALSE}
 }

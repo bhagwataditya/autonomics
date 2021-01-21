@@ -483,13 +483,19 @@ add_limma <- function(object, contrastdefs = contrast_subgroups(object),
     design <- create_design(object, formula=formula)
     design(object)    <- design
     contrastdefs(object) <- contrastdefs
-# Set block and correlation if required
-    cmessage('\t\tAdd limma')
-    object %<>% add_blockcor(block, design, verbose)
-    blockcor <- metadata(object)$blockcor
+# Prepare block
+    if (verbose)  cmessage('\t\tAdd limma')
+    if (!is.null(block)){
+        assert_is_subset(block, svars(object))
+        block <- sdata(object)[[block]]
+        if (is.null(metadata(object)$blockcor)){
+            if (verbose)  cmessage('\t\t\t\tCompute block correlations')
+            metadata(object)$blockcor <- duplicateCorrelation(
+                exprs(object), design=design, block=block
+            )$consensus.correlation }}
 # Fit lm and compute contrasts
     fit <- suppressWarnings(lmFit(object = exprs(object), design = design,
-              block = block, correlation = blockcorr,
+              block = block, correlation = metadata(object)$blockcor,
               weights = weights(object)))
     object %<>% add_contrast_results(fit)
 # Plot/Return
@@ -498,18 +504,6 @@ add_limma <- function(object, contrastdefs = contrast_subgroups(object),
     return(object)
 }
 
-
-add_blockcor <- function(object, block, design, verbose){
-    if (!is.null(block)){
-        if (is.null(metadata(object)$blockcor)){
-            if (verbose)  message('\t\t\t\tCompute block correlation')
-            metadata(object)$blockcor <- duplicateCorrelation(
-                exprs(object), design, block = block
-            )$consensus.correlation
-        }
-    }
-    object
-}
 
 
 vectorize_contrastdefs <- function(contrastdefs){

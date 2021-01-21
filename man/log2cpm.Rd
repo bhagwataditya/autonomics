@@ -27,7 +27,7 @@ log2cpm(object) <- value
 log2cpm matrix (get) or updated object (set)
 }
 \description{
-Get / Set cpm matrix
+Get / Set log2cpm matrix
 }
 \examples{
 file <- download_data('billing16.rnacounts.txt')
