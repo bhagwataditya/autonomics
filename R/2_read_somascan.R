@@ -205,9 +205,9 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 # Analyze
     object %<>% pca()
     object %<>% add_limma(formula = eval_tidy(formula),
-                    contrastsdefs = eval_tidy(contrastdefs), plot = FALSE)
+                    contrastdefs = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
-    if (plot) plot_samples(object)
+#    if (plot) plot_samples(object)
 # Return
     object
 }

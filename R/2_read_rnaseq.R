@@ -533,6 +533,7 @@ explicitly_compute_voom_weights <- function(
 #
 #==============================================================================
 
+#' Preprocess RNAseq counts
 #' @param object     SummarizedExperiment
 #' @param formula    formula
 #' @param block      blocK var or NULL
