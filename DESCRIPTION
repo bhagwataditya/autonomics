@@ -63,6 +63,7 @@ Imports:
 Suggests: 
   affy,
   BiocManager,
+  GEOquery,
   hgu95av2.db, 
   knitr,
   MASS,
