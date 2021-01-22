@@ -694,7 +694,7 @@ explicitly_compute_voom_weights <- function(
 #' @param plot         TRUE/FALSE
 #' @export
 preprocess_rnaseq_counts <- function(object, formula, block = NULL,
-    min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, 
+    min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE,
     voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE
 ){
 # filter
@@ -863,7 +863,7 @@ read_rnaseq_bams <- function(
 #' @param contrastdefs  contrastdef vector/matrix/list
 #' @param min_count     number (default 10): filter out features
 #' @param pseudocount   number
-#' @param genesize     NULL or fvar 
+#' @param genesize     NULL or fvar
 #' @param cpm      TRUE/FALSE: compute counts per million (scaled) reads?
 #' @param voom     TRUE/FALSE: compute voom precision weights?
 #' @param log2     TRUE/FALSE
@@ -931,13 +931,14 @@ read_rnaseq_counts <- function(
 # Initialize
     contrastdefs <- enexpr(contrastdefs)
 # Read
-    object <- .read_rnaseq_counts(
-                  file, fid_col = fid_col, samplefile = samplefile,
-                  sampleidvar = sampleidvar, subgroupvar = subgroupvar)
+    object <- .read_rnaseq_counts(file, fid_col = fid_col,
+                samplefile = samplefile, sampleidvar = sampleidvar,
+                subgroupvar = subgroupvar, featurefile = featurefile,
+                featureidvar = featureidvar, featurenamevar = featurenamevar)
     object %<>% preprocess_rnaseq_counts(formula = formula, block = block,
-                  min_count = min_count, pseudocount = pseudocount, 
-                  genesize = genesize, cpm = cpm, voom = voom, log2 = log2,
-                  plot = plot, verbose = verbose)
+                min_count = min_count, pseudocount = pseudocount,
+                genesize = genesize, cpm = cpm, voom = voom, log2 = log2,
+                plot = plot, verbose = verbose)
 # Contrast
     if (pca)   object %<>% pca()
     if (limma) object %<>% add_limma(formula = formula, block = block,
