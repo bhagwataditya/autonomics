@@ -417,7 +417,8 @@ read_omics <- function(
                         fdata_rows = fdata_rows, fdata_cols = fdata_cols,
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
-        object %<>% merge_samplefile(samplefile = samplefile, sampleidvar= sampleidvar,
+        object %<>% merge_samplefile(samplefile = samplefile,
+                            by.x = 'sample_id', by.y = sampleidvar,
                             subgroupvar = subgroupvar, verbose    = verbose)
     object
 }
@@ -442,8 +443,8 @@ split_values <- function(x){
 #' Merge sample/feature data
 #' @param object        SummarizedExperiment
 #' @param df            data.frame, data.table, DataFrame
-#' @param sampleidvar   sampleid var
-#' @param featureidvar  featureid var
+#' @param by.x          object mergevar
+#' @param by.y          df mergevar
 #' @param verbose       TRUE/FALSE
 #' @param ...           used to maintain deprecated merge_(s|f)data
 #' @return              SummarizedExperiment
@@ -455,8 +456,8 @@ split_values <- function(x){
 #'                                     number = seq_along(object$sample_id)))
 #' sdata(object)
 #'@export
-merge_sdata <- function(object, dt, sampleidvar = names(dt)[1],
-    subgroupvar = NULL, verbose=TRUE
+merge_sdata <- function(object, dt, by.x = 'sample_id',
+    by.y = names(dt)[1], subgroupvar = NULL, verbose=TRUE
 ){
 # Assert
     if (is.null(dt))  return(object)
@@ -464,20 +465,20 @@ merge_sdata <- function(object, dt, sampleidvar = names(dt)[1],
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
 # Convert dt to data.table  (as.data.frame required to avoid error!)
     dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
-    if (!sampleidvar %in% names(dt))  setnames(dt, 'rn', sampleidvar)
-    if ('rn' %in% names(dt) & sampleidvar != 'rn')  dt[, rn := NULL]
+    if (!by.y %in% names(dt))  setnames(dt, 'rn', by.y)
+    if ('rn' %in% names(dt) & by.y != 'rn')  dt[, rn := NULL]
     n0 <- nrow(dt)
 # Rm duplicate keys
-    dt %<>% unique(by = sampleidvar) # keys should be unique!
+    dt %<>% unique(by = by.y) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
-            ' sdata rows after removing duplicate `', sampleidvar, '` entries')
+            ' sdata rows after removing duplicate `', by.y, '` entries')
     if (!is.null(subgroupvar))  setnames(dt, subgroupvar, 'subgroup')
 # Rm duplicate cols
     duplicate_cols <- setdiff(intersect(svars(object), names(dt)), 'sample_id')
     sdata(object)[duplicate_cols] <- NULL
 # Merge
     sdata(object) %<>% merge(
-        dt, by.x = 'sample_id', by.y = sampleidvar, all.x = TRUE, sort = FALSE)
+        dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
     rownames(sdata(object)) <- sdata(object)$sample_id # merging drops rownames
 # Return
     leadcols <- c('sample_id', 'subgroup', 'replicate')
@@ -486,8 +487,8 @@ merge_sdata <- function(object, dt, sampleidvar = names(dt)[1],
     object
 }
 
-merge_fdata <- function(object, dt, featureidvar = names(dt)[1],
-    featurenamevar = NULL, verbose=TRUE
+merge_fdata <- function(object, dt, by.x = 'feature_id',
+    by.y = names(dt)[1], featurenamevar = NULL, verbose=TRUE
 ){
 # Assert
     if (is.null(dt))  return(object)
@@ -495,20 +496,20 @@ merge_fdata <- function(object, dt, featureidvar = names(dt)[1],
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
 # Convert dt to data.table  (as.data.frame required to avoid error!)
     dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
-    if (!featureidvar %in% names(dt))  setnames(dt, 'rn', featureidvar)
-    if ('rn' %in% names(dt) & featureidvar != 'rn')  dt[, rn := NULL]
+    if (!by.y %in% names(dt))  setnames(dt, 'rn', by.y)
+    if ('rn' %in% names(dt) & by.y != 'rn')  dt[, rn := NULL]
     n0 <- nrow(dt)
 # Rm duplicate keys
-    dt %<>% unique(by = featureidvar) # keys should be unique!
+    dt %<>% unique(by = by.y) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
-            ' fdata rows after removing duplicate `', featureidvar, '` entries')
+            ' fdata rows after removing duplicate `', by.y, '` entries')
     if (!is.null(featurenamevar))  setnames(dt, featurenamevar, 'feature_name')
 # Rm duplicate cols
     duplicate_cols <- setdiff(intersect(svars(object), names(dt)), 'feature_id')
     fdata(object)[duplicate_cols] <- NULL
 # Merge
     fdata(object) %<>% merge(
-        dt, by.x = 'feature_id', by.y = featureidvar, all.x = TRUE, sort = FALSE)
+        dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
     rownames(fdata(object)) <- fdata(object)$feature_id # merging drops rownames
 # Return
     leadcols <- c('feature_id', 'feature_name')
@@ -521,8 +522,9 @@ merge_fdata <- function(object, dt, featureidvar = names(dt)[1],
 #'
 #' Add sdata from file or sampleids
 #' @param object       SummarizedExperiment
-#' @param samplefile  samplefile path
-#' @param sampleidvar  sampleidvar or NULL
+#' @param samplefile   samplefile path
+#' @param by.x         object mergevar
+#' @param by.y         samplefile mergevvar
 #' @param subgroupvar  subgroupvar or NULL
 #' @param verbose      TRUE (default) or FALSE
 #' @examples
@@ -537,32 +539,30 @@ merge_fdata <- function(object, dt, featureidvar = names(dt)[1],
 #'    merge_samplefile(object, samplefile)
 #'@export
 merge_samplefile <- function(object, samplefile = NULL,
-    sampleidvar = NULL, subgroupvar = NULL, verbose = TRUE
+    by.x = 'sample_id', by.y = NULL, subgroupvar = NULL, verbose = TRUE
 ){
-    if (file_exists(samplefile)){
-        if (verbose) message(
-            '\t\tMerge sdata: ', samplefile)
-        dt <- fread(samplefile)
-        if (is.null(sampleidvar))  sampleidvar <- names(dt)[1]
-        object %<>% merge_sdata(dt, sampleidvar = sampleidvar,
-                                subgroupvar = subgroupvar, verbose = verbose)
-    }
+    if (is.null(samplefile))  return(object)
+    assert_all_are_existing_files(samplefile)
+    if (verbose) message('\t\tMerge sdata: ', samplefile)
+    dt <- fread(samplefile)
+    if (is.null(by.y))  by.y <- names(dt)[1]
+    object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y,
+                        subgroupvar = subgroupvar, verbose = verbose)
     object
 }
 
 #' @rdname merge_samplefile
 #' @export
 merge_featurefile <- function(object, featurefile = NULL,
-    featureidvar = NULL, featurenamevar = NULL, verbose = TRUE
+    by.x = 'feature_id', by.y = NULL, featurenamevar = NULL, verbose = TRUE
 ){
-    if (file_exists(featurefile)){
-        if (verbose) message(
-            '\t\tMerge fdata: ', featurefile)
-        dt <- fread(featurefile)
-        if (is.null(featureidvar))  featureidvar <- names(dt)[1]
-        object %<>% merge_fdata(dt, featureidvar = featureidvar,
-                                featurenamevar = featurenamevar, verbose = verbose)
-    }
+    if (is.null(featurefile))  return(object)
+    assert_all_are_existing_files(featurefile)
+    if (verbose) message('\t\tMerge fdata: ', featurefile)
+    dt <- fread(featurefile)
+    if (is.null(by.y))  by.y <- names(dt)[1]
+    object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y,
+                            featurenamevar = featurenamevar, verbose = verbose)
     object
 }
 

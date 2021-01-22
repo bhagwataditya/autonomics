@@ -950,8 +950,8 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 # Create sumexp
     object <- matrix2sumexp(exprs1, featuredata = fdata1)
     object$subgroup <- NULL
-    object %<>% merge_samplefile(samplefile = samplefile,
-                        sampleidvar = sampleidvar, subgroupvar  = subgroupvar)
+    object %<>% merge_samplefile(samplefile = samplefile, by.x = 'sample_id',
+                        by.y = sampleidvar, subgroupvar  = subgroupvar)
     object %<>% add_subgroup(verbose=verbose)
 # Filter/Transform
     object %<>% filter_maxquant_samples(

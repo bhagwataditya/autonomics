@@ -8,7 +8,8 @@
 merge_samplefile(
   object,
   samplefile = NULL,
-  sampleidvar = NULL,
+  by.x = "sample_id",
+  by.y = NULL,
   subgroupvar = NULL,
   verbose = TRUE
 )
@@ -16,7 +17,8 @@ merge_samplefile(
 merge_featurefile(
   object,
   featurefile = NULL,
-  featureidvar = NULL,
+  by.x = "feature_id",
+  by.y = NULL,
   featurenamevar = NULL,
   verbose = TRUE
 )
@@ -26,7 +28,9 @@ merge_featurefile(
 
 \item{samplefile}{samplefile path}
 
-\item{sampleidvar}{sampleidvar or NULL}
+\item{by.x}{object mergevar}
+
+\item{by.y}{samplefile mergevvar}
 
 \item{subgroupvar}{subgroupvar or NULL}
 

@@ -7,7 +7,8 @@
 merge_sdata(
   object,
   dt,
-  sampleidvar = names(dt)[1],
+  by.x = "sample_id",
+  by.y = names(dt)[1],
   subgroupvar = NULL,
   verbose = TRUE
 )
@@ -15,13 +16,13 @@ merge_sdata(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{sampleidvar}{sampleid var}
+\item{by.x}{object mergevar}
+
+\item{by.y}{df mergevar}
 
 \item{verbose}{TRUE/FALSE}
 
 \item{df}{data.frame, data.table, DataFrame}
-
-\item{featureidvar}{featureid var}
 
 \item{...}{used to maintain deprecated merge_(s|f)data}
 }

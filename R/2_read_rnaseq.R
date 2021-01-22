@@ -527,7 +527,7 @@ count_reads <- function(files, paired, nthreads, genome){
     rowData(object)  <- fcounts$annotation
     object$sample_id <- sample_names
     object %<>% merge_samplefile( samplefile = samplefile,
-        sampleidvar = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
+        by.x = 'sample_id', by.y = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
 # Return
     object
 }
@@ -551,10 +551,10 @@ count_reads <- function(files, paired, nthreads, genome){
     object <- matrix2sumexp(counts1, featuredata = fdata1, featureidvar=fid_col)
     assayNames(object)[1] <- 'counts'
 # sumexp
-    object %<>% merge_samplefile(samplefile = samplefile,
-                     sampleidvar = sampleidvar, subgroupvar = subgroupvar)
-    object %<>% merge_featurefile(featurefile = featurefile,
-                     featureidvar = featureidvar, featurenamevar=featurenamevar)
+    object %<>% merge_samplefile(samplefile = samplefile, by.x = 'sample_id',
+                     by.y = sampleidvar, subgroupvar = subgroupvar)
+    object %<>% merge_featurefile(featurefile = featurefile, by.x='feature_id',
+                     by.y = featureidvar, featurenamevar=featurenamevar)
     metadata(object)$platform <- 'rnaseq'
     object$subgroup %<>% make.names()
     object$subgroup %<>% factor()
