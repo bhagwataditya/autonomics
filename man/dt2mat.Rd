@@ -2,9 +2,12 @@
 % Please edit documentation in R/1_sumexp_to_dt.R
 \name{dt2mat}
 \alias{dt2mat}
-\title{data.table to matrix}
+\alias{mat2dt}
+\title{`data.table` to `matrix`}
 \usage{
 dt2mat(dt)
+
+mat2dt(x, idvar)
 }
 \arguments{
 \item{dt}{data.table}
@@ -13,11 +16,11 @@ dt2mat(dt)
 matrix
 }
 \description{
-Convert data.table to matrix
+Convert between `data.table` and `matrix`
 }
 \details{
-Takes first column to be matrix rownames and \cr
-remaining columns to be matrix values
+Takes first data.table column to be matrix rownames and \cr
+remaining data.table columns to be matrix values
 }
 \examples{
 dt <- data.table::data.table(
@@ -25,4 +28,5 @@ dt <- data.table::data.table(
         sampleA = c(1787, 10, 432),
         sampleB = c(1143,  3, 268))
 dt2mat(dt)
+mat2dt(dt2mat(dt), 'gene')
 }

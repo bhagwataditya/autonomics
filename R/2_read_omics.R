@@ -459,10 +459,12 @@ split_values <- function(x){
 merge_sdata <- function(object, dt, by.x = 'sample_id',
     by.y = names(dt)[1], subgroupvar = NULL, verbose=TRUE
 ){
-    sdata(object) %<>% merge_sdata(dt, by.x = by.x, by.y = by.y,
-                                   groupvar = subgroupvar, verbose = verbose)
-    if (!is.null(groupvar))  names(sdata(object)) %<>%
+    sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
+    if (!is.null(subgroupvar))  names(sdata(object)) %<>%
                         stri_replace_first_fixed(subgroupvar, 'subgroup')
+    leadcols <- c('sample_id', 'subgroup')
+    leadcols %<>% intersect(names(sdata(object)))
+    sdata(object) %<>% pull_columns(leadcols)
     object
 }
 
@@ -471,38 +473,40 @@ merge_sdata <- function(object, dt, by.x = 'sample_id',
 merge_fdata <- function(object, dt, by.x = 'feature_id',
     by.y = names(dt)[1], featurenamevar = NULL, verbose=TRUE
 ){
-    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y,
-                                  namevar = featurenamevar, verbose = verbose)
-    if (!is.null(groupvar))  names(fdata(object)) %<>%
+    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
+    if (!is.null(featurenamevar))  names(fdata(object)) %<>%
                         stri_replace_first_fixed(featurenamevar, 'featurename')
+    leadcols <- c('feature_id', 'feature_name')
+    leadcols %<>% intersect(names(fdata(object)))
+    fdata(object) %<>% pull_columns(leadcols)
     object
 }
 
 
-merge_data <- function(objectdt, dt, dim, by.x, by.y){
+merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 # Assert
-    assert_is_all_of(objectdt, 'data.table')
+    assert_is_any_of(objectdt,c('data.frame', 'DataFrame'))
     if (is.null(dt))  return(objectdt)
-    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-# Convert dt to data.table  (as.data.frame required to avoid error!)
-    dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
-    if (!by.y %in% names(dt))  setnames(dt, 'rn', by.y)
-    if ('rn' %in% names(dt) & by.y != 'rn')  dt[, rn := NULL]
-    n0 <- nrow(dt)
+    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame'))
+# Convert to data.table
+    # First convert DataFrame to dataframe
+    # to avoid error: data.table::data.table(S4Vectors::DataFrame(a=1, b=2))
+    if (is(dt, 'DataFrame'))  dt %<>% as.data.frame()
+    # Then convert dataframe to data.table
+    dt %<>% as.data.table()
 # Rm duplicate keys
+    n0 <- nrow(dt)
     dt %<>% unique(by = by.y) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
             ' rows after removing duplicate `', by.y, '` entries')
 # Rm duplicate cols
-    duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), 'id')
+    duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
     objectdt[duplicate_cols] <- NULL
 # Merge
+    rownames1 <- rownames(objectdt)
     objectdt %<>% merge(dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
-    rownames(objectdt) <- objectdt$id # merging drops rownames
+    rownames(objectdt) <- rownames1 # merging drops rownames
 # Return
-    leadcols <- c('id', 'name')
-    leadcols %<>% intersect(names(objectdt))
-    objectdt %<>% pull_columns(leadcols)
     objectdt
 }
 

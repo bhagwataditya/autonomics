@@ -135,8 +135,8 @@ pca <- function(
     colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
     metadata(object)$pca <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
@@ -146,11 +146,49 @@ pca <- function(
     object
 }
 
+#' @rdname pca
+#' @export
+pls <- function(
+    object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...
+){
+# Assert
+    if (!requireNamespace('mixOmics', quietly = TRUE)){
+        stop("BiocManager::install('mixOmics'). Then re-run.")
+        return(object)
+    }
+    assert_is_valid_sumexp(object)
+    if (is.infinite(ndim)) ndim <- ncol(object)
+    assert_is_a_number(ndim)
+    assert_all_are_in_range(ndim, 1, ncol(object))
+    assert_is_a_number(minvar)
+    assert_all_are_in_range(minvar, 0, 100)
+    . <- NULL
+# Transform
+    x <- t(exprs(object))
+    y <- subgroup_values(object)
+    pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
+    samples   <- pls_out$variates$X
+    features  <- pls_out$loadings$X
+    variances <- round(100*pls_out$explained_variance$X)
+    colnames(samples)  <- sprintf('pls%d', seq_len(ncol(samples)))
+    colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
+    names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
+# Add
+    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
+    metadata(object)$pls <- variances
+# Filter for minvar
+    object %<>% .filter_minvar('pls', minvar)
+# Return
+    pls1 <- pls2 <- NULL
+    if (plot)  print(biplot(object, pls1, pls2, ...))
+    object
+}
 
 
 #' @rdname pca
 #' @export
-sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=TRUE, ...){
+sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
@@ -240,54 +278,14 @@ lda <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Merge
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
-    metadata(object)$sma <- variances
+    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
+    metadata(object)$lda <- variances
 # Filter for minvar
     object %<>% .filter_minvar('lda', minvar)
 # Return
     lda1 <- lda2 <- NULL
     if (plot)  print(biplot(object, lda1, lda2, ...))
-    object
-}
-
-
-#' @rdname pca
-#' @export
-pls <- function(
-    object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...
-){
-# Assert
-    if (!requireNamespace('mixOmics', quietly = TRUE)){
-        stop("BiocManager::install('mixOmics'). Then re-run.")
-        return(object)
-    }
-    assert_is_valid_sumexp(object)
-    if (is.infinite(ndim)) ndim <- ncol(object)
-    assert_is_a_number(ndim)
-    assert_all_are_in_range(ndim, 1, ncol(object))
-    assert_is_a_number(minvar)
-    assert_all_are_in_range(minvar, 0, 100)
-    . <- NULL
-# Transform
-    x <- t(exprs(object))
-    y <- subgroup_values(object)
-    pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
-    samples   <- pls_out$variates$X
-    features  <- pls_out$loadings$X
-    variances <- round(100*pls_out$explained_variance$X)
-    colnames(samples)  <- sprintf('pls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
-# Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
-    metadata(object)$pls <- variances
-# Filter for minvar
-    object %<>% .filter_minvar('pls', minvar)
-# Return
-    pls1 <- pls2 <- NULL
-    if (plot)  print(biplot(object, pls1, pls2, ...))
     object
 }
 

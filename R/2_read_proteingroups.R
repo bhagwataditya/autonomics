@@ -1,24 +1,3 @@
-#============================================================================
-#
-#                            Constants
-#
-#============================================================================
-
-
-#' proteingroup fvars
-#' @noRd
-PROTEINGROUP_FVARS <- c(
-    'id', 'Majority protein IDs', 'Protein names', 'Gene names',
-    'Contaminant', 'Potential contaminant', 'Reverse', 'Phospho (STY) site IDs')
-
-
-#' phosphosites fvars
-#' @noRd
-PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
-    'Gene names', 'Positions within proteins', 'Localization prob', 'Reverse',
-    'Potential contaminant', 'Contaminant')
-
-
 #===========================================================================
 #
 #                            Getters/Setters
@@ -41,33 +20,87 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 setGeneric('occupancies', function(object)   standardGeneric("occupancies"))
 
 #' @rdname occupancies
-setMethod(
-    "occupancies",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$occupancies)
+setMethod("occupancies", signature("SummarizedExperiment"),
+function(object)   assays(object)$occupancies)
 
 
 #' @rdname occupancies
 #' @export
-setGeneric(
-    'occupancies<-',
-    function(object, value) standardGeneric("occupancies<-"))
+setGeneric('occupancies<-',
+function(object, value) standardGeneric("occupancies<-"))
 
 #' @rdname occupancies
-setReplaceMethod(
-    "occupancies",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$occupancies <- value
-        object })
+setReplaceMethod("occupancies", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$occupancies <- value
+    object })
 
 #' @rdname occupancies
-setReplaceMethod(
-    "occupancies",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$occupancies[] <- value
-        object })
+setReplaceMethod("occupancies", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$occupancies[] <- value
+    object })
+
+
+
+#' @title Get/Set proteingroups
+#' @description Get / Set proteingroups matrix
+#' @param object SummarizedExperiment
+#' @param value occupancy matrix (features x samples)
+#' @return occpuancy matrix (get) or updated object (set)
+#' @examples
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' object <- read_phosphosites(phosphofile, proteinfile)
+#' exprs(object)[1:3, 1:3]
+#' proteingroups(object)[1:3, 1:3]
+#' @rdname proteingroups
+#' @export
+setGeneric('proteingroups', function(object)   standardGeneric("proteingroups"))
+
+#' @rdname proteingroups
+setMethod("proteingroups", signature("SummarizedExperiment"),
+function(object)   assays(object)$proteingroups)
+
+
+#' @rdname proteingroups
+#' @export
+setGeneric('proteingroups<-',
+function(object, value) standardGeneric("proteingroups<-"))
+
+#' @rdname proteingroups
+setReplaceMethod("proteingroups", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$proteingroups <- value
+    object })
+
+#' @rdname proteingroups
+setReplaceMethod("proteingroups", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$proteingroups[] <- value
+    object })
+
+
+
+#============================================================================
+#
+#                            Constants
+#
+#============================================================================
+
+
+#' proteingroup fvars
+#' @noRd
+PROTEINGROUP_FVARS <- c(
+    'id', 'Majority protein IDs', 'Protein names', 'Gene names',
+    'Contaminant', 'Potential contaminant', 'Reverse', 'Phospho (STY) site IDs')
+
+
+#' phosphosites fvars
+#' @noRd
+PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
+    'Gene names', 'Positions within proteins', 'Localization prob', 'Reverse',
+    'Potential contaminant', 'Contaminant')
 
 
 #==============================================================================
@@ -1041,7 +1074,7 @@ filter_maxquant_samples <- function(object, select_subgroups, verbose){
 transform_maxquant <- function(object, impute, verbose, plot){
 # Remove batch effect
     if (verbose) message('\tTransform exprs')
-    if (grepl('Reporter intensity', assayNames(object)[1])){
+    if (grepl('Reporter intensity', metadata(object)$quantity)){
         message('\t\tTMT: rm run effect')
         suppressWarnings(exprs(object) %<>% limma::removeBatchEffect(
                                                 batch = object$replicate))
@@ -1053,7 +1086,7 @@ transform_maxquant <- function(object, impute, verbose, plot){
 
 #==============================================================================
 #
-#                  add_occupancies
+#                  subtract_proteingroups
 #
 #==============================================================================
 
@@ -1071,46 +1104,46 @@ phospho_expr_columns <- function(x, quantity){
 }
 
 
-add_occupancies <- function(phosphosites, proteingroups, verbose){
+subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 # Initialize
-    . <- phospho_value <- protein_value <- occupancy <- NULL
+    . <- phospho <- protein <- occupancy <- NULL
     `Protein group IDs` <- NULL
 # Report
     if (verbose) message(
         '\t\tAdd occupancies(phospho) = exprs(phospho) - exprs(proteins)')
 # phospho datatable
     cols <- c('feature_id', 'Protein group IDs')
-    phospho_dt <- sumexp_to_wide_dt(phosphosites, fvars = 'Protein group IDs')
-    phospho_dt %<>% separate_rows(`Protein group IDs`, sep = ';' )
-    phospho_dt %<>% data.table()
-    phospho_dt %<>% data.table::melt.data.table(
+    fosdt <- sumexp_to_wide_dt(phosphosites, fvars = 'Protein group IDs')
+    fosdt %<>% separate_rows(`Protein group IDs`, sep = ';' )
+    fosdt %<>% data.table()
+    fosdt %<>% data.table::melt.data.table(
         id.vars = c('feature_id', 'Protein group IDs'))
-    setnames(phospho_dt,
+    setnames(fosdt,
         c('feature_id', 'Protein group IDs', 'variable',  'value'),
-        c('phospho_id', 'protein_id',        'sample_id', 'phospho_value'))
+        c('phospho_id', 'protein_id',        'sample_id', 'phospho'))
 # proteingroups datatable
     protein_dt <- sumexp_to_long_dt(proteingroups)
     setnames(
-        protein_dt,c('feature_id', 'value'), c('protein_id', 'protein_value'))
+        protein_dt,c('feature_id', 'value'), c('protein_id', 'protein'))
 # merge
-    phospho_dt %<>% merge(  protein_dt,
+    fosdt %<>% merge(  protein_dt,
                             by = c('protein_id', 'sample_id'), all.x = TRUE)
-    phospho_dt %<>% extract(,
-                        .(  phospho_value = unique(phospho_value),
-                            protein_value = median(protein_value, na.rm = TRUE),
+    fosdt %<>% extract(,
+                        .(  phospho  = unique(phospho),
+                            protein = median(protein, na.rm = TRUE),
                             subgroup      = unique(subgroup)),
                         by = c('phospho_id', 'sample_id') )
-    phospho_dt[ is.na(protein_value), protein_value := 0 ]
+    fosdt[ is.na(protein), protein := 0 ]
 # compute occupancy
-    phospho_dt[, occupancy := phospho_value - protein_value]
-    phospho_dt %<>% data.table::dcast(
-                        phospho_id ~ sample_id, value.var = 'occupancy')
-    occupancy_mat <- dt2mat(phospho_dt)
-    rownames(occupancy_mat) <- phospho_dt[[1]]
-    occupancy_mat %<>% extract(, snames(phosphosites))
-    occupancy_mat %<>% extract(fnames(phosphosites), )
-    occupancies(phosphosites) <- occupancy_mat
-
+    fosdt[, occupancy := phospho - protein]
+    occ <- dt2mat(dcast(fosdt, phospho_id ~ sample_id, value.var = 'occupancy'))
+    pgs <- dt2mat(dcast(fosdt, phospho_id ~ sample_id, value.var = 'protein'))
+    assert_are_identical(rownames(phosphosites), rownames(occ))
+    assert_are_identical(rownames(phosphosites), rownames(pgs))
+    assert_are_identical(colnames(phosphosites), colnames(occ))
+    assert_are_identical(colnames(phosphosites), colnames(pgs))
+    proteingroups(phosphosites) <- pgs
+    occupancies(phosphosites)   <- occ
     phosphosites
 }
 
@@ -1121,7 +1154,7 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
 #                   read_proteingroups
 #                   read_phosphosites
 #                       phospho_expr_columns
-#                       add_occupancies
+#                       subtract_proteingroups
 #
 #==============================================================================
 
@@ -1172,7 +1205,8 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
     object %<>% log2transform(verbose=verbose)
     object %<>% invert(invert_subgroups)
 # Return
-    assayNames(object)[1] <- paste0('maxquant ', quantity)
+    assayNames(object)[1] <- 'maxquant'
+    metadata(object)$quantity <- quantity
     metadata(object)$file <- file
     object
 }
@@ -1199,6 +1233,8 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
 #' @param impute            whether to impute consistent nondetects (TRUE/FALSE)
 #' @param formula           formula to create design matrix (using svars)
 #' @param contrastdefs      contrast definition vector/matrix/list
+#' @param pca               TRUE/FALSE
+#' @param limma             TRUE/FALSE
 #' @param verbose           TRUE/FALSE
 #' @param plot              TRUE/FALSE
 #' @return SummarizedExperiment
@@ -1218,7 +1254,7 @@ add_occupancies <- function(phosphosites, proteingroups, verbose){
 #'
 #' # Internal Standard Ratios: rm meaningless ratios
 #'     file <-  download_data('billing19.proteingroups.txt')
-#'     select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')))
+#'     select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #'     select_subgroups %<>% paste0('_STD')
 #'     object <- read_proteingroups(file, select_subgroups = select_subgroups)
 #'
@@ -1245,7 +1281,7 @@ read_proteingroups <- function(
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
-    verbose = TRUE, plot = TRUE
+    pca = TRUE, limma = TRUE, verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(proteinfile)
@@ -1264,9 +1300,10 @@ read_proteingroups <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
 # Analyze
-    object %<>% pca()
-    object %<>% add_limma(formula = eval_tidy(formula),
-                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
+    if (pca)    object %<>% pca()
+    if (limma)  object %<>% add_limma(formula = eval_tidy(formula),
+                                contrastdefs  = eval_tidy(contrastdefs),
+                                plot = FALSE)
 # Return
     if (plot)  plot_samples(object)
     object
@@ -1278,13 +1315,13 @@ read_phosphosites <- function(
     phosphofile,
     proteinfile = paste0(dirname(phosphofile), '/proteinGroups.txt'),
     quantity = guess_maxquant_quantity(phosphofile),
-    samplefile = default_samplefile(proteinfile),
+    samplefile = NULL,
     select_subgroups = NULL,
     contaminants = FALSE, reverse = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
     formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
     contrastdefs = contrast_subgroups(object),
-    verbose      = TRUE, plot = TRUE
+    pca = TRUE, limma = TRUE, verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
@@ -1293,24 +1330,26 @@ read_phosphosites <- function(
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
 # Read
-    proteingroups <- .read_maxquant(file=proteinfile, quantity = quantity,
+    prot <- .read_maxquant(file=proteinfile, quantity = quantity,
         samplefile = samplefile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose=verbose)
     object  <- .read_maxquant(file = phosphofile, quantity = quantity,
         samplefile = samplefile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose = verbose)
+    assayNames(prot)[1]   %<>% gsub('maxquant', 'proteingroups', ., fixed=TRUE)
+    assayNames(object)[1] %<>% gsub('maxquant', 'phosphosites',  ., fixed=TRUE)
     object %<>% filter_maxquant_features(
                     reverse = reverse, contaminants = contaminants,
                     min_localization_prob = min_localization_prob,
                     verbose = verbose)
-    object %<>% add_occupancies(proteingroups, verbose)
+    object %<>% subtract_proteingroups(prot, verbose)
 # Prepare
     object %<>% rename_phospho_fvars()
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
 # Contrast
-    object %<>% pca()
-    object %<>% add_limma(formula = eval_tidy(formula),
+    if (pca)   object %<>% pca()
+    if (limma) object %<>% add_limma(formula = eval_tidy(formula),
                     contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
 # Return
     if (plot)  plot_samples(object)

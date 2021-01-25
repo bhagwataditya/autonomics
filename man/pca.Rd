@@ -2,18 +2,18 @@
 % Please edit documentation in R/4_pca.R
 \name{pca}
 \alias{pca}
+\alias{pls}
 \alias{sma}
 \alias{lda}
-\alias{pls}
 \title{Add PCA, SMA, LDA, PLS}
 \usage{
 pca(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
-sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = TRUE, ...)
+pls(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...)
+
+sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
 lda(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
-
-pls(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

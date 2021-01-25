@@ -29,6 +29,8 @@ read_proteingroups(
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
+  pca = TRUE,
+  limma = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -37,7 +39,7 @@ read_phosphosites(
   phosphofile,
   proteinfile = paste0(dirname(phosphofile), "/proteinGroups.txt"),
   quantity = guess_maxquant_quantity(phosphofile),
-  samplefile = default_samplefile(proteinfile),
+  samplefile = NULL,
   select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
@@ -46,6 +48,8 @@ read_phosphosites(
   invert_subgroups = character(0),
   formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
   contrastdefs = contrast_subgroups(object),
+  pca = TRUE,
+  limma = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -81,6 +85,10 @@ read_phosphosites(
 
 \item{contrastdefs}{contrast definition vector/matrix/list}
 
+\item{pca}{TRUE/FALSE}
+
+\item{limma}{TRUE/FALSE}
+
 \item{plot}{TRUE/FALSE}
 
 \item{phosphofile}{phosphosites  file path}
@@ -109,7 +117,7 @@ Read proteingroups/phosphosites
 
 # Internal Standard Ratios: rm meaningless ratios
     file <-  download_data('billing19.proteingroups.txt')
-    select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')))
+    select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
     select_subgroups \%<>\% paste0('_STD')
     object <- read_proteingroups(file, select_subgroups = select_subgroups)
 
