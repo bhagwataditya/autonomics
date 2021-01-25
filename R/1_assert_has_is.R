@@ -76,7 +76,7 @@ has_valid_fnames <- function(x, .xname = get_name_in_parent(x)){
         return(false('fnames(%s) are NULL', .xname))}
 
     if (!all(fnames(x) == fdata(x)$feature_id)){
-        return(false('fnames(%s) != rownames(fdata(%s))', .xname, .xname))}
+        return(false('fnames(%s) != fdata(%s)$feature_id', .xname, .xname))}
 
     #if (!all(fnames(x) == rownames(exprs(x)))){
     #    return(false('fnames(%s) != rownames(exprs(%s))', .xname, .xname))}
@@ -94,7 +94,7 @@ has_valid_snames <- function(x, .xname = get_name_in_parent(x)){
         return(false('snames(%s) are NULL', .xname))}
 
     if (!all(snames(x) == sdata(x)$sample_id)){
-        return(false('snames(%s) != colnames(sdata(%s))', .xname, .xname))}
+        return(false('snames(%s) != sdata(%s)$sample_id', .xname, .xname))}
 
     #if (!all(snames(x) == colnames(exprs(x)))){
     #    return(false('snames(%s) != colnames(exprs(%s))', .xname, .xname))}

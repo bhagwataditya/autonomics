@@ -395,20 +395,27 @@ opls <- function(
 
 
 add_scores <- function(
-    p, object, x = pca1, y = pca2, color = subgroup, ...,
+    p, object, x = pca1, y = pca2, color = subgroup, group = NULL, ...,
     fixed = list(shape=15, size=3)
 ){
     x     <- enquo(x)
     y     <- enquo(y)
     color <- enquo(color)
+    group <- enquo(group)
 
-    p + layer(  geom = 'point',
+    p <- p + layer(  geom = 'point',
                 mapping = aes(x = !!x, y = !!y, color = !!color, ...),
                 stat    = "identity",
                 data    = sdata(object),
                 params  = fixed,
                 position= 'identity')
-
+    if (!quo_is_null(group)) p <- p + layer(geom = 'path',
+          mapping  = aes(x = !!x, y = !!y, color = !!color, group = !!group),
+          stat     = "identity",
+          data    = sdata(object),
+          params   = list(size=1),
+          position = 'identity')
+    p
 }
 
 
@@ -471,26 +478,34 @@ add_loadings <- function(
 #' @param y              pca2, etc.
 #' @param color          svar mapped to color (symbol)
 #' @param label          svar mapped to label (symbol)
+#' @param group          svar mapped to group
 #' @param ...            additional svars mapped to aesthetics
 #' @param feature_label  fvar mapped to (loadings) label
 #' @param fixed          fixed plot aesthetics
 #' @param nloadings      number of loadings per half-axis to plot
 #' @return ggplot object
 #' @examples
-#' require(magrittr)
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% pca(plot=FALSE, ndim=4)
-#' object %<>% pls(plot=FALSE)
-#' biplot(object)
-#' biplot(object, pca3, pca4)
-#' biplot(object, pls1, pls2)
-#' biplot(object, nloadings=1)
-#' biplot(object, color = TIME_POINT)
-#' biplot(object, color = NULL)
+#' # halama18
+#'     require(magrittr)
+#'     file <- download_data('halama18.metabolon.xlsx')
+#'     object <- read_metabolon(file, plot = FALSE)
+#'     object %<>% pca(plot=FALSE, ndim=4)
+#'     object %<>% pls(plot=FALSE)
+#'     biplot(object)
+#'     biplot(object, pca3, pca4)
+#'     biplot(object, pls1, pls2)
+#'     biplot(object, nloadings=1)
+#'     biplot(object, color = TIME_POINT)
+#'     biplot(object, color = NULL)
+#'
+#' # atkin18
+#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    object <- read_metabolon(file)
+#'    biplot(object)
+#'    biplot(object, color=SUB, group=SUB)
 #' @export
-biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
-    feature_label = feature_name, ...,
+biplot <- function(object, x=pca1, y=pca2, color = subgroup, group = NULL,
+    label = NULL, feature_label = feature_name, ...,
     fixed = list(shape=15, size=3), nloadings = 0
 ){
     x     <- enquo(x)
@@ -506,6 +521,7 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
     #object %<>% get(methodx)(ndim=xdim, verbose = FALSE)
     #object %<>% get(methody)(ndim=ydim, verbose = FALSE)
     color <- enquo(color)
+    group <- enquo(group)
     feature_label <- enquo(feature_label)
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
@@ -519,7 +535,8 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, label = NULL,
     p <- p + ggtitle(paste0(xstr, ':', ystr))
     p %<>% add_loadings(
             object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
-    p %<>% add_scores(object, !!x, !!y, color = !!color, !!!dots, fixed = fixed)
+    p %<>% add_scores(object, !!x, !!y, color = !!color, group = !!group,
+                      !!!dots, fixed = fixed)
     p %<>% add_color_scale(!!color, data = sdata(object))
 
     if (!quo_is_null(label)){

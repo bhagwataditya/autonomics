@@ -273,8 +273,30 @@ is_available_for_some_feature <- function(object){
 }
 
 
-
-
-
+#' Rm singleton samples
+#'
+#' @param object  SummarizedExperiment
+#' @param svar    sample var
+#' @param verbose TRUE/FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' require(magrittr)
+#' require(GEOquery)
+#' basedir <- '~/autonomicscache/datasets'
+#' subdir  <- '~/autonomicscache/datasets/GSE161731'
+#' if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
+#' file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
+#' samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+#' object <- .read_rnaseq_counts(
+#'             file, samplefile = samplefile, sampleidvar = 'rna_id')
+#' rm_singletons(object, 'subject_id')
+#' @export
+rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
+    selectedsamples <-
+        data.table(sdata(object))[, .SD[.N>1], by = svar][['sample_id']]
+    if (verbose)  cmessage('\t\t\tRetain %d/%d samples with replicated `%s`',
+                           length(selectedsamples), ncol(object), svar)
+    object[, selectedsamples]
+}
 
 

@@ -488,80 +488,6 @@ count_reads <- function(files, paired, nthreads, genome){
     fcounts
 }
 
-#==============================================================================
-#
-#                        .read_rnaseq_counts
-#                        .read_rnaseq_bams
-#
-#==============================================================================
-
-#' @rdname read_rnaseq_bams
-#' @export
-.read_rnaseq_bams <- function(
-    bamdir, paired, genome, nthreads = detectCores(),
-    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
-    verbose = TRUE
-){
-# Assert
-    assert_all_are_existing_files(bamdir)
-    assert_is_a_bool(paired)
-    assert_is_a_string(genome)
-    assert_is_a_number(nthreads)
-# Count reads
-    files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
-                        recursive = TRUE)
-    fcounts <- count_reads(files, paired, nthreads=nthreads, genome=genome)
-# Forge SummarizedExperiment
-    filenames   <- basename(file_path_sans_ext(files))
-    subdirnames <- basename(dirname(files))
-    sample_names <- if (has_no_duplicates(filenames)){           filenames
-                    } else if (has_no_duplicates(subdirnames)){  subdirnames
-                    } else {           paste0(subdirnames, '_', filenames)}
-    object <- SummarizedExperiment(assays = list(
-                counts = fcounts$counts %>% set_colnames(sample_names)))
-    metadata(object)$platform <- 'rnaseq'
-    metadata(object)$file <- bamdir
-# Add sample/feature data
-    message("\t\tAdd fdata")
-    fcounts$annotation$feature_id %<>% as.character()
-    rowData(object)  <- fcounts$annotation
-    object$sample_id <- sample_names
-    object %<>% merge_samplefile( samplefile = samplefile,
-        by.x = 'sample_id', by.y = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
-# Return
-    object
-}
-
-#' @rdname read_rnaseq_counts
-#' @export
-.read_rnaseq_counts <- function(file, fid_col = 1,
-    samplefile  = NULL, sampleidvar  = NULL, subgroupvar = NULL,
-    featurefile = NULL, featureidvar = NULL, featurenamevar = NULL,
-    verbose = TRUE
-){
-# scan
-    assert_all_are_existing_files(file)
-    if (verbose)  message('\tRead ', file)
-    dt <- fread(file, integer64 = 'numeric')
-    if (is.numeric(fid_col)) fid_col <- names(dt)[fid_col]
-    idx <- vapply(dt, is.integer, logical(1))
-    fdata1   <- dt[, !idx, with = FALSE]
-    counts1  <- as.matrix(dt[,  idx, with = FALSE])
-    rownames(counts1) <- fdata1[[fid_col]]
-    object <- matrix2sumexp(counts1, featuredata = fdata1, featureidvar=fid_col)
-    assayNames(object)[1] <- 'counts'
-# sumexp
-    object %<>% merge_samplefile(samplefile = samplefile, by.x = 'sample_id',
-                     by.y = sampleidvar, subgroupvar = subgroupvar)
-    object %<>% merge_featurefile(featurefile = featurefile, by.x='feature_id',
-                     by.y = featureidvar, featurenamevar=featurenamevar)
-    metadata(object)$platform <- 'rnaseq'
-    object$subgroup %<>% make.names()
-    object$subgroup %<>% factor()
-    object
-}
-
-
 
 
 #=============================================================================
@@ -710,7 +636,7 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
     object %<>% extract(idx, )
 # pseudocount
     if (pseudocount>0){
-        if (verbose)  message('\t\t\tadd pseudocount ', pseudocount)
+        if (verbose)  message('\t\t\tpseudocount ', pseudocount)
         counts(object) %<>% add(pseudocount) }
 # tpm
     if (!is.null(genesize)){
@@ -721,8 +647,9 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
 # cpm
     if (cpm){
         if (verbose)  message('\t\t\tcpm')
-        if (verbose)  message('\t\t\t\ttmm-scale lib.sizes')
+        if (verbose)  message('\t\t\t\tscale lib.sizes (tmm)')
         object$lib.size <- scaledlibsizes(counts(object))
+        if (verbose)  message('\t\t\t\tcpm')
         cpm(object) <- counts_to_cpm(counts(object), object$lib.size)
         other <- setdiff(assayNames(object), 'cpm')
         assays(object) %<>% extract(c('cpm', other)) }
@@ -731,14 +658,16 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
         if (verbose)  message('\t\t\tvoom')
         object %<>% add_voom(design, verbose=verbose, plot = plot & !is.null(block))
         if (!is.null(block)){
-            if (verbose)  message('\t\t\t\tvoom with block')
             object %<>% add_voom(design, block=block, verbose=verbose, plot=plot) }}
 # log2
     if (log2){
 	    if (verbose)  message('\t\t\tlog2')
-        for (i in seq_along(assays(object))){
-            assays(    object)[[i]] %<>% log2()
-            assayNames(object)[[i]] %<>% paste0('log2', .) }}
+        selectedassays <- c('counts','cpm','tpm')
+        selectedassays %<>% intersect(assayNames(object))
+        for (curassay in selectedassays){
+            i <- match(curassay, assayNames(object))
+                assays(object)[[i]] %<>% log2()
+            assayNames(object)[[i]] %<>% paste0('log2', .)}}
 # Return
     object
 }
@@ -755,13 +684,18 @@ add_voom <- function(
 # Prepare block
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
+        blockvar <- block
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$blockcor)){
-            if (verbose)  cmessage('\t\t\t\tCompute block correlations')
+            if (verbose)  cmessage('\t\t\t\tcorrelate `%s` replicates',
+                                   blockvar)
             metadata(object)$blockcor <- duplicateCorrelation(
                 log2(cpm(object)), design=design, block=block
             )$consensus.correlation }}
 # Run voom
+    txt <- if (is.null(block)) '\t\t\t\tvoom' else paste0(
+                                '\t\t\t\t`', blockvar, '`-blocked voom')
+    if (verbose) message(txt)
     weights <- voom(counts(object),
                     design      = design,
                     lib.size    = object$lib.size,
@@ -775,6 +709,81 @@ add_voom <- function(
     object
 }
 
+
+
+#==============================================================================
+#
+#                        .read_rnaseq_counts
+#                        .read_rnaseq_bams
+#
+#==============================================================================
+
+#' @rdname read_rnaseq_bams
+#' @export
+.read_rnaseq_bams <- function(
+    bamdir, paired, genome, nthreads = detectCores(),
+    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    verbose = TRUE
+){
+# Assert
+    assert_all_are_existing_files(bamdir)
+    assert_is_a_bool(paired)
+    assert_is_a_string(genome)
+    assert_is_a_number(nthreads)
+# Count reads
+    files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
+                        recursive = TRUE)
+    fcounts <- count_reads(files, paired, nthreads=nthreads, genome=genome)
+# Forge SummarizedExperiment
+    filenames   <- basename(file_path_sans_ext(files))
+    subdirnames <- basename(dirname(files))
+    sample_names <- if (has_no_duplicates(filenames)){           filenames
+                    } else if (has_no_duplicates(subdirnames)){  subdirnames
+                    } else {           paste0(subdirnames, '_', filenames)}
+    object <- SummarizedExperiment(assays = list(
+                counts = fcounts$counts %>% set_colnames(sample_names)))
+    metadata(object)$platform <- 'rnaseq'
+    metadata(object)$file <- bamdir
+# Add sample/feature data
+    message("\t\tAdd fdata")
+    fcounts$annotation$feature_id %<>% as.character()
+    rowData(object)  <- fcounts$annotation
+    object$sample_id <- sample_names
+    object %<>% merge_samplefile( samplefile = samplefile,
+        by.x = 'sample_id', by.y = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
+# Return
+    object
+}
+
+
+#' @rdname read_rnaseq_counts
+#' @export
+.read_rnaseq_counts <- function(file, fid_col = 1,
+    samplefile  = NULL, sampleidvar  = NULL, subgroupvar = NULL,
+    featurefile = NULL, featureidvar = NULL, featurenamevar = NULL,
+    verbose = TRUE
+){
+# scan
+    assert_all_are_existing_files(file)
+    if (verbose)  message('\tRead ', file)
+    dt <- fread(file, integer64 = 'numeric')
+    if (is.numeric(fid_col)) fid_col <- names(dt)[fid_col]
+    idx <- vapply(dt, is.integer, logical(1))
+    fdata1   <- dt[, !idx, with = FALSE]
+    counts1  <- as.matrix(dt[,  idx, with = FALSE])
+    rownames(counts1) <- fdata1[[fid_col]]
+    object <- matrix2sumexp(counts1, featuredata = fdata1, featureidvar=fid_col)
+    assayNames(object)[1] <- 'counts'
+# sumexp
+    object %<>% merge_samplefile(samplefile = samplefile, by.x = 'sample_id',
+                     by.y = sampleidvar, subgroupvar = subgroupvar)
+    object %<>% merge_featurefile(featurefile = featurefile, by.x='feature_id',
+                     by.y = featureidvar, featurenamevar=featurenamevar)
+    metadata(object)$platform <- 'rnaseq'
+    object$subgroup %<>% factor()
+    levels(object$subgroup) %<>% make.names()
+    object
+}
 
 
 #=============================================================================
@@ -885,7 +894,6 @@ read_rnaseq_bams <- function(
 #'     extract_limma_summary(object)
 #'
 #'# GSE161731
-#'    # Download
 #'    require(magrittr)
 #'    require(GEOquery)
 #'    basedir <- '~/autonomicscache/datasets'
@@ -893,31 +901,11 @@ read_rnaseq_bams <- function(
 #'    if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
 #'    file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
 #'    samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
-#'
-#'    # Read
-#'    .read_rnaseq_counts(file)
-#'    .read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id')
-#'    .read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id',
-#'                         subgroupvar = 'cohort')
-#'
-#'    # Read and analyze
-#'    read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id')
-#'    read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id',
-#'                        subgroupvar = 'cohort')
-#'
-#'    # Read and analyze with block effect
-#'    object <- .read_rnaseq_counts(file, samplefile = samplefile,
-#'                          sampleidvar = 'rna_id', subgroupvar = 'cohort')
-#'    object %<>% filter_samples(
-#'          subject_id %in% names(which(table(subject_id)>1)), verbose=TRUE)
-#'    object %<>% pca(plot=TRUE)
-#'    object %<>% filter_samples(subgroup != 'healthy')
-#'    object %<>% pca(plot=TRUE)
-#'    tail(fnames(object)) == tail(fdata(object)$feature_id)  # NEEDS FIX!
-#'    preprocess_rnaseq_counts(object, subgroupvar = 'cohort', block = 'subject_id')
-#'
-#'    read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id', subgroupvar = 'cohort', block = 'subject_id')
-#'    read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id', subgroupvar = 'gender')
+#'    object <- read_rnaseq_counts(file, samplefile = samplefile,
+#'        sampleidvar='rna_id', subgroupvar='gender')
+#'    # Computing correlation takes some time
+#'    # object <- read_rnaseq_counts(file, samplefile = samplefile,
+#'    #    sampleidvar='rna_id', subgroupvar = 'gender', block ='subject_id')
 #' @export
 read_rnaseq_counts <- function(
     file, fid_col = 1,

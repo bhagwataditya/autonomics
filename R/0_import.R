@@ -47,7 +47,7 @@
 #' @importFrom magrittr    set_colnames   set_names   set_rownames
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans
 #' @importFrom matrixStats   rowAlls   rowSds
-#' @importFrom methods       as
+#' @importFrom methods       as    is
 #' @importFrom MultiAssayExperiment  colData       colData<-
 #' @importFrom MultiAssayExperiment  experiments   experiments<-
 #' @importFrom MultiAssayExperiment  MultiAssayExperiment

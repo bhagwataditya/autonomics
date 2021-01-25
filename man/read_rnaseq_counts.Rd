@@ -97,7 +97,6 @@ Read tsv file with rnaseq counts into SummarizedExperiment
     extract_limma_summary(object)
 
 # GSE161731
-   # Download
    require(magrittr)
    require(GEOquery)
    basedir <- '~/autonomicscache/datasets'
@@ -105,29 +104,9 @@ Read tsv file with rnaseq counts into SummarizedExperiment
    if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
    file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
    samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
-
-   # Read
-   .read_rnaseq_counts(file)
-   .read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id')
-   .read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id',
-                        subgroupvar = 'cohort')
-
-   # Read and analyze
-   read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id')
-   read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id',
-                       subgroupvar = 'cohort')
-
-   # Read and analyze with block effect
-   object <- .read_rnaseq_counts(file, samplefile = samplefile,
-                         sampleidvar = 'rna_id', subgroupvar = 'cohort')
-   object \%<>\% filter_samples(
-         subject_id \%in\% names(which(table(subject_id)>1)), verbose=TRUE)
-   object \%<>\% pca(plot=TRUE)
-   object \%<>\% filter_samples(subgroup != 'healthy')
-   object \%<>\% pca(plot=TRUE)
-   tail(fnames(object)) == tail(fdata(object)$feature_id)  # NEEDS FIX!
-   preprocess_rnaseq_counts(object, subgroupvar = 'cohort', block = 'subject_id')
-
-   read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id', subgroupvar = 'cohort', block = 'subject_id')
-   read_rnaseq_counts(file, samplefile = samplefile, sampleidvar = 'rna_id', subgroupvar = 'gender')
+   object <- read_rnaseq_counts(file, samplefile = samplefile,
+       sampleidvar='rna_id', subgroupvar='gender')
+   # Computing correlation takes some time
+   # object <- read_rnaseq_counts(file, samplefile = samplefile,
+   #    sampleidvar='rna_id', subgroupvar = 'gender', block ='subject_id')
 }

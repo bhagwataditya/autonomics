@@ -178,7 +178,7 @@ read_phosphosite_rectangles <- function(
                     reverse = reverse, contaminants = contaminants,
                     min_localization_prob = min_localization_prob,
                     verbose = verbose)
-    object %<>% add_occupancies(proteingroups, verbose)
+    object %<>% subtract_proteingroups(proteingroups, verbose)
 # Prepare
     object %<>% rename_phospho_fvars()
     object %<>% simplify_proteingroups(fastafile)

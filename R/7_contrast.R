@@ -484,7 +484,9 @@ add_limma <- function(object, contrastdefs = contrast_subgroups(object),
     design(object)    <- design
     contrastdefs(object) <- contrastdefs
 # Prepare block
-    if (verbose)  cmessage('\t\tAdd limma')
+    if (verbose)  cmessage('\t\tAdd limma %s%s%s', deparse(formula),
+           if(is.null(block))            '' else paste0(' | ', block),
+           if(is.null(weights(object)))  '' else paste0(' (weights)'))
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
         block <- sdata(object)[[block]]
@@ -728,10 +730,13 @@ extract_limma_dt <- function(object){
 #'           object %<>% add_limma(formula=~0+subgroup+T2D, plot=FALSE)
 #'           extract_limma_summary(object)
 #' @export
-extract_limma_summary <- function(object)  extract_limma_dt(object)[,
-    .(ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
-      nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
-     by='contrast']
+extract_limma_summary <- function(object){
+    effect <- fdr <- NULL
+    extract_limma_dt(object)[,
+        .(ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
+          nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
+        by='contrast']
+}
 
 #=============================================================================
 #

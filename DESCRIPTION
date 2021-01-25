@@ -31,7 +31,6 @@ Imports:
   diagram,
   edgeR,
   GenomicRanges,
-  GEOquery,
   ggplot2,
   ggrepel,
   graphics,

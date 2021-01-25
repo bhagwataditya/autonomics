@@ -454,14 +454,13 @@ split_values <- function(x){
 #' object <- read_metabolon(file)
 #' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
-#' sdata(object)
+#' head(sdata(object))
 #'@export
 merge_sdata <- function(object, dt, by.x = 'sample_id',
     by.y = names(dt)[1], subgroupvar = NULL, verbose=TRUE
 ){
     sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
-    if (!is.null(subgroupvar))  names(sdata(object)) %<>%
-                        stri_replace_first_fixed(subgroupvar, 'subgroup')
+    if (!is.null(subgroupvar))  object$subgroup <- sdata(object)[[subgroupvar]]
     leadcols <- c('sample_id', 'subgroup')
     leadcols %<>% intersect(names(sdata(object)))
     sdata(object) %<>% pull_columns(leadcols)
@@ -474,8 +473,8 @@ merge_fdata <- function(object, dt, by.x = 'feature_id',
     by.y = names(dt)[1], featurenamevar = NULL, verbose=TRUE
 ){
     fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
-    if (!is.null(featurenamevar))  names(fdata(object)) %<>%
-                        stri_replace_first_fixed(featurenamevar, 'featurename')
+    if (!is.null(featurenamevar))  fdata(object)$featurename <-
+                                                fdata(object)[[featurenamevar]]
     leadcols <- c('feature_id', 'feature_name')
     leadcols %<>% intersect(names(fdata(object)))
     fdata(object) %<>% pull_columns(leadcols)
@@ -489,23 +488,30 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
     if (is.null(dt))  return(objectdt)
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame'))
 # Convert to data.table
+# Important: * both have to be data.table, because merge.data.frame
+#              and merge.data.frame are differently behaved!
+#            * as.data.table does not work directly on a DataFrame object!
+#              data.table::data.table(S4Vectors::DataFrame(a=1, b=2))
+    rownames1 <- rownames(objectdt)
+    objectdtclass <- class(objectdt)[1]
     # First convert DataFrame to dataframe
-    # to avoid error: data.table::data.table(S4Vectors::DataFrame(a=1, b=2))
-    if (is(dt, 'DataFrame'))  dt %<>% as.data.frame()
+        if (is(      dt, 'DataFrame'))        dt %<>% as.data.frame()
+        if (is(objectdt, 'DataFrame'))  objectdt %<>% as.data.frame()
     # Then convert dataframe to data.table
-    dt %<>% as.data.table()
+              dt %<>% as.data.table()
+        objectdt %<>% as.data.table()
 # Rm duplicate keys
     n0 <- nrow(dt)
     dt %<>% unique(by = by.y) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
             ' rows after removing duplicate `', by.y, '` entries')
-# Rm duplicate cols
+# Rm duplicate cols: https://stackoverflow.com/questions/9202413
     duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
-    objectdt[duplicate_cols] <- NULL
+    for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
 # Merge
-    rownames1 <- rownames(objectdt)
     objectdt %<>% merge(dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
-    rownames(objectdt) <- rownames1 # merging drops rownames
+    objectdt %<>% as(objectdtclass)
+    rownames(objectdt) <- objectdt[[by.x]] # merging drops rownames
 # Return
     objectdt
 }
@@ -576,7 +582,6 @@ add_subgroup <- function(object, verbose=TRUE){
     object$subgroup %<>% factor()
     object
 }
-
 
 #==============================================================================
 #

@@ -10,6 +10,7 @@ biplot(
   x = pca1,
   y = pca2,
   color = subgroup,
+  group = NULL,
   label = NULL,
   feature_label = feature_name,
   ...,
@@ -28,6 +29,8 @@ plot_biplot(...)
 
 \item{color}{svar mapped to color (symbol)}
 
+\item{group}{svar mapped to group}
+
 \item{label}{svar mapped to label (symbol)}
 
 \item{feature_label}{fvar mapped to (loadings) label}
@@ -45,15 +48,22 @@ ggplot object
 Biplot
 }
 \examples{
-require(magrittr)
-file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
-object \%<>\% pca(plot=FALSE, ndim=4)
-object \%<>\% pls(plot=FALSE)
-biplot(object)
-biplot(object, pca3, pca4)
-biplot(object, pls1, pls2)
-biplot(object, nloadings=1)
-biplot(object, color = TIME_POINT)
-biplot(object, color = NULL)
+# halama18
+    require(magrittr)
+    file <- download_data('halama18.metabolon.xlsx')
+    object <- read_metabolon(file, plot = FALSE)
+    object \%<>\% pca(plot=FALSE, ndim=4)
+    object \%<>\% pls(plot=FALSE)
+    biplot(object)
+    biplot(object, pca3, pca4)
+    biplot(object, pls1, pls2)
+    biplot(object, nloadings=1)
+    biplot(object, color = TIME_POINT)
+    biplot(object, color = NULL)
+
+# atkin18
+   file <- download_data('atkin18.metabolon.xlsx')
+   object <- read_metabolon(file)
+   biplot(object)
+   biplot(object, color=SUB, group=SUB)
 }
