@@ -7,16 +7,15 @@
 \usage{
 .read_metabolon(
   file,
-  sheet = find_origscale_sheet(file),
+  sheet = "OrigScale",
   fid_var = "(COMP|COMP_ID)",
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
-  subgroupvar = "Group",
-  fname_var = "BIOCHEMICAL"
+  subgroupvar = "Group"
 )
 
 read_metabolon(
   file,
-  sheet = find_origscale_sheet(file),
+  sheet = "OrigScale",
   fid_var = "(COMP|COMP_ID)",
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
   subgroupvar = "Group",

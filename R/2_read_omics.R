@@ -323,7 +323,7 @@ numerify   <- function(df){
             "\t\tRm ", sum(!idx), " samples with missing 'sample_id' values")
         sids1 <- sids1[idx]; sdata1 <- sdata1[idx, ]; exprs1 <- exprs1[, idx] }
 # Name features/samples
-    fids1 %<>% uniquify('make.unique'); sids1 %<>% uniquify('make.unique')
+    fids1 %<>% make.unique(); sids1 %<>% make.unique();
     rownames(exprs1) <- rownames(fdata1) <- fids1
     colnames(exprs1) <- rownames(sdata1) <- sids1
 # Wrap into Sumexp and return
@@ -459,40 +459,30 @@ split_values <- function(x){
 merge_sdata <- function(object, dt, by.x = 'sample_id',
     by.y = names(dt)[1], subgroupvar = NULL, verbose=TRUE
 ){
-# Assert
-    if (is.null(dt))  return(object)
-    assert_is_all_of(object,'SummarizedExperiment')
-    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
-# Convert dt to data.table  (as.data.frame required to avoid error!)
-    dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
-    if (!by.y %in% names(dt))  setnames(dt, 'rn', by.y)
-    if ('rn' %in% names(dt) & by.y != 'rn')  dt[, rn := NULL]
-    n0 <- nrow(dt)
-# Rm duplicate keys
-    dt %<>% unique(by = by.y) # keys should be unique!
-    if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
-            ' sdata rows after removing duplicate `', by.y, '` entries')
-    if (!is.null(subgroupvar))  setnames(dt, subgroupvar, 'subgroup')
-# Rm duplicate cols
-    duplicate_cols <- setdiff(intersect(svars(object), names(dt)), 'sample_id')
-    sdata(object)[duplicate_cols] <- NULL
-# Merge
-    sdata(object) %<>% merge(
-        dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
-    rownames(sdata(object)) <- sdata(object)$sample_id # merging drops rownames
-# Return
-    leadcols <- c('sample_id', 'subgroup', 'replicate')
-    leadcols %<>% intersect(svars(object))
-    sdata(object) %<>% pull_columns(leadcols)
+    sdata(object) %<>% merge_sdata(dt, by.x = by.x, by.y = by.y,
+                                   groupvar = subgroupvar, verbose = verbose)
+    if (!is.null(groupvar))  names(sdata(object)) %<>%
+                        stri_replace_first_fixed(subgroupvar, 'subgroup')
     object
 }
 
+#'@rdname merge_sdata
+#'@export
 merge_fdata <- function(object, dt, by.x = 'feature_id',
     by.y = names(dt)[1], featurenamevar = NULL, verbose=TRUE
 ){
+    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y,
+                                  namevar = featurenamevar, verbose = verbose)
+    if (!is.null(groupvar))  names(fdata(object)) %<>%
+                        stri_replace_first_fixed(featurenamevar, 'featurename')
+    object
+}
+
+
+merge_data <- function(objectdt, dt, dim, by.x, by.y){
 # Assert
-    if (is.null(dt))  return(object)
-    assert_is_all_of(object,'SummarizedExperiment')
+    assert_is_all_of(objectdt, 'data.table')
+    if (is.null(dt))  return(objectdt)
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame', 'matrix'))
 # Convert dt to data.table  (as.data.frame required to avoid error!)
     dt %<>% as.data.frame() %>% as.data.table(keep.rownames=TRUE)
@@ -502,21 +492,20 @@ merge_fdata <- function(object, dt, by.x = 'feature_id',
 # Rm duplicate keys
     dt %<>% unique(by = by.y) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
-            ' fdata rows after removing duplicate `', by.y, '` entries')
-    if (!is.null(featurenamevar))  setnames(dt, featurenamevar, 'feature_name')
+            ' rows after removing duplicate `', by.y, '` entries')
 # Rm duplicate cols
-    duplicate_cols <- setdiff(intersect(svars(object), names(dt)), 'feature_id')
-    fdata(object)[duplicate_cols] <- NULL
+    duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), 'id')
+    objectdt[duplicate_cols] <- NULL
 # Merge
-    fdata(object) %<>% merge(
-        dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
-    rownames(fdata(object)) <- fdata(object)$feature_id # merging drops rownames
+    objectdt %<>% merge(dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
+    rownames(objectdt) <- objectdt$id # merging drops rownames
 # Return
-    leadcols <- c('feature_id', 'feature_name')
-    leadcols %<>% intersect(svars(object))
-    fdata(object) %<>% pull_columns(leadcols)
-    object
+    leadcols <- c('id', 'name')
+    leadcols %<>% intersect(names(objectdt))
+    objectdt %<>% pull_columns(leadcols)
+    objectdt
 }
+
 
 #' Merge sample file
 #'

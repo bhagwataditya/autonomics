@@ -8,7 +8,7 @@
 #' @param svar   sample var
 #' @return logical
 #' @examples
-#' file <- load_data('halama18.metabolon.xlsx')
+#' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' has_complete_subgroup_values(object)
 #' has_complete_block_values(object)

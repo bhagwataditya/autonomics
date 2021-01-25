@@ -1,58 +1,5 @@
 #=============================================================================
 #
-#                             .read_somascan
-#
-#=============================================================================
-
-#' @rdname read_somascan
-#' @export
-.read_somascan <- function(
-    file, fidvar = 'SeqId', sidvar = 'SampleId', subgroupvar = 'SampleGroup'
-){
-# Assert
-    assert_all_are_existing_files(file)
-    assert_is_a_string(fidvar)
-    assert_is_a_string(sidvar)
-    . <- NULL
-# Understand file structure
-    content <- readLines(file)
-    n_row <- length(content)
-    n_col <- max(count.fields(file, quote='', sep='\t'))
-    f_row <- 1 + which(stri_detect_fixed(content, '^TABLE_BEGIN'))
-    s_row <- which(stri_detect_regex(content[f_row:length(content)],
-                                    '^\t+', negate=TRUE))[1] + f_row-1
-    f_col <- content %>% extract(f_row) %>%
-        stri_extract_first_regex('^\\t+') %>% stri_count_fixed('\t') %>% add(1)
-    fid_cols <- (1+f_col):n_col
-    fid_rows <- content[f_row:(s_row-1)] %>% stri_extract_first_words() %>%
-        equals(fidvar) %>% which() %>% add(f_row-1)
-    sid_rows <- (1+s_row):n_row
-    sid_cols <- content %>% extract(s_row) %>% stri_extract_all_words() %>%
-                unlist() %>% equals(sidvar) %>% which()
-# Read
-    object <- read_omics(file,
-        fid_rows   = fid_rows,          fid_cols   = fid_cols,
-        sid_rows   =  sid_rows,         sid_cols   =  sid_cols,
-        expr_rows  = (s_row+1):n_row,   expr_cols  = (f_col+1):n_col,
-        fvar_rows  =  f_row:(s_row-1),  fvar_cols  =  f_col,
-        fdata_rows =  f_row:(s_row-1),  fdata_cols = (f_col+1):n_col,
-        svar_rows  =  s_row,            svar_cols  = seq_len(f_col-1),
-        sdata_rows = (s_row+1):n_row,   sdata_cols = seq_len(f_col-1),
-        transpose  = TRUE, verbose    = TRUE)
-# Add metadata/subgroup
-    metadata(object)$platform <- 'somascan'
-    if (subgroupvar %in% svars(object)){
-        values <- sdata(object)[[subgroupvar]]
-       if (all(!is.na(values)) & all(values != ""))  svars(object) %<>%
-            stri_replace_first_fixed('SampleGroup', subgroupvar)
-    }
-    object %<>% add_subgroup()
-    object
-}
-
-
-#=============================================================================
-#
 #                    filter_sample_type
 #                    filter_sample_quality
 #                    filter_feature_type
@@ -137,9 +84,57 @@ rm_single_value_columns <- function(df){
 
 #==============================================================================
 #
+#                         .read_somascan
 #                          read_somascan
 #
 #=============================================================================
+
+
+#' @rdname read_somascan
+#' @export
+.read_somascan <- function(
+    file, fidvar = 'SeqId', sidvar = 'SampleId', subgroupvar = 'SampleGroup'
+){
+# Assert
+    assert_all_are_existing_files(file)
+    assert_is_a_string(fidvar)
+    assert_is_a_string(sidvar)
+    . <- NULL
+# Understand file structure
+    content <- readLines(file)
+    n_row <- length(content)
+    n_col <- max(count.fields(file, quote='', sep='\t'))
+    f_row <- 1 + which(stri_detect_fixed(content, '^TABLE_BEGIN'))
+    s_row <- which(stri_detect_regex(content[f_row:length(content)],
+                                    '^\t+', negate=TRUE))[1] + f_row-1
+    f_col <- content %>% extract(f_row) %>%
+        stri_extract_first_regex('^\\t+') %>% stri_count_fixed('\t') %>% add(1)
+    fid_cols <- (1+f_col):n_col
+    fid_rows <- content[f_row:(s_row-1)] %>% stri_extract_first_words() %>%
+        equals(fidvar) %>% which() %>% add(f_row-1)
+    sid_rows <- (1+s_row):n_row
+    sid_cols <- content %>% extract(s_row) %>% stri_extract_all_words() %>%
+                unlist() %>% equals(sidvar) %>% which()
+# Read
+    object <- read_omics(file,
+        fid_rows   = fid_rows,          fid_cols   = fid_cols,
+        sid_rows   =  sid_rows,         sid_cols   =  sid_cols,
+        expr_rows  = (s_row+1):n_row,   expr_cols  = (f_col+1):n_col,
+        fvar_rows  =  f_row:(s_row-1),  fvar_cols  =  f_col,
+        fdata_rows =  f_row:(s_row-1),  fdata_cols = (f_col+1):n_col,
+        svar_rows  =  s_row,            svar_cols  = seq_len(f_col-1),
+        sdata_rows = (s_row+1):n_row,   sdata_cols = seq_len(f_col-1),
+        transpose  = TRUE, verbose    = TRUE)
+# Add metadata/subgroup
+    assayNames(object) <- 'somascan'
+    if (subgroupvar %in% svars(object)){
+        values <- sdata(object)[[subgroupvar]]
+       if (all(!is.na(values)) & all(values != ""))  svars(object) %<>%
+            stri_replace_first_fixed('SampleGroup', subgroupvar)
+    }
+    object %<>% add_subgroup()
+    object
+}
 
 
 #' Read somascan
@@ -207,7 +202,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     object %<>% add_limma(formula = eval_tidy(formula),
                     contrastdefs = eval_tidy(contrastdefs), plot = FALSE)
 # Plot
-#    if (plot) plot_samples(object)
+    if (plot) plot_samples(object)
 # Return
     object
 }

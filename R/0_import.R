@@ -6,6 +6,7 @@
 #' @importFrom assertive   assert_all_are_in_closed_range
 #' @importFrom assertive   assert_all_are_in_range
 #' @importFrom assertive   assert_all_are_less_than_or_equal_to
+#' @importFrom assertive   assert_all_are_non_missing_nor_empty_character
 #' @importFrom assertive   assert_all_are_not_matching_fixed
 #' @importFrom assertive   assert_all_are_true
 #' @importFrom assertive   assert_all_are_whole_numbers
@@ -28,7 +29,7 @@
 #' @importFrom assertive   is_empty_character   is_scalar   is_existing_file
 #' @importFrom colorspace  sequential_hcl
 #' @importFrom data.table  as.data.table   copy   data.table   fread   fwrite
-#' @importFrom data.table  .N   rbindlist   setkeyv   set
+#' @importFrom data.table  is.data.table    .N   rbindlist   setkeyv   set
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2

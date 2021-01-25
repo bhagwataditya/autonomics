@@ -36,33 +36,6 @@ cmessage_df <- function(format_string, x){
 }
 
 
-#' Make vector components unique by appending spaces
-#' @param x character or factor vector
-#' @param method 'make.unique' or 'make.unique.spaces'
-#' @param verbose TRUE (default) or FALSE
-#' @return character vector
-#' @seealso \code{\link[base]{make.unique}}
-#' @examples
-#' x <- c('A', 'B', 'C', 'A', 'D')
-#' uniquify(x, 'make.unique')
-#' @noRd
-uniquify <- function(x, method = 'make.unique', verbose = TRUE){
-    idx <- cduplicated(x)
-    if (any(idx)){
-        uniquefun <- get(method)
-        uniquex <- uniquefun(x)
-        if (verbose){
-            message(   '\t\tUniquify ( %s -> %s ) duplicates of',
-                        x[idx][1], uniquefun(x[idx][c(1, 1)])[2])
-            cmessage_df("\t\t\t  %s", table(x[idx]) %>% as.list() %>% unlist)
-                # unlist(as.list(.)) is to prevent empty line
-        }
-    } else {
-        uniquex <- x
-    }
-    uniquex
-}
-
 #' Convenient (two way) duplicated
 #' @param x vector
 #' @return logical vector
@@ -73,6 +46,7 @@ uniquify <- function(x, method = 'make.unique', verbose = TRUE){
 cduplicated <- function(x){
     duplicated(x) | duplicated(x, fromLast = TRUE)
 }
+
 
 #' Pull columns in a dataframe to the front
 #' @param df         data.frame
@@ -101,7 +75,7 @@ pull_columns <- function(df, first_cols, verbose = TRUE){
         first_cols %<>% extract(idx)
     }
 
-    if (data.table::is.data.table(df)){
+    if (is.data.table(df)){
         df[, c(first_cols, setdiff(names(df), first_cols)), with = FALSE]
     } else {
         df[, c(first_cols, setdiff(names(df), first_cols)), drop = FALSE]

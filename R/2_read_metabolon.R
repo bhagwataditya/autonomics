@@ -1,68 +1,6 @@
 
 #=============================================================================
 #
-#                   .read_metabolon
-#                       find_origscale_sheet
-#
-#=============================================================================
-
-find_origscale_sheet <- function(file){
-    . <- NULL
-    excel_sheets(file) %>%
-    extract(stri_detect_fixed(., 'OrigScale')) %>%
-    extract2(1)
-}
-
-
-#' @rdname read_metabolon
-#' @export
-.read_metabolon <- function(file, sheet = find_origscale_sheet(file),
-    fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL'
-){
-# Assert
-    assert_all_are_existing_files(file)
-    . <- NULL
-# Initial read
-    d_f <- read_excel(file, sheet, col_names = FALSE, .name_repair = 'minimal')
-    fvar_rows <- which(!is.na(d_f %>% extract_dt_col(1))) %>% extract(1)
-    svar_cols <- which(!is.na(d_f %>% extract_dt_row(1))) %>% extract(1)
-    fvar_cols <- fdata_cols <- seq_len(svar_cols)
-    svar_rows <- sdata_rows <- seq_len(fvar_rows)
-    fvar_names <- extract_dt_row(d_f, fvar_rows) %>% extract(seq_len(svar_cols))
-    svar_names <- extract_dt_col(d_f, svar_cols) %>%extract(seq_len(fvar_rows))
-    fid_var <- fvar_names %>% extract(stri_detect_regex(., fid_var))
-    sid_var <- svar_names %>% extract(stri_detect_regex(., sid_var))
-    fid_rows  <- fdata_rows <- expr_rows <- (fvar_rows+1):nrow(d_f)
-    sid_cols  <- sdata_cols <- expr_cols <- (svar_cols+1):ncol(d_f)
-    fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
-    sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
-# Systematic read
-    object <- read_omics(
-                file,                       sheet      = sheet,
-                fid_rows   = fid_rows,      fid_cols   = fid_cols,
-                sid_rows   = sid_rows,      sid_cols   = sid_cols,
-                expr_rows  = expr_rows,     expr_cols  = expr_cols,
-                fvar_rows  = fvar_rows,     fvar_cols  = fvar_cols,
-                svar_rows  = svar_rows,     svar_cols  = svar_cols,
-                fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
-                sdata_rows = svar_rows,     sdata_cols = sdata_cols,
-                transpose  = FALSE, verbose    = TRUE)
-    metadata(object)$platform <- 'metabolon'
-# Update sdata/fdata                        Group   HMDB_ID -> HMDB_ID
-    subgroupcol <- which(stri_detect_fixed(svars(object), subgroupvar))
-    assertive::assert_all_are_less_than_or_equal_to(length(subgroupcol),1)
-    if (length(subgroupcol)==1) svars(object)[subgroupcol] <- 'subgroup'
-    object %<>% add_subgroup()
-    fvars(object) %<>% stri_replace_first_regex('Group[ ]+', '')
-# Return
-    object
-}
-
-
-
-#=============================================================================
-#
 #                   add_kegg_pathways
 #                       kegg_entry_to_pathways
 #
@@ -209,7 +147,7 @@ pubchem_to_smiles <- function(x){
 
 #=============================================================================
 #
-#                           read_metabolon
+#                           (r|c)stack
 #
 #=============================================================================
 
@@ -260,6 +198,58 @@ stack <- function(x, y){
 
 }
 
+#==============================================================================
+#
+#                           .read_metabolon
+#                            read_metabolon
+#
+#==============================================================================
+
+#' @rdname read_metabolon
+#' @export
+.read_metabolon <- function(file, sheet = 'OrigScale',
+    fid_var = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
+    subgroupvar = 'Group'
+){
+# Assert
+    assert_all_are_existing_files(file)
+    . <- NULL
+# Initial read
+    sheet %<>% grep(excel_sheets(file), fixed = TRUE, value = TRUE)
+    d_f <- read_excel(file, sheet, col_names = FALSE, .name_repair = 'minimal')
+    fvar_rows <- which(!is.na(d_f %>% extract_dt_col(1))) %>% extract(1)
+    svar_cols <- which(!is.na(d_f %>% extract_dt_row(1))) %>% extract(1)
+    fvar_cols <- fdata_cols <- seq_len(svar_cols)
+    svar_rows <- sdata_rows <- seq_len(fvar_rows)
+    fvar_names <- extract_dt_row(d_f, fvar_rows) %>% extract(seq_len(svar_cols))
+    svar_names <- extract_dt_col(d_f, svar_cols) %>%extract(seq_len(fvar_rows))
+    fid_var <- fvar_names %>% extract(stri_detect_regex(., fid_var))
+    sid_var <- svar_names %>% extract(stri_detect_regex(., sid_var))
+    fid_rows  <- fdata_rows <- expr_rows <- (fvar_rows+1):nrow(d_f)
+    sid_cols  <- sdata_cols <- expr_cols <- (svar_cols+1):ncol(d_f)
+    fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
+    sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
+# Systematic read
+    object <- read_omics(
+                file,                       sheet      = sheet,
+                fid_rows   = fid_rows,      fid_cols   = fid_cols,
+                sid_rows   = sid_rows,      sid_cols   = sid_cols,
+                expr_rows  = expr_rows,     expr_cols  = expr_cols,
+                fvar_rows  = fvar_rows,     fvar_cols  = fvar_cols,
+                svar_rows  = svar_rows,     svar_cols  = svar_cols,
+                fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
+                sdata_rows = svar_rows,     sdata_cols = sdata_cols,
+                transpose  = FALSE, verbose    = TRUE)
+    assayNames(object)[1] <- paste0('metabolon')
+# Update sdata/fdata                        Group   HMDB_ID -> HMDB_ID
+    subgroupcol <- which(stri_detect_fixed(svars(object), subgroupvar))
+    assertive::assert_all_are_less_than_or_equal_to(length(subgroupcol),1)
+    if (length(subgroupcol)==1) svars(object)[subgroupcol] <- 'subgroup'
+    object %<>% add_subgroup()
+    fvars(object) %<>% stri_replace_first_regex('Group[ ]+', '')
+# Return
+    object
+}
 
 #' Read metabolon
 #' @param file          string: path to metabolon xlsx file
@@ -284,7 +274,7 @@ stack <- function(x, y){
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    read_metabolon(file)
 #' @export
-read_metabolon <- function(file, sheet = find_origscale_sheet(file),
+read_metabolon <- function(file, sheet = 'OrigScale',
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
@@ -293,16 +283,11 @@ read_metabolon <- function(file, sheet = find_origscale_sheet(file),
     verbose      = TRUE, plot = TRUE
 ){
 # Read
-    object <- .read_metabolon(
-        file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var,
-        subgroupvar = subgroupvar, fname_var = fname_var)
+    object <- .read_metabolon(file = file, sheet = sheet, fid_var = fid_var,
+                              sid_var = sid_var, subgroupvar = subgroupvar)
     formula      <- enexpr(formula)
     contrastdefs <- enexpr(contrastdefs)
 # Prepare
-    is_subgroup_col <- stri_detect_regex(svars(object), subgroupvar)
-    subgroupvar <- if (any(is_subgroup_col)){  svars(object)[is_subgroup_col]
-                    } else {                    sid_var }
-    object %<>% merge_samplefile(subgroupvar, verbose = verbose)
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))

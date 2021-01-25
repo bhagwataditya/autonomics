@@ -2,6 +2,7 @@
 % Please edit documentation in R/2_read_omics.R
 \name{merge_sdata}
 \alias{merge_sdata}
+\alias{merge_fdata}
 \title{Merge sample/feature data}
 \usage{
 merge_sdata(
@@ -10,6 +11,15 @@ merge_sdata(
   by.x = "sample_id",
   by.y = names(dt)[1],
   subgroupvar = NULL,
+  verbose = TRUE
+)
+
+merge_fdata(
+  object,
+  dt,
+  by.x = "feature_id",
+  by.y = names(dt)[1],
+  featurenamevar = NULL,
   verbose = TRUE
 )
 }
