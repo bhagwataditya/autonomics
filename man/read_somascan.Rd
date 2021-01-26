@@ -24,8 +24,10 @@ read_somascan(
   feature_quality = c("FLAG", "PASS"),
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
-  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrastdefs = contrast_subgroups(object),
+  pca = TRUE,
+  lmfit = TRUE,
+  formula = NULL,
+  contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
 )
@@ -54,6 +56,10 @@ read_somascan(
 \item{rm_na_svars}{TRUE/FALSE}
 
 \item{rm_single_value_svars}{TRUE/FALSE}
+
+\item{pca}{whether to pca}
+
+\item{lmfit}{whether to lmfit/contrast}
 
 \item{formula}{design formula (using svars)}
 

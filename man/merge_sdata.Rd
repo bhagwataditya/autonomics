@@ -26,15 +26,17 @@ merge_fdata(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{dt}{data.frame, data.table, DataFrame}
+
 \item{by.x}{object mergevar}
 
 \item{by.y}{df mergevar}
 
+\item{subgroupvar}{subgroup svar}
+
 \item{verbose}{TRUE/FALSE}
 
-\item{df}{data.frame, data.table, DataFrame}
-
-\item{...}{used to maintain deprecated merge_(s|f)data}
+\item{featurenamevar}{featurename fvar}
 }
 \value{
 SummarizedExperiment

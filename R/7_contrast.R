@@ -212,8 +212,9 @@ are_factor <- function(df) vapply(df, is.factor, logical(1))
 #' Create design
 #'
 #'  Create design matrix  for statistical analysis
-#' @param object      SummarizedExperiment
-#' @param formula     formula with svars
+#' @param object  SummarizedExperiment
+#' @param formula formula with svars
+#' @param verbose whether to message
 #' @return design matrix
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
@@ -230,14 +231,11 @@ are_factor <- function(df) vapply(df, is.factor, logical(1))
 #' object$subgroup <- 'atkin18'
 #' create_design(object)
 #' @export
-create_design <- function(
-    object,
-    formula = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup
-){
+create_design <- function(object, formula = NULL, verbose = TRUE){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    formula <- enquo(formula)
-    formula <- eval_tidy(formula, sdata(object))
+    if (is.null(formula)){
+        formula <- if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup }
     assert_is_subset(all.vars(formula), svars(object))
     . <- NULL
 # Ensure that subgroup vector is a factor to preserve order of levels
@@ -248,6 +246,7 @@ create_design <- function(
         }
     }
 # Create design matrix
+    if (verbose)  cmessage('\t\tDesign: %s', deparse(formula))
     myDesign <- model.matrix(formula,  data = sdata(object))
 # Rename "(Intercept)" column
     if (ncol(myDesign)==1){ colnames(myDesign) <- 'subgroup1'
@@ -454,51 +453,51 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
-#' add_limma(object)
+#' lmfit(object)
 #'
 #' file <- download_data('billing19.proteingroups.txt')
 #' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #' select %<>% paste0('_STD')
 #' object <- read_proteingroups(file, select_subgroups = select, plot = FALSE)
-#' object %<>% add_limma()
+#' object %<>% lmfit()
 #'
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
 #' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
-#' object %<>% add_limma()
+#' object %<>% lmfit()
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% add_limma()
+#' object %<>% lmfit()
 #' @export
-add_limma <- function(object, contrastdefs = contrast_subgroups(object),
-    formula   = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    block = NULL, verbose = TRUE, plot =  TRUE
+lmfit <- function(object, contrastdefs = NULL,
+    formula   = NULL, block = NULL, verbose = TRUE, plot =  TRUE
 ){
-# Assert
+# Initialize
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (is.null(contrastdefs))    return(object)
+    if (is.null(contrastdefs)) contrastdefs <- contrast_subgroups(object)
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
     if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
     design <- create_design(object, formula=formula)
     design(object)    <- design
     contrastdefs(object) <- contrastdefs
 # Prepare block
-    if (verbose)  cmessage('\t\tAdd limma %s%s%s', deparse(formula),
+    if (verbose)  cmessage('\t\tLmfit/contrast: %s%s',
            if(is.null(block))            '' else paste0(' | ', block),
            if(is.null(weights(object)))  '' else paste0(' (weights)'))
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
+        blockvar <- block
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$blockcor)){
-            if (verbose)  cmessage('\t\t\t\tCompute block correlations')
+            if (verbose)  cmessage('\t\t\t\tdupcor `%s`', blockvar)
             metadata(object)$blockcor <- duplicateCorrelation(
                 exprs(object), design=design, block=block
             )$consensus.correlation }}
 # Fit lm and compute contrasts
-    fit <- suppressWarnings(lmFit(object = exprs(object), design = design,
-              block = block, correlation = metadata(object)$blockcor,
-              weights = weights(object)))
+    fit <- suppressWarnings(lmFit(object = exprs(object[, rownames(design)]),
+        design = design, block = block, correlation = metadata(object)$blockcor,
+        weights = weights(object)))
     object %<>% add_contrast_results(fit)
 # Plot/Return
     if (plot)  plot_contrastogram(object)
@@ -506,6 +505,12 @@ add_limma <- function(object, contrastdefs = contrast_subgroups(object),
     return(object)
 }
 
+#' @rdname lmfit
+#' @export
+add_limma <- function(...){
+    .Deprecated('lmfit')
+    lmfit(...)
+}
 
 
 vectorize_contrastdefs <- function(contrastdefs){
@@ -712,7 +717,7 @@ extract_limma_dt <- function(object){
 #'
 #'     # ~ 0 + subgroups | weights
 #'         weights(object) <- NULL
-#'         object %<>% add_limma(plot=FALSE)
+#'         object %<>% lmfit(plot=FALSE)
 #'         extract_limma_summary(object)
 #'
 #' # METABOLON
@@ -723,11 +728,11 @@ extract_limma_dt <- function(object){
 #'
 #'    # ~ 0 + subgroup | block
 #'           svars(object) %<>% stri_replace_first_fixed('SUB', 'block')
-#'           object %<>% add_limma(plot=FALSE)
+#'           object %<>% lmfit(plot=FALSE)
 #'           extract_limma_summary(object)
 #'
 #'    # ~ 0 + subgroup + t2d | block
-#'           object %<>% add_limma(formula=~0+subgroup+T2D, plot=FALSE)
+#'           object %<>% lmfit(formula=~0+subgroup+T2D, plot=FALSE)
 #'           extract_limma_summary(object)
 #' @export
 extract_limma_summary <- function(object){
@@ -815,7 +820,7 @@ compute_connections <- function(
 #'     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #'     select %<>% paste0('_STD')
 #'     object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
-#'     object %<>% add_limma(plot=FALSE)
+#'     object %<>% lmfit(plot=FALSE)
 #'     plot_contrastogram(object, curve=0.8)
 #' # subgroup vector
 #'     file <-  download_data('fukuda20.proteingroups.txt')
@@ -994,7 +999,7 @@ make_volcano_dt <- function(
 #'     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
 #'     plot_volcano(object)
 #'     contrasts <- subgroup_matrix(object)
-#'     object %<>% add_limma(contrasts = contrasts, plot = FALSE)
+#'     object %<>% lmfit(contrasts = contrasts, plot = FALSE)
 #'     plot_volcano(object)
 #'
 #' # proteingroup LFQ intensities

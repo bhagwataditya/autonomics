@@ -17,7 +17,17 @@ matrix2sumexp(
 \arguments{
 \item{x}{matrix}
 
-\item{sampledata}{data.frame or DataFrame}
+\item{sampledata}{data.frame / DataFrame}
+
+\item{sampleidvar}{string / NULL}
+
+\item{subgroupvar}{string / NULL}
+
+\item{featuredata}{data.frame / DataFrame}
+
+\item{featureidvar}{string / NULL}
+
+\item{featurenamevar}{string / NULL}
 }
 \value{
 SummarizedExperiment

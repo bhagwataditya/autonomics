@@ -154,6 +154,8 @@ rm_single_value_columns <- function(df){
 #' @param feature_quality       subset of c('PASS', 'FLAG', 'FAIL')
 #' @param rm_na_svars           TRUE/FALSE
 #' @param rm_single_value_svars TRUE/FALSE
+#' @param pca             whether to pca
+#' @param lmfit           whether to lmfit/contrast
 #' @param formula               design formula (using svars)
 #' @param contrastdefs          contrastdef vector/matrix/list
 #' @param verbose               TRUE/FALSE
@@ -169,16 +171,13 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE,
-    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object),
-    verbose      = TRUE, plot = TRUE
+    pca = TRUE, lmfit = TRUE, formula = NULL, contrastdefs = NULL,
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_somascan(
         file, fidvar = fidvar, sidvar = sidvar, subgroupvar = subgroupvar)
     object$sample_id %<>% make.unique()
-    formula      <- enexpr(formula)
-    contrastdefs <- enexpr(contrastdefs)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
@@ -198,9 +197,9 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     object %<>% log2transform(verbose = TRUE)
 # Analyze
-    object %<>% pca()
-    object %<>% add_limma(formula = eval_tidy(formula),
-                    contrastdefs = eval_tidy(contrastdefs), plot = FALSE)
+    if (pca)    object %<>% pca()
+    if (lmfit)  object %<>% lmfit(formula = formula,
+                                  contrastdefs = contrastdefs, plot = FALSE)
 # Plot
     if (plot) plot_samples(object)
 # Return

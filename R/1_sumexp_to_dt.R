@@ -182,7 +182,12 @@ dt2sumexp  <- function(
 
 #' Convert matrix into SummarizedExperiment
 #' @param x matrix
-#' @param sampledata data.frame or DataFrame
+#' @param sampledata     data.frame / DataFrame
+#' @param sampleidvar    string / NULL
+#' @param subgroupvar    string / NULL
+#' @param featuredata    data.frame / DataFrame
+#' @param featureidvar   string / NULL
+#' @param featurenamevar string / NULL
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)

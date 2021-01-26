@@ -441,13 +441,14 @@ split_values <- function(x){
 
 
 #' Merge sample/feature data
-#' @param object        SummarizedExperiment
-#' @param df            data.frame, data.table, DataFrame
-#' @param by.x          object mergevar
-#' @param by.y          df mergevar
-#' @param verbose       TRUE/FALSE
-#' @param ...           used to maintain deprecated merge_(s|f)data
-#' @return              SummarizedExperiment
+#' @param object          SummarizedExperiment
+#' @param dt              data.frame, data.table, DataFrame
+#' @param by.x            object mergevar
+#' @param by.y            df mergevar
+#' @param subgroupvar     subgroup svar
+#' @param featurenamevar  featurename fvar
+#' @param verbose         TRUE/FALSE
+#' @return                SummarizedExperiment
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
@@ -517,15 +518,16 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 }
 
 
-#' Merge sample file
+#' Merge sample/feature file
 #'
-#' Add sdata from file or sampleids
-#' @param object       SummarizedExperiment
-#' @param samplefile   samplefile path
-#' @param by.x         object mergevar
-#' @param by.y         samplefile mergevvar
-#' @param subgroupvar  subgroupvar or NULL
-#' @param verbose      TRUE (default) or FALSE
+#' @param object         SummarizedExperiment
+#' @param samplefile     samplefile path
+#' @param featurefile    featurefile path
+#' @param by.x           object mergevar
+#' @param by.y           file mergevvar
+#' @param subgroupvar    subgroupvar
+#' @param featurenamevar featurenamefvar
+#' @param verbose        TRUE (default) or FALSE
 #' @examples
 #'# PROTEINGROUPS
 #'    file <- download_data('billing19.proteingroups.txt')
@@ -578,7 +580,7 @@ add_subgroup <- function(object, verbose=TRUE){
         object$subgroup  <- split_extract(x, seq_len(nfactor-1), sep)
         object$replicate <- split_extract(x, nfactor, sep)
     }
-    object$subgroup %<>% make.names() # otherwise issue in add_limma (fixable?)
+    object$subgroup %<>% make.names() # otherwise issue in lmfit (fixable?)
     object$subgroup %<>% factor()
     object
 }

@@ -35,6 +35,8 @@ preprocess_rnaseq_counts(
 
 \item{voom}{TRUE/FALSE}
 
+\item{log2}{TRUE/FALSE}
+
 \item{verbose}{TRUE/FALSE}
 
 \item{plot}{TRUE/FALSE}

@@ -616,13 +616,13 @@ explicitly_compute_voom_weights <- function(
 #' @param genesize     NULL or fvar
 #' @param cpm          TRUE/FALSE
 #' @param voom         TRUE/FALSE
+#' @param log2         TRUE/FALSE
 #' @param verbose      TRUE/FALSE
 #' @param plot         TRUE/FALSE
 #' @export
 preprocess_rnaseq_counts <- function(object, formula, block = NULL,
     min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE,
-    voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE
-){
+    voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
 # filter
     if (verbose) message('\t\tPreprocess')
     design <- create_design(object, formula)
@@ -642,12 +642,10 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
     if (!is.null(genesize)){
         assert_is_subset(genesize, fvars(object))
         if (verbose)  message('\t\t\ttpm')
-        tpm(object) <- counts_to_tpm(counts(object), fdata(object)[[genesize]])
-    }
+        tpm(object) <- counts_to_tpm(counts(object), fdata(object)[[genesize]])}
 # cpm
     if (cpm){
-        if (verbose)  message('\t\t\tcpm')
-        if (verbose)  message('\t\t\t\tscale lib.sizes (tmm)')
+        if (verbose)  message('\t\t\tcpm:    tmm scale lib.sizes')
         object$lib.size <- scaledlibsizes(counts(object))
         if (verbose)  message('\t\t\t\tcpm')
         cpm(object) <- counts_to_cpm(counts(object), object$lib.size)
@@ -655,10 +653,11 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
         assays(object) %<>% extract(c('cpm', other)) }
 # voom (counts) & blockcor (log2(cpm))
     if (voom){
-        if (verbose)  message('\t\t\tvoom')
-        object %<>% add_voom(design, verbose=verbose, plot = plot & !is.null(block))
+        if (verbose)  message('\t\t\tvoom:   voom')
+        object %<>% add_voom(design, verbose=FALSE, plot = plot & !is.null(block))
         if (!is.null(block)){
-            object %<>% add_voom(design, block=block, verbose=verbose, plot=plot) }}
+            object %<>%
+                add_voom(design, block=block, verbose=verbose, plot=plot) }}
 # log2
     if (log2){
 	    if (verbose)  message('\t\t\tlog2')
@@ -687,8 +686,7 @@ add_voom <- function(
         blockvar <- block
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$blockcor)){
-            if (verbose)  cmessage('\t\t\t\tcorrelate `%s` replicates',
-                                   blockvar)
+            if (verbose)  cmessage('\t\t\t\tdupcor `%s`', blockvar)
             metadata(object)$blockcor <- duplicateCorrelation(
                 log2(cpm(object)), design=design, block=block
             )$consensus.correlation }}
@@ -794,23 +792,26 @@ add_voom <- function(
 #=============================================================================
 
 
-#' Read RNAseq SAM/BAM files into SummarizedExperiment
-#' @param bamdir        SAM/BAM dir path (string)
-#' @param paired        whether reads are paired end (TRUE/FALSE)
-#' @param genome        string: either "mm10", "hg38" etc. or a GTF file
+#' Read rnaseq [bs]am files
+#'
+#' Read/preprocess/analyze rnaseq [bs]am files
+#'
+#' @param bamdir        bam/sam files dir
+#' @param paired        whether reads are paired end
+#' @param genome        mm10"/"hg38"/etc. or GTF file
 #' @param nthreads      no of cores to be used by Rsubread::featureCounts()
 #' @param samplefile    sample file
-#' @param sampleidvar   sampleid var
-#' @param subgroupvar   subgroup var
-#' @param formula       formula to create design matrix (using svars)
+#' @param sampleidvar   sampleid svar
+#' @param subgroupvar   subgroup svar
+#' @param formula       designmat formula
 #' @param contrastdefs  contrast definition vector/matrix/list
-#' @param min_count     min feature count required by at least one sample
-#' @param genesize      NULL or fvar
-#' @param cpm           TRUE/FALSE: compute counts per million?
-#' @param voom          TRUE/FALSE: compute voom precision weights?
-#' @param log2          TRUE/FALSE
-#' @param verbose       TRUE/FALSE
-#' @param plot          TRUE/FALSE
+#' @param min_count     min feature count required in some samples
+#' @param genesize      genesize fvar for tpm
+#' @param cpm           whether to compute cpm
+#' @param voom          whether to compute voom precision weights
+#' @param log2          whether to log2 transform
+#' @param verbose       whether to message
+#' @param plot          whether to plot
 #' @return SummarizedExperiment
 #' @examples
 #' # in-built genome
@@ -823,15 +824,12 @@ add_voom <- function(
 #' @export
 read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(),
-    samplefile = NULL, sampleidvar = 'sample_id',
-    subgroupvar = 'subgroup',
-    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object), min_count = 10,
-    genesize = NULL, cpm = TRUE, voom = TRUE, log2 = TRUE, verbose = TRUE, plot=TRUE
+    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    formula = NULL, contrastdefs = NULL, min_count = 10, genesize = NULL,
+    cpm = TRUE, voom = TRUE, log2 = TRUE, pca = TRUE, lmfit = TRUE,
+    verbose = TRUE, plot=TRUE
 ){
 # Read
-    formula      <- enexpr(formula)
-    contrastdefs <- enexpr(contrastdefs)
     object <- .read_rnaseq_bams(bamdir      = bamdir,
                                 paired      = paired,
                                 genome      = genome,
@@ -848,9 +846,9 @@ read_rnaseq_bams <- function(
                                 log2       = log2,
                                 verbose    = verbose,
                                 plot       = plot)
-    object %<>% pca()
-    object %<>% add_limma(formula = eval_tidy(formula),
-                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
+    if (pca)    object %<>% pca()
+    if (lmfit)  object %<>% lmfit(formula = formula,
+                    contrastdefs  = contrastdefs, plot = FALSE)
 # Plot/Return
     if (plot)  plot_samples(object)
     object
@@ -858,80 +856,86 @@ read_rnaseq_bams <- function(
 
 
 
-#' Read RNAseq counts
+#' Read rnaseq counts
 #'
-#' Read tsv file with rnaseq counts into SummarizedExperiment
+#' Read/analyze rnaseq counts
 #'
-#' @param file          string: path to rnaseq counts file
-#' @param fid_col       number of name of column with feature identifiers
-#' @param fname_col     string or number: feature name variable
-#' @param samplefile    sample file
-#' @param sampleidvar   sampleid var
-#' @param subgroupvar   subgroup var
-#' @param formula       formula to create design matrix (using svars)
-#' @param contrastdefs  contrastdef vector/matrix/list
-#' @param min_count     number (default 10): filter out features
-#' @param pseudocount   number
-#' @param genesize     NULL or fvar
-#' @param cpm      TRUE/FALSE: compute counts per million (scaled) reads?
-#' @param voom     TRUE/FALSE: compute voom precision weights?
-#' @param log2     TRUE/FALSE
-#' @param pca      TRUE/FALSE  run pca?
-#' @param limma    TRUE/FALSE: run contrast analysis?
-#' @param verbose  TRUE/FALSE
-#' @param plot     TRUE/FALSE
+#' @param file            count file
+#' @param fid_col         featureid fvar
+#' @param samplefile      sdata file
+#' @param sampleidvar     sampleid svar
+#' @param subgroupvar     subgroup svar
+#' @param block           block svar
+#' @param featurefile     fdata file
+#' @param featureidvar    featureid fvar
+#' @param featurenamevar  featurename fvar
+#' @param formula         designmat formula
+#' @param contrastdefs    contrastdef vector/matrix/list
+#' @param min_count       min feature count required in some samples
+#' @param pseudocount     added pseudocount to prevent -Inf log2 values
+#' @param genesize        genesize fvar for tpm
+#' @param cpm             whether to compute cpm
+#' @param voom            whether to compute voom precision weights
+#' @param log2            whether to log2 transform
+#' @param pca             whether to pca
+#' @param lmfit           whether to lmfit/contrast
+#' @param verbose         whether to message
+#' @param plot            whether to plot
 #' @return SummarizedExperiment
 #' @examples
-#' # BILLING19
-#'     # ~ 0 + subgroup
-#'     file <- download_data('billing19.rnacounts.txt')
-#'     object <- read_rnaseq_counts(file)
-#'     extract_limma_summary(object)
-#'
-#'     # ~ 0 + subgroups | weights
-#'     weights(object) <- NULL
-#'     object %<>% add_limma(plot=FALSE)
-#'     extract_limma_summary(object)
+#' # BILLING 2019
+#'     # Read
+#'         file <- download_data('billing19.rnacounts.txt')
+#'         object <- .read_rnaseq_counts(file)
+#'     # Read / Analyze
+#'         object <-  read_rnaseq_counts(file, voom=FALSE, plot=FALSE)
+#'     # Read / Weight / Analyze
+#'         object <-  read_rnaseq_counts(file)
 #'
 #'# GSE161731
-#'    require(magrittr)
-#'    require(GEOquery)
-#'    basedir <- '~/autonomicscache/datasets'
-#'    subdir  <- '~/autonomicscache/datasets/GSE161731'
-#'    if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
-#'    file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
-#'    samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
-#'    object <- read_rnaseq_counts(file, samplefile = samplefile,
-#'        sampleidvar='rna_id', subgroupvar='gender')
-#'    # Computing correlation takes some time
-#'    # object <- read_rnaseq_counts(file, samplefile = samplefile,
-#'    #    sampleidvar='rna_id', subgroupvar = 'gender', block ='subject_id')
+#'    # Download
+#'        require(magrittr)
+#'        basedir <- '~/autonomicscache/datasets'
+#'        subdir  <- '~/autonomicscache/datasets/GSE161731'
+#'        if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles(
+#'                                        "GSE161731",baseDir=basedir)
+#'        file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
+#'        samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+#'    # Read
+#'        object <- .read_rnaseq_counts(file, samplefile = samplefile,
+#'                   sampleidvar ='rna_id', subgroupvar='gender')
+#'    # Read / Analyze
+#'        object <- read_rnaseq_counts(file, samplefile = samplefile,
+#'          sampleidvar='rna_id', subgroupvar='gender', voom=FALSE)
+#'    # Read / Weight / Analyze
+#'        object <- read_rnaseq_counts(file, samplefile = samplefile,
+#'          sampleidvar ='rna_id', subgroupvar='gender', plot = TRUE)
+#'    # Read / Weight / Block / Analyze (dupcor takes some time)
+#'        # object <- read_rnaseq_counts(file, samplefile = samplefile,
+#'        #    sampleidvar='rna_id', subgroupvar='gender', block='subject_id')
 #' @export
 read_rnaseq_counts <- function(
     file, fid_col = 1,
     samplefile = NULL, sampleidvar = NULL, subgroupvar = NULL, block = NULL,
     featurefile = NULL, featureidvar = NULL, featurenamevar = NULL,
-    formula = if (is.null(subgroupvar)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object), min_count = 10,
+    formula = NULL, contrastdefs = NULL, min_count = 10,
     pseudocount = 0.5, genesize = NULL, cpm = TRUE, voom = TRUE, log2 = TRUE,
-    pca = TRUE, limma = TRUE, verbose = TRUE, plot = TRUE
+    pca = TRUE, lmfit = TRUE, verbose = TRUE, plot = TRUE
 ){
-# Initialize
-    contrastdefs <- enexpr(contrastdefs)
 # Read
     object <- .read_rnaseq_counts(file, fid_col = fid_col,
                 samplefile = samplefile, sampleidvar = sampleidvar,
                 subgroupvar = subgroupvar, featurefile = featurefile,
                 featureidvar = featureidvar, featurenamevar = featurenamevar)
+# Preprocess
     object %<>% preprocess_rnaseq_counts(formula = formula, block = block,
                 min_count = min_count, pseudocount = pseudocount,
                 genesize = genesize, cpm = cpm, voom = voom, log2 = log2,
                 plot = plot, verbose = verbose)
-# Contrast
+# Explore
     if (pca)   object %<>% pca()
-    if (limma) object %<>% add_limma(formula = formula, block = block,
-                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
-# Plot
+    if (lmfit) object %<>% lmfit(formula = formula, block = block,
+                                contrastdefs = contrastdefs, plot = FALSE)
     if (plot)  plot_samples(object)
 # Return
     object

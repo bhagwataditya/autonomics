@@ -34,7 +34,7 @@ Plot volcano
     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
     plot_volcano(object)
     contrasts <- subgroup_matrix(object)
-    object \%<>\% add_limma(contrasts = contrasts, plot = FALSE)
+    object \%<>\% lmfit(contrasts = contrasts, plot = FALSE)
     plot_volcano(object)
 
 # proteingroup LFQ intensities

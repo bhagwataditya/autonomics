@@ -112,17 +112,14 @@ read_proteingroup_rectangles <- function(
     select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
-    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object),
-    verbose      = TRUE, plot = TRUE
+    pca = TRUE, lmfit = TRUE, formula = NULL, contrastdefs = NULL,
+    verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(proteinfile)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
     assert_is_a_bool(verbose)
-    formula      <- enexpr(formula)
-    contrastdefs <- enexpr(contrastdefs)
 # Read
     object <- .read_proteingroup_rectangles(proteinfile, quantity,
         samplefile = samplefile, select_subgroups = select_subgroups,
@@ -134,9 +131,9 @@ read_proteingroup_rectangles <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
 # Analyze
-    object %<>% pca()
-    object %<>% add_limma(formula = eval_tidy(formula),
-                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
+    if (pca)    object %<>% pca()
+    if (lmfit)  object %<>% lmfit(formula = formula,
+                                  contrastdefs = contrastdefs, plot = FALSE)
 # Return
     if (plot)  plot_samples(object)
     object
@@ -157,16 +154,13 @@ read_phosphosite_rectangles <- function(
     select_subgroups = NULL,
     contaminants = FALSE, reverse = FALSE, min_localization_prob = 0.75,
     fastafile = NULL, invert_subgroups = character(0),
-    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object),
-    verbose      = TRUE, plot = TRUE
+    pca = TRUE, lmfit = TRUE, formula = NULL, contrastdefs = NULL,
+    verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
     assert_all_are_existing_files(c(phosphofile, proteinfile))
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
-    formula      <- enexpr(formula)
-    contrastdefs <- enexpr(contrastdefs)
 # Read
     proteingroups <- .read_proteingroup_rectangles(file=proteinfile, quantity = quantity,
         samplefile = samplefile, select_subgroups = select_subgroups,
@@ -184,9 +178,9 @@ read_phosphosite_rectangles <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
 # Contrast
-    object %<>% pca()
-    object %<>% add_limma(formula = eval_tidy(formula),
-                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
+    if (pca)    object %<>% pca()
+    if (lmfit)  object %<>% lmfit(formula = formula,
+                    contrastdefs  = contrastdefs, plot = FALSE)
 # Return
     if (plot)  plot_samples(object)
     object

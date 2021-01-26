@@ -4,15 +4,14 @@
 \alias{create_design}
 \title{Create design}
 \usage{
-create_design(
-  object,
-  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup
-)
+create_design(object, formula = NULL, verbose = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
 \item{formula}{formula with svars}
+
+\item{verbose}{whether to message}
 }
 \value{
 design matrix

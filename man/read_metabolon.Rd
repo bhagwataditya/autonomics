@@ -23,8 +23,10 @@ read_metabolon(
   impute = FALSE,
   add_kegg_pathways = FALSE,
   add_smiles = FALSE,
-  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrastdefs = contrast_subgroups(object),
+  pca = TRUE,
+  lmfit = TRUE,
+  formula = NULL,
+  contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
 )

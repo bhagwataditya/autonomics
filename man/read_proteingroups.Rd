@@ -18,8 +18,8 @@
 )
 
 read_proteingroups(
-  proteinfile,
-  quantity = guess_maxquant_quantity(proteinfile),
+  file,
+  quantity = guess_maxquant_quantity(file),
   samplefile = NULL,
   select_subgroups = NULL,
   contaminants = FALSE,
@@ -27,18 +27,19 @@ read_proteingroups(
   fastafile = NULL,
   invert_subgroups = character(0),
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
-  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrastdefs = contrast_subgroups(object),
+  formula = NULL,
+  block = NULL,
+  contrastdefs = NULL,
   pca = TRUE,
-  limma = TRUE,
+  lmfit = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
 
 read_phosphosites(
-  phosphofile,
-  proteinfile = paste0(dirname(phosphofile), "/proteinGroups.txt"),
-  quantity = guess_maxquant_quantity(phosphofile),
+  file,
+  proteinfile = paste0(dirname(file), "/proteinGroups.txt"),
+  quantity = guess_maxquant_quantity(file),
   samplefile = NULL,
   select_subgroups = NULL,
   contaminants = FALSE,
@@ -46,15 +47,17 @@ read_phosphosites(
   min_localization_prob = 0.75,
   fastafile = NULL,
   invert_subgroups = character(0),
-  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrastdefs = contrast_subgroups(object),
   pca = TRUE,
-  limma = TRUE,
+  lmfit = TRUE,
+  formula = NULL,
+  contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
 )
 }
 \arguments{
+\item{file}{proteingroups/phosphosites file}
+
 \item{quantity}{string: "Ratio normalized",
 "Ratio",
 "LFQ intensity",
@@ -65,33 +68,37 @@ read_phosphosites(
 
 \item{samplefile}{samplefile path}
 
+\item{sampleidvar}{sampleid svar}
+
+\item{subgroupvar}{subgroup svar}
+
 \item{select_subgroups}{subgroups to be selected (character vector)}
 
 \item{invert_subgroups}{subgroups to be inverted (character vector)}
 
-\item{verbose}{TRUE/FALSE}
+\item{verbose}{whether to message}
 
-\item{proteinfile}{proteingroups file path}
+\item{contaminants}{whether to return contaminants}
 
-\item{contaminants}{whether to return contaminants (TRUE/FALSE)}
-
-\item{reverse}{whether to return reverse peptides (TRUE/FALSE)}
+\item{reverse}{whether to return reverse peptides}
 
 \item{fastafile}{NULL or fastafile (to deconvolute proteingroups)}
 
-\item{impute}{whether to impute consistent nondetects (TRUE/FALSE)}
+\item{impute}{whether to impute consistent nondetects}
 
-\item{formula}{formula to create design matrix (using svars)}
+\item{formula}{desgnmat formula}
 
-\item{contrastdefs}{contrast definition vector/matrix/list}
+\item{block}{block svar}
 
-\item{pca}{TRUE/FALSE}
+\item{contrastdefs}{contrastdef vector/matrix/list}
 
-\item{limma}{TRUE/FALSE}
+\item{pca}{whether to pca}
 
-\item{plot}{TRUE/FALSE}
+\item{lmfit}{whether to lmfit/contrast}
 
-\item{phosphofile}{phosphosites  file path}
+\item{plot}{whether to plot}
+
+\item{proteinfile}{proteingroups file}
 
 \item{min_localization_prob}{min site localization probability (number)}
 }
@@ -104,7 +111,8 @@ Read proteingroups/phosphosites
 \examples{
 # LFQ intensities
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file)
+    object <- .read_maxquant(file)      # Read
+    object <-  read_proteingroups(file) # Read / Analyze
 
 # Ratios: invert if required
     file <- download_data('billing16.proteingroups.txt')
@@ -116,6 +124,7 @@ Read proteingroups/phosphosites
     object <- read_proteingroups(file, quantity = 'Intensity labeled')
 
 # Internal Standard Ratios: rm meaningless ratios
+    require(magrittr)
     file <-  download_data('billing19.proteingroups.txt')
     select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
     select_subgroups \%<>\% paste0('_STD')

@@ -3,7 +3,7 @@
 \name{.read_rnaseq_bams}
 \alias{.read_rnaseq_bams}
 \alias{read_rnaseq_bams}
-\title{Read RNAseq SAM/BAM files into SummarizedExperiment}
+\title{Read rnaseq [bs]am files}
 \usage{
 .read_rnaseq_bams(
   bamdir,
@@ -24,55 +24,57 @@ read_rnaseq_bams(
   samplefile = NULL,
   sampleidvar = "sample_id",
   subgroupvar = "subgroup",
-  formula = if (single_subgroup(object)) ~1 else ~0 + subgroup,
-  contrastdefs = contrast_subgroups(object),
+  formula = NULL,
+  contrastdefs = NULL,
   min_count = 10,
   genesize = NULL,
   cpm = TRUE,
   voom = TRUE,
   log2 = TRUE,
+  pca = TRUE,
+  lmfit = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
 }
 \arguments{
-\item{bamdir}{SAM/BAM dir path (string)}
+\item{bamdir}{bam/sam files dir}
 
-\item{paired}{whether reads are paired end (TRUE/FALSE)}
+\item{paired}{whether reads are paired end}
 
-\item{genome}{string: either "mm10", "hg38" etc. or a GTF file}
+\item{genome}{mm10"/"hg38"/etc. or GTF file}
 
 \item{nthreads}{no of cores to be used by Rsubread::featureCounts()}
 
 \item{samplefile}{sample file}
 
-\item{sampleidvar}{sampleid var}
+\item{sampleidvar}{sampleid svar}
 
-\item{subgroupvar}{subgroup var}
+\item{subgroupvar}{subgroup svar}
 
-\item{verbose}{TRUE/FALSE}
+\item{verbose}{whether to message}
 
-\item{formula}{formula to create design matrix (using svars)}
+\item{formula}{designmat formula}
 
 \item{contrastdefs}{contrast definition vector/matrix/list}
 
-\item{min_count}{min feature count required by at least one sample}
+\item{min_count}{min feature count required in some samples}
 
-\item{genesize}{NULL or fvar}
+\item{genesize}{genesize fvar for tpm}
 
-\item{cpm}{TRUE/FALSE: compute counts per million?}
+\item{cpm}{whether to compute cpm}
 
-\item{voom}{TRUE/FALSE: compute voom precision weights?}
+\item{voom}{whether to compute voom precision weights}
 
-\item{log2}{TRUE/FALSE}
+\item{log2}{whether to log2 transform}
 
-\item{plot}{TRUE/FALSE}
+\item{plot}{whether to plot}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Read RNAseq SAM/BAM files into SummarizedExperiment
+Read/preprocess/analyze rnaseq [bs]am files
 }
 \examples{
 # in-built genome

@@ -278,15 +278,12 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
-    formula      = if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup,
-    contrastdefs = contrast_subgroups(object),
-    verbose      = TRUE, plot = TRUE
+    pca = TRUE, lmfit = TRUE, formula = NULL, contrastdefs = NULL,
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_metabolon(file = file, sheet = sheet, fid_var = fid_var,
                               sid_var = sid_var, subgroupvar = subgroupvar)
-    formula      <- enexpr(formula)
-    contrastdefs <- enexpr(contrastdefs)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
@@ -296,9 +293,9 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Contrast
-    object %<>% pca()
-    object %<>% add_limma(formula = eval_tidy(formula),
-                    contrastdefs  = eval_tidy(contrastdefs), plot = FALSE)
+    if (pca)   object %<>% pca()
+    if (lmfit) object %<>% lmfit(
+                formula = formula, contrastdefs = contrastdefs, plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return

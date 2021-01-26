@@ -3,7 +3,7 @@
 \name{merge_samplefile}
 \alias{merge_samplefile}
 \alias{merge_featurefile}
-\title{Merge sample file}
+\title{Merge sample/feature file}
 \usage{
 merge_samplefile(
   object,
@@ -30,14 +30,18 @@ merge_featurefile(
 
 \item{by.x}{object mergevar}
 
-\item{by.y}{samplefile mergevvar}
+\item{by.y}{file mergevvar}
 
-\item{subgroupvar}{subgroupvar or NULL}
+\item{subgroupvar}{subgroupvar}
 
 \item{verbose}{TRUE (default) or FALSE}
+
+\item{featurefile}{featurefile path}
+
+\item{featurenamevar}{featurenamefvar}
 }
 \description{
-Add sdata from file or sampleids
+Merge sample/feature file
 }
 \examples{
 # PROTEINGROUPS

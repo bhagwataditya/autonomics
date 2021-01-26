@@ -3,7 +3,7 @@
 \name{.read_rnaseq_counts}
 \alias{.read_rnaseq_counts}
 \alias{read_rnaseq_counts}
-\title{Read RNAseq counts}
+\title{Read rnaseq counts}
 \usage{
 .read_rnaseq_counts(
   file,
@@ -27,8 +27,8 @@ read_rnaseq_counts(
   featurefile = NULL,
   featureidvar = NULL,
   featurenamevar = NULL,
-  formula = if (is.null(subgroupvar)) ~1 else ~0 + subgroup,
-  contrastdefs = contrast_subgroups(object),
+  formula = NULL,
+  contrastdefs = NULL,
   min_count = 10,
   pseudocount = 0.5,
   genesize = NULL,
@@ -36,77 +36,89 @@ read_rnaseq_counts(
   voom = TRUE,
   log2 = TRUE,
   pca = TRUE,
-  limma = TRUE,
+  lmfit = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
 }
 \arguments{
-\item{file}{string: path to rnaseq counts file}
+\item{file}{count file}
 
-\item{fid_col}{number of name of column with feature identifiers}
+\item{fid_col}{featureid fvar}
 
-\item{samplefile}{sample file}
+\item{samplefile}{sdata file}
 
-\item{sampleidvar}{sampleid var}
+\item{sampleidvar}{sampleid svar}
 
-\item{subgroupvar}{subgroup var}
+\item{subgroupvar}{subgroup svar}
 
-\item{verbose}{TRUE/FALSE}
+\item{featurefile}{fdata file}
 
-\item{formula}{formula to create design matrix (using svars)}
+\item{featureidvar}{featureid fvar}
+
+\item{featurenamevar}{featurename fvar}
+
+\item{verbose}{whether to message}
+
+\item{block}{block svar}
+
+\item{formula}{designmat formula}
 
 \item{contrastdefs}{contrastdef vector/matrix/list}
 
-\item{min_count}{number (default 10): filter out features}
+\item{min_count}{min feature count required in some samples}
 
-\item{pseudocount}{number}
+\item{pseudocount}{added pseudocount to prevent -Inf log2 values}
 
-\item{genesize}{NULL or fvar}
+\item{genesize}{genesize fvar for tpm}
 
-\item{cpm}{TRUE/FALSE: compute counts per million (scaled) reads?}
+\item{cpm}{whether to compute cpm}
 
-\item{voom}{TRUE/FALSE: compute voom precision weights?}
+\item{voom}{whether to compute voom precision weights}
 
-\item{log2}{TRUE/FALSE}
+\item{log2}{whether to log2 transform}
 
-\item{pca}{TRUE/FALSE  run pca?}
+\item{pca}{whether to pca}
 
-\item{limma}{TRUE/FALSE: run contrast analysis?}
+\item{lmfit}{whether to lmfit/contrast}
 
-\item{plot}{TRUE/FALSE}
-
-\item{fname_col}{string or number: feature name variable}
+\item{plot}{whether to plot}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Read tsv file with rnaseq counts into SummarizedExperiment
+Read/analyze rnaseq counts
 }
 \examples{
-# BILLING19
-    # ~ 0 + subgroup
-    file <- download_data('billing19.rnacounts.txt')
-    object <- read_rnaseq_counts(file)
-    extract_limma_summary(object)
-
-    # ~ 0 + subgroups | weights
-    weights(object) <- NULL
-    object \%<>\% add_limma(plot=FALSE)
-    extract_limma_summary(object)
+# BILLING 2019
+    # Read
+        file <- download_data('billing19.rnacounts.txt')
+        object <- .read_rnaseq_counts(file)
+    # Read / Analyze
+        object <-  read_rnaseq_counts(file, voom=FALSE, plot=FALSE)
+    # Read / Weight / Analyze
+        object <-  read_rnaseq_counts(file)
 
 # GSE161731
-   require(magrittr)
-   require(GEOquery)
-   basedir <- '~/autonomicscache/datasets'
-   subdir  <- '~/autonomicscache/datasets/GSE161731'
-   if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
-   file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
-   samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
-   object <- read_rnaseq_counts(file, samplefile = samplefile,
-       sampleidvar='rna_id', subgroupvar='gender')
-   # Computing correlation takes some time
-   # object <- read_rnaseq_counts(file, samplefile = samplefile,
-   #    sampleidvar='rna_id', subgroupvar = 'gender', block ='subject_id')
+   # Download
+       require(magrittr)
+       basedir <- '~/autonomicscache/datasets'
+       subdir  <- '~/autonomicscache/datasets/GSE161731'
+       if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles(
+                                       "GSE161731",baseDir=basedir)
+       file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
+       samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+   # Read
+       object <- .read_rnaseq_counts(file, samplefile = samplefile,
+                  sampleidvar ='rna_id', subgroupvar='gender')
+   # Read / Analyze
+       object <- read_rnaseq_counts(file, samplefile = samplefile,
+         sampleidvar='rna_id', subgroupvar='gender', voom=FALSE)
+   # Read / Weight / Analyze
+       object <- read_rnaseq_counts(file, samplefile = samplefile,
+         sampleidvar ='rna_id', subgroupvar='gender', plot = TRUE)
+   # Read / Weight / Block / Analyze (dupcor takes some time)
+       # object <- read_rnaseq_counts(file, samplefile = samplefile,
+       #    sampleidvar='rna_id', subgroupvar='gender', block='subject_id')
 }
