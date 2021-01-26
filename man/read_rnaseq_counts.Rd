@@ -8,25 +8,25 @@
 .read_rnaseq_counts(
   file,
   fid_col = 1,
-  samplefile = NULL,
-  sampleidvar = NULL,
+  sfile = NULL,
+  sidvar = NULL,
   subgroupvar = NULL,
-  featurefile = NULL,
-  featureidvar = NULL,
-  featurenamevar = NULL,
+  ffile = NULL,
+  fidvar = NULL,
+  fnamevar = NULL,
   verbose = TRUE
 )
 
 read_rnaseq_counts(
   file,
   fid_col = 1,
-  samplefile = NULL,
-  sampleidvar = NULL,
+  sfile = NULL,
+  sidvar = NULL,
   subgroupvar = NULL,
   block = NULL,
-  featurefile = NULL,
-  featureidvar = NULL,
-  featurenamevar = NULL,
+  ffile = NULL,
+  fidvar = NULL,
+  fnamevar = NULL,
   formula = NULL,
   contrastdefs = NULL,
   min_count = 10,
@@ -46,17 +46,17 @@ read_rnaseq_counts(
 
 \item{fid_col}{featureid fvar}
 
-\item{samplefile}{sdata file}
+\item{sfile}{sdata file}
 
-\item{sampleidvar}{sampleid svar}
+\item{sidvar}{sampleid svar}
 
 \item{subgroupvar}{subgroup svar}
 
-\item{featurefile}{fdata file}
+\item{ffile}{fdata file}
 
-\item{featureidvar}{featureid fvar}
+\item{fidvar}{featureid fvar}
 
-\item{featurenamevar}{featurename fvar}
+\item{fnamevar}{featurename fvar}
 
 \item{verbose}{whether to message}
 
@@ -108,17 +108,17 @@ Read/analyze rnaseq counts
        if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles(
                                        "GSE161731",baseDir=basedir)
        file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
-       samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+       sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
    # Read
-       object <- .read_rnaseq_counts(file, samplefile = samplefile,
-                  sampleidvar ='rna_id', subgroupvar='gender')
+       object <- .read_rnaseq_counts(file, sfile = sfile,
+                  sidvar ='rna_id', subgroupvar='gender')
    # Read / Analyze
-       object <- read_rnaseq_counts(file, samplefile = samplefile,
-         sampleidvar='rna_id', subgroupvar='gender', voom=FALSE)
+       object <- read_rnaseq_counts(file, sfile = sfile,
+         sidvar='rna_id', subgroupvar='gender', voom=FALSE)
    # Read / Weight / Analyze
-       object <- read_rnaseq_counts(file, samplefile = samplefile,
-         sampleidvar ='rna_id', subgroupvar='gender', plot = TRUE)
+       object <- read_rnaseq_counts(file, sfile = sfile,
+         sidvar ='rna_id', subgroupvar='gender', plot = TRUE)
    # Read / Weight / Block / Analyze (dupcor takes some time)
-       # object <- read_rnaseq_counts(file, samplefile = samplefile,
-       #    sampleidvar='rna_id', subgroupvar='gender', block='subject_id')
+       # object <- read_rnaseq_counts(file, sfile = sfile,
+       #    sidvar='rna_id', subgroupvar='gender', block='subject_id')
 }

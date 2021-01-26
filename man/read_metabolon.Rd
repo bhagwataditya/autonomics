@@ -32,31 +32,35 @@ read_metabolon(
 )
 }
 \arguments{
-\item{file}{string: path to metabolon xlsx file}
+\item{file}{metabolon xlsx filepath}
 
-\item{sheet}{number/string: xls sheet number or name}
+\item{sheet}{xls sheet number or name}
 
-\item{fid_var}{string: feature_id variable (ideally transcends dataset)}
+\item{fid_var}{feature_id fvar}
 
-\item{sid_var}{string: sample_id variable}
+\item{sid_var}{sampleid svar}
 
-\item{subgroupvar}{string: subgroup variable (human comprehensible)}
+\item{subgroupvar}{subgroup svar}
 
-\item{fname_var}{string: feature_name variable}
+\item{fname_var}{featurename fvar}
 
-\item{impute}{TRUE / FALSE}
+\item{impute}{whether to impute}
 
-\item{add_kegg_pathways}{TRUE / FALSE}
+\item{add_kegg_pathways}{whether to add kegg pathways}
 
-\item{add_smiles}{TRUE / FALSE}
+\item{add_smiles}{whether to add smiles}
 
-\item{formula}{formula to create design matrix (using svars)}
+\item{pca}{whether to pca}
+
+\item{lmfit}{whether to lmfit/contrast}
+
+\item{formula}{designmat formula}
 
 \item{contrastdefs}{contrastdef vector/matrix/list}
 
-\item{verbose}{TRUE / FALSE}
+\item{verbose}{whether to msg}
 
-\item{plot}{TRUE / FALSE}
+\item{plot}{whether to plot}
 }
 \value{
 SummarizedExperiment

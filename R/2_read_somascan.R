@@ -142,9 +142,9 @@ rm_single_value_columns <- function(df){
 #' Read data from somascan adat file
 #'
 #' @param file                  *.adat file path (string)
-#' @param fidvar               featureid fvar (string)
-#' @param sidvar               sampleid svar (string)
-#' @param subgroupvar          subgroup svar (string)
+#' @param fidvar                featureid fvar (string)
+#' @param sidvar                sampleid svar (string)
+#' @param subgroupvar           subgroup svar (string)
 #' @param fname_var             featurename fvar (string)
 #' @param sample_type           subset of c('Sample','QC','Buffer','Calibrator')
 #' @param feature_type          subset of c('Protein',
@@ -152,14 +152,14 @@ rm_single_value_columns <- function(df){
 #'                                       'Rat Protein')
 #' @param sample_quality        subset of c('PASS', 'FLAG', 'FAIL')
 #' @param feature_quality       subset of c('PASS', 'FLAG', 'FAIL')
-#' @param rm_na_svars           TRUE/FALSE
-#' @param rm_single_value_svars TRUE/FALSE
-#' @param pca             whether to pca
-#' @param lmfit           whether to lmfit/contrast
+#' @param rm_na_svars           whether to rm NA svars
+#' @param rm_single_value_svars whether to rm single value svars
+#' @param pca                   whether to pca
+#' @param lmfit                 whether to lmfit/contrast
 #' @param formula               design formula (using svars)
 #' @param contrastdefs          contrastdef vector/matrix/list
-#' @param verbose               TRUE/FALSE
-#' @param plot                  TRUE/FALSE
+#' @param verbose               whether to msg
+#' @param plot                  whether to plot
 #' @return Summarizedexperiment
 #' @examples
 #' # HYPOGLYCEMIA

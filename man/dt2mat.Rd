@@ -5,28 +5,26 @@
 \alias{mat2dt}
 \title{`data.table` to `matrix`}
 \usage{
-dt2mat(dt)
+dt2mat(x)
 
 mat2dt(x, idvar)
 }
 \arguments{
-\item{dt}{data.table}
+\item{x}{data.table / matrix}
+
+\item{idvar}{idvar string}
 }
 \value{
-matrix
+matrix / data.table
 }
 \description{
 Convert between `data.table` and `matrix`
 }
-\details{
-Takes first data.table column to be matrix rownames and \cr
-remaining data.table columns to be matrix values
-}
 \examples{
-dt <- data.table::data.table(
+x <- data.table::data.table(
         gene    = c('ENSG001', 'ENSG002', 'ENSG003'),
         sampleA = c(1787, 10, 432),
         sampleB = c(1143,  3, 268))
-dt2mat(dt)
-mat2dt(dt2mat(dt), 'gene')
+dt2mat(x)
+mat2dt(dt2mat(x), 'gene')
 }

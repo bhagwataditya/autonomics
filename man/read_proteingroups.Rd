@@ -4,13 +4,13 @@
 \alias{.read_maxquant}
 \alias{read_proteingroups}
 \alias{read_phosphosites}
-\title{Read proteingroups/phosphosites}
+\title{Read/Analyze proteingroups/phosphosites}
 \usage{
 .read_maxquant(
   file,
   quantity = guess_maxquant_quantity(file),
-  samplefile = NULL,
-  sampleidvar = "sample_id",
+  sfile = NULL,
+  sidvar = "sample_id",
   subgroupvar = "subgroup",
   select_subgroups = NULL,
   invert_subgroups = character(0),
@@ -20,7 +20,7 @@
 read_proteingroups(
   file,
   quantity = guess_maxquant_quantity(file),
-  samplefile = NULL,
+  sfile = NULL,
   select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
@@ -40,7 +40,7 @@ read_phosphosites(
   file,
   proteinfile = paste0(dirname(file), "/proteinGroups.txt"),
   quantity = guess_maxquant_quantity(file),
-  samplefile = NULL,
+  sfile = NULL,
   select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
@@ -66,9 +66,9 @@ read_phosphosites(
 "Intensity labeled",
 "Intensity"}
 
-\item{samplefile}{samplefile path}
+\item{sfile}{sample file path}
 
-\item{sampleidvar}{sampleid svar}
+\item{sidvar}{sampleid svar}
 
 \item{subgroupvar}{subgroup svar}
 
@@ -106,7 +106,7 @@ read_phosphosites(
 SummarizedExperiment
 }
 \description{
-Read proteingroups/phosphosites
+Read/Analyze proteingroups/phosphosites
 }
 \examples{
 # LFQ intensities

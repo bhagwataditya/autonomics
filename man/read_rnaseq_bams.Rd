@@ -10,8 +10,8 @@
   paired,
   genome,
   nthreads = detectCores(),
-  samplefile = NULL,
-  sampleidvar = "sample_id",
+  sfile = NULL,
+  sidvar = "sample_id",
   subgroupvar = "subgroup",
   verbose = TRUE
 )
@@ -21,8 +21,8 @@ read_rnaseq_bams(
   paired,
   genome,
   nthreads = detectCores(),
-  samplefile = NULL,
-  sampleidvar = "sample_id",
+  sfile = NULL,
+  sidvar = "sample_id",
   subgroupvar = "subgroup",
   formula = NULL,
   contrastdefs = NULL,
@@ -46,9 +46,9 @@ read_rnaseq_bams(
 
 \item{nthreads}{no of cores to be used by Rsubread::featureCounts()}
 
-\item{samplefile}{sample file}
+\item{sfile}{sample file}
 
-\item{sampleidvar}{sampleid svar}
+\item{sidvar}{sampleid svar}
 
 \item{subgroupvar}{subgroup svar}
 
@@ -67,6 +67,10 @@ read_rnaseq_bams(
 \item{voom}{whether to compute voom precision weights}
 
 \item{log2}{whether to log2 transform}
+
+\item{pca}{whether to pca}
+
+\item{lmfit}{whether to lmfit/contrast}
 
 \item{plot}{whether to plot}
 }

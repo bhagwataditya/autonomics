@@ -26,8 +26,8 @@ basedir <- '~/autonomicscache/datasets'
 subdir  <- '~/autonomicscache/datasets/GSE161731'
 if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
 file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
-samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
 object <- .read_rnaseq_counts(
-            file, samplefile = samplefile, sampleidvar = 'rna_id')
+            file, sfile = sfile, sidvar = 'rna_id')
 rm_singletons(object, 'subject_id')
 }

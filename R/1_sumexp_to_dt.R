@@ -138,19 +138,18 @@ sumexp_to_subrep_dt <- function(object){
 #'
 #' Convert between `data.table` and `matrix`
 #'
-#' Takes first data.table column to be matrix rownames and \cr
-#' remaining data.table columns to be matrix values
-#' @param dt data.table
-#' @return matrix
+#' @param x  data.table / matrix
+#' @param idvar idvar string
+#' @return matrix / data.table
 #' @examples
-#' dt <- data.table::data.table(
+#' x <- data.table::data.table(
 #'         gene    = c('ENSG001', 'ENSG002', 'ENSG003'),
 #'         sampleA = c(1787, 10, 432),
 #'         sampleB = c(1143,  3, 268))
-#' dt2mat(dt)
-#' mat2dt(dt2mat(dt), 'gene')
+#' dt2mat(x)
+#' mat2dt(dt2mat(x), 'gene')
 #' @export
-dt2mat    <- function(dt) dt[,-1] %>% as.matrix() %>% set_rownames(dt[[1]])
+dt2mat    <- function(x) x[,-1] %>% as.matrix() %>% set_rownames(x[[1]])
 
 
 #' @rdname dt2mat
@@ -183,11 +182,11 @@ dt2sumexp  <- function(
 #' Convert matrix into SummarizedExperiment
 #' @param x matrix
 #' @param sampledata     data.frame / DataFrame
-#' @param sampleidvar    string / NULL
+#' @param sidvar    string / NULL
 #' @param subgroupvar    string / NULL
 #' @param featuredata    data.frame / DataFrame
-#' @param featureidvar   string / NULL
-#' @param featurenamevar string / NULL
+#' @param fidvar   string / NULL
+#' @param fnamevar string / NULL
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -200,11 +199,11 @@ dt2sumexp  <- function(
 matrix2sumexp <- function(
     x,
     sampledata     = NULL,
-    sampleidvar    = if (is.null(sampledata))   NULL else names(sampledata)[1],
+    sidvar    = if (is.null(sampledata))   NULL else names(sampledata)[1],
     subgroupvar    = NULL,
     featuredata    = NULL,
-    featureidvar   = if (is.null(featuredata)) NULL else names(featuredata)[1],
-    featurenamevar = NULL
+    fidvar   = if (is.null(featuredata)) NULL else names(featuredata)[1],
+    fnamevar = NULL
 ){
 # exprs
     object <- SummarizedExperiment(list(exprs = x))
@@ -214,9 +213,9 @@ matrix2sumexp <- function(
 # sdata
     object %<>% add_subgroup()
     object %<>% merge_sdata(sampledata,  by.x = 'sample_id',
-                            by.y = sampleidvar, subgroupvar = subgroupvar)
+                            by.y = sidvar, subgroupvar = subgroupvar)
     object %<>% merge_fdata(featuredata, by.x ='feature_id',
-                            by.y = featureidvar, featurenamevar=featurenamevar)
+                            by.y = fidvar, fnamevar=fnamevar)
 # return
     object
 }

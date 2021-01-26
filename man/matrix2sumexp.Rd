@@ -7,11 +7,11 @@
 matrix2sumexp(
   x,
   sampledata = NULL,
-  sampleidvar = if (is.null(sampledata)) NULL else names(sampledata)[1],
+  sidvar = if (is.null(sampledata)) NULL else names(sampledata)[1],
   subgroupvar = NULL,
   featuredata = NULL,
-  featureidvar = if (is.null(featuredata)) NULL else names(featuredata)[1],
-  featurenamevar = NULL
+  fidvar = if (is.null(featuredata)) NULL else names(featuredata)[1],
+  fnamevar = NULL
 )
 }
 \arguments{
@@ -19,15 +19,15 @@ matrix2sumexp(
 
 \item{sampledata}{data.frame / DataFrame}
 
-\item{sampleidvar}{string / NULL}
+\item{sidvar}{string / NULL}
 
 \item{subgroupvar}{string / NULL}
 
 \item{featuredata}{data.frame / DataFrame}
 
-\item{featureidvar}{string / NULL}
+\item{fidvar}{string / NULL}
 
-\item{featurenamevar}{string / NULL}
+\item{fnamevar}{string / NULL}
 }
 \value{
 SummarizedExperiment

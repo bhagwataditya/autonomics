@@ -53,9 +53,9 @@ read_somascan(
 
 \item{feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
-\item{rm_na_svars}{TRUE/FALSE}
+\item{rm_na_svars}{whether to rm NA svars}
 
-\item{rm_single_value_svars}{TRUE/FALSE}
+\item{rm_single_value_svars}{whether to rm single value svars}
 
 \item{pca}{whether to pca}
 
@@ -65,9 +65,9 @@ read_somascan(
 
 \item{contrastdefs}{contrastdef vector/matrix/list}
 
-\item{verbose}{TRUE/FALSE}
+\item{verbose}{whether to msg}
 
-\item{plot}{TRUE/FALSE}
+\item{plot}{whether to plot}
 }
 \value{
 Summarizedexperiment

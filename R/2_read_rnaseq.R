@@ -492,13 +492,13 @@ count_reads <- function(files, paired, nthreads, genome){
 
 #=============================================================================
 #
-#               counts_to_cpm/cpm_to_counts
+#               counts2cpm/cpm2counts
 #                   scaledlibsizes
 #
 #=============================================================================
 
 
-#' @rdname counts_to_cpm
+#' @rdname counts2cpm
 #' @noRd
 scaledlibsizes <- function(counts){
     colSums(counts) * edgeR::calcNormFactors(counts)
@@ -506,29 +506,28 @@ scaledlibsizes <- function(counts){
 
 
 #' Convert between counts and cpm
-#' @param counts     count matrix
-#' @param cpm        cpm matrix: counts per million (scaled) reads
-#' @param lib.sizes  numeric vector: (scaled) library sizes
-#' @return matrix
+#' @param x         count/cpm matrix
+#' @param libsize  (scaled) libsize vector
+#' @return cpm/tpm/count matrix
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- .read_rnaseq_counts(file)
-#' lib.size <- scaledlibsizes(exprs(object))
-#' cpm <- counts_to_cpm(counts(object), lib.size)
-#' counts  <- cpm_to_counts(cpm, lib.size)
+#' libsize <- scaledlibsizes(exprs(object))
+#' tpm <- counts2tpm(counts(object), genesize = 1)
+#' cpm <- counts2cpm(counts(object), libsize)
+#' counts  <- cpm2counts(cpm, libsize)
 #' sum(counts(object) - counts)
 #' @export
-counts_to_cpm <- function(counts, lib.size = scaledlibsizes(counts)){
-    t(t(counts)/(lib.size + 1)) * 1e6
+counts2cpm <- function(x, libsize = scaledlibsizes(x)){
+    t(t(x)/(libsize + 1)) * 1e6
 }
 
 
-#' @rdname counts_to_cpm
+#' @rdname counts2cpm
 #' @export
-cpm_to_counts <- function(cpm, lib.size){
-    1e-6 * t(t(cpm) * (lib.size + 1))
+cpm2counts <- function(x, libsize){
+    1e-6 * t(t(x) * (libsize + 1))
 }
-
 
 #' counts to tpm
 #' @param counts    count matrix
@@ -537,12 +536,12 @@ cpm_to_counts <- function(cpm, lib.size){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- .read_rnaseq_counts(file)
-#' counts_to_cpm(counts(object), gene.size=1)
+#' counts2tpm(counts(object), gene.size=1)
 #' @export
-counts_to_tpm <- function(counts, genesize){
-    counts  %<>% '/'(genesize)
-    lib.size <- matrixStats::colSums2(counts)
-    t(t(counts)/lib.size) * 1e6
+counts2tpm <- function(x, genesize){
+    x  %<>% '/'(genesize)
+    libsize <- matrixStats::colSums2(x)
+    t(t(x)/libsize) * 1e6
 }
 
 #=============================================================================
@@ -558,7 +557,7 @@ explicitly_compute_voom_weights <- function(
 ){
 # Extract
     log2cpm  <- exprs(object)
-    lib.size <- scaledlibsizes(counts(object))
+    libsize <- scaledlibsizes(counts(object))
     design   <- create_design(object, formula=!!enquo(formula))
 # Assert
     n <- nrow(log2cpm)
@@ -574,9 +573,9 @@ explicitly_compute_voom_weights <- function(
     } else {
         fitted.log2cpm <- fit$coef %*% t(fit$design)
     }
-    fitted.log2count <-(2^fitted.log2cpm) %>% cpm_to_counts(lib.size) %>% log2()
+    fitted.log2count <-(2^fitted.log2cpm) %>% cpm2counts(libsize) %>% log2()
 # Fit mean-variance trend
-    mean.log2count <- fit$Amean + mean(log2(lib.size + 1)) - log2(1e+06)
+    mean.log2count <- fit$Amean + mean(log2(libsize + 1)) - log2(1e+06)
     sdrt.log2count <- sqrt(fit$sigma)        # mean log2 count  &  sqrtsd(resid)
     all.identical <- matrixStats::rowVars(log2cpm)==0
     if (any(all.identical)) {
@@ -626,10 +625,10 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
 # filter
     if (verbose) message('\t\tPreprocess')
     design <- create_design(object, formula)
-    object$lib.size <- matrixStats::colSums2(counts(object))
+    object$libsize <- matrixStats::colSums2(counts(object))
     idx <- filterByExpr(counts(object),
                         design    = design, # group = object$subgroup,
-                        lib.size  = object$lib.size,
+                        lib.size  = object$libsize,
                         min.count = min_count)
     if (verbose) message('\t\tKeep ', sum(idx), '/', length(idx),
             ' features: count >= ', min_count, ' in at least some samples')
@@ -642,13 +641,13 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
     if (!is.null(genesize)){
         assert_is_subset(genesize, fvars(object))
         if (verbose)  message('\t\t\ttpm')
-        tpm(object) <- counts_to_tpm(counts(object), fdata(object)[[genesize]])}
+        tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesize]])}
 # cpm
     if (cpm){
-        if (verbose)  message('\t\t\tcpm:    tmm scale lib.sizes')
-        object$lib.size <- scaledlibsizes(counts(object))
+        if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
+        object$libsize <- scaledlibsizes(counts(object))
         if (verbose)  message('\t\t\t\tcpm')
-        cpm(object) <- counts_to_cpm(counts(object), object$lib.size)
+        cpm(object) <- counts2cpm(counts(object), object$libsize)
         other <- setdiff(assayNames(object), 'cpm')
         assays(object) %<>% extract(c('cpm', other)) }
 # voom (counts) & blockcor (log2(cpm))
@@ -696,7 +695,7 @@ add_voom <- function(
     if (verbose) message(txt)
     weights <- voom(counts(object),
                     design      = design,
-                    lib.size    = object$lib.size,
+                    lib.size    = object$libsize,
                     block       = block,
                     correlation = metadata(object)$blockcor,
                     plot        = plot)$weights
@@ -720,7 +719,7 @@ add_voom <- function(
 #' @export
 .read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(),
-    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    sfile = NULL, sidvar = 'sample_id', subgroupvar = 'subgroup',
     verbose = TRUE
 ){
 # Assert
@@ -747,8 +746,8 @@ add_voom <- function(
     fcounts$annotation$feature_id %<>% as.character()
     rowData(object)  <- fcounts$annotation
     object$sample_id <- sample_names
-    object %<>% merge_samplefile( samplefile = samplefile,
-        by.x = 'sample_id', by.y = sampleidvar, subgroupvar = subgroupvar, verbose = verbose)
+    object %<>% merge_sfile( sfile = sfile,
+        by.x = 'sample_id', by.y = sidvar, subgroupvar = subgroupvar, verbose = verbose)
 # Return
     object
 }
@@ -757,8 +756,8 @@ add_voom <- function(
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_counts <- function(file, fid_col = 1,
-    samplefile  = NULL, sampleidvar  = NULL, subgroupvar = NULL,
-    featurefile = NULL, featureidvar = NULL, featurenamevar = NULL,
+    sfile  = NULL, sidvar  = NULL, subgroupvar = NULL,
+    ffile = NULL, fidvar = NULL, fnamevar = NULL,
     verbose = TRUE
 ){
 # scan
@@ -770,13 +769,13 @@ add_voom <- function(
     fdata1   <- dt[, !idx, with = FALSE]
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1[[fid_col]]
-    object <- matrix2sumexp(counts1, featuredata = fdata1, featureidvar=fid_col)
+    object <- matrix2sumexp(counts1, featuredata = fdata1, fidvar=fid_col)
     assayNames(object)[1] <- 'counts'
 # sumexp
-    object %<>% merge_samplefile(samplefile = samplefile, by.x = 'sample_id',
-                     by.y = sampleidvar, subgroupvar = subgroupvar)
-    object %<>% merge_featurefile(featurefile = featurefile, by.x='feature_id',
-                     by.y = featureidvar, featurenamevar=featurenamevar)
+    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',
+                     by.y = sidvar, subgroupvar = subgroupvar)
+    object %<>% merge_ffile(ffile = ffile, by.x='feature_id',
+                     by.y = fidvar, fnamevar=fnamevar)
     metadata(object)$platform <- 'rnaseq'
     object$subgroup %<>% factor()
     levels(object$subgroup) %<>% make.names()
@@ -800,8 +799,8 @@ add_voom <- function(
 #' @param paired        whether reads are paired end
 #' @param genome        mm10"/"hg38"/etc. or GTF file
 #' @param nthreads      no of cores to be used by Rsubread::featureCounts()
-#' @param samplefile    sample file
-#' @param sampleidvar   sampleid svar
+#' @param sfile    sample file
+#' @param sidvar   sampleid svar
 #' @param subgroupvar   subgroup svar
 #' @param formula       designmat formula
 #' @param contrastdefs  contrast definition vector/matrix/list
@@ -810,6 +809,8 @@ add_voom <- function(
 #' @param cpm           whether to compute cpm
 #' @param voom          whether to compute voom precision weights
 #' @param log2          whether to log2 transform
+#' @param pca                   whether to pca
+#' @param lmfit                 whether to lmfit/contrast
 #' @param verbose       whether to message
 #' @param plot          whether to plot
 #' @return SummarizedExperiment
@@ -824,7 +825,7 @@ add_voom <- function(
 #' @export
 read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(),
-    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    sfile = NULL, sidvar = 'sample_id', subgroupvar = 'subgroup',
     formula = NULL, contrastdefs = NULL, min_count = 10, genesize = NULL,
     cpm = TRUE, voom = TRUE, log2 = TRUE, pca = TRUE, lmfit = TRUE,
     verbose = TRUE, plot=TRUE
@@ -834,8 +835,8 @@ read_rnaseq_bams <- function(
                                 paired      = paired,
                                 genome      = genome,
                                 nthreads    = nthreads,
-                                samplefile  = samplefile,
-                                sampleidvar = sampleidvar,
+                                sfile  = sfile,
+                                sidvar = sidvar,
                                 subgroupvar = subgroupvar)
 # Preprocess/Analyze
     object %<>% preprocess_rnaseq_counts(formula  = !!formula,
@@ -862,13 +863,13 @@ read_rnaseq_bams <- function(
 #'
 #' @param file            count file
 #' @param fid_col         featureid fvar
-#' @param samplefile      sdata file
-#' @param sampleidvar     sampleid svar
+#' @param sfile      sdata file
+#' @param sidvar     sampleid svar
 #' @param subgroupvar     subgroup svar
 #' @param block           block svar
-#' @param featurefile     fdata file
-#' @param featureidvar    featureid fvar
-#' @param featurenamevar  featurename fvar
+#' @param ffile     fdata file
+#' @param fidvar    featureid fvar
+#' @param fnamevar  featurename fvar
 #' @param formula         designmat formula
 #' @param contrastdefs    contrastdef vector/matrix/list
 #' @param min_count       min feature count required in some samples
@@ -900,33 +901,33 @@ read_rnaseq_bams <- function(
 #'        if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles(
 #'                                        "GSE161731",baseDir=basedir)
 #'        file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
-#'        samplefile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+#'        sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
 #'    # Read
-#'        object <- .read_rnaseq_counts(file, samplefile = samplefile,
-#'                   sampleidvar ='rna_id', subgroupvar='gender')
+#'        object <- .read_rnaseq_counts(file, sfile = sfile,
+#'                   sidvar ='rna_id', subgroupvar='gender')
 #'    # Read / Analyze
-#'        object <- read_rnaseq_counts(file, samplefile = samplefile,
-#'          sampleidvar='rna_id', subgroupvar='gender', voom=FALSE)
+#'        object <- read_rnaseq_counts(file, sfile = sfile,
+#'          sidvar='rna_id', subgroupvar='gender', voom=FALSE)
 #'    # Read / Weight / Analyze
-#'        object <- read_rnaseq_counts(file, samplefile = samplefile,
-#'          sampleidvar ='rna_id', subgroupvar='gender', plot = TRUE)
+#'        object <- read_rnaseq_counts(file, sfile = sfile,
+#'          sidvar ='rna_id', subgroupvar='gender', plot = TRUE)
 #'    # Read / Weight / Block / Analyze (dupcor takes some time)
-#'        # object <- read_rnaseq_counts(file, samplefile = samplefile,
-#'        #    sampleidvar='rna_id', subgroupvar='gender', block='subject_id')
+#'        # object <- read_rnaseq_counts(file, sfile = sfile,
+#'        #    sidvar='rna_id', subgroupvar='gender', block='subject_id')
 #' @export
 read_rnaseq_counts <- function(
     file, fid_col = 1,
-    samplefile = NULL, sampleidvar = NULL, subgroupvar = NULL, block = NULL,
-    featurefile = NULL, featureidvar = NULL, featurenamevar = NULL,
+    sfile = NULL, sidvar = NULL, subgroupvar = NULL, block = NULL,
+    ffile = NULL, fidvar = NULL, fnamevar = NULL,
     formula = NULL, contrastdefs = NULL, min_count = 10,
     pseudocount = 0.5, genesize = NULL, cpm = TRUE, voom = TRUE, log2 = TRUE,
     pca = TRUE, lmfit = TRUE, verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_rnaseq_counts(file, fid_col = fid_col,
-                samplefile = samplefile, sampleidvar = sampleidvar,
-                subgroupvar = subgroupvar, featurefile = featurefile,
-                featureidvar = featureidvar, featurenamevar = featurenamevar)
+                sfile = sfile, sidvar = sidvar,
+                subgroupvar = subgroupvar, ffile = ffile,
+                fidvar = fidvar, fnamevar = fnamevar)
 # Preprocess
     object %<>% preprocess_rnaseq_counts(formula = formula, block = block,
                 min_count = min_count, pseudocount = pseudocount,

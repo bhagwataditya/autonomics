@@ -946,23 +946,22 @@ arrange_samples_ <- function(x, svars){
 
 #==============================================================================
 #
-#                       create_maxquant_samplefile
+#                       create_sfile
 #
 #==============================================================================
 
 
-#' Create maxquant samplefile
-#' @param file        proteingroups/phosphosite file
-#' @param samplefile  sample file
+#' Create sfile
+#' @param object      SummarizedExperiment
+#' @param sfile  sample file
 #' @param verbose     TRUE/FALSE
-#' @param quantity    maxquant quantity
-#' @return samplefile
+#' @return sample file path
 #' @export
-create_samplefile <- function(object, samplefile, verbose = TRUE){
-    if (verbose) message('\tCreate samplefile: ', samplefile)
-    assert_all_are_dirs(dirname(samplefile))
-    fwrite(sdata(object), samplefile, sep = '\t', row.names = FALSE)
-    return(samplefile)
+create_sfile <- function(object, sfile, verbose = TRUE){
+    if (verbose) message('\tCreate sfile: ', sfile)
+    assert_all_are_dirs(dirname(sfile))
+    fwrite(sdata(object), sfile, sep = '\t', row.names = FALSE)
+    return(sfile)
 }
 
 
@@ -1162,7 +1161,7 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 #' @rdname read_proteingroups
 #' @export
 .read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
-    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = 'subgroup',
+    sfile = NULL, sidvar = 'sample_id', subgroupvar = 'subgroup',
     select_subgroups = NULL, invert_subgroups = character(0), verbose = TRUE){
 # Read
     assert_all_are_existing_files(file)
@@ -1196,8 +1195,8 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
     colnames(exprs1) <- sids1
 # Create sumexp
     object <- matrix2sumexp(exprs1, featuredata = fdata1)
-    object %<>% merge_samplefile(samplefile = samplefile, by.x = 'sample_id',
-                        by.y = sampleidvar, subgroupvar  = subgroupvar)
+    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',
+                        by.y = sidvar, subgroupvar  = subgroupvar)
 # Filter/Transform
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
@@ -1213,7 +1212,7 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 }
 
 
-#' Read proteingroups/phosphosites
+#' Read/Analyze proteingroups/phosphosites
 #'
 #' @param file              proteingroups/phosphosites file
 #' @param proteinfile       proteingroups file
@@ -1225,8 +1224,8 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 #'                                   "Reporter intensity",
 #'                                   "Intensity labeled",
 #'                                   "Intensity"
-#' @param samplefile        samplefile path
-#' @param sampleidvar       sampleid svar
+#' @param sfile             sample file path
+#' @param sidvar       sampleid svar
 #' @param subgroupvar       subgroup svar
 #' @param select_subgroups  subgroups to be selected (character vector)
 #' @param invert_subgroups  subgroups to be inverted (character vector)
@@ -1280,7 +1279,7 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 #'     fdata(object)[1:3, 1:4]
 #' @export
 read_proteingroups <- function(
-    file, quantity = guess_maxquant_quantity(file), samplefile = NULL,
+    file, quantity = guess_maxquant_quantity(file), sfile = NULL,
     select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
@@ -1292,7 +1291,7 @@ read_proteingroups <- function(
     if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
 # Read
     object <- .read_maxquant(file, quantity,
-        samplefile = samplefile, select_subgroups = select_subgroups,
+        sfile = sfile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose = verbose)
     assayNames(object)[1] %<>% gsub('maxquant', 'proteingroups', .)
 # Prepare
@@ -1315,7 +1314,7 @@ read_proteingroups <- function(
 read_phosphosites <- function(
     file, proteinfile = paste0(dirname(file), '/proteinGroups.txt'),
     quantity = guess_maxquant_quantity(file),
-    samplefile = NULL, select_subgroups = NULL, contaminants = FALSE,
+    sfile = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
     invert_subgroups = character(0), pca = TRUE,
     lmfit = TRUE, formula = NULL, contrastdefs = NULL,
@@ -1327,10 +1326,10 @@ read_phosphosites <- function(
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
 # Read
     prot <- .read_maxquant(file=proteinfile, quantity = quantity,
-        samplefile = samplefile, select_subgroups = select_subgroups,
+        sfile = sfile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose=verbose)
     object  <- .read_maxquant(file = file, quantity = quantity,
-        samplefile = samplefile, select_subgroups = select_subgroups,
+        sfile = sfile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose = verbose)
     assayNames(prot)[1]   %<>% gsub('maxquant', 'proteingroups', ., fixed=TRUE)
     assayNames(object)[1] %<>% gsub('maxquant', 'phosphosites',  ., fixed=TRUE)

@@ -19,7 +19,7 @@ add_limma(...)
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{contrastdefs}{contrastdef vector / matrix / list:
+\item{contrastdefs}{contrastdef vector / matrix / list
 \itemize{
 \item{c("t1-t0", "t2-t1", "t3-t2")}
 \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -29,17 +29,21 @@ add_limma(...)
      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
      nrow=1, byrow=TRUE))}}}
 
-\item{formula}{formula to create design matrix (using svars)}
+\item{formula}{designmat formula}
 
 \item{block}{block svar (or NULL)}
 
-\item{plot}{TRUE/FALSE}
+\item{verbose}{whether to msg}
+
+\item{plot}{whether to plot}
+
+\item{...}{for backward compatibility}
 }
 \value{
 Updated SummarizedExperiment
 }
 \description{
-Fit linear model and analyze contrasts
+Fit linear model. Add contrast results to object
 }
 \details{
 Limma results can be easily accessed with limma(object).
@@ -59,8 +63,9 @@ This returns a list with components:
 \examples{
 require(magrittr)
 file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file, plot=FALSE)
+object <- read_somascan(file, plot=FALSE, lmfit=FALSE)
 lmfit(object)
+lmfit(object, block = 'Subject_ID')
 
 file <- download_data('billing19.proteingroups.txt')
 select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')

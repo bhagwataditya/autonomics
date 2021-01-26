@@ -167,9 +167,9 @@ split_extract <- function(x, i, sep=guess_sep(x)){
 
 #=============================================================================
 #
-#               merge_samplefile
+#               merge_sfile
 #                   file_exists
-#                       default_samplefile
+#                       default_sfile
 #
 #=============================================================================
 
@@ -181,14 +181,14 @@ file_exists <- function(file){
                             return(FALSE)
 }
 
-#' Default samplefile
+#' Default sfile
 #' @param file data file
 #' @return sample file
 #' @export
-default_samplefile <- function(file){
-    samplefile <- tools::file_path_sans_ext(file)
-    samplefile %<>% paste0('.samples.txt')
-    samplefile
+default_sfile <- function(file){
+    sfile <- tools::file_path_sans_ext(file)
+    sfile %<>% paste0('.samples.txt')
+    sfile
 }
 
 
@@ -420,7 +420,7 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 
 #' Contrast
 #'
-#' Fit linear model and analyze contrasts
+#' Fit linear model. Add contrast results to object
 #'
 #' Limma results can be easily accessed with limma(object).
 #' This returns a list with components:
@@ -436,7 +436,7 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #'    \item {F.p}    vector (ngene)            : p    values (moderated F test)
 #' }
 #' @param object       SummarizedExperiment
-#' @param contrastdefs contrastdef vector / matrix / list:
+#' @param contrastdefs contrastdef vector / matrix / list
 #' \itemize{
 #' \item{c("t1-t0", "t2-t1", "t3-t2")}
 #' \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -445,15 +445,18 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
 #'      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
 #'      nrow=1, byrow=TRUE))}}
-#' @param formula      formula to create design matrix (using svars)
+#' @param formula   designmat formula
 #' @param block     block svar (or NULL)
-#' @param plot         TRUE/FALSE
+#' @param verbose   whether to msg
+#' @param plot      whether to plot
+#' @param ...       for backward compatibility
 #' @return Updated SummarizedExperiment
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
+#' object <- read_somascan(file, plot=FALSE, lmfit=FALSE)
 #' lmfit(object)
+#' lmfit(object, block = 'Subject_ID')
 #'
 #' file <- download_data('billing19.proteingroups.txt')
 #' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
@@ -481,9 +484,9 @@ lmfit <- function(object, contrastdefs = NULL,
     design <- create_design(object, formula=formula)
     design(object)    <- design
     contrastdefs(object) <- contrastdefs
-# Prepare block
-    if (verbose)  cmessage('\t\tLmfit/contrast: %s%s',
-           if(is.null(block))            '' else paste0(' | ', block),
+# Block
+    if (verbose)  cmessage('\t\tLmfit: %s%s',
+           if(is.null(block)) '' else paste0('block on `', block, '`'),
            if(is.null(weights(object)))  '' else paste0(' (weights)'))
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
@@ -494,12 +497,13 @@ lmfit <- function(object, contrastdefs = NULL,
             metadata(object)$blockcor <- duplicateCorrelation(
                 exprs(object), design=design, block=block
             )$consensus.correlation }}
-# Fit lm and compute contrasts
+# Lmfit
     fit <- suppressWarnings(lmFit(object = exprs(object[, rownames(design)]),
         design = design, block = block, correlation = metadata(object)$blockcor,
         weights = weights(object)))
+# Contrast
+    if (verbose)  cmessage('\t\tContrast:')
     object %<>% add_contrast_results(fit)
-# Plot/Return
     if (plot)  plot_contrastogram(object)
     cmessage_df('\t\t\t%s', extract_limma_summary(object))
     return(object)

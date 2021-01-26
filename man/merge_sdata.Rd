@@ -19,7 +19,7 @@ merge_fdata(
   dt,
   by.x = "feature_id",
   by.y = names(dt)[1],
-  featurenamevar = NULL,
+  fnamevar = NULL,
   verbose = TRUE
 )
 }
@@ -36,7 +36,7 @@ merge_fdata(
 
 \item{verbose}{TRUE/FALSE}
 
-\item{featurenamevar}{featurename fvar}
+\item{fnamevar}{featurename fvar}
 }
 \value{
 SummarizedExperiment

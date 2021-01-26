@@ -356,9 +356,9 @@ numerify   <- function(df){
 #' @param sdata_rows numeric vector: sdata rows
 #' @param sdata_cols numeric vector: sdata cols
 #' @param transpose  TRUE or FALSE (default)
-#' @param samplefile samplefile or NULL
-#' @param sampleidvar sampleidvar in samplefile
-#' @param subgroupvar subgroupvar in samplefile
+#' @param sfile       sample file path
+#' @param sidvar sidvar in sfile
+#' @param subgroupvar subgroupvar in sfile
 #' @param verbose    TRUE (default) or FALSE
 #' @return SummarizedExperiment
 #' @examples
@@ -405,7 +405,7 @@ read_omics <- function(
     expr_rows, expr_cols, fvar_rows  = NULL, fvar_cols = NULL, svar_rows = NULL,
     svar_cols  = NULL, fdata_rows = NULL,  fdata_cols = NULL, sdata_rows = NULL,
     sdata_cols = NULL, transpose  = FALSE,
-    samplefile = NULL, sampleidvar = 'sample_id', subgroupvar = character(0),
+    sfile = NULL, sidvar = 'sample_id', subgroupvar = character(0),
     verbose = TRUE
 ){
     object <- .read_omics(file, sheet=sheet,
@@ -417,18 +417,12 @@ read_omics <- function(
                         fdata_rows = fdata_rows, fdata_cols = fdata_cols,
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
-        object %<>% merge_samplefile(samplefile = samplefile,
-                            by.x = 'sample_id', by.y = sampleidvar,
+        object %<>% merge_sfile(sfile = sfile,
+                            by.x = 'sample_id', by.y = sidvar,
                             subgroupvar = subgroupvar, verbose    = verbose)
     object
 }
 
-
-#=============================================================================
-#
-#                        merge_samplefile
-#
-#=============================================================================
 
 
 split_values <- function(x){
@@ -446,7 +440,7 @@ split_values <- function(x){
 #' @param by.x            object mergevar
 #' @param by.y            df mergevar
 #' @param subgroupvar     subgroup svar
-#' @param featurenamevar  featurename fvar
+#' @param fnamevar  featurename fvar
 #' @param verbose         TRUE/FALSE
 #' @return                SummarizedExperiment
 #' @examples
@@ -471,11 +465,11 @@ merge_sdata <- function(object, dt, by.x = 'sample_id',
 #'@rdname merge_sdata
 #'@export
 merge_fdata <- function(object, dt, by.x = 'feature_id',
-    by.y = names(dt)[1], featurenamevar = NULL, verbose=TRUE
+    by.y = names(dt)[1], fnamevar = NULL, verbose=TRUE
 ){
     fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
-    if (!is.null(featurenamevar))  fdata(object)$featurename <-
-                                                fdata(object)[[featurenamevar]]
+    if (!is.null(fnamevar))  fdata(object)$featurename <-
+                                                fdata(object)[[fnamevar]]
     leadcols <- c('feature_id', 'feature_name')
     leadcols %<>% intersect(names(fdata(object)))
     fdata(object) %<>% pull_columns(leadcols)
@@ -521,12 +515,12 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' Merge sample/feature file
 #'
 #' @param object         SummarizedExperiment
-#' @param samplefile     samplefile path
-#' @param featurefile    featurefile path
+#' @param sfile     sample file path
+#' @param ffile    ffile path
 #' @param by.x           object mergevar
 #' @param by.y           file mergevvar
 #' @param subgroupvar    subgroupvar
-#' @param featurenamevar featurenamefvar
+#' @param fnamevar featurenamefvar
 #' @param verbose        TRUE (default) or FALSE
 #' @examples
 #'# PROTEINGROUPS
@@ -534,36 +528,36 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #'    select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #'    select %<>% paste0('_STD')
 #'    object <- read_proteingroups(file, select_subgroups = select)
-#'    samplefile <- paste0(tempdir(),'/', basename(file_path_sans_ext(file)))
-#'    samplefile %<>% paste0('.samples.txt')
-#'    invisible(create_samplefile(object, samplefile))
-#'    merge_samplefile(object, samplefile)
+#'    sfile <- paste0(tempdir(),'/', basename(file_path_sans_ext(file)))
+#'    sfile %<>% paste0('.samples.txt')
+#'    invisible(create_sfile(object, sfile))
+#'    merge_sfile(object, sfile)
 #'@export
-merge_samplefile <- function(object, samplefile = NULL,
+merge_sfile <- function(object, sfile = NULL,
     by.x = 'sample_id', by.y = NULL, subgroupvar = NULL, verbose = TRUE
 ){
-    if (is.null(samplefile))  return(object)
-    assert_all_are_existing_files(samplefile)
-    if (verbose) message('\t\tMerge sdata: ', samplefile)
-    dt <- fread(samplefile)
+    if (is.null(sfile))  return(object)
+    assert_all_are_existing_files(sfile)
+    if (verbose) message('\t\tMerge sdata: ', sfile)
+    dt <- fread(sfile)
     if (is.null(by.y))  by.y <- names(dt)[1]
     object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y,
                         subgroupvar = subgroupvar, verbose = verbose)
     object
 }
 
-#' @rdname merge_samplefile
+#' @rdname merge_sfile
 #' @export
-merge_featurefile <- function(object, featurefile = NULL,
-    by.x = 'feature_id', by.y = NULL, featurenamevar = NULL, verbose = TRUE
+merge_ffile <- function(object, ffile = NULL,
+    by.x = 'feature_id', by.y = NULL, fnamevar = NULL, verbose = TRUE
 ){
-    if (is.null(featurefile))  return(object)
-    assert_all_are_existing_files(featurefile)
-    if (verbose) message('\t\tMerge fdata: ', featurefile)
-    dt <- fread(featurefile)
+    if (is.null(ffile))  return(object)
+    assert_all_are_existing_files(ffile)
+    if (verbose) message('\t\tMerge fdata: ', ffile)
+    dt <- fread(ffile)
     if (is.null(by.y))  by.y <- names(dt)[1]
     object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y,
-                            featurenamevar = featurenamevar, verbose = verbose)
+                            fnamevar = fnamevar, verbose = verbose)
     object
 }
 

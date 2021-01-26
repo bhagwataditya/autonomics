@@ -252,19 +252,21 @@ stack <- function(x, y){
 }
 
 #' Read metabolon
-#' @param file          string: path to metabolon xlsx file
-#' @param sheet         number/string: xls sheet number or name
-#' @param fid_var       string: feature_id variable (ideally transcends dataset)
-#' @param sid_var       string: sample_id variable
-#' @param subgroupvar  string: subgroup variable (human comprehensible)
-#' @param fname_var     string: feature_name variable
-#' @param impute        TRUE / FALSE
-#' @param add_kegg_pathways  TRUE / FALSE
-#' @param add_smiles    TRUE / FALSE
-#' @param formula       formula to create design matrix (using svars)
-#' @param contrastdefs  contrastdef vector/matrix/list
-#' @param verbose       TRUE / FALSE
-#' @param plot          TRUE / FALSE
+#' @param file               metabolon xlsx filepath
+#' @param sheet              xls sheet number or name
+#' @param fid_var            feature_id fvar
+#' @param sid_var            sampleid svar
+#' @param subgroupvar        subgroup svar
+#' @param fname_var          featurename fvar
+#' @param impute             whether to impute
+#' @param add_kegg_pathways  whether to add kegg pathways
+#' @param add_smiles         whether to add smiles
+#' @param pca                whether to pca
+#' @param lmfit              whether to lmfit/contrast
+#' @param formula            designmat formula
+#' @param contrastdefs       contrastdef vector/matrix/list
+#' @param verbose            whether to msg
+#' @param plot               whether to plot
 #' @return SummarizedExperiment
 #' @examples
 #' # GLUTAMINASE
