@@ -6,26 +6,26 @@
 \usage{
 matrix2sumexp(
   x,
-  sampledata = NULL,
-  sidvar = if (is.null(sampledata)) NULL else names(sampledata)[1],
+  sdt = NULL,
+  sdtby = if (is.null(sdt)) NULL else names(sdt)[1],
   subgroupvar = NULL,
-  featuredata = NULL,
-  fidvar = if (is.null(featuredata)) NULL else names(featuredata)[1],
+  fdt = NULL,
+  fdtby = if (is.null(fdt)) NULL else names(fdt)[1],
   fnamevar = NULL
 )
 }
 \arguments{
 \item{x}{matrix}
 
-\item{sampledata}{data.frame / DataFrame}
+\item{sdt}{sample data.table / data.frame / DataFrame}
 
-\item{sidvar}{string / NULL}
+\item{sdtby}{sample data mergeby column}
 
 \item{subgroupvar}{string / NULL}
 
-\item{featuredata}{data.frame / DataFrame}
+\item{fdt}{feature data.table / data.frame / DataFrame}
 
-\item{fidvar}{string / NULL}
+\item{fdtby}{feature data mergeby column}
 
 \item{fnamevar}{string / NULL}
 }

@@ -56,8 +56,9 @@ download_data <- function(
         paste0(bitbucket, '/', file), localfile, mode = 'wb')
 
     if (file_ext(file) == 'zip'){
-        if (!dir.exists(dirname(localfile))){
-            unzip(localfile, exdir = dirname(localfile))
+        localdir <- file_path_sans_ext(localfile)
+        if (!dir.exists(localdir)){
+            unzip(localfile, exdir = localdir)
         }
         localfile %<>% substr(1, nchar(.)-4)
     }

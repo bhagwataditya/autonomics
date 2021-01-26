@@ -288,7 +288,7 @@ is_available_for_some_feature <- function(object){
 #' file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
 #' sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
 #' object <- .read_rnaseq_counts(
-#'             file, sfile = sfile, sidvar = 'rna_id')
+#'             file, sfile = sfile, sfileby = 'rna_id')
 #' rm_singletons(object, 'subject_id')
 #' @export
 rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){

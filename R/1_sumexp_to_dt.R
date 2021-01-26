@@ -180,13 +180,13 @@ dt2sumexp  <- function(
 
 
 #' Convert matrix into SummarizedExperiment
-#' @param x matrix
-#' @param sampledata     data.frame / DataFrame
-#' @param sidvar    string / NULL
-#' @param subgroupvar    string / NULL
-#' @param featuredata    data.frame / DataFrame
-#' @param fidvar   string / NULL
-#' @param fnamevar string / NULL
+#' @param x             matrix
+#' @param sdt           sample data.table / data.frame / DataFrame
+#' @param sdtby         sample data mergeby column
+#' @param subgroupvar   string / NULL
+#' @param fdt           feature data.table / data.frame / DataFrame
+#' @param fdtby         feature data mergeby column
+#' @param fnamevar      string / NULL
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -198,12 +198,12 @@ dt2sumexp  <- function(
 #' @export
 matrix2sumexp <- function(
     x,
-    sampledata     = NULL,
-    sidvar    = if (is.null(sampledata))   NULL else names(sampledata)[1],
-    subgroupvar    = NULL,
-    featuredata    = NULL,
-    fidvar   = if (is.null(featuredata)) NULL else names(featuredata)[1],
-    fnamevar = NULL
+    sdt         = NULL,
+    sdtby       = if (is.null(sdt))   NULL else names(sdt)[1],
+    subgroupvar = NULL,
+    fdt         = NULL,
+    fdtby       = if (is.null(fdt)) NULL else names(fdt)[1],
+    fnamevar    = NULL
 ){
 # exprs
     object <- SummarizedExperiment(list(exprs = x))
@@ -212,10 +212,10 @@ matrix2sumexp <- function(
     sdata(object)$sample_id    <- colnames(object)
 # sdata
     object %<>% add_subgroup()
-    object %<>% merge_sdata(sampledata,  by.x = 'sample_id',
-                            by.y = sidvar, subgroupvar = subgroupvar)
-    object %<>% merge_fdata(featuredata, by.x ='feature_id',
-                            by.y = fidvar, fnamevar=fnamevar)
+    object %<>% merge_sdata(
+            sdt, by.x = 'sample_id', by.y = sdtby, subgroupvar = subgroupvar)
+    object %<>% merge_fdata(
+            fdt, by.x ='feature_id', by.y = fdtby, fnamevar = fnamevar)
 # return
     object
 }

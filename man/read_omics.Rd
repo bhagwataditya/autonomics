@@ -45,7 +45,7 @@ read_omics(
   sdata_cols = NULL,
   transpose = FALSE,
   sfile = NULL,
-  sidvar = "sample_id",
+  sfileby = NULL,
   subgroupvar = character(0),
   verbose = TRUE
 )
@@ -88,9 +88,9 @@ excel (xls, xlsx) file}
 
 \item{verbose}{TRUE (default) or FALSE}
 
-\item{sfile}{sample file path}
+\item{sfile}{sample file}
 
-\item{sidvar}{sidvar in sfile}
+\item{sfileby}{sample file mergeby column}
 
 \item{subgroupvar}{subgroupvar in sfile}
 }

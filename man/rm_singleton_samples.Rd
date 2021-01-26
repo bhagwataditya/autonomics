@@ -28,6 +28,6 @@ if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
 file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
 sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
 object <- .read_rnaseq_counts(
-            file, sfile = sfile, sidvar = 'rna_id')
+            file, sfile = sfile, sfileby = 'rna_id')
 rm_singletons(object, 'subject_id')
 }

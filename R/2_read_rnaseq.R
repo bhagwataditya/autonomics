@@ -715,12 +715,12 @@ add_voom <- function(
 #
 #==============================================================================
 
-#' @rdname read_rnaseq_bams
+#' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(),
-    sfile = NULL, sidvar = 'sample_id', subgroupvar = 'subgroup',
-    verbose = TRUE
+    sfile = NULL, sfileby = NULL, subgroupvar = NULL,
+    ffile = NULL, ffileby = NULL, fnamevar    = NULL, verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(bamdir)
@@ -737,17 +737,18 @@ add_voom <- function(
     sample_names <- if (has_no_duplicates(filenames)){           filenames
                     } else if (has_no_duplicates(subdirnames)){  subdirnames
                     } else {           paste0(subdirnames, '_', filenames)}
-    object <- SummarizedExperiment(assays = list(
-                counts = fcounts$counts %>% set_colnames(sample_names)))
+
+    colnames(fcounts$counts) <- sample_names
+    object <- matrix2sumexp(fcounts$counts,
+                            fdt = fcounts$annotation, fdtby='feature_id')
+    assayNames(object)[1] <- 'counts'
+# Add sample/feature data
+    object %<>% merge_sfile( sfile, by.x = 'sample_id',  by.y = sfileby,
+                             subgroupvar = subgroupvar, verbose = verbose)
+    object %<>% merge_ffile( ffile, by.x = 'feature_id', by.y = ffileby,
+                             fnamevar = fnamevar, verbose = verbose)
     metadata(object)$platform <- 'rnaseq'
     metadata(object)$file <- bamdir
-# Add sample/feature data
-    message("\t\tAdd fdata")
-    fcounts$annotation$feature_id %<>% as.character()
-    rowData(object)  <- fcounts$annotation
-    object$sample_id <- sample_names
-    object %<>% merge_sfile( sfile = sfile,
-        by.x = 'sample_id', by.y = sidvar, subgroupvar = subgroupvar, verbose = verbose)
 # Return
     object
 }
@@ -756,8 +757,8 @@ add_voom <- function(
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_counts <- function(file, fid_col = 1,
-    sfile  = NULL, sidvar  = NULL, subgroupvar = NULL,
-    ffile = NULL, fidvar = NULL, fnamevar = NULL,
+    sfile = NULL, sfileby  = NULL, subgroupvar = NULL,
+    ffile = NULL, ffileby = NULL, fnamevar = NULL,
     verbose = TRUE
 ){
 # scan
@@ -769,13 +770,13 @@ add_voom <- function(
     fdata1   <- dt[, !idx, with = FALSE]
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1[[fid_col]]
-    object <- matrix2sumexp(counts1, featuredata = fdata1, fidvar=fid_col)
+    object <- matrix2sumexp(counts1, fdt = fdata1, fdtby = fid_col)
     assayNames(object)[1] <- 'counts'
 # sumexp
     object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',
-                     by.y = sidvar, subgroupvar = subgroupvar)
+                     by.y = sfileby, subgroupvar = subgroupvar)
     object %<>% merge_ffile(ffile = ffile, by.x='feature_id',
-                     by.y = fidvar, fnamevar=fnamevar)
+                     by.y = ffileby, fnamevar=fnamevar)
     metadata(object)$platform <- 'rnaseq'
     object$subgroup %<>% factor()
     levels(object$subgroup) %<>% make.names()
@@ -791,62 +792,38 @@ add_voom <- function(
 #=============================================================================
 
 
-#' Read rnaseq [bs]am files
-#'
-#' Read/preprocess/analyze rnaseq [bs]am files
-#'
-#' @param bamdir        bam/sam files dir
-#' @param paired        whether reads are paired end
-#' @param genome        mm10"/"hg38"/etc. or GTF file
-#' @param nthreads      no of cores to be used by Rsubread::featureCounts()
-#' @param sfile    sample file
-#' @param sidvar   sampleid svar
-#' @param subgroupvar   subgroup svar
-#' @param formula       designmat formula
-#' @param contrastdefs  contrast definition vector/matrix/list
-#' @param min_count     min feature count required in some samples
-#' @param genesize      genesize fvar for tpm
-#' @param cpm           whether to compute cpm
-#' @param voom          whether to compute voom precision weights
-#' @param log2          whether to log2 transform
-#' @param pca                   whether to pca
-#' @param lmfit                 whether to lmfit/contrast
-#' @param verbose       whether to message
-#' @param plot          whether to plot
-#' @return SummarizedExperiment
-#' @examples
-#' # in-built genome
-#' bamdir <- download_data("billing16.bam.zip")
-#' # object <- read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
-#' # object <- .read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
-#' # gtffile <- download_gtf("Homo sapiens")
-#' # object <- read_rnaseq_bams(bamdir, paired=TRUE, genome=gtffile)
-#' @author Aditya Bhagwat, Shahina Hayat
+#' @rdname read_rnaseq_counts
 #' @export
 read_rnaseq_bams <- function(
     bamdir, paired, genome, nthreads = detectCores(),
-    sfile = NULL, sidvar = 'sample_id', subgroupvar = 'subgroup',
-    formula = NULL, contrastdefs = NULL, min_count = 10, genesize = NULL,
-    cpm = TRUE, voom = TRUE, log2 = TRUE, pca = TRUE, lmfit = TRUE,
-    verbose = TRUE, plot=TRUE
+    sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
+    ffile = NULL, ffileby = NULL, fnamevar = NULL,
+    formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
+    cpm = TRUE, voom = TRUE, log2 = TRUE, pca = TRUE,
+    lmfit = TRUE, contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
 # Read
-    object <- .read_rnaseq_bams(bamdir      = bamdir,
-                                paired      = paired,
-                                genome      = genome,
-                                nthreads    = nthreads,
-                                sfile  = sfile,
-                                sidvar = sidvar,
+    object <- .read_rnaseq_bams(bamdir   = bamdir,
+                                paired   = paired,
+                                genome   = genome,
+                                nthreads = nthreads,
+                                sfile    = sfile,
+                                sfileby  = sfileby,
+                                ffile    = ffile,
+                                ffileby  = ffileby,
+                                fnamevar = fnamevar,
                                 subgroupvar = subgroupvar)
 # Preprocess/Analyze
-    object %<>% preprocess_rnaseq_counts(formula  = !!formula,
-                                min_count  = min_count,
-                                genesize   = genesize,
-                                cpm        = cpm,
-                                voom       = voom,
-                                log2       = log2,
-                                verbose    = verbose,
-                                plot       = plot)
+    object %<>% preprocess_rnaseq_counts(formula    = formula,
+                                        block       = block,
+                                        min_count   = min_count,
+                                        pseudocount = pseudocount,
+                                        genesize    = genesize,
+                                        cpm         = cpm,
+                                        voom        = voom,
+                                        log2        = log2,
+                                        verbose     = verbose,
+                                        plot        = plot)
     if (pca)    object %<>% pca()
     if (lmfit)  object %<>% lmfit(formula = formula,
                     contrastdefs  = contrastdefs, plot = FALSE)
@@ -857,31 +834,35 @@ read_rnaseq_bams <- function(
 
 
 
-#' Read rnaseq counts
+#' Read rnaseq
 #'
-#' Read/analyze rnaseq counts
+#' Read/analyze rnaseq counts / bamfiles
 #'
-#' @param file            count file
-#' @param fid_col         featureid fvar
-#' @param sfile      sdata file
-#' @param sidvar     sampleid svar
-#' @param subgroupvar     subgroup svar
-#' @param block           block svar
-#' @param ffile     fdata file
-#' @param fidvar    featureid fvar
-#' @param fnamevar  featurename fvar
-#' @param formula         designmat formula
-#' @param contrastdefs    contrastdef vector/matrix/list
-#' @param min_count       min feature count required in some samples
-#' @param pseudocount     added pseudocount to prevent -Inf log2 values
-#' @param genesize        genesize fvar for tpm
-#' @param cpm             whether to compute cpm
-#' @param voom            whether to compute voom precision weights
-#' @param log2            whether to log2 transform
-#' @param pca             whether to pca
-#' @param lmfit           whether to lmfit/contrast
-#' @param verbose         whether to message
-#' @param plot            whether to plot
+#' @param bamdir   read_rnaseq_bams: bam/samfile dir
+#' @param paired   read_rnaseq_bams: whether paired end reads
+#' @param genome   read_rnaseq_bams: mm10"/"hg38"/etc. or GTF file
+#' @param nthreads read_rnaseq_bams: nthreads used by Rsubread::featureCounts()
+#' @param file     read_rnaseq_counts: count file
+#' @param fid_col  featureid fvar
+#' @param sfile    sample file
+#' @param sfileby  sample file mergeby column
+#' @param subgroupvar  subgroup svar
+#' @param block    block svar
+#' @param ffile    feature file
+#' @param ffileby  feature file mergeby column
+#' @param fnamevar featurename fvar
+#' @param formula  designmat formula
+#' @param contrastdefs contrastdef vector/matrix/list
+#' @param min_count    min feature count required in some samples
+#' @param pseudocount  added pseudocount to prevent -Inf log2 values
+#' @param genesize     genesize fvar for tpm
+#' @param cpm      whether to compute cpm
+#' @param voom     whether to compute voom precision weights
+#' @param log2     whether to log2 transform
+#' @param pca      whether to pca
+#' @param lmfit    whether to lmfit/contrast
+#' @param verbose  whether to message
+#' @param plot     whether to plot
 #' @return SummarizedExperiment
 #' @examples
 #' # BILLING 2019
@@ -900,39 +881,59 @@ read_rnaseq_bams <- function(
 #'        subdir  <- '~/autonomicscache/datasets/GSE161731'
 #'        if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles(
 #'                                        "GSE161731",baseDir=basedir)
-#'        file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
+#'        file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
 #'        sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
 #'    # Read
-#'        object <- .read_rnaseq_counts(file, sfile = sfile,
-#'                   sidvar ='rna_id', subgroupvar='gender')
+#'        object <- .read_rnaseq_counts(file, sfile = sfile, sfileby ='rna_id',
+#'                                       subgroupvar = 'gender')
 #'    # Read / Analyze
-#'        object <- read_rnaseq_counts(file, sfile = sfile,
-#'          sidvar='rna_id', subgroupvar='gender', voom=FALSE)
+#'        object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id',
+#'                                       subgroupvar = 'gender', voom = FALSE)
 #'    # Read / Weight / Analyze
-#'        object <- read_rnaseq_counts(file, sfile = sfile,
-#'          sidvar ='rna_id', subgroupvar='gender', plot = TRUE)
+#'        object <- read_rnaseq_counts(file, sfile = sfile, sfileby ='rna_id',
+#'                                       subgroupvar = 'gender', plot = TRUE)
 #'    # Read / Weight / Block / Analyze (dupcor takes some time)
-#'        # object <- read_rnaseq_counts(file, sfile = sfile,
-#'        #    sidvar='rna_id', subgroupvar='gender', block='subject_id')
+#'        # object <- read_rnaseq_counts(file, sfile = sfile, sfileby='rna_id',
+#'        #                            subgroupvar='gender', block='subject_id')
+#'
+#' # BAM
+#'     # in-built genome
+#'         bamdir <- download_data("billing16.bam.zip")
+#'         object <- .read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
+#'         object <- read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
+#'     # external gtf
+#'         # gtffile <- download_gtf("Homo sapiens")
+#'         # object <- read_rnaseq_bams(bamdir, paired=TRUE, genome=gtffile)
+#' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_counts <- function(
     file, fid_col = 1,
-    sfile = NULL, sidvar = NULL, subgroupvar = NULL, block = NULL,
-    ffile = NULL, fidvar = NULL, fnamevar = NULL,
-    formula = NULL, contrastdefs = NULL, min_count = 10,
-    pseudocount = 0.5, genesize = NULL, cpm = TRUE, voom = TRUE, log2 = TRUE,
-    pca = TRUE, lmfit = TRUE, verbose = TRUE, plot = TRUE
+    sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
+    ffile = NULL, ffileby = NULL, fnamevar = NULL,
+    formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
+    cpm = TRUE, voom = TRUE, log2 = TRUE, pca = TRUE,
+    lmfit = TRUE, contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
-    object <- .read_rnaseq_counts(file, fid_col = fid_col,
-                sfile = sfile, sidvar = sidvar,
-                subgroupvar = subgroupvar, ffile = ffile,
-                fidvar = fidvar, fnamevar = fnamevar)
+    object <- .read_rnaseq_counts(file,
+                                fid_col     = fid_col,
+                                sfile       = sfile,
+                                sfileby     = sfileby,
+                                subgroupvar = subgroupvar,
+                                ffile       = ffile,
+                                ffileby     = ffileby,
+                                fnamevar    = fnamevar)
 # Preprocess
-    object %<>% preprocess_rnaseq_counts(formula = formula, block = block,
-                min_count = min_count, pseudocount = pseudocount,
-                genesize = genesize, cpm = cpm, voom = voom, log2 = log2,
-                plot = plot, verbose = verbose)
+    object %<>% preprocess_rnaseq_counts(formula    = formula,
+                                        block       = block,
+                                        min_count   = min_count,
+                                        pseudocount = pseudocount,
+                                        genesize    = genesize,
+                                        cpm         = cpm,
+                                        voom        = voom,
+                                        log2        = log2,
+                                        verbose     = verbose,
+                                        plot        = plot)
 # Explore
     if (pca)   object %<>% pca()
     if (lmfit) object %<>% lmfit(formula = formula, block = block,

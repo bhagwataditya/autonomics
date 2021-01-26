@@ -356,8 +356,8 @@ numerify   <- function(df){
 #' @param sdata_rows numeric vector: sdata rows
 #' @param sdata_cols numeric vector: sdata cols
 #' @param transpose  TRUE or FALSE (default)
-#' @param sfile       sample file path
-#' @param sidvar sidvar in sfile
+#' @param sfile      sample file
+#' @param sfileby    sample file mergeby column
 #' @param subgroupvar subgroupvar in sfile
 #' @param verbose    TRUE (default) or FALSE
 #' @return SummarizedExperiment
@@ -405,7 +405,7 @@ read_omics <- function(
     expr_rows, expr_cols, fvar_rows  = NULL, fvar_cols = NULL, svar_rows = NULL,
     svar_cols  = NULL, fdata_rows = NULL,  fdata_cols = NULL, sdata_rows = NULL,
     sdata_cols = NULL, transpose  = FALSE,
-    sfile = NULL, sidvar = 'sample_id', subgroupvar = character(0),
+    sfile = NULL, sfileby = NULL, subgroupvar = character(0),
     verbose = TRUE
 ){
     object <- .read_omics(file, sheet=sheet,
@@ -418,8 +418,8 @@ read_omics <- function(
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
         object %<>% merge_sfile(sfile = sfile,
-                            by.x = 'sample_id', by.y = sidvar,
-                            subgroupvar = subgroupvar, verbose    = verbose)
+                            by.x = 'sample_id', by.y = sfileby,
+                            subgroupvar = subgroupvar, verbose = verbose)
     object
 }
 
