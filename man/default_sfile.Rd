@@ -15,3 +15,7 @@ sample file
 \description{
 Default sfile
 }
+\examples{
+file <- download_data('billing19.proteingroups.txt')
+default_sfile(file)
+}

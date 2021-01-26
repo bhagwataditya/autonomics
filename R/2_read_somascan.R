@@ -129,7 +129,7 @@ rm_single_value_columns <- function(df){
     assayNames(object) <- 'somascan'
     if (subgroupvar %in% svars(object)){
         values <- sdata(object)[[subgroupvar]]
-       if (all(!is.na(values)) & all(values != ""))  svars(object) %<>%
+        if (all(!is.na(values)) & all(values != ""))  svars(object) %<>%
             stri_replace_first_fixed('SampleGroup', subgroupvar)
     }
     object %<>% add_subgroup()
@@ -198,8 +198,8 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     object %<>% log2transform(verbose = TRUE)
 # Analyze
     if (pca)    object %<>% pca()
-    if (lmfit)  object %<>% lmfit(formula = formula,
-                                  contrastdefs = contrastdefs, plot = FALSE)
+    if (lmfit)  object %<>% lmfit(formula    = formula,
+                                contrastdefs = contrastdefs, plot = FALSE)
 # Plot
     if (plot) plot_samples(object)
 # Return

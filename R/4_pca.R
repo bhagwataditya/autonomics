@@ -225,8 +225,10 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    samples  %<>% cbind( sample_id = rownames(.), .)
+    features %<>% cbind(feature_id = rownames(.), .)
+    object %<>% merge_sdata(samples, 'sample_id')
+    object %<>% merge_fdata(features, 'feature_id')
     metadata(object)$sma <- variances
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
@@ -410,11 +412,11 @@ add_scores <- function(
                 params  = fixed,
                 position= 'identity')
     if (!quo_is_null(group)) p <- p + layer(geom = 'path',
-          mapping  = aes(x = !!x, y = !!y, color = !!color, group = !!group),
-          stat     = "identity",
-          data    = sdata(object),
-          params   = list(size=1),
-          position = 'identity')
+        mapping  = aes(x = !!x, y = !!y, color = !!color, group = !!group),
+        stat     = "identity",
+        data    = sdata(object),
+        params   = list(size=1),
+        position = 'identity')
     p
 }
 
@@ -536,7 +538,7 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, group = NULL,
     p %<>% add_loadings(
             object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
     p %<>% add_scores(object, !!x, !!y, color = !!color, group = !!group,
-                      !!!dots, fixed = fixed)
+                    !!!dots, fixed = fixed)
     p %<>% add_color_scale(!!color, data = sdata(object))
 
     if (!quo_is_null(label)){

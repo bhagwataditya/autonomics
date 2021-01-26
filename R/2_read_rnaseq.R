@@ -67,30 +67,25 @@ setReplaceMethod(
 setGeneric('log2counts',   function(object)   standardGeneric("log2counts"))
 
 #' @rdname log2counts
-setMethod(
-    "log2counts",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$log2counts)
+setMethod("log2counts", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2counts)
 
 #' @rdname log2counts
 #' @export
-setGeneric('log2counts<-',   function(object, value)   standardGeneric("log2counts<-"))
+setGeneric('log2counts<-',
+function(object, value) standardGeneric("log2counts<-"))
 
 #' @rdname log2counts
-setReplaceMethod(
-    "log2counts",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$log2counts <- value
-        object })
+setReplaceMethod("log2counts", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2counts <- value
+    object })
 
 #' @rdname log2counts
-setReplaceMethod(
-    "log2counts",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$counts[] <- value
-        object })
+setReplaceMethod("log2counts", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$counts[] <- value
+    object })
 
 
 #' @title Get/Set cpm
@@ -108,30 +103,24 @@ setReplaceMethod(
 setGeneric('cpm',   function(object)   standardGeneric("cpm"))
 
 #' @rdname cpm
-setMethod(
-    "cpm",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$cpm)
+setMethod("cpm", signature("SummarizedExperiment"),
+function(object)   assays(object)$cpm)
 
 #' @rdname cpm
 #' @export
 setGeneric('cpm<-',   function(object, value)   standardGeneric("cpm<-"))
 
 #' @rdname cpm
-setReplaceMethod(
-    "cpm",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$cpm <- value
-        object })
+setReplaceMethod("cpm", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$cpm <- value
+    object })
 
 #' @rdname cpm
-setReplaceMethod(
-    "cpm",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$cpm[] <- value
-        object })
+setReplaceMethod("cpm", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$cpm[] <- value
+    object })
 
 
 
@@ -150,30 +139,24 @@ setReplaceMethod(
 setGeneric('log2cpm',   function(object)   standardGeneric("log2cpm"))
 
 #' @rdname log2cpm
-setMethod(
-    "log2cpm",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$log2cpm)
+setMethod("log2cpm", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2cpm)
 
 #' @rdname log2cpm
 #' @export
-setGeneric('log2cpm<-',   function(object, value)   standardGeneric("log2cpm<-"))
+setGeneric('log2cpm<-',  function(object, value)  standardGeneric("log2cpm<-"))
 
 #' @rdname log2cpm
-setReplaceMethod(
-    "log2cpm",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$log2cpm <- value
-        object })
+setReplaceMethod("log2cpm", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2cpm <- value
+    object })
 
 #' @rdname log2cpm
-setReplaceMethod(
-    "log2cpm",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$log2cpm[] <- value
-        object })
+setReplaceMethod("log2cpm", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$log2cpm[] <- value
+    object })
 
 
 
@@ -192,30 +175,24 @@ setReplaceMethod(
 setGeneric('tpm',   function(object)   standardGeneric("tpm"))
 
 #' @rdname tpm
-setMethod(
-    "tpm",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$tpm)
+setMethod("tpm", signature("SummarizedExperiment"),
+function(object)   assays(object)$tpm)
 
 #' @rdname tpm
 #' @export
 setGeneric('tpm<-',   function(object, value)   standardGeneric("tpm<-"))
 
 #' @rdname tpm
-setReplaceMethod(
-    "tpm",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$tpm <- value
-        object })
+setReplaceMethod("tpm", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$tpm <- value
+    object })
 
 #' @rdname tpm
-setReplaceMethod(
-    "tpm",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$tpm[] <- value
-        object })
+setReplaceMethod("tpm", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$tpm[] <- value
+    object })
 
 
 
@@ -234,30 +211,24 @@ setReplaceMethod(
 setGeneric('log2tpm',   function(object)   standardGeneric("log2tpm"))
 
 #' @rdname log2tpm
-setMethod(
-    "log2tpm",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$log2tpm)
+setMethod("log2tpm", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2tpm)
 
 #' @rdname log2tpm
 #' @export
-setGeneric('log2tpm<-',   function(object, value)   standardGeneric("log2tpm<-"))
+setGeneric('log2tpm<-',  function(object, value)  standardGeneric("log2tpm<-"))
 
 #' @rdname log2tpm
-setReplaceMethod(
-    "log2tpm",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$log2tpm <- value
-        object })
+setReplaceMethod("log2tpm", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2tpm <- value
+    object })
 
 #' @rdname log2tpm
-setReplaceMethod(
-    "log2tpm",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$log2tpm[] <- value
-        object })
+setReplaceMethod("log2tpm", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$log2tpm[] <- value
+    object })
 
 
 
@@ -277,10 +248,8 @@ setReplaceMethod(
 setGeneric('weights', function(object)   standardGeneric("weights"))
 
 #' @rdname weights
-setMethod(
-    "weights",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$weights)
+setMethod("weights", signature("SummarizedExperiment"),
+function(object)   assays(object)$weights)
 
 
 #' @rdname weights
@@ -288,32 +257,26 @@ setMethod(
 setGeneric('weights<-', function(object, value) standardGeneric("weights<-"))
 
 #' @rdname weights
-setReplaceMethod(
-    "weights",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$weights <- value
-        object })
+setReplaceMethod("weights", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$weights <- value
+    object })
 
 #' @rdname weights
-setReplaceMethod(
-    "weights",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        if (!'weights' %in% names(assays(object))){
-            assays(object)$weights <- matrix(
-            1, nrow=nrow(object), ncol=ncol(object), dimnames=dimnames(object))
-        }
-        assays(object)$weights[] <- value
-        object })
+setReplaceMethod("weights", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    if (!'weights' %in% names(assays(object))){
+        assays(object)$weights <- matrix(
+        1, nrow=nrow(object), ncol=ncol(object), dimnames=dimnames(object))
+    }
+    assays(object)$weights[] <- value
+    object })
 
 #' @rdname weights
-setReplaceMethod(
-    "weights",
-    signature("SummarizedExperiment", "NULL"),
-    function(object, value){
-        assays(object)$weights <- NULL
-        object })
+setReplaceMethod("weights", signature("SummarizedExperiment", "NULL"),
+function(object, value){
+    assays(object)$weights <- NULL
+    object })
 
 #=========================================================
 #
@@ -498,8 +461,14 @@ count_reads <- function(files, paired, nthreads, genome){
 #=============================================================================
 
 
-#' @rdname counts2cpm
-#' @noRd
+#' Get tmm-scaled libsizes
+#' @param counts  counts matri
+#' @return scaled libsize vector
+#' @examples
+#' file <- download_data('billing19.rnacounts.txt')
+#' object <- .read_rnaseq_counts(file)
+#' scaledlibsizes(counts(object))
+#' @export
 scaledlibsizes <- function(counts){
     colSums(counts) * edgeR::calcNormFactors(counts)
 }
@@ -530,13 +499,13 @@ cpm2counts <- function(x, libsize){
 }
 
 #' counts to tpm
-#' @param counts    count matrix
+#' @param x count matrix
 #' @param genesize  genesize vector (kilobase)
 #' @return tpm matrix
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- .read_rnaseq_counts(file)
-#' counts2tpm(counts(object), gene.size=1)
+#' counts2tpm(counts(object), genesize=1)[1:3, 1:3]
 #' @export
 counts2tpm <- function(x, genesize){
     x  %<>% '/'(genesize)
@@ -608,17 +577,18 @@ explicitly_compute_voom_weights <- function(
 
 #' Preprocess RNAseq counts
 #' @param object       SummarizedExperiment
-#' @param formula      formula
-#' @param block        blocK var or NULL
-#' @param min_count    min count
-#' @param pseudocount  TRUE/FALSE
-#' @param genesize     NULL or fvar
-#' @param cpm          TRUE/FALSE
-#' @param voom         TRUE/FALSE
-#' @param log2         TRUE/FALSE
-#' @param verbose      TRUE/FALSE
-#' @param plot         TRUE/FALSE
-#' @export
+#' @param formula      designmat formula
+#' @param block        blocK svar
+#' @param min_count    min count required in some samples
+#' @param pseudocount  added pseudocount to avoid log(x)=-Inf
+#' @param genesize     genesize fvar to compute tpm
+#' @param cpm          whether to compute counts per million (scaled) reads
+#' @param voom         whether to voom weight
+#' @param log2         whether to log2
+#' @param verbose      whether to msg
+#' @param plot         whether to plot
+#' @return SummarizedExperiment
+#' @noRd
 preprocess_rnaseq_counts <- function(object, formula, block = NULL,
     min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE,
     voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
@@ -653,13 +623,13 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
 # voom (counts) & blockcor (log2(cpm))
     if (voom){
         if (verbose)  message('\t\t\tvoom:   voom')
-        object %<>% add_voom(design, verbose=FALSE, plot = plot & !is.null(block))
+        object %<>% add_voom(design, verbose=FALSE, plot=plot & !is.null(block))
         if (!is.null(block)){
             object %<>%
                 add_voom(design, block=block, verbose=verbose, plot=plot) }}
 # log2
     if (log2){
-	    if (verbose)  message('\t\t\tlog2')
+        if (verbose)  message('\t\t\tlog2')
         selectedassays <- c('counts','cpm','tpm')
         selectedassays %<>% intersect(assayNames(object))
         for (curassay in selectedassays){
@@ -743,10 +713,10 @@ add_voom <- function(
                             fdt = fcounts$annotation, fdtby='feature_id')
     assayNames(object)[1] <- 'counts'
 # Add sample/feature data
-    object %<>% merge_sfile( sfile, by.x = 'sample_id',  by.y = sfileby,
-                             subgroupvar = subgroupvar, verbose = verbose)
-    object %<>% merge_ffile( ffile, by.x = 'feature_id', by.y = ffileby,
-                             fnamevar = fnamevar, verbose = verbose)
+    object %<>% merge_sfile(sfile, by.x = 'sample_id',  by.y = sfileby,
+                            subgroupvar = subgroupvar, verbose = verbose)
+    object %<>% merge_ffile(ffile, by.x = 'feature_id', by.y = ffileby,
+                            fnamevar = fnamevar, verbose = verbose)
     metadata(object)$platform <- 'rnaseq'
     metadata(object)$file <- bamdir
 # Return
@@ -774,9 +744,9 @@ add_voom <- function(
     assayNames(object)[1] <- 'counts'
 # sumexp
     object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',
-                     by.y = sfileby, subgroupvar = subgroupvar)
+                            by.y = sfileby, subgroupvar = subgroupvar)
     object %<>% merge_ffile(ffile = ffile, by.x='feature_id',
-                     by.y = ffileby, fnamevar=fnamevar)
+                            by.y = ffileby, fnamevar=fnamevar)
     metadata(object)$platform <- 'rnaseq'
     object$subgroup %<>% factor()
     levels(object$subgroup) %<>% make.names()

@@ -72,4 +72,5 @@ Suggests:
   org.Mm.eg.db,
   remotes,
   ropls,
+  statmod,
   testthat

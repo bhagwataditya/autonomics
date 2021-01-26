@@ -9,6 +9,9 @@ extract_limma_summary(object)
 \arguments{
 \item{object}{SummarizedExperiment}
 }
+\value{
+data.table(contrast, nup, ndown)
+}
 \description{
 Extract contrast analysis summary
 }
@@ -20,6 +23,7 @@ Extract contrast analysis summary
         extract_limma_summary(object)
 
     # ~ 0 + subgroups | weights
+        require(magrittr)
         weights(object) <- NULL
         object \%<>\% lmfit(plot=FALSE)
         extract_limma_summary(object)
@@ -31,7 +35,7 @@ Extract contrast analysis summary
           extract_limma_summary(object)
 
    # ~ 0 + subgroup | block
-          svars(object) \%<>\% stri_replace_first_fixed('SUB', 'block')
+          svars(object) \%<>\% gsub('SUB', 'block', ., fixed=TRUE)
           object \%<>\% lmfit(plot=FALSE)
           extract_limma_summary(object)
 

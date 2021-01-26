@@ -493,7 +493,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
         if (is(      dt, 'DataFrame'))        dt %<>% as.data.frame()
         if (is(objectdt, 'DataFrame'))  objectdt %<>% as.data.frame()
     # Then convert dataframe to data.table
-              dt %<>% as.data.table()
+        dt %<>% as.data.table()
         objectdt %<>% as.data.table()
 # Rm duplicate keys
     n0 <- nrow(dt)
@@ -522,13 +522,15 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' @param subgroupvar    subgroupvar
 #' @param fnamevar featurenamefvar
 #' @param verbose        TRUE (default) or FALSE
+#' @return SummarizedExperiment
 #' @examples
 #'# PROTEINGROUPS
+#'    require(magrittr)
 #'    file <- download_data('billing19.proteingroups.txt')
 #'    select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #'    select %<>% paste0('_STD')
 #'    object <- read_proteingroups(file, select_subgroups = select)
-#'    sfile <- paste0(tempdir(),'/', basename(file_path_sans_ext(file)))
+#'    sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
 #'    sfile %<>% paste0('.samples.txt')
 #'    invisible(create_sfile(object, sfile))
 #'    merge_sfile(object, sfile)

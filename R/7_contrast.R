@@ -184,6 +184,9 @@ file_exists <- function(file){
 #' Default sfile
 #' @param file data file
 #' @return sample file
+#' @examples
+#' file <- download_data('billing19.proteingroups.txt')
+#' default_sfile(file)
 #' @export
 default_sfile <- function(file){
     sfile <- tools::file_path_sans_ext(file)
@@ -413,7 +416,7 @@ contrast_subgroups <- function(object)  list(contrast_subgroup_cols(object),
 #==============================================================================
 
 contrvec2mat  <- function(contrastdefs)  matrix(
-                   contrastdefs, nrow=1, dimnames=list("", contrastdefs))
+                    contrastdefs, nrow=1, dimnames=list("", contrastdefs))
 
 contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 
@@ -486,8 +489,8 @@ lmfit <- function(object, contrastdefs = NULL,
     contrastdefs(object) <- contrastdefs
 # Block
     if (verbose)  cmessage('\t\tLmfit: %s%s',
-           if(is.null(block)) '' else paste0('block on `', block, '`'),
-           if(is.null(weights(object)))  '' else paste0(' (weights)'))
+        if(is.null(block))            '' else paste0('block on `', block, '`'),
+        if(is.null(weights(object)))  '' else paste0(' (weights)'))
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
         blockvar <- block
@@ -712,6 +715,7 @@ extract_limma_dt <- function(object){
 
 #' Extract contrast analysis summary
 #' @param object SummarizedExperiment
+#' @return data.table(contrast, nup, ndown)
 #' @examples
 #' # RNASEQCOUNTS
 #'     # ~ 0 + subgroup
@@ -720,6 +724,7 @@ extract_limma_dt <- function(object){
 #'         extract_limma_summary(object)
 #'
 #'     # ~ 0 + subgroups | weights
+#'         require(magrittr)
 #'         weights(object) <- NULL
 #'         object %<>% lmfit(plot=FALSE)
 #'         extract_limma_summary(object)
@@ -731,7 +736,7 @@ extract_limma_dt <- function(object){
 #'           extract_limma_summary(object)
 #'
 #'    # ~ 0 + subgroup | block
-#'           svars(object) %<>% stri_replace_first_fixed('SUB', 'block')
+#'           svars(object) %<>% gsub('SUB', 'block', ., fixed=TRUE)
 #'           object %<>% lmfit(plot=FALSE)
 #'           extract_limma_summary(object)
 #'
@@ -742,8 +747,8 @@ extract_limma_dt <- function(object){
 extract_limma_summary <- function(object){
     effect <- fdr <- NULL
     extract_limma_dt(object)[,
-        .(ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
-          nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
+        .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
+            nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
         by='contrast']
 }
 
@@ -1002,8 +1007,8 @@ make_volcano_dt <- function(
 #'     inv <- c('EM_E', 'BM_E', 'BM_EM')
 #'     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
 #'     plot_volcano(object)
-#'     contrasts <- subgroup_matrix(object)
-#'     object %<>% lmfit(contrasts = contrasts, plot = FALSE)
+#'     contrastdefs <- subgroup_matrix(object)
+#'     object %<>% lmfit(contrastdefs = contrastdefs, plot = FALSE)
 #'     plot_volcano(object)
 #'
 #' # proteingroup LFQ intensities
@@ -1014,7 +1019,7 @@ make_volcano_dt <- function(
 #' # metabolon intensities: complex design
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot=FALSE)
-#'     plot_volcano(object)
+#'     plot_volcano(object, ntop=0)
 #'
 #' # proteingroup internalstandard ratios
 #'     file <-  download_data('billing19.proteingroups.txt')

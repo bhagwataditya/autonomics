@@ -285,7 +285,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
 ){
 # Read
     object <- .read_metabolon(file = file, sheet = sheet, fid_var = fid_var,
-                              sid_var = sid_var, subgroupvar = subgroupvar)
+                            sid_var = sid_var, subgroupvar = subgroupvar)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]

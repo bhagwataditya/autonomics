@@ -956,6 +956,10 @@ arrange_samples_ <- function(x, svars){
 #' @param sfile  sample file
 #' @param verbose     TRUE/FALSE
 #' @return sample file path
+#' @examples
+#' file <- download_data('billing19.proteingroups.txt')
+#' object <- read_proteingroups(file, lmfit=FALSE, plot=FALSE)
+#' create_sfile(object, paste0(tempfile(), '.tsv'))
 #' @export
 create_sfile <- function(object, sfile, verbose = TRUE){
     if (verbose) message('\tCreate sfile: ', sfile)
@@ -1279,8 +1283,8 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 #'     fdata(object)[1:3, 1:4]
 #' @export
 read_proteingroups <- function(
-    file, quantity = guess_maxquant_quantity(file), sfile = NULL, sfileby = NULL,
-    select_subgroups = NULL, contaminants = FALSE,
+    file, quantity = guess_maxquant_quantity(file), sfile = NULL,
+    sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     formula = NULL, block = NULL, contrastdefs = NULL,

@@ -19,3 +19,8 @@ sample file path
 \description{
 Create sfile
 }
+\examples{
+file <- download_data('billing19.proteingroups.txt')
+object <- read_proteingroups(file, lmfit=FALSE, plot=FALSE)
+create_sfile(object, paste0(tempfile(), '.tsv'))
+}

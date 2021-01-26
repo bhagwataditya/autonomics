@@ -29,5 +29,5 @@ file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
 sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
 object <- .read_rnaseq_counts(
             file, sfile = sfile, sfileby = 'rna_id')
-rm_singletons(object, 'subject_id')
+rm_singleton_samples(object, 'subject_id')
 }

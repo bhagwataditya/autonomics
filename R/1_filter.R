@@ -260,7 +260,7 @@ filter_samples_available_for_some_feature <- function(object, verbose = FALSE){
     subsetter <- is_available_for_some_feature(object)
     if (any(!subsetter)){
         if (verbose) cmessage(
-            '\t\t\tRetain %d/%d samples with a value available for some feature',
+        '\t\t\tRetain %d/%d samples with a value available for some feature',
             sum(subsetter), length(subsetter))
     object %<>% extract(, subsetter)
     }
@@ -289,13 +289,13 @@ is_available_for_some_feature <- function(object){
 #' sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
 #' object <- .read_rnaseq_counts(
 #'             file, sfile = sfile, sfileby = 'rna_id')
-#' rm_singletons(object, 'subject_id')
+#' rm_singleton_samples(object, 'subject_id')
 #' @export
 rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
     selectedsamples <-
         data.table(sdata(object))[, .SD[.N>1], by = svar][['sample_id']]
     if (verbose)  cmessage('\t\t\tRetain %d/%d samples with replicated `%s`',
-                           length(selectedsamples), ncol(object), svar)
+                        length(selectedsamples), ncol(object), svar)
     object[, selectedsamples]
 }
 
