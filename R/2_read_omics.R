@@ -506,7 +506,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 # Merge
     objectdt %<>% merge(dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
     objectdt %<>% as(objectdtclass)
-    rownames(objectdt) <- objectdt[[by.x]] # merging drops rownames
+    rownames(objectdt) <- rownames1 # merging drops rownames
 # Return
     objectdt
 }
