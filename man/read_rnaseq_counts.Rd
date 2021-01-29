@@ -50,6 +50,7 @@ read_rnaseq_bams(
   pseudocount = 0.5,
   genesize = NULL,
   cpm = TRUE,
+  tmm = cpm,
   voom = TRUE,
   log2 = TRUE,
   pca = TRUE,
@@ -74,6 +75,7 @@ read_rnaseq_counts(
   pseudocount = 0.5,
   genesize = NULL,
   cpm = TRUE,
+  tmm = TRUE,
   voom = TRUE,
   log2 = TRUE,
   pca = TRUE,
@@ -121,6 +123,8 @@ read_rnaseq_counts(
 \item{genesize}{genesize fvar for tpm}
 
 \item{cpm}{whether to compute cpm}
+
+\item{tmm}{whether to tmm-scale library sizes}
 
 \item{voom}{whether to compute voom precision weights}
 

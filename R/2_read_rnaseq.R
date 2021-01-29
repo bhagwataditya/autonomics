@@ -583,14 +583,21 @@ explicitly_compute_voom_weights <- function(
 #' @param pseudocount  added pseudocount to avoid log(x)=-Inf
 #' @param genesize     genesize fvar to compute tpm
 #' @param cpm          whether to compute counts per million (scaled) reads
+#' @param tmm          whether to tmm normalize
 #' @param voom         whether to voom weight
 #' @param log2         whether to log2
 #' @param verbose      whether to msg
 #' @param plot         whether to plot
 #' @return SummarizedExperiment
-#' @noRd
-preprocess_rnaseq_counts <- function(object, formula, block = NULL,
-    min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE,
+#' @examples
+#' require(magrittr)
+#' file <- download_data('billing19.rnacounts.txt')
+#' object <- .read_rnaseq_counts(file)
+#' object$subgroup
+#' object %<>% preprocess_rnaseq_counts()
+#' @export
+preprocess_rnaseq_counts <- function(object, formula = NULL, block = NULL,
+    min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, tmm = cpm,
     voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
 # filter
     if (verbose) message('\t\tPreprocess')
@@ -612,10 +619,12 @@ preprocess_rnaseq_counts <- function(object, formula, block = NULL,
         assert_is_subset(genesize, fvars(object))
         if (verbose)  message('\t\t\ttpm')
         tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesize]])}
+# tmm
+    if (tmm){
+        if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
+        object$libsize <- scaledlibsizes(counts(object)) }
 # cpm
     if (cpm){
-        if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
-        object$libsize <- scaledlibsizes(counts(object))
         if (verbose)  message('\t\t\t\tcpm')
         cpm(object) <- counts2cpm(counts(object), object$libsize)
         other <- setdiff(assayNames(object), 'cpm')
@@ -769,7 +778,7 @@ read_rnaseq_bams <- function(
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
-    cpm = TRUE, voom = TRUE, log2 = TRUE, pca = TRUE,
+    cpm = TRUE, tmm = cpm, voom = TRUE, log2 = TRUE, pca = TRUE,
     lmfit = TRUE, contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
 # Read
@@ -790,6 +799,7 @@ read_rnaseq_bams <- function(
                                         pseudocount = pseudocount,
                                         genesize    = genesize,
                                         cpm         = cpm,
+                                        tmm         = tmm,
                                         voom        = voom,
                                         log2        = log2,
                                         verbose     = verbose,
@@ -826,6 +836,7 @@ read_rnaseq_bams <- function(
 #' @param min_count    min feature count required in some samples
 #' @param pseudocount  added pseudocount to prevent -Inf log2 values
 #' @param genesize     genesize fvar for tpm
+#' @param tmm      whether to tmm-scale library sizes
 #' @param cpm      whether to compute cpm
 #' @param voom     whether to compute voom precision weights
 #' @param log2     whether to log2 transform
@@ -881,7 +892,7 @@ read_rnaseq_counts <- function(
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
-    cpm = TRUE, voom = TRUE, log2 = TRUE, pca = TRUE,
+    cpm = TRUE, tmm = TRUE, voom = TRUE, log2 = TRUE, pca = TRUE,
     lmfit = TRUE, contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -900,6 +911,7 @@ read_rnaseq_counts <- function(
                                         pseudocount = pseudocount,
                                         genesize    = genesize,
                                         cpm         = cpm,
+                                        tmm         = tmm,
                                         voom        = voom,
                                         log2        = log2,
                                         verbose     = verbose,
