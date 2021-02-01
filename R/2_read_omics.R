@@ -632,7 +632,8 @@ add_affy_fdata <- function(object){
 #'                                                             'BiocManager')
 #' if (!requireNamespace("hgu95av2.db", quietly = TRUE))  BiocManager::install(
 #'                                                             'hgu95av2.db')
-#' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
+#' # read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
+#' # currently openblas issue: https://stackoverflow.com/questions/61629861/
 #' @export
 read_affymetrix <- function(celfiles){
 # Assert
