@@ -484,7 +484,7 @@ lmfit <- function(object, contrastdefs = NULL,
     if (is.null(contrastdefs)) contrastdefs <- contrast_subgroups(object)
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
     if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
-    design <- create_design(object, formula=formula)
+    design <- create_design(object, formula=formula, verbose = verbose)
     design(object)    <- design
     contrastdefs(object) <- contrastdefs
 # Block
@@ -508,7 +508,7 @@ lmfit <- function(object, contrastdefs = NULL,
     if (verbose)  cmessage('\t\tContrast:')
     object %<>% add_contrast_results(fit)
     if (plot)  plot_contrastogram(object)
-    cmessage_df('\t\t\t%s', extract_limma_summary(object))
+    if (verbose) cmessage_df('\t\t\t%s', extract_limma_summary(object))
     return(object)
 }
 

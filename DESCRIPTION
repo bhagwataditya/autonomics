@@ -13,7 +13,7 @@ Description:
   This package offers a generic and intuitive solution for cross-platform omics data analysis.
   It has functions for import, preprocessing, exploration, contrast analysis and visualization of omics data.
   It follows a tidy, functional programming paradigm.
-License: GPL (>= 3)
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr

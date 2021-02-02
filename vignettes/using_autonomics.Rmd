@@ -1,0 +1,177 @@
+---
+title: "autonomics"
+subtitle: "Read + preprocess + analyze + visualize cross-platform omics data"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{using_autonomics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=TRUE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
+#str(knitr::opts_chunk$get())
+```
+<!-- ![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png) -->
+
+# Abstract {-}
+
+`autonomics` is created to make cross-platform omics analysis intuitive and enjoyable. It contains **import + preprocess + analyze + visualize** one-liners for *RNAseq*, *MS proteomics*, *SOMAscan* and *Metabolon* platforms, as well as a generic importer for data from *any rectangular omics file*.  
+
+The biological subgroup is inferred from sample names or a sample file, the model `~ 0 + subgroup ` is fitted and `contrasts` between subsequent levels are quantified and visualized with `volcano` plots. Multi-factor subgroups are automatically decomposed into `subfactors`, for each of which contrasts between subsequent levels are computed and visualized into a two-dimensional volcano grid. Defaults can be customized through the `formula`, `block` and `contrastdefs` parameters, allowing to define any statistical formula, fit any general linear model, quantify any contrast, using random effects or precision weights if suited, building on top of the powerful `limma` platform for statistical analysis.  
+
+With repetitive parts automated, common steps generified, and common operations functionalized, cross-platform omics data analysis becomes an intuitive experience. Enjoy!
+
+# Rnaseq {-}
+
+The autonomics functions `read_rnaseq_counts` / `read_rnaseq_bams` read counts/bamfiles, normalize for library composition (**cpm**) or gene length (**tpm**), estimate **voom** precision weights, fit a linear model, and quantify contrasts between subsequent factor levels.
+
+### read_rnaseq_counts {-}
+
+The Billing et al. (2019) dataset studies the differentiation of embryonic stem cells (E00) into mesenchymal stem cells (E00.8, E01, E02, E05, E15, E30), comparing these to original, bone-marrow derived mesenchymal stem cells (M00). The autonomics importer `read_rnaseq_counts` imports, preprocesses and analyzes this dataset as discussed earlier:
+
+
+```{r}
+require(autonomics, quietly = TRUE)
+file <- download_data('billing19.rnacounts.txt')
+object <-  read_rnaseq_counts(file)
+
+```
+
+### read_rnaseq_bams {-}
+
+Sometimes data analysis starts from BAM alignment files rather than count files. These can be imported with the autonomics function `read_rnaseq_bams`, which uses `rsubread::featureCounts` to summarize reads into genewise counts, and subsequently performs the preprocessing steps discussed earlier. This is illustrated on the Billing et al. (2016) dataset, which compares three embryonic celltypes: embryonic stem cells (E), embyronic stem cells differentiated into mesenchymal stem cells (EM), and bone-marrow derived mesenchymal stem cells (BM). Feature counting does take some time (though not as long as alignment) and to keep this vignette fast the example dataset here contains only a small subset of all reads:
+
+```{r, results = 'hide'}
+file <- download_data('billing16.bam.zip')
+object <- read_rnaseq_bams(file, paired = TRUE, genome = 'hg38')
+```
+
+### sfile(by) {-}
+
+The `sfile/sfileby` arguments in both importers allow to merge in sample data from a separate file by a specified column. This is especially useful in clinical datasets, such as the GEO Covid-19 dataset below:
+
+```{r}
+require(magrittr)
+basedir <- '~/autonomicscache/datasets'
+subdir  <- '~/autonomicscache/datasets/GSE161731'
+if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles("GSE161731",baseDir=basedir)
+file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
+sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id', subgroupvar = 'gender')
+```
+
+### block {-}
+
+The `block` argument allows to model e.g. subject_id as a random effect, which is especially useful in clinical data.
+Repeating the GEO Covid-19 analysis with subject_id as a block effect. The line below runs, but takes some time, and is, therefore, commented out.
+
+```{r}
+#object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id',
+#                             subgroupvar = 'gender', block = 'subject_id')
+```
+
+### cpm/tmm/voom effects {-}
+
+```{r}
+    file <- download_data('billing19.rnacounts.txt')
+    colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 counts
+    cpm = FALSE, voom = FALSE, plot = FALSE, verbose = FALSE))[, -1])
+
+    colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm
+    cpm = TRUE,  voom = FALSE, plot = FALSE, verbose = FALSE))[, -1])
+
+    colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm + voom
+    cpm = TRUE,  voom = TRUE,  plot = FALSE, verbose = FALSE))[, -1])
+```
+
+# Proteingroups/phosphosites {-}
+
+
+A popular approach in (DDA) MS proteomics data analysis is to use **MaxQuant** to identify/quantify proteingroup/phosphosite abundances. These can then read, preprocessed, and analyzed by the autonomics functions `read_proteingroups` and `read_phosphosites`, which:
+
+(1) Extract the relevant columns: 
+    - quantifications: **LFQ intensity**, **Ratio normalized**, **Reporter intensity**
+    - features: id, Majority protein IDs, Protein names, Gene names, Contaminant, Potential contaminant, Reverse
+
+(2) **Replace zeroes with NA** (zeroes in MS represent lack of detection)
+(3) **Log2** transform
+(4) **Rm contaminants/reverse/unreplicated** features
+(5) **Impute consistent NAs** (i.e. NA in all samples of a subgroup) with values drawn from a half-normal distribution with mean zero and precision comparable to other subgroups
+(6) For phosphosites: **compute occupancies** by subtracting protein expressions
+(7) Run a **pca**
+(8) **Fit** a linear model
+(9) Quantify **contrasts** between model coefficients
+
+
+### lfq intensities {-}
+
+An example of an LFQ intensities is the Fukuda et al. (2020) dataset, which compares the proteome of 30d zebrafish juveniles versus adults using label-free quantification: 
+
+```{r}
+proteingroups <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(proteingroups)
+```
+
+
+### normalized ratios {-}
+
+Normalized ratios were used in the proteomics profiling of the earlier described Billing et al. (2019) study, which examined the differentiation of embryonic stem cells ('E00') into mesenchymal stem cells ('E01','E02', 'E05', 'E15', 'E30'), and compared these to bone-marrow derived mesenchymal stem cells (M00). The proteomics profiling experiment was performed using MS1 labeling: a light (L) labeled internal standard was created by mixing all samples in equal amounts, the subsequent samples were either medium (M) or heavy (H) labeled. Not all label combinations were of interest, and the `select_subgroups` argument allows to specifies which subgroup combinations to retain: 
+
+```{r}
+proteingroups <- download_data('billing19.proteingroups.txt')
+select_subgroups <- c('E00_STD', 'E01_STD', 'E02_STD',
+                        'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
+object <- read_proteingroups(proteingroups, select_subgroups = select_subgroups)
+```
+
+```{r}
+phosphosites  <- download_data('billing19.phosphosites.txt')
+object <- read_phosphosites(phosphosites, proteingroups, select_subgroups = select_subgroups)
+```
+
+# Somascan {-}
+
+Somascan results are returned in a txt file with extension ".adat". Features are laid out in columns and samples in rows. Rectangles with feature/sample data are also contained in the file. The autonomics function **read_somascan** reads these files, additionally filtering samples/features for quality and type. 
+
+This is illustrated on the dataset from Halama, Atkin et al. (2018), which investigated the effects of hypoglycemia at three different time points:
+
+```{r}
+file <- download_data('atkin18.somascan.adat')
+object <- read_somascan(file)
+```
+
+
+# Metabolon {-}
+
+Metabolon returns metabolomics profiling results in the form of an xlsx file, with a number of sheets, among which "original". Features are laid out in rows and samples in columns. Blocks of feature as well as sample data are included in the file. Metabolon data is highly preprocessed, requiring no additional preprocessing. 
+
+An example is the glutaminase inhibitor dataset from Halama et al. (2018), which investigated the effect of increasing concentrations of glutaminase inhibitor at different time points:
+
+```{r, fig.width=7, fig.height=4, out.width="95%"}
+file <- download_data('halama18.metabolon.xlsx')
+object <- read_metabolon(file) 
+```
+
+# References {-}
+
+A  M Billing, S S Dib, A M Bhagwat, I T da Silva, R D Drummond, S Hayat, R Al-Mismar, H Ben-Hamidane, N Goswami, K Engholm-Keller, M R Larsen, K Suhre, A Rafii, J Graummann (2019). Mol Cell Proteomics. 18(10):1950-1966. doi: 10.1074/mcp.RA119.001356.
+
+A M Billing, H Ben Hamidane, S S Dib, R J Cotton, A M Bhagwat, P Kumar, S Hayat, N A Yousri, N Goswami, K Suhre, A Rafii, J Graumann (2016). Comprehensive transcriptomics and proteomics characterization of human mesenchymal stem cells reveals source specific cellular markers. Sci Rep. 9;6:21507. doi: 10.1038/srep21507.
+
+R Fukuda, R Marin-Juez, H El-Sammak, A Beisaw, R Ramadass, C Kuenne, S Guenther, A Konzer, A M Bhagwat, J Graumann, D YR Stainier (2020). EMBO Rep. 21(8): e49752. doi: 10.15252/embr.201949752
+
+A Halama, M Kulinski, S Dib, S B Zaghlool, K S Siveen, A Iskandarani, J Zierer 3, K S Prabhu, N J Satheesh, A M Bhagwat, S Uddin, G Kastenmüller, O Elemento, S S Gross, K Suhre (2018). Accelerated lipid catabolism and autophagy are cancer survival mechanisms under inhibited glutaminolysis. Cancer Lett., 430:133-147. doi:10.1016/j.canlet.2018.05.017
+
+A Halama, H Kahal, A M Bhagwat, J Zierer, T Sathyapalan, J Graumann, K Suhre, S L Atkin (2018). Metabolic and proteomics signatures of hypoglycaemia in type 2 diabetes. Diabetes, obesity and metabolism,  https://doi.org/10.1111/dom.13602
+
+
+
+
+
+
+
+
+
+
+

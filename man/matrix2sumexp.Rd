@@ -11,7 +11,8 @@ matrix2sumexp(
   subgroupvar = NULL,
   fdt = NULL,
   fdtby = if (is.null(fdt)) NULL else names(fdt)[1],
-  fnamevar = NULL
+  fnamevar = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ matrix2sumexp(
 \item{fdtby}{feature data mergeby column}
 
 \item{fnamevar}{string / NULL}
+
+\item{verbose}{TRUE/FALSE}
 }
 \value{
 SummarizedExperiment

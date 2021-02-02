@@ -601,12 +601,10 @@ preprocess_rnaseq_counts <- function(object, formula = NULL, block = NULL,
     voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
 # filter
     if (verbose) message('\t\tPreprocess')
-    design <- create_design(object, formula)
+    design <- create_design(object, formula, verbose = verbose)
     object$libsize <- matrixStats::colSums2(counts(object))
-    idx <- filterByExpr(counts(object),
-                        design    = design, # group = object$subgroup,
-                        lib.size  = object$libsize,
-                        min.count = min_count)
+    idx <- filterByExpr(counts(object), design = design,#group=object$subgroup,
+                lib.size  = object$libsize, min.count = min_count)
     if (verbose) message('\t\tKeep ', sum(idx), '/', length(idx),
             ' features: count >= ', min_count, ' in at least some samples')
     object %<>% extract(idx, )
@@ -620,31 +618,28 @@ preprocess_rnaseq_counts <- function(object, formula = NULL, block = NULL,
         if (verbose)  message('\t\t\ttpm')
         tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesize]])}
 # tmm
-    if (tmm){
-        if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
-        object$libsize <- scaledlibsizes(counts(object)) }
+    if (tmm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
+                object$libsize <- scaledlibsizes(counts(object)) }
 # cpm
-    if (cpm){
-        if (verbose)  message('\t\t\t\tcpm')
-        cpm(object) <- counts2cpm(counts(object), object$libsize)
-        other <- setdiff(assayNames(object), 'cpm')
-        assays(object) %<>% extract(c('cpm', other)) }
+    if (cpm){   if (verbose)  message('\t\t\t\tcpm')
+                cpm(object) <- counts2cpm(counts(object), object$libsize)
+                other <- setdiff(assayNames(object), 'cpm')
+                assays(object) %<>% extract(c('cpm', other)) }
 # voom (counts) & blockcor (log2(cpm))
     if (voom){
         if (verbose)  message('\t\t\tvoom:   voom')
-        object %<>% add_voom(design, verbose=FALSE, plot=plot & !is.null(block))
+        object %<>% add_voom(design, verbose=FALSE, plot=plot & is.null(block))
         if (!is.null(block)){
             object %<>%
                 add_voom(design, block=block, verbose=verbose, plot=plot) }}
 # log2
-    if (log2){
-        if (verbose)  message('\t\t\tlog2')
-        selectedassays <- c('counts','cpm','tpm')
-        selectedassays %<>% intersect(assayNames(object))
-        for (curassay in selectedassays){
-            i <- match(curassay, assayNames(object))
-                assays(object)[[i]] %<>% log2()
-            assayNames(object)[[i]] %<>% paste0('log2', .)}}
+    if (log2){  if (verbose)  message('\t\t\tlog2')
+                selectedassays <- c('counts','cpm','tpm')
+                selectedassays %<>% intersect(assayNames(object))
+                for (curassay in selectedassays){
+                    i <- match(curassay, assayNames(object))
+                    assays(object)[[i]] %<>% log2()
+                    assayNames(object)[[i]] %<>% paste0('log2', .)}}
 # Return
     object
 }
@@ -749,7 +744,8 @@ add_voom <- function(
     fdata1   <- dt[, !idx, with = FALSE]
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1[[fid_col]]
-    object <- matrix2sumexp(counts1, fdt = fdata1, fdtby = fid_col)
+    object <- matrix2sumexp(
+                counts1, fdt = fdata1, fdtby = fid_col, verbose = verbose)
     assayNames(object)[1] <- 'counts'
 # sumexp
     object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',
@@ -903,7 +899,8 @@ read_rnaseq_counts <- function(
                                 subgroupvar = subgroupvar,
                                 ffile       = ffile,
                                 ffileby     = ffileby,
-                                fnamevar    = fnamevar)
+                                fnamevar    = fnamevar,
+                                verbose     = verbose)
 # Preprocess
     object %<>% preprocess_rnaseq_counts(formula    = formula,
                                         block       = block,
@@ -917,9 +914,9 @@ read_rnaseq_counts <- function(
                                         verbose     = verbose,
                                         plot        = plot)
 # Explore
-    if (pca)   object %<>% pca()
+    if (pca)   object %<>% pca(verbose=verbose)
     if (lmfit) object %<>% lmfit(formula = formula, block = block,
-                                contrastdefs = contrastdefs, plot = FALSE)
+                contrastdefs = contrastdefs, verbose = verbose, plot = FALSE)
     if (plot)  plot_samples(object)
 # Return
     object

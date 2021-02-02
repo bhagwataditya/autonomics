@@ -187,6 +187,7 @@ dt2sumexp  <- function(
 #' @param fdt           feature data.table / data.frame / DataFrame
 #' @param fdtby         feature data mergeby column
 #' @param fnamevar      string / NULL
+#' @param verbose       TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -203,7 +204,8 @@ matrix2sumexp <- function(
     subgroupvar = NULL,
     fdt         = NULL,
     fdtby       = if (is.null(fdt)) NULL else names(fdt)[1],
-    fnamevar    = NULL
+    fnamevar    = NULL,
+    verbose     = TRUE
 ){
 # exprs
     object <- SummarizedExperiment(list(exprs = x))
@@ -211,7 +213,7 @@ matrix2sumexp <- function(
     fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
 # sdata
-    object %<>% add_subgroup()
+    object %<>% add_subgroup(verbose = verbose)
     object %<>% merge_sdata(
             sdt, by.x = 'sample_id', by.y = sdtby, subgroupvar = subgroupvar)
     object %<>% merge_fdata(
