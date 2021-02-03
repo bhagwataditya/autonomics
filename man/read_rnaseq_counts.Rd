@@ -8,7 +8,7 @@
 \title{Read rnaseq}
 \usage{
 .read_rnaseq_bams(
-  bamdir,
+  dir,
   paired,
   genome,
   nthreads = detectCores(),
@@ -34,7 +34,7 @@
 )
 
 read_rnaseq_bams(
-  bamdir,
+  dir,
   paired,
   genome,
   nthreads = detectCores(),
@@ -86,7 +86,7 @@ read_rnaseq_counts(
 )
 }
 \arguments{
-\item{bamdir}{read_rnaseq_bams: bam/samfile dir}
+\item{dir}{read_rnaseq_bams: bam/samfile dir}
 
 \item{paired}{read_rnaseq_bams: whether paired end reads}
 
@@ -178,12 +178,12 @@ Read/analyze rnaseq counts / bamfiles
 
 # BAM
     # in-built genome
-        bamdir <- download_data("billing16.bam.zip")
-        object <- .read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
-        object <- read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
+        dir <- download_data("billing16.bam.zip")
+        object <- .read_rnaseq_bams(dir, paired=TRUE, genome="hg38")
+        object <- read_rnaseq_bams(dir, paired=TRUE, genome="hg38")
     # external gtf
         # gtffile <- download_gtf("Homo sapiens")
-        # object <- read_rnaseq_bams(bamdir, paired=TRUE, genome=gtffile)
+        # object <- read_rnaseq_bams(dir, paired=TRUE, genome=gtffile)
 }
 \author{
 Aditya Bhagwat, Shahina Hayat

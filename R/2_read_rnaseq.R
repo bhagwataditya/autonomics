@@ -692,17 +692,17 @@ add_voom <- function(
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_bams <- function(
-    bamdir, paired, genome, nthreads = detectCores(),
+    dir, paired, genome, nthreads = detectCores(),
     sfile = NULL, sfileby = NULL, subgroupvar = NULL,
     ffile = NULL, ffileby = NULL, fnamevar    = NULL, verbose = TRUE
 ){
 # Assert
-    assert_all_are_existing_files(bamdir)
+    assert_all_are_existing_files(dir)
     assert_is_a_bool(paired)
     assert_is_a_string(genome)
     assert_is_a_number(nthreads)
 # Count reads
-    files <- list.files(bamdir, pattern = ".sam$|.bam$", full.names = TRUE,
+    files <- list.files(dir, pattern = ".sam$|.bam$", full.names = TRUE,
                         recursive = TRUE)
     fcounts <- count_reads(files, paired, nthreads=nthreads, genome=genome)
 # Forge SummarizedExperiment
@@ -722,7 +722,7 @@ add_voom <- function(
     object %<>% merge_ffile(ffile, by.x = 'feature_id', by.y = ffileby,
                             fnamevar = fnamevar, verbose = verbose)
     metadata(object)$platform <- 'rnaseq'
-    metadata(object)$file <- bamdir
+    metadata(object)$file <- dir
 # Return
     object
 }
@@ -770,7 +770,7 @@ add_voom <- function(
 #' @rdname read_rnaseq_counts
 #' @export
 read_rnaseq_bams <- function(
-    bamdir, paired, genome, nthreads = detectCores(),
+    dir, paired, genome, nthreads = detectCores(),
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
@@ -778,7 +778,7 @@ read_rnaseq_bams <- function(
     lmfit = TRUE, contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
 # Read
-    object <- .read_rnaseq_bams(bamdir   = bamdir,
+    object <- .read_rnaseq_bams(dir   = dir,
                                 paired   = paired,
                                 genome   = genome,
                                 nthreads = nthreads,
@@ -814,7 +814,7 @@ read_rnaseq_bams <- function(
 #'
 #' Read/analyze rnaseq counts / bamfiles
 #'
-#' @param bamdir   read_rnaseq_bams: bam/samfile dir
+#' @param dir   read_rnaseq_bams: bam/samfile dir
 #' @param paired   read_rnaseq_bams: whether paired end reads
 #' @param genome   read_rnaseq_bams: mm10"/"hg38"/etc. or GTF file
 #' @param nthreads read_rnaseq_bams: nthreads used by Rsubread::featureCounts()
@@ -875,12 +875,12 @@ read_rnaseq_bams <- function(
 #'
 #' # BAM
 #'     # in-built genome
-#'         bamdir <- download_data("billing16.bam.zip")
-#'         object <- .read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
-#'         object <- read_rnaseq_bams(bamdir, paired=TRUE, genome="hg38")
+#'         dir <- download_data("billing16.bam.zip")
+#'         object <- .read_rnaseq_bams(dir, paired=TRUE, genome="hg38")
+#'         object <- read_rnaseq_bams(dir, paired=TRUE, genome="hg38")
 #'     # external gtf
 #'         # gtffile <- download_gtf("Homo sapiens")
-#'         # object <- read_rnaseq_bams(bamdir, paired=TRUE, genome=gtffile)
+#'         # object <- read_rnaseq_bams(dir, paired=TRUE, genome=gtffile)
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_counts <- function(
