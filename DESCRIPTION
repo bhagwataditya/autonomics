@@ -20,7 +20,7 @@ VignetteBuilder: knitr
 biocViews: DataImport, DimensionReduction, GeneExpression, MassSpectrometry, 
             Preprocessing, PrincipalComponent, RNASeq, Software, Transcription
 BugReports: https://bitbucket.org/graumannlabtools/autonomics 
-URL: https://bitbucket.org/graumannlabtools/autonomics
+URL: https://github.com/bhagwataditya/autonomics
 RoxygenNote: 7.1.1
 Imports: 
   abind,
