@@ -303,7 +303,7 @@ impute_systematic_nondetects <- function(
 # Update object
     ff <- fnames(object)
     ss <- snames(object)
-    assays(object)$exprs      <- dt2exprs(dt)[ff, ss]
+    exprs(object) <- dt2exprs(dt)[ff, ss]
     assays(object)$is_imputed <- dt2mat(data.table::dcast(
                     dt, feature_id ~ sample_id, value.var = 'is_imputed'))
     fdata(object)$imputed <- rowAnys(assays(object)$is_imputed)
