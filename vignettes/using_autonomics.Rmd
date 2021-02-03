@@ -9,149 +9,189 @@ vignette: >
 ---
 
 ```{r, include=TRUE, echo=FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
+knitr::opts_chunk$set(
+  echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
 #str(knitr::opts_chunk$get())
 ```
 <!-- ![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png) -->
 
 # Abstract {-}
 
-`autonomics` is created to make cross-platform omics analysis intuitive and enjoyable. It contains **import + preprocess + analyze + visualize** one-liners for *RNAseq*, *MS proteomics*, *SOMAscan* and *Metabolon* platforms, as well as a generic importer for data from *any rectangular omics file*.  
+`autonomics` is created to make cross-platform omics analysis intuitive and enjoyable. It contains **import + preprocess + analyze + visualize** one-liners for *RNAseq*, *MS proteomics*, *SOMAscan* and *Metabolon* platforms and a *generic* importer for data from *any rectangular omics file*. With a focus on not only automation but also customization, these importers have a flexible  `formula`/ `block`/`contrastdefs` interface which allows to define any statistical formula, fit any general linear model, quantify any contrast, and use random effects or precision weights if required, building on top of the powerful `limma` platform for statistical analysis. It also offers exquisite support for analyzing **complex designs** such as the innovative **contrastogram** visualization to unravel and summarize the differential expression structure in complex designs. By autonomating repetitive tasks, generifying common steps, and intuifying complex designs, it makes cross-platform omics data analysis a fun experience. Try it  and enjoy :-).
 
-The biological subgroup is inferred from sample names or a sample file, the model `~ 0 + subgroup ` is fitted and `contrasts` between subsequent levels are quantified and visualized with `volcano` plots. Multi-factor subgroups are automatically decomposed into `subfactors`, for each of which contrasts between subsequent levels are computed and visualized into a two-dimensional volcano grid. Defaults can be customized through the `formula`, `block` and `contrastdefs` parameters, allowing to define any statistical formula, fit any general linear model, quantify any contrast, using random effects or precision weights if suited, building on top of the powerful `limma` platform for statistical analysis.  
+# read + preprocess + analyze + visualize
 
-With repetitive parts automated, common steps generified, and common operations functionalized, cross-platform omics data analysis becomes an intuitive experience. Enjoy!
+Autonomics offers  **import + preprocess + analyze + visualize** one-liners for *RNAseq*, *MS proteomics*, *SOMAscan* and *Metabolon* platforms, as well a *generic* importer for data from *any rectangular omics file*. We will discuss each of these in more detail in the following sections, but all of them follow the following general steps:
 
-# Rnaseq {-}
+  * **read**
+    - exprs, features, samples
+    - extract **subgroups** from sampleids / samplefile
+    - wrap these into a **SummarizedExperiment**
+  * **preprocess**
+    - **normalize**
+    - **log2** transform
+    - **impute** in a platform-aware fashion
+    - **filter**
+  * **analyze**
+    - plot **sample distributions**
+    - plot **detections** (absent/present)
+    - plot **pca** biplots
+    - **fit** the linear model `~0+subgroup`
+    - quantify **contrasts** between subsequent factor levels and **plot volcanoes**
+  
 
-The autonomics functions `read_rnaseq_counts` / `read_rnaseq_bams` read counts/bamfiles, normalize for library composition (**cpm**) or gene length (**tpm**), estimate **voom** precision weights, fit a linear model, and quantify contrasts between subsequent factor levels.
+## RNAseq
+
+Autonomics provides ready-to-use importers for both **count** as well as **BAM** files, which read / preprocess / analyze RNAseq data. Specific to RNAseq is counting reads using Rsubread::featureCounts (for read_rna_bams)), normalizing for library composition (**cpm**) or gene length (**tpm**), estimating **voom** precision weights, and using these in linear modeling. Let's illustrate both of these on example datasets:
 
 ### read_rnaseq_counts {-}
 
-The Billing et al. (2019) dataset studies the differentiation of embryonic stem cells (E00) into mesenchymal stem cells (E00.8, E01, E02, E05, E15, E30), comparing these to original, bone-marrow derived mesenchymal stem cells (M00). The autonomics importer `read_rnaseq_counts` imports, preprocesses and analyzes this dataset as discussed earlier:
-
+**Billing et al. (2019)** studied the differentiation of embryonic (**E00**) into mesenchymal stem cells (**E00.8**, **E01**, **E02**, **E05**, **E15**, **E30**), with similar properties as bone-marrow mesenchymal stem cells (**M00**). Importing the RNAseq counts:
 
 ```{r}
 require(autonomics, quietly = TRUE)
-file <- download_data('billing19.rnacounts.txt')
-object <-  read_rnaseq_counts(file)
+object <-  read_rnaseq_counts(file = download_data('billing19.rnacounts.txt'))
+```
 
+### read_rnaseq_counts(sfile) {-}
+
+
+The `sfile/sfileby` arguments in both importers allow to merge in sample data from a separate file by a specified column. This is especially useful in clinical datasets, such as the GSE161731 Covid-19 dataset, for which both a **counts** file as well as a **sample** file can be downloaded from GEO:
+
+```{r}
+if (!dir.exists('~/autonomicscache/datasets/GSE161731')){
+    GEOquery::getGEOSuppFiles("GSE161731",baseDir='~/autonomicscache/datasets')}
+object <- read_rnaseq_counts(
+  file  = '~/autonomicscache/datasets/GSE161731/GSE161731_counts.csv.gz', 
+  sfile = '~/autonomicscache/datasets/GSE161731/GSE161731_counts_key.csv.gz', 
+  sfileby = 'rna_id', 
+  subgroupvar = 'gender')
+```
+
+### read_rnaseq_counts(block) {-}
+
+The `block` argument in both importers allows to model e.g. subject_id as a random effect, which is very common in clinical data. Repeating the GEO Covid-19 analysis with subject_id as a block effect. Outcomment the line below, which takes a few minutes to complete.
+
+```{r}
+#object <- read_rnaseq_counts(
+#  file  = '~/autonomicscache/datasets/GSE161731/GSE161731_counts.csv.gz', 
+#  sfile = '~/autonomicscache/datasets/GSE161731/GSE161731_counts_key.csv.gz', 
+#  sfileby = 'rna_id', 
+#  subgroupvar = 'gender', 
+#  block = 'subject_id')
 ```
 
 ### read_rnaseq_bams {-}
 
-Sometimes data analysis starts from BAM alignment files rather than count files. These can be imported with the autonomics function `read_rnaseq_bams`, which uses `rsubread::featureCounts` to summarize reads into genewise counts, and subsequently performs the preprocessing steps discussed earlier. This is illustrated on the Billing et al. (2016) dataset, which compares three embryonic celltypes: embryonic stem cells (E), embyronic stem cells differentiated into mesenchymal stem cells (EM), and bone-marrow derived mesenchymal stem cells (BM). Feature counting does take some time (though not as long as alignment) and to keep this vignette fast the example dataset here contains only a small subset of all reads:
+**Billing et al. (2016)** compared three types of stem cells: embryonic (**E**), embryonic differentiated into mesenchymal  (**EM**), and bone-marrow mesenchymal (**BM**). Importing a downsized version of the RNAseq BAM files (with only a subset of all reads):
 
 ```{r, results = 'hide'}
-file <- download_data('billing16.bam.zip')
-object <- read_rnaseq_bams(file, paired = TRUE, genome = 'hg38')
+object <- read_rnaseq_bams(
+              dir   = download_data('billing16.bam.zip'), 
+              paired = TRUE, 
+              genome = 'hg38')
 ```
 
-### sfile(by) {-}
+### cpm/tmm/voom effects on power {-}
 
-The `sfile/sfileby` arguments in both importers allow to merge in sample data from a separate file by a specified column. This is especially useful in clinical datasets, such as the GEO Covid-19 dataset below:
+Proper preprocessing leads to increased power:
 
 ```{r}
-require(magrittr)
-basedir <- '~/autonomicscache/datasets'
-subdir  <- '~/autonomicscache/datasets/GSE161731'
-if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles("GSE161731",baseDir=basedir)
-file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
-sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
-object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id', subgroupvar = 'gender')
+  file <- download_data('billing19.rnacounts.txt')
+  colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 counts
+  cpm = FALSE, voom = FALSE, plot = FALSE, verbose = FALSE))[, -1])
+
+  colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm
+  cpm = TRUE,  voom = FALSE, plot = FALSE, verbose = FALSE))[, -1])
+
+  colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm + voom
+  cpm = TRUE,  voom = TRUE,  plot = FALSE, verbose = FALSE))[, -1])
 ```
 
-### block {-}
+## Proteingroups/phosphosites
 
-The `block` argument allows to model e.g. subject_id as a random effect, which is especially useful in clinical data.
-Repeating the GEO Covid-19 analysis with subject_id as a block effect. The line below runs, but takes some time, and is, therefore, commented out.
+A popular approach in (DDA) MS proteomics data analysis is to use **MaxQuant** to produce **proteinGroups.txt** and **phospho (STY)Sites.txt** files. These can be imported using `read_proteingroups` / `read_phosphosites`, which :
+
+* **Read**
+    - **quantification cols**: LFQ intensities, Normalized Ratios, or Reporter intensities
+    - **feature cols**: id, Majority protein IDs, Protein names, Gene names, Contaminant, Potential contaminant, Reverse
+    - **subgroups** from sampleids / samplefile
+* **Preprocess**
+    - Convert **0 -> NA** (they represent lack of detection)
+    - **Log2** transform
+    - Rm **contaminants/reverse/unreplicated** features
+    - **Impute** consistent NAs with values drawn from a half-normal distribution around zero
+    - For phosphosites: **compute occupancies** by subtracting protein expressions
+* **Analyze**
+    - plot **sample distributions**
+    - plot **detections**
+    - **pca** biplot
+    - **Fit** a linear model
+    - Quantify **contrasts** between subsequent factor levels and plot **volcanoes**
+
+
+### LFQ intensities {-}
+
+An **LFQ intensities** example is the **Fukuda et al. (2020)** dataset, which compares the proteome of **30d** zebrafish juveniles versus **adults** using label-free quantification. In the volcano plot measured values are shown with circles, imputed values as triangles.
 
 ```{r}
-#object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id',
-#                             subgroupvar = 'gender', block = 'subject_id')
+bject <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt')) 
 ```
 
-### cpm/tmm/voom effects {-}
+
+### Normalized ratios {-}
+
+**Normalized ratios** were used in the proteomics profiling of the earlier described **Billing et al. (2019)** study, which examined the differentiation of embryonic stem cells (**E00**) into mesenchymal stem cells (**E01**,**E02**, **E05**, **E15**, **E30**), and compared these to bone-marrow derived mesenchymal stem cells (**M00**). The proteomics profiling experiment was performed using MS1 labeling: a light (**L**) labeled internal standard was created by mixing all samples in equal amounts, the subsequent samples were either medium (**M**) or heavy (**H**) labeled. Not all label combinations were of interest, and the `select_subgroups` argument allows to specifies which subgroup combinations to retain:
+
 
 ```{r}
-    file <- download_data('billing19.rnacounts.txt')
-    colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 counts
-    cpm = FALSE, voom = FALSE, plot = FALSE, verbose = FALSE))[, -1])
-
-    colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm
-    cpm = TRUE,  voom = FALSE, plot = FALSE, verbose = FALSE))[, -1])
-
-    colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm + voom
-    cpm = TRUE,  voom = TRUE,  plot = FALSE, verbose = FALSE))[, -1])
+object <- read_proteingroups(
+              file = download_data('billing19.proteingroups.txt'),
+              select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
+                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'))
 ```
 
-# Proteingroups/phosphosites {-}
-
-
-A popular approach in (DDA) MS proteomics data analysis is to use **MaxQuant** to identify/quantify proteingroup/phosphosite abundances. These can then read, preprocessed, and analyzed by the autonomics functions `read_proteingroups` and `read_phosphosites`, which:
-
-(1) Extract the relevant columns: 
-    - quantifications: **LFQ intensity**, **Ratio normalized**, **Reporter intensity**
-    - features: id, Majority protein IDs, Protein names, Gene names, Contaminant, Potential contaminant, Reverse
-
-(2) **Replace zeroes with NA** (zeroes in MS represent lack of detection)
-(3) **Log2** transform
-(4) **Rm contaminants/reverse/unreplicated** features
-(5) **Impute consistent NAs** (i.e. NA in all samples of a subgroup) with values drawn from a half-normal distribution with mean zero and precision comparable to other subgroups
-(6) For phosphosites: **compute occupancies** by subtracting protein expressions
-(7) Run a **pca**
-(8) **Fit** a linear model
-(9) Quantify **contrasts** between model coefficients
-
-
-### lfq intensities {-}
-
-An example of an LFQ intensities is the Fukuda et al. (2020) dataset, which compares the proteome of 30d zebrafish juveniles versus adults using label-free quantification: 
+The phosphosites can be read in a similar fashion:
 
 ```{r}
-proteingroups <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(proteingroups)
+object <- read_phosphosites(
+              file = download_data('billing19.phosphosites.txt'), 
+              proteinfile = download_data('billing19.proteingroups.txt'), 
+              select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
+                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'))
 ```
 
+## Metabolon
 
-### normalized ratios {-}
-
-Normalized ratios were used in the proteomics profiling of the earlier described Billing et al. (2019) study, which examined the differentiation of embryonic stem cells ('E00') into mesenchymal stem cells ('E01','E02', 'E05', 'E15', 'E30'), and compared these to bone-marrow derived mesenchymal stem cells (M00). The proteomics profiling experiment was performed using MS1 labeling: a light (L) labeled internal standard was created by mixing all samples in equal amounts, the subsequent samples were either medium (M) or heavy (H) labeled. Not all label combinations were of interest, and the `select_subgroups` argument allows to specifies which subgroup combinations to retain: 
-
-```{r}
-proteingroups <- download_data('billing19.proteingroups.txt')
-select_subgroups <- c('E00_STD', 'E01_STD', 'E02_STD',
-                        'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
-object <- read_proteingroups(proteingroups, select_subgroups = select_subgroups)
-```
-
-```{r}
-phosphosites  <- download_data('billing19.phosphosites.txt')
-object <- read_phosphosites(phosphosites, proteingroups, select_subgroups = select_subgroups)
-```
-
-# Somascan {-}
-
-Somascan results are returned in a txt file with extension ".adat". Features are laid out in columns and samples in rows. Rectangles with feature/sample data are also contained in the file. The autonomics function **read_somascan** reads these files, additionally filtering samples/features for quality and type. 
-
-This is illustrated on the dataset from Halama, Atkin et al. (2018), which investigated the effects of hypoglycemia at three different time points:
-
-```{r}
-file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file)
-```
-
-
-# Metabolon {-}
-
-Metabolon returns metabolomics profiling results in the form of an xlsx file, with a number of sheets, among which "original". Features are laid out in rows and samples in columns. Blocks of feature as well as sample data are included in the file. Metabolon data is highly preprocessed, requiring no additional preprocessing. 
-
-An example is the glutaminase inhibitor dataset from Halama et al. (2018), which investigated the effect of increasing concentrations of glutaminase inhibitor at different time points:
+**Metabolon** delivers metabolomics results in the form of an **xlsx** file, with values of interest likely in the (second) **OrigScale** sheet. Features are laid out in rows, samples in columns, and additional feature/sample data are self-contained in the file. Metabolon data can be read/analyzed with the autonomics function `read_metabolon`, as illustrated below on the dataset of **Halama and and Atkin (2018)**, who investigates the effects of **hypoglycemia** on a number of subjects (**SUB**) at four different time points (**t0**, **t1**, **t2**, **t3**):
 
 ```{r, fig.width=7, fig.height=4, out.width="95%"}
-file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file) 
+object <- read_metabolon(
+            file  = download_data('atkin18.metabolon.xlsx'), 
+            block = 'SUB')
 ```
+
+## Somascan
+
+**Somascan** results are returned in a txt file with extension **.adat**. Features are laid out in columns and samples in rows. Rectangles with feature/sample data are also contained in the file. The autonomics function `read_somascan` reads/analyzes SOMAscan files, additionally filtering samples/features for quality and type. This is illustrated on the above described dataset from **Halama and and Atkin (2018)**, who investigated the effects of **hypoglycemia** on a number of subjects (**SUB**) at four different time points (**t0**, **t1**, **t2**, **t3**):
+
+```{r}
+object <- read_somascan(
+            file = download_data('atkin18.somascan.adat'), 
+            block = 'Subject_ID')
+
+```
+
+<!--
+# complex designs
+
+Multi-factor subgroups are automatically decomposed into `subfactors`, for each of which contrasts between subsequent levels are computed and visualized into a two-dimensional volcano grid.
+
+## The contrastogram
+The contrastogram
+
+# Analyzing clinical data
+-->
 
 # References {-}
 
