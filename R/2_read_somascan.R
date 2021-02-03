@@ -157,6 +157,7 @@ rm_single_value_columns <- function(df){
 #' @param pca                   whether to pca
 #' @param lmfit                 whether to lmfit/contrast
 #' @param formula               design formula (using svars)
+#' @param block                 block var
 #' @param contrastdefs          contrastdef vector/matrix/list
 #' @param verbose               whether to msg
 #' @param plot                  whether to plot
@@ -165,13 +166,14 @@ rm_single_value_columns <- function(df){
 #' # HYPOGLYCEMIA
 #'     file <- download_data('atkin18.somascan.adat')
 #'     read_somascan(file)
+#'     read_somascan(file, block = 'Subject_ID')
 #' @export
 read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     subgroupvar = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE,
-    pca = TRUE, lmfit = TRUE, formula = NULL, contrastdefs = NULL,
+    pca = TRUE, lmfit = TRUE, formula = NULL, block = NULL, contrastdefs = NULL,
     verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -198,7 +200,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     object %<>% log2transform(verbose = TRUE)
 # Analyze
     if (pca)    object %<>% pca()
-    if (lmfit)  object %<>% lmfit(formula    = formula,
+    if (lmfit)  object %<>% lmfit(formula = formula, block = block,
                                 contrastdefs = contrastdefs, plot = FALSE)
 # Plot
     if (plot) plot_samples(object)

@@ -264,6 +264,7 @@ stack <- function(x, y){
 #' @param pca                whether to pca
 #' @param lmfit              whether to lmfit/contrast
 #' @param formula            designmat formula
+#' @param block              block svar
 #' @param contrastdefs       contrastdef vector/matrix/list
 #' @param verbose            whether to msg
 #' @param plot               whether to plot
@@ -275,12 +276,13 @@ stack <- function(x, y){
 #' # HYPOGLYCEMIA
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    read_metabolon(file)
+#'    read_metabolon(file, block='SUB')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
-    pca = TRUE, lmfit = TRUE, formula = NULL, contrastdefs = NULL,
+    pca = TRUE, lmfit = TRUE, formula = NULL, block = NULL, contrastdefs = NULL,
     verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -296,8 +298,8 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Contrast
     if (pca)   object %<>% pca()
-    if (lmfit) object %<>% lmfit(
-                formula = formula, contrastdefs = contrastdefs, plot = FALSE)
+    if (lmfit) object %<>% lmfit(formula = formula, block = block,
+                                contrastdefs = contrastdefs, plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
 # Return

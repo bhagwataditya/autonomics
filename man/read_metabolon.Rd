@@ -26,6 +26,7 @@ read_metabolon(
   pca = TRUE,
   lmfit = TRUE,
   formula = NULL,
+  block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -56,6 +57,8 @@ read_metabolon(
 
 \item{formula}{designmat formula}
 
+\item{block}{block svar}
+
 \item{contrastdefs}{contrastdef vector/matrix/list}
 
 \item{verbose}{whether to msg}
@@ -75,4 +78,5 @@ Read metabolon
 # HYPOGLYCEMIA
    file <- download_data('atkin18.metabolon.xlsx')
    read_metabolon(file)
+   read_metabolon(file, block='SUB')
 }

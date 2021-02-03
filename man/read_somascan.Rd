@@ -27,6 +27,7 @@ read_somascan(
   pca = TRUE,
   lmfit = TRUE,
   formula = NULL,
+  block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -63,6 +64,8 @@ read_somascan(
 
 \item{formula}{design formula (using svars)}
 
+\item{block}{block var}
+
 \item{contrastdefs}{contrastdef vector/matrix/list}
 
 \item{verbose}{whether to msg}
@@ -79,4 +82,5 @@ Read data from somascan adat file
 # HYPOGLYCEMIA
     file <- download_data('atkin18.somascan.adat')
     read_somascan(file)
+    read_somascan(file, block = 'Subject_ID')
 }
