@@ -4,6 +4,9 @@
 #
 #=========================================================================
 
+
+#=========
+
 #' @title Get/Set counts
 #' @description Get / Set counts matrix
 #' @param object SummarizedExperiment
@@ -19,44 +22,39 @@
 setGeneric('counts',   function(object)   standardGeneric("counts"))
 
 #' @rdname counts
-setMethod(
-    "counts",
-    signature("SummarizedExperiment"),
-    function(object)   assays(object)$counts)
+setMethod("counts", signature("SummarizedExperiment"),
+function(object)   assays(object)$counts)
 
 #' @rdname counts
 #' @export
 setGeneric('counts<-',   function(object, value)   standardGeneric("counts<-"))
 
 #' @rdname counts
-setReplaceMethod(
-    "counts",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$counts <- value
-        object })
+setReplaceMethod("counts", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$counts <- value
+    object })
 
 #' @rdname counts
-setReplaceMethod(
-    "counts",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$counts[] <- value
-        object })
+setReplaceMethod("counts", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$counts[] <- value
+    object })
 
 #' @rdname counts
-setReplaceMethod(
-    "counts",
-    signature("SummarizedExperiment", "NULL"),
-    function(object, value){
-        assays(object)$counts <- NULL
-        object })
+setReplaceMethod("counts", signature("SummarizedExperiment", "NULL"),
+function(object, value){
+    assays(object)$counts <- NULL
+    object })
+
+
+#===============
 
 #' @title Get/Set log2counts
 #' @description Get / Set log2counts matrix
 #' @param object SummarizedExperiment
-#' @param value count matrix (features x samples)
-#' @return count matrix (get) or updated object (set)
+#' @param value log2count matrix (features x samples)
+#' @return log2count matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
 #' object <- read_rnaseq_counts(file)
@@ -84,9 +82,49 @@ function(object, value){
 #' @rdname log2counts
 setReplaceMethod("log2counts", signature("SummarizedExperiment", "numeric"),
 function(object, value){
-    assays(object)$counts[] <- value
+    assays(object)$log2counts[] <- value
     object })
 
+
+#===============
+
+#' @title Get/Set log2countsratios
+#' @description Get / Set log2countsratios matrix
+#' @param object SummarizedExperiment
+#' @param value log2countsratios matrix (features x samples)
+#' @return log2countsratios matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' log2countsratios(object) <- exprs(object)
+#' log2countsratios(object)[1:3, 1:3]
+#' @rdname log2countsratios
+#' @export
+setGeneric('log2countsratios',   function(object)   standardGeneric("log2countsratios"))
+
+#' @rdname log2countsratios
+setMethod("log2countsratios", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2countsratios)
+
+#' @rdname log2countsratios
+#' @export
+setGeneric('log2countsratios<-',
+function(object, value) standardGeneric("log2countsratios<-"))
+
+#' @rdname log2countsratios
+setReplaceMethod("log2countsratios", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2countsratios <- value
+    object })
+
+#' @rdname log2countsratios
+setReplaceMethod("log2countsratios", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$log2countsratios[] <- value
+    object })
+
+
+#================
 
 #' @title Get/Set cpm
 #' @description Get / Set cpm matrix
@@ -123,6 +161,7 @@ function(object, value){
     object })
 
 
+#================
 
 #' @title Get/Set log2cpm
 #' @description Get / Set log2cpm matrix
@@ -159,6 +198,44 @@ function(object, value){
     object })
 
 
+#================
+
+#' @title Get/Set log2cpmratios
+#' @description Get / Set log2cpmratios matrix
+#' @param object SummarizedExperiment
+#' @param value log2cpmratios matrix (features x samples)
+#' @return log2cpmratios matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' log2cpmratios(object) <- exprs(object)
+#' log2cpmratios(object)[1:3, 1:3]
+#' @rdname log2cpmratios
+#' @export
+setGeneric('log2cpmratios',   function(object)   standardGeneric("log2cpmratios"))
+
+#' @rdname log2cpmratios
+setMethod("log2cpmratios", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2cpmratios)
+
+#' @rdname log2cpmratios
+#' @export
+setGeneric('log2cpmratios<-',  function(object, value)  standardGeneric("log2cpmratios<-"))
+
+#' @rdname log2cpmratios
+setReplaceMethod("log2cpmratios", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2cpmratios <- value
+    object })
+
+#' @rdname log2cpmratios
+setReplaceMethod("log2cpmratios", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$log2cpmratios[] <- value
+    object })
+
+
+#================
 
 #' @title Get/Set tpm
 #' @description Get / Set tpm matrix
@@ -195,6 +272,7 @@ function(object, value){
     object })
 
 
+#===============
 
 #' @title Get/Set log2tpm
 #' @description Get / Set log2tpm matrix
@@ -231,6 +309,44 @@ function(object, value){
     object })
 
 
+#===============
+
+#' @title Get/Set log2tpmratios
+#' @description Get / Set log2tpmratios matrix
+#' @param object SummarizedExperiment
+#' @param value log2tpmratios matrix (features x samples)
+#' @return log2tpmratios matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('billing16.rnacounts.txt')
+#' object <- read_rnaseq_counts(file)
+#' log2tpmratios(object) <- exprs(object)
+#' log2tpmratios(object)[1:3, 1:3]
+#' @rdname log2tpmratios
+#' @export
+setGeneric('log2tpmratios',   function(object)   standardGeneric("log2tpmratios"))
+
+#' @rdname log2tpmratios
+setMethod("log2tpmratios", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2tpmratios)
+
+#' @rdname log2tpmratios
+#' @export
+setGeneric('log2tpmratios<-',  function(object, value)  standardGeneric("log2tpmratios<-"))
+
+#' @rdname log2tpmratios
+setReplaceMethod("log2tpmratios", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2tpmratios <- value
+    object })
+
+#' @rdname log2tpmratios
+setReplaceMethod("log2tpmratios", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$log2tpmratios[] <- value
+    object })
+
+
+#========
 
 #' @title Get/Set weights
 #' @description Get/Set weight matrix

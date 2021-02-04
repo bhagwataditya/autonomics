@@ -8,6 +8,67 @@
 #==============================================================================
 
 
+#' Subtract controls
+#' @param object      SummarizedExperiment
+#' @param subgroup    subgroup svar
+#' @param refgroup    ref subgroup
+#' @param block       block svar (within which subtraction is performed)
+#' @param assaynames  which assays to subtract for
+#' @param verbose     TRUE/FALSE
+#' @examples
+#' file <- download_data('atkin18.metabolon.xlsx') 
+#' object <- read_metabolon(file, plot = FALSE)
+#' pca(object, plot=TRUE, color=SET)
+#' object %<>% subtract_controls(block='SUB', subgroup = 'SET', refgroup='t0')
+#' pca(object, plot=TRUE, color=SET)
+#' @export 
+subtract_controls <- function(
+    object, subgroup, refgroup, block, 
+    assaynames = setdiff(assayNames(object), 'weights'), verbose = TRUE
+){
+# Ensure single ref per block
+    sdata1 <- sdata(object)[, c('sample_id', subgroup, block)]
+    sdata1 %<>% data.table()
+    singlerefperblock <- sdata1[, sum(get(subgroup)==refgroup)==1, by=block]$V1
+    assert_is_identical_to_true(all(singlerefperblock))
+# Subtract ref
+    splitobjects <- split_by_svar(object, !!sym(subgroup))
+    refobj <- splitobjects[[refgroup]]
+    splitobjects %<>% extract(-1)
+    splitobjects %<>% lapply(function(obj){
+        idx <- match(obj[[block]], refobj[[block]])
+        refobj %<>% extract(, idx)
+        assert_is_identical_to_true(all(obj[[block]] == refobj[[block]]))
+        for (assayname in assaynames){
+            assays(obj)[[assayname]] %<>% subtract(assays(refobj)[[assayname]])
+            assayNames(obj) %<>% stri_replace_first_fixed(
+                                    assayname, paste0(assayname, 'ratios'))
+        }
+        obj        
+    })
+    splitobjects %<>% do.call(S4Vectors::cbind, .)
+    idx <- na.exclude(match(object$sample_id, splitobjects$sample_id))
+    splitobjects[, idx]
+
+
+#    dt <- sumexp_to_long_dt(object, svars = c('sample_id', subgroup, block))
+#    setnames(dt, c(block, subgroup), c('block', 'subgroup'))
+#    dt[block=='C01' & feature_id=='48762']
+#    dt[, nrefs := sum(subgroup==refgroup), by = c('feature_id', 'block')]
+#    assertive::assert_is_identical_to_true(all(dt$nrefs==1)) # refs should be unique
+#    dt[, refvalue:= value[subgroup==refgroup], by = c('feature_id', 'block')]
+#    dt[, value := value - refvalue]
+#    dt %<>% extract(subgroup != refgroup)
+#    exprs1 <- dt2exprs(dt)
+#    assert_is_identical_to_true(all(rownames(object) == rownames(exprs1)))
+#    object %<>% extract(, colnames(exprs1))
+#    exprs(object) <- exprs1
+#    object %<>% merge_fdata(dt[, .(feature_id, refsample = refvalue)], 
+#                            by.x='feature_id', by.y='feature_id')
+#    object
+}
+
+
 #' Log2 transform
 #' @param object SummarizedExperiment
 #' @param verbose TRUE or FALSE

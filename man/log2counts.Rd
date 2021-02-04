@@ -21,10 +21,10 @@ log2counts(object) <- value
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{value}{count matrix (features x samples)}
+\item{value}{log2count matrix (features x samples)}
 }
 \value{
-count matrix (get) or updated object (set)
+log2count matrix (get) or updated object (set)
 }
 \description{
 Get / Set log2counts matrix
