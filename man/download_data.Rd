@@ -4,7 +4,12 @@
 \alias{download_data}
 \title{Download example datasets}
 \usage{
-download_data(file, localdir = "~/autonomicscache/datasets", unzip = TRUE)
+download_data(
+  file,
+  localdir = "~/autonomicscache/datasets",
+  unzip = TRUE,
+  ntries = 3
+)
 }
 \arguments{
 \item{file}{name of file to download}
@@ -12,6 +17,8 @@ download_data(file, localdir = "~/autonomicscache/datasets", unzip = TRUE)
 \item{localdir}{directory where results will be saved}
 
 \item{unzip}{TRUE (default) or FALSE: whether to unzip}
+
+\item{ntries}{no of times to retry}
 }
 \value{
 return   localfile invisibly
