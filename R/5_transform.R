@@ -16,6 +16,7 @@
 #' @param assaynames  which assays to subtract for
 #' @param verbose     TRUE/FALSE
 #' @examples
+#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx') 
 #' object <- read_metabolon(file, plot = FALSE)
 #' pca(object, plot=TRUE, color=SET)

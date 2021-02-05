@@ -43,7 +43,7 @@
 #' @importFrom gridExtra   arrangeGrob   grid.arrange
 #' @importFrom magrittr    %>%   %<>%   add   and   equals
 #' @importFrom magrittr    divide_by   extract   extract2   is_in
-#' @importFrom magrittr    multiply_by
+#' @importFrom magrittr    multiply_by   subtract
 #' @importFrom magrittr    set_colnames   set_names   set_rownames
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans
 #' @importFrom matrixStats   rowAlls   rowSds

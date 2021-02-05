@@ -211,13 +211,13 @@ single_subgroup <- function(object){
 
 are_factor <- function(df) vapply(df, is.factor, logical(1))
 
-nlevels(object, svar) <- function(object, svar){
+nlevels <- function(object, svar){
     if (!svar %in% svars(object))  return(0)
     length(unique(object[[svar]]))
 }
 
-singlelevel <- function(object, svar) nlevels(object[[svar]]) ==1
-multilevel  <- function(object, svar) nlevels(object[[svar]]) > 1
+singlelevel <- function(object, svar) nlevels(object, svar) ==1
+multilevel  <- function(object, svar) nlevels(object, svar) > 1
 
 #' Create design
 #'
@@ -245,7 +245,7 @@ create_design <- function(object, formula = NULL, verbose = TRUE){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     if (is.null(formula))  formula <- 
-        if (multilevel(object[['subgroup']])) ~ 0 + subgroup else ~ 1
+        if (multilevel(object, 'subgroup')) ~ 0 + subgroup else ~ 1
     assert_is_subset(all.vars(formula), svars(object))
     . <- NULL
 # Ensure that subgroup vector is a factor to preserve order of levels
@@ -258,7 +258,7 @@ create_design <- function(object, formula = NULL, verbose = TRUE){
     myDesign <- model.matrix(formula,  data = sdata(object))
 # Rename "(Intercept)" column
     if (ncol(myDesign)==1){ 
-        if (singlelevel(object[['subgroup']]))  colnames(myDesign) <- 
+        if (singlelevel(object, 'subgroup'))  colnames(myDesign) <- 
                                                 slevels(object, 'subgroup')
         return(myDesign) }
     factors <- svars(object)[are_factor(sdata(object))] # Rename intercept
@@ -1078,8 +1078,8 @@ plot_volcano <- function(
                         #direction = 'x'
     p + theme_bw() +
         scale_color_manual(values = colorvalues, name = NULL) +
-        xlab(expression(log[2](FC))) +
-        ylab(expression(-log[10](p))) +
+        xlab('log2(FC)') +
+        ylab('-log10(p)') +
         ggtitle('volcano')#+
         #guides(color=FALSE)
 }
