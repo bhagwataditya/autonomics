@@ -32,7 +32,7 @@ Log2 transform
 \examples{
 require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
+object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 
 plot_sample_densities(object)
 plot_sample_densities(invnorm(object))

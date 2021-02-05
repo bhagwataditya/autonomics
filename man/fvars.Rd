@@ -29,7 +29,7 @@ Get/Set feature variables
 \examples{
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 fvars(object)[1] \%<>\% paste0('1')
 fvars(object)[1]
 }

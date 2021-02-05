@@ -446,7 +446,7 @@ split_values <- function(x){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
 #' head(sdata(object))
@@ -529,7 +529,8 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #'    file <- download_data('billing19.proteingroups.txt')
 #'    select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #'    select %<>% paste0('_STD')
-#'    object <- read_proteingroups(file, select_subgroups = select)
+#'    object <- read_proteingroups(file, select_subgroups = select, 
+#'                                pca = FALSE, lmfit = FALSE, plot = FALSE)
 #'    sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
 #'    sfile %<>% paste0('.samples.txt')
 #'    invisible(create_sfile(object, sfile))

@@ -10,7 +10,7 @@
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' (object %<>% extract_features(c(5,4)))
 #' @export
 extract_features <- function(object, extractor){
@@ -60,7 +60,7 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' @examples
 #' # GLUTAMINASE
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file)
+#'     object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #'     filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 #' @export
 filter_features <- function(object, condition, verbose = FALSE){
@@ -145,7 +145,7 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
 #'
 #' filter_exprs_replicated_in_some_subgroup(object, character(0))

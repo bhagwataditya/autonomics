@@ -36,7 +36,7 @@ Get/Set weight matrix
 }
 \examples{
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 weights(object)[1:3, 1:2]
 weights(object) <- 1; weights(object)[1:3, 1:2]
 }

@@ -32,7 +32,8 @@ Get / Set proteingroups matrix
 \examples{
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
-object <- read_phosphosites(phosphofile, proteinfile)
+object <- read_phosphosites(
+    phosphofile, proteinfile, pca = FALSE, lmfit = FALSE, plot = FALSE)
 exprs(object)[1:3, 1:3]
 proteingroups(object)[1:3, 1:3]
 }

@@ -22,6 +22,6 @@ Filter features on condition
 \examples{
 # GLUTAMINASE
     file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file)
+    object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
     filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 }
