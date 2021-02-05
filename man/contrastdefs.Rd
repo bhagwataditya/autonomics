@@ -29,6 +29,7 @@ Get/set contrastdefs
 \examples{
 file <- download_data('billing16.proteingroups.txt')
 inv <- c('EM_E', 'BM_E', 'BM_EM')
-object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+object <- read_proteingroups(
+            file, invert_subgroups=inv, pca=FALSE, plot=FALSE)
 contrastdefs(object)
 }

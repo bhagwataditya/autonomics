@@ -23,7 +23,8 @@ Explore imputations
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
+object <- read_proteingroups(
+            file, impute = FALSE, lmfit=FALSE, plot = FALSE)
 explore_imputations(object)
 explore_transformations(object)
 }

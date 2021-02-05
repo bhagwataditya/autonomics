@@ -73,11 +73,11 @@ has_identical_values <- function(x) length(unique(x))==1
 #'
 #' # SummarizedExperiment
 #'    # file <- download_data('halama18.metabolon.xlsx')
-#'    # object <- read_metabolon(file)
+#'    # object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #'    # guess_sep(object)
 #'
 #'    # file <- download_data('billing16.proteingroups.txt')
-#'    # object <- read_proteingroups(object)
+#'    # object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #'    # guess_sep(object)
 #' @export
 guess_sep <- function (x, ...)  UseMethod("guess_sep", x)
@@ -152,7 +152,7 @@ nfactors <- function(x, sep = guess_sep(x)){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' x <- object$sample_id[1:5]
 #' nfactors(x)
 #' split_extract(x, 1:2)
@@ -228,14 +228,14 @@ multilevel  <- function(object, svar) nlevels(object, svar) > 1
 #' @return design matrix
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
+#' object <- read_rnaseq_counts(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' create_design(object)
 #'
 #' object$subgroup <- 'billing16'
 #' create_design(object)
 #'
 #' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
+#' object <- read_somascan(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' create_design(object)
 #' create_design(object, ~ 0 + subgroup + Sex + T2D + age + bmi)
 #' object$subgroup <- 'atkin18'
@@ -333,7 +333,7 @@ subgroup_array <- function(object){
 #' @return matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' subgroup_matrix(object)
 #' @export
 subgroup_matrix <- function(object){
@@ -374,7 +374,7 @@ subgroup_matrix <- function(object){
 #' @return  matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' subgroup_matrix(object)
 #' contrast_subgroup_cols(object)
 #' contrast_subgroup_rows(object)
@@ -470,23 +470,24 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE, lmfit=FALSE)
+#' object <- read_somascan(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' lmfit(object)
 #' lmfit(object, block = 'Subject_ID')
 #'
 #' file <- download_data('billing19.proteingroups.txt')
 #' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #' select %<>% paste0('_STD')
-#' object <- read_proteingroups(file, select_subgroups = select, plot = FALSE)
+#' object <- read_proteingroups(file, select_subgroups = select, 
+#'                             pca=FALSE, lmfit=FALSE, plot = FALSE)
 #' object %<>% lmfit()
 #'
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
+#' object <- read_rnaseq_counts(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
 #' object %<>% lmfit()
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
 #' object %<>% lmfit()
 #' @export
 lmfit <- function(object, contrastdefs = NULL,
@@ -583,7 +584,8 @@ add_contrast_results <- function(object, fit){
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' object <- read_proteingroups(
+#'             file, invert_subgroups=inv, pca=FALSE, plot=FALSE)
 #' design(object)
 #' @export
 setGeneric("design", function(object)   standardGeneric("design") )
@@ -614,7 +616,8 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' object <- read_proteingroups(
+#'             file, invert_subgroups=inv, pca=FALSE, plot=FALSE)
 #' contrastdefs(object)
 #' @export
 setGeneric("contrastdefs", function(object)   standardGeneric("contrastdefs") )
@@ -646,7 +649,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' object <- read_proteingroups(file, invert_subgroups=inv, pca=FALSE, plot=FALSE)
 #' dim(limma(object))
 #' dim(limma(object[1:5, ]))
 #' @export
@@ -685,7 +688,8 @@ function(object, value) object)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#' object <- read_proteingroups(
+#'             file, invert_subgroups=inv, pca=FALSE, plot=FALSE)
 #' extract_limma_quantity(object)
 #' @noRd
 extract_limma_quantity <- function(object, quantity='p'){
@@ -710,7 +714,7 @@ merge_limma_quantities <- function(x, y){
 #' @return melted data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, plot=FALSE)
 #' extract_limma_dt(object)
 #'
 #' file <- download_data('billing16.proteingroups.txt')
@@ -733,7 +737,7 @@ extract_limma_dt <- function(object){
 #' # RNASEQCOUNTS
 #'     # ~ 0 + subgroup
 #'         file <- download_data('billing19.rnacounts.txt')
-#'         object <- read_rnaseq_counts(file, plot=FALSE)
+#'         object <- read_rnaseq_counts(file, pca=FALSE, plot=FALSE)
 #'         extract_limma_summary(object)
 #'
 #'     # ~ 0 + subgroups | weights
@@ -745,7 +749,7 @@ extract_limma_dt <- function(object){
 #' # METABOLON
 #'     # ~ 0 + subgroup
 #'           file <- download_data('atkin18.metabolon.xlsx')
-#'           object <- read_metabolon(file, plot=FALSE)
+#'           object <- read_metabolon(file, pca=FALSE, plot=FALSE)
 #'           extract_limma_summary(object)
 #'
 #'    # ~ 0 + subgroup | block
@@ -834,24 +838,26 @@ compute_connections <- function(
 #' @examples
 #' # subgroup matrix
 #'    file <- download_data('halama18.metabolon.xlsx')
-#'    object <- read_metabolon(file, plot=FALSE)
+#'    object <- read_metabolon(file, pca=FALSE, plot=FALSE)
 #'    plot_contrastogram(object)
 #' # subgroup vector
 #'     require(magrittr)
 #'     file <-  download_data('billing19.proteingroups.txt')
 #'     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #'     select %<>% paste0('_STD')
-#'     object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
+#'     object <- read_proteingroups(
+#'                 file, select_subgroups = select, pca=FALSE, plot=FALSE)
 #'     object %<>% lmfit(plot=FALSE)
 #'     plot_contrastogram(object, curve=0.8)
 #' # subgroup vector
 #'     file <-  download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, plot=FALSE)
+#'     object <- read_proteingroups(file, pca=FALSE, plot=FALSE)
 #'     plot_contrastogram(object)
 #' # Ratios: self-contrasts
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    invert <- c('EM_E', 'BM_E', 'BM_EM')
-#'    object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
+#'    object <- read_proteingroups(
+#'                file, invert_subgroups=invert, pca=FALSE, plot=FALSE)
 #'    plot_contrastogram(object)
 #' @export
 plot_contrastogram <- function(
@@ -935,7 +941,8 @@ top_down <- function(effect, fdr, mlp, ntop){
 #' @examples
 #' file <- download_data("billing16.proteingroups.txt")
 #' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
+#' object <- read_proteingroups(
+#'             file, invert_subgroups=invert_subgroups, pca=FALSE, plot=FALSE)
 #' effect <-      limma(object)[,1,'effect']
 #' fdr    <-      limma(object)[,1,'fdr']
 #' mlp    <- -log(limma(object)[,1,'p'])
@@ -976,7 +983,7 @@ melt_contrastdefs <- function(contrastdefmat){
 #' file <- download_data("billing16.proteingroups.txt")
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(file, invert_subgroups=inv,
-#'             contrastdefs = c('E_EM', 'E_BM', 'EM_BM'), pca=FALSE, plot=FALSE)
+#'     contrastdefs = c('E_EM', 'E_BM', 'EM_BM'), pca=FALSE, plot=FALSE)
 #' make_volcano_dt(object)
 #' @export
 make_volcano_dt <- function(
@@ -1018,7 +1025,8 @@ make_volcano_dt <- function(
 #'     require(magrittr)
 #'     file <- download_data("billing16.proteingroups.txt")
 #'     inv <- c('EM_E', 'BM_E', 'BM_EM')
-#'     object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+#'     object <- read_proteingroups(
+#'         file, invert_subgroups=inv, pca=FALSE, plot=FALSE)
 #'     plot_volcano(object)
 #'     contrastdefs <- subgroup_matrix(object)
 #'     object %<>% lmfit(contrastdefs = contrastdefs, plot = FALSE)
@@ -1026,19 +1034,20 @@ make_volcano_dt <- function(
 #'
 #' # proteingroup LFQ intensities
 #'     file <- download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, plot=FALSE)
+#'     object <- read_proteingroups(file, pca=FALSE, plot=FALSE)
 #'     plot_volcano(object)
 #'
 #' # metabolon intensities: complex design
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot=FALSE)
+#'     object <- read_metabolon(file, pca=FALSE, plot=FALSE)
 #'     plot_volcano(object, ntop=0)
 #'
 #' # proteingroup internalstandard ratios
 #'     file <-  download_data('billing19.proteingroups.txt')
 #'     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #'     select %<>% paste0('_STD')
-#'     object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
+#'     object <- read_proteingroups(
+#'                  file, select_subgroups = select, pca=FALSE, plot=FALSE)
 #'     plot_volcano(object)
 #' @export
 plot_volcano <- function(

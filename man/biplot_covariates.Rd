@@ -42,7 +42,7 @@ Biplot covariates
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
+object <- read_metabolon(file, lmfit=FALSE, plot = FALSE)
 biplot_covariates(object, ndim = 12, dimcols = 3)
 biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)

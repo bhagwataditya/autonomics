@@ -26,23 +26,25 @@ Plot contrastogram
 \examples{
 # subgroup matrix
    file <- download_data('halama18.metabolon.xlsx')
-   object <- read_metabolon(file, plot=FALSE)
+   object <- read_metabolon(file, pca=FALSE, plot=FALSE)
    plot_contrastogram(object)
 # subgroup vector
     require(magrittr)
     file <-  download_data('billing19.proteingroups.txt')
     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
     select \%<>\% paste0('_STD')
-    object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
+    object <- read_proteingroups(
+                file, select_subgroups = select, pca=FALSE, plot=FALSE)
     object \%<>\% lmfit(plot=FALSE)
     plot_contrastogram(object, curve=0.8)
 # subgroup vector
     file <-  download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, plot=FALSE)
+    object <- read_proteingroups(file, pca=FALSE, plot=FALSE)
     plot_contrastogram(object)
 # Ratios: self-contrasts
    file <- download_data('billing16.proteingroups.txt')
    invert <- c('EM_E', 'BM_E', 'BM_EM')
-   object <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
+   object <- read_proteingroups(
+               file, invert_subgroups=invert, pca=FALSE, plot=FALSE)
    plot_contrastogram(object)
 }

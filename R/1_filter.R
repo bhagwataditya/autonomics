@@ -108,7 +108,7 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(exprs(object)))
 #' @return updated object
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' rm_missing_in_some_samples(object)
 #' @noRd
 rm_missing_in_some_samples <- function(object, verbose = TRUE){
@@ -141,7 +141,8 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
 #' invert_subgroups <- c('E_EM', 'BM_EM', 'E_BM')
-#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
+#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups,
+#'     pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
@@ -195,7 +196,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' # FUKUDA20
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, )
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' object %<>% filter_replicated()
 #' @export
 filter_replicated  <- function(
@@ -231,8 +232,8 @@ filter_replicated  <- function(
 #' @examples
 #' # GLUTAMINASE
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file)
-#'     filter_samples(object,   TIME_POINT=='h10',  verbose = TRUE)
+#'     object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'     filter_samples(object, TIME_POINT=='h10', verbose = TRUE)
 #' @export
 filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     condition <- enquo(condition)

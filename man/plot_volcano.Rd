@@ -31,7 +31,8 @@ Plot volcano
     require(magrittr)
     file <- download_data("billing16.proteingroups.txt")
     inv <- c('EM_E', 'BM_E', 'BM_EM')
-    object <- read_proteingroups(file, invert_subgroups=inv, plot=FALSE)
+    object <- read_proteingroups(
+        file, invert_subgroups=inv, pca=FALSE, plot=FALSE)
     plot_volcano(object)
     contrastdefs <- subgroup_matrix(object)
     object \%<>\% lmfit(contrastdefs = contrastdefs, plot = FALSE)
@@ -39,18 +40,19 @@ Plot volcano
 
 # proteingroup LFQ intensities
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, plot=FALSE)
+    object <- read_proteingroups(file, pca=FALSE, plot=FALSE)
     plot_volcano(object)
 
 # metabolon intensities: complex design
     file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, plot=FALSE)
+    object <- read_metabolon(file, pca=FALSE, plot=FALSE)
     plot_volcano(object, ntop=0)
 
 # proteingroup internalstandard ratios
     file <-  download_data('billing19.proteingroups.txt')
     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
     select \%<>\% paste0('_STD')
-    object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
+    object <- read_proteingroups(
+                 file, select_subgroups = select, pca=FALSE, plot=FALSE)
     plot_volcano(object)
 }

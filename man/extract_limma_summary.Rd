@@ -19,7 +19,7 @@ Extract contrast analysis summary
 # RNASEQCOUNTS
     # ~ 0 + subgroup
         file <- download_data('billing19.rnacounts.txt')
-        object <- read_rnaseq_counts(file, plot=FALSE)
+        object <- read_rnaseq_counts(file, pca=FALSE, plot=FALSE)
         extract_limma_summary(object)
 
     # ~ 0 + subgroups | weights
@@ -31,7 +31,7 @@ Extract contrast analysis summary
 # METABOLON
     # ~ 0 + subgroup
           file <- download_data('atkin18.metabolon.xlsx')
-          object <- read_metabolon(file, plot=FALSE)
+          object <- read_metabolon(file, pca=FALSE, plot=FALSE)
           extract_limma_summary(object)
 
    # ~ 0 + subgroup | block

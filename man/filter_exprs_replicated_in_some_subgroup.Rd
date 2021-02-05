@@ -33,7 +33,8 @@ Filter features with replicated expression in some subgroup
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
 invert_subgroups <- c('E_EM', 'BM_EM', 'E_BM')
-object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
+object <- read_proteingroups(file, invert_subgroups=invert_subgroups,
+    pca=FALSE, lmfit=FALSE, plot=FALSE)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 
 file <- download_data('halama18.metabolon.xlsx')
