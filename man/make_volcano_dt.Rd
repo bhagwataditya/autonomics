@@ -23,6 +23,6 @@ Create volcano datatable
 file <- download_data("billing16.proteingroups.txt")
 inv <- c('EM_E', 'BM_E', 'BM_EM')
 object <- read_proteingroups(file, invert_subgroups=inv,
-            contrastdefs = c('E_EM', 'E_BM', 'EM_BM'), pca=FALSE, plot=FALSE)
+    contrastdefs = c('E_EM', 'E_BM', 'EM_BM'), pca=FALSE, plot=FALSE)
 make_volcano_dt(object)
 }

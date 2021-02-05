@@ -21,14 +21,14 @@ Create design matrix  for statistical analysis
 }
 \examples{
 file <- download_data('billing16.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot=FALSE)
+object <- read_rnaseq_counts(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 create_design(object)
 
 object$subgroup <- 'billing16'
 create_design(object)
 
 file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file, plot=FALSE)
+object <- read_somascan(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 create_design(object)
 create_design(object, ~ 0 + subgroup + Sex + T2D + age + bmi)
 object$subgroup <- 'atkin18'

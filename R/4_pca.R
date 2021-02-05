@@ -91,7 +91,7 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' @return        SummarizedExperiment
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
 #' pca(object, plot=TRUE)  # Principal Component Analysis
 #' pls(object)  # Partial Least Squares
 #' lda(object)  # Linear Discriminant Analysis
@@ -297,7 +297,7 @@ lda <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 #' @return        SummarizedExperiment
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' spls(object)
 #' @noRd
 spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
@@ -341,7 +341,7 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
 #' @return        SummarizedExperiment
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' opls(object)
 #' @noRd
 opls <- function(
@@ -490,7 +490,7 @@ add_loadings <- function(
 #' # halama18
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot = FALSE)
+#'     object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
 #'     object %<>% pca(plot=FALSE, ndim=4)
 #'     object %<>% pls(plot=FALSE)
 #'     biplot(object)
@@ -584,7 +584,7 @@ plot_corrections <- function(...){
 #' @return  grid object
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file, lmfit=FALSE, plot = FALSE)
 #' biplot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' @seealso biplot_covariates
 #' @export
@@ -630,7 +630,7 @@ plot_covariates <- function(...){
 #' @return  ggplot object
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file, lmfit=FALSE, plot = FALSE)
 #' biplot_covariates(object, ndim = 12, dimcols = 3)
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)

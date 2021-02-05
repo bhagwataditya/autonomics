@@ -54,7 +54,8 @@ Convert SummarizedExperiment into data.table
 # Stem cell comparison
     file <- download_data('billing16.proteingroups.txt')
     invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-    object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
+    object <- read_proteingroups(file, invert_subgroups = invert_subgroups,
+                  pca=FALSE, lmfit=FALSE, plot=FALSE)
     sumexp_to_wide_dt(object)
     sumexp_to_long_dt(object)
     sumexp_to_subrep_dt(object)
@@ -62,7 +63,7 @@ Convert SummarizedExperiment into data.table
 # Glutaminase
    require(magrittr)
    file <- download_data('halama18.metabolon.xlsx')
-   object <- read_metabolon(file)
+   object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
    sumexp_to_wide_dt(object)
    sumexp_to_long_dt(object)
    sumexp_to_subrep_dt(object)
@@ -70,7 +71,8 @@ Convert SummarizedExperiment into data.table
 # Fukuda
    require(magrittr)
    file <- download_data('fukuda20.proteingroups.txt')
-   object <- read_proteingroups(file, impute=FALSE, plot=FALSE)
+   object <- read_proteingroups(file, impute=FALSE,
+                               pca=FALSE, lmfit=FALSE, plot=FALSE)
    sumexp_to_long_dt(object)
    object \%<>\% impute_systematic_nondetects(plot=FALSE)
    sumexp_to_long_dt(object)
