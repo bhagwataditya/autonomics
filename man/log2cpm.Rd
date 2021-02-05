@@ -31,7 +31,8 @@ Get / Set log2cpm matrix
 }
 \examples{
 file <- download_data('billing16.rnacounts.txt')
-object <- read_rnaseq_counts(file)
+object <- read_rnaseq_counts(
+            file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 log2cpm(object) <- exprs(object)
 log2cpm(object)[1:3, 1:3]
 }

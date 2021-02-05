@@ -37,7 +37,7 @@ object <- read_proteingroups(file, invert_subgroups=invert_subgroups)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file)
+object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 
 filter_exprs_replicated_in_some_subgroup(object, character(0))

@@ -1,5 +1,6 @@
 
 #===============================================================================
+
 #' Get/set analysis
 #' @param object SummarizedExperiment
 #' @param value list
@@ -7,7 +8,7 @@
 #' @rdname analysis
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' analysis(object)
 #' @export
 setGeneric("analysis", function(object) standardGeneric("analysis"))
@@ -72,6 +73,7 @@ function(object, value){
 
 
 #==============================================================================
+
 #' @title Get/Set fdata
 #' @description Get/Set feature data
 #' @param object SummarizedExperiment, eSet, or EList
@@ -80,7 +82,8 @@ function(object, value){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(
+#'            file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' head(fdata(object)) # Getter
 #' fdata(object) %<>% cbind(z=1)
 #' head(fdata(object)) # Setter
@@ -108,13 +111,14 @@ function(object, value){
 
 
 #==============================================================================
+
 #' Get fvar levels
 #' @param  object  SummarizedExperiment
 #' @param  fvar    feature variable
 #' @return fvar values
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' head(flevels(object, 'feature_name'))
 #' @export
 flevels <- function(object, fvar){
@@ -126,6 +130,7 @@ flevels <- function(object, fvar){
 
 
 #==============================================================================
+
 #' @title Get/Set fnames
 #' @description Get/Set feature names
 #' @param object SummarizedExperiment, eSet, or EList
@@ -134,7 +139,7 @@ flevels <- function(object, fvar){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' fnames(object) %<>% paste0('PG', .)
 #' object
 #' @rdname fnames
@@ -161,6 +166,7 @@ function(object, value){  rownames(object) <- value
 
 
 #==============================================================================
+
 #' @title Get fvalues
 #' @description Get fvar values
 #' @param  object  SummarizedExperiment
@@ -168,7 +174,7 @@ function(object, value){  rownames(object) <- value
 #' @return fvar values
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' head(fvalues(object, 'feature_name'))
 #' fvalues(object, NULL)
 #' @export
@@ -197,6 +203,7 @@ fid_values <- function(object) fvalues(object, 'feature_id')
 
 
 #==============================================================================
+
 #' @title Get/Set fvars
 #' @description Get/Set feature variables
 #' @param object SummarizedExperiment
@@ -205,7 +212,7 @@ fid_values <- function(object) fvalues(object, 'feature_id')
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' fvars(object)[1] %<>% paste0('1')
 #' fvars(object)[1]
 #' @rdname fvars
@@ -231,6 +238,7 @@ function(object, value){ names(rowData(object)) <- value
 
 
 #==============================================================================
+
 #' @title Get/Set sdata
 #' @description Get/Set sample data
 #' @param object SummarizedExperiment, eSet, or EList
@@ -239,7 +247,7 @@ function(object, value){ names(rowData(object)) <- value
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' head(sdata(object))
 #' head(sdata(object) %<>% cbind(z=1))
 #' @rdname sdata
@@ -291,6 +299,7 @@ function(object, value){
 
 
 #=====================================================================
+
 #' @title Get/Set snames
 #' @description Get/Set sample names
 #' @param object SummarizedExperiment
@@ -299,7 +308,7 @@ function(object, value){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' head(snames(object))
 #' head(snames(object) %<>% paste0('SAMPLE_', .))
 #' @rdname snames
@@ -326,6 +335,7 @@ function(object, value){
 
 
 #=========================================================
+
 #' @title Get slevels
 #' @description Get svar levels
 #' @param object SummarizedExperiment, eSet, or eList
@@ -333,7 +343,7 @@ function(object, value){
 #' @return svar values (character)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' slevels(object, 'subgroup')
 #' subgroup_levels(object)
 #' @rdname slevels
@@ -352,6 +362,7 @@ subgroup_levels <- function(object){
 
 
 #=========================================================
+
 #' @title Get/Set svalues
 #' @description Get/Set svar values
 #' @param object SummarizedExperiment
@@ -360,7 +371,7 @@ subgroup_levels <- function(object){
 #' @return character vector (get) or SummarizedExperiment (set)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' svalues(object, 'subgroup')
 #' subgroup_values(object)
 #' @rdname svalues
@@ -400,15 +411,16 @@ function(object, svar, value){
 
 
 #=========================================================================
+
 #' @title Get/Set svars
 #' @description Get/Set sample variables
 #' @param object SummarizedExperiment
 #' @param value string fector with variable names
-#' @return sample variable names (get) or updated eSet (set)
+#' @return sample variable names (get) or updated SummarizedExperiment
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' svars(object)[1]
 #' (svars(object)[1] %<>% paste0('1'))
 #' @rdname svars

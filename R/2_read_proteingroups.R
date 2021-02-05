@@ -12,7 +12,8 @@
 #' @examples
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
-#' object <- read_phosphosites(phosphofile, proteinfile)
+#' object <- read_phosphosites(
+#'             phosphofile, proteinfile, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' exprs(object)[1:3, 1:3]
 #' occupancies(object)[1:3, 1:3]
 #' @rdname occupancies
@@ -51,7 +52,8 @@ function(object, value){
 #' @examples
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
-#' object <- read_phosphosites(phosphofile, proteinfile)
+#' object <- read_phosphosites(
+#'     phosphofile, proteinfile, pca = FALSE, lmfit = FALSE, plot = FALSE)
 #' exprs(object)[1:3, 1:3]
 #' proteingroups(object)[1:3, 1:3]
 #' @rdname proteingroups
@@ -877,7 +879,7 @@ extract_common_substr <- function(a, b){
 #' # SummarizedExperiment
 #' #---------------------
 #'    file <- download_data('billing16.proteingroups.txt')
-#'    x <- read_proteingroups(file)
+#'    x <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #'    invert(x, subgroups = c('E_EM', 'E_BM', 'EM_BM'))
 #' @export
 invert <- function(x, ...)    UseMethod('invert', x)

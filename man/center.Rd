@@ -32,7 +32,8 @@ require(matrixStats)
 file <- download_data('billing19.proteingroups.txt')
 select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 select \%<>\% paste0('_STD')
-object <- read_proteingroups(file, select_subgroups = select)
+object <- read_proteingroups(
+            file, select_subgroups = select, pca=FALSE, lmfit=FALSE, plot=FALSE)
 object \%<>\% extract(, order(object$subgroup))
 fdata(object)$housekeeping <- FALSE
 fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE

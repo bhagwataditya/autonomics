@@ -29,7 +29,7 @@ Get/Set sample names
 \examples{
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 head(snames(object))
 head(snames(object) \%<>\% paste0('SAMPLE_', .))
 }

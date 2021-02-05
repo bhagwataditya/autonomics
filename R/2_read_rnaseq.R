@@ -11,7 +11,8 @@
 #' @return count matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(
+#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' counts(object) <- exprs(object)
 #' counts(object)[1:3, 1:3]
 #' @rdname counts
@@ -29,28 +30,22 @@ setMethod(
 setGeneric('counts<-',   function(object, value)   standardGeneric("counts<-"))
 
 #' @rdname counts
-setReplaceMethod(
-    "counts",
-    signature("SummarizedExperiment", "matrix"),
-    function(object, value){
-        assays(object)$counts <- value
-        object })
+setReplaceMethod("counts",signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$counts <- value
+    object })
 
 #' @rdname counts
-setReplaceMethod(
-    "counts",
-    signature("SummarizedExperiment", "numeric"),
-    function(object, value){
-        assays(object)$counts[] <- value
-        object })
+setReplaceMethod("counts", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$counts[] <- value
+    object })
 
 #' @rdname counts
-setReplaceMethod(
-    "counts",
-    signature("SummarizedExperiment", "NULL"),
-    function(object, value){
-        assays(object)$counts <- NULL
-        object })
+setReplaceMethod("counts", signature("SummarizedExperiment", "NULL"),
+function(object, value){
+    assays(object)$counts <- NULL
+    object })
 
 #' @title Get/Set log2counts
 #' @description Get / Set log2counts matrix
@@ -59,7 +54,8 @@ setReplaceMethod(
 #' @return count matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(
+#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' log2counts(object) <- exprs(object)
 #' log2counts(object)[1:3, 1:3]
 #' @rdname log2counts
@@ -95,7 +91,8 @@ function(object, value){
 #' @return cpm matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(
+#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' cpm(object) <- exprs(object)
 #' cpm(object)[1:3, 1:3]
 #' @rdname cpm
@@ -131,7 +128,8 @@ function(object, value){
 #' @return log2cpm matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(
+#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' log2cpm(object) <- exprs(object)
 #' log2cpm(object)[1:3, 1:3]
 #' @rdname log2cpm
@@ -167,7 +165,8 @@ function(object, value){
 #' @return tpm matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(
+#'            file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' tpm(object) <- exprs(object)
 #' tpm(object)[1:3, 1:3]
 #' @rdname tpm
@@ -203,7 +202,8 @@ function(object, value){
 #' @return log2tpm matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(
+#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' log2tpm(object) <- exprs(object)
 #' log2tpm(object)[1:3, 1:3]
 #' @rdname log2tpm
@@ -240,7 +240,7 @@ function(object, value){
 #' @return weight matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' weights(object)[1:3, 1:2]
 #' weights(object) <- 1; weights(object)[1:3, 1:2]
 #' @rdname weights

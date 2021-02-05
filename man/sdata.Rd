@@ -41,7 +41,7 @@ Get/Set sample data
 \examples{
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 head(sdata(object))
 head(sdata(object) \%<>\% cbind(z=1))
 }

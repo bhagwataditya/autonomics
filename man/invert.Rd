@@ -42,6 +42,6 @@ For SummarizedExperiments: invert expressions , subgroups, and sample ids
 # SummarizedExperiment
 #---------------------
    file <- download_data('billing16.proteingroups.txt')
-   x <- read_proteingroups(file)
+   x <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
    invert(x, subgroups = c('E_EM', 'E_BM', 'EM_BM'))
 }

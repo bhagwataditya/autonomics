@@ -27,7 +27,7 @@ svars(object) <- value
 \item{value}{string fector with variable names}
 }
 \value{
-sample variable names (get) or updated eSet (set)
+sample variable names (get) or updated SummarizedExperiment
 }
 \description{
 Get/Set sample variables
@@ -35,7 +35,7 @@ Get/Set sample variables
 \examples{
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 svars(object)[1]
 (svars(object)[1] \%<>\% paste0('1'))
 }
