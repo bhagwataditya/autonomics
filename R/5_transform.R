@@ -9,12 +9,13 @@
 
 
 #' Subtract controls
-#' @param object      SummarizedExperiment
-#' @param subgroup    subgroup svar
-#' @param refgroup    ref subgroup
-#' @param block       block svar (within which subtraction is performed)
-#' @param assaynames  which assays to subtract for
-#' @param verbose     TRUE/FALSE
+#' @param  object      SummarizedExperiment
+#' @param  subgroup    subgroup svar
+#' @param  refgroup    ref subgroup
+#' @param  block       block svar (within which subtraction is performed)
+#' @param  assaynames  which assays to subtract for
+#' @param  verbose     TRUE/FALSE
+#' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx') 
@@ -50,23 +51,6 @@ subtract_controls <- function(
     splitobjects %<>% do.call(S4Vectors::cbind, .)
     idx <- na.exclude(match(object$sample_id, splitobjects$sample_id))
     splitobjects[, idx]
-
-
-#    dt <- sumexp_to_long_dt(object, svars = c('sample_id', subgroup, block))
-#    setnames(dt, c(block, subgroup), c('block', 'subgroup'))
-#    dt[block=='C01' & feature_id=='48762']
-#    dt[, nrefs := sum(subgroup==refgroup), by = c('feature_id', 'block')]
-#    assertive::assert_is_identical_to_true(all(dt$nrefs==1)) # refs should be unique
-#    dt[, refvalue:= value[subgroup==refgroup], by = c('feature_id', 'block')]
-#    dt[, value := value - refvalue]
-#    dt %<>% extract(subgroup != refgroup)
-#    exprs1 <- dt2exprs(dt)
-#    assert_is_identical_to_true(all(rownames(object) == rownames(exprs1)))
-#    object %<>% extract(, colnames(exprs1))
-#    exprs(object) <- exprs1
-#    object %<>% merge_fdata(dt[, .(feature_id, refsample = refvalue)], 
-#                            by.x='feature_id', by.y='feature_id')
-#    object
 }
 
 
@@ -129,7 +113,7 @@ zscore <- function(object, verbose = FALSE){
 #' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #' select %<>% paste0('_STD')
 #' object <- read_proteingroups(
-#'             file, select_subgroups = select, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'     file, select_subgroups = select, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' object %<>% extract(, order(object$subgroup))
 #' fdata(object)$housekeeping <- FALSE
 #' fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE

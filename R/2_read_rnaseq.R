@@ -102,7 +102,8 @@ function(object, value){
 #' log2countsratios(object)[1:3, 1:3]
 #' @rdname log2countsratios
 #' @export
-setGeneric('log2countsratios',   function(object)   standardGeneric("log2countsratios"))
+setGeneric('log2countsratios',   
+function(object)   standardGeneric("log2countsratios"))
 
 #' @rdname log2countsratios
 setMethod("log2countsratios", signature("SummarizedExperiment"),
@@ -114,13 +115,15 @@ setGeneric('log2countsratios<-',
 function(object, value) standardGeneric("log2countsratios<-"))
 
 #' @rdname log2countsratios
-setReplaceMethod("log2countsratios", signature("SummarizedExperiment", "matrix"),
+setReplaceMethod("log2countsratios", 
+signature("SummarizedExperiment", "matrix"),
 function(object, value){
     assays(object)$log2countsratios <- value
     object })
 
 #' @rdname log2countsratios
-setReplaceMethod("log2countsratios", signature("SummarizedExperiment", "numeric"),
+setReplaceMethod("log2countsratios", 
+signature("SummarizedExperiment", "numeric"),
 function(object, value){
     assays(object)$log2countsratios[] <- value
     object })
@@ -216,7 +219,8 @@ function(object, value){
 #' log2cpmratios(object)[1:3, 1:3]
 #' @rdname log2cpmratios
 #' @export
-setGeneric('log2cpmratios',   function(object)   standardGeneric("log2cpmratios"))
+setGeneric('log2cpmratios',   
+function(object)   standardGeneric("log2cpmratios"))
 
 #' @rdname log2cpmratios
 setMethod("log2cpmratios", signature("SummarizedExperiment"),
@@ -224,7 +228,8 @@ function(object)   assays(object)$log2cpmratios)
 
 #' @rdname log2cpmratios
 #' @export
-setGeneric('log2cpmratios<-',  function(object, value)  standardGeneric("log2cpmratios<-"))
+setGeneric('log2cpmratios<-',  
+function(object, value)  standardGeneric("log2cpmratios<-"))
 
 #' @rdname log2cpmratios
 setReplaceMethod("log2cpmratios", signature("SummarizedExperiment", "matrix"),
@@ -329,7 +334,8 @@ function(object, value){
 #' log2tpmratios(object)[1:3, 1:3]
 #' @rdname log2tpmratios
 #' @export
-setGeneric('log2tpmratios',   function(object)   standardGeneric("log2tpmratios"))
+setGeneric('log2tpmratios',   
+function(object)   standardGeneric("log2tpmratios"))
 
 #' @rdname log2tpmratios
 setMethod("log2tpmratios", signature("SummarizedExperiment"),
@@ -337,7 +343,8 @@ function(object)   assays(object)$log2tpmratios)
 
 #' @rdname log2tpmratios
 #' @export
-setGeneric('log2tpmratios<-',  function(object, value)  standardGeneric("log2tpmratios<-"))
+setGeneric('log2tpmratios<-',  
+function(object, value)  standardGeneric("log2tpmratios<-"))
 
 #' @rdname log2tpmratios
 setReplaceMethod("log2tpmratios", signature("SummarizedExperiment", "matrix"),

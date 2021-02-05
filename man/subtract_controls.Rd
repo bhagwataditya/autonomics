@@ -26,6 +26,9 @@ subtract_controls(
 
 \item{verbose}{TRUE/FALSE}
 }
+\value{
+SummarizedExperiment
+}
 \description{
 Subtract controls
 }
