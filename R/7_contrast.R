@@ -211,6 +211,13 @@ single_subgroup <- function(object){
 
 are_factor <- function(df) vapply(df, is.factor, logical(1))
 
+nlevels(object, svar) <- function(object, svar){
+    if (!svar %in% svars(object))  return(0)
+    length(unique(object[[svar]]))
+}
+
+singlelevel <- function(object, svar) nlevels(object[[svar]]) ==1
+multilevel  <- function(object, svar) nlevels(object[[svar]]) > 1
 
 #' Create design
 #'
@@ -237,23 +244,23 @@ are_factor <- function(df) vapply(df, is.factor, logical(1))
 create_design <- function(object, formula = NULL, verbose = TRUE){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (is.null(formula)){
-        formula <- if (single_subgroup(object)) ~ 1 else ~ 0 + subgroup }
+    if (is.null(formula))  formula <- 
+        if (multilevel(object[['subgroup']])) ~ 0 + subgroup else ~ 1
     assert_is_subset(all.vars(formula), svars(object))
     . <- NULL
 # Ensure that subgroup vector is a factor to preserve order of levels
     object$subgroup %<>% factor() # required for '(Intercept)' -> factor1.level1
     for (var in setdiff(all.vars(formula), 'subgroup')){
         if (is.character(sdata(object)[[var]])){
-            sdata(object)[[var]] %<>% factor()
-        }
-    }
+            sdata(object)[[var]] %<>% factor() }}
 # Create design matrix
     if (verbose)  cmessage('\t\tDesign: %s', deparse(formula))
     myDesign <- model.matrix(formula,  data = sdata(object))
 # Rename "(Intercept)" column
-    if (ncol(myDesign)==1){ colnames(myDesign) <- 'subgroup1'
-                            return(myDesign) }
+    if (ncol(myDesign)==1){ 
+        if (singlelevel(object[['subgroup']]))  colnames(myDesign) <- 
+                                                slevels(object, 'subgroup')
+        return(myDesign) }
     factors <- svars(object)[are_factor(sdata(object))] # Rename intercept
     factor1 <- factors[1]                               # to factor1level1
     level1  <- levels(sdata(object)[[factor1]])[1]
@@ -406,8 +413,14 @@ contrast_subgroup_rows <- function(object){
     rowcontrasts
 }
 
-contrast_subgroups <- function(object)  list(contrast_subgroup_cols(object),
-                                            contrast_subgroup_rows(object))
+contrast_subgroups <- function(object, design){
+    if (ncol(design)==1){
+        list(matrix(colnames(design), nrow=1, ncol=1), 
+            matrix(nrow=0, ncol=0))
+    } else {
+        list(contrast_subgroup_cols(object),
+            contrast_subgroup_rows(object)) }
+}
 
 #==============================================================================
 #
@@ -481,11 +494,11 @@ lmfit <- function(object, contrastdefs = NULL,
 ){
 # Initialize
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (is.null(contrastdefs)) contrastdefs <- contrast_subgroups(object)
-    if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
-    if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
     design <- create_design(object, formula=formula, verbose = verbose)
     design(object)    <- design
+    if (is.null(contrastdefs)) contrastdefs <- contrast_subgroups(object,design)
+    if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
+    if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
     contrastdefs(object) <- contrastdefs
 # Block
     if (verbose)  cmessage('\t\tLmfit: %s%s',
