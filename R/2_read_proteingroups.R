@@ -1248,41 +1248,9 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 #' @param plot              whether to plot
 #' @return SummarizedExperiment
 #' @examples
-#' # LFQ intensities
-#'     file <- download_data('fukuda20.proteingroups.txt')
-#'     object <- .read_maxquant(file)      # Read
-#'     object <-  read_proteingroups(file) # Read / Analyze
-#'
-#' # Ratios: invert if required
-#'     file <- download_data('billing16.proteingroups.txt')
-#'     inv <- c('EM_E','BM_E','BM_EM')
-#'     object <- read_proteingroups(file, invert_subgroups = inv,
-#'                                  contrastdefs = c('E_EM', 'E_BM', 'EM_BM'))
-#'
-#' # Unnormalized Intensities: specify quantity
-#'     object <- read_proteingroups(file, quantity = 'Intensity labeled')
-#'
-#' # Internal Standard Ratios: rm meaningless ratios
-#'     require(magrittr)
-#'     file <-  download_data('billing19.proteingroups.txt')
-#'     select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-#'     select_subgroups %<>% paste0('_STD')
-#'     object <- read_proteingroups(file, select_subgroups = select_subgroups)
-#'
-#' # Phosphosites
-#'     phosphofile <- download_data('billing19.phosphosites.txt')
-#'     proteinfile <- download_data('billing19.proteingroups.txt')
-#'     read_phosphosites(phosphofile, proteinfile,
-#'                         select_subgroups = select_subgroups)
-#'
-#' # Deconvolute proteingroups
-#'     file <-  download_data('billing16.proteingroups.txt')
-#'     object <- read_proteingroups(file,quantity = 'Intensity labeled',
-#'         fastafile=download_data('uniprot_hsa_20140515.fasta'), plot=FALSE)
-#'     fdata(object)[1:3, 1:4]
-#'     object <- read_proteingroups(file,quantity = 'Intensity labeled',
-#'         fastafile=download_data('uniprot_hsa_20140515.fasta'), plot=FALSE)
-#'     fdata(object)[1:3, 1:4]
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- .read_maxquant(file)      # read
+#' object <-  read_proteingroups(file) # read + analyze
 #' @export
 read_proteingroups <- function(
     file, quantity = guess_maxquant_quantity(file), sfile = NULL,
