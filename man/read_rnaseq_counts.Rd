@@ -51,10 +51,10 @@ read_rnaseq_bams(
   genesize = NULL,
   cpm = TRUE,
   tmm = cpm,
-  voom = TRUE,
   log2 = TRUE,
   pca = TRUE,
   lmfit = TRUE,
+  voom = TRUE,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -76,10 +76,10 @@ read_rnaseq_counts(
   genesize = NULL,
   cpm = TRUE,
   tmm = TRUE,
-  voom = TRUE,
   log2 = TRUE,
   pca = TRUE,
   lmfit = TRUE,
+  voom = lmfit,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -126,13 +126,13 @@ read_rnaseq_counts(
 
 \item{tmm}{whether to tmm-scale library sizes}
 
-\item{voom}{whether to compute voom precision weights}
-
 \item{log2}{whether to log2 transform}
 
 \item{pca}{whether to pca}
 
 \item{lmfit}{whether to lmfit/contrast}
+
+\item{voom}{whether to compute voom precision weights}
 
 \item{contrastdefs}{contrastdef vector/matrix/list}
 
@@ -145,45 +145,9 @@ SummarizedExperiment
 Read/analyze rnaseq counts / bamfiles
 }
 \examples{
-# BILLING 2019
-    # Read
-        file <- download_data('billing19.rnacounts.txt')
-        object <- .read_rnaseq_counts(file)
-    # Read / Analyze
-        object <-  read_rnaseq_counts(file, voom=FALSE, plot=FALSE)
-    # Read / Weight / Analyze
-        object <-  read_rnaseq_counts(file)
-
-# GSE161731
-   # Download
-       require(magrittr)
-       basedir <- '~/autonomicscache/datasets'
-       subdir  <- '~/autonomicscache/datasets/GSE161731'
-       if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles(
-                                       "GSE161731",baseDir=basedir)
-       file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
-       sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
-   # Read
-       object <- .read_rnaseq_counts(file, sfile = sfile, sfileby ='rna_id',
-                                      subgroupvar = 'gender')
-   # Read / Analyze
-       object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id',
-                                      subgroupvar = 'gender', voom = FALSE)
-   # Read / Weight / Analyze
-       object <- read_rnaseq_counts(file, sfile = sfile, sfileby ='rna_id',
-                                      subgroupvar = 'gender', plot = TRUE)
-   # Read / Weight / Block / Analyze (dupcor takes some time)
-       # object <- read_rnaseq_counts(file, sfile = sfile, sfileby='rna_id',
-       #                            subgroupvar='gender', block='subject_id')
-
-# BAM
-    # in-built genome
-        dir <- download_data("billing16.bam.zip")
-        object <- .read_rnaseq_bams(dir, paired=TRUE, genome="hg38")
-        object <- read_rnaseq_bams(dir, paired=TRUE, genome="hg38")
-    # external gtf
-        # gtffile <- download_gtf("Homo sapiens")
-        # object <- read_rnaseq_bams(dir, paired=TRUE, genome=gtffile)
+file <- download_data('billing19.rnacounts.txt')
+object <- .read_rnaseq_counts(file)  # read
+object <-  read_rnaseq_counts(file)  # read + analyze
 }
 \author{
 Aditya Bhagwat, Shahina Hayat
