@@ -5,16 +5,15 @@
 #===========================================================================
 
 #' @title Get/Set occupancies
-#' @description Get / Set occupancies matrix
+#' @description Get / Set phosphosite occupancies matrix
 #' @param object SummarizedExperiment
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
-#' proteinfile <- download_data('billing19.proteingroups.txt')
-#' phosphofile <- download_data('billing19.phosphosites.txt')
-#' object <- read_phosphosites(
-#'             phosphofile, proteinfile, pca=FALSE, lmfit=FALSE, plot=FALSE)
-#' exprs(object)[1:3, 1:3]
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' occupancies(object)
+#' occupancies(object) <- exprs(object)
 #' occupancies(object)[1:3, 1:3]
 #' @rdname occupancies
 #' @export
@@ -50,11 +49,8 @@ function(object, value){
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
-#' proteinfile <- download_data('billing19.proteingroups.txt')
-#' phosphofile <- download_data('billing19.phosphosites.txt')
-#' object <- read_phosphosites(
-#'     phosphofile, proteinfile, pca = FALSE, lmfit = FALSE, plot = FALSE)
-#' exprs(object)[1:3, 1:3]
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' proteingroups(object)[1:3, 1:3]
 #' @rdname proteingroups
 #' @export
@@ -141,8 +137,8 @@ MAXQUANT_PATTERNS <- c(
 #' @return  string: value from names(MAXQUANT_PATTERNS)
 #' @examples
 #' # file
-#'     x <- download_data('billing16.proteingroups.txt')
-#'     guess_maxquant_quantity(x)
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     guess_maxquant_quantity(file)
 #'
 #' # character vector
 #'     x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
@@ -164,14 +160,14 @@ MAXQUANT_PATTERNS <- c(
 #'     guess_maxquant_quantity(x)
 #'
 #' # dataframe
-#'     file <- download_data( 'billing16.proteingroups.txt')
+#'     file <- download_data('fukuda20.proteingroups.txt')
 #'     x <- data.table::fread(file)
 #'     guess_maxquant_quantity(x)
 #'
 #' # SummarizedExperiment
-#'      file <-download_data( 'billing16.proteingroups.txt')
-#'      # x <- .read_proteingroups(file)
-#'      # guess_maxquant_quantity(x)
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'     guess_maxquant_quantity(file)
 #' @export
 guess_maxquant_quantity <- function(x, ...){
     UseMethod("guess_maxquant_quantity", x)
@@ -255,11 +251,6 @@ guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
 #'
 #'    x <- 'Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
 #'    standardize_maxquant_snames(x)
-#'
-#' # SummarizedExperiment
-#'    file <- download_data('billing16.proteingroups.txt')
-#'    # x <- .read_proteingroups(file)
-#'    # standardize_maxquant_snames(x)
 #' @export
 standardize_maxquant_snames <- function (x, ...) {
     UseMethod("standardize_maxquant_snames", x)
@@ -350,11 +341,11 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #'
 #' # SummarizedExperiment
 #'    require(magrittr)
-#'    file <- download_data('billing16.proteingroups.txt')
+#'    file <- download_data('billing19.proteingroups.txt')
 #'    # x <- .read_proteingroups(file)
 #'    # x %<>% standardize_maxquant_snames()
 #'    # demultiplex(x, verbose = TRUE)
-#' @export
+#' @noRd
 demultiplex <- function (x, ...) {
     UseMethod("demultiplex", x)
 }
@@ -672,7 +663,7 @@ rm_from_annot <- function(annotation, pattern){
 #' @return data.table
 #' @examples
 #' require(magrittr)
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_proteingroups(file)
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' fdata(object)[1:5, ]
@@ -872,15 +863,13 @@ extract_common_substr <- function(a, b){
 #' @return character vector or SummarizedExperiment
 #' @examples
 #' # character
-#' #----------
-#'    x <- c('Ctrl_A', 'Ctrl_B')
-#'    invert(x)
+#'     x <- c('Ctrl_A', 'Ctrl_B')
+#'     invert(x)
 #'
 #' # SummarizedExperiment
-#' #---------------------
-#'    file <- download_data('billing16.proteingroups.txt')
-#'    x <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
-#'    invert(x, subgroups = c('E_EM', 'E_BM', 'EM_BM'))
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'     invert(object)
 #' @export
 invert <- function(x, ...)    UseMethod('invert', x)
 
@@ -959,8 +948,8 @@ arrange_samples_ <- function(x, svars){
 #' @param verbose     TRUE/FALSE
 #' @return sample file path
 #' @examples
-#' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_proteingroups(file, lmfit=FALSE, plot=FALSE)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' create_sfile(object, paste0(tempfile(), '.tsv'))
 #' @export
 create_sfile <- function(object, sfile, verbose = TRUE){
@@ -988,8 +977,9 @@ rm_reverse <- function(object, verbose){
 
 
 #' @examples
-#' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_proteingroups(file, contaminants=TRUE)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <-  read_proteingroups(file, contaminants=TRUE, pca=FALSE, 
+#'                             lmfit=FALSE, plot=FALSE) # read + analyze
 #' rm_contaminants(object, verbose=TRUE)
 #' @noRd
 rm_contaminants <- function(object, verbose){

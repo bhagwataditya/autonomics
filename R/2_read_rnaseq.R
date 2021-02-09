@@ -13,7 +13,7 @@
 #' @param value count matrix (features x samples)
 #' @return count matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
 #'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' counts(object) <- exprs(object)
@@ -57,7 +57,7 @@ function(object, value){
 #' @param value log2count matrix (features x samples)
 #' @return log2count matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
 #'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' log2counts(object) <- exprs(object)
@@ -96,7 +96,7 @@ function(object, value){
 #' @param value log2countsratios matrix (features x samples)
 #' @return log2countsratios matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file)
 #' log2countsratios(object) <- exprs(object)
 #' log2countsratios(object)[1:3, 1:3]
@@ -137,7 +137,7 @@ function(object, value){
 #' @param value cpm matrix (features x samples)
 #' @return cpm matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
 #'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' cpm(object) <- exprs(object)
@@ -175,7 +175,7 @@ function(object, value){
 #' @param value log2cpm matrix (features x samples)
 #' @return log2cpm matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
 #'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' log2cpm(object) <- exprs(object)
@@ -213,7 +213,7 @@ function(object, value){
 #' @param value log2cpmratios matrix (features x samples)
 #' @return log2cpmratios matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file)
 #' log2cpmratios(object) <- exprs(object)
 #' log2cpmratios(object)[1:3, 1:3]
@@ -252,7 +252,7 @@ function(object, value){
 #' @param value tpm matrix (features x samples)
 #' @return tpm matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
 #'            file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' tpm(object) <- exprs(object)
@@ -290,7 +290,7 @@ function(object, value){
 #' @param value log2tpm matrix (features x samples)
 #' @return log2tpm matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
 #'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' log2tpm(object) <- exprs(object)
@@ -328,7 +328,7 @@ function(object, value){
 #' @param value log2tpmratios matrix (features x samples)
 #' @return log2tpmratios matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file)
 #' log2tpmratios(object) <- exprs(object)
 #' log2tpmratios(object)[1:3, 1:3]
@@ -368,7 +368,7 @@ function(object, value){
 #' @param ... addtional params
 #' @return weight matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
 #' weights(object)[1:3, 1:2]
 #' weights(object) <- 1; weights(object)[1:3, 1:2]
