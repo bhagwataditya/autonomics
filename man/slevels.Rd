@@ -22,7 +22,7 @@ Get svar levels
 }
 \examples{
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_proteingroups(file, plot=FALSE)
 slevels(object, 'subgroup')
 subgroup_levels(object)
 }

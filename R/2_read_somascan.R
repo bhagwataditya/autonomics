@@ -163,18 +163,19 @@ rm_single_value_columns <- function(df){
 #' @param plot                  whether to plot
 #' @return Summarizedexperiment
 #' @examples
-#' # HYPOGLYCEMIA
-#'     file <- download_data('atkin18.somascan.adat')
-#'     read_somascan(file)
-#'     read_somascan(file, block = 'Subject_ID')
+#' file <- download_data('atkin18.somascan.adat')
+#' read_somascan(file)
+#' read_somascan(file, pca = TRUE)
+#' read_somascan(file, limma = TRUE)
+#' read_somascan(file, limma = TRUE, block = 'Subject_ID')
 #' @export
 read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     subgroupvar = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
-    rm_na_svars = FALSE, rm_single_value_svars = FALSE,
-    pca = FALSE, limma = FALSE, formula = NULL, block = NULL, contrastdefs = NULL,
-    verbose = TRUE, plot = FALSE
+    rm_na_svars = FALSE, rm_single_value_svars = FALSE, pca = FALSE, 
+    limma = FALSE, formula = NULL, block = NULL, contrastdefs = NULL,
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_somascan(
@@ -199,11 +200,8 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     object %<>% log2transform(verbose = TRUE)
 # Analyze
-    if (pca)    object %<>% pca()
-    if (limma)  object %<>% add_limma(formula = formula, block = block,
-                                contrastdefs = contrastdefs, plot = FALSE)
-# Plot
-    if (plot) plot_samples(object)
+    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
 }

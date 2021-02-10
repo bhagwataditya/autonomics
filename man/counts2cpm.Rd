@@ -22,7 +22,7 @@ Convert between counts and cpm
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- .read_rnaseq_counts(file)
+object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
 libsize <- scaledlibsizes(exprs(object))
 tpm <- counts2tpm(counts(object), genesize = 1)
 cpm <- counts2cpm(counts(object), libsize)

@@ -17,6 +17,6 @@ Get tmm-scaled libsizes
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- .read_rnaseq_counts(file)
+object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
 scaledlibsizes(counts(object))
 }

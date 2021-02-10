@@ -30,7 +30,7 @@ read_somascan(
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = FALSE
+  plot = TRUE
 )
 }
 \arguments{
@@ -79,8 +79,9 @@ Summarizedexperiment
 Read data from somascan adat file
 }
 \examples{
-# HYPOGLYCEMIA
-    file <- download_data('atkin18.somascan.adat')
-    read_somascan(file)
-    read_somascan(file, block = 'Subject_ID')
+file <- download_data('atkin18.somascan.adat')
+read_somascan(file)
+read_somascan(file, pca = TRUE)
+read_somascan(file, limma = TRUE)
+read_somascan(file, limma = TRUE, block = 'Subject_ID')
 }

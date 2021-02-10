@@ -31,9 +31,8 @@ Get / Set exprs matrix
 }
 \examples{
 file <- download_data('billing16.proteingroups.txt')
-object <- .read_maxquant(file)
+object <- read_proteingroups(file, plot=FALSE)
 exprs(object)[1:3, 1:3]
-
 exprs(object) <- 0
 exprs(object)[1:3, 1:3]
 }

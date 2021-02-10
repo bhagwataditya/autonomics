@@ -31,7 +31,7 @@ Get / Set log2cpmratios matrix
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file)
+object <- read_rnaseq_counts(file, plot=FALSE)
 log2cpmratios(object) <- exprs(object)
 log2cpmratios(object)[1:3, 1:3]
 }

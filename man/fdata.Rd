@@ -29,8 +29,7 @@ Get/Set feature data
 \examples{
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(
-           file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_proteingroups(file, plot=FALSE)
 head(fdata(object)) # Getter
 fdata(object) \%<>\% cbind(z=1)
 head(fdata(object)) # Setter

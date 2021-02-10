@@ -21,6 +21,6 @@ Create sfile
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_proteingroups(file, plot=FALSE)
 create_sfile(object, paste0(tempfile(), '.tsv'))
 }

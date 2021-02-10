@@ -57,6 +57,6 @@ character vector, dataframe, or SummarizedExperiment.
 
 # SummarizedExperiment
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+    object <- read_proteingroups(file, plot=FALSE)
     guess_maxquant_quantity(file)
 }

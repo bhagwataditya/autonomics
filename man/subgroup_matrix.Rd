@@ -20,6 +20,6 @@ Arrange (subgroup)levels in matrix
 }
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_metabolon(file, plot=FALSE)
 subgroup_matrix(object)
 }

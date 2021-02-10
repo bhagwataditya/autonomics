@@ -29,7 +29,7 @@ read_metabolon(
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = FALSE
+  plot = TRUE
 )
 }
 \arguments{
@@ -72,11 +72,9 @@ SummarizedExperiment
 Read metabolon
 }
 \examples{
-# GLUTAMINASE
-   file <- download_data('halama18.metabolon.xlsx')
-   read_metabolon(file)
-# HYPOGLYCEMIA
-   file <- download_data('atkin18.metabolon.xlsx')
-   read_metabolon(file)
-   read_metabolon(file, block='SUB')
+file <- download_data('atkin18.metabolon.xlsx')
+read_metabolon(file)
+read_metabolon(file, pca = TRUE)
+read_metabolon(file, limma = TRUE)
+read_metabolon(file, limma = TRUE, block='SUB')
 }

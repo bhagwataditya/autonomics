@@ -446,7 +446,7 @@ split_values <- function(x){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_metabolon(file, plot=FALSE)
 #' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
 #' head(sdata(object))
@@ -524,16 +524,15 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' @param verbose        TRUE (default) or FALSE
 #' @return SummarizedExperiment
 #' @examples
-#'# PROTEINGROUPS
-#'    require(magrittr)
-#'    file <- download_data('billing19.proteingroups.txt')
-#'    select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-#'    select %<>% paste0('_STD')
-#'    object <- read_proteingroups(file, select_subgroups = select)
-#'    sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
-#'    sfile %<>% paste0('.samples.txt')
-#'    invisible(create_sfile(object, sfile))
-#'    merge_sfile(object, sfile)
+#' require(magrittr)
+#' file <- download_data('billing19.proteingroups.txt')
+#' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+#' select %<>% paste0('_STD')
+#' object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
+#' sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
+#' sfile %<>% paste0('.samples.txt')
+#' invisible(create_sfile(object, sfile))
+#' merge_sfile(object, sfile)
 #'@export
 merge_sfile <- function(object, sfile = NULL,
     by.x = 'sample_id', by.y = NULL, subgroupvar = NULL, verbose = TRUE

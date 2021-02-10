@@ -14,7 +14,7 @@
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_metabolon(file, plot=FALSE)
 #' object %<>% add_kegg_pathways()
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
 #' @noRd
@@ -90,7 +90,7 @@ kegg_entry_to_pathways <- function(x){
 #' @return character/factor vector
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_metabolon(file, plot=FALSE)
 #' add_smiles(object)
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
 #' @noRd
@@ -270,20 +270,18 @@ stack <- function(x, y){
 #' @param plot               whether to plot
 #' @return SummarizedExperiment
 #' @examples
-#' # GLUTAMINASE
-#'    file <- download_data('halama18.metabolon.xlsx')
-#'    read_metabolon(file)
-#' # HYPOGLYCEMIA
-#'    file <- download_data('atkin18.metabolon.xlsx')
-#'    read_metabolon(file)
-#'    read_metabolon(file, block='SUB')
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' read_metabolon(file)
+#' read_metabolon(file, pca = TRUE)
+#' read_metabolon(file, limma = TRUE)
+#' read_metabolon(file, limma = TRUE, block='SUB')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
-    pca = FALSE, limma = FALSE, formula = NULL, block = NULL, contrastdefs = NULL,
-    verbose = TRUE, plot = FALSE
+    pca = FALSE, limma = FALSE, formula = NULL, block = NULL, 
+    contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_metabolon(file = file, sheet = sheet, fid_var = fid_var,
@@ -296,19 +294,10 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (impute)             object %<>% impute_systematic_nondetects()
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
-# Contrast
-    if (pca)   object %<>% pca()
-    if (limma) object %<>% add_limma(formula = formula, block = block,
-                                contrastdefs = contrastdefs, plot = FALSE)
-# Plot
-    if (plot)  plot_samples(object)
+# Analyze
+    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
 }
-
-
-
-
-
-
 

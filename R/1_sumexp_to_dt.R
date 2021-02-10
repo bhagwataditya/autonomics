@@ -42,7 +42,7 @@ sumexp_to_wide_dt <- function(
 #'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
 #'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups,
-#'                   pca=FALSE, limma=FALSE, plot=FALSE)
+#'                   plot=FALSE)
 #'     sumexp_to_wide_dt(object)
 #'     sumexp_to_long_dt(object)
 #'     sumexp_to_subrep_dt(object)
@@ -50,7 +50,7 @@ sumexp_to_wide_dt <- function(
 #' # Glutaminase
 #'    require(magrittr)
 #'    file <- download_data('halama18.metabolon.xlsx')
-#'    object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#'    object <- read_metabolon(file, plot=FALSE)
 #'    sumexp_to_wide_dt(object)
 #'    sumexp_to_long_dt(object)
 #'    sumexp_to_subrep_dt(object)
@@ -58,8 +58,7 @@ sumexp_to_wide_dt <- function(
 #' # Fukuda
 #'    require(magrittr)
 #'    file <- download_data('fukuda20.proteingroups.txt')
-#'    object <- read_proteingroups(file, impute=FALSE,
-#'                                pca=FALSE, limma=FALSE, plot=FALSE)
+#'    object <- read_proteingroups(file, impute=FALSE, plot=FALSE)
 #'    sumexp_to_long_dt(object)
 #'    object %<>% impute_systematic_nondetects(plot=FALSE)
 #'    sumexp_to_long_dt(object)
@@ -192,9 +191,9 @@ dt2sumexp  <- function(
 #' @param verbose       TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
+#' require(magrittr) 
 #' file <- download_data('halama18.metabolon.xlsx')
-#' x <- exprs(read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE))
+#' x <- exprs(read_metabolon(file, plot=FALSE))
 #' object <- matrix2sumexp(x)
 #' object %<>% pca()
 #' biplot(object, nloadings=0)
@@ -231,8 +230,8 @@ matrix2sumexp <- function(
 #' @examples
 #' somascanfile  <- download_data('atkin18.somascan.adat')
 #' metabolonfile <- download_data('atkin18.metabolon.xlsx')
-#' somascan <- read_somascan(somascanfile,   pca=FALSE, limma=FALSE, plot=FALSE)
-#' metabolon<- read_metabolon(metabolonfile, pca=FALSE, limma=FALSE, plot=FALSE)
+#' somascan <- read_somascan(somascanfile,   plot=FALSE)
+#' metabolon<- read_metabolon(metabolonfile, plot=FALSE)
 #' object   <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
 #' @export
 sumexp2mae <- function(experiments){

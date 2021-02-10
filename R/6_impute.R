@@ -36,7 +36,8 @@ zero_to_na <- function(x, verbose = FALSE){
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-#' x <- exprs(read_proteingroups(file, invert_subgroups=invert_subgroups))
+#' x <- exprs(read_proteingroups(
+#'               file, invert_subgroups=invert_subgroups, plot=FALSE))
 #' nan_to_na(x, verbose=TRUE)
 #' @export
 nan_to_na <- function(x, verbose = FALSE){
@@ -195,8 +196,7 @@ zeroimpute <- function(x, selector = is.na(x)){
 #' @return list of SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(
-#'               file, impute=FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
+#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 #' split_by_svar(object)
 #' @export
 split_by_svar <- function(object, svar = subgroup){
@@ -255,8 +255,7 @@ is_full_detect <- function(object){
 #' @return  \code{NULL}
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(
-#'               file, impute=FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
+#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 #' venn_detects(object)
 #' @export
 venn_detects <- function(object){
@@ -283,8 +282,7 @@ venn_detects <- function(object){
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(
-#'             file, impute = FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
+#' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
 #' impute_systematic_nondetects(object)
 #' @export
 impute_systematic_nondetects <- function(
@@ -386,15 +384,13 @@ plot_detects <- function(...){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(
-#'            file, impute=FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
+#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 #' plot_summarized_detections(object)
 #' plot_detections(object)
 #' plot_detections(impute_systematic_nondetects(object, plot=FALSE))
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(
-#'             file, impute = FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
+#' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
 #' plot_summarized_detections(object)
 #' plot_detections(object)
 #' @export
@@ -540,8 +536,7 @@ plot_summarized_detections <- function(object, group = subgroup,
 #' @return ggplot object
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(
-#'             file, impute = FALSE, limma=FALSE, plot = FALSE)
+#' object <- read_proteingroups(file, impute = FALSE, pca = TRUE, plot = FALSE)
 #' explore_imputations(object)
 #' explore_transformations(object)
 #' @export
@@ -590,7 +585,7 @@ explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
 #'@return matrix (get) or updated object (set)
 #'@examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_proteingroups(file, plot=FALSE)
 #' sum(is_imputed(object))
 #' @rdname is_imputed
 #' @export

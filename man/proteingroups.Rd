@@ -31,6 +31,6 @@ Get / Set proteingroups matrix
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_proteingroups(file, plot=FALSE)
 proteingroups(object)[1:3, 1:3]
 }

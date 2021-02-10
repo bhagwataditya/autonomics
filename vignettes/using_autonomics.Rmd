@@ -50,7 +50,8 @@ Autonomics provides ready-to-use importers for both **count** as well as **BAM**
 
 ```{r}
 require(autonomics, quietly = TRUE)
-object <-  read_rnaseq_counts(file = download_data('billing19.rnacounts.txt'))
+object <-  read_rnaseq_counts(file = download_data('billing19.rnacounts.txt'), 
+                              pca = TRUE, limma = TRUE, plot = TRUE)
 ```
 
 ### read_rnaseq_counts(sfile) {-}
@@ -65,7 +66,10 @@ object <- read_rnaseq_counts(
   file  = '~/autonomicscache/datasets/GSE161731/GSE161731_counts.csv.gz', 
   sfile = '~/autonomicscache/datasets/GSE161731/GSE161731_counts_key.csv.gz', 
   sfileby = 'rna_id', 
-  subgroupvar = 'gender')
+  subgroupvar = 'gender', 
+  pca = TRUE, 
+  limma = TRUE, 
+  plot = TRUE)
 ```
 
 ### read_rnaseq_counts(block) {-}
@@ -87,9 +91,12 @@ The `block` argument in both importers allows to model e.g. subject_id as a rand
 
 ```{r, results = 'hide'}
 object <- read_rnaseq_bams(
-              dir   = download_data('billing16.bam.zip'), 
+              dir    = download_data('billing16.bam.zip'), 
               paired = TRUE, 
-              genome = 'hg38')
+              genome = 'hg38', 
+              pca    = TRUE, 
+              limma  = TRUE, 
+              plot   = TRUE)
 ```
 
 ### cpm/tmm/voom effects on power {-}
@@ -99,13 +106,13 @@ Proper preprocessing leads to increased power:
 ```{r}
   file <- download_data('billing19.rnacounts.txt')
   colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 counts
-  cpm = FALSE, voom = FALSE, limma = TRUE, verbose = FALSE))[, -1])
+  cpm = FALSE, voom = FALSE, limma = TRUE, verbose = FALSE, plot=FALSE))[, -1])
 
   colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm
-  cpm = TRUE,  voom = FALSE, limma = TRUE, verbose = FALSE))[, -1])
+  cpm = TRUE,  voom = FALSE, limma = TRUE, verbose = FALSE, plot=FALSE))[, -1])
 
   colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm + voom
-  cpm = TRUE,  voom = TRUE,  limma = TRUE, verbose = FALSE))[, -1])
+  cpm = TRUE,  voom = TRUE,  limma = TRUE, verbose = FALSE, plot=FALSE))[, -1])
 ```
 
 ## Proteingroups/phosphosites
@@ -135,7 +142,8 @@ A popular approach in (DDA) MS proteomics data analysis is to use **MaxQuant** t
 An **LFQ intensities** example is the **Fukuda et al. (2020)** dataset, which compares the proteome of **30d** zebrafish juveniles versus **adults** using label-free quantification. In the volcano plot measured values are shown with circles, imputed values as triangles.
 
 ```{r}
-bject <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt')) 
+object <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt'), 
+                             pca = TRUE, limma = TRUE, plot = TRUE)
 ```
 
 
@@ -148,7 +156,8 @@ bject <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt'))
 object <- read_proteingroups(
               file = download_data('billing19.proteingroups.txt'),
               select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
-                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'))
+                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'), 
+              pca = TRUE, limma = TRUE, plot = TRUE)
 ```
 
 The phosphosites can be read in a similar fashion:
@@ -158,7 +167,8 @@ object <- read_phosphosites(
               file = download_data('billing19.phosphosites.txt'), 
               proteinfile = download_data('billing19.proteingroups.txt'), 
               select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
-                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'))
+                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'), 
+              pca = TRUE, limma = TRUE, plot = TRUE)
 ```
 
 ## Metabolon
@@ -168,7 +178,7 @@ object <- read_phosphosites(
 ```{r, fig.width=7, fig.height=4, out.width="95%"}
 object <- read_metabolon(
             file  = download_data('atkin18.metabolon.xlsx'), 
-            block = 'SUB')
+            pca = TRUE, limma = TRUE, block = 'SUB', plot = TRUE)
 ```
 
 ## Somascan
@@ -178,7 +188,7 @@ object <- read_metabolon(
 ```{r}
 object <- read_somascan(
             file = download_data('atkin18.somascan.adat'), 
-            block = 'Subject_ID')
+            pca = TRUE, limma = TRUE, block = 'Subject_ID', plot = TRUE)
 
 ```
 

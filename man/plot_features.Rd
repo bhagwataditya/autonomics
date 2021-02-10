@@ -45,7 +45,7 @@ Plot features
 \examples{
 require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, limma=FALSE, plot = FALSE)
+object <- read_metabolon(file, pca=TRUE, plot = FALSE)
 idx <- order(abs(fdata(object)$pca1), decreasing=TRUE)[1:9]
 object \%<>\% extract(idx, )
 plot_feature_boxplots(object)

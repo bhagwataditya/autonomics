@@ -40,6 +40,6 @@ For SummarizedExperiments: invert expressions , subgroups, and sample ids
 
 # SummarizedExperiment
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+    object <- read_proteingroups(file, plot=FALSE)
     invert(object)
 }

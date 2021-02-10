@@ -34,7 +34,7 @@ read_proteingroups(
   pca = FALSE,
   limma = FALSE,
   verbose = TRUE,
-  plot = FALSE
+  plot = TRUE
 )
 
 read_phosphosites(
@@ -52,9 +52,10 @@ read_phosphosites(
   pca = FALSE,
   limma = FALSE,
   formula = NULL,
+  block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = FALSE
+  plot = TRUE
 )
 }
 \arguments{
@@ -112,6 +113,7 @@ Read/Analyze proteingroups/phosphosites
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- .read_maxquant(file)      # read
-object <-  read_proteingroups(file) # read + analyze
+object <- read_proteingroups(file)
+object <- read_proteingroups(file, pca=TRUE)
+object <- read_proteingroups(file, limma=TRUE)
 }

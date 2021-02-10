@@ -25,7 +25,7 @@ stri_split and extract
 \examples{
 require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_metabolon(file, plot=FALSE)
 x <- object$sample_id[1:5]
 nfactors(x)
 split_extract(x, 1:2)

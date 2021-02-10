@@ -35,7 +35,7 @@ Get/Set sample variables
 \examples{
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_proteingroups(file, plot=FALSE)
 svars(object)[1]
 (svars(object)[1] \%<>\% paste0('1'))
 }

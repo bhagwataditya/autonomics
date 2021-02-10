@@ -14,8 +14,7 @@
 #' @return count matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' counts(object) <- exprs(object)
 #' counts(object)[1:3, 1:3]
 #' @rdname counts
@@ -58,8 +57,7 @@ function(object, value){
 #' @return log2count matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' log2counts(object) <- exprs(object)
 #' log2counts(object)[1:3, 1:3]
 #' @rdname log2counts
@@ -97,7 +95,7 @@ function(object, value){
 #' @return log2countsratios matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' log2countsratios(object) <- exprs(object)
 #' log2countsratios(object)[1:3, 1:3]
 #' @rdname log2countsratios
@@ -138,8 +136,7 @@ function(object, value){
 #' @return cpm matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' cpm(object) <- exprs(object)
 #' cpm(object)[1:3, 1:3]
 #' @rdname cpm
@@ -176,8 +173,7 @@ function(object, value){
 #' @return log2cpm matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' log2cpm(object) <- exprs(object)
 #' log2cpm(object)[1:3, 1:3]
 #' @rdname log2cpm
@@ -214,7 +210,7 @@ function(object, value){
 #' @return log2cpmratios matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' log2cpmratios(object) <- exprs(object)
 #' log2cpmratios(object)[1:3, 1:3]
 #' @rdname log2cpmratios
@@ -253,8 +249,7 @@ function(object, value){
 #' @return tpm matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(
-#'            file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' tpm(object) <- exprs(object)
 #' tpm(object)[1:3, 1:3]
 #' @rdname tpm
@@ -291,8 +286,7 @@ function(object, value){
 #' @return log2tpm matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' log2tpm(object) <- exprs(object)
 #' log2tpm(object)[1:3, 1:3]
 #' @rdname log2tpm
@@ -329,7 +323,7 @@ function(object, value){
 #' @return log2tpmratios matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(file, plot=FALSE)
 #' log2tpmratios(object) <- exprs(object)
 #' log2tpmratios(object)[1:3, 1:3]
 #' @rdname log2tpmratios
@@ -369,7 +363,7 @@ function(object, value){
 #' @return weight matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_proteingroups(file, plot=FALSE)
 #' weights(object)[1:3, 1:2]
 #' weights(object) <- 1; weights(object)[1:3, 1:2]
 #' @rdname weights
@@ -595,7 +589,7 @@ count_reads <- function(files, paired, nthreads, genome){
 #' @return scaled libsize vector
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- .read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
 #' scaledlibsizes(counts(object))
 #' @export
 scaledlibsizes <- function(counts){
@@ -609,7 +603,7 @@ scaledlibsizes <- function(counts){
 #' @return cpm/tpm/count matrix
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- .read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
 #' libsize <- scaledlibsizes(exprs(object))
 #' tpm <- counts2tpm(counts(object), genesize = 1)
 #' cpm <- counts2cpm(counts(object), libsize)
@@ -633,7 +627,7 @@ cpm2counts <- function(x, libsize){
 #' @return tpm matrix
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- .read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
 #' counts2tpm(counts(object), genesize=1)[1:3, 1:3]
 #' @export
 counts2tpm <- function(x, genesize){
@@ -904,7 +898,7 @@ read_rnaseq_bams <- function(
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE,
-    limma = FALSE, voom = limma, contrastdefs = NULL, verbose = TRUE, plot=FALSE
+    limma = FALSE, voom = limma, contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
 # Read
     object <- .read_rnaseq_bams(dir   = dir,
@@ -917,7 +911,7 @@ read_rnaseq_bams <- function(
                                 ffileby  = ffileby,
                                 fnamevar = fnamevar,
                                 subgroupvar = subgroupvar)
-# Preprocess/Analyze
+# Preprocess
     object %<>% preprocess_rnaseq_counts(formula    = formula,
                                         block       = block,
                                         min_count   = min_count,
@@ -929,11 +923,10 @@ read_rnaseq_bams <- function(
                                         log2        = log2,
                                         verbose     = verbose,
                                         plot        = plot)
-    if (pca)    object %<>% pca()
-    if (limma)  object %<>% add_limma(formula = formula,
-                    contrastdefs  = contrastdefs, plot = FALSE)
-# Plot/Return
-    if (plot)  plot_samples(object)
+# Analyze
+    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+                    contrastdefs = contrastdefs, verbose = verbose, plot = plot)
+# Return
     object
 }
 
@@ -972,8 +965,9 @@ read_rnaseq_bams <- function(
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- .read_rnaseq_counts(file)  # read
-#' object <-  read_rnaseq_counts(file)  # read + analyze
+#' object <- read_rnaseq_counts(file)
+#' object <- read_rnaseq_counts(file, pca=TRUE)
+#' object <- read_rnaseq_counts(file, limma=TRUE)
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_counts <- function(
@@ -983,7 +977,7 @@ read_rnaseq_counts <- function(
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, 
     limma = FALSE, voom = limma, contrastdefs = NULL, 
-    verbose = TRUE, plot = FALSE
+    verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_rnaseq_counts(file,
@@ -1007,12 +1001,28 @@ read_rnaseq_counts <- function(
                                         log2        = log2,
                                         verbose     = verbose,
                                         plot        = plot)
-# Explore
-    if (pca)   object %<>% pca(verbose=verbose)
-    if (limma) object %<>% add_limma(formula = formula, block = block,
-                contrastdefs = contrastdefs, verbose = verbose, plot = FALSE)
-    if (plot)  plot_samples(object)
+# Analyze
+    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
+    object
+}
+
+
+analyze <- function(
+    object, pca = TRUE, limma = TRUE, formula = NULL, block = NULL, 
+    contrastdefs = NULL, verbose = TRUE, plot = TRUE
+){
+    if (plot) grid.draw(grid.arrange(arrangeGrob(
+        plot_sample_densities(object[, seq_len(min(30, ncol(object)))]), 
+        plot_feature_densities(object[sample(ncol(object), 4)]), ncol=2),
+        plot_summarized_detections(object), nrow=2))
+    if (pca)   object %<>% pca(verbose=verbose, plot=plot)
+    if (limma) object %<>% add_limma(formula     = formula, 
+                                    block        = block,
+                                    contrastdefs = contrastdefs, 
+                                    verbose      = verbose, 
+                                    plot         = plot)
     object
 }
 

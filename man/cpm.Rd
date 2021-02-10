@@ -31,8 +31,7 @@ Get / Set cpm matrix
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(
-            file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_rnaseq_counts(file, plot=FALSE)
 cpm(object) <- exprs(object)
 cpm(object)[1:3, 1:3]
 }

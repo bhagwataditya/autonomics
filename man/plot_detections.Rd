@@ -50,15 +50,13 @@ different cell types)
 \examples{
 require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(
-           file, impute=FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
+object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 plot_summarized_detections(object)
 plot_detections(object)
 plot_detections(impute_systematic_nondetects(object, plot=FALSE))
 
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(
-            file, impute = FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
+object <- read_metabolon(file, impute = FALSE, plot = FALSE)
 plot_summarized_detections(object)
 plot_detections(object)
 }

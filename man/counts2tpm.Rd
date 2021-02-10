@@ -19,6 +19,6 @@ counts to tpm
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- .read_rnaseq_counts(file)
+object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
 counts2tpm(counts(object), genesize=1)[1:3, 1:3]
 }

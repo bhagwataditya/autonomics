@@ -18,7 +18,7 @@ Create MultiAssayExperiment from SummarizedExperiment list
 \examples{
 somascanfile  <- download_data('atkin18.somascan.adat')
 metabolonfile <- download_data('atkin18.metabolon.xlsx')
-somascan <- read_somascan(somascanfile,   pca=FALSE, limma=FALSE, plot=FALSE)
-metabolon<- read_metabolon(metabolonfile, pca=FALSE, limma=FALSE, plot=FALSE)
+somascan <- read_somascan(somascanfile,   plot=FALSE)
+metabolon<- read_metabolon(metabolonfile, plot=FALSE)
 object   <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
 }

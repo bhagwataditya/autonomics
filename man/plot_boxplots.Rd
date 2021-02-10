@@ -70,7 +70,7 @@ Plot sample/feature boxplots
 # data
     require(magrittr)
     file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
+    object <- read_metabolon(file, plot = FALSE)
     object \%<>\% extract(, order(.$subgroup))
     fdata(object) \%<>\% cbind(
                         control=.$feature_name \%in\% c('biotin','phosphate'))

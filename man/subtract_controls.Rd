@@ -35,7 +35,7 @@ Subtract controls
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx') 
-object <- read_metabolon(file)
+object <- read_metabolon(file, plot=FALSE)
 pca(object, plot=TRUE, color=SET)
 object \%<>\% subtract_controls(block='SUB', subgroup = 'SET', refgroup='t0')
 pca(object, plot=TRUE, color=SET)

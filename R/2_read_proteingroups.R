@@ -11,7 +11,7 @@
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_proteingroups(file, plot=FALSE)
 #' occupancies(object)
 #' occupancies(object) <- exprs(object)
 #' occupancies(object)[1:3, 1:3]
@@ -50,7 +50,7 @@ function(object, value){
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_proteingroups(file, plot=FALSE)
 #' proteingroups(object)[1:3, 1:3]
 #' @rdname proteingroups
 #' @export
@@ -166,7 +166,7 @@ MAXQUANT_PATTERNS <- c(
 #'
 #' # SummarizedExperiment
 #'     file <- download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#'     object <- read_proteingroups(file, plot=FALSE)
 #'     guess_maxquant_quantity(file)
 #' @export
 guess_maxquant_quantity <- function(x, ...){
@@ -662,7 +662,7 @@ rm_from_annot <- function(annotation, pattern){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, plot=FALSE)
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' fdata(object)[1:5, ]
 #' object %<>% simplify_proteingroups(fastafile)
@@ -866,7 +866,7 @@ extract_common_substr <- function(a, b){
 #'
 #' # SummarizedExperiment
 #'     file <- download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#'     object <- read_proteingroups(file, plot=FALSE)
 #'     invert(object)
 #' @export
 invert <- function(x, ...)    UseMethod('invert', x)
@@ -947,7 +947,7 @@ arrange_samples_ <- function(x, svars){
 #' @return sample file path
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+#' object <- read_proteingroups(file, plot=FALSE)
 #' create_sfile(object, paste0(tempfile(), '.tsv'))
 #' @export
 create_sfile <- function(object, sfile, verbose = TRUE){
@@ -1237,8 +1237,9 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- .read_maxquant(file)      # read
-#' object <-  read_proteingroups(file) # read + analyze
+#' object <- read_proteingroups(file)
+#' object <- read_proteingroups(file, pca=TRUE)
+#' object <- read_proteingroups(file, limma=TRUE)
 #' @export
 read_proteingroups <- function(
     file, quantity = guess_maxquant_quantity(file), sfile = NULL,
@@ -1246,7 +1247,7 @@ read_proteingroups <- function(
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     formula = NULL, block = NULL, contrastdefs = NULL,
-    pca = FALSE, limma = FALSE, verbose = TRUE, plot = FALSE
+    pca = FALSE, limma = FALSE, verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -1256,18 +1257,16 @@ read_proteingroups <- function(
         sfile = sfile, sfileby = sfileby, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose = verbose)
     assayNames(object)[1] %<>% gsub('maxquant', 'proteingroups', .)
-# Prepare
+# Preprocess
     object %<>% filter_maxquant_features(reverse = reverse,
                     contaminants = contaminants, verbose = verbose)
     object %<>% rename_proteingroup_fvars()
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
 # Analyze
-    if (pca)    object %<>% pca()
-    if (limma)  object %<>% add_limma(formula = formula, block = block,
-                                contrastdefs  = contrastdefs, plot = FALSE)
+    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
-    if (plot)  plot_samples(object)
     object
 }
 
@@ -1279,8 +1278,8 @@ read_phosphosites <- function(
     sfile = NULL, sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
     invert_subgroups = character(0), pca = FALSE,
-    limma = FALSE, formula = NULL, contrastdefs = NULL,
-    verbose = TRUE, plot = FALSE
+    limma = FALSE, formula = NULL, block = NULL, contrastdefs = NULL,
+    verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
@@ -1304,12 +1303,10 @@ read_phosphosites <- function(
     object %<>% rename_phospho_fvars()
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
-# Contrast
-    if (pca)   object %<>% pca()
-    if (limma) object %<>% add_limma(formula = formula,
-                    contrastdefs  = contrastdefs, plot = FALSE)
+# Analyze
+    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
-    if (plot)  plot_samples(object)
     object
 }
 

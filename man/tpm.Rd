@@ -31,8 +31,7 @@ Get / Set tpm matrix
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(
-           file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_rnaseq_counts(file, plot=FALSE)
 tpm(object) <- exprs(object)
 tpm(object)[1:3, 1:3]
 }

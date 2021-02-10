@@ -57,7 +57,7 @@ read_rnaseq_bams(
   voom = limma,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = FALSE
+  plot = TRUE
 )
 
 read_rnaseq_counts(
@@ -82,7 +82,7 @@ read_rnaseq_counts(
   voom = limma,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = FALSE
+  plot = TRUE
 )
 }
 \arguments{
@@ -146,8 +146,9 @@ Read/analyze rnaseq counts / bamfiles
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- .read_rnaseq_counts(file)  # read
-object <-  read_rnaseq_counts(file)  # read + analyze
+object <- read_rnaseq_counts(file)
+object <- read_rnaseq_counts(file, pca=TRUE)
+object <- read_rnaseq_counts(file, limma=TRUE)
 }
 \author{
 Aditya Bhagwat, Shahina Hayat

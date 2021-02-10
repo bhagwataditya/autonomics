@@ -33,8 +33,6 @@ add_limma(
 \item{verbose}{whether to msg}
 
 \item{plot}{whether to plot}
-
-\item{...}{for backward compatibility}
 }
 \value{
 Updated SummarizedExperiment
@@ -60,23 +58,22 @@ This returns a list with components:
 \examples{
 require(magrittr)
 file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_somascan(file, plot=FALSE)
 add_limma(object)
 add_limma(object, block = 'Subject_ID')
 
 file <- download_data('billing19.proteingroups.txt')
 select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 select \%<>\% paste0('_STD')
-object <- read_proteingroups(file, select_subgroups = select, 
-                            pca=FALSE, limma=FALSE, plot = FALSE)
+object <- read_proteingroups(file, select_subgroups = select, plot = FALSE)
 object \%<>\% add_limma()
 
 file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, pca=FALSE, limma=FALSE, plot=FALSE)
+object <- read_rnaseq_counts(file, plot=FALSE)
 object$subgroup \%<>\% factor(sort(unique(.))[c(2:length(.), 1)])
 object \%<>\% add_limma()
 
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
+object <- read_metabolon(file, plot = FALSE)
 object \%<>\% add_limma()
 }
