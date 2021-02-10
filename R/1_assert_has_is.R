@@ -9,7 +9,7 @@
 #' @return logical
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
 #' has_complete_subgroup_values(object)
 #' has_complete_block_values(object)
 #' @noRd
@@ -48,7 +48,7 @@ has_complete_block_values <- function(object){
 #' @examples
 #' # STEM CELL COMPARISON
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
 #' contains_ratios(object)
 #'
 #' # GLUTAMINASE
@@ -129,7 +129,7 @@ is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
 #' @examples
 #' # VALID
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     x <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'     x <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
 #'     assert_is_valid_sumexp(x)
 #' # NOT VALID
 #'     rownames(SummarizedExperiment::colData(x)) <- NULL

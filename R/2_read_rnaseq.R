@@ -15,7 +15,7 @@
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
 #' counts(object) <- exprs(object)
 #' counts(object)[1:3, 1:3]
 #' @rdname counts
@@ -59,7 +59,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
 #' log2counts(object) <- exprs(object)
 #' log2counts(object)[1:3, 1:3]
 #' @rdname log2counts
@@ -139,7 +139,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
 #' cpm(object) <- exprs(object)
 #' cpm(object)[1:3, 1:3]
 #' @rdname cpm
@@ -177,7 +177,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
 #' log2cpm(object) <- exprs(object)
 #' log2cpm(object)[1:3, 1:3]
 #' @rdname log2cpm
@@ -254,7 +254,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
-#'            file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'            file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
 #' tpm(object) <- exprs(object)
 #' tpm(object)[1:3, 1:3]
 #' @rdname tpm
@@ -292,7 +292,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(
-#'             file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'             file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
 #' log2tpm(object) <- exprs(object)
 #' log2tpm(object)[1:3, 1:3]
 #' @rdname log2tpm
@@ -369,7 +369,7 @@ function(object, value){
 #' @return weight matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
 #' weights(object)[1:3, 1:2]
 #' weights(object) <- 1; weights(object)[1:3, 1:2]
 #' @rdname weights
@@ -904,7 +904,7 @@ read_rnaseq_bams <- function(
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = cpm, log2 = TRUE, pca = TRUE,
-    lmfit = TRUE, voom = TRUE, contrastdefs = NULL, verbose = TRUE, plot=TRUE
+    limma = TRUE, voom = TRUE, contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
 # Read
     object <- .read_rnaseq_bams(dir   = dir,
@@ -930,7 +930,7 @@ read_rnaseq_bams <- function(
                                         verbose     = verbose,
                                         plot        = plot)
     if (pca)    object %<>% pca()
-    if (lmfit)  object %<>% lmfit(formula = formula,
+    if (limma)  object %<>% add_limma(formula = formula,
                     contrastdefs  = contrastdefs, plot = FALSE)
 # Plot/Return
     if (plot)  plot_samples(object)
@@ -966,7 +966,7 @@ read_rnaseq_bams <- function(
 #' @param voom     whether to compute voom precision weights
 #' @param log2     whether to log2 transform
 #' @param pca      whether to pca
-#' @param lmfit    whether to lmfit/contrast
+#' @param limma    whether to limma/contrast
 #' @param verbose  whether to message
 #' @param plot     whether to plot
 #' @return SummarizedExperiment
@@ -982,7 +982,7 @@ read_rnaseq_counts <- function(
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = TRUE, log2 = TRUE, pca = TRUE, 
-    lmfit = TRUE, voom = lmfit, contrastdefs = NULL, 
+    limma = TRUE, voom = limma, contrastdefs = NULL, 
     verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -1009,7 +1009,7 @@ read_rnaseq_counts <- function(
                                         plot        = plot)
 # Explore
     if (pca)   object %<>% pca(verbose=verbose)
-    if (lmfit) object %<>% lmfit(formula = formula, block = block,
+    if (limma) object %<>% add_limma(formula = formula, block = block,
                 contrastdefs = contrastdefs, verbose = verbose, plot = FALSE)
     if (plot)  plot_samples(object)
 # Return

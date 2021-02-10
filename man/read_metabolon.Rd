@@ -24,7 +24,7 @@ read_metabolon(
   add_kegg_pathways = FALSE,
   add_smiles = FALSE,
   pca = TRUE,
-  lmfit = TRUE,
+  limma = TRUE,
   formula = NULL,
   block = NULL,
   contrastdefs = NULL,
@@ -53,7 +53,7 @@ read_metabolon(
 
 \item{pca}{whether to pca}
 
-\item{lmfit}{whether to lmfit/contrast}
+\item{limma}{whether to limma/contrast}
 
 \item{formula}{designmat formula}
 

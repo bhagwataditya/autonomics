@@ -24,6 +24,6 @@ Filter samples on condition
 \examples{
 # GLUTAMINASE
     file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+    object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
     filter_samples(object, TIME_POINT=='h10', verbose = TRUE)
 }

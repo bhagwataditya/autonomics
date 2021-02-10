@@ -47,7 +47,7 @@ Merge sample/feature data
 \examples{
 require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
 object \%<>\% merge_sdata( data.frame(sample_id = object$sample_id,
                                     number = seq_along(object$sample_id)))
 head(sdata(object))

@@ -39,7 +39,7 @@ Biplot batch corrections
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, lmfit=FALSE, plot = FALSE)
+object <- read_metabolon(file, limma=FALSE, plot = FALSE)
 biplot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 }
 \seealso{

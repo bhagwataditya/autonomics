@@ -17,20 +17,20 @@
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
 #'     object <- read_proteingroups(
 #'                file, invert_subgroups = invert_subgroups, pca = FALSE, 
-#'                lmfit = FALSE, plot = FALSE)
+#'                limma = FALSE, plot = FALSE)
 #'     p <- plot_sample_densities(object)
 #'     add_color_scale(p, data=sdata(object))
 #'
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    object <- read_proteingroups(file, quantity = 'Intensity labeled', 
-#'                                 pca = FALSE, lmfit = FALSE, plot = FALSE)
+#'                                 pca = FALSE, limma = FALSE, plot = FALSE)
 #'    add_color_scale(object)
 #'
 #' # GLUTAMINASE
 #'    require(magrittr)
 #'    file <- download_data('halama18.metabolon.xlsx')
-#'    object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'    object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
 #'    object %<>% pca()
 #'    plot_data(sdata(object), x=pca1, y=pca2, color=TIME_POINT)
 #' @noRd
@@ -122,7 +122,7 @@ make_onefactor_colors <- function(
 #' @return named string vector (elements = colors, names = color_var levels)
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
 #' varlevels <- subgroup_levels(object)
 #' make_twofactor_colors(varlevels, show = TRUE)
 #' @noRd
@@ -184,7 +184,7 @@ make_twofactor_colors <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
 #' object %<>% pca()
 #' data <- sdata(object)
 #' plot_data(data, x = pca1, y = pca2)
@@ -267,7 +267,7 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #' # Read data
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'     object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
 #' # Plot distributions
 #'     plot_sample_densities(object)
@@ -365,7 +365,7 @@ plot_feature_densities <- function(
 #' # data
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'     object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
 #'     control_features <- c('biotin','phosphate')
 #'     fdata(object) %<>% cbind(control=.$feature_name %in% control_features)
@@ -476,7 +476,7 @@ plot_subgroup_violins <- function(
 #' # data
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'     object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
 #'     fdata(object) %<>% cbind(
 #'                         control=.$feature_name %in% c('biotin','phosphate'))
@@ -638,7 +638,7 @@ plot_samples <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, lmfit=FALSE, plot = FALSE)
+#' object <- read_metabolon(file, limma=FALSE, plot = FALSE)
 #' idx <- order(abs(fdata(object)$pca1), decreasing=TRUE)[1:9]
 #' object %<>% extract(idx, )
 #' plot_feature_boxplots(object)

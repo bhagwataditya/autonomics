@@ -30,9 +30,9 @@ cpm matrix (get) or updated object (set)
 Get / Set cpm matrix
 }
 \examples{
-file <- download_data('billing16.rnacounts.txt')
+file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(
-            file, voom=FALSE, pca=FALSE, lmfit=FALSE, plot=FALSE)
+            file, voom=FALSE, pca=FALSE, limma=FALSE, plot=FALSE)
 cpm(object) <- exprs(object)
 cpm(object)[1:3, 1:3]
 }

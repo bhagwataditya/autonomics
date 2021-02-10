@@ -57,7 +57,7 @@ Plot sample/feature densities
 # Read data
     require(magrittr)
     file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+    object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
     object \%<>\% extract(, order(.$subgroup))
 # Plot distributions
     plot_sample_densities(object)

@@ -20,6 +20,6 @@ Split by svar
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(
-              file, impute=FALSE, pca=FALSE, lmfit=FALSE, plot = FALSE)
+              file, impute=FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
 split_by_svar(object)
 }

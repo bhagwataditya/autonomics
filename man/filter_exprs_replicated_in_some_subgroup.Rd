@@ -34,11 +34,11 @@ require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
 invert_subgroups <- c('E_EM', 'BM_EM', 'E_BM')
 object <- read_proteingroups(file, invert_subgroups=invert_subgroups,
-    pca=FALSE, lmfit=FALSE, plot=FALSE)
+    pca=FALSE, limma=FALSE, plot=FALSE)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 
 filter_exprs_replicated_in_some_subgroup(object, character(0))

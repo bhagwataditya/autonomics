@@ -20,7 +20,7 @@ sample file path
 Create sfile
 }
 \examples{
-file <- download_data('billing19.proteingroups.txt')
-object <- read_proteingroups(file, lmfit=FALSE, plot=FALSE)
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
 create_sfile(object, paste0(tempfile(), '.tsv'))
 }

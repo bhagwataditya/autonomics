@@ -19,7 +19,7 @@
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx') 
-#' object <- read_metabolon(file, pca = FALSE, lmfit = FALSE, plot = FALSE)
+#' object <- read_metabolon(file, pca = FALSE, limma = FALSE, plot = FALSE)
 #' pca(object, plot=TRUE, color=SET)
 #' object %<>% subtract_controls(block='SUB', subgroup = 'SET', refgroup='t0')
 #' pca(object, plot=TRUE, color=SET)
@@ -61,7 +61,7 @@ subtract_controls <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
 #'
 #' plot_sample_densities(object)
 #' plot_sample_densities(invnorm(object))
@@ -113,7 +113,7 @@ zscore <- function(object, verbose = FALSE){
 #' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #' select %<>% paste0('_STD')
 #' object <- read_proteingroups(
-#'     file, select_subgroups = select, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#'     file, select_subgroups = select, pca=FALSE, limma=FALSE, plot=FALSE)
 #' object %<>% extract(, order(object$subgroup))
 #' fdata(object)$housekeeping <- FALSE
 #' fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE
@@ -307,7 +307,7 @@ plot_transformation_biplots <- function(
 #' @return grid object
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
 #' explore_transformations(object)
 #' @export
 explore_transformations <- function(

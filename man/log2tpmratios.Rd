@@ -30,7 +30,7 @@ log2tpmratios matrix (get) or updated object (set)
 Get / Set log2tpmratios matrix
 }
 \examples{
-file <- download_data('billing16.rnacounts.txt')
+file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file)
 log2tpmratios(object) <- exprs(object)
 log2tpmratios(object)[1:3, 1:3]

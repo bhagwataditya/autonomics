@@ -32,7 +32,7 @@ read_proteingroups(
   block = NULL,
   contrastdefs = NULL,
   pca = TRUE,
-  lmfit = TRUE,
+  limma = TRUE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -50,7 +50,7 @@ read_phosphosites(
   fastafile = NULL,
   invert_subgroups = character(0),
   pca = TRUE,
-  lmfit = TRUE,
+  limma = TRUE,
   formula = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
@@ -96,7 +96,7 @@ read_phosphosites(
 
 \item{pca}{whether to pca}
 
-\item{lmfit}{whether to lmfit/contrast}
+\item{limma}{whether to limma/contrast}
 
 \item{plot}{whether to plot}
 

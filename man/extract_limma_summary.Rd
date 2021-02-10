@@ -25,7 +25,7 @@ Extract contrast analysis summary
     # ~ 0 + subgroups | weights
         require(magrittr)
         weights(object) <- NULL
-        object \%<>\% lmfit(plot=FALSE)
+        object \%<>\% add_limma(plot=FALSE)
         extract_limma_summary(object)
 
 # METABOLON
@@ -36,10 +36,10 @@ Extract contrast analysis summary
 
    # ~ 0 + subgroup | block
           svars(object) \%<>\% gsub('SUB', 'block', ., fixed=TRUE)
-          object \%<>\% lmfit(plot=FALSE)
+          object \%<>\% add_limma(plot=FALSE)
           extract_limma_summary(object)
 
    # ~ 0 + subgroup + t2d | block
-          object \%<>\% lmfit(formula=~0+subgroup+T2D, plot=FALSE)
+          object \%<>\% add_limma(formula=~0+subgroup+T2D, plot=FALSE)
           extract_limma_summary(object)
 }

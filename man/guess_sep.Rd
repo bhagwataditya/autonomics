@@ -45,10 +45,10 @@ Guess separator
 
 # SummarizedExperiment
    # file <- download_data('halama18.metabolon.xlsx')
-   # object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+   # object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
    # guess_sep(object)
 
    # file <- download_data('billing16.proteingroups.txt')
-   # object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+   # object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
    # guess_sep(object)
 }

@@ -59,9 +59,4 @@ Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 
    x <- 'Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
    standardize_maxquant_snames(x)
-
-# SummarizedExperiment
-   file <- download_data('billing16.proteingroups.txt')
-   # x <- .read_proteingroups(file)
-   # standardize_maxquant_snames(x)
 }

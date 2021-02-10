@@ -35,7 +35,7 @@ Plot contrastogram
     select \%<>\% paste0('_STD')
     object <- read_proteingroups(
                 file, select_subgroups = select, pca=FALSE, plot=FALSE)
-    object \%<>\% lmfit(plot=FALSE)
+    object \%<>\% add_limma(plot=FALSE)
     plot_contrastogram(object, curve=0.8)
 # subgroup vector
     file <-  download_data('fukuda20.proteingroups.txt')

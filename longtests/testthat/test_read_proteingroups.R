@@ -1,7 +1,7 @@
 context('invert')
     require(magrittr)
     file <- download_data('billing16.proteingroups.txt')
-    object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+    object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
     object %<>% invert(subgroups = c('EM_E','BM_E','BM_EM'))
     msg <- 'invert_ratios'
     test_that(msg, {
@@ -18,7 +18,7 @@ context('read_proteingroups / read_phosphosites')
         object <- read_proteingroups(
                     file, invert_subgroups = inv, 
                     contrastdefs = c('E_EM', 'E_BM', 'EM_BM'), 
-                    pca = FALSE, lmfit = FALSE, plot = FALSE)
+                    pca = FALSE, limma = FALSE, plot = FALSE)
         msg <- 'read_proteingroups(invert_ratios)'
         test_that(msg, {
             expect_s4_class(object, 'SummarizedExperiment')
@@ -30,7 +30,7 @@ context('read_proteingroups / read_phosphosites')
         file <- download_data('billing16.proteingroups.txt')
         object <- read_proteingroups(
                     file, quantity = 'Intensity labeled', 
-                    pca = FALSE, lmfit = FALSE, plot = FALSE)
+                    pca = FALSE, limma = FALSE, plot = FALSE)
         msg <- 'read_proteingroups(select)'
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     # select_subgroups
@@ -40,7 +40,7 @@ context('read_proteingroups / read_phosphosites')
         select_subgroups %<>% paste0('_STD')
         object <- read_proteingroups(
                     file, select_subgroups = select_subgroups, 
-                    pca = FALSE, lmfit = FALSE, plot = FALSE)
+                    pca = FALSE, limma = FALSE, plot = FALSE)
         msg <- 'read_proteingroups(select)'
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     # fastafile
@@ -48,7 +48,7 @@ context('read_proteingroups / read_phosphosites')
         fastafile <- download_data('uniprot_hsa_20140515.fasta')
         object <- read_proteingroups(
                     file, fastafile=fastafile, 
-                    pca = FALSE, lmfit = FALSE, plot = FALSE)
+                    pca = FALSE, limma = FALSE, plot = FALSE)
         msg <- 'read_proteingroups(fastafile)'
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     # phospho
@@ -59,7 +59,7 @@ context('read_proteingroups / read_phosphosites')
         object <- read_phosphosites(
                     phosphofile, proteinfile, 
                     select_subgroups = select_subgroups, 
-                    pca = FALSE, lmfit = FALSE, plot = FALSE)
+                    pca = FALSE, limma = FALSE, plot = FALSE)
         msg <- 'read_phosphosites()'
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
 

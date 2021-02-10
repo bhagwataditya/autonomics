@@ -28,8 +28,8 @@ character vector, dataframe, or SummarizedExperiment.
 }
 \examples{
 # file
-    x <- download_data('billing16.proteingroups.txt')
-    guess_maxquant_quantity(x)
+    file <- download_data('fukuda20.proteingroups.txt')
+    guess_maxquant_quantity(file)
 
 # character vector
     x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
@@ -51,12 +51,12 @@ character vector, dataframe, or SummarizedExperiment.
     guess_maxquant_quantity(x)
 
 # dataframe
-    file <- download_data( 'billing16.proteingroups.txt')
+    file <- download_data('fukuda20.proteingroups.txt')
     x <- data.table::fread(file)
     guess_maxquant_quantity(x)
 
 # SummarizedExperiment
-     file <-download_data( 'billing16.proteingroups.txt')
-     # x <- .read_proteingroups(file)
-     # guess_maxquant_quantity(x)
+    file <- download_data('fukuda20.proteingroups.txt')
+    object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+    guess_maxquant_quantity(file)
 }

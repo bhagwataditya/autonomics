@@ -53,7 +53,7 @@ read_rnaseq_bams(
   tmm = cpm,
   log2 = TRUE,
   pca = TRUE,
-  lmfit = TRUE,
+  limma = TRUE,
   voom = TRUE,
   contrastdefs = NULL,
   verbose = TRUE,
@@ -78,8 +78,8 @@ read_rnaseq_counts(
   tmm = TRUE,
   log2 = TRUE,
   pca = TRUE,
-  lmfit = TRUE,
-  voom = lmfit,
+  limma = TRUE,
+  voom = limma,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -130,7 +130,7 @@ read_rnaseq_counts(
 
 \item{pca}{whether to pca}
 
-\item{lmfit}{whether to lmfit/contrast}
+\item{limma}{whether to limma/contrast}
 
 \item{voom}{whether to compute voom precision weights}
 

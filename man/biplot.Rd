@@ -51,7 +51,7 @@ Biplot
 # halama18
     require(magrittr)
     file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot = FALSE)
+    object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
     object \%<>\% pca(plot=FALSE, ndim=4)
     object \%<>\% pls(plot=FALSE)
     biplot(object)

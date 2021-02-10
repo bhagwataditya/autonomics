@@ -25,7 +25,7 @@ read_somascan(
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
   pca = TRUE,
-  lmfit = TRUE,
+  limma = TRUE,
   formula = NULL,
   block = NULL,
   contrastdefs = NULL,
@@ -60,7 +60,7 @@ read_somascan(
 
 \item{pca}{whether to pca}
 
-\item{lmfit}{whether to lmfit/contrast}
+\item{limma}{whether to limma/contrast}
 
 \item{formula}{design formula (using svars)}
 

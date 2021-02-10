@@ -196,7 +196,7 @@ zeroimpute <- function(x, selector = is.na(x)){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(
-#'               file, impute=FALSE, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'               file, impute=FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
 #' split_by_svar(object)
 #' @export
 split_by_svar <- function(object, svar = subgroup){
@@ -256,7 +256,7 @@ is_full_detect <- function(object){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(
-#'               file, impute=FALSE, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'               file, impute=FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
 #' venn_detects(object)
 #' @export
 venn_detects <- function(object){
@@ -284,7 +284,7 @@ venn_detects <- function(object){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(
-#'             file, impute = FALSE, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'             file, impute = FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
 #' impute_systematic_nondetects(object)
 #' @export
 impute_systematic_nondetects <- function(
@@ -387,14 +387,14 @@ plot_detects <- function(...){
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(
-#'            file, impute=FALSE, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'            file, impute=FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
 #' plot_summarized_detections(object)
 #' plot_detections(object)
 #' plot_detections(impute_systematic_nondetects(object, plot=FALSE))
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(
-#'             file, impute = FALSE, pca=FALSE, lmfit=FALSE, plot = FALSE)
+#'             file, impute = FALSE, pca=FALSE, limma=FALSE, plot = FALSE)
 #' plot_summarized_detections(object)
 #' plot_detections(object)
 #' @export
@@ -541,7 +541,7 @@ plot_summarized_detections <- function(object, group = subgroup,
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(
-#'             file, impute = FALSE, lmfit=FALSE, plot = FALSE)
+#'             file, impute = FALSE, limma=FALSE, plot = FALSE)
 #' explore_imputations(object)
 #' explore_transformations(object)
 #' @export
@@ -590,7 +590,7 @@ explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
 #'@return matrix (get) or updated object (set)
 #'@examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
 #' sum(is_imputed(object))
 #' @rdname is_imputed
 #' @export

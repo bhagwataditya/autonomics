@@ -27,13 +27,12 @@ occupancies(object) <- value
 occpuancy matrix (get) or updated object (set)
 }
 \description{
-Get / Set occupancies matrix
+Get / Set phosphosite occupancies matrix
 }
 \examples{
-proteinfile <- download_data('billing19.proteingroups.txt')
-phosphofile <- download_data('billing19.phosphosites.txt')
-object <- read_phosphosites(
-            phosphofile, proteinfile, pca=FALSE, lmfit=FALSE, plot=FALSE)
-exprs(object)[1:3, 1:3]
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+occupancies(object)
+occupancies(object) <- exprs(object)
 occupancies(object)[1:3, 1:3]
 }

@@ -30,7 +30,7 @@ log2cpmratios matrix (get) or updated object (set)
 Get / Set log2cpmratios matrix
 }
 \examples{
-file <- download_data('billing16.rnacounts.txt')
+file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file)
 log2cpmratios(object) <- exprs(object)
 log2cpmratios(object)[1:3, 1:3]

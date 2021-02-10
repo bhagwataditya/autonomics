@@ -35,13 +35,11 @@ For SummarizedExperiments: invert expressions , subgroups, and sample ids
 }
 \examples{
 # character
-#----------
-   x <- c('Ctrl_A', 'Ctrl_B')
-   invert(x)
+    x <- c('Ctrl_A', 'Ctrl_B')
+    invert(x)
 
 # SummarizedExperiment
-#---------------------
-   file <- download_data('billing16.proteingroups.txt')
-   x <- read_proteingroups(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
-   invert(x, subgroups = c('E_EM', 'E_BM', 'EM_BM'))
+    file <- download_data('fukuda20.proteingroups.txt')
+    object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+    invert(object)
 }

@@ -14,7 +14,7 @@
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
 #' object %<>% add_kegg_pathways()
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
 #' @noRd
@@ -90,7 +90,7 @@ kegg_entry_to_pathways <- function(x){
 #' @return character/factor vector
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=FALSE, lmfit=FALSE, plot=FALSE)
+#' object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot=FALSE)
 #' add_smiles(object)
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
 #' @noRd
@@ -262,7 +262,7 @@ stack <- function(x, y){
 #' @param add_kegg_pathways  whether to add kegg pathways
 #' @param add_smiles         whether to add smiles
 #' @param pca                whether to pca
-#' @param lmfit              whether to lmfit/contrast
+#' @param limma              whether to limma/contrast
 #' @param formula            designmat formula
 #' @param block              block svar
 #' @param contrastdefs       contrastdef vector/matrix/list
@@ -282,7 +282,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
-    pca = TRUE, lmfit = TRUE, formula = NULL, block = NULL, contrastdefs = NULL,
+    pca = TRUE, limma = TRUE, formula = NULL, block = NULL, contrastdefs = NULL,
     verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -298,7 +298,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Contrast
     if (pca)   object %<>% pca()
-    if (lmfit) object %<>% lmfit(formula = formula, block = block,
+    if (limma) object %<>% add_limma(formula = formula, block = block,
                                 contrastdefs = contrastdefs, plot = FALSE)
 # Plot
     if (plot)  plot_samples(object)
