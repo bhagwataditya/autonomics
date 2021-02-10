@@ -29,7 +29,7 @@ read_metabolon(
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 }
 \arguments{

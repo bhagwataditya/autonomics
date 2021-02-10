@@ -82,7 +82,7 @@ read_rnaseq_counts(
   voom = limma,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 }
 \arguments{

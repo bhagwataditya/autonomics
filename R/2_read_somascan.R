@@ -174,7 +174,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE,
     pca = TRUE, limma = FALSE, formula = NULL, block = NULL, contrastdefs = NULL,
-    verbose = TRUE, plot = TRUE
+    verbose = TRUE, plot = FALSE
 ){
 # Read
     object <- .read_somascan(

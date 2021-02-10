@@ -30,7 +30,7 @@ read_somascan(
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 }
 \arguments{

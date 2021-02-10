@@ -283,7 +283,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
     pca = TRUE, limma = FALSE, formula = NULL, block = NULL, contrastdefs = NULL,
-    verbose = TRUE, plot = TRUE
+    verbose = TRUE, plot = FALSE
 ){
 # Read
     object <- .read_metabolon(file = file, sheet = sheet, fid_var = fid_var,

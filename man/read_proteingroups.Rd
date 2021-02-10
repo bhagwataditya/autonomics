@@ -34,7 +34,7 @@ read_proteingroups(
   pca = TRUE,
   limma = FALSE,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 
 read_phosphosites(
@@ -54,7 +54,7 @@ read_phosphosites(
   formula = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 }
 \arguments{

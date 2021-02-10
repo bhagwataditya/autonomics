@@ -983,7 +983,7 @@ read_rnaseq_counts <- function(
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = TRUE, log2 = TRUE, pca = TRUE, 
     limma = FALSE, voom = limma, contrastdefs = NULL, 
-    verbose = TRUE, plot = TRUE
+    verbose = TRUE, plot = FALSE
 ){
 # Read
     object <- .read_rnaseq_counts(file,
