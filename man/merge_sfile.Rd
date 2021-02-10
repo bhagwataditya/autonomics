@@ -52,8 +52,7 @@ Merge sample/feature file
    file <- download_data('billing19.proteingroups.txt')
    select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
    select \%<>\% paste0('_STD')
-   object <- read_proteingroups(file, select_subgroups = select, 
-                               pca = FALSE, plot = FALSE)
+   object <- read_proteingroups(file, select_subgroups = select)
    sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
    sfile \%<>\% paste0('.samples.txt')
    invisible(create_sfile(object, sfile))

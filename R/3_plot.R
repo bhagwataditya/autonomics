@@ -15,22 +15,19 @@
 #' # STEMCELL RATIOS
 #'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
-#'     object <- read_proteingroups(
-#'                file, invert_subgroups = invert_subgroups, pca = FALSE, 
-#'                plot = FALSE)
+#'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups)
 #'     p <- plot_sample_densities(object)
 #'     add_color_scale(p, data=sdata(object))
 #'
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('billing16.proteingroups.txt')
-#'    object <- read_proteingroups(file, quantity = 'Intensity labeled', 
-#'                                 pca = FALSE, plot = FALSE)
+#'    object <- read_proteingroups(file, quantity = 'Intensity labeled')
 #'    add_color_scale(object)
 #'
 #' # GLUTAMINASE
 #'    require(magrittr)
 #'    file <- download_data('halama18.metabolon.xlsx')
-#'    object <- read_metabolon(file, pca=FALSE, limma=FALSE, plot = FALSE)
+#'    object <- read_metabolon(file)
 #'    object %<>% pca()
 #'    plot_data(sdata(object), x=pca1, y=pca2, color=TIME_POINT)
 #' @noRd

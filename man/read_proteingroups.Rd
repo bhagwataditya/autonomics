@@ -31,7 +31,7 @@ read_proteingroups(
   formula = NULL,
   block = NULL,
   contrastdefs = NULL,
-  pca = TRUE,
+  pca = FALSE,
   limma = FALSE,
   verbose = TRUE,
   plot = FALSE
@@ -49,7 +49,7 @@ read_phosphosites(
   min_localization_prob = 0.75,
   fastafile = NULL,
   invert_subgroups = character(0),
-  pca = TRUE,
+  pca = FALSE,
   limma = FALSE,
   formula = NULL,
   contrastdefs = NULL,

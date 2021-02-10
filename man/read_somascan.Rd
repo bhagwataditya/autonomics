@@ -24,7 +24,7 @@ read_somascan(
   feature_quality = c("FLAG", "PASS"),
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
-  pca = TRUE,
+  pca = FALSE,
   limma = FALSE,
   formula = NULL,
   block = NULL,

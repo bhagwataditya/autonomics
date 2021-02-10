@@ -99,13 +99,13 @@ Proper preprocessing leads to increased power:
 ```{r}
   file <- download_data('billing19.rnacounts.txt')
   colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 counts
-  cpm = FALSE, voom = FALSE, plot = FALSE, verbose = FALSE))[, -1])
+  cpm = FALSE, voom = FALSE, limma = TRUE, verbose = FALSE))[, -1])
 
   colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm
-  cpm = TRUE,  voom = FALSE, plot = FALSE, verbose = FALSE))[, -1])
+  cpm = TRUE,  voom = FALSE, limma = TRUE, verbose = FALSE))[, -1])
 
   colSums(extract_limma_summary(read_rnaseq_counts(file,  # log2 cpm + voom
-  cpm = TRUE,  voom = TRUE,  plot = FALSE, verbose = FALSE))[, -1])
+  cpm = TRUE,  voom = TRUE,  limma = TRUE, verbose = FALSE))[, -1])
 ```
 
 ## Proteingroups/phosphosites

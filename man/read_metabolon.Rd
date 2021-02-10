@@ -23,7 +23,7 @@ read_metabolon(
   impute = FALSE,
   add_kegg_pathways = FALSE,
   add_smiles = FALSE,
-  pca = TRUE,
+  pca = FALSE,
   limma = FALSE,
   formula = NULL,
   block = NULL,
