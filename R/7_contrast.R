@@ -428,6 +428,52 @@ contrast_subgroups <- function(object, design){
 #
 #==============================================================================
 
+
+.lmefit <- function(sd){
+    fitres <- lme(fixed = value ~ subgroup, random=~1|Subject_ID, data = sd,
+                na.action = stats::na.omit)
+    fitres %<>% summary()
+    fitres %<>% extract2('tTable')
+    pvalues <- data.table::as.data.table(as.list(fitres[, 'p-value']))
+    tvalues <- data.table::as.data.table(as.list(fitres[, 't-value']))
+    effects <- data.table::as.data.table(as.list(fitres[, 'Value'  ]))
+    stderrs <- data.table::as.data.table(as.list(fitres[, 'Std.Error']))
+    names(pvalues) %<>% paste0('p.', .)
+    names(tvalues) %<>% paste0('t.', .)
+    names(effects) %<>% paste0('effect.', .)
+    names(stderrs) %<>% paste0('se.', .)
+    cbind(pvalues, tvalues, effects, stderrs)
+}
+
+.lmeextract <- function(lmeres, quantity){
+    idx <- stri_startswith_fixed(names(lmeres), paste0(quantity, '.'))
+    lmemat <- as.matrix(lmeres[, idx, with=FALSE])
+    rownames(lmemat) <- lmeres$feature_id
+    colnames(lmemat) %<>% stri_replace_first_fixed(paste0(quantity, '.'), '')
+    lmemat
+}
+
+# file <- download_data('atkin18.somascan.adat')
+# object <- read_somascan(file, pca=FALSE, limma=FALSE, plot=FALSE)
+# formula <- ~ 0 + subgroup | Subject_ID
+# fm1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+# lmerfit(object)
+add_lme <- function(object, contrastdefs = NULL, formula   = NULL,
+                    verbose = TRUE, plot =  TRUE
+){
+    if (is.null)  formula <- value ~ subgroup + (subgroup | Subject_ID)
+    dt <- sumexp_to_long_dt(object, svars = setdiff(all.vars(formula), 'value'))
+    dt %<>% extract(c("2182-54_1", "2190-55_1"), on = 'feature_id')
+    lmeres <- dt[, .lmefit(.SD), by = 'feature_id'] # 15:03 - 
+    quantities <- c('p', 't', 'effect', 'se')
+    lmeextractres <- mapply(.lmeextract, quantity=quantities, 
+                            MoreArgs = list(lmeres=lmeres), SIMPLIFY = FALSE)
+    metadata(object)$lme <- do.call(abind::abind, c(lmeextractres, along=3))
+    metadata(object)$lme %<>% extract(rownames(object),,)
+    object
+}
+
+
 contrvec2mat  <- function(contrastdefs)  matrix(
                     contrastdefs, nrow=1, dimnames=list("", contrastdefs))
 

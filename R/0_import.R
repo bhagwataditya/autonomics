@@ -51,6 +51,7 @@
 #' @importFrom MultiAssayExperiment  colData       colData<-
 #' @importFrom MultiAssayExperiment  experiments   experiments<-
 #' @importFrom MultiAssayExperiment  MultiAssayExperiment
+#' @importFrom nlme          lme
 #' @importFrom parallel      detectCores
 #' @importFrom readxl        read_excel   excel_sheets
 #' @importFrom rlang         as_string   enquo   eval_tidy   enexpr
