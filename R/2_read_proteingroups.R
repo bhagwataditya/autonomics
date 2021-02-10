@@ -1246,7 +1246,7 @@ read_proteingroups <- function(
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     formula = NULL, block = NULL, contrastdefs = NULL,
-    pca = TRUE, limma = TRUE, verbose = TRUE, plot = TRUE
+    pca = TRUE, limma = FALSE, verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -1279,7 +1279,7 @@ read_phosphosites <- function(
     sfile = NULL, sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
     invert_subgroups = character(0), pca = TRUE,
-    limma = TRUE, formula = NULL, contrastdefs = NULL,
+    limma = FALSE, formula = NULL, contrastdefs = NULL,
     verbose = TRUE, plot = TRUE
 ){
 # Assert

@@ -25,7 +25,7 @@ read_somascan(
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
   pca = TRUE,
-  limma = TRUE,
+  limma = FALSE,
   formula = NULL,
   block = NULL,
   contrastdefs = NULL,

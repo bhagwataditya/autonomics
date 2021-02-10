@@ -17,14 +17,14 @@
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
 #'     object <- read_proteingroups(
 #'                file, invert_subgroups = invert_subgroups, pca = FALSE, 
-#'                limma = FALSE, plot = FALSE)
+#'                plot = FALSE)
 #'     p <- plot_sample_densities(object)
 #'     add_color_scale(p, data=sdata(object))
 #'
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    object <- read_proteingroups(file, quantity = 'Intensity labeled', 
-#'                                 pca = FALSE, limma = FALSE, plot = FALSE)
+#'                                 pca = FALSE, plot = FALSE)
 #'    add_color_scale(object)
 #'
 #' # GLUTAMINASE

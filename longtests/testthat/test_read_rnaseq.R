@@ -18,20 +18,20 @@ sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
     # read
         object <- read_rnaseq_counts(
             file, sfile = sfile, sfileby ='rna_id', subgroupvar = 'gender', 
-            cpm = FALSE, voom = FALSE, pca = FALSE, limma = FALSE, plot = FALSE)
+            cpm = FALSE, voom = FALSE, pca = FALSE, plot = FALSE)
         msg <- 'read_rnaseq_counts("GSE161731_counts.csv.gz") works'
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     # cpm
         msg <- 'read_rnaseq_counts(cpm=TRUE) works'
         object <- read_rnaseq_counts(
             file, sfile = sfile, sfileby ='rna_id', subgroupvar = 'gender', 
-            voom = FALSE,  pca = FALSE, limma = FALSE, plot = FALSE)
+            voom = FALSE,  pca = FALSE, plot = FALSE)
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     # voom
         msg <- 'read_rnaseq_counts(voom=TRUE) works'
         object <- read_rnaseq_counts(
             file, sfile = sfile, sfileby ='rna_id', subgroupvar = 'gender', 
-            pca = FALSE, limma = FALSE, plot = FALSE)
+            pca = FALSE, plot = FALSE)
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     # block        
         msg <- 'read_rnaseq_counts(block=blockvar) works'

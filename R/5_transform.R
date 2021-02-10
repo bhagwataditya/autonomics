@@ -19,7 +19,7 @@
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx') 
-#' object <- read_metabolon(file, pca = FALSE, limma = FALSE, plot = FALSE)
+#' object <- read_metabolon(file, pca = FALSE, plot = FALSE)
 #' pca(object, plot=TRUE, color=SET)
 #' object %<>% subtract_controls(block='SUB', subgroup = 'SET', refgroup='t0')
 #' pca(object, plot=TRUE, color=SET)

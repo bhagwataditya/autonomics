@@ -904,7 +904,7 @@ read_rnaseq_bams <- function(
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = cpm, log2 = TRUE, pca = TRUE,
-    limma = TRUE, voom = TRUE, contrastdefs = NULL, verbose = TRUE, plot=TRUE
+    limma = FALSE, voom = TRUE, contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
 # Read
     object <- .read_rnaseq_bams(dir   = dir,
@@ -982,7 +982,7 @@ read_rnaseq_counts <- function(
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = TRUE, log2 = TRUE, pca = TRUE, 
-    limma = TRUE, voom = limma, contrastdefs = NULL, 
+    limma = FALSE, voom = limma, contrastdefs = NULL, 
     verbose = TRUE, plot = TRUE
 ){
 # Read

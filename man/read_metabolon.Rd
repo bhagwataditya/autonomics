@@ -24,7 +24,7 @@ read_metabolon(
   add_kegg_pathways = FALSE,
   add_smiles = FALSE,
   pca = TRUE,
-  limma = TRUE,
+  limma = FALSE,
   formula = NULL,
   block = NULL,
   contrastdefs = NULL,
