@@ -54,7 +54,7 @@ read_rnaseq_bams(
   log2 = TRUE,
   pca = FALSE,
   limma = FALSE,
-  voom = TRUE,
+  voom = limma,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -75,7 +75,7 @@ read_rnaseq_counts(
   pseudocount = 0.5,
   genesize = NULL,
   cpm = TRUE,
-  tmm = TRUE,
+  tmm = cpm,
   log2 = TRUE,
   pca = FALSE,
   limma = FALSE,

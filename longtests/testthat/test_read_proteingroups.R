@@ -1,7 +1,7 @@
 context('invert')
     require(magrittr)
     file <- download_data('billing16.proteingroups.txt')
-    object <- read_proteingroups(file, pca=FALSE, limma=FALSE, plot=FALSE)
+    object <- read_proteingroups(file)
     object %<>% invert(subgroups = c('EM_E','BM_E','BM_EM'))
     msg <- 'invert_ratios'
     test_that(msg, {
@@ -50,8 +50,22 @@ context('read_proteingroups / read_phosphosites')
         select_subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
         select_subgroups %<>% paste0('_STD')
         object <- read_phosphosites(
-                    phosphofile, proteinfile, 
-                    select_subgroups = select_subgroups)
+                phosphofile, proteinfile, select_subgroups = select_subgroups)
         msg <- 'read_phosphosites()'
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
-
+    # pca
+        file <-  download_data('fukuda20.proteingroups.txt')
+        object <- read_proteingroups(file, pca = TRUE)
+        msg <- 'read_proteingroups(pca=TRUE)'
+        test_that(msg, {
+            expect_s4_class(object, 'SummarizedExperiment')
+            expect_true('pca1' %in% svars(object))
+            expect_true('pca1' %in% fvars(object))
+            expect_true('pca'  %in% names(S4Vectors::metadata(object)))})
+    # limma
+        file <-  download_data('fukuda20.proteingroups.txt')
+        object <- read_proteingroups(file, limma = TRUE)
+        msg <- 'read_proteingroups(limma=TRUE)'
+        test_that(msg, {
+            expect_s4_class(object, 'SummarizedExperiment')
+            expect_true('limma'  %in% names(S4Vectors::metadata(object)))})

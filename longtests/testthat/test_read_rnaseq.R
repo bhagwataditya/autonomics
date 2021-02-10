@@ -32,31 +32,26 @@
         test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     # pca
         msg <- 'read_rnaseq_counts(pca=TRUE) works'
-        object <- read_rnaseq_counts(
-            file, sfile = sfile, sfileby='rna_id', subgroupvar='gender', 
-            pca=TRUE)
-        test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
+        object <- read_rnaseq_counts(file, sfile = sfile, sfileby='rna_id',
+                                     subgroupvar='gender', pca=TRUE)
+        test_that(msg, {
+                  expect_s4_class(object, 'SummarizedExperiment')
+                  expect_true('pca1' %in% svars(object))
+                  expect_true('pca1' %in% fvars(object))
+                  expect_true('pca'  %in% names(S4Vectors::metadata(object)))})
     # limma
         msg <- 'read_rnaseq_counts(limma=TRUE) works'
         object <- read_rnaseq_counts(
             file, sfile = sfile, sfileby='rna_id', subgroupvar='gender', 
-            limma = TRUE, voom = FALSE)
-        test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
-    # limma + voom
-        msg <- 'read_rnaseq_counts(limma=TRUE) works'
-        object <- read_rnaseq_counts(
-            file, sfile = sfile, sfileby='rna_id', subgroupvar='gender', 
             limma = TRUE)
-        test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
-    # limma + voom + block        
-        msg <- 'read_rnaseq_counts(block=blockvar) works'
+        test_that(msg, {
+            expect_s4_class(object, 'SummarizedExperiment')
+            expect_true('limma' %in% names(S4Vectors::metadata(object)))})
+    # limma + block        
+        msg <- 'read_rnaseq_counts(limma=TRUE, block=blockvar) works'
         object <- read_rnaseq_counts(
             file, sfile = sfile, sfileby='rna_id', subgroupvar='gender', 
             limma=TRUE, block='subject_id')
-        test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
-    # plot
-        msg <- 'read_rnaseq_counts(limma=TRUE) works'
-        object <- read_rnaseq_counts(
-                file, sfile = sfile, sfileby='rna_id', subgroupvar='gender', 
-                pca = TRUE, limma = TRUE, plot = TRUE)
-        test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
+        test_that(msg, {
+            expect_s4_class(object, 'SummarizedExperiment')
+            expect_true('limma' %in% names(S4Vectors::metadata(object)))})
