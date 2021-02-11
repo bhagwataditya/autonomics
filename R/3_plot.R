@@ -362,16 +362,8 @@ plot_feature_densities <- function(
 #'     fdata(object) %<>% cbind(control=.$feature_name %in% control_features)
 #' # plot
 #'     plot_violins(object[1:12, ], x=feature_id, fill=feature_id)
-#'     plot_violins(object[, 1:12], x=sample_id, fill=sample_id)
-#'     plot_violins(object[, 1:12], x=sample_id, fill=subgroup)
-#'     plot_violins(object[, 1:12], x=subgroup, fill=subgroup, group=sample_id)
-#'     plot_violins(object[1:4, ],  x=subgroup, fill=subgroup, facet=feature_id)
-#'
 #'     plot_feature_violins(object[1:12, ])
-#'
-#'     plot_sample_violins(object)
 #'     plot_sample_violins(object[, 1:12],  highlight = control)
-#'
 #'     plot_subgroup_violins(object[1:4, ])
 #' @export
 plot_violins <- function(object, x, fill, color = NULL, group = NULL,
@@ -474,13 +466,10 @@ plot_subgroup_violins <- function(
 #' # plot
 #'     plot_boxplots(object[1:9,], x = feature_id, fill = feature_id)
 #'     plot_boxplots(object[,1:9], x = sample_id,  fill = sample_id )
-#'
 #'     plot_feature_boxplots(object[1:9, ])
-#'
 #'     plot_sample_boxplots(object[, 1:12])
 #'     plot_sample_boxplots(object[, 1:12], highlight = control)
-#'
-#'     plot_subgroup_boxplots(object[1:4, ])
+#'     plot_subgroup_boxplots(object[1:2, ])
 #' @export
 plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
     highlight = NULL, fixed = list(na.rm=TRUE)

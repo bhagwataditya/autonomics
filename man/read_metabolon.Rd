@@ -73,8 +73,5 @@ Read metabolon
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-read_metabolon(file)
-read_metabolon(file, pca = TRUE)
-read_metabolon(file, limma = TRUE)
-read_metabolon(file, limma = TRUE, block='SUB')
+read_metabolon(file, pca = TRUE, limma = TRUE, block='SUB')
 }

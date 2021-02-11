@@ -16,30 +16,7 @@ data.table(contrast, nup, ndown)
 Extract contrast analysis summary
 }
 \examples{
-# RNASEQCOUNTS
-    # ~ 0 + subgroup
-        file <- download_data('billing19.rnacounts.txt')
-        object <- read_rnaseq_counts(file, limma=TRUE, plot=FALSE)
-        extract_limma_summary(object)
-
-    # ~ 0 + subgroups | weights
-        require(magrittr)
-        weights(object) <- NULL
-        object \%<>\% add_limma(plot=FALSE)
-        extract_limma_summary(object)
-
-# METABOLON
-    # ~ 0 + subgroup
-          file <- download_data('atkin18.metabolon.xlsx')
-          object <- read_metabolon(file, limma=TRUE, plot=FALSE)
-          extract_limma_summary(object)
-
-   # ~ 0 + subgroup | block
-          object \%<>\% add_limma(plot=FALSE, block = 'SUB')
-          extract_limma_summary(object)
-
-   # ~ 0 + subgroup + t2d | block
-          object \%<>\% add_limma(
-                         formula=~0+subgroup+T2D, block='SUB', plot=FALSE)
-          extract_limma_summary(object)
+file <- download_data('billing19.rnacounts.txt')
+object <- read_rnaseq_counts(file, limma=TRUE, plot=FALSE)
+extract_limma_summary(object)
 }

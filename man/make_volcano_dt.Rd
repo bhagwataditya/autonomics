@@ -20,9 +20,7 @@ data.table
 Create volcano datatable
 }
 \examples{
-file <- download_data("billing16.proteingroups.txt")
-inv <- c('EM_E', 'BM_E', 'BM_EM')
-object <- read_proteingroups(file, invert_subgroups=inv,
-    contrastdefs = c('E_EM', 'E_BM', 'EM_BM'), limma=TRUE, plot=FALSE)
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
 make_volcano_dt(object)
 }

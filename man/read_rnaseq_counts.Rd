@@ -146,9 +146,7 @@ Read/analyze rnaseq counts / bamfiles
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file)
-object <- read_rnaseq_counts(file, pca=TRUE)
-object <- read_rnaseq_counts(file, limma=TRUE)
+object <- read_rnaseq_counts(file, pca= TRUE, limma=TRUE)
 }
 \author{
 Aditya Bhagwat, Shahina Hayat

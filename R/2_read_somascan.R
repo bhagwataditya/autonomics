@@ -164,10 +164,7 @@ rm_single_value_columns <- function(df){
 #' @return Summarizedexperiment
 #' @examples
 #' file <- download_data('atkin18.somascan.adat')
-#' read_somascan(file)
-#' read_somascan(file, pca = TRUE)
-#' read_somascan(file, limma = TRUE)
-#' read_somascan(file, limma = TRUE, block = 'Subject_ID')
+#' read_somascan(file, pca = TRUE, limma = TRUE, block = 'Subject_ID')
 #' @export
 read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     subgroupvar = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',

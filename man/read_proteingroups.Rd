@@ -113,7 +113,5 @@ Read/Analyze proteingroups/phosphosites
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file)
-object <- read_proteingroups(file, pca=TRUE)
-object <- read_proteingroups(file, limma=TRUE)
+object <- read_proteingroups(file, pca=TRUE, limma=TRUE)
 }

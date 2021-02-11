@@ -79,16 +79,8 @@ Plot sample/feature violins
     fdata(object) \%<>\% cbind(control=.$feature_name \%in\% control_features)
 # plot
     plot_violins(object[1:12, ], x=feature_id, fill=feature_id)
-    plot_violins(object[, 1:12], x=sample_id, fill=sample_id)
-    plot_violins(object[, 1:12], x=sample_id, fill=subgroup)
-    plot_violins(object[, 1:12], x=subgroup, fill=subgroup, group=sample_id)
-    plot_violins(object[1:4, ],  x=subgroup, fill=subgroup, facet=feature_id)
-
     plot_feature_violins(object[1:12, ])
-
-    plot_sample_violins(object)
     plot_sample_violins(object[, 1:12],  highlight = control)
-
     plot_subgroup_violins(object[1:4, ])
 }
 \seealso{

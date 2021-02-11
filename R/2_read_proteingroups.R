@@ -1237,9 +1237,7 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file)
-#' object <- read_proteingroups(file, pca=TRUE)
-#' object <- read_proteingroups(file, limma=TRUE)
+#' object <- read_proteingroups(file, pca=TRUE, limma=TRUE)
 #' @export
 read_proteingroups <- function(
     file, quantity = guess_maxquant_quantity(file), sfile = NULL,

@@ -773,32 +773,9 @@ extract_limma_dt <- function(object){
 #' @param object SummarizedExperiment
 #' @return data.table(contrast, nup, ndown)
 #' @examples
-#' # RNASEQCOUNTS
-#'     # ~ 0 + subgroup
-#'         file <- download_data('billing19.rnacounts.txt')
-#'         object <- read_rnaseq_counts(file, limma=TRUE, plot=FALSE)
-#'         extract_limma_summary(object)
-#'
-#'     # ~ 0 + subgroups | weights
-#'         require(magrittr)
-#'         weights(object) <- NULL
-#'         object %<>% add_limma(plot=FALSE)
-#'         extract_limma_summary(object)
-#'
-#' # METABOLON
-#'     # ~ 0 + subgroup
-#'           file <- download_data('atkin18.metabolon.xlsx')
-#'           object <- read_metabolon(file, limma=TRUE, plot=FALSE)
-#'           extract_limma_summary(object)
-#'
-#'    # ~ 0 + subgroup | block
-#'           object %<>% add_limma(plot=FALSE, block = 'SUB')
-#'           extract_limma_summary(object)
-#'
-#'    # ~ 0 + subgroup + t2d | block
-#'           object %<>% add_limma(
-#'                          formula=~0+subgroup+T2D, block='SUB', plot=FALSE)
-#'           extract_limma_summary(object)
+#' file <- download_data('billing19.rnacounts.txt')
+#' object <- read_rnaseq_counts(file, limma=TRUE, plot=FALSE)
+#' extract_limma_summary(object)
 #' @export
 extract_limma_summary <- function(object){
     effect <- fdr <- NULL
@@ -875,29 +852,9 @@ compute_connections <- function(
 #' @param curve  arrow curvature
 #' @return list returned by \code{\link[diagram]{plotmat}}
 #' @examples
-#' # subgroup matrix
-#'    file <- download_data('halama18.metabolon.xlsx')
-#'    object <- read_metabolon(file, limma=TRUE, plot=FALSE)
-#'    plot_contrastogram(object)
-#' # subgroup vector
-#'     require(magrittr)
-#'     file <-  download_data('billing19.proteingroups.txt')
-#'     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-#'     select %<>% paste0('_STD')
-#'     object <- read_proteingroups(
-#'                 file, select_subgroups = select, limma=TRUE, plot=FALSE)
-#'     object %<>% add_limma(plot=FALSE)
-#'     plot_contrastogram(object, curve=0.8)
-#' # subgroup vector
-#'     file <-  download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
-#'     plot_contrastogram(object)
-#' # Ratios: self-contrasts
-#'    file <- download_data('billing16.proteingroups.txt')
-#'    invert <- c('EM_E', 'BM_E', 'BM_EM')
-#'    object <- read_proteingroups(
-#'                file, invert_subgroups=invert, limma=TRUE, plot=FALSE)
-#'    plot_contrastogram(object)
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, limma=TRUE, plot=FALSE)
+#' plot_contrastogram(object)
 #' @export
 plot_contrastogram <- function(
     object,
@@ -1019,10 +976,8 @@ melt_contrastdefs <- function(contrastdefmat){
 #' @param ntop            no of top features to be annotated
 #' @return data.table
 #' @examples
-#' file <- download_data("billing16.proteingroups.txt")
-#' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(file, invert_subgroups=inv,
-#'     contrastdefs = c('E_EM', 'E_BM', 'EM_BM'), limma=TRUE, plot=FALSE)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
 #' make_volcano_dt(object)
 #' @export
 make_volcano_dt <- function(
@@ -1053,41 +1008,15 @@ make_volcano_dt <- function(
 }
 
 #' Plot volcano
-#'
 #' @param object           SummarizedExperiment
 #' @param contrastdefmat   contrast layout matrix
 #' @param label            fvar for labeling top features
 #' @param ntop             number: n top features to be annotated
 #' @return ggplot object
 #' @examples
-#' # proteingroup group ratios
-#'     require(magrittr)
-#'     file <- download_data("billing16.proteingroups.txt")
-#'     inv <- c('EM_E', 'BM_E', 'BM_EM')
-#'     object <- read_proteingroups(
-#'         file, invert_subgroups=inv, limma=TRUE, plot=FALSE)
-#'     plot_volcano(object)
-#'     contrastdefs <- subgroup_matrix(object)
-#'     object %<>% add_limma(contrastdefs = contrastdefs, plot = FALSE)
-#'     plot_volcano(object)
-#'
-#' # proteingroup LFQ intensities
-#'     file <- download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
-#'     plot_volcano(object)
-#'
-#' # metabolon intensities: complex design
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, limma=TRUE, plot=FALSE)
-#'     plot_volcano(object, ntop=0)
-#'
-#' # proteingroup internalstandard ratios
-#'     file <-  download_data('billing19.proteingroups.txt')
-#'     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-#'     select %<>% paste0('_STD')
-#'     object <- read_proteingroups(
-#'                  file, select_subgroups = select, limma=TRUE, plot=FALSE)
-#'     plot_volcano(object)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
+#' plot_volcano(object)
 #' @export
 plot_volcano <- function(
     object, contrastdefmat = contrastdefs(object)[[1]],
