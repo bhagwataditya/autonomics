@@ -141,37 +141,37 @@ rm_single_value_columns <- function(df){
 #'
 #' Read data from somascan adat file
 #'
-#' @param file                  *.adat file path (string)
-#' @param fidvar                featureid fvar (string)
-#' @param sidvar                sampleid svar (string)
-#' @param subgroupvar           subgroup svar (string)
-#' @param fname_var             featurename fvar (string)
-#' @param sample_type           subset of c('Sample','QC','Buffer','Calibrator')
-#' @param feature_type          subset of c('Protein',
-#'                                       'Hybridization Control Elution',
-#'                                       'Rat Protein')
+#' @param file          *.adat file path (string)
+#' @param fidvar        featureid fvar (string)
+#' @param sidvar        sampleid svar (string)
+#' @param subgroupvar   subgroup svar (string)
+#' @param fname_var     featurename fvar (string)
+#' @param sample_type   subset of c('Sample','QC','Buffer','Calibrator')
+#' @param feature_type  subset of c('Protein',
+#'                                   'Hybridization Control Elution',
+#'                                   'Rat Protein')
 #' @param sample_quality        subset of c('PASS', 'FLAG', 'FAIL')
 #' @param feature_quality       subset of c('PASS', 'FLAG', 'FAIL')
-#' @param rm_na_svars           whether to rm NA svars
+#' @param rm_na_svars   whether to rm NA svars
 #' @param rm_single_value_svars whether to rm single value svars
-#' @param pca                   whether to pca
-#' @param limma                 whether to limma/contrast
-#' @param formula               design formula (using svars)
-#' @param block                 block var
-#' @param contrastdefs          contrastdef vector/matrix/list
-#' @param verbose               whether to msg
-#' @param plot                  whether to plot
+#' @param pca           whether to pca
+#' @param test          testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'
+#' @param formula       design formula (using svars)
+#' @param block         block var
+#' @param contrastdefs  contrastdef vector/matrix/list
+#' @param verbose       whether to msg
+#' @param plot          whether to plot
 #' @return Summarizedexperiment
 #' @examples
 #' file <- download_data('atkin18.somascan.adat')
-#' read_somascan(file, pca = TRUE, limma = TRUE, block = 'Subject_ID')
+#' read_somascan(file, pca = TRUE, test = 'limma', block = 'Subject_ID')
 #' @export
 read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     subgroupvar = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, pca = FALSE, 
-    limma = FALSE, formula = NULL, block = NULL, contrastdefs = NULL,
+    test = NULL, formula = NULL, block = NULL, contrastdefs = NULL,
     verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -197,7 +197,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     object %<>% log2transform(verbose = TRUE)
 # Analyze
-    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object

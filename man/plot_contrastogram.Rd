@@ -25,6 +25,6 @@ Plot contrastogram
 }
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, limma=TRUE, plot=FALSE)
+object <- read_metabolon(file, test='limma', plot=FALSE)
 plot_contrastogram(object)
 }

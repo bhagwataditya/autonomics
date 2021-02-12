@@ -977,7 +977,7 @@ rm_reverse <- function(object, verbose){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <-  read_proteingroups(file, contaminants=TRUE, pca=FALSE, 
-#'                             limma=FALSE, plot=FALSE) # read + analyze
+#'                             test='limma', plot=FALSE) # read + analyze
 #' rm_contaminants(object, verbose=TRUE)
 #' @noRd
 rm_contaminants <- function(object, verbose){
@@ -1218,26 +1218,26 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
 #'                                   "Reporter intensity",
 #'                                   "Intensity labeled",
 #'                                   "Intensity"
-#' @param sfile             sample file
-#' @param sfileby               sample file mergeby column
-#' @param subgroupvar       subgroup svar
+#' @param sfile         sample file
+#' @param sfileby       sample file mergeby column
+#' @param subgroupvar   subgroup svar
 #' @param select_subgroups  subgroups to be selected (character vector)
 #' @param invert_subgroups  subgroups to be inverted (character vector)
-#' @param contaminants      whether to return contaminants
-#' @param reverse           whether to return reverse peptides
+#' @param contaminants  whether to return contaminants
+#' @param reverse       whether to return reverse peptides
 #' @param min_localization_prob min site localization probability (number)
-#' @param impute            whether to impute consistent nondetects
-#' @param formula           desgnmat formula
-#' @param block             block svar
-#' @param contrastdefs      contrastdef vector/matrix/list
-#' @param pca               whether to pca
-#' @param limma             whether to limma/contrast
-#' @param verbose           whether to message
-#' @param plot              whether to plot
+#' @param impute        whether to impute consistent nondetects
+#' @param formula       desgnmat formula
+#' @param block         block svar
+#' @param contrastdefs  contrastdef vector/matrix/list
+#' @param pca           whether to pca
+#' @param test          testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'
+#' @param verbose       whether to message
+#' @param plot          whether to plot
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=TRUE, limma=TRUE)
+#' object <- read_proteingroups(file, pca=TRUE, test='limma')
 #' @export
 read_proteingroups <- function(
     file, quantity = guess_maxquant_quantity(file), sfile = NULL,
@@ -1245,7 +1245,7 @@ read_proteingroups <- function(
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     formula = NULL, block = NULL, contrastdefs = NULL,
-    pca = FALSE, limma = FALSE, verbose = TRUE, plot = TRUE
+    pca = FALSE, test = NULL, verbose = TRUE, plot = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -1262,7 +1262,7 @@ read_proteingroups <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
 # Analyze
-    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
@@ -1276,7 +1276,7 @@ read_phosphosites <- function(
     sfile = NULL, sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
     invert_subgroups = character(0), pca = FALSE,
-    limma = FALSE, formula = NULL, block = NULL, contrastdefs = NULL,
+    test = NULL, formula = NULL, block = NULL, contrastdefs = NULL,
     verbose = TRUE, plot = TRUE
 ){
 # Assert
@@ -1302,7 +1302,7 @@ read_phosphosites <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
 # Analyze
-    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object

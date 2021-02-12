@@ -34,10 +34,10 @@ Plots sample densities and scores
 }
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, pca=TRUE, limma=TRUE, plot = FALSE)
+object <- read_metabolon(file, pca=TRUE, test='limma', plot = FALSE)
 plot_samples(object)
 
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, pca=TRUE, limma=TRUE, plot = FALSE)
+object <- read_proteingroups(file, pca=TRUE, test='limma', plot = FALSE)
 plot_samples(object)
 }

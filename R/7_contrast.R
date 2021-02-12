@@ -424,14 +424,17 @@ contrast_subgroups <- function(object, design){
 
 #==============================================================================
 #
-#                            contrast
+#                                  lme
 #
 #==============================================================================
 
-
-.lmefit <- function(sd){
-    fitres <- lme(fixed = value ~ subgroup, random=~1|Subject_ID, data = sd,
-                na.action = stats::na.omit)
+.lmefit <- function(sd, formula, block){
+    fitres <- lme(  fixed     = formula, 
+                    random    = as.formula(sprintf('~1|%s', block)), 
+                    data      = sd,
+                    na.action = stats::na.omit)
+    fvalue <- stats::anova(fitres)['subgroup', 'F-value']
+    f.pval <- stats::anova(fitres)['subgroup', 'p-value']
     fitres %<>% summary()
     fitres %<>% extract2('tTable')
     pvalues <- data.table::as.data.table(as.list(fitres[, 'p-value']))
@@ -442,7 +445,7 @@ contrast_subgroups <- function(object, design){
     names(tvalues) %<>% paste0('t.', .)
     names(effects) %<>% paste0('effect.', .)
     names(stderrs) %<>% paste0('se.', .)
-    cbind(pvalues, tvalues, effects, stderrs)
+    cbind(pvalues, tvalues, effects, stderrs, F = fvalue, F.p = f.pval )
 }
 
 .lmeextract <- function(lmeres, quantity){
@@ -453,50 +456,97 @@ contrast_subgroups <- function(object, design){
     lmemat
 }
 
-# file <- download_data('atkin18.somascan.adat')
-# object <- read_somascan(file, pca=FALSE, limma=FALSE, plot=FALSE)
-# formula <- ~ 0 + subgroup | Subject_ID
-# fm1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
-# lmerfit(object)
-add_lme <- function(object, contrastdefs = NULL, formula   = NULL,
+
+#' @rdname limmatest
+#' @export
+lmetest <- function(object, contrastdefs = NULL, formula = NULL, block = NULL,
                     verbose = TRUE, plot =  TRUE
 ){
-    if (is.null)  formula <- value ~ subgroup + (subgroup | Subject_ID)
-    dt <- sumexp_to_long_dt(object, svars = setdiff(all.vars(formula), 'value'))
-    dt %<>% extract(c("2182-54_1", "2190-55_1"), on = 'feature_id')
-    lmeres <- dt[, .lmefit(.SD), by = 'feature_id'] # 15:03 - 
+    if (is.null(formula))  formula <- as.formula('value ~ subgroup')
+    allx <- c(setdiff(all.vars(formula), 'value'), block)
+    dt <- sumexp_to_long_dt(object, svars = allx)
+# Set difference contrasts
+    fixedx <- setdiff(allx, block)
+    for (x in fixedx){  
+        dt[[x]] %<>% factor()
+        stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]])) }
+# lmefit
+    if (verbose)  message('\t\tlme: ', 
+                        Reduce(paste, deparse(formula)), ', 1 | ', block)
+    lmeres <- dt[, .lmefit(.SD, formula=formula, block=block), by='feature_id']
+    fdt <- lmeres[, c('feature_id', 'F', 'F.p'), with=FALSE]
+    setnames(fdt, c('F', 'F.p'), c('F.lme', 'F.p.lme'))
+    object %<>% merge_fdata(fdt)
+# lmeextract
+    for (x in setdiff(all.vars(formula), 'value'))  names(lmeres) %<>% 
+        stri_replace_first_fixed(x, '')
     quantities <- c('p', 't', 'effect', 'se')
-    lmeextractres <- mapply(.lmeextract, quantity=quantities, 
+    lmeres <- mapply(.lmeextract, quantity=quantities, 
                             MoreArgs = list(lmeres=lmeres), SIMPLIFY = FALSE)
-    metadata(object)$lme <- do.call(abind::abind, c(lmeextractres, along=3))
+    lmeres$fdr  <- apply(lmeres$p, 2, p.adjust, 'fdr')
+    lmeres$bonf <- apply(lmeres$p, 2, p.adjust, 'bonf')
+    metadata(object)$lme <- do.call(abind::abind, c(lmeres, along=3))
     metadata(object)$lme %<>% extract(rownames(object),,)
+    
+    if (verbose) cmessage_df('\t\t\t%s', extract_test_summary(object, 'lme'))
+    if (is.null(contrastdefs))  contrastdefs <- colnames(metadata(object)$lme)
+    if (length(contrastdefs) > 1) contrastdefs %<>% setdiff('(Intercept)')
+    if (plot)  print(plot_volcano(
+        object, test='lme', contrastdefs = contrastdefs, label=NULL, ntop=0)) 
     object
 }
 
+
+lmtest <- function(
+    object, contrastdefs = NULL, formula = NULL, verbose = TRUE, plot = TRUE
+){
+    
+}
+
+#==============================================================================
+#
+#                                limma
+#
+#==============================================================================
 
 contrvec2mat  <- function(contrastdefs)  matrix(
                     contrastdefs, nrow=1, dimnames=list("", contrastdefs))
 
 contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 
+.limmacontrast <- function(object, fit){
+    # compute contrasts
+    contrastmat <- makeContrasts(
+        contrasts = vectorize_contrastdefs(contrastdefs(object)),
+        levels    = design(object))
+    fit %<>% contrasts.fit(contrasts = contrastmat)
+    limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
+    } else { c('effect','rank','t','se','p','fdr','bonf') }
+    limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
+                            dimnames = list(feature  = rownames(fit),
+                                            contrast = colnames(fit),
+                                            quantity = limma_quantities))
+    limma(object)[,,'effect'] <- fit$coefficients
+    limma(object)[,,'rank'  ] <- apply(-abs(fit$coefficients), 2, rank)
+    # perform moderated t test
+    if (!all(fit$df.residual==0)){
+        fit %<>% eBayes()
+        pp <- fit$p.value
+        limma(object)[,,'t' ] <- fit$t
+        limma(object)[,,'se'] <- sqrt(fit$s2.post) * fit$stdev.unscaled
+        limma(object)[,,'p' ] <- pp
+        limma(object)[,,'rank'] <- apply(pp, 2, rank)
+        limma(object)[,,'fdr' ] <- apply(pp, 2, p.adjust, 'fdr')
+        limma(object)[,,'bonf'] <- apply(pp, 2, p.adjust, 'bonferroni')
+        fdata(object)$F.limma   <- fit$F
+        fdata(object)$F.p.limma <- fit$F.p
+    }
+    return(object)
+}
 
-#' Contrast
-#'
-#' Fit linear model. Add contrast results to object
+#' Test for differential expression
 #'
 #' Limma results can be easily accessed with limma(object).
-#' This returns a list with components:
-#' \itemize{
-#'    \item {effect} matrix (ngene x ncontrast): effect sizes
-#'    \item {rank}   matrix (ngene x ncontrast): effect ranks
-#'    \item {t}      matrix (ngene x ncontrast): t    values (moderated t test)
-#'    \item {se}     matrix (ngene x ncontrast): se   values (moderated t test)
-#'    \item {p}      matrix (ngene x ncontrast): p    values (moderated t test)
-#'    \item {fdr}    matrix (ngene x ncontrast): fdr  values (moderated t test)
-#'    \item {bonf}   matrix (ngene x ncontrast): bonf values (moderated t test)
-#'    \item {F}      vector (ngene)            : F    values (moderated F test)
-#'    \item {F.p}    vector (ngene)            : p    values (moderated F test)
-#' }
 #' @param object       SummarizedExperiment
 #' @param contrastdefs contrastdef vector / matrix / list
 #' \itemize{
@@ -516,26 +566,26 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
-#' add_limma(object)
-#' add_limma(object, block = 'Subject_ID')
+#' limmatest(object, block = 'Subject_ID')
+#' lmetest(object, block = 'Subject_ID')
 #'
 #' file <- download_data('billing19.proteingroups.txt')
 #' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #' select %<>% paste0('_STD')
 #' object <- read_proteingroups(file, select_subgroups = select, plot = FALSE)
-#' object %<>% add_limma()
+#' object %<>% limmatest()
 #'
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
 #' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
-#' object %<>% add_limma()
+#' object %<>% limmatest()
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% add_limma()
+#' object %<>% limmatest()
 #' @export
-add_limma <- function(object, contrastdefs = NULL,
-    formula   = NULL, block = NULL, verbose = TRUE, plot =  TRUE
+limmatest <- function(object, contrastdefs = NULL,
+    formula = NULL, block = NULL, verbose = TRUE, plot =  TRUE
 ){
 # Initialize
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -564,53 +614,25 @@ add_limma <- function(object, contrastdefs = NULL,
         weights = weights(object)))
 # Contrast
     if (verbose)  cmessage('\t\tContrast:')
-    object %<>% add_contrast_results(fit)
-    if (plot)  print(plot_volcano(object, label=NULL, ntop=0)) 
+    object %<>% .limmacontrast(fit)
+    if (plot)  print(plot_volcano(object, test='limma', label=NULL, ntop=0)) 
                     # plot_contrastogram(object)
-    if (verbose) cmessage_df('\t\t\t%s', extract_limma_summary(object))
+    if (verbose) cmessage_df('\t\t\t%s', extract_test_summary(object, 'limma'))
     return(object)
 }
+
 
 vectorize_contrastdefs <- function(contrastdefs){
     unname(unlist(lapply(contrastdefs, function(x) na.exclude(c(t(x))))))
 }
 
 
-add_contrast_results <- function(object, fit){
-# compute contrasts
-    contrastmat <- makeContrasts(
-                    contrasts = vectorize_contrastdefs(contrastdefs(object)),
-                    levels    = design(object))
-    fit %<>% contrasts.fit(contrasts = contrastmat)
-    limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
-                        } else { c('effect','rank','t','se','p','fdr','bonf') }
-    limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
-                            dimnames = list(feature  = rownames(fit),
-                                            contrast = colnames(fit),
-                                            quantity = limma_quantities))
-    limma(object)[,,'effect'] <- fit$coefficients
-    limma(object)[,,'rank'  ] <- apply(-abs(fit$coefficients), 2, rank)
-# perform moderated t test
-    if (!all(fit$df.residual==0)){
-        fit %<>% eBayes()
-        pp <- fit$p.value
-        limma(object)[,,'t' ] <- fit$t
-        limma(object)[,,'se'] <- sqrt(fit$s2.post) * fit$stdev.unscaled
-        limma(object)[,,'p' ] <- pp
-        limma(object)[,,'rank'] <- apply(pp, 2, rank)
-        limma(object)[,,'fdr' ] <- apply(pp, 2, p.adjust, 'fdr')
-        limma(object)[,,'bonf'] <- apply(pp, 2, p.adjust, 'bonferroni')
-        fdata(object)$F   <- fit$F
-        fdata(object)$F.p <- fit$F.p
-    }
-    return(object)
-}
 
 
 #==============================================================================
 #
 #                    limma & limma<-
-#                    extract_limma_dt
+#                    extract_test_dt
 #
 #==============================================================================
 
@@ -622,7 +644,7 @@ add_contrast_results <- function(object, fit){
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(
-#'               file, invert_subgroups=inv, limma=TRUE, plot=FALSE)
+#'               file, invert_subgroups=inv, test='limma', plot=FALSE)
 #' design(object)
 #' @export
 setGeneric("design", function(object)   standardGeneric("design") )
@@ -654,7 +676,7 @@ function(object, value){
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(
-#'             file, invert_subgroups=inv, limma=TRUE, plot=FALSE)
+#'             file, invert_subgroups=inv, test='limma', plot=FALSE)
 #' contrastdefs(object)
 #' @export
 setGeneric("contrastdefs", function(object)   standardGeneric("contrastdefs") )
@@ -687,7 +709,7 @@ function(object, value){
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(
-#'            file, invert_subgroups=inv, limma=TRUE, plot=FALSE)
+#'            file, invert_subgroups=inv, test='limma', plot=FALSE)
 #' dim(limma(object))
 #' dim(limma(object[1:5, ]))
 #' @export
@@ -727,20 +749,23 @@ function(object, value) object)
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(
-#'             file, invert_subgroups=inv, limma=TRUE, plot=FALSE)
-#' extract_limma_quantity(object)
+#'             file, invert_subgroups=inv, test='limma', plot=FALSE)
+#' extract_test_quantity(object, test = 'limma')
 #' @noRd
-extract_limma_quantity <- function(object, quantity='p'){
+extract_test_quantity <- function(object, test, quantity='p'){
+    assert_is_subset(test, c('limma', 'lme', 'lm', 'wilcoxon'))
     fvars0 <- c('feature_id','feature_name','imputed')
     fvars0 %<>% intersect(fvars(object))
-    dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
-    dt %<>% cbind(adrop(limma(object)[, , quantity, drop=FALSE], drop=3))
+    fdt <- data.table(fdata(object)[, fvars0, drop=FALSE])
+    testdt <- metadata(object)[[test]][, , quantity, drop=FALSE]
+    testdt %<>% adrop(drop=3)
+    fdt %<>% cbind(testdt)
     data.table::melt.data.table(
-        dt, id.vars = fvars0, variable.name = 'contrast', value.name = quantity)
+        fdt, id.vars = fvars0, variable.name = 'contrast', value.name=quantity)
 }
 
 
-merge_limma_quantities <- function(x, y){
+merge_test_quantities <- function(x, y){
     names0 <- c('feature_id','feature_name','imputed', 'contrast')
     names0 %<>% intersect(names(x)) %>% intersect(names(y))
     merge(x, y, by = names0)
@@ -749,37 +774,39 @@ merge_limma_quantities <- function(x, y){
 
 #' Extract limma datatable
 #' @param object SummarizedExperiment
+#' @param test 'limma', 'lme', 'lm', 'wilcoxon'
 #' @return melted data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
-#' extract_limma_dt(object)
+#' object <- read_proteingroups(file, test='limma', plot=FALSE)
+#' extract_test_dt(object, test = 'limma')
 #'
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(
-#'            file, invert_subgroups=inv, limma=TRUE, plot=FALSE)
-#' extract_limma_dt(object)
+#'            file, invert_subgroups=inv, test='limma', plot=FALSE)
+#' extract_test_dt(object, test = 'limma')
 #' @noRd
-extract_limma_dt <- function(object){
-    Reduce( merge_limma_quantities,
-            mapply( extract_limma_quantity,
+extract_test_dt <- function(object, test){
+    Reduce( merge_test_quantities,
+            mapply( extract_test_quantity,
                     quantity = c('effect', 'p', 'fdr', 'bonf'),
-                    MoreArgs = list(object=object),
+                    MoreArgs = list(object=object, test=test),
                     SIMPLIFY = FALSE ))
 }
 
 #' Extract contrast analysis summary
 #' @param object SummarizedExperiment
+#' @param test 'limma', 'lme', 'lm', 'wilcoxon'
 #' @return data.table(contrast, nup, ndown)
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, limma=TRUE, plot=FALSE)
-#' extract_limma_summary(object)
+#' object <- read_rnaseq_counts(file, test='limma', plot=FALSE)
+#' extract_test_summary(object, 'limma')
 #' @export
-extract_limma_summary <- function(object){
+extract_test_summary <- function(object, test){
     effect <- fdr <- NULL
-    extract_limma_dt(object)[,
+    extract_test_dt(object, test = test)[,
         .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
             nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
         by='contrast']
@@ -853,7 +880,7 @@ compute_connections <- function(
 #' @return list returned by \code{\link[diagram]{plotmat}}
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, limma=TRUE, plot=FALSE)
+#' object <- read_metabolon(file, test='limma', plot=FALSE)
 #' plot_contrastogram(object)
 #' @export
 plot_contrastogram <- function(
@@ -938,7 +965,7 @@ top_down <- function(effect, fdr, mlp, ntop){
 #' file <- download_data("billing16.proteingroups.txt")
 #' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_proteingroups(
-#'             file, invert_subgroups=invert_subgroups, limma=TRUE, plot=FALSE)
+#'           file, invert_subgroups=invert_subgroups, test='limma', plot=FALSE)
 #' effect <-      limma(object)[,1,'effect']
 #' fdr    <-      limma(object)[,1,'fdr']
 #' mlp    <- -log(limma(object)[,1,'p'])
@@ -972,19 +999,20 @@ melt_contrastdefs <- function(contrastdefmat){
 
 #' Create volcano datatable
 #' @param object          SummarizedExperiment
+#' @param test            'limma', 'lme', 'lm', 'wilcoxon'
 #' @param contrastdefmat  contrastdef matrix
 #' @param ntop            no of top features to be annotated
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
-#' make_volcano_dt(object)
+#' object <- read_proteingroups(file, test='limma', plot=FALSE)
+#' make_volcano_dt(object, test = 'limma')
 #' @export
 make_volcano_dt <- function(
-    object, contrastdefmat = contrastdefs(object)[[1]], ntop = 3
+    object, test, contrastdefmat = contrastdefs(object)[[1]], ntop = 3
 ){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
-    dt <- extract_limma_dt(object)
+    dt <- extract_test_dt(object, test)
     dt %<>% merge(melt_contrastdefs(contrastdefmat), by = 'contrast')
     dt %<>% extract(!is.na(effect) & !is.na(p))
     dt[, mlp  := -log10(p)]
@@ -1007,28 +1035,40 @@ make_volcano_dt <- function(
     dt[]
 }
 
+#' Statistical tests supported in autonomics
+#' @export
+TESTS <- c('limma','lme','lm','wilcoxon')
+    
 #' Plot volcano
-#' @param object           SummarizedExperiment
-#' @param contrastdefmat   contrast layout matrix
-#' @param label            fvar for labeling top features
-#' @param ntop             number: n top features to be annotated
+#' @param object         SummarizedExperiment
+#' @param test           'limma', 'lme', 'lm', 'wilcoxon'
+#' @param contrastdefs   contrastdef vector / matrix / list
+#' @param label          fvar for labeling top features
+#' @param ntop           number: n top features to be annotated
 #' @return ggplot object
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
+#' object <- read_proteingroups(file, test='limma', plot=FALSE)
 #' plot_volcano(object)
 #' @export
-plot_volcano <- function(
-    object, contrastdefmat = contrastdefs(object)[[1]],
+plot_volcano <- function(object, 
+    test = intersect(names(metadata(object)), TESTS)[1], 
+    contrastdefs = autonomics::contrastdefs(object)[[1]], 
     label = feature_name, ntop = 3
 ){
-# Assert
+# Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
-    assert_is_matrix(contrastdefmat)
+    assert_is_a_string(test)
+    assert_is_subset(test, TESTS)
+    assert_is_subset(test, names(metadata(object)))
+    if (is.null(contrastdefs)) contrastdefs<-colnames(metadata(object)[[test]])
+    if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
+    if (is.list(contrastdefs))      contrastdefs %<>% extract2(1)
+    assert_is_matrix(contrastdefs)
     topup <- topdown <- effect <- mlp <- facetrow <- facetcol <- NULL
     label <- enquo(label)
 # Prepare
-    plotdt <- make_volcano_dt(object, contrastdefmat, ntop = ntop)
+    plotdt <- make_volcano_dt(object, test, contrastdefs, ntop = ntop)
     txtdt  <- copy(plotdt)[topup==TRUE | topdown==TRUE]
     colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100),
                     hcl(h=120, l=c(100, 70, 20), c=100))
@@ -1036,22 +1076,17 @@ plot_volcano <- function(
 # Plot
     imputed <- NULL # fallback when plotdt misses "imputed"
     significance <- NULL
-    p <- ggplot(plotdt) +
-        facet_grid(
-            rows = if (all(stri_isempty(plotdt$facetrow))) {NULL} else {
-                vars(facetrow)},
-            cols = if (all(stri_isempty(plotdt$facetcol))) {NULL} else {
-                vars(facetcol)},
-            scales = 'fixed') +
-        geom_point( aes(x=effect, y=mlp, color = significance, shape=imputed),
-                    na.rm = TRUE)
-    if (!quo_is_null(label)){
-        p <- p + geom_text_repel(
+    p <- ggplot(plotdt) + facet_grid(
+        rows = if (all(stri_isempty(plotdt$facetrow))) NULL else vars(facetrow),
+        cols = if (all(stri_isempty(plotdt$facetcol))) NULL else vars(facetcol),
+        scales = 'fixed') +
+    geom_point(aes(x=effect,y=mlp,color=significance,shape=imputed),na.rm=TRUE)
+    if (!quo_is_null(label)) p <- p + geom_text_repel(
                         data = txtdt,
                         aes(x=effect, y=mlp, label=!!label, color=significance),
                         #hjust = 'outward',
                         na.rm = TRUE,
-                        show.legend = FALSE)}#,
+                        show.legend = FALSE)#,
                         #direction = 'x'
     p + theme_bw() +
         scale_color_manual(values = colorvalues, name = NULL) +

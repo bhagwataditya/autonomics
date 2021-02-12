@@ -6,7 +6,8 @@
 \usage{
 plot_volcano(
   object,
-  contrastdefmat = contrastdefs(object)[[1]],
+  test = intersect(names(metadata(object)), TESTS)[1],
+  contrastdefs = autonomics::contrastdefs(object)[[1]],
   label = feature_name,
   ntop = 3
 )
@@ -14,7 +15,9 @@ plot_volcano(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{contrastdefmat}{contrast layout matrix}
+\item{test}{'limma', 'lme', 'lm', 'wilcoxon'}
+
+\item{contrastdefs}{contrastdef vector / matrix / list}
 
 \item{label}{fvar for labeling top features}
 
@@ -28,6 +31,6 @@ Plot volcano
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
+object <- read_proteingroups(file, test='limma', plot=FALSE)
 plot_volcano(object)
 }

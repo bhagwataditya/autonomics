@@ -897,8 +897,8 @@ read_rnaseq_bams <- function(
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
-    cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE,
-    limma = FALSE, voom = limma, contrastdefs = NULL, verbose = TRUE, plot=TRUE
+    cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, test = NULL, 
+    voom = !is.null(test), contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
 # Read
     object <- .read_rnaseq_bams(dir   = dir,
@@ -924,7 +924,7 @@ read_rnaseq_bams <- function(
                                         verbose     = verbose,
                                         plot        = plot)
 # Analyze
-    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot = plot)
 # Return
     object
@@ -959,13 +959,13 @@ read_rnaseq_bams <- function(
 #' @param voom     whether to compute voom precision weights
 #' @param log2     whether to log2 transform
 #' @param pca      whether to pca
-#' @param limma    whether to limma/contrast
+#' @param test     testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'
 #' @param verbose  whether to message
 #' @param plot     whether to plot
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, pca= TRUE, limma=TRUE)
+#' object <- read_rnaseq_counts(file, pca= TRUE, test='limma')
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_counts <- function(
@@ -974,7 +974,7 @@ read_rnaseq_counts <- function(
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, 
-    limma = FALSE, voom = limma, contrastdefs = NULL, 
+    test = NULL, voom = !is.null(test), contrastdefs = NULL, 
     verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -1000,7 +1000,7 @@ read_rnaseq_counts <- function(
                                         verbose     = verbose,
                                         plot        = plot)
 # Analyze
-    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
@@ -1008,7 +1008,7 @@ read_rnaseq_counts <- function(
 
 
 analyze <- function(
-    object, pca = TRUE, limma = TRUE, formula = NULL, block = NULL, 
+    object, pca = FALSE, test = NULL, formula = NULL, block = NULL, 
     contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
     if (plot) grid.draw(grid.arrange(arrangeGrob(
@@ -1016,11 +1016,11 @@ analyze <- function(
         plot_feature_densities(object[sample(ncol(object), 4)]), ncol=2),
         plot_summarized_detections(object), nrow=2))
     if (pca)   object %<>% pca(verbose=verbose, plot=plot)
-    if (limma) object %<>% add_limma(formula     = formula, 
-                                    block        = block,
-                                    contrastdefs = contrastdefs, 
-                                    verbose      = verbose, 
-                                    plot         = plot)
+    for (curtest in test){
+        testfun <-get(paste0(test, 'test'))
+        object %<>% testfun(formula = formula, block = block, 
+                            contrastdefs = contrastdefs, 
+                            verbose = verbose, plot = plot) }
     object
 }
 

@@ -4,10 +4,17 @@
 \alias{make_volcano_dt}
 \title{Create volcano datatable}
 \usage{
-make_volcano_dt(object, contrastdefmat = contrastdefs(object)[[1]], ntop = 3)
+make_volcano_dt(
+  object,
+  test,
+  contrastdefmat = contrastdefs(object)[[1]],
+  ntop = 3
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{test}{'limma', 'lme', 'lm', 'wilcoxon'}
 
 \item{contrastdefmat}{contrastdef matrix}
 
@@ -21,6 +28,6 @@ Create volcano datatable
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, limma=TRUE, plot=FALSE)
-make_volcano_dt(object)
+object <- read_proteingroups(file, test='limma', plot=FALSE)
+make_volcano_dt(object, test = 'limma')
 }

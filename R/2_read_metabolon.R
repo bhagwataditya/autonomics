@@ -252,32 +252,32 @@ stack <- function(x, y){
 }
 
 #' Read metabolon
-#' @param file               metabolon xlsx filepath
-#' @param sheet              xls sheet number or name
-#' @param fid_var            feature_id fvar
-#' @param sid_var            sampleid svar
-#' @param subgroupvar        subgroup svar
-#' @param fname_var          featurename fvar
-#' @param impute             whether to impute
+#' @param file            metabolon xlsx filepath
+#' @param sheet           xls sheet number or name
+#' @param fid_var         feature_id fvar
+#' @param sid_var         sampleid svar
+#' @param subgroupvar     subgroup svar
+#' @param fname_var       featurename fvar
+#' @param impute          whether to impute
 #' @param add_kegg_pathways  whether to add kegg pathways
-#' @param add_smiles         whether to add smiles
-#' @param pca                whether to pca
-#' @param limma              whether to limma/contrast
-#' @param formula            designmat formula
-#' @param block              block svar
-#' @param contrastdefs       contrastdef vector/matrix/list
-#' @param verbose            whether to msg
-#' @param plot               whether to plot
+#' @param add_smiles      whether to add smiles
+#' @param pca             whether to pca
+#' @param test            testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'
+#' @param formula         designmat formula
+#' @param block           block svar
+#' @param contrastdefs    contrastdef vector/matrix/list
+#' @param verbose         whether to msg
+#' @param plot            whether to plot
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' read_metabolon(file, pca = TRUE, limma = TRUE, block='SUB')
+#' read_metabolon(file, pca = TRUE, test = 'limma', block='SUB')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
     fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
     subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
-    pca = FALSE, limma = FALSE, formula = NULL, block = NULL, 
+    pca = FALSE, test = NULL, formula = NULL, block = NULL, 
     contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -292,7 +292,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Analyze
-    object %<>% analyze(pca=pca, limma=limma, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
