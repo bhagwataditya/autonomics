@@ -428,27 +428,54 @@ contrast_subgroups <- function(object, design){
 #
 #==============================================================================
 
-.lmefit <- function(sd, formula, block){
-    fitres <- lme(  fixed     = formula, 
-                    random    = as.formula(sprintf('~1|%s', block)), 
-                    data      = sd,
-                    na.action = stats::na.omit)
-    fvalue <- stats::anova(fitres)['subgroup', 'F-value']
-    f.pval <- stats::anova(fitres)['subgroup', 'p-value']
+.cbindstats <- function(
+    fitres, fname = 'F value', f.pname = 'Pr(>F)', pname = 'Pr(>|t|)', 
+    tname = 't value', effectname = 'Estimate', sename = 'Std. Error'
+){
+    fval <- stats::anova(fitres)['subgroup', fname]
+    f.p <- stats::anova(fitres)['subgroup', f.pname]
     fitres %<>% summary()
-    fitres %<>% extract2('tTable')
-    pvalues <- data.table::as.data.table(as.list(fitres[, 'p-value']))
-    tvalues <- data.table::as.data.table(as.list(fitres[, 't-value']))
-    effects <- data.table::as.data.table(as.list(fitres[, 'Value'  ]))
-    stderrs <- data.table::as.data.table(as.list(fitres[, 'Std.Error']))
+    fitres %<>% stats::coefficients()
+    pvalues <- data.table::as.data.table(as.list(fitres[, pname]))
+    tvalues <- data.table::as.data.table(as.list(fitres[, tname]))
+    effects <- data.table::as.data.table(as.list(fitres[, effectname]))
+    stderrs <- data.table::as.data.table(as.list(fitres[, sename]))
     names(pvalues) %<>% paste0('p.', .)
     names(tvalues) %<>% paste0('t.', .)
     names(effects) %<>% paste0('effect.', .)
     names(stderrs) %<>% paste0('se.', .)
-    cbind(pvalues, tvalues, effects, stderrs, F = fvalue, F.p = f.pval )
+    cbind(pvalues, tvalues, effects, stderrs, F = fval, F.p = f.p )
 }
 
-.lmeextract <- function(lmeres, quantity){
+.lmtest <- function(sd, formula, block=NULL){
+    fitres <- lm(  formula    = formula, 
+                    data      = sd,
+                    na.action = stats::na.omit)
+    .cbindstats(fitres)
+}
+
+.lmetest <- function(sd, formula, block){
+    fitres <- lme(  fixed     = formula, 
+                    random    = block, 
+                    data      = sd,
+                    na.action = stats::na.omit)
+    .cbindstats( fitres, fname='F-value', f.pname='p-value', pname='p-value', 
+                tname = 't-value', effectname = 'Value', sename = 'Std.Error')
+}
+
+.lmertest <- function(sd, formula, block = NULL){
+    fitres <- lme4::lmer(
+        formula   = formula,
+        data      = sd,
+        na.action = stats::na.omit, 
+        control   = lme4::lmerControl(check.conv.singular = lme4::.makeCC(
+                                            action = "ignore",  tol = 1e-4)))
+                    # https://stackoverflow.com/a/55367171
+    fitres %<>% lmerTest::as_lmerModLmerTest()
+    .cbindstats(fitres)
+}
+
+.extractstat <- function(lmeres, quantity){
     idx <- stri_startswith_fixed(names(lmeres), paste0(quantity, '.'))
     lmemat <- as.matrix(lmeres[, idx, with=FALSE])
     rownames(lmemat) <- lmeres$feature_id
@@ -456,24 +483,31 @@ contrast_subgroups <- function(object, design){
     lmemat
 }
 
-
-#' @rdname limmatest
+#' Statistical tests supported in autonomics
 #' @export
-lmetest <- function(object, contrastdefs = NULL, formula = NULL, block = NULL,
-                    verbose = TRUE, plot =  TRUE
+TESTS <- c('limma','lm','lme','lmer', 'wilcoxon')
+
+
+lmxtest <- function(
+    object, 
+    test, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = as.formula(sprintf(
+                'value ~ %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
+    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  TRUE
 ){
-    if (is.null(formula))  formula <- as.formula('value ~ subgroup')
-    allx <- c(setdiff(all.vars(formula), 'value'), block)
+# Assert
+    assert_is_a_string(test);  assert_is_subset(test, TESTS)
+# Prepare dt
+    allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
     dt <- sumexp_to_long_dt(object, svars = allx)
-# Set difference contrasts
-    fixedx <- setdiff(allx, block)
+    fixedx <- setdiff(allx, all.vars(block))
     for (x in fixedx){  
         dt[[x]] %<>% factor()
         stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]])) }
 # lmefit
-    if (verbose)  message('\t\tlme: ', 
-                        Reduce(paste, deparse(formula)), ', 1 | ', block)
-    lmeres <- dt[, .lmefit(.SD, formula=formula, block=block), by='feature_id']
+    fitmethod <- get(paste0('.', test, 'test'))
+    lmeres <- dt[, fitmethod(.SD, formula=formula, block=block), by='feature_id']
     fdt <- lmeres[, c('feature_id', 'F', 'F.p'), with=FALSE]
     setnames(fdt, c('F', 'F.p'), c('F.lme', 'F.p.lme'))
     object %<>% merge_fdata(fdt)
@@ -481,7 +515,7 @@ lmetest <- function(object, contrastdefs = NULL, formula = NULL, block = NULL,
     for (x in setdiff(all.vars(formula), 'value'))  names(lmeres) %<>% 
         stri_replace_first_fixed(x, '')
     quantities <- c('p', 't', 'effect', 'se')
-    lmeres <- mapply(.lmeextract, quantity=quantities, 
+    lmeres <- mapply(.extractstat, quantity=quantities, 
                             MoreArgs = list(lmeres=lmeres), SIMPLIFY = FALSE)
     lmeres$fdr  <- apply(lmeres$p, 2, p.adjust, 'fdr')
     lmeres$bonf <- apply(lmeres$p, 2, p.adjust, 'bonf')
@@ -497,11 +531,69 @@ lmetest <- function(object, contrastdefs = NULL, formula = NULL, block = NULL,
 }
 
 
+#' @rdname limmatest
+#' @export
 lmtest <- function(
-    object, contrastdefs = NULL, formula = NULL, verbose = TRUE, plot = TRUE
+    object,
+    test, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = as.formula(sprintf(
+                'value ~ %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
+    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  TRUE
 ){
-    
+    if (verbose)  cmessage('\t\tlm(%s)', Reduce(paste, deparse(formula)))
+    lmxtest(object, test = 'lm', subgroupvar = subgroupvar, 
+            formula = formula, block = block, contrastdefs = contrastdefs, 
+            verbose = verbose, plot = plot)
 }
+
+
+#' @rdname limmatest
+#' @export
+lmetest <- function(
+    object, 
+    test, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = as.formula(sprintf(
+                'value ~ %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
+    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  TRUE
+){
+    assert_is_not_null(block)
+    if (is_a_string(block)){ 
+        if (is_subset(block, svars(object)))  block %<>% sprintf('~1|%s', .)
+        block %<>% as.formula() }
+    if (verbose)  cmessage('\t\tlme(%s, random = %s)', 
+                        Reduce(paste, deparse(formula)), 
+                        Reduce(paste, deparse(block)))
+    lmxtest(object, test = 'lme', subgroupvar = subgroupvar, 
+            formula = formula, block = block, contrastdefs = contrastdefs, 
+            verbose = verbose, plot = plot)
+}
+
+
+#' @rdname limmatest
+#' @export
+lmertest <- function(
+    object, 
+    test, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = as.formula(sprintf(
+                'value ~ %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
+    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  TRUE
+){
+    if (is_formula(block))  block <- Reduce(paste, deparse(block))
+    if (is_a_string(block)){ 
+        if (is_subset(block, svars(object)))  block %<>% sprintf('1|%s', .)
+        formula <- Reduce(paste, deparse(formula))
+        formula %<>% sprintf('%s + (%s)', ., block)
+        formula %<>% as.formula()
+    }
+    if (verbose)  cmessage('\t\tlmer(%s)', Reduce(paste, deparse(formula)))
+    lmxtest(object, test = 'lmer', subgroupvar = subgroupvar, 
+            formula = formula, block = NULL, contrastdefs = contrastdefs, 
+            verbose = verbose, plot = plot)
+}
+
 
 #==============================================================================
 #
@@ -566,23 +658,30 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
+#' lmtest(object)
 #' limmatest(object, block = 'Subject_ID')
-#' lmetest(object, block = 'Subject_ID')
+#' lmetest(  object, block = 'Subject_ID')
+#' lmertest( object, block = 'Subject_ID')
 #'
 #' file <- download_data('billing19.proteingroups.txt')
 #' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #' select %<>% paste0('_STD')
 #' object <- read_proteingroups(file, select_subgroups = select, plot = FALSE)
+#' object %<>% impute_systematic_nondetects(plot=FALSE)
 #' object %<>% limmatest()
+#' object %<>% lmtest()
 #'
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' object$subgroup %<>% factor(sort(unique(.))[c(2:length(.), 1)])
-#' object %<>% limmatest()
+#' object <- read_rnaseq_counts(file, plot=FALSE, voom=TRUE)
+#' object %<>% limmatest(plot=FALSE)
+#' weights(object) <- NULL; object %<>% limmatest(plot=FALSE)
+#' object %<>% lmtest(plot=FALSE)
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% limmatest()
+#' object %<>% impute_systematic_nondetects(plot=FALSE)
+#' object %<>% limmatest(plot=FALSE)
+#' object %<>% lmtest(plot=FALSE)
 #' @export
 limmatest <- function(object, contrastdefs = NULL,
     formula = NULL, block = NULL, verbose = TRUE, plot =  TRUE
@@ -1035,10 +1134,6 @@ make_volcano_dt <- function(
     dt[]
 }
 
-#' Statistical tests supported in autonomics
-#' @export
-TESTS <- c('limma','lme','lm','wilcoxon')
-    
 #' Plot volcano
 #' @param object         SummarizedExperiment
 #' @param test           'limma', 'lme', 'lm', 'wilcoxon'

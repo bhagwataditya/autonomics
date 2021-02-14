@@ -5,7 +5,7 @@
 \alias{TESTS}
 \title{Statistical tests supported in autonomics}
 \format{
-An object of class \code{character} of length 4.
+An object of class \code{character} of length 5.
 }
 \usage{
 TESTS
