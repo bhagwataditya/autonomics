@@ -424,7 +424,7 @@ contrast_subgroups <- function(object, design){
 
 #==============================================================================
 #
-#                                  lme
+#                            lm / lme / lmer
 #
 #==============================================================================
 
@@ -507,7 +507,7 @@ lmxtest <- function(
         stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]])) }
 # lmefit
     fitmethod <- get(paste0('.', test, 'test'))
-    lmeres <- dt[, fitmethod(.SD, formula=formula, block=block), by='feature_id']
+    lmeres <- dt[, fitmethod(.SD, formula=formula, block=block),by='feature_id']
     fdt <- lmeres[, c('feature_id', 'F', 'F.p'), with=FALSE]
     setnames(fdt, c('F', 'F.p'), c('F.lme', 'F.p.lme'))
     object %<>% merge_fdata(fdt)
@@ -519,14 +519,15 @@ lmxtest <- function(
                             MoreArgs = list(lmeres=lmeres), SIMPLIFY = FALSE)
     lmeres$fdr  <- apply(lmeres$p, 2, p.adjust, 'fdr')
     lmeres$bonf <- apply(lmeres$p, 2, p.adjust, 'bonf')
-    metadata(object)$lme <- do.call(abind::abind, c(lmeres, along=3))
-    metadata(object)$lme %<>% extract(rownames(object),,)
+    metadata(object)$lmx <- do.call(abind::abind, c(lmeres, along=3))
+    metadata(object)$lmx %<>% extract(rownames(object),,)
+    names(metadata(object)) %<>% stri_replace_first_fixed('lmx', test)
     
-    if (verbose) cmessage_df('\t\t\t%s', extract_test_summary(object, 'lme'))
-    if (is.null(contrastdefs))  contrastdefs <- colnames(metadata(object)$lme)
+    if (verbose) cmessage_df('\t\t\t%s', extract_test_summary(object, test))
+    if (is.null(contrastdefs)) contrastdefs <-colnames(metadata(object)[[test]])
     if (length(contrastdefs) > 1) contrastdefs %<>% setdiff('(Intercept)')
     if (plot)  print(plot_volcano(
-        object, test='lme', contrastdefs = contrastdefs, label=NULL, ntop=0)) 
+        object, test=test, contrastdefs = contrastdefs)) 
     object
 }
 
@@ -606,6 +607,10 @@ contrvec2mat  <- function(contrastdefs)  matrix(
 
 contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 
+vectorize_contrastdefs <- function(contrastdefs){
+    unname(unlist(lapply(contrastdefs, function(x) na.exclude(c(t(x))))))
+}
+
 .limmacontrast <- function(object, fit){
     # compute contrasts
     contrastmat <- makeContrasts(
@@ -659,6 +664,7 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
 #' lmtest(object)
+#' wilcoxtest(object)
 #' limmatest(object, block = 'Subject_ID')
 #' lmetest(  object, block = 'Subject_ID')
 #' lmertest( object, block = 'Subject_ID')
@@ -683,8 +689,11 @@ contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
 #' object %<>% limmatest(plot=FALSE)
 #' object %<>% lmtest(plot=FALSE)
 #' @export
-limmatest <- function(object, contrastdefs = NULL,
-    formula = NULL, block = NULL, verbose = TRUE, plot =  TRUE
+limmatest <- function(object, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = as.formula(sprintf(
+                '~ 0 + %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
+    contrastdefs = NULL, block = NULL, verbose = TRUE, plot =  TRUE
 ){
 # Initialize
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -714,19 +723,82 @@ limmatest <- function(object, contrastdefs = NULL,
 # Contrast
     if (verbose)  cmessage('\t\tContrast:')
     object %<>% .limmacontrast(fit)
-    if (plot)  print(plot_volcano(object, test='limma', label=NULL, ntop=0)) 
+    if (plot)  print(plot_volcano(object, test='limma')) 
                     # plot_contrastogram(object)
     if (verbose) cmessage_df('\t\t\t%s', extract_test_summary(object, 'limma'))
     return(object)
 }
 
 
-vectorize_contrastdefs <- function(contrastdefs){
-    unname(unlist(lapply(contrastdefs, function(x) na.exclude(c(t(x))))))
+#==============================================================================
+#
+#                                wilcoxon
+#
+#==============================================================================
+
+
+wilcoxtest <- function(object, formula = ~ subgroup, 
+    subgroupvar = all.vars(formula), 
+    contrastdefs = contrast_subgroups(object, create_design(object, formula)), 
+    block = NULL, verbose = TRUE, plot = TRUE
+){
+# fit
+    dt <- sumexp_to_long_dt(object, svars = c(subgroupvar, block))
+    results <- lapply(vectorize_contrastdefs(contrastdefs), 
+                    .wilcoxtest, dt, subgroupvar, block)
+    results %<>% Reduce(merge, .)
+# extract
+    extract_quantity <- function(quantity, results){
+        quantitydot <- paste0(quantity, '.')
+        quantitymat <- results[, stri_startswith_fixed(
+                        names(results), quantitydot), with=FALSE]
+        quantitymat %<>% as.matrix()
+        rownames(quantitymat) <- results$feature_id
+        colnames(quantitymat) %<>% stri_replace_first_fixed(quantitydot, '')
+        quantitymat }
+    
+    results <- mapply(extract_quantity, c('p', 'w', 'effect'), 
+                    MoreArgs=list(results=results), SIMPLIFY=FALSE)
+    results$fdr  <- apply(results$p, 2, p.adjust, method = 'fdr')
+    results$bonf <- apply(results$p, 2, p.adjust, method = 'bonf')
+# wrap
+    metadata(object)$wilcoxon <- do.call(abind::abind, c(results, along = 3))
+# Return
+    if (plot)  print(plot_volcano(object, test='wilcoxon')) 
+                    # plot_contrastogram(object)
+    if (verbose) cmessage_df('\t\t\t%s', extract_test_summary(object, 'wilcoxon'))
+    object
 }
 
 
-
+.wilcoxtest <- function(contrastdef, dt, subgroupvar, block){
+    if (!is.null(block))  dt <- data.table::dcast(dt, as.formula(sprintf(
+                    'feature_id + feature_name + %s ~ %s', block, subgroupvar)),
+                    value.var = 'value')
+    terms <- unlist(stri_split_regex(contrastdef,pattern='[ ]*[-][ ]*'))
+    x <- terms[[2]]
+    y <- terms[[1]]
+    resdt <- suppressWarnings(dt[, .(
+        p = wilcox.test(  
+                x = if (is.null(block)) value[get(subgroupvar)==x] else get(x),
+                y = if (is.null(block)) value[get(subgroupvar)==y] else get(y), 
+                paired = !is.null(block))$p.value, 
+        w = wilcox.test(
+                x = if (is.null(block)) value[get(subgroupvar)==x] else get(x),
+                y = if (is.null(block)) value[get(subgroupvar)==y] else get(y), 
+                paired = !is.null(block))$statistic, 
+        effect = if (is.null(block)){
+                mean(value[get(subgroupvar)==y])-
+                mean(value[get(subgroupvar)==x])
+            } else {
+                mean(get(y) - get(x), na.rm=TRUE)
+            }),
+        by = 'feature_id'])
+    data.table::setnames(resdt, c('p', 'w', 'effect'), 
+                        sprintf('%s.%s', c('p', 'w', 'effect'), contrastdef))
+    resdt
+}
+    
 
 #==============================================================================
 #
@@ -852,7 +924,7 @@ function(object, value) object)
 #' extract_test_quantity(object, test = 'limma')
 #' @noRd
 extract_test_quantity <- function(object, test, quantity='p'){
-    assert_is_subset(test, c('limma', 'lme', 'lm', 'wilcoxon'))
+    assert_is_subset(test, TESTS)
     fvars0 <- c('feature_id','feature_name','imputed')
     fvars0 %<>% intersect(fvars(object))
     fdt <- data.table(fdata(object)[, fvars0, drop=FALSE])
@@ -1074,7 +1146,7 @@ top_down <- function(effect, fdr, mlp, ntop){
 #' @noRd
 top_up <- function(effect, fdr, mlp, ntop){
     fdr_ok   <- fdr  < 0.05
-    coef_ok  <- effect >  1
+    coef_ok  <- effect >  0 # currently no filter 
     coef_top <- if(any(fdr_ok)){  effect > nmax(effect[fdr_ok], ntop+1)
                 } else {          rep(FALSE, length(effect)) }
     mlp_top  <- if (any(coef_ok)){ mlp > nmax(mlp[coef_ok], ntop+1)
@@ -1149,7 +1221,7 @@ make_volcano_dt <- function(
 plot_volcano <- function(object, 
     test = intersect(names(metadata(object)), TESTS)[1], 
     contrastdefs = autonomics::contrastdefs(object)[[1]], 
-    label = feature_name, ntop = 3
+    label = feature_name, ntop = 1
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -1165,8 +1237,8 @@ plot_volcano <- function(object,
 # Prepare
     plotdt <- make_volcano_dt(object, test, contrastdefs, ntop = ntop)
     txtdt  <- copy(plotdt)[topup==TRUE | topdown==TRUE]
-    colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100),
-                    hcl(h=120, l=c(100, 70, 20), c=100))
+    colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100), # 20 70 100
+                    hcl(h=120, l=c(100, 70, 20), c=100)) # 100 70 20
     names(colorvalues) <- levels(plotdt$significance)
 # Plot
     imputed <- NULL # fallback when plotdt misses "imputed"
@@ -1187,6 +1259,6 @@ plot_volcano <- function(object,
         scale_color_manual(values = colorvalues, name = NULL) +
         xlab('log2(FC)') +
         ylab('-log10(p)') +
-        ggtitle('volcano')#+
+        ggtitle(test)#+
         #guides(color=FALSE)
 }

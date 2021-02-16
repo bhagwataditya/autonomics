@@ -9,7 +9,7 @@ plot_volcano(
   test = intersect(names(metadata(object)), TESTS)[1],
   contrastdefs = autonomics::contrastdefs(object)[[1]],
   label = feature_name,
-  ntop = 3
+  ntop = 1
 )
 }
 \arguments{

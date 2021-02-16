@@ -45,8 +45,10 @@ lmertest(
 
 limmatest(
   object,
+  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
+  formula = as.formula(sprintf("~ 0 + \%s", if (is.null(subgroupvar)) 1 else
+    subgroupvar)),
   contrastdefs = NULL,
-  formula = NULL,
   block = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -84,6 +86,7 @@ require(magrittr)
 file <- download_data('atkin18.somascan.adat')
 object <- read_somascan(file, plot=FALSE)
 lmtest(object)
+wilcoxtest(object)
 limmatest(object, block = 'Subject_ID')
 lmetest(  object, block = 'Subject_ID')
 lmertest( object, block = 'Subject_ID')
