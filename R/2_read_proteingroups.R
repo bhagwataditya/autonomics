@@ -976,7 +976,7 @@ rm_reverse <- function(object, verbose){
 
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <-  read_proteingroups(file, contaminants=TRUE, pca=FALSE, 
+#' object <-  read_proteingroups(file, contaminants=TRUE, pca=FALSE,
 #'                             test='limma', plot=FALSE) # read + analyze
 #' rm_contaminants(object, verbose=TRUE)
 #' @noRd
@@ -1103,7 +1103,7 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
     `Protein group IDs` <- NULL
 # Report
     if (verbose) message(
-        '\t\tAdd occupancies(phospho) = exprs(phospho) - exprs(proteins)')
+        '\tAdd occupancies(phospho) = exprs(phospho) - exprs(proteins)')
 # phospho datatable
     cols <- c('feature_id', 'Protein group IDs')
     fosdt <- sumexp_to_wide_dt(phosphosites, fvars = 'Protein group IDs')
@@ -1262,7 +1262,7 @@ read_proteingroups <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
 # Analyze
-    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, test=test, formula = formula, block = block,
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
@@ -1302,7 +1302,7 @@ read_phosphosites <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
 # Analyze
-    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, test=test, formula = formula, block = block,
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object

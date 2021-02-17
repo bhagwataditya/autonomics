@@ -67,7 +67,7 @@ filter_features <- function(object, condition, verbose = FALSE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose) message('\t\t\tRetain ',
+    if (verbose) message('\t\tRetain ',
         sum(idx), '/', length(idx), ' features: ', expr_text(condition))
     object %<>% extract(idx,)
     fdata(object) %<>% droplevels()
@@ -89,7 +89,7 @@ rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
     selector <- rowAnys(exprs(object) != 0, na.rm = TRUE)
     if (verbose & sum(selector)<length(selector))  message(
-                    '\t\t\tRetain ', sum(selector), '/', length(selector),
+                    '\t\tRetain ', sum(selector), '/', length(selector),
                     ' features: non-zero, non-NA, and non-NaN for some sample')
     object %<>% extract(selector, )
     if (!is.null(analysis(object))) {
