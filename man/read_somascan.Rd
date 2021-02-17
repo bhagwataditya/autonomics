@@ -25,7 +25,7 @@ read_somascan(
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
   pca = FALSE,
-  test = NULL,
+  fit = NULL,
   formula = NULL,
   block = NULL,
   contrastdefs = NULL,
@@ -60,7 +60,7 @@ read_somascan(
 
 \item{pca}{whether to pca}
 
-\item{test}{testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'}
+\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'}
 
 \item{formula}{design formula (using svars)}
 
@@ -80,5 +80,5 @@ Read data from somascan adat file
 }
 \examples{
 file <- download_data('atkin18.somascan.adat')
-read_somascan(file, pca = TRUE, test = 'limma', block = 'Subject_ID')
+read_somascan(file, pca = TRUE, fit = 'limma', block = 'Subject_ID')
 }

@@ -6,7 +6,7 @@
 \usage{
 make_volcano_dt(
   object,
-  test,
+  fit,
   contrastdefmat = contrastdefs(object)[[1]],
   ntop = 3
 )
@@ -14,7 +14,7 @@ make_volcano_dt(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{test}{'limma', 'lme', 'lm', 'wilcoxon'}
+\item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
 \item{contrastdefmat}{contrastdef matrix}
 
@@ -28,6 +28,6 @@ Create volcano datatable
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, test='limma', plot=FALSE)
-make_volcano_dt(object, test = 'limma')
+object <- read_proteingroups(file, fit='limma', plot=FALSE)
+make_volcano_dt(object, fit = 'limma')
 }

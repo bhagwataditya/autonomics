@@ -551,11 +551,11 @@ plot_subgroup_boxplots <- function(
 #' @return gtable returned by \code{\link[gridExtra]{arrangeGrob}}
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=TRUE, test='limma', plot = FALSE)
+#' object <- read_metabolon(file, pca=TRUE, fit='limma', plot = FALSE)
 #' plot_samples(object)
 #'
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=TRUE, test='limma', plot = FALSE)
+#' object <- read_proteingroups(file, pca=TRUE, fit='limma', plot = FALSE)
 #' plot_samples(object)
 #' @export
 plot_samples <- function(

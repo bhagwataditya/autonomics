@@ -24,7 +24,7 @@ read_metabolon(
   add_kegg_pathways = FALSE,
   add_smiles = FALSE,
   pca = FALSE,
-  test = NULL,
+  fit = NULL,
   formula = NULL,
   block = NULL,
   contrastdefs = NULL,
@@ -53,7 +53,7 @@ read_metabolon(
 
 \item{pca}{whether to pca}
 
-\item{test}{testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'}
+\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
 \item{formula}{designmat formula}
 
@@ -73,5 +73,5 @@ Read metabolon
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-read_metabolon(file, pca = TRUE, test = 'limma', block='SUB')
+read_metabolon(file, pca = TRUE, fit = 'limma', block='SUB')
 }

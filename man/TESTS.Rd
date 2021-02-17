@@ -3,7 +3,7 @@
 \docType{data}
 \name{TESTS}
 \alias{TESTS}
-\title{Statistical tests supported in autonomics}
+\title{Statistical models supported in autonomics}
 \format{
 An object of class \code{character} of length 5.
 }
@@ -11,6 +11,6 @@ An object of class \code{character} of length 5.
 TESTS
 }
 \description{
-Statistical tests supported in autonomics
+Statistical models supported in autonomics
 }
 \keyword{datasets}

@@ -155,7 +155,7 @@ rm_single_value_columns <- function(df){
 #' @param rm_na_svars   whether to rm NA svars
 #' @param rm_single_value_svars whether to rm single value svars
 #' @param pca           whether to pca
-#' @param test          testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'
+#' @param fit           fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'
 #' @param formula       design formula (using svars)
 #' @param block         block var
 #' @param contrastdefs  contrastdef vector/matrix/list
@@ -164,14 +164,14 @@ rm_single_value_columns <- function(df){
 #' @return Summarizedexperiment
 #' @examples
 #' file <- download_data('atkin18.somascan.adat')
-#' read_somascan(file, pca = TRUE, test = 'limma', block = 'Subject_ID')
+#' read_somascan(file, pca = TRUE, fit = 'limma', block = 'Subject_ID')
 #' @export
 read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     subgroupvar = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, pca = FALSE, 
-    test = NULL, formula = NULL, block = NULL, contrastdefs = NULL,
+    fit = NULL, formula = NULL, block = NULL, contrastdefs = NULL,
     verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -197,7 +197,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     object %<>% log2transform(verbose = TRUE)
 # Analyze
-    object %<>% analyze(pca=pca, test=test, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, fit=fit, formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
