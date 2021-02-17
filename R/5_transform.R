@@ -9,8 +9,8 @@
 
 
 #' Subtract controls
-#' @param  object      SummarizedExperiment
-#' @param  subgroup    subgroup svar
+#' @param  object       SummarizedExperiment
+#' @param  subgroupvar  subgroup svar
 #' @param  refgroup    ref subgroup
 #' @param  block       block svar (within which subtraction is performed)
 #' @param  assaynames  which assays to subtract for
@@ -21,20 +21,20 @@
 #' file <- download_data('atkin18.metabolon.xlsx') 
 #' object <- read_metabolon(file, plot=FALSE)
 #' pca(object, plot=TRUE, color=SET)
-#' object %<>% subtract_controls(block='SUB', subgroup = 'SET', refgroup='t0')
+#' object %<>% subtract_controls(block='SUB', subgroupvar = 'SET', refgroup='t0')
 #' pca(object, plot=TRUE, color=SET)
 #' @export 
 subtract_controls <- function(
-    object, subgroup, refgroup, block, 
+    object, subgroupvar, refgroup, block, 
     assaynames = setdiff(assayNames(object), 'weights'), verbose = TRUE
 ){
 # Ensure single ref per block
-    sdata1 <- sdata(object)[, c('sample_id', subgroup, block)]
+    sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]
     sdata1 %<>% data.table()
-    singlerefperblock <- sdata1[, sum(get(subgroup)==refgroup)==1, by=block]$V1
+    singlerefperblock <- sdata1[,sum(get(subgroupvar)==refgroup)==1,by=block]$V1
     assert_is_identical_to_true(all(singlerefperblock))
 # Subtract ref
-    splitobjects <- split_by_svar(object, !!sym(subgroup))
+    splitobjects <- split_by_svar(object, !!sym(subgroupvar))
     refobj <- splitobjects[[refgroup]]
     splitobjects %<>% extract(-1)
     splitobjects %<>% lapply(function(obj){
@@ -51,6 +51,34 @@ subtract_controls <- function(
     splitobjects %<>% do.call(S4Vectors::cbind, .)
     idx <- na.exclude(match(object$sample_id, splitobjects$sample_id))
     splitobjects[, idx]
+}
+
+
+#' @rdname subtract_controls
+#' @export
+subtract_differences <- function(object, block, subgroupvar){
+    fvars0 <- intersect(c('feature_id', 'feature_name'), fvars(object))
+    dt <- sumexp_to_long_dt(object, fvars=fvars0, svars=c(subgroupvar, block))
+    subgroups <- levels(dt[[subgroupvar]])
+    n <- length(sugroups)
+    formula <- paste0(c(fvars0, block), collapse = ' + ')
+    formula %<>% paste0(' ~ ', subgroupvar)
+    formula %<>% as.formula()
+    dt %<>% dcast(formula, value.var ='value')
+    
+    newdt  <- dt[, c(fvars0, block), with = FALSE]
+    diffdt <- dt[, setdiff(names(dt), c(fvars0, block)), with=FALSE]
+    diffdt <- diffdt[, subgroups[-1], with=FALSE] - 
+              diffdt[, subgroups[-n], with=FALSE]
+    names(diffdt) %<>% paste0(' - ', subgroups[-n])
+    newdt %<>% cbind(diffdt)
+    
+    newdt %<>% data.table::melt.data.table(id.vars =  c(fvars0, block), variable.name = subgroupvar)
+    data.table::setorderv(newdt, c('feature_id', block, subgroupvar))
+    newdt[, sample_id := paste0(get(block), '.', get(subgroupvar))]
+    newobject <- dt2sumexp(newdt)
+    assayNames(newobject)[1] <- assayNames(object)[1]
+    newobject
 }
 
 

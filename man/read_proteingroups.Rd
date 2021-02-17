@@ -32,7 +32,7 @@ read_proteingroups(
   block = NULL,
   contrastdefs = NULL,
   pca = FALSE,
-  test = NULL,
+  fit = NULL,
   verbose = TRUE,
   plot = TRUE
 )
@@ -50,7 +50,7 @@ read_phosphosites(
   fastafile = NULL,
   invert_subgroups = character(0),
   pca = FALSE,
-  test = NULL,
+  fit = NULL,
   formula = NULL,
   block = NULL,
   contrastdefs = NULL,
@@ -97,7 +97,7 @@ read_phosphosites(
 
 \item{pca}{whether to pca}
 
-\item{test}{testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'}
+\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'}
 
 \item{plot}{whether to plot}
 
@@ -113,5 +113,5 @@ Read/Analyze proteingroups/phosphosites
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, pca=TRUE, test='limma')
+object <- read_proteingroups(file, pca=TRUE, fit='limma')
 }

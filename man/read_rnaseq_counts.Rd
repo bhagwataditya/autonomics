@@ -53,8 +53,8 @@ read_rnaseq_bams(
   tmm = cpm,
   log2 = TRUE,
   pca = FALSE,
-  test = NULL,
-  voom = !is.null(test),
+  fit = NULL,
+  voom = !is.null(fit),
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -78,8 +78,8 @@ read_rnaseq_counts(
   tmm = cpm,
   log2 = TRUE,
   pca = FALSE,
-  test = NULL,
-  voom = !is.null(test),
+  fit = NULL,
+  voom = !is.null(fit),
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -130,7 +130,7 @@ read_rnaseq_counts(
 
 \item{pca}{whether to pca}
 
-\item{test}{testing method: NULL, 'limma', 'lm', 'lme', 'wilcoxon'}
+\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
 \item{voom}{whether to compute voom precision weights}
 
@@ -146,7 +146,7 @@ Read/analyze rnaseq counts / bamfiles
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, pca= TRUE, test='limma')
+object <- read_rnaseq_counts(file, pca= TRUE, fit='limma')
 }
 \author{
 Aditya Bhagwat, Shahina Hayat
