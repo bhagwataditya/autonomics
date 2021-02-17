@@ -4,7 +4,10 @@
 #
 #==============================================================================
 
-fit_wilcoxon <- function(object, formula = ~ subgroup, 
+#' @export
+#' @rdname fit_limma
+fit_wilcoxon <- function(
+    object, formula = if ('subgroup' %in% svars(object)) ~ subgroup else ~ 1, 
     subgroupvar = all.vars(formula), 
     contrastdefs = contrast_subgroups(object, create_design(object, formula)), 
     block = NULL, verbose = TRUE, plot = TRUE
@@ -33,7 +36,7 @@ fit_wilcoxon <- function(object, formula = ~ subgroup,
 # Return
     if (plot)  print(plot_volcano(object, fit='wilcoxon')) 
                     # plot_contrastogram(object)
-    if (verbose) cmessage_df('\t\t\t%s',extract_fit_summary(object,'wilcoxon'))
+    if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object,'wilcoxon'))
     object
 }
 

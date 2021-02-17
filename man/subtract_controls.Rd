@@ -2,21 +2,24 @@
 % Please edit documentation in R/5_transform.R
 \name{subtract_controls}
 \alias{subtract_controls}
+\alias{subtract_differences}
 \title{Subtract controls}
 \usage{
 subtract_controls(
   object,
-  subgroup,
+  subgroupvar,
   refgroup,
   block,
   assaynames = setdiff(assayNames(object), "weights"),
   verbose = TRUE
 )
+
+subtract_differences(object, block, subgroupvar)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroup}{subgroup svar}
+\item{subgroupvar}{subgroup svar}
 
 \item{refgroup}{ref subgroup}
 
@@ -37,6 +40,6 @@ require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx') 
 object <- read_metabolon(file, plot=FALSE)
 pca(object, plot=TRUE, color=SET)
-object \%<>\% subtract_controls(block='SUB', subgroup = 'SET', refgroup='t0')
+object \%<>\% subtract_controls(block='SUB', subgroupvar = 'SET', refgroup='t0')
 pca(object, plot=TRUE, color=SET)
 }

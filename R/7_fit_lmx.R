@@ -82,7 +82,7 @@ fit_lmx <- function(
         dt[[x]] %<>% factor()
         stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]])) }
 # lmefit
-    fitmethod <- get(paste0('fit_', fit))
+    fitmethod <- get(paste0('.fit_', fit))
     lmeres <- dt[, fitmethod(.SD, formula=formula, block=block),by='feature_id']
     fdt <- lmeres[, c('feature_id', 'F', 'F.p'), with=FALSE]
     setnames(fdt, c('F', 'F.p'), c('F.lme', 'F.p.lme'))
@@ -99,7 +99,7 @@ fit_lmx <- function(
     metadata(object)$lmx %<>% extract(rownames(object),,)
     names(metadata(object)) %<>% stri_replace_first_fixed('lmx', fit)
     
-    if (verbose) cmessage_df('\t\t\t%s', extract_fit_summary(object, fit))
+    if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object, fit))
     if (is.null(contrastdefs)) contrastdefs <-colnames(metadata(object)[[fit]])
     if (length(contrastdefs) > 1) contrastdefs %<>% setdiff('(Intercept)')
     if (plot)  print(plot_volcano(

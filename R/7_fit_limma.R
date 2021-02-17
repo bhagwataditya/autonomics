@@ -298,8 +298,9 @@ vectorize_contrastdefs <- function(contrastdefs){
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
-#' fit_lm(object)
 #' fit_wilcoxon(object)
+#' fit_lm(object)
+#' fit_limma(object)
 #' fit_limma(object, block = 'Subject_ID')
 #' fit_lme(  object, block = 'Subject_ID')
 #' fit_lmer( object, block = 'Subject_ID')
@@ -360,7 +361,7 @@ fit_limma <- function(object,
     object %<>% .limmacontrast(fit)
     if (plot)  print(plot_volcano(object, fit='limma')) 
                     # plot_contrastogram(object)
-    if (verbose) cmessage_df('\t\t\t%s', extract_fit_summary(object, 'limma'))
+    if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object, 'limma'))
     return(object)
 }
 

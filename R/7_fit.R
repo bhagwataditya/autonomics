@@ -339,9 +339,9 @@ extract_fit_dt <- function(object, fit){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, fit='limma', plot=FALSE)
-#' extract_fit_summary(object, 'limma')
+#' summarize_fit(object, 'limma')
 #' @export
-extract_fit_summary <- function(object, fit){
+summarize_fit <- function(object, fit){
     effect <- fdr <- NULL
     extract_fit_dt(object, fit = fit)[,
         .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),

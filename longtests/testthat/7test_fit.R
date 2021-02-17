@@ -1,63 +1,121 @@
 require(magrittr)
-context('add_limma')
+context('fit'
+        )
+# UNPAIRED
+
+    msg <- 'fit: fukuda20.proteingroups)'
+    file <- download_data('fukuda20.proteingroups.txt') 
+    object <- read_proteingroups(file, plot = FALSE)
+    object %<>% fit_wilcoxon(plot=FALSE)
+    object %<>% fit_lm(      plot=FALSE)
+    object %<>% fit_limma(   plot=FALSE)
+    test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     
-    msg <- 'add_limma("billing19.proteingroups")'
+    msg <- 'fit: billing19.proteingroups'
     file <- download_data('billing19.proteingroups.txt')
     select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
     select %<>% paste0('_STD')
     object <- read_proteingroups(file, select_subgroups = select, plot = FALSE)
-    object %<>% add_limma(plot=FALSE)
+    exprs(object) %<>% na_to_zero()
+    object %<>% fit_wilcoxon(plot=FALSE)
+    object %<>% fit_lm(      plot=FALSE)
+    object %<>% fit_limma(   plot=FALSE)
     test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     
-    msg <- 'add_limma("halama18.metabolon")'
+    msg <- 'fit: halama18.metabolon'
     file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
-    object %<>% add_limma(plot=FALSE)
+    object %<>% impute_systematic_nondetects(plot=FALSE)
+    object %<>% fit_wilcoxon(plot=FALSE)
+    object %<>% fit_lm(      plot=FALSE)
+    object %<>% fit_limma(   plot=FALSE)
     test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
     
-    msg <- 'add_limma("billing19.rnacounts")'
+    msg <- 'fit: billing19.rnacounts'
     file <- download_data('billing19.rnacounts.txt')
-    object <- read_rnaseq_counts(file, plot=FALSE)
-    object %<>% add_limma(plot=FALSE)
+    object <- read_rnaseq_counts(file, voom=TRUE, plot=FALSE)
+    object %<>% fit_wilcoxon(plot=FALSE)
+    object %<>% fit_lm(      plot=FALSE)
+    object %<>% fit_limma(   plot=FALSE)
     test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
-    
 
-context('extract_limma_summary')
+# PAIRED
+    
+    msg <- 'fit: atkin18.somascan'
+    file <- download_data('atkin18.somascan.adat')
+    object <- read_somascan(file, plot=FALSE)
+    object %<>% fit_wilcoxon(plot=FALSE)
+    object %<>% fit_lm(      plot=FALSE)
+    object %<>% fit_limma()
+    
+    object %<>% fit_wilcoxon(block = 'Subject_ID', plot=FALSE)
+    object %<>% fit_limma(   block = 'Subject_ID', plot=FALSE)
+    object %<>% fit_lme(     block = 'Subject_ID', plot=FALSE)
+    
+    object %<>% subtract_controls(block='Subject_ID', subgroup = 'subgroup', refgroup='t0')
+    object %<>% fit_lm(formula = value ~ 0 + subgroup)
+    object %<>% fit_limma(contrastdefs = c('t1', 't2', 't3'))
+    
+#' pca(object, plot=TRUE, color=SET)
+
+    msg <- 'fit: GSE161731.rnacounts'
+    basedir <- '~/autonomicscache/datasets'
+    subdir  <- '~/autonomicscache/datasets/GSE161731'
+    if (!dir.exists(subdir)){
+        GEOquery::getGEOSuppFiles("GSE161731",baseDir=basedir) }
+    file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
+    sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+    object <- read_rnaseq_counts(
+        file, sfile = sfile, sfileby='rna_id', subgroupvar='gender', 
+        block='subject_id', voom=TRUE)
+    object %<>% fit_lm(      plot = FALSE)
+    object %<>% fit_limma(   plot = FALSE)
+    object %<>% fit_wilcoxon(plot = FALSE)
+    object %<>% fit_limma(block='subject_id', plot = FALSE)
+    #object %<>% fit_lme(  block='subject_id', plot = FALSE) # convergence error
+    #object %<>% fit_lmer( block='subject_id', plot = FALSE)  # keeps running
+    test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
+
+# L2R
+    
+    object %<>% subtract_controls()
+            
+context('summarize_fit')
 
 # RNASEQCOUNTS
     # ~ 0 + subgroup | weights
-        msg <- 'extract_limma_summary("billing19.rnacounts.txt")'
+        msg <- 'summarize_fit("billing19.rnacounts.txt")'
         file <- download_data('billing19.rnacounts.txt')
-        object <- read_rnaseq_counts(file, limma=TRUE, plot=FALSE)
-        limmadt <- extract_limma_summary(object)
-        test_that(msg, expect_s3_class(limmadt, 'data.table'))
+        object <- read_rnaseq_counts(file, fit='limma', plot=FALSE)
+        fitdt <- summarize_fit(object, fit='limma')
+        test_that(msg, expect_s3_class(fitdt, 'data.table'))
 
     # ~ 0 + subgroups
-        msg <- 'extract_limma_summary("billing19.rnacounts.txt" no voom)'
+        msg <- 'summarize_fit("billing19.rnacounts.txt" no voom)'
         weights(object) <- NULL
-        object %<>% add_limma(plot=FALSE)
-        limmadt <- extract_limma_summary(object)
-        test_that(msg, expect_s3_class(limmadt, 'data.table'))
+        object %<>% fit_limma(plot=FALSE)
+        fitdt <- summarize_fit(object, fit = 'limma')
+        test_that(msg, expect_s3_class(fitdt, 'data.table'))
 
 # METABOLON
     # ~ 0 + subgroup
-        msg <- 'extract_limma_summary("atkin18.metabolon.xlsx")'
+        msg <- 'summarize_fit("atkin18.metabolon.xlsx")'
         file <- download_data('atkin18.metabolon.xlsx')
         object <- read_metabolon(file, limma=TRUE, block='SUB', plot=FALSE)
-        extract_limma_summary(object)
-        test_that(msg, expect_s3_class(limmadt, 'data.table'))
+        fitdt <- summarize_fit(object, fit = 'limma')
+        test_that(msg, expect_s3_class(fitdt, 'data.table'))
 
    # ~ 0 + subgroup | block
-        msg <- 'extract_limma_summary("atkin18.metabolon.xlsx, block")'
-        object %<>% add_limma(plot=FALSE, block = 'SUB')
-        limmadt <- extract_limma_summary(object)
-        test_that(msg, expect_s3_class(limmadt, 'data.table'))
+        msg <- 'summarize_fit("atkin18.metabolon.xlsx, block")'
+        object %<>% fit_limma(plot=FALSE, block = 'SUB')
+        fitdt <- summarize_fit(object, fit = 'limma')
+        test_that(msg, expect_s3_class(fitdt, 'data.table'))
 
    # ~ 0 + subgroup + t2d | block
-        msg <- 'extract_limma_summary("atkin18.metabolon.xlsx, block, T2D")'
-        object %<>% add_limma(formula=~0+subgroup+T2D, block='SUB', plot=FALSE)
-        limmadt <- extract_limma_summary(object)
-        test_that(msg, expect_s3_class(limmadt, 'data.table'))
+        msg <- 'summarize_fit("atkin18.metabolon.xlsx, block, T2D")'
+        object %<>% fit_limma(formula=~0+subgroup+T2D, block='SUB', plot=FALSE)
+        fitdt <- summarize_fit(object, fit = 'limma')
+        test_that(msg, expect_s3_class(fitdt, 'data.table'))
 
 context('plot_contrastogram')
     # subgroup vector
