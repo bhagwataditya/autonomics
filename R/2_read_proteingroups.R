@@ -1065,13 +1065,7 @@ filter_maxquant_samples <- function(object, select_subgroups, verbose){
 #==============================================================================
 
 transform_maxquant <- function(object, impute, verbose, plot){
-# Remove batch effect
     if (verbose) message('\tTransform exprs')
-    if (grepl('Reporter intensity', metadata(object)$quantity)){
-        message('\t\tTMT: rm run effect')
-        suppressWarnings(exprs(object) %<>% limma::removeBatchEffect(
-                                                batch = object$replicate))
-    }
 # Impute
     if (impute) object %<>% impute_systematic_nondetects(plot = FALSE)
     object
@@ -1285,8 +1279,8 @@ read_proteingroups <- function(
     file, quantity = guess_maxquant_quantity(file), sfile = NULL,
     sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
-    include_pepcounts = FALSE,
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
+    include_pepcounts = FALSE,
     formula = NULL, block = NULL, contrastdefs = NULL,
     pca = FALSE, fit = NULL, verbose = TRUE, plot = TRUE
 ){
@@ -1344,7 +1338,7 @@ read_phosphosites <- function(
 # Prepare
     object %<>% rename_phospho_fvars()
     object %<>% simplify_proteingroups(fastafile)
-    object %<>% transform_maxquant(impute=FALSE,verbose=verbose,plot=plot)
+    object %<>% transform_maxquant(impute=FALSE, verbose=verbose, plot=plot)
 # Analyze
     object %<>% analyze(pca=pca, fit=fit, formula = formula, block = block,
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
