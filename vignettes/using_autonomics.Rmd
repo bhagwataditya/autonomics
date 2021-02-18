@@ -51,7 +51,7 @@ Autonomics provides ready-to-use importers for both **count** as well as **BAM**
 ```{r}
 require(autonomics, quietly = TRUE)
 object <-  read_rnaseq_counts(file = download_data('billing19.rnacounts.txt'), 
-                              pca = TRUE, test = 'limma', plot = TRUE)
+                              pca = TRUE, fit = 'limma', plot = TRUE)
 ```
 
 ### read_rnaseq_counts(sfile) {-}
@@ -68,7 +68,7 @@ object <- read_rnaseq_counts(
   sfileby = 'rna_id', 
   subgroupvar = 'gender', 
   pca = TRUE, 
-  test = 'limma', 
+  fit = 'limma', 
   plot = TRUE)
 ```
 
@@ -95,7 +95,7 @@ object <- read_rnaseq_bams(
               paired = TRUE, 
               genome = 'hg38', 
               pca    = TRUE, 
-              test   = 'limma', 
+              fit   = 'limma', 
               plot   = TRUE)
 ```
 
@@ -107,16 +107,16 @@ Proper preprocessing leads to increased power:
   file <- download_data('billing19.rnacounts.txt')
 # log2counts
   object <- read_rnaseq_counts(file, 
-       cpm = FALSE, voom = FALSE, test = 'limma', verbose = FALSE, plot = FALSE)
-  colSums(extract_test_summary(object, 'limma')[, -1])
+       cpm = FALSE, voom = FALSE, fit = 'limma', verbose = FALSE, plot = FALSE)
+  colSums(summarize_fit(object, 'limma')[, -1])
 # log2cpm
   object <- read_rnaseq_counts(file,
-       cpm = TRUE,  voom = FALSE, test = 'limma', verbose = FALSE, plot=FALSE)
-  colSums(extract_test_summary(object, 'limma')[, -1])
+       cpm = TRUE,  voom = FALSE, fit = 'limma', verbose = FALSE, plot=FALSE)
+  colSums(summarize_fit(object, 'limma')[, -1])
 # log2cpm + voom
   object <- read_rnaseq_counts(file,  # log2 cpm + voom
-       cpm = TRUE,  voom = TRUE,  test = 'limma', verbose = FALSE, plot=FALSE)
-  colSums(extract_test_summary(object, 'limma')[, -1])
+       cpm = TRUE,  voom = TRUE,  fit = 'limma', verbose = FALSE, plot=FALSE)
+  colSums(summarize_fit(object, 'limma')[, -1])
 ```
 
 ## Proteingroups/phosphosites
@@ -147,7 +147,7 @@ An **LFQ intensities** example is the **Fukuda et al. (2020)** dataset, which co
 
 ```{r}
 object <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt'), 
-                             pca = TRUE, test = 'limma', plot = TRUE)
+                             pca = TRUE, fit = 'limma', plot = TRUE)
 ```
 
 
@@ -161,7 +161,7 @@ object <- read_proteingroups(
               file = download_data('billing19.proteingroups.txt'),
               select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
                                    'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'), 
-              pca = TRUE, test = 'limma', plot = TRUE)
+              pca = TRUE, fit = 'limma', plot = TRUE)
 ```
 
 The phosphosites can be read in a similar fashion:
@@ -172,7 +172,7 @@ object <- read_phosphosites(
               proteinfile = download_data('billing19.proteingroups.txt'), 
               select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
                                    'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'), 
-              pca = TRUE, test = 'limma', plot = TRUE)
+              pca = TRUE, fit = 'limma', plot = TRUE)
 ```
 
 ## Metabolon
@@ -182,7 +182,7 @@ object <- read_phosphosites(
 ```{r, fig.width=7, fig.height=4, out.width="95%"}
 object <- read_metabolon(
             file  = download_data('atkin18.metabolon.xlsx'), 
-            pca = TRUE, test = 'limma', block = 'SUB', plot = TRUE)
+            pca = TRUE, fit = 'limma', block = 'SUB', plot = TRUE)
 ```
 
 ## Somascan
@@ -192,7 +192,7 @@ object <- read_metabolon(
 ```{r}
 object <- read_somascan(
             file = download_data('atkin18.somascan.adat'), 
-            pca = TRUE, test = 'limma', block = 'Subject_ID', plot = TRUE)
+            pca = TRUE, fit = 'limma', block = 'Subject_ID', plot = TRUE)
 ```
 
 <!--
