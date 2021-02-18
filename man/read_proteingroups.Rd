@@ -14,6 +14,7 @@
   subgroupvar = "subgroup",
   select_subgroups = NULL,
   invert_subgroups = character(0),
+  include_pepcounts = FALSE,
   verbose = TRUE
 )
 
@@ -27,6 +28,7 @@ read_proteingroups(
   reverse = FALSE,
   fastafile = NULL,
   invert_subgroups = character(0),
+  include_pepcounts = FALSE,
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
   formula = NULL,
   block = NULL,
@@ -78,6 +80,8 @@ read_phosphosites(
 \item{select_subgroups}{subgroups to be selected (character vector)}
 
 \item{invert_subgroups}{subgroups to be inverted (character vector)}
+
+\item{include_pepcounts}{whether to include peptide count data}
 
 \item{verbose}{whether to message}
 
