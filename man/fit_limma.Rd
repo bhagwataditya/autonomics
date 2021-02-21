@@ -16,48 +16,48 @@ fit_limma(
   contrastdefs = NULL,
   block = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 
 fit_lm(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit),
+  formula = default_formula(object, subgroupvar, fit = "lm"),
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 
 fit_lme(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit),
+  formula = default_formula(object, subgroupvar, fit = "lme"),
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 
 fit_lmer(
   object,
   fit,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit),
+  formula = default_formula(object, subgroupvar, fit = "lmer"),
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 
 fit_wilcoxon(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   contrastdefs = contrast_subgroups(object, create_design(object, subgroupvar =
-    subgroupvar)),
+    subgroupvar, verbose = FALSE)),
   block = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 }
 \arguments{

@@ -339,8 +339,9 @@ fit_limma <- function(object,
     assert_is_all_of(object, 'SummarizedExperiment')
     if (verbose)  cmessage('\t\tlimma: lmFit(%s%s%s)',
         Reduce(paste, deparse(formula)),
-        if(is.null(block))            '' else paste0(', block = object$ `', block, '`'),
-        if(is.null(weights(object)))  '' else paste0(', weights = weights(object)'))
+        if(is.null(block))  '' else paste0(', block = object$ `', block, '`'),
+        if(is.null(weights(object))) '' else paste0(
+                                                ', weights = weights(object)'))
     design <- create_design(object, formula=formula, verbose = FALSE)
     design(object)    <- design
     if (is.null(contrastdefs)) contrastdefs <- contrast_subgroups(object,design)
