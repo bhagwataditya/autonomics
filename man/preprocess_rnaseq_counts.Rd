@@ -6,7 +6,8 @@
 \usage{
 preprocess_rnaseq_counts(
   object,
-  formula = NULL,
+  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
+  formula = default_formula(object, subgroupvar, "limma"),
   block = NULL,
   min_count = 10,
   pseudocount = 0.5,

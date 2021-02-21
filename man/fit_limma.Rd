@@ -12,8 +12,7 @@
 fit_limma(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = as.formula(sprintf("~ 0 + \%s", if (is.null(subgroupvar)) 1 else
-    subgroupvar)),
+  formula = default_formula(object, subgroupvar, "limma"),
   contrastdefs = NULL,
   block = NULL,
   verbose = TRUE,
@@ -23,8 +22,7 @@ fit_limma(
 fit_lm(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = as.formula(sprintf("value ~ \%s", if (is.null(subgroupvar)) 1 else
-    subgroupvar)),
+  formula = default_formula(object, subgroupvar, fit),
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
@@ -34,8 +32,7 @@ fit_lm(
 fit_lme(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = as.formula(sprintf("value ~ \%s", if (is.null(subgroupvar)) 1 else
-    subgroupvar)),
+  formula = default_formula(object, subgroupvar, fit),
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
@@ -46,8 +43,7 @@ fit_lmer(
   object,
   fit,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = as.formula(sprintf("value ~ \%s", if (is.null(subgroupvar)) 1 else
-    subgroupvar)),
+  formula = default_formula(object, subgroupvar, fit),
   block = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
@@ -56,9 +52,9 @@ fit_lmer(
 
 fit_wilcoxon(
   object,
-  formula = if ("subgroup" \%in\% svars(object)) ~subgroup else ~1,
-  subgroupvar = all.vars(formula),
-  contrastdefs = contrast_subgroups(object, create_design(object, formula)),
+  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
+  contrastdefs = contrast_subgroups(object, create_design(object, subgroupvar =
+    subgroupvar)),
   block = NULL,
   verbose = TRUE,
   plot = TRUE

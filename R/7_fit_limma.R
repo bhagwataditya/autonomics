@@ -132,13 +132,25 @@ nlevels <- function(object, svar){
     length(unique(object[[svar]]))
 }
 
-singlelevel <- function(object, svar) nlevels(object, svar) ==1
-multilevel  <- function(object, svar) nlevels(object, svar) > 1
+singlelevel <- function(object, svar)   nlevels(object, svar) ==1
+multilevel  <- function(object, svar)   nlevels(object, svar) > 1
+
+#' 
+default_formula <- function(object, subgroupvar, fit){
+    formula <- if (is.null(subgroupvar))        '~1'
+    else if (!subgroupvar %in% svars(object))   '~1'
+    else if (singlelevel(object, subgroupvar))  '~1'
+    else if (fit=='limma')                      sprintf('~0 + %s', subgroupvar)
+    else                                        sprintf('~ %s', subgroupvar)
+    formula %<>% as.formula()
+    formula
+}
 
 #' Create design
 #'
 #'  Create design matrix  for statistical analysis
 #' @param object  SummarizedExperiment
+#' @param subgroupvar subgroup svar
 #' @param formula formula with svars
 #' @param verbose whether to message
 #' @return design matrix
@@ -157,31 +169,24 @@ multilevel  <- function(object, svar) nlevels(object, svar) > 1
 #' object$subgroup <- 'atkin18'
 #' create_design(object)
 #' @export
-create_design <- function(object, formula = NULL, verbose = TRUE){
+create_design <- function(
+    object, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = default_formula(object, subgroupvar), verbose = TRUE
+){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (is.null(formula))  formula <- 
-        if (multilevel(object, 'subgroup')) ~ 0 + subgroup else ~ 1
     assert_is_subset(all.vars(formula), svars(object))
     . <- NULL
 # Ensure that subgroup vector is a factor to preserve order of levels
-    object$subgroup %<>% factor() # required for '(Intercept)' -> factor1.level1
-    for (var in setdiff(all.vars(formula), 'subgroup')){
-        if (is.character(sdata(object)[[var]])){
-            sdata(object)[[var]] %<>% factor() }}
+    for (var in setdiff(all.vars(formula), subgroupvar)){
+        if (is.character(object[[var]])) object[[var]] %<>% factor() }
 # Create design matrix
     if (verbose)  cmessage('\t\tDesign: %s', deparse(formula))
     myDesign <- model.matrix(formula,  data = sdata(object))
-# Rename "(Intercept)" column
-    if (ncol(myDesign)==1){ 
-        if (singlelevel(object, 'subgroup'))  colnames(myDesign) <- 
-                                                slevels(object, 'subgroup')
-        return(myDesign) }
+# Rename columns
+    colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     factors <- svars(object)[are_factor(sdata(object))] # Rename intercept
-    factor1 <- factors[1]                               # to factor1level1
-    level1  <- levels(sdata(object)[[factor1]])[1]
-    colnames(myDesign) %<>% gsub('(Intercept)', level1, ., fixed = TRUE)
-# Rename regressors
     for (var in factors) colnames(myDesign) %<>% gsub(var, '', ., fixed = TRUE)
         # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
         # For other cases it works wonderfully, so I keep it for now.
@@ -327,22 +332,22 @@ vectorize_contrastdefs <- function(contrastdefs){
 #' @export
 fit_limma <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = as.formula(sprintf(
-                '~ 0 + %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
-    contrastdefs = NULL, block = NULL, verbose = TRUE, plot =  TRUE
+    formula = default_formula(object, subgroupvar, 'limma'), 
+    contrastdefs = NULL, block = NULL, verbose = TRUE, plot=FALSE
 ){
-# Initialize
+# Set design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
-    design <- create_design(object, formula=formula, verbose = verbose)
+    if (verbose)  cmessage('\t\tlimma: lmFit(%s%s%s)',
+        Reduce(paste, deparse(formula)),
+        if(is.null(block))            '' else paste0(', block = object$ `', block, '`'),
+        if(is.null(weights(object)))  '' else paste0(', weights = weights(object)'))
+    design <- create_design(object, formula=formula, verbose = FALSE)
     design(object)    <- design
     if (is.null(contrastdefs)) contrastdefs <- contrast_subgroups(object,design)
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
     if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
     contrastdefs(object) <- contrastdefs
 # Block
-    if (verbose)  cmessage('\t\tLmfit: %s%s',
-        if(is.null(block))            '' else paste0('block on `', block, '`'),
-        if(is.null(weights(object)))  '' else paste0(' (weights)'))
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
         blockvar <- block
@@ -357,7 +362,6 @@ fit_limma <- function(object,
         design = design, block = block, correlation = metadata(object)$blockcor,
         weights = weights(object)))
 # Contrast
-    if (verbose)  cmessage('\t\tContrast:')
     object %<>% .limmacontrast(fit)
     if (plot)  print(plot_volcano(object, fit='limma')) 
                     # plot_contrastogram(object)

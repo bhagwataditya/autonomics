@@ -7,15 +7,18 @@
 #' @export
 #' @rdname fit_limma
 fit_wilcoxon <- function(
-    object, formula = if ('subgroup' %in% svars(object)) ~ subgroup else ~ 1, 
-    subgroupvar = all.vars(formula), 
-    contrastdefs = contrast_subgroups(object, create_design(object, formula)), 
-    block = NULL, verbose = TRUE, plot = TRUE
+    object,
+    subgroupvar =if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
+    contrastdefs = contrast_subgroups(
+        object, create_design(object, subgroupvar=subgroupvar, verbose=FALSE)), 
+    block = NULL, verbose = TRUE, plot = FALSE
 ){
 # fit
     dt <- sumexp_to_long_dt(object, svars = c(subgroupvar, block))
+    if (verbose)  cmessage('\t\tWilcoxon')
     results <- lapply(vectorize_contrastdefs(contrastdefs), 
-                    .fit_wilcoxon, dt, subgroupvar, block)
+                    if (is.null(block)) .wilcoxon else .fit_wilcoxon_block, 
+                    dt, subgroupvar, block, verbose)
     results %<>% Reduce(merge, .)
 # extract
     extract_quantity <- function(quantity, results){
@@ -40,33 +43,71 @@ fit_wilcoxon <- function(
     object
 }
 
-
-.fit_wilcoxon <- function(contrastdef, dt, subgroupvar, block){
-    if (!is.null(block))  dt <- data.table::dcast(dt, as.formula(sprintf(
-                    'feature_id + feature_name + %s ~ %s', block, subgroupvar)),
-                    value.var = 'value')
-    terms <- unlist(stri_split_regex(contrastdef,pattern='[ ]*[-][ ]*'))
-    x <- terms[[2]]
-    y <- terms[[1]]
-    resdt <- suppressWarnings(dt[, .(
-        p = wilcox.test(  
-                x = if (is.null(block)) value[get(subgroupvar)==x] else get(x),
-                y = if (is.null(block)) value[get(subgroupvar)==y] else get(y), 
-                paired = !is.null(block))$p.value, 
-        w = wilcox.test(
-                x = if (is.null(block)) value[get(subgroupvar)==x] else get(x),
-                y = if (is.null(block)) value[get(subgroupvar)==y] else get(y), 
-                paired = !is.null(block))$statistic, 
-        effect = if (is.null(block)){
-                mean(value[get(subgroupvar)==y])-
-                mean(value[get(subgroupvar)==x])
-            } else {
-                mean(get(y) - get(x), na.rm=TRUE)
-            }),
-        by = 'feature_id'])
+.wilcoxon <- function(contrastdef, dt, subgroupvar, block, verbose){
+    subgrouplevels <- stri_split_regex(contrastdef, pattern = '[ ]*[-][ ]*')
+    subgrouplevels %<>% unlist()
+    assert_is_subset(length(subgrouplevels), c(1,2))
+    fun <- if (length(subgrouplevels)==1){ .wilcoxon_onesample
+        } else if (is.null(block)){        .wilcoxon_unpaired
+        } else {                           .wilcoxon_paired   }
+    resdt <- fun(dt, 
+                subgroupvar = subgroupvar, 
+                subgrouplevels = subgrouplevels, 
+                block = block, verbose = verbose)
     data.table::setnames(resdt, c('p', 'w', 'effect'), 
                         sprintf('%s.%s', c('p', 'w', 'effect'), contrastdef))
     resdt
 }
+
+.wilcoxon_onesample <- function(
+    dt, subgroupvar = NULL, subgrouplevels = NULL, block = NULL, verbose = TRUE
+){
+    if (verbose)  cmessage('\t\t\twilcox.test(x = value)')
+    suppressWarnings(dt[, 
+        .(  p      = wilcox.test(x = value, y = NULL, paired = FALSE)$p.value, 
+            w      = wilcox.test(x = value, y = NULL, paired = FALSE)$statistic,
+            effect = mean(value, na.rm=TRUE)),
+        by = 'feature_id'])
+}
+
+
+.wilcoxon_unpaired <- function(
+    dt, subgroupvar, subgrouplevels, block = NULL, verbose = TRUE
+){
+    xx <- subgrouplevels[[1]]
+    yy <- subgrouplevels[[2]]
+    if (verbose)  cmessage('\t\t\twilcox.test(x = %s, y = %s)', xx, yy)
+    suppressWarnings(dt[, 
+        .(  p = wilcox.test(x      = value[get(subgroupvar)==xx],
+                            y      = value[get(subgroupvar)==yy], 
+                            paired = FALSE)$p.value, 
+            w = wilcox.test(x      = value[get(subgroupvar)==xx],
+                            y      = value[get(subgroupvar)==yy], 
+                            paired = FALSE)$statistic, 
+            effect = if (is.null(yy)){  
+                            mean(value[get(subgroupvar)==xx], na.rm=TRUE) 
+                } else {    mean(value[get(subgroupvar)==yy], na.rm=TRUE) - 
+                            mean(value[get(subgroupvar)==xx], na.rm=TRUE) }),
+        by = 'feature_id'])
+}
+
+
+.wilcoxon_paired <- function(
+    dt, subgroupvar, subgrouplevels, block, verbose = TRUE
+){
+    dt <- data.table::dcast(dt, as.formula(sprintf(
+            'feature_id + feature_name + %s ~ %s', block, subgroupvar)),
+            value.var = 'value')
+    xx <- subgrouplevels[[1]]
+    yy <- subgrouplevels[[2]]
+    if (verbose)  cmessage("\t\t\twilcox.test(x = %s, y = %s, paired = TRUE) - pair on '%s'", 
+                            xx, yy, block)
+    suppressWarnings(dt[, 
+        .(  p = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$p.value, 
+            w = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$statistic, 
+            effect = mean(get(y) - get(x), na.rm=TRUE)),
+        by = 'feature_id'])
+}
+
     
 

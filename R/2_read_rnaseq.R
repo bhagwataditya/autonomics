@@ -719,12 +719,14 @@ explicitly_compute_voom_weights <- function(
 #' object$subgroup
 #' object %<>% preprocess_rnaseq_counts()
 #' @export
-preprocess_rnaseq_counts <- function(object, formula = NULL, block = NULL,
+preprocess_rnaseq_counts <- function(object, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
     min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, tmm = cpm,
     voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
 # filter
     if (verbose) message('\t\tPreprocess')
-    design <- create_design(object, formula, verbose = verbose)
+    design <- create_design(object, formula=formula, verbose = verbose)
     object$libsize <- matrixStats::colSums2(counts(object))
     idx <- filterByExpr(counts(object), design = design,#group=object$subgroup,
                 lib.size  = object$libsize, min.count = min_count)
@@ -1008,8 +1010,15 @@ read_rnaseq_counts <- function(
 
 
 analyze <- function(
-    object, pca = FALSE, fit = NULL, formula = NULL, block = NULL, 
-    contrastdefs = NULL, verbose = TRUE, plot = TRUE
+    object, 
+    pca = FALSE, 
+    fit = NULL, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = default_formula(object, subgroupvar, fit), 
+    block = NULL, 
+    contrastdefs = NULL, 
+    verbose = TRUE, 
+    plot = TRUE
 ){
     if (plot) grid.draw(grid.arrange(arrangeGrob(
         plot_sample_densities(object[, seq_len(min(30, ncol(object)))]), 
@@ -1018,9 +1027,13 @@ analyze <- function(
     if (pca)   object %<>% pca(verbose=verbose, plot=plot)
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
-        object %<>% fitfun(formula = formula, block = block, 
+        if (is.null(formula)) formula <- default_formula(object,subgroupvar,fit)
+        object %<>% fitfun( subgroupvar  = subgroupvar, 
+                            formula      = formula, 
                             contrastdefs = contrastdefs, 
-                            verbose = verbose, plot = plot) }
+                            block        = block, 
+                            verbose      = verbose, 
+                            plot         = plot) }
     object
 }
 

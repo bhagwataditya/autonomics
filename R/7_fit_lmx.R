@@ -12,10 +12,12 @@
     f.p <- stats::anova(fitres)['subgroup', f.pname]
     fitres %<>% summary()
     fitres %<>% stats::coefficients()
-    pvalues <- data.table::as.data.table(as.list(fitres[, pname]))
-    tvalues <- data.table::as.data.table(as.list(fitres[, tname]))
-    effects <- data.table::as.data.table(as.list(fitres[, effectname]))
-    stderrs <- data.table::as.data.table(as.list(fitres[, sename]))
+    fitres
+    
+    pvalues <- as.data.table(as.list(fitres[, pname,      drop=FALSE]))
+    tvalues <- as.data.table(as.list(fitres[, tname,      drop=FALSE]))
+    effects <- as.data.table(as.list(fitres[, effectname, drop=FALSE]))
+    stderrs <- as.data.table(as.list(fitres[, sename,     drop=FALSE]))
     names(pvalues) %<>% paste0('p.', .)
     names(tvalues) %<>% paste0('t.', .)
     names(effects) %<>% paste0('effect.', .)
@@ -24,10 +26,21 @@
 }
 
 .fit_lm <- function(sd, formula, block=NULL){
-    fitres <- lm(  formula    = formula, 
+    fitres <- stats::coefficients(summary(lm(
+                    formula    = formula, 
                     data      = sd,
-                    na.action = stats::na.omit)
-    .cbindstats(fitres)
+                    na.action = stats::na.omit)))
+             #      F = stats::anova(fitres)[, 'F value'], 
+            #       F.p = stats::anova(fitres)[, 'Pr(>F)'])
+    colnames(fitres) %<>% stri_replace_first_fixed('Estimate', 'effect')
+    colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
+    colnames(fitres) %<>% stri_replace_first_fixed('t value', 't')
+    colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
+    fitmat <- matrix(fitres, nrow=1)
+    colnames(fitmat) <- paste(rep(colnames(fitres), nrow(fitres)), 
+                        rep(rownames(fitres), each = nrow(fitres)), sep = '.')
+    fitmat %<>% cbind(F=0, F.p=1)
+    data.table(fitmat)
 }
 
 .fit_lme <- function(sd, formula, block){
@@ -51,12 +64,12 @@
     .cbindstats(fitres)
 }
 
-.extractstat <- function(lmeres, quantity){
-    idx <- stri_startswith_fixed(names(lmeres), paste0(quantity, '.'))
-    lmemat <- as.matrix(lmeres[, idx, with=FALSE])
-    rownames(lmemat) <- lmeres$feature_id
-    colnames(lmemat) %<>% stri_replace_first_fixed(paste0(quantity, '.'), '')
-    lmemat
+.extractstat <- function(fitres, quantity){
+    idx <- stri_startswith_fixed(names(fitres), paste0(quantity, '.'))
+    mat <- as.matrix(fitres[, idx, with=FALSE])
+    rownames(mat) <- fitres$feature_id
+    colnames(mat) %<>% stri_replace_first_fixed(paste0(quantity, '.'), '')
+    mat
 }
 
 #' Statistical models supported in autonomics
@@ -64,39 +77,40 @@
 TESTS <- c('limma','lm','lme','lmer', 'wilcoxon')
 
 
-fit_lmx <- function(
-    object, 
-    fit, 
+fit_lmx <- function(object, fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = as.formula(sprintf(
-                'value ~ %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
-    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  TRUE
+    formula = default_formula(object, subgroupvar, fit),
+    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
-# Assert
+# Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
-# Prepare dt
+    formula %<>% deparse() %>% Reduce(paste, .)
+    formula %<>% paste0('value ', .)
+    formula %<>% as.formula()
     allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
     dt <- sumexp_to_long_dt(object, svars = allx)
     fixedx <- setdiff(allx, all.vars(block))
     for (x in fixedx){  
         dt[[x]] %<>% factor()
-        stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]])) }
-# lmefit
+        n <- length(levels(dt[[x]]))
+        if (n>1) stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]]))}
+# fit
     fitmethod <- get(paste0('.fit_', fit))
-    lmeres <- dt[, fitmethod(.SD, formula=formula, block=block),by='feature_id']
-    fdt <- lmeres[, c('feature_id', 'F', 'F.p'), with=FALSE]
-    setnames(fdt, c('F', 'F.p'), c('F.lme', 'F.p.lme'))
+    fitres <- dt[, fitmethod(.SD, formula=formula, block=block),by='feature_id']
+    fdt <- fitres[, c('feature_id', 'F', 'F.p'), with=FALSE]
+    names(fdt) %<>% stri_replace_first_fixed('F.p', paste0('F.p.', fit))
+    names(fdt) %<>% stri_replace_first_fixed('F',   paste0('F.',   fit))
     object %<>% merge_fdata(fdt)
-# lmeextract
-    for (x in setdiff(all.vars(formula), 'value'))  names(lmeres) %<>% 
+# extract
+    for (x in setdiff(all.vars(formula), 'value'))  names(fitres) %<>% 
         stri_replace_first_fixed(x, '')
     quantities <- c('p', 't', 'effect', 'se')
-    lmeres <- mapply(.extractstat, quantity=quantities, 
-                            MoreArgs = list(lmeres=lmeres), SIMPLIFY = FALSE)
-    lmeres$fdr  <- apply(lmeres$p, 2, p.adjust, 'fdr')
-    lmeres$bonf <- apply(lmeres$p, 2, p.adjust, 'bonf')
-    metadata(object)$lmx <- do.call(abind::abind, c(lmeres, along=3))
-    metadata(object)$lmx %<>% extract(rownames(object),,)
+    fitres <- mapply(.extractstat, quantity=quantities, 
+                            MoreArgs = list(fitres=fitres), SIMPLIFY = FALSE)
+    fitres$fdr  <- apply(fitres$p, 2, p.adjust, 'fdr')
+    fitres$bonf <- apply(fitres$p, 2, p.adjust, 'bonf')
+    metadata(object)$lmx <- do.call(abind::abind, c(fitres, along=3))
+    metadata(object)$lmx %<>% extract(rownames(object),,,drop=FALSE)
     names(metadata(object)) %<>% stri_replace_first_fixed('lmx', fit)
     
     if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object, fit))
@@ -113,9 +127,8 @@ fit_lmx <- function(
 fit_lm <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = as.formula(sprintf(
-                'value ~ %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
-    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  TRUE
+    formula = default_formula(object, subgroupvar, fit),
+    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
     if (verbose)  cmessage('\t\tlm(%s)', Reduce(paste, deparse(formula)))
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
@@ -129,9 +142,8 @@ fit_lm <- function(
 fit_lme <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = as.formula(sprintf(
-                'value ~ %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
-    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  TRUE
+    formula = default_formula(object, subgroupvar, fit),
+    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
     assert_is_not_null(block)
     if (is_a_string(block)){ 
@@ -152,9 +164,8 @@ fit_lmer <- function(
     object, 
     fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = as.formula(sprintf(
-                'value ~ %s', if (is.null(subgroupvar)) 1 else subgroupvar)),
-    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  TRUE
+    formula = default_formula(object, subgroupvar, fit),
+    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
     if (is_formula(block))  block <- Reduce(paste, deparse(block))
     if (is_a_string(block)){ 

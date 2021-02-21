@@ -4,10 +4,17 @@
 \alias{create_design}
 \title{Create design}
 \usage{
-create_design(object, formula = NULL, verbose = TRUE)
+create_design(
+  object,
+  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
+  formula = default_formula(object, subgroupvar),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{subgroupvar}{subgroup svar}
 
 \item{formula}{formula with svars}
 

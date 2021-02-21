@@ -292,7 +292,8 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, formula = formula, block = block, 
+    object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar, 
+                    formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
