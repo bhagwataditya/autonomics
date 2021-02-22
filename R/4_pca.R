@@ -589,13 +589,20 @@ biplot_corrections <- function(
     object, method = 'pca', color = subgroup, covariates = character(0),
     varcols = ceiling(sqrt(1+length(covariates))), plot = TRUE
 ){
-    p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
+    x <- paste0(method, "1")
+    y <- paste0(method, "2")
+    p <- biplot(object, !!sym(x), !!sym(y), color = !!enquo(color),
+                nloadings=0)
     p <- p + ggtitle('INPUT')
     p <- p + guides(color=FALSE, fill=FALSE)
     plotlist <- list(p)
     for (ibatch in covariates){
-        exprs(object) %<>% removeBatchEffect(batch=sdata(object)[[ibatch]])
-        p <- biplot(object, pca1, pca2, color = !!enquo(color), nloadings=0)
+        tmp_object <- object
+        exprs(tmp_object) %<>%
+            removeBatchEffect(batch=sdata(tmp_object)[[ibatch]])
+        tmp_object <- get(method)(tmp_object, ndim=2, verbose=FALSE)
+        p <- biplot(tmp_object, !!sym(x), !!sym(y), color = !!enquo(color),
+                    nloadings=0)
         p <- p + ggtitle(paste0(' - ', ibatch))
         p <- p + guides(color=FALSE, fill=FALSE)
         plotlist %<>% c(list(p))
