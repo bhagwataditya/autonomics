@@ -15,6 +15,7 @@ fit_limma(
   formula = default_formula(object, subgroupvar, "limma"),
   contrastdefs = NULL,
   block = NULL,
+  weights = autonomics::weights(object),
   verbose = TRUE,
   plot = FALSE
 )
@@ -24,6 +25,7 @@ fit_lm(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lm"),
   block = NULL,
+  weights = autonomics::weights(object),
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -34,6 +36,7 @@ fit_lme(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lme"),
   block = NULL,
+  weights = autonomics::weights(object),
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -45,6 +48,7 @@ fit_lmer(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lmer"),
   block = NULL,
+  weights = autonomics::weights(object),
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -76,6 +80,8 @@ fit_wilcoxon(
      nrow=1, byrow=TRUE))}}}
 
 \item{block}{block svar (or NULL)}
+
+\item{weights}{weight matrix or NULL}
 
 \item{verbose}{whether to msg}
 

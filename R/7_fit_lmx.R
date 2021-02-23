@@ -102,7 +102,8 @@ TESTS <- c('limma','lm','lme','lmer', 'wilcoxon')
 fit_lmx <- function(object, fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit),
-    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+    block = NULL, weights = autonomics::weights(object), contrastdefs = NULL, 
+    verbose = TRUE, plot =  FALSE
 ){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
@@ -148,7 +149,8 @@ fit_lm <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit='lm'),
-    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+    block = NULL, weights = autonomics::weights(object), contrastdefs = NULL, 
+    verbose = TRUE, plot =  FALSE
 ){
     if (verbose)  cmessage('\t\tlm(%s)', Reduce(paste, deparse(formula)))
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
@@ -163,7 +165,8 @@ fit_lme <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit='lme'),
-    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+    block = NULL, weights = autonomics::weights(object), contrastdefs = NULL, 
+    verbose = TRUE, plot =  FALSE
 ){
     assert_is_not_null(block)
     if (is_a_string(block)){ 
@@ -185,7 +188,8 @@ fit_lmer <- function(
     fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit='lmer'),
-    block = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+    block = NULL, weights = autonomics::weights(object), contrastdefs = NULL, 
+    verbose = TRUE, plot =  FALSE
 ){
     if (is_formula(block))  block <- Reduce(paste, deparse(block))
     if (is_a_string(block)){ 

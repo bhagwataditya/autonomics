@@ -1017,6 +1017,7 @@ analyze <- function(
     subgroupvar = default_subgroupvar(object), 
     formula = default_formula(object, subgroupvar, fit), 
     block = NULL, 
+    weights = autonomics::weights(object),
     contrastdefs = NULL, 
     verbose = TRUE, 
     plot = TRUE
@@ -1033,6 +1034,7 @@ analyze <- function(
                             formula      = formula, 
                             contrastdefs = contrastdefs, 
                             block        = block, 
+                            weights      = weights,
                             verbose      = verbose, 
                             plot         = plot) }
     object
