@@ -724,7 +724,11 @@ preprocess_rnaseq_counts <- function(object,
     formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
     min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, tmm = cpm,
     voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
-# filter
+# Initialize
+    if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
+    if (is.null(formula))      formula <- default_formula(
+                                            object, subgroupvar, fit='limma')
+# Filter
     if (verbose) message('\t\tPreprocess')
     design <- create_design(object, formula=formula, verbose = verbose)
     object$libsize <- matrixStats::colSums2(counts(object))
@@ -733,31 +737,28 @@ preprocess_rnaseq_counts <- function(object,
     if (verbose) message('\t\tKeep ', sum(idx), '/', length(idx),
             ' features: count >= ', min_count, ' in at least some samples')
     object %<>% extract(idx, )
-# pseudocount
-    if (pseudocount>0){
-        if (verbose)  message('\t\t\tpseudocount ', pseudocount)
-        counts(object) %<>% add(pseudocount) }
-# tpm
+# Add pseudocount
+    if (pseudocount>0){ if (verbose)  message('\t\t\tpseudocount ', pseudocount)
+                        counts(object) %<>% add(pseudocount) }
+# Tpm/Cpm normalize
     if (!is.null(genesize)){
         assert_is_subset(genesize, fvars(object))
         if (verbose)  message('\t\t\ttpm')
         tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesize]])}
-# tmm
     if (tmm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
                 object$libsize <- scaledlibsizes(counts(object)) }
-# cpm
     if (cpm){   if (verbose)  message('\t\t\t\tcpm')
                 cpm(object) <- counts2cpm(counts(object), object$libsize)
                 other <- setdiff(assayNames(object), 'cpm')
                 assays(object) %<>% extract(c('cpm', other)) }
-# voom (counts) & blockcor (log2(cpm))
+# Voom  weight (counts) & blockcor (log2(cpm))
     if (voom){
         if (verbose)  message('\t\t\tvoom:   voom')
         object %<>% add_voom(design, verbose=FALSE, plot=plot & is.null(block))
         if (!is.null(block)){
             object %<>%
                 add_voom(design, block=block, verbose=verbose, plot=plot) }}
-# log2
+# Log2 transform
     if (log2){  if (verbose)  message('\t\t\tlog2')
                 selectedassays <- c('counts','cpm','tpm')
                 selectedassays %<>% intersect(assayNames(object))
@@ -1013,7 +1014,7 @@ analyze <- function(
     object, 
     pca = FALSE, 
     fit = NULL, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    subgroupvar = default_subgroupvar(object), 
     formula = default_formula(object, subgroupvar, fit), 
     block = NULL, 
     contrastdefs = NULL, 

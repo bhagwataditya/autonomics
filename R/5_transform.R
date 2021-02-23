@@ -7,35 +7,113 @@
 #
 #==============================================================================
 
+# mat <- cbind(s1=c(-1,-1), s2=c(-1,1), s3=c(1,-1), s4=c(0.1,0.1))
+# which.medoid(mat)
+which.medoid <- function(mat){
+    spatmed <- ICSNP::spatial.median(t(mat))
+    which.min(sqrt(colSums((sweep(mat, 1, spatmed))^2)))
+}
 
-#' Subtract controls
+# Filter for medoid sample
+filter_medoid <- function(object){
+    if (ncol(object)==1)  return(object)
+    medoid <- which.medoid(exprs(object))
+    object[, medoid]
+}
+
+.subtract_baseline <- function(
+    object, subgroupvar, subgroupctr, assaynames
+){
+    idx <- object[[subgroupvar]] == subgroupctr
+    controls <- object[, idx]
+    perturbs <- object[, !idx]
+    controls %<>% filter_medoid()
+    for (ass in assaynames){
+        assays(perturbs)[[ass]] %<>% sweep(1, assays(controls)[[ass]]) }
+    perturbs
+}
+
+#' Subtract baseline
+#' 
+#' Subtract baseline level within block
+#' 
+#' \code{subtract_baseline} subtracts baseline levels within block, using the 
+#' medoid baseline sample if multiple exist. \cr
+#' 
+#' \code{subtract_pairs} also subtracts baseline level within block. 
+#' It \cannot handle multiple baseline samples, but has instead been optimized
+#' for many blocks \cr
+#' 
+#' \code{subtract_differences} subtracts differences between subsequent levels, 
+#' again within block
 #' @param  object       SummarizedExperiment
 #' @param  subgroupvar  subgroup svar
-#' @param  refgroup    ref subgroup
-#' @param  block       block svar (within which subtraction is performed)
-#' @param  assaynames  which assays to subtract for
-#' @param  verbose     TRUE/FALSE
+#' @param  subgroupctr  control subgroup
+#' @param  block        block svar (within which subtraction is performed)
+#' @param  assaynames   which assays to subtract for
+#' @param  verbose      TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
-#' file <- download_data('atkin18.metabolon.xlsx') 
-#' object <- read_metabolon(file, plot=FALSE)
-#' pca(object, plot=TRUE, color=SET)
-#' object %<>% subtract_controls(block='SUB', subgroupvar = 'SET', refgroup='t0')
-#' pca(object, plot=TRUE, color=SET)
+#' # read 
+#'     require(magrittr)
+#'     file <- download_data('atkin18.metabolon.xlsx') 
+#'     object0 <- read_metabolon(file, plot=FALSE)
+#'     pca(object0, plot=TRUE, color=SET)
+#' 
+#' # subtract_baseline: takes medoid of baseline samples if multiple
+#'     object <- subtract_baseline(object0, block='SUB', subgroupvar='SET')
+#'     pca(object, plot=TRUE, color=SET)
+#' 
+#' # subtract_pairs: optimized for many blocks
+#'     object <- subtract_pairs(   object0, block='SUB', subgroupvar='SET')
+#'     pca(object, plot=TRUE, color=SET)
+#' 
+#' # subtract differences
+#'     object <- subtract_differences(object0, block='SUB', subgroupvar='SET')
+#'     exprs(object) %<>% na_to_zero()
+#'     pca(object, plot=TRUE, color=SET)
 #' @export 
-subtract_controls <- function(
-    object, subgroupvar, refgroup, block, 
+subtract_baseline <- function(
+    object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], 
+    block = NULL, assaynames = setdiff(assayNames(object), 'weights'), 
+    verbose = TRUE
+){
+    if (verbose){ 
+        cmessage("\t\tSubtract controls")
+        cmessage("\t\t\tcontrols  : %s=%s (medoid)", subgroupvar, subgroupctr)
+        if (!is.null(block))  cmessage("\t\t\tin block  : %s", block)
+        cmessage("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
+    }
+    objlist <- if (is.null(block)) list(object) else split_by_svar(
+                                                        object, !!sym(block)) 
+    objlist %<>% lapply(.subtract_baseline, 
+                        subgroupvar = subgroupvar, subgroupctr = subgroupctr, 
+                        assaynames = assaynames)
+    do.call(BiocGenerics::cbind, objlist)
+}
+
+
+#' @rdname subtract_baseline
+#' @export
+subtract_pairs <- function(
+    object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], block,
     assaynames = setdiff(assayNames(object), 'weights'), verbose = TRUE
 ){
+# Report
+    if (verbose){ 
+        cmessage("\t\tSubtract pairs")
+        cmessage("\t\t\tcontrols  : %s=%s (medoid)", subgroupvar, subgroupctr)
+        if (!is.null(block))  cmessage("\t\t\tin block  : %s", block)
+        cmessage("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
+    }
 # Ensure single ref per block
     sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]
     sdata1 %<>% data.table()
-    singlerefperblock <- sdata1[,sum(get(subgroupvar)==refgroup)==1,by=block]$V1
+    singlerefperblock <- sdata1[,sum(get(subgroupvar)==subgroupctr)==1,by=block]$V1
     assert_is_identical_to_true(all(singlerefperblock))
 # Subtract ref
     splitobjects <- split_by_svar(object, !!sym(subgroupvar))
-    refobj <- splitobjects[[refgroup]]
+    refobj <- splitobjects[[subgroupctr]]
     splitobjects %<>% extract(-1)
     splitobjects %<>% lapply(function(obj){
         idx <- match(obj[[block]], refobj[[block]])
@@ -54,13 +132,18 @@ subtract_controls <- function(
 }
 
 
-#' @rdname subtract_controls
+#' @rdname subtract_baseline
 #' @export
-subtract_differences <- function(object, block, subgroupvar){
+subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
+    if (verbose){ 
+        cmessage("\t\tSubtract differences")
+        if (!is.null(block))  cmessage("\t\t\tin block  : %s", block)
+        cmessage("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
+    }
     fvars0 <- intersect(c('feature_id', 'feature_name'), fvars(object))
     dt <- sumexp_to_long_dt(object, fvars=fvars0, svars=c(subgroupvar, block))
-    subgroups <- levels(dt[[subgroupvar]])
-    n <- length(sugroups)
+    subgroups <- slevels(object, subgroupvar)
+    n <- length(subgroups)
     formula <- paste0(c(fvars0, block), collapse = ' + ')
     formula %<>% paste0(' ~ ', subgroupvar)
     formula %<>% as.formula()
@@ -73,7 +156,8 @@ subtract_differences <- function(object, block, subgroupvar){
     names(diffdt) %<>% paste0(' - ', subgroups[-n])
     newdt %<>% cbind(diffdt)
     
-    newdt %<>% data.table::melt.data.table(id.vars =  c(fvars0, block), variable.name = subgroupvar)
+    newdt %<>% data.table::melt.data.table(
+                id.vars =  c(fvars0, block), variable.name = subgroupvar)
     data.table::setorderv(newdt, c('feature_id', block, subgroupvar))
     newdt[, sample_id := paste0(get(block), '.', get(subgroupvar))]
     newobject <- dt2sumexp(newdt)

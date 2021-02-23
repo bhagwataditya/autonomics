@@ -135,8 +135,26 @@ nlevels <- function(object, svar){
 singlelevel <- function(object, svar)   nlevels(object, svar) ==1
 multilevel  <- function(object, svar)   nlevels(object, svar) > 1
 
-#' 
-default_formula <- function(object, subgroupvar, fit){
+#' @rdname default_formula
+#' @export
+default_subgroupvar <- function(object){
+    if ('subgroup' %in% svars(object))  'subgroup' else NULL
+}
+
+#' Create default formula
+#' @param object SummarizedExperiment
+#' @param subgroupvar string
+#' @param fit 'limma', 'lm', 'lme', 'lmer'
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <-.read_metabolon(file)
+#' default_subgroupvar(object)
+#' default_formula(object, fit = 'limma')
+#' default_formula(object, fit = 'lm')
+#' @export 
+default_formula <- function(
+    object, subgroupvar = default_subgroupvar(object), fit
+){
     formula <- if (is.null(subgroupvar))        '~1'
     else if (!subgroupvar %in% svars(object))   '~1'
     else if (singlelevel(object, subgroupvar))  '~1'
@@ -172,30 +190,28 @@ default_formula <- function(object, subgroupvar, fit){
 create_design <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar), verbose = TRUE
+    formula = default_formula(object, subgroupvar, fit = 'limma'), verbose = TRUE
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(all.vars(formula), svars(object))
     . <- NULL
 # Ensure that subgroup vector is a factor to preserve order of levels
-    for (var in setdiff(all.vars(formula), subgroupvar)){
+    for (var in all.vars(formula)){
         if (is.character(object[[var]])) object[[var]] %<>% factor() }
 # Create design matrix
     if (verbose)  cmessage('\t\tDesign: %s', deparse(formula))
     myDesign <- model.matrix(formula,  data = sdata(object))
-# Rename columns
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
-    factors <- svars(object)[are_factor(sdata(object))] # Rename intercept
-    for (var in factors) colnames(myDesign) %<>% gsub(var, '', ., fixed = TRUE)
+    is_factor_var <- function(x, object) is.factor(object[[x]])
+    for (predictor in all.vars(formula)){
+        if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
+                    stri_replace_first_fixed(predictor, '') %>% make.names() }
         # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
         # For other cases it works wonderfully, so I keep it for now.
         # If it gives too many issues, roll back to doing the dropping only
         # for "subgroup" levels:
         #colnames(myDesign) %<>% gsub('subgroup', '', ., fixed=TRUE)
-# Validify names
-    colnames(myDesign) %<>% gsub(':', '..', ., fixed = TRUE)
-    colnames(myDesign) %<>% make.names()
 # Return
     return(myDesign)
 }
@@ -343,7 +359,7 @@ fit_limma <- function(object,
         if(is.null(weights(object))) '' else paste0(
                                                 ', weights = weights(object)'))
     design <- create_design(object, formula=formula, verbose = FALSE)
-    design(object)    <- design
+    design(object) <- design
     if (is.null(contrastdefs)) contrastdefs <- contrast_subgroups(object,design)
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
     if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()

@@ -7,7 +7,7 @@
 create_design(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar),
+  formula = default_formula(object, subgroupvar, fit = "limma"),
   verbose = TRUE
 )
 }

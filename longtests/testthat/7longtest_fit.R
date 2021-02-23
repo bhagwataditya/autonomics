@@ -1,6 +1,36 @@
 require(magrittr)
-context('fit'
-        )
+context('fit')
+
+# Does it work across unpaired-paired-onesample-weights?
+# UNPAIRED - PARED - ONESAMPLE - WEIGHTS
+# INTERCEPT - SUBGROUPVAR - FORMULA
+
+    msg <- 'fit: GSE161731.rnacounts'
+    basedir <- '~/autonomicscache/datasets'
+    subdir  <- '~/autonomicscache/datasets/GSE161731'
+    if (!dir.exists(subdir)){
+        GEOquery::getGEOSuppFiles("GSE161731",baseDir=basedir) }
+    file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
+    sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
+    object <- read_rnaseq_counts(
+        file, sfile = sfile, sfileby='rna_id', subgroupvar='gender', 
+        block='subject_id', voom=TRUE)
+    object %<>% fit_lm(      plot = FALSE)
+    object %<>% fit_limma(   plot = FALSE)
+    object %<>% fit_wilcoxon(plot = FALSE)
+    object %<>% fit_limma(block='subject_id', plot = FALSE)
+    #object %<>% fit_lme(  block='subject_id', plot = FALSE) # convergence error
+    #object %<>% fit_lmer( block='subject_id', plot = FALSE)  # keeps running
+    test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
+
+# L2R
+    
+    object %<>% subtract_controls()
+            
+context('summarize_fit')
+
+
+
 # UNPAIRED
 
     msg <- 'fit: fukuda20.proteingroups)'
@@ -58,29 +88,6 @@ context('fit'
     
 #' pca(object, plot=TRUE, color=SET)
 
-    msg <- 'fit: GSE161731.rnacounts'
-    basedir <- '~/autonomicscache/datasets'
-    subdir  <- '~/autonomicscache/datasets/GSE161731'
-    if (!dir.exists(subdir)){
-        GEOquery::getGEOSuppFiles("GSE161731",baseDir=basedir) }
-    file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
-    sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
-    object <- read_rnaseq_counts(
-        file, sfile = sfile, sfileby='rna_id', subgroupvar='gender', 
-        block='subject_id', voom=TRUE)
-    object %<>% fit_lm(      plot = FALSE)
-    object %<>% fit_limma(   plot = FALSE)
-    object %<>% fit_wilcoxon(plot = FALSE)
-    object %<>% fit_limma(block='subject_id', plot = FALSE)
-    #object %<>% fit_lme(  block='subject_id', plot = FALSE) # convergence error
-    #object %<>% fit_lmer( block='subject_id', plot = FALSE)  # keeps running
-    test_that(msg, expect_s4_class(object, 'SummarizedExperiment'))
-
-# L2R
-    
-    object %<>% subtract_controls()
-            
-context('summarize_fit')
 
 # RNASEQCOUNTS
     # ~ 0 + subgroup | weights
