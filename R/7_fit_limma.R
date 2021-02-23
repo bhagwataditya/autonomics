@@ -312,6 +312,7 @@ vectorize_contrastdefs <- function(contrastdefs){
 #'      nrow=1, byrow=TRUE))}}
 #' @param formula   designmat formula
 #' @param block     block svar (or NULL)
+#' @param weights   weight matrix or NULL
 #' @param verbose   whether to msg
 #' @param plot      whether to plot
 #' @return Updated SummarizedExperiment
@@ -349,7 +350,8 @@ vectorize_contrastdefs <- function(contrastdefs){
 fit_limma <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, 'limma'), 
-    contrastdefs = NULL, block = NULL, verbose = TRUE, plot=FALSE
+    contrastdefs = NULL, block = NULL, weights = weights(object), 
+    verbose = TRUE, plot=FALSE
 ){
 # Set design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -377,7 +379,7 @@ fit_limma <- function(object,
 # Lmfit
     fit <- suppressWarnings(lmFit(object = exprs(object[, rownames(design)]),
         design = design, block = block, correlation = metadata(object)$blockcor,
-        weights = weights(object)))
+        weights = weights))
 # Contrast
     object %<>% .limmacontrast(fit)
     if (plot)  print(plot_volcano(object, fit='limma')) 
