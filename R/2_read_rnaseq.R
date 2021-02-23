@@ -1010,6 +1010,23 @@ read_rnaseq_counts <- function(
 }
 
 
+#' Analyze
+#' @param object       SummarizedExperiment
+#' @param pca          whether to perform pca
+#' @param fit          NULL, 'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
+#' @param subgroupvar  subgroup svar
+#' @param formula      model formula
+#' @param block        block svar
+#' @param weights      weight matrix
+#' @param contrastdefs contrastdefs vector/matrix/list
+#' @param verbose      whether to msg
+#' @param plot         whether to plot
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot=FALSE)
+#' object %<>% analyze(pca=TRUE, fit='limma')
+#' 
+#' @export
 analyze <- function(
     object, 
     pca = FALSE, 
