@@ -38,7 +38,7 @@
     colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = nrow(fitres)), sep = '.')
+                        rep(rownames(fitres), times =ncol(fitres)), sep = '.')
     fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
@@ -56,7 +56,7 @@
     fitres %<>% extract(, c('effect', 'se', 't', 'p')) # drop DF column
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = nrow(fitres)), sep = '.')
+                        rep(rownames(fitres), times = ncol(fitres)), sep = '.')
     fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
@@ -81,7 +81,7 @@
     fitres %<>% extract(, c('effect', 'se', 't', 'p')) # drop DF column
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = nrow(fitres)), sep = '.')
+                        rep(rownames(fitres), times = ncol(fitres)), sep = '.')
     fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }

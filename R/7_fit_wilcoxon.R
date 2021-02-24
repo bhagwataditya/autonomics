@@ -9,8 +9,8 @@
 fit_wilcoxon <- function(
     object,
     subgroupvar =if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    contrastdefs = contrast_subgroups(
-        object, create_design(object, subgroupvar=subgroupvar, verbose=FALSE)), 
+    formula = default_formula(object, subgroupvar, fit = 'wilcoxon'),
+    contrastdefs = contrast_coefs(object, formula = formula), 
     block = NULL, verbose = TRUE, plot = FALSE
 ){
 # fit

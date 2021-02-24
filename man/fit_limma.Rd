@@ -13,7 +13,7 @@ fit_limma(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, "limma"),
-  contrastdefs = NULL,
+  contrastdefs = contrast_coefs(object, formula),
   block = NULL,
   weights = autonomics::weights(object),
   verbose = TRUE,
@@ -57,8 +57,8 @@ fit_lmer(
 fit_wilcoxon(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  contrastdefs = contrast_subgroups(object, create_design(object, subgroupvar =
-    subgroupvar, verbose = FALSE)),
+  formula = default_formula(object, subgroupvar, fit = "wilcoxon"),
+  contrastdefs = contrast_coefs(object, formula = formula),
   block = NULL,
   verbose = TRUE,
   plot = FALSE

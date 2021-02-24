@@ -223,8 +223,8 @@ split_subgroup_levels <- function(object){
 
 #' @rdname subgroup_matrix
 #' @export
-subgroup_array <- function(object){
-    x <- subgroup_levels(object)
+subgroup_array <- function(object, subgroupvar){
+    x <- slevels(object, subgroupvar)
     sep <- guess_sep(object)
     #x %<>% sort()
     dt <- data.table(subgroup = factor(x, x))
@@ -245,14 +245,15 @@ subgroup_array <- function(object){
 #' Arrange (subgroup)levels in matrix
 #'
 #' @param object SummarizedExperiment
+#' @param subgroupvar subgroup svar
 #' @return matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' subgroup_matrix(object)
 #' @export
-subgroup_matrix <- function(object){
-    subgroup_array <- subgroup_array(object)
+subgroup_matrix <- function(object, subgroupvar){
+    subgroup_array <- subgroup_array(object, subgroupvar)
     if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
         byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
     otherdims <- names(dim(subgroup_array)) %>% setdiff('V1')

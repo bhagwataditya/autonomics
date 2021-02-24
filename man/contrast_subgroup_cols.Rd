@@ -5,9 +5,9 @@
 \alias{contrast_subgroup_rows}
 \title{Row/Col contrasts}
 \usage{
-contrast_subgroup_cols(object)
+contrast_subgroup_cols(object, subgroupvar)
 
-contrast_subgroup_rows(object)
+contrast_subgroup_rows(object, subgroupvar)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

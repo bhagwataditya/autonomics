@@ -5,12 +5,14 @@
 \alias{subgroup_matrix}
 \title{Get subgroup matrix}
 \usage{
-subgroup_array(object)
+subgroup_array(object, subgroupvar)
 
-subgroup_matrix(object)
+subgroup_matrix(object, subgroupvar)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{subgroupvar}{subgroup svar}
 }
 \value{
 matrix

@@ -219,7 +219,7 @@ create_design <- function(
 
 #=============================================================================
 #
-#               contrast_subgroups
+#               contrast_coefs
 #                   contrast_subgroup_cols
 #                   contrast_subgroup_rows
 #
@@ -236,8 +236,8 @@ create_design <- function(
 #' contrast_subgroup_cols(object)
 #' contrast_subgroup_rows(object)
 #' @export
-contrast_subgroup_cols <- function(object){
-    subgroupmat <- subgroup_matrix(object)
+contrast_subgroup_cols <- function(object, subgroupvar){
+    subgroupmat <- subgroup_matrix(object, subgroupvar)
     if (is_scalar(subgroupmat))  return(subgroupmat)
     if (ncol(subgroupmat)==1) return(matrix(, ncol=0, nrow=nrow(subgroupmat)))
     colcontrasts <- matrix(  sprintf('%s - %s',
@@ -255,8 +255,8 @@ contrast_subgroup_cols <- function(object){
 
 #' @rdname contrast_subgroup_cols
 #' @export
-contrast_subgroup_rows <- function(object){
-    subgroupmat <- subgroup_matrix(object)
+contrast_subgroup_rows <- function(object, subgroupvar){
+    subgroupmat <- subgroup_matrix(object, subgroupvar)
     if (nrow(subgroupmat)==1) return(matrix(, nrow=0, ncol=ncol(subgroupmat)))
     rowcontrasts <- matrix(  sprintf('%s - %s',
                                     subgroupmat[-nrow(subgroupmat), ],
@@ -271,13 +271,18 @@ contrast_subgroup_rows <- function(object){
 }
 
 
-contrast_subgroups <- function(object, design){
+contrast_coefs <- function(object, formula){
+    subgroupvar <- all.vars(formula)[1]
+    design <- create_design(object, formula = formula)
     if (ncol(design)==1){
         list(matrix(colnames(design), nrow=1, ncol=1), 
             matrix(nrow=0, ncol=0))
+    } else if (all(design[, 1]==1)){
+        list(colnames(design)[-1][seq_len(nlevels(object, subgroupvar)-1)], 
+            matrix(nrow=0, ncol=0))
     } else {
-        list(contrast_subgroup_cols(object),
-            contrast_subgroup_rows(object)) }
+        list(contrast_subgroup_cols(object, subgroupvar),
+            contrast_subgroup_rows( object, subgroupvar)) }
 }
 
 
@@ -348,9 +353,10 @@ vectorize_contrastdefs <- function(contrastdefs){
 #' object %<>% fit_lm(plot=FALSE)
 #' @export
 fit_limma <- function(object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula = default_formula(object, subgroupvar, 'limma'), 
-    contrastdefs = NULL, block = NULL, weights = autonomics::weights(object), 
+    contrastdefs = contrast_coefs(object, formula), 
+    block = NULL, weights = autonomics::weights(object), 
     verbose = TRUE, plot=FALSE
 ){
 # Set design/contrasts
@@ -362,7 +368,6 @@ fit_limma <- function(object,
                                                 ', weights = weights(object)'))
     design <- create_design(object, formula=formula, verbose = FALSE)
     design(object) <- design
-    if (is.null(contrastdefs)) contrastdefs <- contrast_subgroups(object,design)
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
     if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
     contrastdefs(object) <- contrastdefs
