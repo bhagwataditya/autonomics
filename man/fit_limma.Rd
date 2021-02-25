@@ -15,7 +15,7 @@ fit_limma(
   formula = default_formula(object, subgroupvar, "limma"),
   contrastdefs = contrast_coefs(object, formula),
   block = NULL,
-  weightvar = NULL,
+  weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -25,7 +25,7 @@ fit_lm(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lm"),
   block = NULL,
-  weightvar = NULL,
+  weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -36,7 +36,7 @@ fit_lme(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lme"),
   block = NULL,
-  weightvar = NULL,
+  weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -48,7 +48,7 @@ fit_lmer(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lmer"),
   block = NULL,
-  weightvar = NULL,
+  weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -60,6 +60,7 @@ fit_wilcoxon(
   contrastdefs = contrast_coefs(object, formula = default_formula(object, subgroupvar,
     fit = "wilcoxon")),
   block = NULL,
+  weightvar = NULL,
   verbose = TRUE,
   plot = FALSE
 )

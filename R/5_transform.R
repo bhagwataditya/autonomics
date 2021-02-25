@@ -120,7 +120,7 @@ subtract_pairs <- function(
 # Report
     if (verbose){ 
         cmessage("\t\tSubtract pairs")
-        cmessage("\t\t\tcontrols  : %s=%s (medoid)", subgroupvar, subgroupctr)
+        cmessage("\t\t\tcontrols  : %s=='%s'", subgroupvar, subgroupctr)
         if (!is.null(block))  cmessage("\t\t\tin block  : %s", block)
         cmessage("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
     }

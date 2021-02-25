@@ -356,14 +356,17 @@ fit_limma <- function(object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula = default_formula(object, subgroupvar, 'limma'), 
     contrastdefs = contrast_coefs(object, formula), 
-    block = NULL, weightvar = NULL, verbose = TRUE, plot=FALSE
+    block = NULL, 
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    verbose = TRUE, plot=FALSE
 ){
 # Set design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
     if (verbose)  cmessage('\t\tlimma: lmFit(%s%s%s)',
         Reduce(paste, deparse(formula)),
-        if(is.null(block))   '' else paste0(', block = object$ `', block, '`'),
-        if(is.null(weights)) '' else paste0(', weights = weights)'))
+        if(is.null(block))     '' else paste0(', block = object$ `',block, '`'),
+        if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
+                                            weightvar))
     design <- create_design(object, formula=formula, verbose = FALSE)
     design(object) <- design
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
