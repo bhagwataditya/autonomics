@@ -8,16 +8,15 @@
 #' @rdname fit_limma
 fit_wilcoxon <- function(
     object,
-    subgroupvar =if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    formula = default_formula(object, subgroupvar, fit = 'wilcoxon'),
-    contrastdefs = contrast_coefs(object, formula = formula), 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
+    contrastdefs = contrast_coefs(object, 
+        formula = default_formula(object, subgroupvar, fit = 'wilcoxon')), 
     block = NULL, verbose = TRUE, plot = FALSE
 ){
 # fit
     dt <- sumexp_to_long_dt(object, svars = c(subgroupvar, block))
     if (verbose)  cmessage('\t\tWilcoxon')
-    results <- lapply(vectorize_contrastdefs(contrastdefs), 
-                    if (is.null(block)) .wilcoxon else .fit_wilcoxon_block, 
+    results <- lapply(vectorize_contrastdefs(contrastdefs), .wilcoxon, 
                     dt, subgroupvar, block, verbose)
     results %<>% Reduce(merge, .)
 # extract
@@ -46,6 +45,7 @@ fit_wilcoxon <- function(
 .wilcoxon <- function(contrastdef, dt, subgroupvar, block, verbose){
     subgrouplevels <- stri_split_regex(contrastdef, pattern = '[ ]*[-][ ]*')
     subgrouplevels %<>% unlist()
+    subgrouplevels %<>% rev()
     assert_is_subset(length(subgrouplevels), c(1,2))
     fun <- if (length(subgrouplevels)==1){ .wilcoxon_onesample
         } else if (is.null(block)){        .wilcoxon_unpaired
@@ -105,7 +105,7 @@ fit_wilcoxon <- function(
     suppressWarnings(dt[, 
         .(  p = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$p.value, 
             w = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$statistic, 
-            effect = mean(get(y) - get(x), na.rm=TRUE)),
+            effect = mean(get(yy) - get(xx), na.rm=TRUE)),
         by = 'feature_id'])
 }
 

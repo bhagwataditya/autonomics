@@ -69,7 +69,7 @@ sumexp_to_long_dt <- function(
     fvars = intersect('feature_name', autonomics::fvars(object)),
     sid   = 'sample_id',
     svars = intersect('subgroup', autonomics::svars(object)),
-    assay = assayNames(object)[1]
+    assay = assayNames(object) %>% intersect(c(.[1], 'is_imputed'))
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -86,20 +86,22 @@ sumexp_to_long_dt <- function(
     }
 # Melt
     melt <- data.table::melt.data.table
-    dt <- sumexp_to_wide_dt(object, fid, fvars, assay = assay)
+    dt <- sumexp_to_wide_dt(object, fid, fvars, assay = assay[1])
     dt %<>% melt(id.vars = unique(c(fid, fvars)), variable.name = sid,
                 value.name = 'value')
 # Merge
-    if ('is_imputed' %in% SummarizedExperiment::assayNames(object)){
-        idt <- sumexp_to_wide_dt(
-                    object, fid, fvars = character(0), assay = "is_imputed")
-        idt %<>% melt(id.vars = fid, variable.name=sid, value.name='is_imputed')
-        dt %<>% merge(idt, by = c(fid, sid))
+    if (length(assay)>1){
+        for (ass in assay[-1]){
+            assdt <- sumexp_to_wide_dt(
+                        object, fid=fid, fvars = character(0), assay = ass)
+            assdt %<>% melt(id.vars = fid, variable.name = sid, value.name=ass)
+            dt %<>% merge(assdt, by = c(fid, sid))
+        }
     }
     sdata1 <- sdata(object)[, c(sid, svars), drop = FALSE]
     dt %<>% merge(sdata1, by = sid)
     cols <- intersect(unique(
-                c(fid, fvars, sid, svars, 'value', 'is_imputed')), names(dt))
+                c(fid, fvars, sid, svars, 'value', assay[-1])), names(dt))
     dt %<>% extract(, cols, with = FALSE)
         # Note: unique is to avoid duplication of same fields in fid and fvars
 # Order

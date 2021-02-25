@@ -50,7 +50,7 @@ Subtract baseline level within block
 medoid baseline sample if multiple exist. \cr
 
 \code{subtract_pairs} also subtracts baseline level within block. 
-It \cannot handle multiple baseline samples, but has instead been optimized
+It cannot handle multiple baseline samples, but has instead been optimized
 for many blocks \cr
 
 \code{subtract_differences} subtracts differences between subsequent levels, 

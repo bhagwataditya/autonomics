@@ -9,12 +9,17 @@
     object0 <- .read_rnaseq_counts(file, sfile=sfile, sfileby='rna_id')
     object0 %<>% rm_singleton_samples('subject_id')
     object0 %<>% filter_samples(cohort == 'COVID-19', verbose=TRUE)
+    object0 %<>% filter_samples(time_since_onset != 'middle')
     complete_subjects <- data.table(sdata(object0))[, 
         .SD[all(c('early', 'late') %in% time_since_onset)], 
         by='subject_id']$subject_id
     object0 %<>% filter_samples(subject_id %in% complete_subjects)
-    object0 %<>% filter_samples(time_since_onset != 'middle')
-    object0 %<>% preprocess_rnaseq_counts(subgroupvar = 'subject_id')
+    # object0 %<>% pca()
+    # biplot(object0, color = subject_id, group = subject_id, label = sample_id, 
+    #       shape = time_since_onset)
+    object0 %<>% filter_samples(!sample_id %in% c(
+        'DU18-02S0011620', 'DU18-02S0011625', 'DU18-02S0011619'), verbose=TRUE)
+    object0 %<>% preprocess_rnaseq_counts(formula=~subject_id+time_since_onset)
     object <- subtract_baseline(object0, 
                     block='subject_id', subgroupvar='time_since_onset')
     # object0 %<>% pca()
@@ -23,6 +28,8 @@
     # biplot(object, color=subject_id, group=subject_id, shape=time_since_onset)
 
     
+#=====================================
+#                ~ 1
 #=====================================
     
 context('fit_limma: ~ 1')       # late - early : 32 down, 75 up
@@ -36,24 +43,24 @@ context('fit_limma: ~ 1')       # late - early : 32 down, 75 up
     test_that(  "subgroup = 'subgroup1'", {
         object %<>% fit_limma()
         expect_true(sumexp_has_limma(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==32)
-        expect_true(summarize_fit(object, 'limma')$nup  ==75)
+        expect_true(summarize_fit(object, 'limma')$ndown==6)
+        expect_true(summarize_fit(object, 'limma')$nup  ==56)
     })
 
     test_that(  "subgroup = NULL", {
         object$subgroup <- NULL
         object %<>% fit_limma()
         expect_true(sumexp_has_limma(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==32)
-        expect_true(summarize_fit(object, 'limma')$nup  ==75)
+        expect_true(summarize_fit(object, 'limma')$ndown==6)
+        expect_true(summarize_fit(object, 'limma')$nup  ==56)
     })
     
     test_that(  "formula=~1", {
         object$subgroup <- NULL
         object %<>% fit_limma(formula=~1)
         expect_true(sumexp_has_limma(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==32)
-        expect_true(summarize_fit(object, 'limma')$nup  ==75)
+        expect_true(summarize_fit(object, 'limma')$ndown==6)
+        expect_true(summarize_fit(object, 'limma')$nup  ==56)
     })
 
 #=============================================================================
@@ -65,16 +72,16 @@ context('fit_limma: ~ (0 +) time_since_onset')  # 23 down, 90 up
         object$subgroup <- object$time_since_onset
         object %<>% fit_limma()
         expect_true(sumexp_has_limma(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==23)
-        expect_true(summarize_fit(object, 'limma')$nup  ==90)
+        expect_true(summarize_fit(object, 'limma')$ndown==0)
+        expect_true(summarize_fit(object, 'limma')$nup  ==35)
     })
 
     test_that(  "subgroupvar = 'time_since_onset'", {
         object$subgroup <- NULL
         object %<>% fit_limma(subgroupvar = 'time_since_onset')
         expect_true(sumexp_has_limma(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==23)
-        expect_true(summarize_fit(object, 'limma')$nup  ==90)
+        expect_true(summarize_fit(object, 'limma')$ndown==0)
+        expect_true(summarize_fit(object, 'limma')$nup  ==35)
     })
     
     test_that(  "formula = ~ 0 + time_since_onset", {
@@ -82,6 +89,8 @@ context('fit_limma: ~ (0 +) time_since_onset')  # 23 down, 90 up
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~ 0 + time_since_onset)
         expect_true(sumexp_has_limma(object))
+        expect_true(summarize_fit(object, 'limma')$ndown==0)
+        expect_true(summarize_fit(object, 'limma')$nup  ==35)
     })
     
     test_that(  "formula = ~ time_since_onset", {
@@ -89,6 +98,8 @@ context('fit_limma: ~ (0 +) time_since_onset')  # 23 down, 90 up
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~ time_since_onset)
         expect_true(sumexp_has_limma(object))
+        expect_true(summarize_fit(object, 'limma')$ndown==0)
+        expect_true(summarize_fit(object, 'limma')$nup  ==35)
     })
 
 #=============================================================================
@@ -101,8 +112,8 @@ context('fit_limma: ~ subject_id + subgroup')  # 90 down, 147 up
         object %<>% fit_limma(formula = ~ subject_id + time_since_onset, 
                               contrastdefs = 'late')
         expect_true(sumexp_has_limma(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==90)
-        expect_true(summarize_fit(object, 'limma')$nup  ==147)
+        expect_true(summarize_fit(object, 'limma')$ndown==10)
+        expect_true(summarize_fit(object, 'limma')$nup  ==54)
     })
     
     test_that(  "formula = ~ time_since_onset + subject_id", {
@@ -110,8 +121,8 @@ context('fit_limma: ~ subject_id + subgroup')  # 90 down, 147 up
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~ time_since_onset + subject_id)
         expect_true(sumexp_has_limma(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==90)
-        expect_true(summarize_fit(object, 'limma')$nup  ==147)
+        expect_true(summarize_fit(object, 'limma')$ndown==10)
+        expect_true(summarize_fit(object, 'limma')$nup  ==54)
     })
     
     test_that(  "formula = ~ 0 + subject_id + time_since_onset", {
@@ -120,16 +131,16 @@ context('fit_limma: ~ subject_id + subgroup')  # 90 down, 147 up
         object %<>% fit_limma(formula = ~ 0 + subject_id + time_since_onset, 
                               contrastdefs = 'late')
         expect_true(sumexp_has_limma(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==90)
-        expect_true(summarize_fit(object, 'limma')$nup  ==147)
+        expect_true(summarize_fit(object, 'limma')$ndown==10)
+        expect_true(summarize_fit(object, 'limma')$nup  ==54)
     })
     
     test_that(  "formula = ~ 0 + time_since_onset + subject_id", {
         object <- object0       # needs to be avoided !
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~ 0 + time_since_onset + subject_id)
-        expect_true(summarize_fit(object, 'limma')$ndown<90)
-        expect_true(summarize_fit(object, 'limma')$nup  <147)
+        expect_true(summarize_fit(object, 'limma')$ndown==12)
+        expect_true(summarize_fit(object, 'limma')$nup  ==52)
         expect_true(sumexp_has_limma(object))
     })
 
@@ -142,8 +153,8 @@ context('fit_limma: ~ subject_id  |  subgroup')  # 53 down, 127 up
         object <- object0
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~time_since_onset, block='subject_id')
-        expect_true(summarize_fit(object, 'limma')$ndown== 53)
-        expect_true(summarize_fit(object, 'limma')$nup  ==127)
+        expect_true(summarize_fit(object, 'limma')$ndown== 8)
+        expect_true(summarize_fit(object, 'limma')$nup  == 85)
         expect_true(sumexp_has_limma(object))
     })
     
@@ -151,8 +162,8 @@ context('fit_limma: ~ subject_id  |  subgroup')  # 53 down, 127 up
         object <- object0
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~0+time_since_onset, block='subject_id')
-        expect_true(summarize_fit(object, 'limma')$ndown==53)
-        expect_true(summarize_fit(object, 'limma')$nup  ==127)
+        expect_true(summarize_fit(object, 'limma')$ndown==8)
+        expect_true(summarize_fit(object, 'limma')$nup  ==86)
         expect_true(sumexp_has_limma(object))
     })
     

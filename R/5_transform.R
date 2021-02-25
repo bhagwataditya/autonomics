@@ -14,11 +14,29 @@ which.medoid <- function(mat){
     which.min(sqrt(colSums((sweep(mat, 1, spatmed))^2)))
 }
 
-# Filter for medoid sample
-filter_medoid <- function(object){
+.filter_medoid <- function(object, verbose = FALSE){
     if (ncol(object)==1)  return(object)
     medoid <- which.medoid(exprs(object))
-    object[, medoid]
+    object %<>% extract(, medoid)
+    if (verbose) cmessage('\t\t\t\t%s', object$sample_id)
+    object
+}
+
+#' Filter medoid sample
+#' @param object SummarizedExperiment
+#' @param by svar
+#' @param verbose  whether to message
+#' @examples 
+#' file <- download_data('billing19.rnacounts.txt')
+#' object <- read_rnaseq_counts(file, plot=FALSE)
+#' object %<>% filter_medoid(by = 'subgroup', verbose=TRUE)
+#' @export
+filter_medoid <- function(object, by = NULL, verbose = FALSE){
+    if (is.null(by))  return(.filter_medoid(object, verbose=verbose))
+    object %<>% split_by_svar(!!sym(by))
+    if (verbose) cmessage('\t\t\tRetain medoid sample')
+    object %<>% lapply(.filter_medoid, verbose=verbose)
+    do.call(BiocGenerics::cbind, object)
 }
 
 .subtract_baseline <- function(
@@ -41,7 +59,7 @@ filter_medoid <- function(object){
 #' medoid baseline sample if multiple exist. \cr
 #' 
 #' \code{subtract_pairs} also subtracts baseline level within block. 
-#' It \cannot handle multiple baseline samples, but has instead been optimized
+#' It cannot handle multiple baseline samples, but has instead been optimized
 #' for many blocks \cr
 #' 
 #' \code{subtract_differences} subtracts differences between subsequent levels, 
@@ -114,7 +132,7 @@ subtract_pairs <- function(
 # Subtract ref
     splitobjects <- split_by_svar(object, !!sym(subgroupvar))
     refobj <- splitobjects[[subgroupctr]]
-    splitobjects %<>% extract(-1)
+    splitobjects %<>% extract(setdiff(names(splitobjects), subgroupctr))
     splitobjects %<>% lapply(function(obj){
         idx <- match(obj[[block]], refobj[[block]])
         refobj %<>% extract(, idx)

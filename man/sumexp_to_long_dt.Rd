@@ -19,7 +19,7 @@ sumexp_to_long_dt(
   fvars = intersect("feature_name", autonomics::fvars(object)),
   sid = "sample_id",
   svars = intersect("subgroup", autonomics::svars(object)),
-  assay = assayNames(object)[1]
+  assay = assayNames(object) \%>\% intersect(c(.[1], "is_imputed"))
 )
 
 sumexp_to_subrep_dt(object)

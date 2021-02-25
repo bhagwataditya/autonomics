@@ -25,10 +25,11 @@
     cbind(pvalues, tvalues, effects, stderrs, F = fval, F.p = f.p )
 }
 
-.lm <- function(sd, formula, block=NULL){
+.lm <- function(sd, formula, block, weights){
     fitres <- stats::coefficients(summary(lm(
-                    formula    = formula, 
+                    formula   = formula, 
                     data      = sd,
+                    weights   = weights,
                     na.action = stats::na.omit)))
              #      F = stats::anova(fitres)[, 'F value'], 
             #       F.p = stats::anova(fitres)[, 'Pr(>F)'])
@@ -43,7 +44,7 @@
     data.table(fitmat)
 }
 
-.lme <- function(sd, formula, block){
+.lme <- function(sd, formula, block, weights){
     fitres <- stats::coefficients(summary(lme(
                     fixed     = formula, 
                     random    = block, 
@@ -61,10 +62,11 @@
     data.table(fitmat)
 }
 
-.lmer <- function(sd, formula, block = NULL){
+.lmer <- function(sd, formula, block, weights){
     fitres <- lme4::lmer(
         formula   = formula,
         data      = sd,
+        weights   = weights,
         na.action = stats::na.omit, 
         control   = lme4::lmerControl(
             check.conv.grad     = lme4::.makeCC(action = 'ignore', tol=2e-3),
@@ -101,9 +103,8 @@ TESTS <- c('limma','lm','lme','lmer', 'wilcoxon')
 
 fit_lmx <- function(object, fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit),
-    block = NULL, weights = autonomics::weights(object), contrastdefs = NULL, 
-    verbose = TRUE, plot =  FALSE
+    formula = default_formula(object, subgroupvar, fit), block = NULL, 
+    weightvar = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
@@ -111,7 +112,11 @@ fit_lmx <- function(object, fit,
     formula %<>% paste0('value ', .)
     formula %<>% as.formula()
     allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
-    dt <- sumexp_to_long_dt(object, svars = allx)
+    assnames <- assayNames(object)[1]
+    if (!is.null(weightvar)){   assert_is_character(weightvar)
+                                assert_is_subset(weightvar, assayNames(object)) 
+                                assnames %<>% c(weightvar)}
+    dt <- sumexp_to_long_dt(object, svars = allx, assay = assnames)
     fixedx <- setdiff(allx, all.vars(block))
     for (x in fixedx){  
         dt[[x]] %<>% factor()
@@ -119,7 +124,9 @@ fit_lmx <- function(object, fit,
         if (n>1) stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]]))}
 # fit
     fitmethod <- get(paste0('.', fit))
-    fitres <- dt[, fitmethod(.SD, formula=formula, block=block),by='feature_id']
+    fitres <- dt[, fitmethod(
+                    .SD, formula=formula, block=block, weights=get(weightvar)),
+                by = 'feature_id' ]
     fdt <- fitres[, c('feature_id', 'F', 'F.p'), with=FALSE]
     names(fdt) %<>% stri_replace_first_fixed('F.p', paste0('F.p.', fit))
     names(fdt) %<>% stri_replace_first_fixed('F',   paste0('F.',   fit))
@@ -148,14 +155,13 @@ fit_lmx <- function(object, fit,
 fit_lm <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lm'),
-    block = NULL, weights = autonomics::weights(object), contrastdefs = NULL, 
-    verbose = TRUE, plot =  FALSE
+    formula = default_formula(object, subgroupvar, fit='lm'), block = NULL, 
+    weightvar = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
     if (verbose)  cmessage('\t\tlm(%s)', Reduce(paste, deparse(formula)))
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
-            formula = formula, block = block, contrastdefs = contrastdefs, 
-            verbose = verbose, plot = plot)
+            formula = formula, block = block, weightvar = weightvar, 
+            contrastdefs = contrastdefs, verbose = verbose, plot = plot)
 }
 
 
@@ -164,9 +170,8 @@ fit_lm <- function(
 fit_lme <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lme'),
-    block = NULL, weights = autonomics::weights(object), contrastdefs = NULL, 
-    verbose = TRUE, plot =  FALSE
+    formula = default_formula(object, subgroupvar, fit='lme'), block = NULL, 
+    weightvar = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
     assert_is_not_null(block)
     if (is_a_string(block)){ 
@@ -176,8 +181,8 @@ fit_lme <- function(
                         Reduce(paste, deparse(formula)), 
                         Reduce(paste, deparse(block)))
     fit_lmx(object, fit = 'lme', subgroupvar = subgroupvar, 
-            formula = formula, block = block, contrastdefs = contrastdefs, 
-            verbose = verbose, plot = plot)
+            formula = formula, block = block, weightvar = weightvar, 
+            contrastdefs = contrastdefs, verbose = verbose, plot = plot)
 }
 
 
@@ -187,9 +192,8 @@ fit_lmer <- function(
     object, 
     fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lmer'),
-    block = NULL, weights = autonomics::weights(object), contrastdefs = NULL, 
-    verbose = TRUE, plot =  FALSE
+    formula = default_formula(object, subgroupvar, fit='lmer'), block = NULL, 
+    weightvar = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
     if (is_formula(block))  block <- Reduce(paste, deparse(block))
     if (is_a_string(block)){ 
@@ -200,6 +204,6 @@ fit_lmer <- function(
     }
     if (verbose)  cmessage('\t\tlmer(%s)', Reduce(paste, deparse(formula)))
     fit_lmx(object, fit = 'lmer', subgroupvar = subgroupvar, 
-            formula = formula, block = NULL, contrastdefs = contrastdefs, 
-            verbose = verbose, plot = plot)
+            formula = formula, block = NULL, weightvar = weightvar, 
+            contrastdefs = contrastdefs, verbose = verbose, plot = plot)
 }

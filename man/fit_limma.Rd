@@ -15,7 +15,7 @@ fit_limma(
   formula = default_formula(object, subgroupvar, "limma"),
   contrastdefs = contrast_coefs(object, formula),
   block = NULL,
-  weights = autonomics::weights(object),
+  weightvar = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -25,7 +25,7 @@ fit_lm(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lm"),
   block = NULL,
-  weights = autonomics::weights(object),
+  weightvar = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -36,7 +36,7 @@ fit_lme(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lme"),
   block = NULL,
-  weights = autonomics::weights(object),
+  weightvar = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -48,7 +48,7 @@ fit_lmer(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lmer"),
   block = NULL,
-  weights = autonomics::weights(object),
+  weightvar = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -57,8 +57,8 @@ fit_lmer(
 fit_wilcoxon(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "wilcoxon"),
-  contrastdefs = contrast_coefs(object, formula = formula),
+  contrastdefs = contrast_coefs(object, formula = default_formula(object, subgroupvar,
+    fit = "wilcoxon")),
   block = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -81,7 +81,7 @@ fit_wilcoxon(
 
 \item{block}{block svar (or NULL)}
 
-\item{weights}{weight matrix or NULL}
+\item{weightvar}{NULL or name of weight matrix in assays(object)}
 
 \item{verbose}{whether to msg}
 

@@ -158,7 +158,7 @@ default_formula <- function(
     formula <- if (is.null(subgroupvar))        '~1'
     else if (!subgroupvar %in% svars(object))   '~1'
     else if (singlelevel(object, subgroupvar))  '~1'
-    else if (fit=='limma')                      sprintf('~0 + %s', subgroupvar)
+    else if (fit %in% c('limma', 'wilcoxon'))   sprintf('~0 + %s', subgroupvar)
     else                                        sprintf('~ %s', subgroupvar)
     formula %<>% as.formula()
     formula
@@ -273,7 +273,7 @@ contrast_subgroup_rows <- function(object, subgroupvar){
 
 contrast_coefs <- function(object, formula){
     subgroupvar <- all.vars(formula)[1]
-    design <- create_design(object, formula = formula)
+    design <- create_design(object, formula = formula, verbose = FALSE)
     if (ncol(design)==1){
         list(matrix(colnames(design), nrow=1, ncol=1), 
             matrix(nrow=0, ncol=0))
@@ -317,7 +317,7 @@ vectorize_contrastdefs <- function(contrastdefs){
 #'      nrow=1, byrow=TRUE))}}
 #' @param formula   designmat formula
 #' @param block     block svar (or NULL)
-#' @param weights   weight matrix or NULL
+#' @param weightvar NULL or name of weight matrix in assays(object)
 #' @param verbose   whether to msg
 #' @param plot      whether to plot
 #' @return Updated SummarizedExperiment
@@ -356,16 +356,14 @@ fit_limma <- function(object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula = default_formula(object, subgroupvar, 'limma'), 
     contrastdefs = contrast_coefs(object, formula), 
-    block = NULL, weights = autonomics::weights(object), 
-    verbose = TRUE, plot=FALSE
+    block = NULL, weightvar = NULL, verbose = TRUE, plot=FALSE
 ){
 # Set design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
     if (verbose)  cmessage('\t\tlimma: lmFit(%s%s%s)',
         Reduce(paste, deparse(formula)),
-        if(is.null(block))  '' else paste0(', block = object$ `', block, '`'),
-        if(is.null(weights(object))) '' else paste0(
-                                                ', weights = weights(object)'))
+        if(is.null(block))   '' else paste0(', block = object$ `', block, '`'),
+        if(is.null(weights)) '' else paste0(', weights = weights)'))
     design <- create_design(object, formula=formula, verbose = FALSE)
     design(object) <- design
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
@@ -381,7 +379,12 @@ fit_limma <- function(object,
             metadata(object)$blockcor <- duplicateCorrelation(
                 exprs(object), design=design, block=block
             )$consensus.correlation }}
-# Lmfit
+# weights
+    weights <- NULL
+    if (!is.null(weightvar)) {  assert_is_a_string(weightvar)
+                                assert_is_subset(weightvar, assayNames(object))
+                                weights <- assays(object)[[weightvar]] }
+# Fit
     fit <- suppressWarnings(lmFit(object = exprs(object[, rownames(design)]),
         design = design, block = block, correlation = metadata(object)$blockcor,
         weights = weights))
