@@ -1017,7 +1017,7 @@ read_rnaseq_counts <- function(
 #' @param subgroupvar  subgroup svar
 #' @param formula      model formula
 #' @param block        block svar
-#' @param weights      weight matrix
+#' @param weightvar    NULL or name of weight matrix in assays(object)
 #' @param contrastdefs contrastdefs vector/matrix/list
 #' @param verbose      whether to msg
 #' @param plot         whether to plot
@@ -1028,15 +1028,15 @@ read_rnaseq_counts <- function(
 #' 
 #' @export
 analyze <- function(
-    object, 
-    pca = FALSE, 
-    fit = NULL, 
-    subgroupvar = default_subgroupvar(object), 
-    formula = default_formula(object, subgroupvar, fit), 
-    block = NULL, 
-    weights = autonomics::weights(object),
-    contrastdefs = NULL, 
-    verbose = TRUE, 
+    object,
+    pca = FALSE,
+    fit = NULL,
+    subgroupvar = default_subgroupvar(object),
+    formula = default_formula(object, subgroupvar, fit),
+    block = NULL,
+    weightvar = NULL,
+    contrastdefs = NULL,
+    verbose = TRUE,
     plot = TRUE
 ){
     if (plot) grid.draw(grid.arrange(arrangeGrob(
@@ -1047,12 +1047,12 @@ analyze <- function(
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
         if (is.null(formula)) formula <- default_formula(object,subgroupvar,fit)
-        object %<>% fitfun( subgroupvar  = subgroupvar, 
-                            formula      = formula, 
-                            contrastdefs = contrastdefs, 
-                            block        = block, 
-                            weights      = weights,
-                            verbose      = verbose, 
+        object %<>% fitfun( subgroupvar  = subgroupvar,
+                            formula      = formula,
+                            contrastdefs = contrastdefs,
+                            block        = block,
+                            weightvar      = weightvar,
+                            verbose      = verbose,
                             plot         = plot) }
     object
 }
