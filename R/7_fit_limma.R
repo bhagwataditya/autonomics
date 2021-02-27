@@ -240,13 +240,13 @@ contrast_subgroup_cols <- function(object, subgroupvar){
     subgroupmat <- subgroup_matrix(object, subgroupvar)
     if (is_scalar(subgroupmat))  return(subgroupmat)
     if (ncol(subgroupmat)==1) return(matrix(, ncol=0, nrow=nrow(subgroupmat)))
-    colcontrasts <- matrix(  sprintf('%s - %s',
+    colcontrasts <- matrix(  sprintf('%s-%s',    # no space: as lm(contr.sdiff)
                                     subgroupmat[, -1],
                                     subgroupmat[, -ncol(subgroupmat)]),
                             nrow = nrow(subgroupmat),
                             ncol = ncol(subgroupmat)-1)
     rownames(colcontrasts) <- rownames(subgroupmat)
-    colnames(colcontrasts) <- sprintf('%s - %s',
+    colnames(colcontrasts) <- sprintf('%s-%s',   # no space: as lm(contr.sdiff)
                             colnames(subgroupmat)[-1],
                             colnames(subgroupmat)[-ncol(subgroupmat)])
     colcontrasts
@@ -258,13 +258,13 @@ contrast_subgroup_cols <- function(object, subgroupvar){
 contrast_subgroup_rows <- function(object, subgroupvar){
     subgroupmat <- subgroup_matrix(object, subgroupvar)
     if (nrow(subgroupmat)==1) return(matrix(, nrow=0, ncol=ncol(subgroupmat)))
-    rowcontrasts <- matrix(  sprintf('%s - %s',
+    rowcontrasts <- matrix(  sprintf('%s-%s',  # no space: as lm(contr.sdiff)
                                     subgroupmat[-nrow(subgroupmat), ],
                                     subgroupmat[-1, ]),
                             nrow = nrow(subgroupmat)-1,
                             ncol = ncol(subgroupmat))
     colnames(rowcontrasts) <- colnames(subgroupmat)
-    rownames(rowcontrasts) <- sprintf('%s - %s',
+    rownames(rowcontrasts) <- sprintf('%s-%s', # no space: as lm(contr.sdiff)
                             rownames(subgroupmat)[-nrow(subgroupmat)],
                             rownames(subgroupmat)[-1])
     rowcontrasts

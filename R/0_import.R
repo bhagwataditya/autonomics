@@ -39,7 +39,9 @@
 #' @importFrom graphics    lines    pie    title
 #' @importFrom grDevices   hcl
 #' @importFrom limma       contrasts.fit    duplicateCorrelation   eBayes
-#' @importFrom limma       lmFit    makeContrasts   removeBatchEffect    voom
+#' @importFrom limma       lmFit    makeContrasts   removeBatchEffect    
+#' @importFrom limma       voom   vennDiagram
+#' @importFrom graphics    layout
 #' @importFrom grid        grid.layout  grid.draw   grid.newpage
 #' @importFrom gridExtra   arrangeGrob   grid.arrange
 #' @importFrom magrittr    %>%   %<>%   add   and   equals
