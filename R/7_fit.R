@@ -292,7 +292,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #' @noRd
 extract_fit_quantity <- function(object, fit, quantity='p'){
     assert_is_subset(fit, TESTS)
-    fvars0 <- c('feature_id','feature_name','imputed')
+    fvars0 <- c('feature_id','feature_name','imputed', 'control')
     fvars0 %<>% intersect(fvars(object))
     fdt <- data.table(fdata(object)[, fvars0, drop=FALSE])
     fitdt <- metadata(object)[[fit]][, , quantity, drop=FALSE]
@@ -304,7 +304,7 @@ extract_fit_quantity <- function(object, fit, quantity='p'){
 
 
 merge_fit_quantities <- function(x, y){
-    names0 <- c('feature_id','feature_name','imputed', 'contrast')
+    names0 <- c('feature_id','feature_name','imputed', 'control', 'contrast')
     names0 %<>% intersect(names(x)) %>% intersect(names(y))
     merge(x, y, by = names0)
 }

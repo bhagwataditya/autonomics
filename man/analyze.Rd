@@ -11,7 +11,7 @@ analyze(
   subgroupvar = default_subgroupvar(object),
   formula = default_formula(object, subgroupvar, fit),
   block = NULL,
-  weights = autonomics::weights(object),
+  weightvar = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -30,7 +30,7 @@ analyze(
 
 \item{block}{block svar}
 
-\item{weights}{weight matrix}
+\item{weightvar}{NULL or name of weight matrix in assays(object)}
 
 \item{contrastdefs}{contrastdefs vector/matrix/list}
 
