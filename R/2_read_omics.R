@@ -417,9 +417,8 @@ read_omics <- function(
                         fdata_rows = fdata_rows, fdata_cols = fdata_cols,
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
-        object %<>% merge_sfile(sfile = sfile,
-                            by.x = 'sample_id', by.y = sfileby,
-                            subgroupvar = subgroupvar, verbose = verbose)
+        object %<>% merge_sfile(
+            sfile = sfile, by.x = 'sample_id', by.y = sfileby, verbose=verbose)
     object
 }
 
@@ -452,27 +451,18 @@ split_values <- function(x){
 #' head(sdata(object))
 #'@export
 merge_sdata <- function(object, dt, by.x = 'sample_id',
-    by.y = names(dt)[1], subgroupvar = NULL, verbose=TRUE
+    by.y = names(dt)[1], verbose=TRUE
 ){
     sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
-    if (!is.null(subgroupvar))  object$subgroup <- sdata(object)[[subgroupvar]]
-    leadcols <- c('sample_id', 'subgroup')
-    leadcols %<>% intersect(names(sdata(object)))
-    sdata(object) %<>% pull_columns(leadcols)
     object
 }
 
 #'@rdname merge_sdata
 #'@export
 merge_fdata <- function(object, dt, by.x = 'feature_id',
-    by.y = names(dt)[1], fnamevar = NULL, verbose=TRUE
+    by.y = names(dt)[1], verbose=TRUE
 ){
     fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
-    if (!is.null(fnamevar))  fdata(object)$featurename <-
-                                                fdata(object)[[fnamevar]]
-    leadcols <- c('feature_id', 'feature_name')
-    leadcols %<>% intersect(names(fdata(object)))
-    fdata(object) %<>% pull_columns(leadcols)
     object
 }
 
@@ -519,8 +509,6 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' @param ffile    ffile path
 #' @param by.x           object mergevar
 #' @param by.y           file mergevvar
-#' @param subgroupvar    subgroupvar
-#' @param fnamevar featurenamefvar
 #' @param verbose        TRUE (default) or FALSE
 #' @return SummarizedExperiment
 #' @examples
@@ -534,49 +522,47 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' invisible(create_sfile(object, sfile))
 #' merge_sfile(object, sfile)
 #'@export
-merge_sfile <- function(object, sfile = NULL,
-    by.x = 'sample_id', by.y = NULL, subgroupvar = NULL, verbose = TRUE
+merge_sfile <- function(
+    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, verbose = TRUE
 ){
     if (is.null(sfile))  return(object)
     assert_all_are_existing_files(sfile)
     if (verbose) message('\t\tMerge sdata: ', sfile)
     dt <- fread(sfile)
     if (is.null(by.y))  by.y <- names(dt)[1]
-    object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y,
-                        subgroupvar = subgroupvar, verbose = verbose)
+    object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
 
 #' @rdname merge_sfile
 #' @export
-merge_ffile <- function(object, ffile = NULL,
-    by.x = 'feature_id', by.y = NULL, fnamevar = NULL, verbose = TRUE
+merge_ffile <- function(
+    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, verbose = TRUE
 ){
     if (is.null(ffile))  return(object)
     assert_all_are_existing_files(ffile)
     if (verbose) message('\t\tMerge fdata: ', ffile)
     dt <- fread(ffile)
     if (is.null(by.y))  by.y <- names(dt)[1]
-    object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y,
-                            fnamevar = fnamevar, verbose = verbose)
+    object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
 
-add_subgroup <- function(object, verbose=TRUE){
-# Add subgroup if required
+add_subgroup <- function(
+    object, subgroupvar = 'subgroup', replicatevar = 'replicate', verbose=TRUE
+){
+    if (is.null(subgroupvar))
+    if (has_complete_svalues(object, subgroupvar))  return(object)
     x <- object$sample_id
     sep <- guess_sep(x)
-    if (sep=='NOSEP'){
-        object$subgroup <- 'subgroup1'
-        return(object)
-    } else {
+    if (sep!='NOSEP'){
         nfactor <- nfactors(x, sep)
         if (verbose) message('\t\tInfer subgroup from sample_ids')
-        object$subgroup  <- split_extract(x, seq_len(nfactor-1), sep)
-        object$replicate <- split_extract(x, nfactor, sep)
+        object[[subgroupvar]]  <- split_extract(x, seq_len(nfactor-1), sep)
+        object[[replicatevar]] <- split_extract(x, nfactor, sep)
     }
-    object$subgroup %<>% make.names() # otherwise issue in limma (fixable?)
-    object$subgroup %<>% factor()
+    #object[[subgroupvar]] %<>% make.names() # otherwise issue in limma (fixable?)
+    #object[[subgroupvar]] %<>% factor()
     object
 }
 

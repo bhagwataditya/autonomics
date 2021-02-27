@@ -10,6 +10,9 @@
   sheet = "OrigScale",
   fid_var = "(COMP|COMP_ID)",
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
+  sfile = NULL,
+  sfileby = NULL,
+  by = NULL,
   subgroupvar = "Group"
 )
 
@@ -18,6 +21,9 @@ read_metabolon(
   sheet = "OrigScale",
   fid_var = "(COMP|COMP_ID)",
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
+  sfile = NULL,
+  sfileby = NULL,
+  fileby = NULL,
   subgroupvar = "Group",
   fname_var = "BIOCHEMICAL",
   impute = FALSE,
@@ -40,6 +46,12 @@ read_metabolon(
 \item{fid_var}{feature_id fvar}
 
 \item{sid_var}{sampleid svar}
+
+\item{sfile}{sample file}
+
+\item{sfileby}{sample file mergeby column}
+
+\item{by}{metabolon file mergeby column}
 
 \item{subgroupvar}{subgroup svar}
 

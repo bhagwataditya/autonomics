@@ -9,6 +9,9 @@
   file,
   fidvar = "SeqId",
   sidvar = "SampleId",
+  sfile = NULL,
+  sfileby = NULL,
+  by = NULL,
   subgroupvar = "SampleGroup"
 )
 
@@ -16,6 +19,9 @@ read_somascan(
   file,
   fidvar = "SeqId",
   sidvar = "SampleId",
+  sfile = NULL,
+  sfileby = NULL,
+  by = NULL,
   subgroupvar = "SampleGroup",
   fname_var = "EntrezGeneSymbol",
   sample_type = "Sample",

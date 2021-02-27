@@ -10,7 +10,6 @@ merge_sdata(
   dt,
   by.x = "sample_id",
   by.y = names(dt)[1],
-  subgroupvar = NULL,
   verbose = TRUE
 )
 
@@ -19,7 +18,6 @@ merge_fdata(
   dt,
   by.x = "feature_id",
   by.y = names(dt)[1],
-  fnamevar = NULL,
   verbose = TRUE
 )
 }
@@ -32,9 +30,9 @@ merge_fdata(
 
 \item{by.y}{df mergevar}
 
-\item{subgroupvar}{subgroup svar}
-
 \item{verbose}{TRUE/FALSE}
+
+\item{subgroupvar}{subgroup svar}
 
 \item{fnamevar}{featurename fvar}
 }

@@ -26,10 +26,8 @@
   fid_col = 1,
   sfile = NULL,
   sfileby = NULL,
-  subgroupvar = NULL,
   ffile = NULL,
   ffileby = NULL,
-  fnamevar = NULL,
   verbose = TRUE
 )
 

@@ -14,10 +14,12 @@
 #' has_complete_block_values(object)
 #' @noRd
 has_complete_svalues <- function(object, svar){
+    # NULL svar
+    if (is.null(svar))  return(FALSE)
 
     # svar missing
-    var_present <- svar %in% svars(object)
-    if (!var_present) return(FALSE)
+    var_present <- svar %in% autonomics::svars(object)
+    if (!var_present)   return(FALSE)
 
     # svalues missing
     values_present <- any(is_empty_character(svalues(object, svar)))

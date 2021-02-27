@@ -8,7 +8,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include=TRUE, echo=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE, include=TRUE}
 knitr::opts_chunk$set(
   echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
 #str(knitr::opts_chunk$get())
@@ -181,8 +181,8 @@ object <- read_phosphosites(
 
 ```{r, fig.width=7, fig.height=4, out.width="95%"}
 object <- read_metabolon(
-            file  = download_data('atkin18.metabolon.xlsx'), 
-            pca = TRUE, fit = 'limma', block = 'SUB', plot = TRUE)
+        file  = download_data('atkin18.metabolon.xlsx'),  subgroupvar = 'SET',
+        pca = TRUE, fit = 'limma', block = 'SUB', plot = TRUE)
 ```
 
 ## Somascan

@@ -364,7 +364,7 @@ fit_limma <- function(object,
     assert_is_all_of(object, 'SummarizedExperiment')
     if (verbose)  cmessage('\t\tlimma: lmFit(%s%s%s)',
         Reduce(paste, deparse(formula)),
-        if(is.null(block))     '' else paste0(', block = object$ `',block, '`'),
+        if(is.null(block))     '' else paste0(', block = object$`',block, '`'),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
                                             weightvar))
     design <- create_design(object, formula=formula, verbose = FALSE)

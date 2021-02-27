@@ -209,7 +209,7 @@ stack <- function(x, y){
 #' @export
 .read_metabolon <- function(file, sheet = 'OrigScale',
     fid_var = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    subgroupvar = 'Group'
+    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'Group'
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -242,11 +242,12 @@ stack <- function(x, y){
                 transpose  = FALSE, verbose    = TRUE)
     assayNames(object)[1] <- paste0('metabolon')
 # Update sdata/fdata                        Group   HMDB_ID -> HMDB_ID
-    subgroupcol <- which(stri_detect_fixed(svars(object), subgroupvar))
-    assertive::assert_all_are_less_than_or_equal_to(length(subgroupcol),1)
-    if (length(subgroupcol)==1) svars(object)[subgroupcol] <- 'subgroup'
-    object %<>% add_subgroup()
-    fvars(object) %<>% stri_replace_first_regex('Group[ ]+', '')
+    nsv <- length(svars((object)))
+    nfv <- length(fvars((object)))
+    svars(object)[nsv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$1')
+    fvars(object)[nfv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$2')
+    object %<>% merge_sfile(sfile = sfile, by.x = by, by.y = sfileby)
+    object %<>% add_subgroup(subgroupvar)
 # Return
     object
 }
@@ -256,6 +257,9 @@ stack <- function(x, y){
 #' @param sheet           xls sheet number or name
 #' @param fid_var         feature_id fvar
 #' @param sid_var         sampleid svar
+#' @param sfile           sample file
+#' @param sfileby         sample file mergeby column
+#' @param by              metabolon file mergeby column
 #' @param subgroupvar     subgroup svar
 #' @param fname_var       featurename fvar
 #' @param impute          whether to impute
@@ -274,15 +278,18 @@ stack <- function(x, y){
 #' read_metabolon(file, pca = TRUE, fit = 'limma', block='SUB')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
-    fid_var      = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    subgroupvar = 'Group', fname_var    = 'BIOCHEMICAL',
+    fid_var = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
+    sfile = NULL, sfileby = NULL, fileby = NULL, subgroupvar = 'Group',
+    fname_var = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
     pca = FALSE, fit = NULL, formula = NULL, block = NULL, 
     contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
-    object <- .read_metabolon(file = file, sheet = sheet, fid_var = fid_var,
-                            sid_var = sid_var, subgroupvar = subgroupvar)
+    if (is.null(subgroupvar))  subgroupvar <- 'Group'
+    object <- .read_metabolon(
+        file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var, 
+        sfile = sfile, sfileby = sfileby, by = by, subgroupvar = subgroupvar)
 # Prepare
     assert_is_subset(fname_var, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fname_var]]

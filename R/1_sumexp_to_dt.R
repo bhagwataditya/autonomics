@@ -216,11 +216,9 @@ matrix2sumexp <- function(
     fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
 # sdata
-    object %<>% add_subgroup(verbose = verbose)
-    object %<>% merge_sdata(
-            sdt, by.x = 'sample_id', by.y = sdtby, subgroupvar = subgroupvar)
-    object %<>% merge_fdata(
-            fdt, by.x ='feature_id', by.y = fdtby, fnamevar = fnamevar)
+    object %<>% merge_sdata(sdt, by.x = 'sample_id', by.y = sdtby)
+    object %<>% merge_fdata(fdt, by.x ='feature_id', by.y = fdtby)
+    object %<>% add_subgroup(subgroupvar, verbose = verbose)
 # return
     object
 }

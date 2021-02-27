@@ -10,7 +10,6 @@ merge_sfile(
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
-  subgroupvar = NULL,
   verbose = TRUE
 )
 
@@ -19,7 +18,6 @@ merge_ffile(
   ffile = NULL,
   by.x = "feature_id",
   by.y = NULL,
-  fnamevar = NULL,
   verbose = TRUE
 )
 }
@@ -32,13 +30,9 @@ merge_ffile(
 
 \item{by.y}{file mergevvar}
 
-\item{subgroupvar}{subgroupvar}
-
 \item{verbose}{TRUE (default) or FALSE}
 
 \item{ffile}{ffile path}
-
-\item{fnamevar}{featurenamefvar}
 }
 \value{
 SummarizedExperiment

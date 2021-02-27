@@ -11,8 +11,8 @@ analyze(
   subgroupvar = default_subgroupvar(object),
   formula = default_formula(object, subgroupvar, fit),
   block = NULL,
-  weightvar = NULL,
-  contrastdefs = NULL,
+  weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
+  contrastdefs = contrast_coefs(object, formula),
   verbose = TRUE,
   plot = TRUE
 )
@@ -45,5 +45,4 @@ Analyze
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, plot=FALSE)
 object \%<>\% analyze(pca=TRUE, fit='limma')
-
 }

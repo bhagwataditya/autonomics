@@ -93,7 +93,8 @@ rm_single_value_columns <- function(df){
 #' @rdname read_somascan
 #' @export
 .read_somascan <- function(
-    file, fidvar = 'SeqId', sidvar = 'SampleId', subgroupvar = 'SampleGroup'
+    file, fidvar = 'SeqId', sidvar = 'SampleId', 
+    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'SampleGroup'
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -127,12 +128,8 @@ rm_single_value_columns <- function(df){
         transpose  = TRUE, verbose    = TRUE)
 # Add metadata/subgroup
     assayNames(object) <- 'somascan'
-    if (subgroupvar %in% svars(object)){
-        values <- sdata(object)[[subgroupvar]]
-        if (all(!is.na(values)) & all(values != ""))  svars(object) %<>%
-            stri_replace_first_fixed('SampleGroup', subgroupvar)
-    }
-    object %<>% add_subgroup()
+    object %<>% merge_sfile(sfile = sfile, by.x = by, by.y = sfileby)
+    object %<>% add_subgroup(subgroupvar)
     object
 }
 
@@ -167,7 +164,8 @@ rm_single_value_columns <- function(df){
 #' read_somascan(file, pca = TRUE, fit = 'limma', block = 'Subject_ID')
 #' @export
 read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
-    subgroupvar = 'SampleGroup', fname_var    = 'EntrezGeneSymbol',
+    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'SampleGroup', 
+    fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, pca = FALSE, 
@@ -176,7 +174,8 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 ){
 # Read
     object <- .read_somascan(
-        file, fidvar = fidvar, sidvar = sidvar, subgroupvar = subgroupvar)
+        file, fidvar = fidvar, sidvar = sidvar, 
+        sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = subgroupvar)
     object$sample_id %<>% make.unique()
 # Prepare
     assert_is_subset(fname_var, fvars(object))

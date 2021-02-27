@@ -857,9 +857,7 @@ add_voom <- function(
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_counts <- function(file, fid_col = 1,
-    sfile = NULL, sfileby  = NULL, subgroupvar = NULL,
-    ffile = NULL, ffileby = NULL, fnamevar = NULL,
-    verbose = TRUE
+    sfile = NULL, sfileby  = NULL, ffile = NULL, ffileby = NULL, verbose = TRUE
 ){
 # scan
     assert_all_are_existing_files(file)
@@ -874,10 +872,8 @@ add_voom <- function(
                 counts1, fdt = fdata1, fdtby = fid_col, verbose = verbose)
     assayNames(object)[1] <- 'counts'
 # sumexp
-    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',
-                            by.y = sfileby, subgroupvar = subgroupvar)
-    object %<>% merge_ffile(ffile = ffile, by.x='feature_id',
-                            by.y = ffileby, fnamevar=fnamevar)
+    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',by.y = sfileby)
+    object %<>% merge_ffile(ffile = ffile, by.x='feature_id', by.y = ffileby)
     metadata(object)$platform <- 'rnaseq'
     object$subgroup %<>% factor()
     levels(object$subgroup) %<>% make.names()
@@ -1004,6 +1000,7 @@ read_rnaseq_counts <- function(
                                         plot        = plot)
 # Analyze
     object %<>% analyze(pca=pca, fit=fit, formula = formula, block = block, 
+                        weightvar = if (voom) 'weights' else NULL,
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
@@ -1025,7 +1022,6 @@ read_rnaseq_counts <- function(
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' object %<>% analyze(pca=TRUE, fit='limma')
-#' 
 #' @export
 analyze <- function(
     object,
@@ -1034,24 +1030,34 @@ analyze <- function(
     subgroupvar = default_subgroupvar(object),
     formula = default_formula(object, subgroupvar, fit),
     block = NULL,
-    weightvar = NULL,
-    contrastdefs = NULL,
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+    contrastdefs = contrast_coefs(object, formula),
     verbose = TRUE,
     plot = TRUE
 ){
-    if (plot) grid.draw(grid.arrange(arrangeGrob(
-        plot_sample_densities(object[, seq_len(min(30, ncol(object)))]), 
-        plot_feature_densities(object[sample(ncol(object), 4)]), ncol=2),
-        plot_summarized_detections(object), nrow=2))
-    if (pca)   object %<>% pca(verbose=verbose, plot=plot)
+    subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
+    if (plot){
+        grid.draw(
+            grid.arrange(arrangeGrob(
+                plot_sample_densities(
+                    object[, seq_len(min(30, ncol(object)))], 
+                    fill = !!subgroup), 
+                plot_feature_densities(object[sample(ncol(object), 4)]), 
+                ncol=2),
+            plot_summarized_detections(
+                object, group = !!subgroup, fill = !!subgroup),
+            nrow=2))
+    }
+    if (pca)   object %<>% pca(verbose=verbose, plot=plot, color=!!subgroup)
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
         if (is.null(formula)) formula <- default_formula(object,subgroupvar,fit)
+        if (is.null(contrastdefs)) contrastdefs<- contrast_coefs(object,formula)
         object %<>% fitfun( subgroupvar  = subgroupvar,
                             formula      = formula,
                             contrastdefs = contrastdefs,
                             block        = block,
-                            weightvar      = weightvar,
+                            weightvar    = weightvar,
                             verbose      = verbose,
                             plot         = plot) }
     object

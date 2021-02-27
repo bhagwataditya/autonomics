@@ -446,9 +446,9 @@ plot_detections <- function(object, group = subgroup, fill = subgroup){
 #==============================================================================
 
 
-get_subgroup_combinations <- function(object){
+get_subgroup_combinations <- function(object, subgroupvar){
     type <- NULL
-    subgroups <- subgroup_levels(object)
+    subgroups <- slevels(object, subgroupvar)
     subgroups  %>%
         lapply(function(x) c(0,1) %>% set_names(rep(x,2))) %>%
         set_names(subgroups) %>%
@@ -474,15 +474,17 @@ plot_summarized_detections <- function(object, group = subgroup,
                                         fill = subgroup, na_imputes = TRUE){
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
+    group <- enquo(group)
+    if (quo_is_null(group))  return(ggplot() + geom_blank())
+    groupstr <- as_name(group)
     fill <- enquo(fill);     fillstr <- as_name(fill)
-    group <- enquo(group);   groupstr <- as_name(group)
     assert_is_subset(groupstr, svars(object))
     assert_is_subset(fillstr,  svars(object))
     xmin <- xmax <- ymin <- ymax <- nfeature <- quantified <- NULL
 # Prepare
     object %<>% filter_samples(!is.na(!!group), verbose=TRUE)
     exprs(object) %<>% zero_to_na()  #### TODO fine-tune
-    featuretypes <- get_subgroup_combinations(object)
+    featuretypes <- get_subgroup_combinations(object, groupstr)
     dt <- sumexp_to_long_dt(object, svars = groupstr)
     if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,
                                                         value := NA]
