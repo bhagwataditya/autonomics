@@ -143,12 +143,13 @@ fit_lmx <- function(object, fit,
     fitres$fdr  <- apply(fitres$p, 2, p.adjust, 'fdr')
     fitres$bonf <- apply(fitres$p, 2, p.adjust, 'bonf')
     fitarray <- do.call(abind::abind, c(fitres, along=3))
-    metadata(object) %<>% c(structure(list(fitarray), names = fit))
+    colnames(fitarray) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
+    metadata(object)$fit <- fitarray
+    names(metadata(object)) %<>% stri_replace_first_fixed('fit', fit)
     if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object, fit))
     if (is.null(contrastdefs)) contrastdefs <-colnames(metadata(object)[[fit]])
     if (length(contrastdefs) > 1) contrastdefs %<>% setdiff('(Intercept)')
-    if (plot)  print(plot_volcano(
-        object, fit=fit, contrastdefs = contrastdefs)) 
+    if (plot)  print(plot_volcano(object, fit=fit, contrastdefs = contrastdefs)) 
     object
 }
 

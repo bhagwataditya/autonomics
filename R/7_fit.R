@@ -351,3 +351,76 @@ summarize_fit <- function(object, fit){
 }
 
 
+##
+##
+##
+        # .is_fdr(object, 'limma', `<`)
+    
+    .is_fdr <- function(object, fit, direction){
+        fitres <- metadata(object)[[fit]]
+        isfdr <- adrop(fitres[, , 'fdr', drop = FALSE] < 0.05, 3)
+        isdirected <- adrop(direction(fitres[, , 'effect', drop=FALSE], 0), 3)
+        isfdr & isdirected
+    }
+     
+    #' Is fdr significant?
+    #' @param object SummarizedExperiment
+    #' @param fit 'limma', 'wilcoxon', 'lm', 'lme' or 'lmer'
+    #' @param contrast contrastnames
+    #' @param direction `<` or `>`
+    #' @return 0/1 matrix
+    #' @examples 
+    #' # isfdr <- is_fdr(object, fit = c('limma.onesample', 'lm'))
+    #' @export
+    is_fdr <- function(
+         object,
+         fit = intersect(names(metadata(object)), TESTS),
+         contrast = colnames(metadata(object)[[fit[1]]]),
+         direction = `<`
+    ){
+    # Assert
+        assert_is_all_of(object, 'SummarizedExperiment')
+        assert_is_character(fit)
+        assert_is_subset(fit, names(metadata(object)))
+        if (is.character(contrast))  for (fi in fit)  assert_is_subset(
+                            contrast, colnames(metadata(object)[[fi]]))
+        assertive::assert_is_scalar(direction)
+        assert_is_function(direction)
+        
+    # Run across models
+        res <-  mapply(.is_fdr,
+                        fit,
+                        MoreArgs = list(object=object, direction=direction),
+                        SIMPLIFY = FALSE)
+        add_model_names <- function(isfdrmat, model){
+                            colnames(isfdrmat) %<>% paste(model, sep='.')
+                            isfdrmat }
+        res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
+        res %<>% do.call(cbind, .)
+        mode(res) <- 'numeric'
+        res
+    }
+    
+    
+    
+    # is_fdr(object)
+    # 
+    # plotmat <- cbind(
+    #     limma    = data.table(metadata(object)$limma[   , 1,])[,    fdr<0.05 & effect>0],
+    #     wilcoxon = data.table(metadata(object)$wilcoxon[   , 1,])[, fdr<0.05 & effect>0],
+    #     lm       = data.table(metadata(object)$lm[   , 1,])[,       fdr<0.05 & effect>0],
+    #     lm2      = data.table(metadata(object)$lm[   , 1,])[,       fdr<0.05 & effect>0])
+    # rownames(plotmat) <- fnames(object)
+    # limma::vennDiagram(plotmat, )
+    # 
+    # 
+    # 
+    # plotlist <- list(
+    #     limma = data.table(metadata(object)$limma[   , 1,], keep.rownames = TRUE)[fdr<0.05 & effect>0, rn],
+    #     wilcoxon = data.table(metadata(object)$wilcoxon[, 1,], keep.rownames = TRUE)[fdr<0.05 & effect>0, rn],
+    #     lm = data.table(metadata(object)$lm[      , 1,], keep.rownames = TRUE)[fdr<0.05 & effect>0, rn])
+    # graphics::plot(eulerr::euler(plotlist, quantities=TRUE, fills = make_colors(names(plotlist))))
+    # grid::grid.newpage()
+    # colors <- make_colors(names(plotlist))
+    # grid::grid.draw(VennDiagram::venn.diagram(plotlist, filename = NULL, scaled = TRUE, fill = colors, col = colors, cat.col = colors, main = 'RNA: '))
+    # 
