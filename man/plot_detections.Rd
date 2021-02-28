@@ -9,14 +9,14 @@
 \usage{
 plot_detects(...)
 
-plot_detections(object, subgroup = subgroup, fill = subgroup)
+plot_detections(object, subgroup = subgroup, fill = !!enquo(subgroup))
 
 plot_quantifications(...)
 
 plot_summarized_detections(
   object,
   subgroup = subgroup,
-  fill = subgroup,
+  fill = !!enquo(subgroup),
   na_imputes = TRUE
 )
 }
@@ -25,9 +25,9 @@ plot_summarized_detections(
 
 \item{object}{SummarizedExperiment}
 
-\item{subgroup}{subgroup svar sym}
+\item{subgroup}{subgroup var (sym)}
 
-\item{fill}{fill svar}
+\item{fill}{fill var (sym)}
 
 \item{na_imputes}{whether to NA imputes prior to plottin (TRUE/FALSE)g}
 }

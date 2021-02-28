@@ -26,6 +26,8 @@
 }
 
 .lm <- function(sd, formula, block, weights){
+    formula <- as.formula(formula)  # stackoverflow.com/questions/51142338
+    environment(formula) <- environment()
     fitres <- stats::coefficients(summary(lm(
                     formula   = formula, 
                     data      = sd,
@@ -105,25 +107,20 @@ fit_lmx <- function(object, fit,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit), block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    contrastdefs = NULL, verbose = TRUE, plot =  FALSE
-){
+    contrastdefs = NULL, verbose = TRUE, plot =  FALSE){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
-    formula %<>% formula2str()
-    formula %<>% paste0('value ', .)
-    formula %<>% as.formula()
+    formula %<>% addlhs()
     allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
     assnames <- assayNames(object)[1]
-    if (!is.null(weightvar)){   
-        assert_is_character(weightvar)
-        assert_is_subset(weightvar, assayNames(object)) 
-        assnames %<>% c(weightvar)
+    if (!is.null(weightvar)){   assert_is_character(weightvar)
+                                assert_is_subset(weightvar, assayNames(object)) 
+                                assnames %<>% c(weightvar)
         cmessage('\t\t\tweights = assays(object)$%s', weightvar) }
     dt <- sumexp_to_long_dt(object, svars = allx, assay = assnames)
     fixedx <- setdiff(allx, all.vars(block))
-    for (x in fixedx){  
-        dt[[x]] %<>% factor()
-        n <- length(levels(dt[[x]]))
+    for (x in fixedx){          dt[[x]] %<>% factor()
+                                n <- length(levels(dt[[x]]))
         if (n>1) stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]]))}
 # fit
     fitmethod <- get(paste0('.', fit))
@@ -143,6 +140,10 @@ fit_lmx <- function(object, fit,
     fitres$fdr  <- apply(fitres$p, 2, p.adjust, 'fdr')
     fitres$bonf <- apply(fitres$p, 2, p.adjust, 'bonf')
     fitarray <- do.call(abind::abind, c(fitres, along=3))
+    formula %<>% droplhs() %<>% formula2str()
+    if (!is.null(weights))  formula %<>% 
+                                paste0(', weights = assays(object)$', weightvar)
+    names(dimnames(fitarray)) <- c('feature', formula,'quantity')
     colnames(fitarray) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     metadata(object)$fit <- fitarray
     names(metadata(object)) %<>% stri_replace_first_fixed('fit', fit)
@@ -150,8 +151,7 @@ fit_lmx <- function(object, fit,
     if (is.null(contrastdefs)) contrastdefs <-colnames(metadata(object)[[fit]])
     if (length(contrastdefs) > 1) contrastdefs %<>% setdiff('(Intercept)')
     if (plot)  print(plot_volcano(object, fit=fit, contrastdefs = contrastdefs)) 
-    object
-}
+    object }
 
 
 #' @rdname fit_limma

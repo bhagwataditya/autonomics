@@ -343,9 +343,9 @@ fit_limma <- function(object,
         assert_is_subset(block, svars(object))
         blockvar <- block
         block <- sdata(object)[[block]]
-        if (is.null(metadata(object)$blockcor)){
+        if (is.null(metadata(object)$dupcor)){
             if (verbose)  cmessage('\t\t\t\tdupcor `%s`', blockvar)
-            metadata(object)$blockcor <- duplicateCorrelation(
+            metadata(object)$dupcor <- duplicateCorrelation(
                 exprs(object), design=design, block=block
             )$consensus.correlation }}
 # weights
@@ -355,7 +355,7 @@ fit_limma <- function(object,
                                 weights <- assays(object)[[weightvar]] }
 # Fit
     fit <- suppressWarnings(lmFit(object = exprs(object[, rownames(design)]),
-        design = design, block = block, correlation = metadata(object)$blockcor,
+        design = design, block = block, correlation = metadata(object)$dupcor,
         weights = weights))
 # Contrast
     object %<>% .limmacontrast(fit, formula)
@@ -399,3 +399,7 @@ fit_limma <- function(object,
 }
 
 formula2str <- function(formula) Reduce(paste, deparse(formula))
+addlhs  <- function(formula)  as.formula(paste0('value ', formula2str(formula)))
+droplhs <- function(formula)  as.formula(stri_replace_first_regex(
+                                formula2str(formula), '^value[ ]*', ''))
+

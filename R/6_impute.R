@@ -279,7 +279,7 @@ venn_detects <- function(
 
 #' Impute systematic nondetects
 #' @param object    SummarizedExperiment
-#' @param subgroup  subgroup svar
+#' @param subgroup     subgroup svar
 #' @param fun       imputation function
 #' @param plot      TRUE or FALSE
 #' @param verbose   TRUE or FALSE
@@ -295,14 +295,14 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
 # Process
     absent <- replicated <- systematic <- NULL
     subgroup <- enquo(subgroup)
-    subgroupvar <- as_name(subgroup)
+    groupvar <- as_name(subgroup)
 # Filter
     object %<>% filter_exprs_replicated_in_some_subgroup(
-                    subgroupvar = subgroupvar, verbose = verbose)
+                    subgroupvar = groupvar, verbose = verbose)
 # Impute
-    dt  <-  sumexp_to_long_dt(object, svars = subgroupvar)
-    dt[, absent     := all(is.na(value)),    by = c('feature_id', subgroupvar)]
-    dt[, replicated := sum(!is.na(value))>1, by = c('feature_id', subgroupvar)]
+    dt  <-  sumexp_to_long_dt(object, svars = groupvar)
+    dt[, absent     := all(is.na(value)),    by = c('feature_id', groupvar)]
+    dt[, replicated := sum(!is.na(value))>1, by = c('feature_id', groupvar)]
     dt[, systematic := any(absent) & any(replicated), by = 'feature_id']
     dt[, is_imputed := systematic & absent]
     dt[, value := fun(value, is_imputed), by='feature_id']
@@ -344,6 +344,7 @@ cluster_order_features <- function(object){
 }
 
 detect_order_features <- function(object, subgroup){
+    subgroup <- enquo(subgroup)
     x <- object
     exprs(x)[is_imputed(x)] <- NA
     idx1 <- fnames(cluster_order_features(
@@ -384,10 +385,10 @@ plot_detects <- function(...){
 #' structure often seen in mass spectrometry proteomics data (across e.g.
 #' different cell types)
 #' @param object     SummarizedExperiment
-#' @param subgroup   subgroup svar sym
-#' @param fill       fill svar
+#' @param subgroup      subgroup var (sym)
+#' @param fill       fill var (sym)
 #' @param na_imputes whether to NA imputes prior to plottin (TRUE/FALSE)g
-#' @param ...      for backward compatibilty
+#' @param ...        for backward compatibilty
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -402,14 +403,16 @@ plot_detects <- function(...){
 #' plot_summarized_detections(object)
 #' plot_detections(object)
 #' @export
-plot_detections <- function(object, subgroup = subgroup, fill = subgroup){
+plot_detections <- function(
+    object, subgroup = subgroup, fill = !!enquo(subgroup)
+){
 # Process
     detection <- feature_id <- NULL
     subgroup <- enquo(subgroup);         fill     <- enquo(fill)
-    subgroupvar <- as_name(subgroup);    fillstr  <- as_name(fill)
+    groupvar <- as_name(subgroup);    fillstr  <- as_name(fill)
 # Reorder samples
-    sdata(object)[[subgroupvar]] %<>% factor()
-    object %<>% extract(, order(sdata(.)[[subgroupvar]]))
+    sdata(object)[[groupvar]] %<>% factor()
+    object %<>% extract(, order(sdata(.)[[groupvar]]))
 # Reorder/block features
     object %<>% detect_order_features(!!subgroup)
     y <- object; exprs(y)[is_imputed(y)] <- NA
@@ -417,7 +420,7 @@ plot_detections <- function(object, subgroup = subgroup, fill = subgroup){
     nsystematic <- sum(is_systematic_detect(y, subgroup=!!subgroup))
     nrandom     <- sum(is_random_detect(y, subgroup=!!subgroup))
 # Melt
-    plotdt  <-  sumexp_to_long_dt(object)
+    plotdt  <-  sumexp_to_long_dt(object, svars = c(groupvar, fillstr))
     alpha <- NULL
     plotdt[,             detection := 'detect']
     plotdt[is.na(value), detection := 'nondetect']
@@ -478,28 +481,28 @@ plot_quantifications <- function(...){
 
 #' @rdname plot_detections
 #' @export
-plot_summarized_detections <- function(object, subgroup = subgroup,
-                                        fill = subgroup, na_imputes = TRUE){
+plot_summarized_detections <- function(
+    object, subgroup = subgroup, fill = !!enquo(subgroup), na_imputes = TRUE){
 # Assert
     assert_is_all_of(object, "SummarizedExperiment")
     subgroup <- enquo(subgroup)
     if (quo_is_null(subgroup))  return(ggplot() + geom_blank())
-    subgroupvar <- as_name(subgroup)
+    groupvar <- as_name(subgroup)
     fill <- enquo(fill);     fillstr <- as_name(fill)
-    assert_is_subset(subgroupvar, svars(object))
+    assert_is_subset(groupvar, svars(object))
     assert_is_subset(fillstr,  svars(object))
     xmin <- xmax <- ymin <- ymax <- nfeature <- quantified <- NULL
 # Prepare
     object %<>% filter_samples(!is.na(!!subgroup), verbose=TRUE)
     exprs(object) %<>% zero_to_na()  #### TODO fine-tune
-    featuretypes <- get_subgroup_combinations(object, subgroupvar)
-    dt <- sumexp_to_long_dt(object, svars = subgroupvar)
+    featuretypes <- get_subgroup_combinations(object, groupvar)
+    dt <- sumexp_to_long_dt(object, svars = groupvar)
     if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,
                                                         value := NA]
     dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
-                    by = c(subgroupvar, 'feature_id'))
+                    by = c(groupvar, 'feature_id'))
     dt %<>% data.table::dcast.data.table(
-        as.formula(paste0('feature_id ~ ', subgroupvar)),value.var='quantified')
+        as.formula(paste0('feature_id ~ ', groupvar)),value.var='quantified')
     dt %<>% merge(featuretypes, by = setdiff(names(featuretypes), 'type'))
     dt %<>% extract(,.(nfeature=.N),by='type')
     dt %<>% merge(featuretypes,by='type')
@@ -507,14 +510,14 @@ plot_summarized_detections <- function(object, subgroup = subgroup,
     dt[, ymin := c(0,ymax[-.N])]
     dt %<>% data.table::melt.data.table(
         id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
-        variable.name = subgroupvar, value.name='quantified')
+        variable.name = groupvar, value.name='quantified')
     dt$quantified %<>% as.factor()
-    nsampledt <- data.table(sdata(object))[, .N, by=subgroupvar] %>% # preserves
-                set_names(c(subgroupvar, 'xmax'))                # factor order!
-    setorderv(nsampledt, subgroupvar)
+    nsampledt <- data.table(sdata(object))[, .N, by=groupvar] %>% # preserves
+                set_names(c(groupvar, 'xmax'))                # factor order!
+    setorderv(nsampledt, groupvar)
     nsampledt[, xmax := cumsum(xmax)]
     nsampledt[, xmin := c(0, xmax[-.N])]
-    dt %<>% merge(nsampledt, by = subgroupvar)
+    dt %<>% merge(nsampledt, by = groupvar)
 # Plot
     colors <- make_colors(slevels(object, fillstr))
     ggplot(dt) + geom_rect(aes( xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,

@@ -17,7 +17,7 @@ test_that(  "read_metabolon(file, subgroupvar = NULL) works", {
     expect_false('subgroup' %in% svars(object))
 })
 
-test_that(  "read_metabolon(file, subgroupvar = 'SET') works", {
+test_that(  "read_metabolon(file, subgroupvar='SET')", {
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, subgroupvar = 'SET', plot=FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
@@ -26,7 +26,7 @@ test_that(  "read_metabolon(file, subgroupvar = 'SET') works", {
     expect_false('subgroup' %in% svars(object))
 })
 
-test_that(  "read_metabolon(file, subgroupvar = 'SET', pca=TRUE) works", {
+test_that(  "read_metabolon(file, subgroupvar='SET', pca=TRUE)", {
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, subgroupvar = 'SET', pca=TRUE, plot=FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
@@ -35,7 +35,7 @@ test_that(  "read_metabolon(file, subgroupvar = 'SET', pca=TRUE) works", {
     expect_true('pca' %in% names(metadata(object)))
 })
 
-test_that(  "read_metabolon(file, subgroupvar = 'SET', fit='limma') works", {
+test_that(  "read_metabolon(file, subgroupvar='SET', fit='limma')", {
     file <- download_data('atkin18.metabolon.xlsx')
     sgvar <- 'SET'
     object <- read_metabolon(file, subgroupvar = sgvar, fit='limma', plot=FALSE)
@@ -46,15 +46,27 @@ test_that(  "read_metabolon(file, subgroupvar = 'SET', fit='limma') works", {
     expect_identical(names(dimnames(limma(object)))[2], formulastr)
 })
 
-test_that(  "read_metabolon(file, subgroupvar = 'SET', fit='lm') works", {
+test_that(  "read_metabolon(file, subgroupvar='SET', fit='lm')", {
     file <- download_data('atkin18.metabolon.xlsx')
     sgvar <- 'SET'
     object <- read_metabolon(
                 file, subgroupvar = sgvar, impute = TRUE, fit='lm', plot=FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
+    expect_true('lm' %in% names(metadata(object)))
+    formulastr <- formula2str(default_formula(
+                                object, subgroupvar = sgvar, fit = 'lm'))
+    expect_identical(names(dimnames(metadata(object)$lm))[2], formulastr)
+})
+
+test_that("read_metabolon(file, subgroupvar='SET', fit='limma', block='SUB')", {
+    file <- download_data('atkin18.metabolon.xlsx')
+    sgvar <- 'SET'; block <- 'SUB'
+    object <- read_metabolon(file, subgroupvar = sgvar, block = block, 
+                            impute = TRUE, fit = 'limma', plot = FALSE)
+    expect_s4_class(object, 'SummarizedExperiment')
     expect_true('limma' %in% names(metadata(object)))
     formulastr <- formula2str(default_formula(
                                 object, subgroupvar = sgvar, fit = 'limma'))
-    expect_identical(names(dimnames(limma(object)))[2], formulastr)
-    names(dimnames(limma(object)))
+    expect_identical(names(dimnames(metadata(object)$limma))[2], formulastr)
 })
+

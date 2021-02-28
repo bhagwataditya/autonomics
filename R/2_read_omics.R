@@ -551,7 +551,7 @@ merge_ffile <- function(
 add_subgroup <- function(
     object, subgroupvar = 'subgroup', replicatevar = 'replicate', verbose=TRUE
 ){
-    if (is.null(subgroupvar))
+    if (is.null(subgroupvar))  subgroupvar <- 'subgroup'
     if (has_complete_svalues(object, subgroupvar))  return(object)
     x <- object$sample_id
     sep <- guess_sep(x)

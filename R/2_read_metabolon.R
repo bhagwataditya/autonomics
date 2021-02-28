@@ -247,6 +247,7 @@ stack <- function(x, y){
     svars(object)[nsv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$1')
     fvars(object)[nfv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$2')
     object %<>% merge_sfile(sfile = sfile, by.x = by, by.y = sfileby)
+    if (is.null(subgroupvar)) subgroupvar <- 'Group'
     object %<>% add_subgroup(subgroupvar)
 # Return
     object
@@ -295,7 +296,8 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     object %<>% log2transform(verbose = TRUE)
-    if (impute) object %<>% impute_systematic_nondetects(subgroup = !!subgroup)
+    if (impute)             object %<>% impute_systematic_nondetects(
+                                            subgroup = !!subgroup, plot = plot)
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Analyze

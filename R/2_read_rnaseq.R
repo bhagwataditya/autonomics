@@ -751,7 +751,7 @@ preprocess_rnaseq_counts <- function(object,
                 cpm(object) <- counts2cpm(counts(object), object$libsize)
                 other <- setdiff(assayNames(object), 'cpm')
                 assays(object) %<>% extract(c('cpm', other)) }
-# Voom  weight (counts) & blockcor (log2(cpm))
+# Voom  weight (counts) & dupcor (log2(cpm))
     if (voom){
         if (verbose)  message('\t\t\tvoom:   voom')
         object %<>% add_voom(design, verbose=FALSE, plot=plot & is.null(block))
@@ -784,9 +784,9 @@ add_voom <- function(
         assert_is_subset(block, svars(object))
         blockvar <- block
         block <- sdata(object)[[block]]
-        if (is.null(metadata(object)$blockcor)){
+        if (is.null(metadata(object)$dupcor)){
             if (verbose)  cmessage('\t\t\t\tdupcor `%s`', blockvar)
-            metadata(object)$blockcor <- duplicateCorrelation(
+            metadata(object)$dupcor <- duplicateCorrelation(
                 log2(cpm(object)), design=design, block=block
             )$consensus.correlation }}
 # Run voom
@@ -797,7 +797,7 @@ add_voom <- function(
                     design      = design,
                     lib.size    = object$libsize,
                     block       = block,
-                    correlation = metadata(object)$blockcor,
+                    correlation = metadata(object)$dupcor,
                     plot        = plot)$weights
 # Add/Return
     rownames(weights) <- rownames(object)
