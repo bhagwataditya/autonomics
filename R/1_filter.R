@@ -131,11 +131,11 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #==================
 
 #' Filter features with replicated expression in some subgroup
-#' @param object      SummarizedExperiment
-#' @param group       group svar
-#' @param comparator  '>' or '!='
-#' @param lod         number: limit of detection
-#' @param verbose     TRUE or FALSE
+#' @param object       SummarizedExperiment
+#' @param subgroupvar  subgroup svar
+#' @param comparator   '>' or '!='
+#' @param lod          number: limit of detection
+#' @param verbose      TRUE or FALSE
 #' @return Filtered SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -152,27 +152,27 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' filter_exprs_replicated_in_some_subgroup(object, character(0))
 #' @export
 filter_exprs_replicated_in_some_subgroup <- function(
-    object, group = 'subgroup',
+    object, subgroupvar = 'subgroup',
     comparator = if (contains_ratios(object)) '!=' else '>',
     lod = 0, verbose = TRUE
 ){
 # Assert
-    assert_is_subset(group, svars(object))
+    assert_is_subset(subgroupvar, svars(object))
 # Datatablify
     replicated_in_its_subgroup <- replicated_in_any_subgroup <- value <- NULL
-    dt <- sumexp_to_long_dt(object, svars = group)
+    dt <- sumexp_to_long_dt(object, svars = subgroupvar)
 # Find replicated features
     exceeds_lod <- if (comparator == '>'){ function(value, lod) value >  lod
             } else if (comparator == '!=') function(value, lod) value != lod
     V1 <- dt[,.I[sum(exceeds_lod(value, lod), na.rm=TRUE)>1],
-            by = c('feature_id', group)]$V1
+            by = c('feature_id', subgroupvar)]$V1
             #https://stackoverflow.com/questions/16573995
 # Keep only replicated features
     replicated_features <- dt[V1]$feature_id
     idx <- fid_values(object) %in% replicated_features
     if (verbose)   message('\t\tFilter ', sum(idx), '/', length(idx),
             ' features: expr ', comparator, ' ', as.character(lod),
-            ' for at least two samples in some ', group)
+            ' for at least two samples in some ', subgroupvar)
     object %<>% extract_features(idx) # also handles limma in metadata
 # Update analysis log
     if (!is.null(analysis(object))) {
@@ -180,7 +180,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
                 sum(idx),
                 names = sprintf(
                     "expr %s %s, for at least two samples in some %s",
-                    comparator, as.character(lod), group)))
+                    comparator, as.character(lod), subgroupvar)))
     }
     object
 }

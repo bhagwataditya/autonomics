@@ -6,7 +6,7 @@
 \usage{
 impute_systematic_nondetects(
   object,
-  group = subgroup,
+  subgroup = subgroup,
   fun = halfnormimpute,
   plot = TRUE,
   verbose = TRUE
@@ -15,7 +15,7 @@ impute_systematic_nondetects(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{group}{group svar}
+\item{subgroup}{subgroup svar}
 
 \item{fun}{imputation function}
 

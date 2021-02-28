@@ -6,7 +6,7 @@
 \usage{
 filter_exprs_replicated_in_some_subgroup(
   object,
-  group = "subgroup",
+  subgroupvar = "subgroup",
   comparator = if (contains_ratios(object)) "!=" else ">",
   lod = 0,
   verbose = TRUE
@@ -15,7 +15,7 @@ filter_exprs_replicated_in_some_subgroup(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{group}{group svar}
+\item{subgroupvar}{subgroup svar}
 
 \item{comparator}{'>' or '!='}
 

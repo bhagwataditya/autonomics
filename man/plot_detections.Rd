@@ -9,13 +9,13 @@
 \usage{
 plot_detects(...)
 
-plot_detections(object, group = subgroup, fill = subgroup)
+plot_detections(object, subgroup = subgroup, fill = subgroup)
 
 plot_quantifications(...)
 
 plot_summarized_detections(
   object,
-  group = subgroup,
+  subgroup = subgroup,
   fill = subgroup,
   na_imputes = TRUE
 )
@@ -25,7 +25,7 @@ plot_summarized_detections(
 
 \item{object}{SummarizedExperiment}
 
-\item{group}{group svar}
+\item{subgroup}{subgroup svar sym}
 
 \item{fill}{fill svar}
 
