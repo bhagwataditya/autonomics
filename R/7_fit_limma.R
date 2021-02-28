@@ -45,38 +45,6 @@ setReplaceMethod("limma", signature("SummarizedExperiment", "NULL"),
 function(object, value) object)
 
 
-#' @title Get/set design matrix
-#' @param object SummarizedExperiment
-#' @param value list
-#' @return design (get) or SummarizedExperiment (set)
-#' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(
-#'               file, invert_subgroups=inv, fit='limma', plot=FALSE)
-#' design(object)
-#' @export
-setGeneric("design", function(object)   standardGeneric("design") )
-
-
-#' @rdname design
-#' @export
-setGeneric("design<-",
-function(object, value)  standardGeneric("design<-") )
-
-
-#' @rdname design
-setMethod("design", signature("SummarizedExperiment"),
-function(object) metadata(object)$design)
-
-
-#' @rdname design
-setReplaceMethod("design", signature("SummarizedExperiment", "matrix"),
-function(object, value){
-    metadata(object)$design <- value
-    object  })
-
-
 #' @title Get/set contrastdefs
 #' @param object SummarizedExperiment
 #' @param value list
@@ -362,13 +330,11 @@ fit_limma <- function(object,
 ){
 # Set design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (verbose)  cmessage('\t\tlimma: lmFit(%s%s%s)',
-        Reduce(paste, deparse(formula)),
+    if (verbose)  cmessage('\t\tlimma: lmFit(%s%s%s)', formula2str(formula),
         if(is.null(block))     '' else paste0(', block = object$`',block, '`'),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
                                             weightvar))
     design <- create_design(object, formula=formula, verbose = FALSE)
-    design(object) <- design
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
     if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
     contrastdefs(object) <- contrastdefs
@@ -392,7 +358,7 @@ fit_limma <- function(object,
         design = design, block = block, correlation = metadata(object)$blockcor,
         weights = weights))
 # Contrast
-    object %<>% .limmacontrast(fit)
+    object %<>% .limmacontrast(fit, formula)
     if (plot)  print(plot_volcano(object, fit='limma')) 
                     # plot_contrastogram(object)
     if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object, 'limma'))
@@ -400,11 +366,12 @@ fit_limma <- function(object,
 }
 
 
-.limmacontrast <- function(object, fit){
+.limmacontrast <- function(object, fit, formula){
     # compute contrasts
+    design <- create_design(object, formula=formula, verbose = FALSE)
     contrastmat <- makeContrasts(
         contrasts = vectorize_contrastdefs(contrastdefs(object)),
-        levels    = design(object))
+        levels    = design)
     fit %<>% contrasts.fit(contrasts = contrastmat)
     limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
     } else { c('effect','rank','t','se','p','fdr','bonf') }
@@ -414,6 +381,7 @@ fit_limma <- function(object,
                                             quantity = limma_quantities))
     limma(object)[,,'effect'] <- fit$coefficients
     limma(object)[,,'rank'  ] <- apply(-abs(fit$coefficients), 2, rank)
+    names(dimnames(limma(object)))[2] <- formula2str(formula)
     # perform moderated t test
     if (!all(fit$df.residual==0)){
         fit %<>% eBayes()
@@ -429,3 +397,5 @@ fit_limma <- function(object,
     }
     return(object)
 }
+
+formula2str <- function(formula) Reduce(paste, deparse(formula))

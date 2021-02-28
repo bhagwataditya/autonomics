@@ -109,7 +109,7 @@ fit_lmx <- function(object, fit,
 ){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
-    formula %<>% deparse() %>% Reduce(paste, .)
+    formula %<>% formula2str()
     formula %<>% paste0('value ', .)
     formula %<>% as.formula()
     allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
@@ -163,7 +163,7 @@ fit_lm <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
-    if (verbose)  cmessage('\t\tlm(%s)', Reduce(paste, deparse(formula)))
+    if (verbose)  cmessage('\t\tlm(%s)', formula2str(formula))
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
             formula = formula, block = block, weightvar = weightvar, 
             contrastdefs = contrastdefs, verbose = verbose, plot = plot)
@@ -184,8 +184,7 @@ fit_lme <- function(
         if (is_subset(block, svars(object)))  block %<>% sprintf('~1|%s', .)
         block %<>% as.formula() }
     if (verbose)  cmessage('\t\tlme(%s, random = %s)', 
-                        Reduce(paste, deparse(formula)), 
-                        Reduce(paste, deparse(block)))
+                        formula2str(formula), formula2str(block))
     fit_lmx(object, fit = 'lme', subgroupvar = subgroupvar, 
             formula = formula, block = block, weightvar = weightvar, 
             contrastdefs = contrastdefs, verbose = verbose, plot = plot)
@@ -202,14 +201,14 @@ fit_lmer <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
-    if (is_formula(block))  block <- Reduce(paste, deparse(block))
+    if (is_formula(block))  block %<>% formula2str()
     if (is_a_string(block)){ 
         if (is_subset(block, svars(object)))  block %<>% sprintf('1|%s', .)
-        formula <- Reduce(paste, deparse(formula))
+        formula <- formula2str()
         formula %<>% sprintf('%s + (%s)', ., block)
         formula %<>% as.formula()
     }
-    if (verbose)  cmessage('\t\tlmer(%s)', Reduce(paste, deparse(formula)))
+    if (verbose)  cmessage('\t\tlmer(%s)', formula2str(formula))
     fit_lmx(object, fit = 'lmer', subgroupvar = subgroupvar, 
             formula = formula, block = NULL, weightvar = weightvar, 
             contrastdefs = contrastdefs, verbose = verbose, plot = plot)

@@ -30,7 +30,8 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    design    <- design(object)
+    design <- create_design(
+        object, formula=attr(limma(object), 'formula'), verbose = FALSE)
     colcontrasts <- contrastdefs(object)[[1]]
     rowcontrasts <- contrastdefs(object)[[2]]
     contrastdefs <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
