@@ -286,7 +286,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
-    if (is.null(subgroupvar))  subgroupvar <- 'Group'
+    subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
     object <- .read_metabolon(
         file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var, 
         sfile = sfile, sfileby = sfileby, by = by, subgroupvar = subgroupvar)
@@ -295,7 +295,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fdata(object)$feature_name <- fdata(object)[[fname_var]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     object %<>% log2transform(verbose = TRUE)
-    if (impute)             object %<>% impute_systematic_nondetects()
+    if (impute) object %<>% impute_systematic_nondetects(subgroup = !!subgroup)
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Analyze

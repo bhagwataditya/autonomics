@@ -1,5 +1,5 @@
 context('read_metabolon')       # late - early : 32 down, 75 up
-metadta <- S4Vectors::metadata
+metadata <- S4Vectors::metadata
 
 test_that(  "read_metabolon(file) works", {
     file <- download_data('halama18.metabolon.xlsx')
@@ -44,7 +44,6 @@ test_that(  "read_metabolon(file, subgroupvar = 'SET', fit='limma') works", {
     formulastr <- formula2str(default_formula(
                                 object, subgroupvar = sgvar, fit = 'limma'))
     expect_identical(names(dimnames(limma(object)))[2], formulastr)
-    names(dimnames(limma(object)))
 })
 
 test_that(  "read_metabolon(file, subgroupvar = 'SET', fit='lm') works", {

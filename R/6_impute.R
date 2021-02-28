@@ -258,11 +258,15 @@ is_full_detect <- function(object){
 #' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 #' venn_detects(object)
 #' @export
-venn_detects <- function(object){
+venn_detects <- function(
+    object, 
+    subgroup = if ('subgroup' %in% svars(object)) subgroup else NULL
+){
+    subgroup <- enquo(subgroup)
     limma::vennDiagram(as.matrix(cbind(
-        systematic = is_systematic_detect(object),
-        random     = is_random_detect(object),
-        full       = is_full_detect(object))))
+        systematic = is_systematic_detect(object, !!subgroup),
+        random     = is_random_detect(    object, !!subgroup),
+        full       = is_full_detect(      object))))
 }
 
 
@@ -296,10 +300,10 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
     object %<>% filter_exprs_replicated_in_some_subgroup(
                     subgroupvar = subgroupvar, verbose = verbose)
 # Impute
-    dt  <-  sumexp_to_long_dt(object)[
-            , absent     := all(is.na(value)),    c('feature_id', subgroupvar)
-        ][  , replicated := sum(!is.na(value))>1, c('feature_id', subgroupvar)
-        ][  , systematic := any(absent) & any(replicated), 'feature_id']
+    dt  <-  sumexp_to_long_dt(object, svars = subgroupvar)
+    dt[, absent     := all(is.na(value)),    by = c('feature_id', subgroupvar)]
+    dt[, replicated := sum(!is.na(value))>1, by = c('feature_id', subgroupvar)]
+    dt[, systematic := any(absent) & any(replicated), by = 'feature_id']
     dt[, is_imputed := systematic & absent]
     dt[, value := fun(value, is_imputed), by='feature_id']
 # Update object
@@ -339,12 +343,15 @@ cluster_order_features <- function(object){
     object
 }
 
-detect_order_features <- function(object){
+detect_order_features <- function(object, subgroup){
     x <- object
     exprs(x)[is_imputed(x)] <- NA
-    idx1 <- fnames(cluster_order_features(x[is_systematic_detect(x),     ]))
-    idx2 <- fnames(cluster_order_features(x[is_random_detect(x), ]))
-    idx3 <- fnames(cluster_order_features(x[is_full_detect(x),       ]))
+    idx1 <- fnames(cluster_order_features(
+                        x[is_systematic_detect(x, !!subgroup),]))
+    idx2 <- fnames(cluster_order_features(
+                        x[is_random_detect(x, !!subgroup), ]))
+    idx3 <- fnames(cluster_order_features(
+                        x[is_full_detect(x),]))
     SummarizedExperiment::rbind(object[idx1,], object[idx2,], object[idx3,])
 }
 
@@ -404,11 +411,11 @@ plot_detections <- function(object, subgroup = subgroup, fill = subgroup){
     sdata(object)[[subgroupvar]] %<>% factor()
     object %<>% extract(, order(sdata(.)[[subgroupvar]]))
 # Reorder/block features
-    object %<>% detect_order_features()
+    object %<>% detect_order_features(!!subgroup)
     y <- object; exprs(y)[is_imputed(y)] <- NA
     nfull       <- sum(is_full_detect(y))
-    nsystematic <- sum(is_systematic_detect(y))
-    nrandom     <- sum(is_random_detect(y))
+    nsystematic <- sum(is_systematic_detect(y, subgroup=!!subgroup))
+    nrandom     <- sum(is_random_detect(y, subgroup=!!subgroup))
 # Melt
     plotdt  <-  sumexp_to_long_dt(object)
     alpha <- NULL

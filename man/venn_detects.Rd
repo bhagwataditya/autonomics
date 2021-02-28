@@ -4,7 +4,10 @@
 \alias{venn_detects}
 \title{Venn detects}
 \usage{
-venn_detects(object)
+venn_detects(
+  object,
+  subgroup = if ("subgroup" \%in\% svars(object)) subgroup else NULL
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
