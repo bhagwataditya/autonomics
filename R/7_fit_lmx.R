@@ -204,7 +204,7 @@ fit_lmer <- function(
     if (is_formula(block))  block %<>% formula2str()
     if (is_a_string(block)){ 
         if (is_subset(block, svars(object)))  block %<>% sprintf('1|%s', .)
-        formula <- formula2str()
+        formula %<>% formula2str()
         formula %<>% sprintf('%s + (%s)', ., block)
         formula %<>% as.formula()
     }

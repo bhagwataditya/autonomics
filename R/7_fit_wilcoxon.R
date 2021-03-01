@@ -9,8 +9,8 @@
 fit_wilcoxon <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    contrastdefs = contrast_coefs(object, 
-        formula = default_formula(object, subgroupvar, fit = 'wilcoxon')), 
+    formula = default_formula(object, subgroupvar, fit = 'wilcoxon'), 
+    contrastdefs = contrast_coefs(object, formula = formula), 
     block = NULL, weightvar = NULL, verbose = TRUE, plot = FALSE
 ){
 # fit
@@ -18,7 +18,9 @@ fit_wilcoxon <- function(
     if (verbose)  cmessage('\t\tWilcoxon')
     results <- lapply(vectorize_contrastdefs(contrastdefs), .wilcoxon, 
                     dt, subgroupvar, block, verbose)
-    results %<>% Reduce(merge, .)
+    results %<>% Reduce(function(x,y) merge(x,y, by='feature_id', all=TRUE), .)
+    results %<>% merge(data.table(fdata(object))[, 'feature_id', drop = FALSE], 
+                       ., by = 'feature_id', all.x = TRUE)
 # extract
     extract_quantity <- function(quantity, results){
         quantitydot <- paste0(quantity, '.')
@@ -35,6 +37,8 @@ fit_wilcoxon <- function(
     results$bonf <- apply(results$p, 2, p.adjust, method = 'bonf')
 # wrap
     metadata(object)$wilcoxon <- do.call(abind::abind, c(results, along = 3))
+    names(dimnames(metadata(object)$wilcoxon)) <-
+                                        c('feature', subgroupvar, 'quantity')
 # Return
     if (plot)  print(plot_volcano(object, fit='wilcoxon')) 
                     # plot_contrastogram(object)
@@ -100,9 +104,10 @@ fit_wilcoxon <- function(
             value.var = 'value')
     xx <- subgrouplevels[[1]]
     yy <- subgrouplevels[[2]]
-    if (verbose)  cmessage("\t\t\twilcox.test(x = %s, y = %s, paired = TRUE) - pair on '%s'", 
+    if (verbose)  cmessage(
+        "\t\t\twilcox.test(x = %s, y = %s, paired = TRUE) - pair on '%s'", 
                             xx, yy, block)
-    suppressWarnings(dt[, 
+    suppressWarnings(dt[!is.na(get(xx)) & !is.na(get(yy)), 
         .(  p = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$p.value, 
             w = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$statistic, 
             effect = mean(get(yy) - get(xx), na.rm=TRUE)),

@@ -68,5 +68,39 @@ test_that("read_metabolon(file, subgroupvar='SET', fit='limma', block='SUB')", {
     formulastr <- formula2str(default_formula(
                                 object, subgroupvar = sgvar, fit = 'limma'))
     expect_identical(names(dimnames(metadata(object)$limma))[2], formulastr)
+    expect_true('dupcor' %in% names(metadata(object)))
 })
 
+test_that("read_metabolon(file, subgroupvar='SET', fit='lme', block='SUB')", {
+    file <- download_data('atkin18.metabolon.xlsx')
+    sgvar <- 'SET'; block <- 'SUB'
+    object <- read_metabolon(file, subgroupvar = sgvar, block = block, 
+                            impute = TRUE, fit = 'lme', plot = FALSE)
+    expect_s4_class(object, 'SummarizedExperiment')
+    expect_true('lme' %in% names(metadata(object)))
+    formulastr <- formula2str(default_formula(
+                                object, subgroupvar = sgvar, fit = 'lme'))
+    expect_identical(names(dimnames(metadata(object)$lme))[2], formulastr)
+})
+
+test_that("read_metabolon(file, subgroupvar='SET', fit='lmer', block='SUB')", {
+    file <- download_data('atkin18.metabolon.xlsx')
+    sgvar <- 'SET'; block <- 'SUB'
+    object <- read_metabolon(file, subgroupvar = sgvar, block = block, 
+                            impute = TRUE, fit = 'lmer', plot = FALSE)
+    expect_s4_class(object, 'SummarizedExperiment')
+    expect_true('lmer' %in% names(metadata(object)))
+    formulastr <- formula2str(default_formula(
+                                object, subgroupvar = sgvar, fit = 'lmer'))
+    expect_identical(names(dimnames(metadata(object)$lme))[2], formulastr)
+})
+
+test_that("read_metabolon(file,subgroupvar='SET',fit='wilcoxon',block='SUB')", {
+    file <- download_data('atkin18.metabolon.xlsx')
+    sgvar <- 'SET'; block <- 'SUB'
+    object <- read_metabolon(file, subgroupvar = sgvar, block = block, 
+                            fit = 'wilcoxon', plot = FALSE)
+    expect_s4_class(object, 'SummarizedExperiment')
+    expect_true('wilcoxon' %in% names(metadata(object)))
+    expect_identical(names(dimnames(metadata(object)$wilcoxon))[2], sgvar)
+})

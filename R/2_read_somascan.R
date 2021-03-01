@@ -129,6 +129,7 @@ rm_single_value_columns <- function(df){
 # Add metadata/subgroup
     assayNames(object) <- 'somascan'
     object %<>% merge_sfile(sfile = sfile, by.x = by, by.y = sfileby)
+    if (is.null(subgroupvar))  subgroupvar <- 'SampleGroup'
     object %<>% add_subgroup(subgroupvar)
     object
 }
@@ -196,7 +197,8 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     object %<>% log2transform(verbose = TRUE)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, formula = formula, block = block, 
+    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
+                    formula = formula, block = block, 
                     contrastdefs = contrastdefs, verbose = verbose, plot=plot)
 # Return
     object
