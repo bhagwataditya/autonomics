@@ -22,8 +22,7 @@ filtered SummarizedExperiment
 Filter samples on condition
 }
 \examples{
-# GLUTAMINASE
-    file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, plot=FALSE)
-    filter_samples(object, TIME_POINT=='h10', verbose = TRUE)
+file <- download_data('halama18.metabolon.xlsx')
+object <- read_metabolon(file, plot=FALSE)
+filter_samples(object, TIME_POINT=='h10', verbose = TRUE)
 }

@@ -730,13 +730,9 @@ preprocess_rnaseq_counts <- function(object,
                                             object, subgroupvar, fit='limma')
 # Filter
     if (verbose) message('\t\tPreprocess')
-    design <- create_design(object, formula=formula, verbose = verbose)
     object$libsize <- matrixStats::colSums2(counts(object))
-    idx <- filterByExpr(counts(object), design = design,#group=object$subgroup,
-                lib.size  = object$libsize, min.count = min_count)
-    if (verbose) message('\t\tKeep ', sum(idx), '/', length(idx),
-            ' features: count >= ', min_count, ' in at least some samples')
-    object %<>% extract(idx, )
+    object %<>% filter_by_expr(
+                    formula=formula, min_count = min_count, verbose=verbose)
 # Add pseudocount
     if (pseudocount>0){ if (verbose)  message('\t\t\tpseudocount ', pseudocount)
                         counts(object) %<>% add(pseudocount) }
@@ -753,11 +749,10 @@ preprocess_rnaseq_counts <- function(object,
                 assays(object) %<>% extract(c('cpm', other)) }
 # Voom  weight (counts) & dupcor (log2(cpm))
     if (voom){
-        if (verbose)  message('\t\t\tvoom:   voom')
-        object %<>% add_voom(design, verbose=FALSE, plot=plot & is.null(block))
+        object %<>% add_voom(formula, verbose=verbose, plot=plot & is.null(block))
         if (!is.null(block)){
             object %<>%
-                add_voom(design, block=block, verbose=verbose, plot=plot) }}
+                add_voom(formula, block=block, verbose=verbose, plot=plot) }}
 # Log2 transform
     if (log2){  if (verbose)  message('\t\t\tlog2')
                 selectedassays <- c('counts','cpm','tpm')
@@ -771,11 +766,21 @@ preprocess_rnaseq_counts <- function(object,
 }
 
 
-add_voom <- function(
-    object, design, block = NULL, verbose = TRUE, plot = TRUE
-){
+filter_by_expr <- function(object, formula, min_count, verbose){
+    design <- create_design(object, formula=formula, verbose = FALSE)
+    idx <- filterByExpr(counts(object), design = design,#group=object$subgroup,
+                lib.size  = object$libsize, min.count = min_count)
+    if (verbose) message('\t\t\tKeep ', sum(idx), '/', length(idx),
+            ' features: count >= ', min_count, ' (', formula2str(formula), ')')
+    object %<>% extract(idx, )
+    object
+}
+
+
+add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
 # Retain samples with subgroups
     n0 <- ncol(object)
+    design <- create_design(object, formula=formula, verbose = FALSE)
     object %<>% extract(, rownames(design))
     if (verbose & nrow(object)<n0)  message('\t\t\t\tRetain ',
             ncol(object), '/', n0, ' samples with subgroup definitions')
@@ -785,13 +790,14 @@ add_voom <- function(
         blockvar <- block
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$dupcor)){
-            if (verbose)  cmessage('\t\t\t\tdupcor `%s`', blockvar)
-            metadata(object)$dupcor <- duplicateCorrelation(
-                log2(cpm(object)), design=design, block=block
-            )$consensus.correlation }}
+            if (verbose)  cmessage('\t\t\tdupcor `%s`', blockvar)
+            metadata(object)$dupcor <- 0.2#duplicateCorrelation(
+                #log2(cpm(object)), design=design, block=block
+            #)$consensus.correlation 
+            }}
 # Run voom
-    txt <- if (is.null(block)) '\t\t\t\tvoom' else paste0(
-                                '\t\t\t\t`', blockvar, '`-blocked voom')
+    txt <- sprintf('\t\t\tvoom: %s', formula2str(formula))
+    if (!is.null(block))  txt %<>% paste0(' | ', blockvar)
     if (verbose) message(txt)
     weights <- voom(counts(object),
                     design      = design,
@@ -843,10 +849,10 @@ add_voom <- function(
                             fdt = fcounts$annotation, fdtby='feature_id')
     assayNames(object)[1] <- 'counts'
 # Add sample/feature data
-    object %<>% merge_sfile(sfile, by.x = 'sample_id',  by.y = sfileby,
-                            subgroupvar = subgroupvar, verbose = verbose)
-    object %<>% merge_ffile(ffile, by.x = 'feature_id', by.y = ffileby,
-                            fnamevar = fnamevar, verbose = verbose)
+    object %<>% merge_sfile(
+                sfile, by.x = 'sample_id',  by.y = sfileby, verbose = verbose)
+    object %<>% merge_ffile(
+                ffile, by.x = 'feature_id', by.y = ffileby, verbose = verbose)
     metadata(object)$platform <- 'rnaseq'
     metadata(object)$file <- dir
 # Return
@@ -911,20 +917,23 @@ read_rnaseq_bams <- function(
                                 fnamevar = fnamevar,
                                 subgroupvar = subgroupvar)
 # Preprocess
-    object %<>% preprocess_rnaseq_counts(formula    = formula,
-                                        block       = block,
-                                        min_count   = min_count,
-                                        pseudocount = pseudocount,
-                                        genesize    = genesize,
-                                        cpm         = cpm,
-                                        tmm         = tmm,
-                                        voom        = voom,
-                                        log2        = log2,
-                                        verbose     = verbose,
-                                        plot        = plot)
+    object %<>% preprocess_rnaseq_counts(subgroupvar = subgroupvar, 
+                                        formula      = formula,
+                                        block        = block,
+                                        min_count    = min_count,
+                                        pseudocount  = pseudocount,
+                                        genesize     = genesize,
+                                        cpm          = cpm,
+                                        tmm          = tmm,
+                                        voom         = voom,
+                                        log2         = log2,
+                                        verbose      = verbose,
+                                        plot         = plot)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, formula = formula, block = block, 
-                    contrastdefs = contrastdefs, verbose = verbose, plot = plot)
+    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
+                        formula = formula, block = block, 
+                        contrastdefs = contrastdefs, 
+                        verbose = verbose, plot = plot)
 # Return
     object
 }
@@ -986,7 +995,8 @@ read_rnaseq_counts <- function(
                                 subgroupvar = subgroupvar,
                                 verbose     = verbose)
 # Preprocess
-    object %<>% preprocess_rnaseq_counts(formula    = formula,
+    object %<>% preprocess_rnaseq_counts(subgroupvar= subgroupvar,
+                                        formula     = formula,
                                         block       = block,
                                         min_count   = min_count,
                                         pseudocount = pseudocount,
@@ -1019,9 +1029,10 @@ read_rnaseq_counts <- function(
 #' @param verbose      whether to msg
 #' @param plot         whether to plot
 #' @examples 
+#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' object %<>% analyze(pca=TRUE, fit='limma')
+#' object %<>% analyze(pca=TRUE, subgroupvar = 'Group', fit='limma')
 #' @export
 analyze <- function(
     object,

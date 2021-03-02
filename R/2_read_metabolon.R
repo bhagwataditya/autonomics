@@ -45,7 +45,7 @@ add_kegg_pathways <- function(
 #' @param pathway_var kegg pathway fvar
 #' @return character vector
 #' @examples
-#'     x <- c("C07326", "C04742", "C18218", "C18218", NA_character_,
+#' x <- c("C07326", "C04742", "C18218", "C18218", NA_character_,
 #'            NA_character_, "", "")
 #' kegg_entry_to_pathways(x)
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html

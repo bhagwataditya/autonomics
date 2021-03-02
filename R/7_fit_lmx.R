@@ -56,7 +56,7 @@
     colnames(fitres) %<>% stri_replace_first_fixed('Std.Error', 'se')
     colnames(fitres) %<>% stri_replace_first_fixed('t-value', 't')
     colnames(fitres) %<>% stri_replace_first_fixed('p-value', 'p')
-    fitres %<>% extract(, c('effect', 'se', 't', 'p')) # drop DF column
+    fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep = '.')
@@ -82,7 +82,7 @@
     colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
     colnames(fitres) %<>% stri_replace_first_fixed('t value', 't')
     colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
-    fitres %<>% extract(, c('effect', 'se', 't', 'p')) # drop DF column
+    fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep = '.')

@@ -200,9 +200,9 @@ create_design <- function(
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' subgroup_matrix(object)
-#' contrast_subgroup_cols(object)
-#' contrast_subgroup_rows(object)
+#' subgroup_matrix(object, subgroupvar = 'Group')
+#' contrast_subgroup_cols(object, subgroupvar = 'Group')
+#' contrast_subgroup_rows(object, subgroupvar = 'Group')
 #' @export
 contrast_subgroup_cols <- function(object, subgroupvar){
     subgroupmat <- subgroup_matrix(object, subgroupvar)
@@ -293,12 +293,12 @@ vectorize_contrastdefs <- function(contrastdefs){
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
-#' fit_wilcoxon(object)
-#' fit_lm(object)
-#' fit_limma(object)
-#' fit_limma(object, block = 'Subject_ID')
-#' fit_lme(  object, block = 'Subject_ID')
-#' fit_lmer( object, block = 'Subject_ID')
+#' fit_wilcoxon(object, subgroupvar = 'SampleGroup')
+#' fit_lm(object, subgroupvar = 'SampleGroup')
+#' fit_limma(object, subgroupvar = 'SampleGroup')
+#' fit_limma(object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' fit_lme(  object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' fit_lmer( object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
 #'
 #' file <- download_data('billing19.proteingroups.txt')
 #' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
@@ -316,9 +316,9 @@ vectorize_contrastdefs <- function(contrastdefs){
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% impute_systematic_nondetects(plot=FALSE)
-#' object %<>% fit_limma(plot=FALSE)
-#' object %<>% fit_lm(plot=FALSE)
+#' object %<>% impute_systematic_nondetects(plot=FALSE, subgroup = Group)
+#' object %<>% fit_limma(plot=FALSE, subgroupvar = 'Group')
+#' object %<>% fit_lm(plot=FALSE, subgroupvar = 'Group')
 #' @export
 fit_limma <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
@@ -328,10 +328,10 @@ fit_limma <- function(object,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     verbose = TRUE, plot=FALSE
 ){
-# Set design/contrasts
+# Design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (verbose)  cmessage('\t\tlimma: lmFit(%s%s%s)', formula2str(formula),
-        if(is.null(block))     '' else paste0(', block = object$`',block, '`'),
+    if (verbose)  cmessage('\t\tlmFit(%s%s%s)', formula2str(formula),
+        if(is.null(block))     '' else paste0(' | ',block),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
                                             weightvar))
     design <- create_design(object, formula=formula, verbose = FALSE)
@@ -348,15 +348,17 @@ fit_limma <- function(object,
             metadata(object)$dupcor <- duplicateCorrelation(
                 exprs(object), design=design, block=block
             )$consensus.correlation }}
-# weights
-    weights <- NULL
-    if (!is.null(weightvar)) {  assert_is_a_string(weightvar)
-                                assert_is_subset(weightvar, assayNames(object))
-                                weights <- assays(object)[[weightvar]] }
+# Exprs/Weights
+    exprmat <-  assays(object)[[1]][, rownames(design)]
+    weightmat <- if (is.null(weightvar)){ NULL 
+            } else {assert_is_a_string(weightvar)
+                    assert_is_subset(weightvar, assayNames(object))
+                    assays(object)[[weightvar]][, rownames(design)] }
 # Fit
-    fit <- suppressWarnings(lmFit(object = exprs(object[, rownames(design)]),
-        design = design, block = block, correlation = metadata(object)$dupcor,
-        weights = weights))
+    fit <- suppressWarnings(lmFit(
+                object = exprmat, design = design, 
+                block = block, correlation = metadata(object)$dupcor,
+                weights = weightmat))
 # Contrast
     object %<>% .limmacontrast(fit, formula)
     if (plot)  print(plot_volcano(object, fit='limma')) 

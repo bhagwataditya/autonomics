@@ -1279,7 +1279,7 @@ read_proteingroups <- function(
     sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
-    include_pepcounts = FALSE,
+    include_pepcounts = FALSE, subgroupvar = NULL,
     formula = NULL, block = NULL, contrastdefs = NULL,
     pca = FALSE, fit = NULL, verbose = TRUE, plot = TRUE
 ){
@@ -1299,8 +1299,10 @@ read_proteingroups <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, formula = formula, block = block,
-                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
+    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
+                        formula = formula, block = block, 
+                        contrastdefs = contrastdefs, 
+                        verbose = verbose, plot = plot)
 # Return
     object
 }
@@ -1313,8 +1315,8 @@ read_phosphosites <- function(
     sfile = NULL, sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
     invert_subgroups = character(0), pca = FALSE,
-    fit = NULL, formula = NULL, block = NULL, contrastdefs = NULL,
-    verbose = TRUE, plot = TRUE
+    fit = NULL, subgroupvar = NULL, formula = NULL, block = NULL, 
+    contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Assert
     `Protein group IDs` <- `Localization prob` <- NULL
@@ -1339,8 +1341,9 @@ read_phosphosites <- function(
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=FALSE, verbose=verbose, plot=plot)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, formula = formula, block = block,
-                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
+    object %<>% analyze(pca=pca, fit=fit, subgroupvar=subgroupvar, 
+                        formula=formula, block=block, contrastdefs=contrastdefs, 
+                        verbose=verbose, plot=plot)
 # Return
     object
 }

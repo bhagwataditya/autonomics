@@ -58,10 +58,9 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' @param verbose logical
 #' @return filtered eSet
 #' @examples
-#' # GLUTAMINASE
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot=FALSE)
-#'     filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot=FALSE)
+#' filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 #' @export
 filter_features <- function(object, condition, verbose = FALSE){
     condition <- enquo(condition)
@@ -147,9 +146,10 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' object %<>% filter_exprs_replicated_in_some_subgroup()
+#' object %<>% filter_exprs_replicated_in_some_subgroup(subgroupvar = 'Group')
 #'
 #' filter_exprs_replicated_in_some_subgroup(object, character(0))
+#' filter_exprs_replicated_in_some_subgroup(object, NULL)
 #' @export
 filter_exprs_replicated_in_some_subgroup <- function(
     object, subgroupvar = 'subgroup',
@@ -170,8 +170,8 @@ filter_exprs_replicated_in_some_subgroup <- function(
 # Keep only replicated features
     replicated_features <- dt[V1]$feature_id
     idx <- fid_values(object) %in% replicated_features
-    if (verbose)   message('\t\tFilter ', sum(idx), '/', length(idx),
-            ' features: expr ', comparator, ' ', as.character(lod),
+    if (verbose)  if (any(!idx))  message('\t\tFilter ', sum(idx), '/', 
+            length(idx), ' features: expr ', comparator, ' ', as.character(lod),
             ' for at least two samples in some ', subgroupvar)
     object %<>% extract_features(idx) # also handles limma in metadata
 # Update analysis log
@@ -193,7 +193,6 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' @param verbose    TRUE/FALSE
 #' @return  SummarizedExperiment
 #' @examples
-#' # FUKUDA20
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, plot=FALSE)
@@ -209,7 +208,7 @@ filter_replicated  <- function(
 
     nreplicates <- rowSums(comparator(exprs(object), lod), na.rm=TRUE)
     idx <- nreplicates >= n
-    if (verbose) cmessage(
+    if (verbose)  if (!any(idx))  cmessage(
         '\t\t\tRetain %d/%d features replicated in at least %d samples',
         sum(idx), length(idx), n)
     object[idx, ]
@@ -230,10 +229,9 @@ filter_replicated  <- function(
 #' @param record    TRUE (default) or FALSE
 #' @return filtered SummarizedExperiment
 #' @examples
-#' # GLUTAMINASE
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot=FALSE)
-#'     filter_samples(object, TIME_POINT=='h10', verbose = TRUE)
+#' file <- download_data('halama18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot=FALSE)
+#' filter_samples(object, TIME_POINT=='h10', verbose = TRUE)
 #' @export
 filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     condition <- enquo(condition)

@@ -9,7 +9,7 @@ biplot(
   object,
   x = pca1,
   y = pca2,
-  color = subgroup,
+  color = NULL,
   group = NULL,
   label = NULL,
   feature_label = feature_name,

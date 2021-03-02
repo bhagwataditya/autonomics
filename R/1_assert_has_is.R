@@ -3,7 +3,7 @@
 # has/contains
 
 
-#' Does object have complete svalues
+#' Does object have some svalues
 #' @param object SummarizedExperiment
 #' @param svar   sample var
 #' @return logical
@@ -13,35 +13,14 @@
 #' has_complete_subgroup_values(object)
 #' has_complete_block_values(object)
 #' @noRd
-has_complete_svalues <- function(object, svar){
-    # NULL svar
-    if (is.null(svar))  return(FALSE)
-
-    # svar missing
-    var_present <- svar %in% autonomics::svars(object)
-    if (!var_present)   return(FALSE)
-
-    # svalues missing
-    values_present <- any(is_empty_character(svalues(object, svar)))
-    if (values_present) return(FALSE)
-
-    # svar and svalues both present
+has_some_svalues <- function(object, svar){
+    if (is.null(svar))                          return(FALSE)
+    if (!svar %in% autonomics::svars(object))   return(FALSE)
+    if (all(is.na(svalues(object,svar)) | 
+        svalues(object, svar)==''))             return(FALSE)
     return(TRUE)
 }
 
-
-#' @rdname has_complete_svalues
-#' @noRd
-has_complete_subgroup_values <- function(object){
-    has_complete_svalues(object, 'subgroup')
-}
-
-
-#' @rdname has_complete_svalues
-#' @noRd
-has_complete_block_values <- function(object){
-    has_complete_svalues(object, 'block')
-}
 
 
 #' Does object contain ratio values?

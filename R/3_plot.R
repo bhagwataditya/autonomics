@@ -38,7 +38,7 @@ add_color_scale <- function(p, color = subgroup, data){
             if (is.character(values0)) values0 %<>% factor()
             levels0 <- levels(values0)
             colors0 <- make_colors(levels0, sep = guess_sep(levels0))
-            p <- p + scale_color_manual(values = colors0)
+            p <- p + scale_color_manual(values = colors0, na.value = 'gray80')
         }
     }
 # Return
@@ -58,7 +58,7 @@ add_fill_scale <- function(p, fill = subgroup, data){
         if (!is.numeric(values0)){
             levels0 <- unique(values0)
             colors0 <- make_colors(levels0, sep = guess_sep(levels0))
-            p <- p + scale_fill_manual(values = colors0)
+            p <- p + scale_fill_manual(values = colors0, na.value = 'gray80')
         }
     }
 # Return

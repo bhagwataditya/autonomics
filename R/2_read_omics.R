@@ -557,7 +557,7 @@ merge_ffile <- function(
 add_subgroup <- function(
     object, subgroupvar = 'subgroup', replicatevar = 'replicate', verbose=TRUE
 ){
-    if (!has_complete_svalues(object, subgroupvar)){
+    if (!has_some_svalues(object, subgroupvar)){
         x <- object$sample_id
         sep <- guess_sep(x)
         if (sep=='NOSEP'){
@@ -570,9 +570,11 @@ add_subgroup <- function(
             object[[replicatevar]] <- split_extract(x, nfactor, sep)
         }
     }
-    if (!is.null(subgroupvar)) object[[subgroupvar]] %<>% make.names() 
+    if (!is.null(subgroupvar)){
+        object[[subgroupvar]] %<>% factor()
+        levels(object[[subgroupvar]]) %<>% make.names() 
         # otherwise issue in limma (fixable?)
-        #object[[subgroupvar]] %<>% factor()
+    }
     object
 }
 

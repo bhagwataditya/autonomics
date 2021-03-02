@@ -39,7 +39,8 @@ object \%<>\% filter_exprs_replicated_in_some_subgroup()
 
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot=FALSE)
-object \%<>\% filter_exprs_replicated_in_some_subgroup()
+object \%<>\% filter_exprs_replicated_in_some_subgroup(subgroupvar = 'Group')
 
 filter_exprs_replicated_in_some_subgroup(object, character(0))
+filter_exprs_replicated_in_some_subgroup(object, NULL)
 }

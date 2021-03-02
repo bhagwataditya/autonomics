@@ -394,7 +394,7 @@ opls <- function(
 
 add_scores <- function(
     p, object, x = pca1, y = pca2, color = subgroup, group = NULL, ...,
-    fixed = list(shape=15, size=3)
+    fixed = list(shape=15, size=3, na.rm=TRUE)
 ){
     x     <- enquo(x)
     y     <- enquo(y)
@@ -411,7 +411,7 @@ add_scores <- function(
         mapping  = aes(x = !!x, y = !!y, color = !!color, group = !!group),
         stat     = "identity",
         data    = sdata(object),
-        params   = list(size=0.1, linetype='dotted'),
+        params   = list(size=0.1, linetype='dotted', na.rm = TRUE),
         position = 'identity')
     p
 }
@@ -503,7 +503,7 @@ add_loadings <- function(
 #'    biplot(object)
 #'    biplot(object, color=SUB, group=SUB)
 #' @export
-biplot <- function(object, x=pca1, y=pca2, color = subgroup, group = NULL,
+biplot <- function(object, x = pca1, y = pca2, color = NULL, group = NULL,
     label = NULL, feature_label = feature_name, ...,
     fixed = list(shape=15, size=3), nloadings = 0
 ){
@@ -539,9 +539,8 @@ biplot <- function(object, x=pca1, y=pca2, color = subgroup, group = NULL,
     p %<>% add_color_scale(!!color, data = sdata(object))
 
     if (!quo_is_null(label)){
-        p <- p + geom_text_repel(
-                    aes(x=!!x, y=!!y, label=!!label), data=sdata(object))}
-
+        p <- p + geom_text_repel(aes(x=!!x, y=!!y, label=!!label), 
+                                data=sdata(object), na.rm = TRUE)}
     p
 }
 
