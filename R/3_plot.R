@@ -23,7 +23,8 @@
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    object <- read_proteingroups(
 #'               file, quantity = 'Intensity labeled', plot=FALSE)
-#'    add_color_scale(object)
+#'     p <- plot_sample_densities(object)
+#'    add_color_scale(p, data = sdata(object))
 #' @noRd
 add_color_scale <- function(p, color = subgroup, data){
 # Assert
@@ -189,7 +190,7 @@ make_twofactor_colors <- function(
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
-    data, geom = geom_point, color = subgroup, fill = !!enquo(color), ...,
+    data, geom = geom_point, color = NULL, fill = !!enquo(color), ...,
     fixed = list(), theme = list()
 ){
     color <- enquo(color)
@@ -259,9 +260,10 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$subgroup))
+#'     object %<>% extract(, order(.$Group))
 #' # Plot distributions
 #'     plot_sample_densities(object)
+#'     plot_sample_densities(object, fill = Group)
 #'     plot_feature_densities(object)
 #' @export
 plot_densities <- function(object, group, fill, color = NULL,
@@ -296,7 +298,7 @@ is_uniquely_empty <- function(x, y){
 #' @export
 plot_sample_densities <- function(
     object,
-    fill = subgroup,
+    fill  = sample_id,
     color = NULL,
     group = sample_id,
     fixed = list(alpha=0.5, na.rm=TRUE),
@@ -357,14 +359,14 @@ plot_feature_densities <- function(
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$subgroup))
+#'     object %<>% extract(, order(.$Group))
 #'     control_features <- c('biotin','phosphate')
 #'     fdata(object) %<>% cbind(control=.$feature_name %in% control_features)
 #' # plot
 #'     plot_violins(object[1:12, ], x=feature_id, fill=feature_id)
 #'     plot_feature_violins(object[1:12, ])
 #'     plot_sample_violins(object[, 1:12],  highlight = control)
-#'     plot_subgroup_violins(object[1:4, ])
+#'     plot_subgroup_violins(object[1:4, ], subgroup = Group)
 #' @export
 plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     facet = NULL, highlight = NULL, fixed = list(na.rm=TRUE)
@@ -405,7 +407,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
 #' @rdname plot_violins
 #' @export
 plot_sample_violins <- function(
-    object, x = sample_id, fill = subgroup, color = NULL, highlight = NULL,
+    object, x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
     fixed=list(na.rm=TRUE)
 ) plot_violins(
     object, x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color),
@@ -426,8 +428,8 @@ plot_feature_violins <- function(
 #' @rdname plot_violins
 #' @export
 plot_subgroup_violins <- function(
-    object, x = subgroup, fill = subgroup, color = NULL, highlight = NULL,
-    facet = feature_id, fixed = list(na.rm=TRUE)
+    object, subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
+    color = NULL, highlight = NULL, facet = feature_id, fixed = list(na.rm=TRUE)
 ) plot_violins(
     object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
     facet=!!enquo(facet), highlight=!!enquo(highlight), fixed=fixed
@@ -460,7 +462,7 @@ plot_subgroup_violins <- function(
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$subgroup))
+#'     object %<>% extract(, order(.$Group))
 #'     fdata(object) %<>% cbind(
 #'                         control=.$feature_name %in% c('biotin','phosphate'))
 #' # plot
@@ -469,7 +471,7 @@ plot_subgroup_violins <- function(
 #'     plot_feature_boxplots(object[1:9, ])
 #'     plot_sample_boxplots(object[, 1:12])
 #'     plot_sample_boxplots(object[, 1:12], highlight = control)
-#'     plot_subgroup_boxplots(object[1:2, ])
+#'     plot_subgroup_boxplots(object[1:2, ], subgroup = Group)
 #' @export
 plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
     highlight = NULL, fixed = list(na.rm=TRUE)
@@ -510,7 +512,7 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
 #' @rdname plot_boxplots
 #' @export
 plot_sample_boxplots <- function(
-    object, x = sample_id, fill = subgroup, color = NULL, highlight = NULL,
+    object, x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
     fixed = list(na.rm=TRUE)
 ) plot_boxplots(
     object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
@@ -531,71 +533,12 @@ plot_feature_boxplots <- function(
 #' @rdname plot_boxplots
 #' @export
 plot_subgroup_boxplots <- function(
-    object, x = subgroup, fill = subgroup, color = NULL, highlight = NULL,
-    facet = feature_id, fixed = list(na.rm=TRUE)
+    object, subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
+    color = NULL, highlight = NULL, facet = feature_id, fixed = list(na.rm=TRUE)
 ) plot_boxplots(
-    object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
-    facet=!!enquo(facet), highlight=!!enquo(highlight), fixed=fixed
+    object, x = !!enquo(x), fill = !!enquo(fill), color = !!color,
+    facet = !!enquo(facet), highlight = !!enquo(highlight), fixed = fixed
 )
-
-
-#' Plot samples
-#'
-#' Plots sample densities and scores
-#' @param object    SummarizedExperiment
-#' @param x         svar mapped to biplot x (sym, default pca1)
-#' @param y         svar mapped to biplot y *sym, default pca2)
-#' @param color     svar mapped to biplot color and density fill
-#' @param nloadings n loadings added to plot
-#' @param plot      whether to print plot
-#' @return gtable returned by \code{\link[gridExtra]{arrangeGrob}}
-#' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=TRUE, fit='limma', plot = FALSE)
-#' plot_samples(object)
-#'
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=TRUE, fit='limma', plot = FALSE)
-#' plot_samples(object)
-#' @export
-plot_samples <- function(
-    object, x=pca1, y=pca2, color=subgroup, nloadings=0, plot=TRUE
-){
-    pcaplot <-  biplot( object, x=pca1, y=pca2, color=!!enquo(color),
-                        nloadings = nloadings) +
-                theme(legend.position='right', legend.title=element_blank())
-    samples    <- plot_sample_densities(object)  +
-                    theme(legend.position='none') + xlab(NULL) + ylab(NULL)
-    features   <- plot_feature_densities(object) +
-                    theme(legend.position='none') + xlab(NULL) + ylab(NULL)
-    detections <- plot_summarized_detections(object) +
-                    theme(legend.position='none')
-    volcanoes  <- plot_volcano(object, ntop = 0)
-    # Cairo::CairoPNG(
-    #    'contrastogram.png', width=480*7, height=480*7, dpi=400, pointsize=10)
-    # plot_contrastogram(object)
-    # dev.off()
-    # contrastogram <- grid::rasterGrob(
-    #    png::readPNG('contrastogram.png'), interpolate = TRUE)
-    colors  <- gglegend(pcaplot)
-    pcaplot <- pcaplot + theme(legend.position='none',
-                axis.text.x = element_blank(), axis.text.y = element_blank())
-
-    samples <- samples + theme(legend.position='none',
-                                axis.text.y = element_blank())
-    #features <- features   +
-    #            theme(legend.position='none', axis.text.y = element_blank())
-    detections <- detections + theme(legend.position='none')
-    volcanoes  <- volcanoes  + theme(legend.position='none')
-    pp <- grid.arrange( colors, #features, ncol=1),
-                        arrangeGrob(detections, samples, pcaplot, ncol=1),
-                        volcanoes,
-                        ncol=3,
-                        widths = c(2,4,6))
-    if (plot) grid.draw(pp)
-    pp
-}
-
 
 
 
@@ -622,14 +565,16 @@ plot_samples <- function(
 #' idx <- order(abs(fdata(object)$pca1), decreasing=TRUE)[1:9]
 #' object %<>% extract(idx, )
 #' plot_feature_boxplots(object)
-#' plot_feature_profiles(object)
+#' plot_subgroup_boxplots(object, subgroup=Group)
+#' plot_feature_profiles( object, subgroup=Group)
 #' @export
 plot_features <- function(
     object,
     geom,
-    x          = subgroup,
-    fill       = subgroup,
-    color      = subgroup,
+    subgroup, 
+    x     = !!enquo(subgroup),
+    fill  = !!enquo(subgroup),
+    color = !!enquo(subgroup),
     ...,
     fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
     theme = list(axis.text.x = element_blank(),

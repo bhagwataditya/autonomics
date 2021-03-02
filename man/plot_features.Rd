@@ -8,9 +8,10 @@
 plot_features(
   object,
   geom,
-  x = subgroup,
-  fill = subgroup,
-  color = subgroup,
+  subgroup,
+  x = !!enquo(subgroup),
+  fill = !!enquo(subgroup),
+  color = !!enquo(subgroup),
   ...,
   fixed = list(na.rm = TRUE),
   theme = list(axis.text.x = element_blank(), axis.title.x = element_blank(),

@@ -21,7 +21,7 @@ plot_violins(
 plot_sample_violins(
   object,
   x = sample_id,
-  fill = subgroup,
+  fill = sample_id,
   color = NULL,
   highlight = NULL,
   fixed = list(na.rm = TRUE)
@@ -38,8 +38,9 @@ plot_feature_violins(
 
 plot_subgroup_violins(
   object,
-  x = subgroup,
-  fill = subgroup,
+  subgroup,
+  x = !!enquo(subgroup),
+  fill = !!enquo(subgroup),
   color = NULL,
   highlight = NULL,
   facet = feature_id,
@@ -74,14 +75,14 @@ Plot sample/feature violins
     require(magrittr)
     file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
-    object \%<>\% extract(, order(.$subgroup))
+    object \%<>\% extract(, order(.$Group))
     control_features <- c('biotin','phosphate')
     fdata(object) \%<>\% cbind(control=.$feature_name \%in\% control_features)
 # plot
     plot_violins(object[1:12, ], x=feature_id, fill=feature_id)
     plot_feature_violins(object[1:12, ])
     plot_sample_violins(object[, 1:12],  highlight = control)
-    plot_subgroup_violins(object[1:4, ])
+    plot_subgroup_violins(object[1:4, ], subgroup = Group)
 }
 \seealso{
 \code{\link{plot_sample_densities}},

@@ -7,7 +7,7 @@
 plot_data(
   data,
   geom = geom_point,
-  color = subgroup,
+  color = NULL,
   fill = !!enquo(color),
   ...,
   fixed = list(),

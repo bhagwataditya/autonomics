@@ -16,7 +16,7 @@ plot_densities(
 
 plot_sample_densities(
   object,
-  fill = subgroup,
+  fill = sample_id,
   color = NULL,
   group = sample_id,
   fixed = list(alpha = 0.5, na.rm = TRUE),
@@ -58,9 +58,10 @@ Plot sample/feature densities
     require(magrittr)
     file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
-    object \%<>\% extract(, order(.$subgroup))
+    object \%<>\% extract(, order(.$Group))
 # Plot distributions
     plot_sample_densities(object)
+    plot_sample_densities(object, fill = Group)
     plot_feature_densities(object)
 }
 \seealso{
