@@ -13,7 +13,7 @@ test_that('read_rnaseq_counts(file, cpm=FALSE)', {
     expect_s4_class(object, 'SummarizedExperiment') 
 })
 
-test_that('read_rnaseq_counts(file, cpm=TRUE)', {
+test_that('read_rnaseq_counts(file)', {
     object <- read_rnaseq_counts(
         file, sfile = sfile, sfileby ='rna_id', subgroupvar = 'gender')
     expect_s4_class(object, 'SummarizedExperiment')

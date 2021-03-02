@@ -523,13 +523,16 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' merge_sfile(object, sfile)
 #'@export
 merge_sfile <- function(
-    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, verbose = TRUE
+    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, 
+    stringsAsFactors = TRUE, verbose = TRUE
 ){
     if (is.null(sfile))  return(object)
     assert_all_are_existing_files(sfile)
     if (verbose) message('\t\tMerge sdata: ', sfile)
-    dt <- fread(sfile)
+    dt <- fread(sfile, stringsAsFactors = stringsAsFactors)
     if (is.null(by.y))  by.y <- names(dt)[1]
+    assert_is_subset(by.y, names(dt))
+    dt[[by.y]] %<>% as.character()
     object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
@@ -537,13 +540,16 @@ merge_sfile <- function(
 #' @rdname merge_sfile
 #' @export
 merge_ffile <- function(
-    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, verbose = TRUE
+    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, 
+    stringsAsFactors = TRUE, verbose = TRUE
 ){
     if (is.null(ffile))  return(object)
     assert_all_are_existing_files(ffile)
     if (verbose) message('\t\tMerge fdata: ', ffile)
-    dt <- fread(ffile)
+    dt <- fread(ffile, stringsAsFactors = stringsAsFactors)
     if (is.null(by.y))  by.y <- names(dt)[1]
+    assert_is_subset(by.y, names(dt))
+    dt[[by.y]] %<>% as.character()
     object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
@@ -551,18 +557,22 @@ merge_ffile <- function(
 add_subgroup <- function(
     object, subgroupvar = 'subgroup', replicatevar = 'replicate', verbose=TRUE
 ){
-    if (is.null(subgroupvar))  subgroupvar <- 'subgroup'
-    if (has_complete_svalues(object, subgroupvar))  return(object)
-    x <- object$sample_id
-    sep <- guess_sep(x)
-    if (sep!='NOSEP'){
-        nfactor <- nfactors(x, sep)
-        if (verbose) message('\t\tInfer subgroup from sample_ids')
-        object[[subgroupvar]]  <- split_extract(x, seq_len(nfactor-1), sep)
-        object[[replicatevar]] <- split_extract(x, nfactor, sep)
+    if (!has_complete_svalues(object, subgroupvar)){
+        x <- object$sample_id
+        sep <- guess_sep(x)
+        if (sep=='NOSEP'){
+            subgroupvar <- NULL
+        } else {
+            if (is.null(subgroupvar))  subgroupvar <- 'subgroup'
+            nfactor <- nfactors(x, sep)
+            if (verbose) message('\t\tInfer subgroup from sample_ids')
+            object[[subgroupvar]]  <- split_extract(x, seq_len(nfactor-1), sep)
+            object[[replicatevar]] <- split_extract(x, nfactor, sep)
+        }
     }
-    #object[[subgroupvar]] %<>% make.names() # otherwise issue in limma (fixable?)
-    #object[[subgroupvar]] %<>% factor()
+    if (!is.null(subgroupvar)) object[[subgroupvar]] %<>% make.names() 
+        # otherwise issue in limma (fixable?)
+        #object[[subgroupvar]] %<>% factor()
     object
 }
 

@@ -1222,8 +1222,7 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
     if (include_pepcounts && !phospho) {
         for (i in seq_along(pepcs)) assays(object)[[i + 1]] <- pepcs[[i]]
     }
-    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',
-                        by.y = sfileby, subgroupvar  = subgroupvar)
+    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id', by.y = sfileby)
 # Filter/Transform
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)

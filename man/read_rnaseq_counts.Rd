@@ -28,6 +28,7 @@
   sfileby = NULL,
   ffile = NULL,
   ffileby = NULL,
+  subgroupvar = NULL,
   verbose = TRUE
 )
 

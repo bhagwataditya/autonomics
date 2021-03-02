@@ -57,8 +57,8 @@ fit_lmer(
 fit_wilcoxon(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  contrastdefs = contrast_coefs(object, formula = default_formula(object, subgroupvar,
-    fit = "wilcoxon")),
+  formula = default_formula(object, subgroupvar, fit = "wilcoxon"),
+  contrastdefs = contrast_coefs(object, formula = formula),
   block = NULL,
   weightvar = NULL,
   verbose = TRUE,

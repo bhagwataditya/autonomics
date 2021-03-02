@@ -10,6 +10,7 @@ merge_sfile(
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
+  stringsAsFactors = TRUE,
   verbose = TRUE
 )
 
@@ -18,6 +19,7 @@ merge_ffile(
   ffile = NULL,
   by.x = "feature_id",
   by.y = NULL,
+  stringsAsFactors = TRUE,
   verbose = TRUE
 )
 }
