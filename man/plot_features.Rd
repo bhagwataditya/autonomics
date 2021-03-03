@@ -50,5 +50,6 @@ object <- read_metabolon(file, pca=TRUE, plot = FALSE)
 idx <- order(abs(fdata(object)$pca1), decreasing=TRUE)[1:9]
 object \%<>\% extract(idx, )
 plot_feature_boxplots(object)
-plot_feature_profiles(object)
+plot_subgroup_boxplots(object, subgroup=Group)
+plot_feature_profiles( object, subgroup=Group)
 }
