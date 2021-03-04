@@ -210,13 +210,13 @@ split_values <- function(x){
     dt[, data.table::tstrsplit(x, sep) ]
 }
 
-split_subgroup_values <- function(object){
-    subgroupvalues <- subgroup_values(object)
+split_subgroup_values <- function(object, subgroupvar){
+    subgroupvalues <- svalues(object, subgroupvar)
     cbind(subgroup = subgroupvalues, split_values(subgroupvalues))
 }
 
-split_subgroup_levels <- function(object){
-    subgrouplevels <- subgroup_levels(object)
+split_subgroup_levels <- function(object, subgroupvar){
+    subgrouplevels <- slevels(object, subgroupvar)
     cbind(subgroup = subgrouplevels, split_values(subgrouplevels))
 }
 

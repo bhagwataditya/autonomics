@@ -10,12 +10,14 @@ test_that('read_rnaseq_counts(file, cpm=FALSE)', {
     object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id', 
                  subgroupvar = 'cohort', cpm = FALSE, plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment') 
+    expect_identical(assayNames(object), 'log2counts')
 })
 
 test_that('read_rnaseq_counts(file)', {
     object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id', 
                  subgroupvar = 'cohort', plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
+    expect_identical(assayNames(object)[1], 'log2cpm')
 })
 
 test_that('read_rnaseq_counts(file, pca=TRUE)', {
@@ -34,12 +36,4 @@ test_that("read_rnaseq_counts(file, fit='limma')", {
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('limma' %in% names(S4Vectors::metadata(object)))
 })
-
-# # read_rnaseq_bams: billing16 
-#     # download
-#         context('read_rnaseq_bams: billing16')
-#         dir <- download_data("billing16.bam.zip")
-#     # read
-#         object <- read_rnaseq_bams(dir, paired=TRUE, genome="hg38")
-
 

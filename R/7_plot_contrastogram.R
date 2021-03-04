@@ -9,7 +9,8 @@
 true_names <- function(x) names(x[x])
 
 compute_connections <- function(
-    object, colors = make_colors(subgroup_levels(object), guess_sep(object))
+    object, subgroupvar, 
+    colors = make_colors(slevels(object, subgroupvar), guess_sep(object))
 ){
 # subgroup matrix, difference contrasts, limma
     pvalues <- limma(object)[, , 'p',      drop=FALSE]
@@ -22,7 +23,7 @@ compute_connections <- function(
                 #colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
     sep <- guess_sep(object)
-    subgroupmatrix <- subgroup_matrix(object)
+    subgroupmatrix <- subgroup_matrix(object, subgroupvar = subgroupvar)
     subgrouplevels <- c(t(subgroupmatrix))
     arrowsizes <- arrowcolors <- matrix(0,
         nrow = length(subgrouplevels), ncol = length(subgrouplevels),
@@ -30,8 +31,8 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    design <- create_design(
-        object, formula=attr(limma(object), 'formula'), verbose = FALSE)
+    formula <- as.formula(names(dimnames(limma(object)))[2])
+    design <- create_design(object, formula = formula, verbose = FALSE)
     colcontrasts <- contrastdefs(object)[[1]]
     rowcontrasts <- contrastdefs(object)[[2]]
     contrastdefs <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
@@ -61,30 +62,33 @@ compute_connections <- function(
 
 
 #' Plot contrastogram
-#' @param object SummarizedExperiment
-#' @param colors named color vector (names = subgroups)
-#' @param curve  arrow curvature
+#' @param object       SummarizedExperiment
+#' @param subgroupvar  subgroup svar
+#' @param colors       named color vector (names = subgroups)
+#' @param curve        arrow curvature
 #' @return list returned by \code{\link[diagram]{plotmat}}
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, fit='limma', plot=FALSE)
-#' plot_contrastogram(object)
+#' plot_contrastogram(object, subgroupvar = 'Group')
 #' @export
 plot_contrastogram <- function(
-    object,
-    colors = make_colors(subgroup_levels(object), guess_sep(object)),
+    object, 
+    subgroupvar,
+    colors = make_colors(slevels(object, subgroupvar), guess_sep(object)),
     curve  = 0.1
 ){
 # Initialize
     V2 <- N <- NULL
 # Prepare
-    contrastogram_matrices <- compute_connections(object, colors = colors)
+    contrastogram_matrices <- compute_connections(
+                object, subgroupvar = subgroupvar, colors = colors)
     arrowsizes  <- contrastogram_matrices$arrowsizes
     arrowcolors <- contrastogram_matrices$arrowcolors
     arrowlabels <- contrastogram_matrices$arrowlabels
     widths <- scales::rescale(arrowsizes, c(0.01,30))
 # Plot
-    dt <- split_subgroup_levels(object)
+    dt <- split_subgroup_levels(object, subgroupvar)
     nrow <- dt[, data.table::uniqueN(V2)]
     nperrow <- dt[, .N, by = 'V1'][, N]
     if (all(nperrow==1)) nperrow %<>% length()

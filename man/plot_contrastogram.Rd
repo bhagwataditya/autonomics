@@ -6,12 +6,15 @@
 \usage{
 plot_contrastogram(
   object,
-  colors = make_colors(subgroup_levels(object), guess_sep(object)),
+  subgroupvar,
+  colors = make_colors(slevels(object, subgroupvar), guess_sep(object)),
   curve = 0.1
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{subgroupvar}{subgroup svar}
 
 \item{colors}{named color vector (names = subgroups)}
 
@@ -26,5 +29,5 @@ Plot contrastogram
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, fit='limma', plot=FALSE)
-plot_contrastogram(object)
+plot_contrastogram(object, subgroupvar = 'Group')
 }

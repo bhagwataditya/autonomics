@@ -1047,8 +1047,6 @@ analyze <- function(
     plot = TRUE
 ){
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
-    if (is.null(formula))      formula <- default_formula(
-                                            object, subgroupvar, fit='limma')
     subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
     if (plot){
         grid.draw(
