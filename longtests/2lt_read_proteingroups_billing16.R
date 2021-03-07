@@ -42,17 +42,17 @@ test_that("read_proteingroups(file, invert_subgroups)", {
                           "E_EM.R3", "EM_BM.R1", "EM_BM.R2", "EM_BM.R3")) 
 })
 
-test_that("read_proteingroups(file, fastafile)", {
-    file <- download_data('billing16.proteingroups.txt')
-    fastafile <- download_data('uniprot_hsa_20140515.fasta')
-    invert <- c('EM_E', 'BM_E', 'BM_EM')
-    object0 <- read_proteingroups(file, invert_subgroups = invert, plot = FALSE)
-    object  <- read_proteingroups(file, invert_subgroups = invert, 
-                                    fastafile = fastafile, plot = FALSE)
-    expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('canonical' %in% fvars(object))
-    expect_true(any(nchar(fdata(object)$uniprot)<nchar(fdata(object0)$uniprot)))
-})
+# test_that("read_proteingroups(file, fastafile)", {
+#     file <- download_data('billing16.proteingroups.txt')
+#     fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#     invert <- c('EM_E', 'BM_E', 'BM_EM')
+#     object0 <- read_proteingroups(file, invert_subgroups = invert, plot = FALSE)
+#     object  <- read_proteingroups(file, invert_subgroups = invert, 
+#                                     fastafile = fastafile, plot = FALSE)
+#     expect_s4_class(object, 'SummarizedExperiment')
+#     expect_true('canonical' %in% fvars(object))
+#     expect_true(any(nchar(fdata(object)$uniprot)<nchar(fdata(object0)$uniprot)))
+# })
 
 test_that(  "read_proteingroups(file, pca=TRUE)", {
     file <- download_data('billing16.proteingroups.txt')
@@ -71,7 +71,7 @@ test_that(  "read_proteingroups(file, impute=TRUE)", {
     object <- read_proteingroups(file, invert_subgroups = invert_subgroups, 
                                 impute = TRUE, plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('is_imputed' %in% assayNames(object))
+    expect_true('is_imputed' %in% SummarizedExperiment::assayNames(object))
 })
 
 test_that(  "read_proteingroups(file, fit='limma')", {
@@ -87,17 +87,17 @@ test_that(  "read_proteingroups(file, fit='limma')", {
     expect_identical(names(dimnames(metadata(object)$limma))[2], formulastr)
 })
 
-test_that(  "read_proteingroups(file, fit='lm')", {
-    file <- download_data('billing16.proteingroups.txt')
-    invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-    formula <- ~0 + subgroup
-    object <- read_proteingroups(file, invert_subgroups = invert_subgroups, 
-                            fit = 'lm', formula = formula, plot = FALSE)
-    expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('lm' %in% names(metadata(object)))
-    formulastr <- formula2str(formula)
-    expect_identical(names(dimnames(metadata(object)$lm))[2], formulastr)
-})
+# test_that(  "read_proteingroups(file, fit='lm')", {
+#     file <- download_data('billing16.proteingroups.txt')
+#     invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
+#     formula <- ~0 + subgroup
+#     object <- read_proteingroups(file, invert_subgroups = invert_subgroups, 
+#                             fit = 'lm', formula = formula, plot = FALSE)
+#     expect_s4_class(object, 'SummarizedExperiment')
+#     expect_true('lm' %in% names(metadata(object)))
+#     formulastr <- formula2str(formula)
+#     expect_identical(names(dimnames(metadata(object)$lm))[2], formulastr)
+# })
 
 test_that(  "read_proteingroups(file, fit='wilcoxon')", {
     file <- download_data('billing16.proteingroups.txt')

@@ -34,9 +34,9 @@ test_that("read_phosphosites(file)", {
     object <- read_phosphosites(file, proteinfile =proteinfile, 
                             select_subgroups = select_subgroups, plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('proteingroups' %in% assayNames(object))
-    expect_true('phosphosites'  %in% assayNames(object))
-    expect_true('occupancies'   %in% assayNames(object))
+    expect_true('proteingroups' %in% SummarizedExperiment::assayNames(object))
+    expect_true('phosphosites'  %in% SummarizedExperiment::assayNames(object))
+    expect_true('occupancies'   %in% SummarizedExperiment::assayNames(object))
 })
 
 test_that("read_proteingroups(file, pca=TRUE)", {
@@ -58,7 +58,7 @@ test_that("read_proteingroups(file, impute=TRUE)", {
     object <- read_proteingroups(file, select_subgroups = select_subgroups, 
                                 impute = TRUE, plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('is_imputed' %in% assayNames(object))
+    expect_true('is_imputed' %in% SummarizedExperiment::assayNames(object))
 })
 
 test_that("read_proteingroups(file, fit='limma')", {
@@ -74,26 +74,26 @@ test_that("read_proteingroups(file, fit='limma')", {
     expect_identical(names(dimnames(metadata(object)$limma))[2], formulastr)
 })
 
-test_that("read_proteingroups(file, fit='lm')", {
-    file <- download_data('billing19.proteingroups.txt')
-    select_subgroups <- sprintf('%s_STD', 
-                                c('E00','E01','E02','E05','E15','E30','M00'))
-    object <- read_proteingroups(file, select_subgroups = select_subgroups, 
-                                impute = TRUE, fit = 'lm', plot = FALSE)
-    expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('lm' %in% names(metadata(object)))
-    formulastr <- formula2str(default_formula(
-                                object, subgroupvar = 'subgroup', fit='lm'))
-    expect_identical(names(dimnames(metadata(object)$lm))[2], formulastr)
-})
+# test_that("read_proteingroups(file, fit='lm')", {
+#     file <- download_data('billing19.proteingroups.txt')
+#     select_subgroups <- sprintf('%s_STD', 
+#                                 c('E00','E01','E02','E05','E15','E30','M00'))
+#     object <- read_proteingroups(file, select_subgroups = select_subgroups, 
+#                                 impute = TRUE, fit = 'lm', plot = FALSE)
+#     expect_s4_class(object, 'SummarizedExperiment')
+#     expect_true('lm' %in% names(metadata(object)))
+#     formulastr <- formula2str(default_formula(
+#                                 object, subgroupvar = 'subgroup', fit='lm'))
+#     expect_identical(names(dimnames(metadata(object)$lm))[2], formulastr)
+# })
 
-test_that("read_proteingroups(file, fit='wilcoxon')", {
-    file <- download_data('billing19.proteingroups.txt')
-    select_subgroups <- sprintf('%s_STD', 
-                                c('E00','E01','E02','E05','E15','E30','M00'))
-    object <- read_proteingroups(file, select_subgroups = select_subgroups, 
-                                impute = TRUE, fit = 'wilcoxon', plot = FALSE)
-    expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('wilcoxon' %in% names(metadata(object)))
-    expect_identical(names(dimnames(metadata(object)$wilcoxon))[2], 'subgroup')
-})
+# test_that("read_proteingroups(file, fit='wilcoxon')", {
+#     file <- download_data('billing19.proteingroups.txt')
+#     select_subgroups <- sprintf('%s_STD', 
+#                                 c('E00','E01','E02','E05','E15','E30','M00'))
+#     object <- read_proteingroups(file, select_subgroups = select_subgroups, 
+#                                 impute = TRUE, fit = 'wilcoxon', plot = FALSE)
+#     expect_s4_class(object, 'SummarizedExperiment')
+#     expect_true('wilcoxon' %in% names(metadata(object)))
+#     expect_identical(names(dimnames(metadata(object)$wilcoxon))[2], 'subgroup')
+# })
