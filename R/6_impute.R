@@ -252,6 +252,7 @@ is_full_detect <- function(object){
 #' Venn diagram full/systematic/random detects
 #'
 #' @param object SummarizedExperiment
+#' @param subgroup subgroup symbol
 #' @return  \code{NULL}
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')

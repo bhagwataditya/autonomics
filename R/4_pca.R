@@ -90,11 +90,11 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' @param ...     passed to biplot
 #' @return        SummarizedExperiment
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' pca(object, plot=TRUE)  # Principal Component Analysis
-#' pls(object)  # Partial Least Squares
-#' lda(object)  # Linear Discriminant Analysis
+#' pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
+#' pls(object, subgroupvar = 'Group')  # Partial Least Squares
+#' lda(object, subgroupvar = 'Group')  # Linear Discriminant Analysis
 #' sma(object)  # Spectral Map Analysis
 #' pca(object, ndim=3)
 #' pca(object, ndim=Inf, minvar=5)
@@ -149,7 +149,8 @@ pca <- function(
 #' @rdname pca
 #' @export
 pls <- function(
-    object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...
+    object,  subgroupvar = 'subgroup', ndim = 2, minvar = 0, 
+    verbose = FALSE, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
@@ -157,6 +158,7 @@ pls <- function(
         return(object)
     }
     assert_is_valid_sumexp(object)
+    assert_is_subset(subgroupvar, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -165,7 +167,7 @@ pls <- function(
     . <- NULL
 # Transform
     x <- t(exprs(object))
-    y <- subgroup_values(object)
+    y <- svalues(object, subgroupvar)
     pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
@@ -241,13 +243,17 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 
 #' @rdname pca
 #' @export
-lda <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
+lda <- function(
+    object, subgroupvar = 'subgroup', ndim=2, minvar=0, 
+    verbose = TRUE, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
         message("BiocManager::install('MASS'). Then re-run.")
         return(object)}
     assert_is_valid_sumexp(object)
-    nsubgroup <- length(subgroup_levels(object))
+    assert_is_subset(subgroupvar, svars(object))
+    nsubgroup <- length(slevels(object, subgroupvar))
     if (is.infinite(ndim))  ndim <- nsubgroup - 1
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, nsubgroup-1)
@@ -264,7 +270,7 @@ lda <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 # Transform
     exprs_t  <- t(exprs(tmpobj))
     lda_out  <- suppressWarnings(
-                    MASS::lda( exprs_t,grouping = sdata(object)$subgroup))
+                    MASS::lda( exprs_t,grouping = object[[subgroupvar]]))
     features <- lda_out$scaling
     if (ncol(features)==1) features %<>% cbind(LD2 = 0)
     exprs_t %<>% scale(center = colMeans(lda_out$means), scale = FALSE)
@@ -293,20 +299,24 @@ lda <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 
 
 #' @param object  SummarizedExperiment
+#' @param subgroupvar subgrup svar
 #' @param ndim    number
 #' @return        SummarizedExperiment
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' spls(object)
+#' spls(object, subgroupvar ='Group')
 #' @noRd
-spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
+spls <- function(
+    object, subgroupvar = 'subgroup', ndim = 2, minvar = 0, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         stop("BiocManager::install('mixOmics'). Then re-run.")
         return(object)
     }
     assert_is_valid_sumexp(object)
+    assert_is_subset(subgroupvar, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -315,7 +325,7 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
     . <- NULL
 # Transform
     x <- t(exprs(object))
-    y <- subgroup_values(object)
+    y <- object[[subgroupvar]]
     pls_out <- mixOmics::splsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
@@ -324,8 +334,8 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
     colnames(features) <- sprintf('spls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('spls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    object %<>% merge_sdata(mat2dt(samples,  'sample_id'))
+    object %<>% merge_fdata(mat2dt(features,'feature_id'))
     metadata(object)$spls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
@@ -340,7 +350,7 @@ spls <- function(object, ndim = 2, minvar = 0, plot = FALSE, ...){
 #' @param ndim    number
 #' @return        SummarizedExperiment
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' opls(object)
 #' @noRd
@@ -370,8 +380,8 @@ opls <- function(
     colnames(features) <- sprintf('opls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('opls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(samples)
-    object %<>% merge_fdata(features)
+    object %<>% merge_sdata(mat2dt(samples,  'sample_id'))
+    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
     metadata(object)$opls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
@@ -483,25 +493,14 @@ add_loadings <- function(
 #' @param nloadings      number of loadings per half-axis to plot
 #' @return ggplot object
 #' @examples
-#' # halama18
-#'     require(magrittr)
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% pca(plot=FALSE, ndim=4)
-#'     object %<>% pls(plot=FALSE)
-#'     biplot(object)
-#'     biplot(object, pca3, pca4)
-#'     biplot(object, pls1, pls2)
-#'     biplot(object, nloadings=1)
-#'     biplot(object, color = TIME_POINT)
-#'     biplot(object, color = NULL)
-#'
 #' # atkin18
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    object <- read_metabolon(file, plot = FALSE)
-#'    object %<>% pca()
+#'    object %<>% pca(ndim=4)
 #'    biplot(object)
 #'    biplot(object, color=SUB, group=SUB)
+#'    biplot(object, color=SUB, nloadings=1)
+#'    biplot(object, pca3, pca4, color=SUB, nloadings=1)
 #' @export
 biplot <- function(object, x = pca1, y = pca2, color = NULL, group = NULL,
     label = NULL, feature_label = feature_name, ...,
@@ -581,7 +580,8 @@ plot_corrections <- function(...){
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, pca=TRUE, plot = FALSE)
-#' biplot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+#' biplot_corrections(
+#'     object,  color = Group, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' @seealso biplot_covariates
 #' @export
 biplot_corrections <- function(
@@ -634,7 +634,7 @@ plot_covariates <- function(...){
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, pca = TRUE, plot = FALSE)
-#' biplot_covariates(object, ndim = 12, dimcols = 3)
+#' biplot_covariates(object, covariates = 'Group', ndim = 12, dimcols = 3)
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
 #' biplot_covariates(object, covariates = c('subgroup'), dimcols = 3)

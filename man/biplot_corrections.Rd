@@ -40,7 +40,8 @@ Biplot batch corrections
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, pca=TRUE, plot = FALSE)
-biplot_corrections(object,  covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+biplot_corrections(
+    object,  color = Group, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 }
 \seealso{
 biplot_covariates

@@ -10,10 +10,6 @@
 # mat <- cbind(s1=c(-1,-1), s2=c(-1,1), s3=c(1,-1), s4=c(0.1,0.1))
 # which.medoid(mat)
 which.medoid <- function(mat){
-        if (!requireNamespace('ICSNP', quietly = TRUE)){
-        stop("`BiocManager::install('ICSNP')`. Then re-run.")
-        return(object)
-    }
     spatmed <- ICSNP::spatial.median(t(mat))
     which.min(sqrt(colSums((sweep(mat, 1, spatmed))^2)))
 }
@@ -36,6 +32,9 @@ which.medoid <- function(mat){
 #' object %<>% filter_medoid(by = 'subgroup', verbose=TRUE)
 #' @export
 filter_medoid <- function(object, by = NULL, verbose = FALSE){
+    if (!requireNamespace('ICSNP', quietly = TRUE)){
+        stop("`BiocManager::install('ICSNP')`. Then re-run.")
+        return(object) }
     if (is.null(by))  return(.filter_medoid(object, verbose=verbose))
     object %<>% split_by_svar(!!sym(by))
     if (verbose) cmessage('\t\t\tRetain medoid sample')

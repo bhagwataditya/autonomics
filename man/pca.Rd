@@ -9,11 +9,27 @@
 \usage{
 pca(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
-pls(object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...)
+pls(
+  object,
+  subgroupvar = "subgroup",
+  ndim = 2,
+  minvar = 0,
+  verbose = FALSE,
+  plot = FALSE,
+  ...
+)
 
 sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
 
-lda(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
+lda(
+  object,
+  subgroupvar = "subgroup",
+  ndim = 2,
+  minvar = 0,
+  verbose = TRUE,
+  plot = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -36,11 +52,11 @@ Perform a dimension reduction.
 Add sample scores, feature loadings, and dimension variances to object.
 }
 \examples{
-file <- download_data('halama18.metabolon.xlsx')
+file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-pca(object, plot=TRUE)  # Principal Component Analysis
-pls(object)  # Partial Least Squares
-lda(object)  # Linear Discriminant Analysis
+pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
+pls(object, subgroupvar = 'Group')  # Partial Least Squares
+lda(object, subgroupvar = 'Group')  # Linear Discriminant Analysis
 sma(object)  # Spectral Map Analysis
 pca(object, ndim=3)
 pca(object, ndim=Inf, minvar=5)

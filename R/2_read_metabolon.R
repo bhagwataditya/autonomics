@@ -280,7 +280,7 @@ stack <- function(x, y){
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
     fid_var = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    sfile = NULL, sfileby = NULL, fileby = NULL, subgroupvar = 'Group',
+    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'Group',
     fname_var = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
     pca = FALSE, fit = NULL, formula = NULL, block = NULL, 

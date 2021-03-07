@@ -24,8 +24,8 @@ URL: https://github.com/bhagwataditya/autonomics
 RoxygenNote: 7.1.1
 Imports: 
   abind,
-  AnnotationDbi, 
   assertive, 
+  BiocGenerics,
   colorspace,
   data.table,
   diagram,
@@ -62,10 +62,14 @@ Imports:
   utils
 Suggests: 
   affy,
+  AnnotationDbi,
   BiocManager,
   GEOquery,
-  hgu95av2.db, 
+  hgu95av2.db,
+  ICSNP,
   knitr,
+  lme4, 
+  lmerTest,
   MASS,
   mixOmics,
   mpm,

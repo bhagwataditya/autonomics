@@ -142,6 +142,9 @@ rm_single_value_columns <- function(df){
 #' @param file          *.adat file path (string)
 #' @param fidvar        featureid fvar (string)
 #' @param sidvar        sampleid svar (string)
+#' @param sfile         sample file
+#' @param sfileby       sample file mergeby column
+#' @param by            metabolon file mergeby column
 #' @param subgroupvar   subgroup svar (string)
 #' @param fname_var     featurename fvar (string)
 #' @param sample_type   subset of c('Sample','QC','Buffer','Calibrator')

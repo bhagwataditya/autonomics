@@ -63,6 +63,8 @@ plot_subgroup_violins(
 \item{highlight}{fvar expressing which feature should be highlighted}
 
 \item{fixed}{fixed aesthetics}
+
+\item{subgroup}{subgroup svar}
 }
 \value{
 ggplot object

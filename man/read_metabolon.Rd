@@ -23,7 +23,7 @@ read_metabolon(
   sid_var = "(CLIENT_IDENTIFIER|Client ID)",
   sfile = NULL,
   sfileby = NULL,
-  fileby = NULL,
+  by = NULL,
   subgroupvar = "Group",
   fname_var = "BIOCHEMICAL",
   impute = FALSE,

@@ -46,6 +46,12 @@ read_somascan(
 
 \item{sidvar}{sampleid svar (string)}
 
+\item{sfile}{sample file}
+
+\item{sfileby}{sample file mergeby column}
+
+\item{by}{metabolon file mergeby column}
+
 \item{subgroupvar}{subgroup svar (string)}
 
 \item{fname_var}{featurename fvar (string)}

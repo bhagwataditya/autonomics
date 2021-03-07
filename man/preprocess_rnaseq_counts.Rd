@@ -23,6 +23,8 @@ preprocess_rnaseq_counts(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{subgroupvar}{subgroup svar}
+
 \item{formula}{designmat formula}
 
 \item{block}{blocK svar}

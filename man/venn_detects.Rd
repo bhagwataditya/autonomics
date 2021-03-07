@@ -11,6 +11,8 @@ venn_detects(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{subgroup}{subgroup symbol}
 }
 \value{
 \code{NULL}

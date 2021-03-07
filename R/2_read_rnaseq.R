@@ -700,6 +700,7 @@ explicitly_compute_voom_weights <- function(
 
 #' Preprocess RNAseq counts
 #' @param object       SummarizedExperiment
+#' @param subgroupvar  subgroup svar
 #' @param formula      designmat formula
 #' @param block        blocK svar
 #' @param min_count    min count required in some samples

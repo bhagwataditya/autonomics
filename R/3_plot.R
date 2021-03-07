@@ -344,6 +344,7 @@ plot_feature_densities <- function(
 #' Plot sample/feature violins
 #'
 #' @param object      SummarizedExperiment
+#' @param subgroup    subgroup svar
 #' @param x           svar mapped to x
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color

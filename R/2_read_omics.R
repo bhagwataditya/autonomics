@@ -591,6 +591,11 @@ add_subgroup <- function(
 
 
 add_affy_fdata <- function(object){
+# Assert
+    if (!requireNamespace('AnnotationDbi', quietly = TRUE)){
+        stop("`BiocManager::install('AnnotationDbi')`. Then re-run.")
+        return(object)
+    }
 # Extract entrez identifiers
     entrezgs <- vapply(
         stri_split_fixed(fnames(object), '_'), extract, character(1), 1)
@@ -601,9 +606,9 @@ add_affy_fdata <- function(object){
 # Map
     rowData(object) <- DataFrame(
         feature_id    = fnames(object),
-        feature_name  = suppressMessages(mapIds(
+        feature_name  = suppressMessages(AnnotationDbi::mapIds(
                     db, entrezgs, column = 'SYMBOL',   keytype = 'ENTREZID')),
-        feature_descr = suppressMessages(mapIds(
+        feature_descr = suppressMessages(AnnotationDbi::mapIds(
                     db, entrezgs, column = 'GENENAME', keytype = 'ENTREZID')),
         row.names     = fnames(object)
     )

@@ -61,8 +61,8 @@ test_that(  "read_metabolon(file, subgroupvar='SET', fit='lm')", {
 test_that("read_metabolon(file, subgroupvar='SET', fit='limma', block='SUB')", {
     file <- download_data('atkin18.metabolon.xlsx')
     sgvar <- 'SET'; block <- 'SUB'
-    object <- read_metabolon(file, subgroupvar = sgvar, block = block, 
-                            impute = TRUE, fit = 'limma', plot = FALSE)
+    object <- suppressWarnings(read_metabolon(file, subgroupvar = sgvar, 
+                  block = block, impute = TRUE, fit = 'limma', plot = FALSE))
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('limma' %in% names(metadata(object)))
     formulastr <- formula2str(default_formula(
