@@ -438,8 +438,6 @@ split_values <- function(x){
 #' @param dt              data.frame, data.table, DataFrame
 #' @param by.x            object mergevar
 #' @param by.y            df mergevar
-#' @param subgroupvar     subgroup svar
-#' @param fnamevar  featurename fvar
 #' @param verbose         TRUE/FALSE
 #' @return                SummarizedExperiment
 #' @examples
@@ -504,12 +502,13 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 
 #' Merge sample/feature file
 #'
-#' @param object         SummarizedExperiment
-#' @param sfile     sample file path
-#' @param ffile    ffile path
-#' @param by.x           object mergevar
-#' @param by.y           file mergevvar
-#' @param verbose        TRUE (default) or FALSE
+#' @param object            SummarizedExperiment
+#' @param sfile             sample file path
+#' @param ffile             ffile path
+#' @param by.x              object mergevar
+#' @param by.y              file mergevvar
+#' @param stringsAsFactors  TRUE or FALSE
+#' @param verbose           TRUE (default) or FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)

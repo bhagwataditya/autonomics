@@ -369,7 +369,20 @@ summarize_fit <- function(object, fit){
     testmat[, contrast, drop=FALSE]
 }
 
-#' @rdname plot_venn
+
+#' Is fdr?
+#' @param object   SummarizedExperiment
+#' @param fit      subset of autonomics::TESTS
+#' @param contrast subset of 
+#' @return NULL
+#' @examples
+#' require(magrittr)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, plot=FALSE)
+#' object %<>% fit_lm()
+#' object %<>% fit_limma()
+#' isfdr <- is_fdr(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
+#' plot_fdr_venns(isfdr)
 #' @export
 is_fdr <- function(
      object,
@@ -395,7 +408,7 @@ is_fdr <- function(
 }
 
 
-#' Plot venn
+#' Plot fdr venns
 #' @param isfdr matrix(nrow, ncontrast): -1 (down), +1 (up)
 #' @return NULL
 #' @examples
@@ -405,11 +418,10 @@ is_fdr <- function(
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
 #' isfdr <- is_fdr(object, fit = c('lm','limma'), contrast = 'X30dpt-Adult')
-#' plot_venn(isfdr)
+#' plot_fdr_venns(isfdr)
 #' @export
-plot_venn <- function(isfdr){
+plot_fdr_venns <- function(isfdr){
     layout(matrix(1:2, nrow=2))
     vennDiagram(isfdr, include='up',   mar = rep(0,4), show.include=TRUE)
     vennDiagram(isfdr, include='down', mar = rep(0,4), show.include=TRUE)
 }
-    

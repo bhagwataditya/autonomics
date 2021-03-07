@@ -10,6 +10,10 @@
 # mat <- cbind(s1=c(-1,-1), s2=c(-1,1), s3=c(1,-1), s4=c(0.1,0.1))
 # which.medoid(mat)
 which.medoid <- function(mat){
+        if (!requireNamespace('ICSNP', quietly = TRUE)){
+        stop("`BiocManager::install('ICSNP')`. Then re-run.")
+        return(object)
+    }
     spatmed <- ICSNP::spatial.median(t(mat))
     which.min(sqrt(colSums((sweep(mat, 1, spatmed))^2)))
 }
@@ -118,6 +122,8 @@ subtract_pairs <- function(
     assaynames = setdiff(assayNames(object), 'weights'), verbose = TRUE
 ){
 # Report
+    # PRO: optimized for many block levels
+    # CON: works only with exactly one ref per block 
     if (verbose){ 
         cmessage("\t\tSubtract pairs")
         cmessage("\t\t\tcontrols  : %s=='%s'", subgroupvar, subgroupctr)
@@ -153,10 +159,13 @@ subtract_pairs <- function(
 #' @rdname subtract_baseline
 #' @export
 subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
+    # PRO: robust (works with missing levels, or multiple replicates per level)
+    # CON: performance not optimized for many block levels
+    #      currently only performed on first assay (can off course be updated)
     if (verbose){ 
         cmessage("\t\tSubtract differences")
         if (!is.null(block))  cmessage("\t\t\tin block  : %s", block)
-        cmessage("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
+        cmessage("\t\t\tfor assays: %s", assayNames(object)[1])
     }
     fvars0 <- intersect(c('feature_id', 'feature_name'), fvars(object))
     dt <- sumexp_to_long_dt(object, fvars=fvars0, svars=c(subgroupvar, block))
@@ -171,7 +180,7 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
     diffdt <- dt[, setdiff(names(dt), c(fvars0, block)), with=FALSE]
     diffdt <- diffdt[, subgroups[-1], with=FALSE] - 
               diffdt[, subgroups[-n], with=FALSE]
-    names(diffdt) %<>% paste0(' - ', subgroups[-n])
+    names(diffdt) %<>% paste0('_', subgroups[-n])
     newdt %<>% cbind(diffdt)
     
     newdt %<>% data.table::melt.data.table(

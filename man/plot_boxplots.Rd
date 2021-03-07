@@ -60,6 +60,8 @@ plot_subgroup_boxplots(
 \item{highlight}{fvar expressing which feature should be highlighted}
 
 \item{fixed}{fixed aesthetics}
+
+\item{subgroup}{subgroup svar symbol}
 }
 \value{
 ggplot object

@@ -31,10 +31,6 @@ merge_fdata(
 \item{by.y}{df mergevar}
 
 \item{verbose}{TRUE/FALSE}
-
-\item{subgroupvar}{subgroup svar}
-
-\item{fnamevar}{featurename fvar}
 }
 \value{
 SummarizedExperiment

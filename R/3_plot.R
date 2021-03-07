@@ -448,6 +448,7 @@ plot_subgroup_violins <- function(
 #' Plot sample/feature boxplots
 #'
 #' @param object      SummarizedExperiment
+#' @param subgroup    subgroup svar symbol
 #' @param x           svar mapped to x
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
@@ -551,6 +552,7 @@ plot_subgroup_boxplots <- function(
 #' Plot features
 #' @param object      SummarizedExperiment
 #' @param geom        geom_point, geom_boxplot, etc.
+#' @param subgroup    subgroup svar
 #' @param x           svar mapped to x
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color

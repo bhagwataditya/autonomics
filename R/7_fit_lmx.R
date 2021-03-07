@@ -195,12 +195,17 @@ fit_lme <- function(
 #' @export
 fit_lmer <- function(
     object, 
-    fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit='lmer'), block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
+    if (!requireNamespace('lme4', quietly = TRUE)){
+        stop("`BiocManager::install('lme4')`. Then re-run.")
+        return(object) }
+    if (!requireNamespace('lmerTest', quietly = TRUE)){
+        stop("`BiocManager::install('lmerTest')`. Then re-run.")
+        return(object) }
     if (is_formula(block))  block %<>% formula2str()
     if (is_a_string(block)){ 
         if (is_subset(block, svars(object)))  block %<>% sprintf('1|%s', .)

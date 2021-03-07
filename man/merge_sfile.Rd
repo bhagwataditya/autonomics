@@ -32,6 +32,8 @@ merge_ffile(
 
 \item{by.y}{file mergevvar}
 
+\item{stringsAsFactors}{TRUE or FALSE}
+
 \item{verbose}{TRUE (default) or FALSE}
 
 \item{ffile}{ffile path}

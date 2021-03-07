@@ -2,29 +2,30 @@
 % Please edit documentation in R/7_fit.R
 \name{is_fdr}
 \alias{is_fdr}
-\alias{plot_venn}
-\title{Plot venn}
+\title{Is fdr?}
 \usage{
 is_fdr(
   object,
   fit = intersect(names(metadata(object)), TESTS),
   contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1
 )
-
-plot_venn(isfdr)
 }
 \arguments{
-\item{isfdr}{matrix(nrow, ncontrast): -1 (down), +1 (up)}
+\item{object}{SummarizedExperiment}
+
+\item{fit}{subset of autonomics::TESTS}
+
+\item{contrast}{subset of}
 }
 \description{
-Plot venn
+Is fdr?
 }
 \examples{
+require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, plot=FALSE)
-object \%<>\% fit_wilcoxon() # fails on unpaired imputed data
 object \%<>\% fit_lm()
 object \%<>\% fit_limma()
-isfdr <- is_fdr(object, fit = c('lm','limma'), contrast = 'X30dpt-Adult')
-plot_venn(isfdr)
+isfdr <- is_fdr(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
+plot_fdr_venns(isfdr)
 }

@@ -195,7 +195,8 @@ create_design <- function(
 
 
 #' Row/Col contrasts
-#' @param object SummarizedExperiment
+#' @param object       SummarizedExperiment
+#' @param subgroupvar  subgroup svar
 #' @return  matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
@@ -272,8 +273,9 @@ vectorize_contrastdefs <- function(contrastdefs){
 
 #' Fit model and test for differential expression
 #'
-#' Limma results can be easily accessed with limma(object).
 #' @param object       SummarizedExperiment
+#' @param subgroupvar  subgroup variable
+#' @param formula      modeling formula
 #' @param contrastdefs contrastdef vector / matrix / list
 #' \itemize{
 #' \item{c("t1-t0", "t2-t1", "t3-t2")}
@@ -283,7 +285,6 @@ vectorize_contrastdefs <- function(contrastdefs){
 #'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
 #'      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
 #'      nrow=1, byrow=TRUE))}}
-#' @param formula   designmat formula
 #' @param block     block svar (or NULL)
 #' @param weightvar NULL or name of weight matrix in assays(object)
 #' @param verbose   whether to msg

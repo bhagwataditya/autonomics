@@ -28,6 +28,7 @@
 #' @importFrom assertive   has_names                has_no_duplicates
 #' @importFrom assertive   is_a_string  is_empty_character  is_existing_file
 #' @importFrom assertive   is_formula  is_scalar  is_subset
+#' @importFrom BiocGenerics cbind 
 #' @importFrom colorspace  sequential_hcl
 #' @importFrom data.table  as.data.table   copy   data.table   dcast
 #' @importFrom data.table  fread   fwrite
@@ -64,8 +65,8 @@
 #' @importFrom R.utils       gunzip
 #' @importFrom S4Vectors     DataFrame   metadata   metadata<-
 #' @importFrom seqinr        read.fasta
-#' @importFrom stats         aggregate    approxfun   as.formula
-#' @importFrom stats         dist   hclust   lowess   median   model.matrix
+#' @importFrom stats         aggregate    approxfun   as.formula   dist   hclust
+#' @importFrom stats         lowess   lm  median   model.matrix   wilcox.test
 #' @importFrom stats         na.exclude   p.adjust qnorm   rnorm   sd
 #' @import     stringi
 #' @importFrom tidyr         separate_rows

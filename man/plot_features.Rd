@@ -25,6 +25,8 @@ plot_feature_profiles(...)
 
 \item{geom}{geom_point, geom_boxplot, etc.}
 
+\item{subgroup}{subgroup svar}
+
 \item{x}{svar mapped to x}
 
 \item{fill}{svar mapped to fill}

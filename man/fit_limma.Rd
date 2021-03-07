@@ -44,7 +44,6 @@ fit_lme(
 
 fit_lmer(
   object,
-  fit,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "lmer"),
   block = NULL,
@@ -68,7 +67,9 @@ fit_wilcoxon(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{formula}{designmat formula}
+\item{subgroupvar}{subgroup variable}
+
+\item{formula}{modeling formula}
 
 \item{contrastdefs}{contrastdef vector / matrix / list
 \itemize{
@@ -92,7 +93,7 @@ fit_wilcoxon(
 Updated SummarizedExperiment
 }
 \description{
-Limma results can be easily accessed with limma(object).
+Fit model and test for differential expression
 }
 \examples{
 require(magrittr)

@@ -11,6 +11,8 @@ contrast_subgroup_rows(object, subgroupvar)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{subgroupvar}{subgroup svar}
 }
 \value{
 matrix
