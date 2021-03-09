@@ -60,11 +60,14 @@ object <-  read_rnaseq_counts(file = download_data('billing19.rnacounts.txt'),
 The `sfile/sfileby` arguments in both importers allow to merge in sample data from a separate file by a specified column. This is especially useful in clinical datasets, such as the GSE161731 Covid-19 dataset, for which both a **counts** file as well as a **sample** file can be downloaded from GEO:
 
 ```{r}
-if (!dir.exists('~/autonomicscache/datasets/GSE161731')){
-    GEOquery::getGEOSuppFiles("GSE161731",baseDir='~/autonomicscache/datasets')}
+basedir <- file.path(tempdir(), 'datasets')
+dir.create(basedir, showWarnings = FALSE, recursive = TRUE)
+if (!dir.exists(file.path(basedir, 'GSE161731'))){
+    GEOquery::getGEOSuppFiles("GSE161731", baseDir=basedir)
+}
 object <- read_rnaseq_counts(
-  file  = '~/autonomicscache/datasets/GSE161731/GSE161731_counts.csv.gz', 
-  sfile = '~/autonomicscache/datasets/GSE161731/GSE161731_counts_key.csv.gz', 
+  file  = file.path(basedir, 'GSE161731/GSE161731_counts.csv.gz'), 
+  sfile = file.path(basedir, 'GSE161731/GSE161731_counts_key.csv.gz'), 
   sfileby = 'rna_id', 
   subgroupvar = 'gender', 
   pca = TRUE, 
@@ -205,6 +208,13 @@ The contrastogram
 
 # Analyzing clinical data
 -->
+
+# SessionInfo {-}
+
+```{r}
+sessionInfo()
+```
+
 
 # References {-}
 

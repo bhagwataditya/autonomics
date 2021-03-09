@@ -78,12 +78,12 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
                                         subgroupvar = 'Group', block = 'SUB'))
         expect_true(sumexp_contains_fit(object, 'limma'))
         fitdt <- summarize_fit(object, fit = 'limma')
-        test_that(msg, expect_s3_class(fitdt, 'data.table'))
+        expect_s3_class(fitdt, 'data.table')
 
         # ~ 0 + Group + t2d | block
         object %<>% fit_limma(formula=~0+Group+T2D, block='SUB', plot=FALSE)
         fitdt <- summarize_fit(object, fit = 'limma')
-        test_that(msg, expect_s3_class(fitdt, 'data.table'))
+        expect_s3_class(fitdt, 'data.table')
     })
 
 context('plot_contrastogram')

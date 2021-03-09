@@ -43,6 +43,8 @@ lda(
 \item{plot}{TRUE/FALSE}
 
 \item{...}{passed to biplot}
+
+\item{subgroupvar}{subgroup svar}
 }
 \value{
 SummarizedExperiment

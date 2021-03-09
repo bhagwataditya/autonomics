@@ -1,5 +1,5 @@
 #' Available autonomics datasets
-#' @noRd
+#' @export
 AUTONOMICS_DATASETS <- c(
     'atkin18.somascan.adat',
     'atkin18.metabolon.xlsx',
@@ -14,12 +14,13 @@ AUTONOMICS_DATASETS <- c(
     'halama18.metabolon.xlsx',
     'uniprot_hsa_20140515.fasta')
 
-#' Download example datasets
-#' @param file      name of file to download
+#' Download example dataset
+#' 
+#' @param file      string in \code{AUTONOMICS_DATASETS}: filename to download
 #' @param localdir  directory where results will be saved
 #' @param unzip     TRUE (default) or FALSE: whether to unzip
 #' @param ntries    no of times to retry
-#' @return return   localfile invisibly
+#' @return return localfile invisibly
 #' @examples
 #' # atkin18 - hypoglycemia - pubmed 30525282
 #'     download_data('atkin18.somascan.adat')        # somascan  intensities
@@ -29,7 +30,7 @@ AUTONOMICS_DATASETS <- c(
 #'     download_data('billing16.proteingroups.txt')  # proteingroup ratios
 #'     download_data('billing16.somascan.adat')      # somascan     intensities
 #'     download_data('billing16.rnacounts.txt')      # rnaseq       counts
-#'     download_data('billing16.bam.zip')          # rnaseq       alignments
+#'     download_data('billing16.bam.zip')            # rnaseq       alignments
 #'
 #' # billing19 - stemcell differentiation - pubmed 31332097  pride PXD004652
 #'     download_data('billing19.proteingroups.txt')  # proteingroup ratios
@@ -42,7 +43,28 @@ AUTONOMICS_DATASETS <- c(
 #' # halama18 - glutaminase inhibition - pubmed 30525282
 #'     download_data('halama18.metabolon.xlsx')      # metabolon intensities
 #' @export
-download_data <- function(
+download_data <- function(filename, verbose = FALSE ){
+    fileURL <- paste0(
+        "https://bitbucket.org/graumannlabtools/autonomics/downloads/", 
+        filename)
+    bfc <- .get_cache()
+    rid <- BiocFileCache::bfcquery(bfc, filename, "rname")$rid
+    if (!length(rid)) {
+     if( verbose )
+         message( "Downloading atkin18.somascan.adat" )
+     rid <- names(BiocFileCache::bfcadd(bfc, filename, fileURL ))
+    }
+    #if (!isFALSE(bfcneedsupdate(bfc, rid)))
+    #bfcdownload(bfc, rid)
+    BiocFileCache::bfcrpath(bfc, rids = rid)
+}
+
+.get_cache <- function(){
+    cache <- rappdirs::user_cache_dir(appname="autonomics")
+    BiocFileCache::BiocFileCache(cache)
+}
+
+download_data_old <- function(
     file, localdir = '~/autonomicscache/datasets', unzip = TRUE, ntries = 3
 ){
     assert_is_subset(file, AUTONOMICS_DATASETS)
@@ -67,5 +89,3 @@ download_data <- function(
         localfile %<>% substr(1, nchar(.)-4) }
     return(invisible(localfile))
 }
-
-

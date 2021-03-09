@@ -83,6 +83,7 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' Add sample scores, feature loadings, and dimension variances to object.
 #'
 #' @param object  SummarizedExperiment
+#' @param subgroupvar subgroup svar
 #' @param ndim    number
 #' @param minvar  number
 #' @param verbose TRUE (default) or FALSE
@@ -493,14 +494,14 @@ add_loadings <- function(
 #' @param nloadings      number of loadings per half-axis to plot
 #' @return ggplot object
 #' @examples
-#' # atkin18
-#'    file <- download_data('atkin18.metabolon.xlsx')
-#'    object <- read_metabolon(file, plot = FALSE)
-#'    object %<>% pca(ndim=4)
-#'    biplot(object)
-#'    biplot(object, color=SUB, group=SUB)
-#'    biplot(object, color=SUB, nloadings=1)
-#'    biplot(object, pca3, pca4, color=SUB, nloadings=1)
+#' require(magrittr)
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' object %<>% pca(ndim=4)
+#' biplot(object)
+#' biplot(object, color=SUB, group=SUB)
+#' biplot(object, color=SUB, nloadings=1)
+#' biplot(object, pca3, pca4, color=SUB, nloadings=1)
 #' @export
 biplot <- function(object, x = pca1, y = pca2, color = NULL, group = NULL,
     label = NULL, feature_label = feature_name, ...,
@@ -637,7 +638,7 @@ plot_covariates <- function(...){
 #' biplot_covariates(object, covariates = 'Group', ndim = 12, dimcols = 3)
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
-#' biplot_covariates(object, covariates = c('subgroup'), dimcols = 3)
+#' biplot_covariates(object, covariates = c('Group'), dimcols = 3)
 #' @seealso biplot_corrections
 #' @export
 biplot_covariates <- function(

@@ -25,6 +25,7 @@ RoxygenNote: 7.1.1
 Imports: 
   abind,
   assertive, 
+  BiocFileCache,
   BiocGenerics,
   colorspace,
   data.table,
@@ -45,6 +46,7 @@ Imports:
   nlme,
   parallel,
   pcaMethods,
+  rappdirs,
   rlang,
   R.utils,
   readxl,

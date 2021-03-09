@@ -2,17 +2,12 @@
 % Please edit documentation in R/0_download.R
 \name{download_data}
 \alias{download_data}
-\title{Download example datasets}
+\title{Download example dataset}
 \usage{
-download_data(
-  file,
-  localdir = "~/autonomicscache/datasets",
-  unzip = TRUE,
-  ntries = 3
-)
+download_data(filename, verbose = FALSE)
 }
 \arguments{
-\item{file}{name of file to download}
+\item{file}{string in \code{AUTONOMICS_DATASETS}: filename to download}
 
 \item{localdir}{directory where results will be saved}
 
@@ -21,10 +16,10 @@ download_data(
 \item{ntries}{no of times to retry}
 }
 \value{
-return   localfile invisibly
+return localfile invisibly
 }
 \description{
-Download example datasets
+Download example dataset
 }
 \examples{
 # atkin18 - hypoglycemia - pubmed 30525282
@@ -35,7 +30,7 @@ Download example datasets
     download_data('billing16.proteingroups.txt')  # proteingroup ratios
     download_data('billing16.somascan.adat')      # somascan     intensities
     download_data('billing16.rnacounts.txt')      # rnaseq       counts
-    download_data('billing16.bam.zip')          # rnaseq       alignments
+    download_data('billing16.bam.zip')            # rnaseq       alignments
 
 # billing19 - stemcell differentiation - pubmed 31332097  pride PXD004652
     download_data('billing19.proteingroups.txt')  # proteingroup ratios

@@ -48,12 +48,12 @@ ggplot object
 Biplot
 }
 \examples{
-# atkin18
-   file <- download_data('atkin18.metabolon.xlsx')
-   object <- read_metabolon(file, plot = FALSE)
-   object \%<>\% pca(ndim=4)
-   biplot(object)
-   biplot(object, color=SUB, group=SUB)
-   biplot(object, color=SUB, nloadings=1)
-   biplot(object, pca3, pca4, color=SUB, nloadings=1)
+require(magrittr)
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file, plot = FALSE)
+object \%<>\% pca(ndim=4)
+biplot(object)
+biplot(object, color=SUB, group=SUB)
+biplot(object, color=SUB, nloadings=1)
+biplot(object, pca3, pca4, color=SUB, nloadings=1)
 }

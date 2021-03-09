@@ -87,7 +87,7 @@ rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # . != 0 needed due to stupid behaviour of rowAnys
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
     selector <- rowAnys(exprs(object) != 0, na.rm = TRUE)
-    if (verbose & sum(selector)<length(selector))  message(
+    if (verbose && sum(selector)<length(selector))  message(
                     '\t\tRetain ', sum(selector), '/', length(selector),
                     ' features: non-zero, non-NA, and non-NaN for some sample')
     object %<>% extract(selector, )
@@ -237,14 +237,14 @@ filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose & sum(idx)<length(idx)) message(
-        '\t\t\tRetain ', sum(idx), '/', length(idx),
-        ' samples: ', expr_text(condition))
+    if (verbose & sum(idx)<length(idx)) cmessage(
+        '\t\t\tRetain %d/%d samples: ', sum(idx), length(idx), 
+        expr_text(condition))
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
     if (record && !is.null(analysis(object))) {
-        analysis(object)$nsamples   %<>%  c(structure(sum(idx),
-                                            names = expr_text(condition)))
+        analysis(object)$nsamples   %<>%  
+            c(structure(sum(idx), names = expr_text(condition)))
     }
     object
 }
