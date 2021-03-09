@@ -33,6 +33,6 @@ Get / Set phosphosite occupancies matrix
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, plot=FALSE)
 occupancies(object)
-occupancies(object) <- exprs(object)
+occupancies(object) <- values(object)
 occupancies(object)[1:3, 1:3]
 }

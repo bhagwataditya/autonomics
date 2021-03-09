@@ -16,7 +16,7 @@ which.medoid <- function(mat){
 
 .filter_medoid <- function(object, verbose = FALSE){
     if (ncol(object)==1)  return(object)
-    medoid <- which.medoid(exprs(object))
+    medoid <- which.medoid(values(object))
     object %<>% extract(, medoid)
     if (verbose) cmessage('\t\t\t\t%s', object$sample_id)
     object
@@ -91,7 +91,7 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #' 
 #' # subtract differences
 #'     object <- subtract_differences(object0, block='SUB', subgroupvar='SET')
-#'     exprs(object) %<>% na_to_zero()
+#'     values(object) %<>% na_to_zero()
 #'     pca(object, plot=TRUE, color=SET)
 #' @export 
 subtract_baseline <- function(
@@ -216,7 +216,7 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' @export
 log2transform <- function(object, verbose = FALSE){
     if (verbose)  message('\t\tLog2 transform')
-    exprs(object) %<>% log2()
+    values(object) %<>% log2()
     object
 }
 
@@ -224,7 +224,7 @@ log2transform <- function(object, verbose = FALSE){
 #' @export
 exp2 <- function(object, verbose = FALSE){
     if (verbose)  message('\t\tExp2 transform')
-    exprs(object) %<>% magrittr::raise_to_power(2, .)
+    values(object) %<>% magrittr::raise_to_power(2, .)
     object
 }
 
@@ -233,7 +233,7 @@ exp2 <- function(object, verbose = FALSE){
 #' @export
 zscore <- function(object, verbose = FALSE){
     if (verbose)  message('\t\tZscore')
-    exprs(object) %<>% scale()
+    values(object) %<>% scale()
     object
 }
 
@@ -253,8 +253,8 @@ zscore <- function(object, verbose = FALSE){
 #' object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
 #' object %<>% extract(, order(object$subgroup))
 #' fdata(object)$housekeeping <- FALSE
-#' fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE
-#' exprs(object)[, object$subgroup=='BM00_STD'] %<>% add(5)
+#' fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
+#' values(object)[, object$subgroup=='BM00_STD'] %<>% add(5)
 #' gridExtra::grid.arrange(plot_sample_densities(object),
 #'                         plot_sample_densities(center(object)),
 #'                         plot_sample_densities(center(object, housekeeping)))
@@ -266,9 +266,9 @@ center <- function(object, selector = rep(TRUE, nrow(object))==TRUE,
     selector <- rlang::eval_tidy(selector, data = fdata(object))
     if (verbose) cmessage('%s center samples on %d features',
                         fun, nrow(object[selector, ]))
-    correction_factors <- apply(exprs(object[selector, ]), 2, fun, na.rm=TRUE)
+    correction_factors <- apply(values(object[selector, ]), 2, fun, na.rm=TRUE)
     correction_factors[is.na(correction_factors)] <- 0
-    exprs(object) %<>% sweep(2, correction_factors)
+    values(object) %<>% sweep(2, correction_factors)
     object
 }
 
@@ -277,7 +277,7 @@ center <- function(object, selector = rep(TRUE, nrow(object))==TRUE,
 #' @export
 quantnorm <- function(object, verbose = FALSE){
     if (verbose)  message('\t\tQuantnorm')
-    exprs(object) %<>% limma::normalizeBetweenArrays()
+    values(object) %<>% limma::normalizeBetweenArrays()
     object
 }
 
@@ -286,7 +286,7 @@ quantnorm <- function(object, verbose = FALSE){
 #' @export
 invnorm <- function(object, verbose = FALSE){
     if (verbose)  message('Invnorm')
-    exprs(object) %<>% apply(2, transform_to_fitting_normal)
+    values(object) %<>% apply(2, transform_to_fitting_normal)
     object
 }
 

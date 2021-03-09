@@ -15,7 +15,7 @@
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' counts(object) <- exprs(object)
+#' counts(object) <- values(object)
 #' counts(object)[1:3, 1:3]
 #' @rdname counts
 #' @export
@@ -58,7 +58,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2counts(object) <- exprs(object)
+#' log2counts(object) <- values(object)
 #' log2counts(object)[1:3, 1:3]
 #' @rdname log2counts
 #' @export
@@ -96,7 +96,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2countsratios(object) <- exprs(object)
+#' log2countsratios(object) <- values(object)
 #' log2countsratios(object)[1:3, 1:3]
 #' @rdname log2countsratios
 #' @export
@@ -137,7 +137,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' cpm(object) <- exprs(object)
+#' cpm(object) <- values(object)
 #' cpm(object)[1:3, 1:3]
 #' @rdname cpm
 #' @export
@@ -174,7 +174,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2cpm(object) <- exprs(object)
+#' log2cpm(object) <- values(object)
 #' log2cpm(object)[1:3, 1:3]
 #' @rdname log2cpm
 #' @export
@@ -211,7 +211,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2cpmratios(object) <- exprs(object)
+#' log2cpmratios(object) <- values(object)
 #' log2cpmratios(object)[1:3, 1:3]
 #' @rdname log2cpmratios
 #' @export
@@ -250,7 +250,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' tpm(object) <- exprs(object)
+#' tpm(object) <- values(object)
 #' tpm(object)[1:3, 1:3]
 #' @rdname tpm
 #' @export
@@ -287,7 +287,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2tpm(object) <- exprs(object)
+#' log2tpm(object) <- values(object)
 #' log2tpm(object)[1:3, 1:3]
 #' @rdname log2tpm
 #' @export
@@ -324,7 +324,7 @@ function(object, value){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2tpmratios(object) <- exprs(object)
+#' log2tpmratios(object) <- values(object)
 #' log2tpmratios(object)[1:3, 1:3]
 #' @rdname log2tpmratios
 #' @export
@@ -604,7 +604,7 @@ scaledlibsizes <- function(counts){
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
-#' libsize <- scaledlibsizes(exprs(object))
+#' libsize <- scaledlibsizes(values(object))
 #' tpm <- counts2tpm(counts(object), genesize = 1)
 #' cpm <- counts2cpm(counts(object), libsize)
 #' counts  <- cpm2counts(cpm, libsize)
@@ -648,7 +648,7 @@ explicitly_compute_voom_weights <- function(
     object, formula, plot = TRUE, ...
 ){
 # Extract
-    log2cpm  <- exprs(object)
+    log2cpm  <- values(object)
     libsize <- scaledlibsizes(counts(object))
     design   <- create_design(object, formula=!!enquo(formula))
 # Assert

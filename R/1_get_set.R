@@ -32,40 +32,40 @@ function(object, value){
     object})
 
 
-#' @title Get/Set exprs
-#' @description Get / Set exprs matrix
+#' @title Get/Set expr values
+#' @description Get/Set value matrix
 #' @param object SummarizedExperiment
 #' @param value ratio matrix (features x samples)
-#' @return exprs matrix (get) or updated object (set)
+#' @return value matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file, plot=FALSE)
-#' exprs(object)[1:3, 1:3]
-#' exprs(object) <- 0
-#' exprs(object)[1:3, 1:3]
+#' values(object)[1:3, 1:3]
+#' values(object) <- 0
+#' values(object)[1:3, 1:3]
 #' @export
-setGeneric('exprs',  function(object)   standardGeneric("exprs"))
+setGeneric('values',  function(object)   standardGeneric("values"))
 
 
-#' @rdname exprs
-setMethod("exprs", signature("SummarizedExperiment"),
+#' @rdname values
+setMethod("values", signature("SummarizedExperiment"),
 function(object)   assays(object)[[1]])
 
 
-#' @rdname exprs
+#' @rdname values
 #' @export
-setGeneric('exprs<-',   function(object, value) standardGeneric("exprs<-"))
+setGeneric('values<-',   function(object, value) standardGeneric("values<-"))
 
 
-#' @rdname exprs
-setReplaceMethod("exprs", signature("SummarizedExperiment", "matrix"),
+#' @rdname values
+setReplaceMethod("values", signature("SummarizedExperiment", "matrix"),
 function(object, value){
     assays(object)[[1]] <- value
     object })
 
 
-#' @rdname exprs
-setReplaceMethod("exprs", signature("SummarizedExperiment", "numeric"),
+#' @rdname values
+setReplaceMethod("values", signature("SummarizedExperiment", "numeric"),
 function(object, value){
     assays(object)[[1]][] <- value
     object })

@@ -115,19 +115,19 @@ pca <- function(
     if (verbose)  message('\t\tAdd PCA')
 # Prepare
     tmpobj <- object
-    exprs(tmpobj) %<>% inf_to_na(verbose=verbose)
-    exprs(tmpobj) %<>% nan_to_na(verbose=verbose)
+    values(tmpobj) %<>% inf_to_na(verbose=verbose)
+    values(tmpobj) %<>% nan_to_na(verbose=verbose)
     tmpobj %<>% rm_missing_in_all_samples(verbose = verbose)
 # (Double) center and (global) normalize
-    row_means <- rowMeans(exprs(tmpobj), na.rm=TRUE)
-    col_means <- colWeightedMeans(exprs(tmpobj), abs(row_means), na.rm = TRUE)
+    row_means <- rowMeans(values(tmpobj), na.rm=TRUE)
+    col_means <- colWeightedMeans(values(tmpobj), abs(row_means), na.rm = TRUE)
     global_mean <- mean(col_means)
-    exprs(tmpobj) %<>% apply(1, '-', col_means)   %>%   # Center columns
+    values(tmpobj) %<>% apply(1, '-', col_means)   %>%   # Center columns
                         apply(1, '-', row_means)  %>%   # Center rows
                         add(global_mean)          %>%   # Add doubly subtracted
                         divide_by(sd(., na.rm=TRUE))    # Normalize
 # Perform PCA
-    pca_res  <- pcaMethods::pca(t(exprs(tmpobj)),
+    pca_res  <- pcaMethods::pca(t(values(tmpobj)),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
     samples   <- pca_res@scores
     features  <- pca_res@loadings
@@ -167,7 +167,7 @@ pls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(exprs(object))
+    x <- t(values(object))
     y <- svalues(object, subgroupvar)
     pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
@@ -205,11 +205,11 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
     . <- NULL
 # Preprocess
     tmpobj <- object
-    exprs(tmpobj) %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
-    exprs(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
+    values(tmpobj) %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
+    values(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
     tmpobj        %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
-    df <- data.frame(feature = rownames(tmpobj), exprs(tmpobj))
+    df <- data.frame(feature = rownames(tmpobj), values(tmpobj))
     mpm_tmp <- mpm::mpm(
                 df, logtrans = FALSE, closure = 'none', center = 'double',
                 normal = 'global', row.weight = 'mean', col.weight = 'constant')
@@ -265,11 +265,11 @@ lda <- function(
     . <- NULL
 # Preprocess
     tmpobj <- object
-    exprs(tmpobj) %<>% minusinf_to_na(verbose = verbose)         # SVD singular
-    exprs(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
+    values(tmpobj) %<>% minusinf_to_na(verbose = verbose)         # SVD singular
+    values(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
     tmpobj %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
-    exprs_t  <- t(exprs(tmpobj))
+    exprs_t  <- t(values(tmpobj))
     lda_out  <- suppressWarnings(
                     MASS::lda( exprs_t,grouping = object[[subgroupvar]]))
     features <- lda_out$scaling
@@ -325,7 +325,7 @@ spls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(exprs(object))
+    x <- t(values(object))
     y <- object[[subgroupvar]]
     pls_out <- mixOmics::splsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
@@ -371,7 +371,7 @@ opls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(exprs(object))
+    x <- t(values(object))
     y <- subgroup_values(object)
     pls_out <- ropls::opls(x, y, predI = ndim, permI = 0, fig.pdfC = FALSE)
     samples   <- pls_out@scoreMN
@@ -598,7 +598,7 @@ biplot_corrections <- function(
     plotlist <- list(p)
     for (ibatch in covariates){
         tmp_object <- object
-        exprs(tmp_object) %<>%
+        values(tmp_object) %<>%
             removeBatchEffect(batch=sdata(tmp_object)[[ibatch]])
         tmp_object <- get(method)(tmp_object, ndim=2, verbose=FALSE)
         p <- biplot(tmp_object, !!sym(x), !!sym(y), color = !!enquo(color),

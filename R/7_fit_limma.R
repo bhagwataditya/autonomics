@@ -347,7 +347,7 @@ fit_limma <- function(object,
         if (is.null(metadata(object)$dupcor)){
             if (verbose)  cmessage('\t\t\t\tdupcor `%s`', blockvar)
             metadata(object)$dupcor <- duplicateCorrelation(
-                exprs(object), design=design, block=block
+                values(object), design=design, block=block
             )$consensus.correlation }}
 # Exprs/Weights
     exprmat <-  assays(object)[[1]][, rownames(design)]

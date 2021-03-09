@@ -36,7 +36,7 @@ zero_to_na <- function(x, verbose = FALSE){
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-#' x <- exprs(read_proteingroups(
+#' x <- values(read_proteingroups(
 #'               file, invert_subgroups=invert_subgroups, plot=FALSE))
 #' nan_to_na(x, verbose=TRUE)
 #' @export
@@ -225,18 +225,18 @@ split_by_svar <- function(object, svar = subgroup){
 is_systematic_detect <- function(object, subgroup = subgroup){
     subgroup <- enquo(subgroup)
     split_by_svar(object, !!subgroup) %>%
-    lapply(function(x) rowAlls(is.na(exprs(x)))) %>%
+    lapply(function(x) rowAlls(is.na(values(x)))) %>%
     Reduce("|", .)
 }
 
 is_random_detect <- function(object, subgroup = subgroup){
     subgroup <- enquo(subgroup)
-    rowAnys(is.na(exprs(object))) & !is_systematic_detect(object, !!subgroup)
+    rowAnys(is.na(values(object))) & !is_systematic_detect(object, !!subgroup)
 }
 
 
 is_full_detect <- function(object){
-    rowAlls(!is.na(exprs(object)))
+    rowAlls(!is.na(values(object)))
 }
 
 
@@ -310,7 +310,7 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
 # Update object
     ff <- fnames(object)
     ss <- snames(object)
-    exprs(object) <- dt2exprs(dt)[ff, ss]
+    values(object) <- dt2exprs(dt)[ff, ss]
     assays(object)$is_imputed <- dt2mat(data.table::dcast(
                     dt, feature_id ~ sample_id, value.var = 'is_imputed'))
     fdata(object)$imputed <- rowAnys(assays(object)$is_imputed)
@@ -336,10 +336,10 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
 
 cluster_order_features <- function(object){
     if (nrow(object) < 3) return(object)
-    idx <- is.na(exprs(object))
-    exprs(object)[idx] <- 0
-    order <- hclust(dist(exprs(object)))$order
-    exprs(object)[idx] <- NA
+    idx <- is.na(values(object))
+    values(object)[idx] <- 0
+    order <- hclust(dist(values(object)))$order
+    values(object)[idx] <- NA
     object %<>% extract(order, )
     object
 }
@@ -347,7 +347,7 @@ cluster_order_features <- function(object){
 detect_order_features <- function(object, subgroup){
     subgroup <- enquo(subgroup)
     x <- object
-    exprs(x)[is_imputed(x)] <- NA
+    values(x)[is_imputed(x)] <- NA
     idx1 <- fnames(cluster_order_features(
                         x[is_systematic_detect(x, !!subgroup),]))
     idx2 <- fnames(cluster_order_features(
@@ -416,7 +416,7 @@ plot_detections <- function(
     object %<>% extract(, order(sdata(.)[[groupvar]]))
 # Reorder/block features
     object %<>% detect_order_features(!!subgroup)
-    y <- object; exprs(y)[is_imputed(y)] <- NA
+    y <- object; values(y)[is_imputed(y)] <- NA
     nfull       <- sum(is_full_detect(y))
     nsystematic <- sum(is_systematic_detect(y, subgroup=!!subgroup))
     nrandom     <- sum(is_random_detect(y, subgroup=!!subgroup))
@@ -495,7 +495,7 @@ plot_summarized_detections <- function(
     xmin <- xmax <- ymin <- ymax <- nfeature <- quantified <- NULL
 # Prepare
     object %<>% filter_samples(!is.na(!!subgroup), verbose=TRUE)
-    exprs(object) %<>% zero_to_na()  #### TODO fine-tune
+    values(object) %<>% zero_to_na()  #### TODO fine-tune
     featuretypes <- get_subgroup_combinations(object, groupvar)
     dt <- sumexp_to_long_dt(object, svars = groupvar)
     if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,

@@ -32,6 +32,6 @@ Get / Set log2tpmratios matrix
 \examples{
 file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file, plot=FALSE)
-log2tpmratios(object) <- exprs(object)
+log2tpmratios(object) <- values(object)
 log2tpmratios(object)[1:3, 1:3]
 }

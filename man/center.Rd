@@ -35,8 +35,8 @@ select \%<>\% paste0('_STD')
 object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
 object \%<>\% extract(, order(object$subgroup))
 fdata(object)$housekeeping <- FALSE
-fdata(object)$housekeeping[order(rowVars(exprs(object)))[1:100]] <- TRUE
-exprs(object)[, object$subgroup=='BM00_STD'] \%<>\% add(5)
+fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
+values(object)[, object$subgroup=='BM00_STD'] \%<>\% add(5)
 gridExtra::grid.arrange(plot_sample_densities(object),
                         plot_sample_densities(center(object)),
                         plot_sample_densities(center(object, housekeeping)))

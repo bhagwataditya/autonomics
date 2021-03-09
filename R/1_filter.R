@@ -86,7 +86,7 @@ filter_features <- function(object, condition, verbose = FALSE){
 rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # . != 0 needed due to stupid behaviour of rowAnys
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
-    selector <- rowAnys(exprs(object) != 0, na.rm = TRUE)
+    selector <- rowAnys(values(object) != 0, na.rm = TRUE)
     if (verbose && sum(selector)<length(selector))  message(
                     '\t\tRetain ', sum(selector), '/', length(selector),
                     ' features: non-zero, non-NA, and non-NaN for some sample')
@@ -98,7 +98,7 @@ rm_missing_in_all_samples <- function(object, verbose = TRUE){
     object
 }
 
-is_available_in_all_samples <- function(object)  rowAlls(!is.na(exprs(object)))
+is_available_in_all_samples <- function(object)  rowAlls(!is.na(values(object)))
 
 
 #' Keep features that are available in all samples
@@ -206,7 +206,7 @@ filter_replicated  <- function(
     assert_is_a_number(lod)
     assert_is_a_number(n)
 
-    nreplicates <- rowSums(comparator(exprs(object), lod), na.rm=TRUE)
+    nreplicates <- rowSums(comparator(values(object), lod), na.rm=TRUE)
     idx <- nreplicates >= n
     if (verbose)  if (!any(idx))  cmessage(
         '\t\t\tRetain %d/%d features replicated in at least %d samples',
@@ -267,7 +267,7 @@ filter_samples_available_for_some_feature <- function(object, verbose = FALSE){
 }
 
 is_available_for_some_feature <- function(object){
-    subsetter <- (!is.na(exprs(object))) & (exprs(object) != 0)
+    subsetter <- (!is.na(values(object))) & (values(object) != 0)
     set_names(colAnys(subsetter), snames(object))
 }
 

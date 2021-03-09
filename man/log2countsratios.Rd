@@ -32,6 +32,6 @@ Get / Set log2countsratios matrix
 \examples{
 file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file, plot=FALSE)
-log2countsratios(object) <- exprs(object)
+log2countsratios(object) <- values(object)
 log2countsratios(object)[1:3, 1:3]
 }

@@ -73,6 +73,6 @@ again within block
 
 # subtract differences
     object <- subtract_differences(object0, block='SUB', subgroupvar='SET')
-    exprs(object) \%<>\% na_to_zero()
+    values(object) \%<>\% na_to_zero()
     pca(object, plot=TRUE, color=SET)
 }

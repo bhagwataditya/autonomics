@@ -20,7 +20,7 @@ Convert NaN to NA
 \examples{
 file <- download_data('billing16.proteingroups.txt')
 invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-x <- exprs(read_proteingroups(
+x <- values(read_proteingroups(
               file, invert_subgroups=invert_subgroups, plot=FALSE))
 nan_to_na(x, verbose=TRUE)
 }

@@ -59,8 +59,8 @@ has_valid_fnames <- function(x, .xname = get_name_in_parent(x)){
     if (!all(fnames(x) == fdata(x)$feature_id)){
         return(false('fnames(%s) != fdata(%s)$feature_id', .xname, .xname))}
 
-    #if (!all(fnames(x) == rownames(exprs(x)))){
-    #    return(false('fnames(%s) != rownames(exprs(%s))', .xname, .xname))}
+    #if (!all(fnames(x) == rownames(values(x)))){
+    #    return(false('fnames(%s) != rownames(values(%s))', .xname, .xname))}
 
     #if (!all(fnames(x) == rownames(fdata(x)))){
     #    return(false('fnames(%s) != rownames(fdata(%s))', .xname, .xname))}
@@ -77,8 +77,8 @@ has_valid_snames <- function(x, .xname = get_name_in_parent(x)){
     if (!all(snames(x) == sdata(x)$sample_id)){
         return(false('snames(%s) != sdata(%s)$sample_id', .xname, .xname))}
 
-    #if (!all(snames(x) == colnames(exprs(x)))){
-    #    return(false('snames(%s) != colnames(exprs(%s))', .xname, .xname))}
+    #if (!all(snames(x) == colnames(values(x)))){
+    #    return(false('snames(%s) != colnames(values(%s))', .xname, .xname))}
 
     #if (!all(snames(x) == rownames(sdata(x)))){
     #    return(false('snames(%s) != colnames(sdata(%s))', .xname, .xname))}

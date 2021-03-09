@@ -35,6 +35,6 @@ Get / Set counts matrix
 \examples{
 file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file, plot=FALSE)
-counts(object) <- exprs(object)
+counts(object) <- values(object)
 counts(object)[1:3, 1:3]
 }

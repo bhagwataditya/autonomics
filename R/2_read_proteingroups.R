@@ -13,7 +13,7 @@
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, plot=FALSE)
 #' occupancies(object)
-#' occupancies(object) <- exprs(object)
+#' occupancies(object) <- values(object)
 #' occupancies(object)[1:3, 1:3]
 #' @rdname occupancies
 #' @export
@@ -893,14 +893,14 @@ invert.SummarizedExperiment <- function(
     assert_is_subset(subgroups, subgroup_levels(x))
 # Initialize message
     idx <- which(x$subgroup %in% subgroups)
-    first <- exprs(x)[, idx[1]] %>% (function(y) which(!is.na(y))[[1]])
-    oldvalue <- exprs(x)[first, idx[1]] %>% round(2) %>% as.character()
+    first <- values(x)[, idx[1]] %>% (function(y) which(!is.na(y))[[1]])
+    oldvalue <- values(x)[first, idx[1]] %>% round(2) %>% as.character()
     cmessage('\t\tInvert subgroups %s', paste0(subgroups, collapse = ', '))
 
 # Invert (log) ratios
-    if (all(exprs(x)>0, na.rm = TRUE)){ exprs(x)[, idx] %<>% (function(x){1/x})
-    } else {                            exprs(x)[, idx] %<>% (function(x){ -x})}
-    newvalue <- as.character(round(exprs(x)[first, idx[1]], 2))
+    if (all(values(x)>0, na.rm = TRUE)){ values(x)[, idx] %<>% (function(x){1/x})
+    } else {                            values(x)[, idx] %<>% (function(x){ -x})}
+    newvalue <- as.character(round(values(x)[first, idx[1]], 2))
     cmessage('\t\t\texprs    : %s -> %s',
             as.character(oldvalue), as.character(newvalue))
 # Invert subgroup and sampleid values
@@ -1097,7 +1097,7 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
     `Protein group IDs` <- NULL
 # Report
     if (verbose) message(
-        '\tAdd occupancies(phospho) = exprs(phospho) - exprs(proteins)')
+        '\tAdd occupancies(phospho) = values(phospho) - values(proteins)')
 # phospho datatable
     cols <- c('feature_id', 'Protein group IDs')
     fosdt <- sumexp_to_wide_dt(phosphosites, fvars = 'Protein group IDs')
@@ -1226,8 +1226,8 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
 # Filter/Transform
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
-    exprs(object) %<>% zero_to_na(verbose = verbose)
-    exprs(object) %<>% nan_to_na( verbose = verbose)
+    values(object) %<>% zero_to_na(verbose = verbose)
+    values(object) %<>% nan_to_na( verbose = verbose)
     object %<>% log2transform(verbose=verbose)
     object %<>% invert(invert_subgroups)
 # Return

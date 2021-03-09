@@ -32,6 +32,6 @@ Get / Set log2tpm matrix
 \examples{
 file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file, plot=FALSE)
-log2tpm(object) <- exprs(object)
+log2tpm(object) <- values(object)
 log2tpm(object)[1:3, 1:3]
 }
