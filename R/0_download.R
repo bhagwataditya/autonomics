@@ -51,12 +51,18 @@ download_data <- function(filename, verbose = FALSE ){
     rid <- BiocFileCache::bfcquery(bfc, filename, "rname")$rid
     if (!length(rid)) {
      if( verbose )
-         message( "Downloading atkin18.somascan.adat" )
+         message( "Downloading ", filename)
      rid <- names(BiocFileCache::bfcadd(bfc, filename, fileURL ))
     }
     #if (!isFALSE(bfcneedsupdate(bfc, rid)))
     #bfcdownload(bfc, rid)
-    BiocFileCache::bfcrpath(bfc, rids = rid)
+    filepath <- BiocFileCache::bfcrpath(bfc, rids = rid)
+    if (tools::file_ext(filename)=='zip'){
+        if (verbose)  cmessage('unzip')
+        utils::unzip(filepath, exdir = substr(filepath, 1, nchar(filepath)-4))
+        filepath %<>% substr(1, nchar(.)-4)
+    }
+    filepath
 }
 
 .get_cache <- function(){
