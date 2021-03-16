@@ -158,10 +158,18 @@ nfactors <- function(x, sep = guess_sep(x)){
 #' split_extract(x, 1:2)
 #' split_extract(x, seq_len(nfactors(x)-1))
 #' split_extract(x, nfactors(x))
+#' 
+#' # With NA values
+#' split_extract(fdata(object)$PUBCHEM, 1, ';')
 #' @export
 split_extract <- function(x, i, sep=guess_sep(x)){
     factors <- stri_split_fixed(x, sep)
-    vapply(factors, function(y) paste0(y[i], collapse=sep), character(1))
+    extracted <- rep(NA_character_, length(factors))
+    idx <- !is.na(factors)
+    extracted[idx] <- vapply(
+                        factors[idx], 
+                        function(y) paste0(y[i], collapse=sep), character(1))
+    extracted
 }
 
 
@@ -250,7 +258,7 @@ subgroup_array <- function(object, subgroupvar){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' subgroup_matrix(object)
+#' subgroup_matrix(object, 'Group')
 #' @export
 subgroup_matrix <- function(object, subgroupvar){
     subgroup_array <- subgroup_array(object, subgroupvar)
@@ -382,7 +390,7 @@ summarize_fit <- function(object, fit){
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
 #' isfdr <- is_fdr(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
-#' plot_fdr_venns(isfdr)
+#' plot_venn(isfdr)
 #' @export
 is_fdr <- function(
      object,
@@ -408,19 +416,19 @@ is_fdr <- function(
 }
 
 
-#' Plot fdr venns
+#' Plot venn
 #' @param isfdr matrix(nrow, ncontrast): -1 (down), +1 (up)
 #' @return NULL
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' object %<>% fit_wilcoxon() # fails on unpaired imputed data
-#' object %<>% fit_lm()
-#' object %<>% fit_limma()
-#' isfdr <- is_fdr(object, fit = c('lm','limma'), contrast = 'X30dpt-Adult')
-#' plot_fdr_venns(isfdr)
+#' require(magrittr)
+#' file <- download_data('atkin18.somascan.adat')
+#' object <- read_somascan(file, plot=FALSE)
+#' object %<>% fit_wilcoxon(subgroupvar='SampleGroup', block = 'Subject_ID')
+#' object %<>% fit_limma(   subgroupvar='SampleGroup', block = 'Subject_ID')
+#' isfdr <- is_fdr(object, contrast = 't3-t2')
+#' plot_venn(isfdr)
 #' @export
-plot_fdr_venns <- function(isfdr){
+plot_venn <- function(isfdr){
     layout(matrix(1:2, nrow=2))
     vennDiagram(isfdr, include='up',   mar = rep(0,4), show.include=TRUE)
     vennDiagram(isfdr, include='down', mar = rep(0,4), show.include=TRUE)

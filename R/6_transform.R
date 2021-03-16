@@ -18,7 +18,7 @@ which.medoid <- function(mat){
     if (ncol(object)==1)  return(object)
     medoid <- which.medoid(values(object))
     object %<>% extract(, medoid)
-    if (verbose) cmessage('\t\t\t\t%s', object$sample_id)
+    if (verbose)  message('\t\t\t\t', object$sample_id)
     object
 }
 
@@ -27,6 +27,7 @@ which.medoid <- function(mat){
 #' @param by svar
 #' @param verbose  whether to message
 #' @examples 
+#' require(magrittr)
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
 #' object %<>% filter_medoid(by = 'subgroup', verbose=TRUE)
@@ -37,7 +38,7 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
         return(object) }
     if (is.null(by))  return(.filter_medoid(object, verbose=verbose))
     object %<>% split_by_svar(!!sym(by))
-    if (verbose) cmessage('\t\t\tRetain medoid sample')
+    if (verbose)  message('\t\t\tRetain medoid sample')
     object %<>% lapply(.filter_medoid, verbose=verbose)
     do.call(BiocGenerics::cbind, object)
 }
@@ -100,10 +101,10 @@ subtract_baseline <- function(
     verbose = TRUE
 ){
     if (verbose){ 
-        cmessage("\t\tSubtract controls")
-        cmessage("\t\t\tcontrols  : %s=%s (medoid)", subgroupvar, subgroupctr)
-        if (!is.null(block))  cmessage("\t\t\tin block  : %s", block)
-        cmessage("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
+        message("\t\tSubtract controls")
+        message("\t\t\tcontrols  : ", subgroupvar, "=", subgroupctr," (medoid)")
+        if (!is.null(block))  message("\t\t\tin block  : ", block)
+        message("\t\t\tfor assays: ", paste0(assaynames, collapse = ', '))
     }
     objlist <- if (is.null(block)) list(object) else split_by_svar(
                                                         object, !!sym(block)) 
@@ -124,10 +125,10 @@ subtract_pairs <- function(
     # PRO: optimized for many block levels
     # CON: works only with exactly one ref per block 
     if (verbose){ 
-        cmessage("\t\tSubtract pairs")
-        cmessage("\t\t\tcontrols  : %s=='%s'", subgroupvar, subgroupctr)
-        if (!is.null(block))  cmessage("\t\t\tin block  : %s", block)
-        cmessage("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
+        message("\t\tSubtract pairs")
+        message("\t\t\tcontrols  : ", subgroupvar, "==", subgroupctr)
+        if (!is.null(block))  message("\t\t\tin block  : %s", block)
+        message("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
     }
 # Ensure single ref per block
     sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]
@@ -162,9 +163,9 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
     # CON: performance not optimized for many block levels
     #      currently only performed on first assay (can off course be updated)
     if (verbose){ 
-        cmessage("\t\tSubtract differences")
-        if (!is.null(block))  cmessage("\t\t\tin block  : %s", block)
-        cmessage("\t\t\tfor assays: %s", assayNames(object)[1])
+        message("\t\tSubtract differences")
+        if (!is.null(block))  message("\t\t\tin block  : ", block)
+        message("\t\t\tfor assays: ", assayNames(object)[1])
     }
     fvars0 <- intersect(c('feature_id', 'feature_name'), fvars(object))
     dt <- sumexp_to_long_dt(object, fvars=fvars0, svars=c(subgroupvar, block))
@@ -192,27 +193,27 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 }
 
 
-#' Log2 transform
+#' Transform values
 #' @param object SummarizedExperiment
 #' @param verbose TRUE or FALSE
 #' @return Transformed sumexp
 #' @examples
 #' require(magrittr)
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
 #'
-#' plot_sample_densities(object)
-#' plot_sample_densities(invnorm(object))
+#' object                       %>% plot_sample_densities()
+#' invnorm(object)              %>% plot_sample_densities()
 #'
-#' plot_sample_densities(object)
-#' plot_sample_densities(quantnorm(object))
+#' object                       %>% plot_sample_densities()
+#' quantnorm(object)            %>% plot_sample_densities()
 #'
-#' plot_sample_densities(object)
-#' plot_sample_densities(zscore(object))
+#' object                       %>% plot_sample_densities()
+#' zscore(object)               %>% plot_sample_densities()
 #'
-#' plot_sample_densities(object)
-#' plot_sample_densities(exp2(object))
-#' plot_sample_densities(log2transform(exp2(object)))
+#' object                       %>% plot_sample_densities()
+#' exp2(object)                 %>% plot_sample_densities()
+#' log2transform(exp2(object))  %>% plot_sample_densities()
 #' @export
 log2transform <- function(object, verbose = FALSE){
     if (verbose)  message('\t\tLog2 transform')
@@ -247,25 +248,22 @@ zscore <- function(object, verbose = FALSE){
 #' @examples
 #' require(magrittr)
 #' require(matrixStats)
-#' file <- download_data('billing19.proteingroups.txt')
-#' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-#' select %<>% paste0('_STD')
-#' object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
-#' object %<>% extract(, order(object$subgroup))
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
 #' fdata(object)$housekeeping <- FALSE
 #' fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
-#' values(object)[, object$subgroup=='BM00_STD'] %<>% add(5)
-#' gridExtra::grid.arrange(plot_sample_densities(object),
-#'                         plot_sample_densities(center(object)),
-#'                         plot_sample_densities(center(object, housekeeping)))
+#' values(object)[, object$subgroup=='Adult'] %<>% add(5)
+#' plot_sample_densities(object)
+#' plot_sample_densities(center(object))
+#' plot_sample_densities(center(object, housekeeping))
 #' @export
 center <- function(object, selector = rep(TRUE, nrow(object))==TRUE,
                     fun = 'median', verbose = TRUE
 ){
     selector <- enexpr(selector)
     selector <- rlang::eval_tidy(selector, data = fdata(object))
-    if (verbose) cmessage('%s center samples on %d features',
-                        fun, nrow(object[selector, ]))
+    if (verbose)  message(fun, ' center samples on ', 
+                            nrow(object[selector, ]), ' features')
     correction_factors <- apply(values(object[selector, ]), 2, fun, na.rm=TRUE)
     correction_factors[is.na(correction_factors)] <- 0
     values(object) %<>% sweep(2, correction_factors)
@@ -348,61 +346,69 @@ gglegend<-function(p){
     tmp <- ggplot_gtable(ggplot_build(p))
     leg <- which(vapply(
                     tmp$grobs, function(x) x$name, character(1))=="guide-box")
-    legend <- tmp$grobs[[leg]]
-    return(legend)
+    if (length(leg)==0)  grid::nullGrob()  else  tmp$grobs[[leg]]
 }
 
 
 plot_transformation_densities <- function(
     object,
+    subgroup = sym('subgroup'),
     transformations = c('quantnorm', 'zscore', 'invnorm'),
-    x = value, fill = subgroup,
-    group = if (ncol(object) > 16)  subgroup  else  sample_id, ...,
+    ...,
     fixed = list(na.rm=TRUE, alpha=0.3)
 ){
-    dt <- sumexp_to_long_dt(object)
+    subgroup <- enquo(subgroup); subgroupvar <- as_name(subgroup)
+    assert_is_subset(subgroupvar, svars(object))
+    dt <- sumexp_to_long_dt(object, svars = c(subgroupvar))
     dt$transfo <- 'input'
     for (transfo in transformations){
-        dt1 <- sumexp_to_long_dt(get(transfo)(object))
+        dt1 <- sumexp_to_long_dt(
+                get(transfo)(object), svars = c(subgroupvar))
         dt1$transfo <- transfo
         dt %<>% rbind(dt1)
     }
     dt$transfo %<>% factor(c('input', transformations))
-    plot_data(dt, geom_density, x = !!enquo(x), group = !!enquo(group),
-            color = NULL, fill = !!enquo(fill), ..., fixed = fixed) +
+    plot_data(dt, geom_density, x = value, group = sample_id,
+            color = NULL, fill = !!subgroup, ..., fixed = fixed) +
     facet_wrap(~transfo, scales = "free", nrow=1)
 }
 
 
 plot_transformation_violins <- function(
     object,
+    subgroup = sym('subgroup'),
     transformations = c('quantnorm', 'zscore', 'invnorm'),
-    x = subgroup, y = value, fill = subgroup,
-    group = if (ncol(object) > 16)  subgroup  else  sample_id, ...,
+    ...,
     fixed = list(na.rm=TRUE)
 ){
-    dt <- sumexp_to_long_dt(object)
+    subgroup <- enquo(subgroup); subgroupvar <- as_name(subgroup)
+    assert_is_subset(subgroupvar, svars(object))
+    dt <- sumexp_to_long_dt(object, svars = subgroupvar)
     dt$transfo <- 'input'
     for (transfo in transformations){
-        dt1 <- sumexp_to_long_dt(get(transfo)(object))
+        dt1 <- sumexp_to_long_dt(
+                get(transfo)(object), svars = subgroupvar)
         dt1$transfo <- transfo
         dt %<>% rbind(dt1)
     }
     dt$transfo %<>% factor(c('input', transformations))
-    plot_data(dt, geom_violin, x = !!enquo(x), y = !!enquo(y),
-            group = !!enquo(group), color = NULL, fill = !!enquo(fill),
-            ..., fixed = fixed) +
-    facet_grid(subgroup~transfo, scales = "free") +
+    plot_data(dt, geom_violin, x = sample_id, y = value, group = sample_id, 
+              color = NULL, fill = !!subgroup, ..., fixed = fixed) +
+    facet_grid(rows = vars(!!subgroup), cols = vars(transfo), scales = "free") +
     coord_flip()
 }
 
 
 plot_transformation_biplots <- function(
     object,
+    subgroup = sym('subgroup'),
     transformations = c('quantnorm', 'zscore', 'invnorm'),
-    method = 'pca', xdim = 1, ydim = 2, color = subgroup, ...,
+    method = 'pca', xdim = 1, ydim = 2, color = !!enquo(subgroup), ...,
     fixed = list(shape=15, size=3)
 ){
+    subgroup <- enquo(subgroup)
+    subgroupvar <- as_name(subgroup)
+    assert_is_subset(subgroupvar, svars(object))
     color <- enquo(color)
     xstr <- paste0(method, xdim)
     ystr <- paste0(method, ydim)
@@ -436,6 +442,7 @@ plot_transformation_biplots <- function(
 
 #' Explore transformations
 #' @param object          SummarizedExperiment
+#' @param subgroup        subgroup (sym)
 #' @param transformations vector
 #' @param method          'pca', 'pls', 'sma', or 'lda'
 #' @param xdim            number (default 1)
@@ -443,17 +450,25 @@ plot_transformation_biplots <- function(
 #' @param ...             passed to plot_data
 #' @return grid object
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' file <- download_data('billing16.proteingroups.txt')
+#' invert <- c('EM_E', 'EM_BM', 'BM_E')
+#' object <- read_proteingroups(file, invert_subgroups = invert, plot=FALSE)
 #' explore_transformations(object)
 #' @export
 explore_transformations <- function(
-    object, transformations = c('quantnorm', 'zscore', 'invnorm'),
+    object, 
+    subgroup = subgroup,
+    transformations = c('quantnorm', 'zscore', 'invnorm'),
     method='pca', xdim=1, ydim=2, ...
 ){
-    p1 <- plot_transformation_densities(object, transformations, ...)
+    subgroup <- enquo(subgroup)
+    subgroupvar <- as_name(subgroup)
+    assert_is_subset(subgroupvar, svars(object))
+    p1 <- plot_transformation_densities(
+            object, subgroup=!!subgroup, transformations, ...)
     p2 <- plot_transformation_biplots(
-            object, transformations, method, xdim1 = xdim, ydim = ydim, ...)
+            object, subgroup=!!subgroup, transformations, method, 
+            xdim1 = xdim, ydim = ydim, ...)
 
     grid.arrange(arrangeGrob(p1 + theme(legend.position='none'),
                             p2  + theme(legend.position='none'), nrow=2),

@@ -1,17 +1,4 @@
 
-#' Conveniently message
-#'
-#' Print message to screen with sprintf syntax
-#'
-#' @param format_string sprintf format string
-#' @param ... additional arguments  passed to sprintf
-#' @examples
-#' cmessage('\t%s\t%s', 'Hi', 'there')
-#' @noRd
-cmessage <- function(format_string, ...){
-    message(sprintf(format_string, ...))
-}
-
 #' Conveniently message dataframe
 #'
 #' Conveniently message dataframe using sprintf syntax.
@@ -22,12 +9,12 @@ cmessage <- function(format_string, ...){
 #' @return NULL
 #' @examples
 #' x <- data.frame(feature_id = c('F001', 'F002'), symbol = c('FEAT1', 'FEAT2'))
-#' cmessage_df('\t%s', x)
+#' message_df('\t%s', x)
 #'
 #' x <- c(rep('PASS', 25), rep('FAIL', 25))
-#' cmessage_df(format_string = '%s', table(x))
+#' message_df(format_string = '%s', table(x))
 #' @noRd
-cmessage_df <- function(format_string, x){
+message_df <- function(format_string, x){
     format_string %>%
     sprintf(capture.output(print(x))) %>%
     paste0(collapse = '\n') %>%

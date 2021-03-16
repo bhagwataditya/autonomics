@@ -58,7 +58,7 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' @param verbose logical
 #' @return filtered eSet
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 #' @export
@@ -66,8 +66,8 @@ filter_features <- function(object, condition, verbose = FALSE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose) message('\t\tRetain ',
-        sum(idx), '/', length(idx), ' features: ', expr_text(condition))
+    if (verbose) message('\t\tRetain ', sum(idx), '/', length(idx), 
+                        ' features: ', expr_text(condition))
     object %<>% extract(idx,)
     fdata(object) %<>% droplevels()
     if (!is.null(analysis(object))) {
@@ -106,7 +106,7 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(values(object)))
 #' @param verbose TRUE (default) or FALSE
 #' @return updated object
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' rm_missing_in_some_samples(object)
 #' @noRd
@@ -138,16 +138,9 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' @return Filtered SummarizedExperiment
 #' @examples
 #' require(magrittr)
-#' file <- download_data('billing16.proteingroups.txt')
-#' invert_subgroups <- c('E_EM', 'BM_EM', 'E_BM')
-#' object <- read_proteingroups(file, invert_subgroups=invert_subgroups,
-#'     plot=FALSE)
-#' object %<>% filter_exprs_replicated_in_some_subgroup()
-#'
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' object %<>% filter_exprs_replicated_in_some_subgroup(subgroupvar = 'Group')
-#'
 #' filter_exprs_replicated_in_some_subgroup(object, character(0))
 #' filter_exprs_replicated_in_some_subgroup(object, NULL)
 #' @export
@@ -208,9 +201,9 @@ filter_replicated  <- function(
 
     nreplicates <- rowSums(comparator(values(object), lod), na.rm=TRUE)
     idx <- nreplicates >= n
-    if (verbose)  if (!any(idx))  cmessage(
-        '\t\t\tRetain %d/%d features replicated in at least %d samples',
-        sum(idx), length(idx), n)
+    if (verbose)  if (!any(idx))  message(
+        '\t\t\tRetain ', sum(idx), '/', length(idx), 
+        'features replicated in at least ', n, ' samples')
     object[idx, ]
 }
 
@@ -229,17 +222,16 @@ filter_replicated  <- function(
 #' @param record    TRUE (default) or FALSE
 #' @return filtered SummarizedExperiment
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' filter_samples(object, TIME_POINT=='h10', verbose = TRUE)
+#' filter_samples(object, Group != 't0', verbose = TRUE)
 #' @export
 filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose & sum(idx)<length(idx)) cmessage(
-        '\t\t\tRetain %d/%d samples: ', sum(idx), length(idx), 
-        expr_text(condition))
+    if (verbose & sum(idx)<length(idx))  message('\t\t\tRetain ', sum(idx), '/', 
+                                length(idx), 'samples: ', expr_text(condition))
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
     if (record && !is.null(analysis(object))) {
@@ -258,9 +250,8 @@ filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
 filter_samples_available_for_some_feature <- function(object, verbose = FALSE){
     subsetter <- is_available_for_some_feature(object)
     if (any(!subsetter)){
-        if (verbose) cmessage(
-        '\t\t\tRetain %d/%d samples with a value available for some feature',
-            sum(subsetter), length(subsetter))
+        if (verbose)  message('\t\t\tRetain ', sum(subsetter), '/', 
+          length(subsetter), ' samples with a value available for some feature')
     object %<>% extract(, subsetter)
     }
     object
@@ -279,22 +270,16 @@ is_available_for_some_feature <- function(object){
 #' @param verbose TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
-#' require(GEOquery)
-#' basedir <- '~/autonomicscache/datasets'
-#' subdir  <- '~/autonomicscache/datasets/GSE161731'
-#' if (!dir.exists(subdir))  getGEOSuppFiles("GSE161731",baseDir = basedir)
-#' file       <- paste0(subdir,'/GSE161731_counts.csv.gz')
-#' sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
-#' object <- read_rnaseq_counts(
-#'             file, sfile = sfile, sfileby = 'rna_id', plot=FALSE)
-#' rm_singleton_samples(object, 'subject_id')
+#' file <- download_data('atkin18.somascan.adat')
+#' object <- read_somascan(file, plot=FALSE)
+#' object %<>% filter_samples(SampleGroup %in% c('t1', 't2'), verbose = TRUE)
+#' rm_singleton_samples(object, 'Subject_ID')
 #' @export
 rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
     selectedsamples <-
         data.table(sdata(object))[, .SD[.N>1], by = svar][['sample_id']]
-    if (verbose)  cmessage('\t\t\tRetain %d/%d samples with replicated `%s`',
-                        length(selectedsamples), ncol(object), svar)
+    if (verbose)   message('\t\t\tRetain ', length(selectedsamples), '/', 
+                           ncol(object), ' samples with replicated ', svar)
     object[, selectedsamples]
 }
 

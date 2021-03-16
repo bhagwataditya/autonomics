@@ -895,14 +895,14 @@ invert.SummarizedExperiment <- function(
     idx <- which(x$subgroup %in% subgroups)
     first <- values(x)[, idx[1]] %>% (function(y) which(!is.na(y))[[1]])
     oldvalue <- values(x)[first, idx[1]] %>% round(2) %>% as.character()
-    cmessage('\t\tInvert subgroups %s', paste0(subgroups, collapse = ', '))
+    message('\t\tInvert subgroups ', paste0(subgroups, collapse = ', '))
 
 # Invert (log) ratios
     if (all(values(x)>0, na.rm = TRUE)){ values(x)[, idx] %<>% (function(x){1/x})
     } else {                            values(x)[, idx] %<>% (function(x){ -x})}
     newvalue <- as.character(round(values(x)[first, idx[1]], 2))
-    cmessage('\t\t\texprs    : %s -> %s',
-            as.character(oldvalue), as.character(newvalue))
+    message('\t\t\texprs    : ', as.character(oldvalue), ' -> ', 
+            as.character(newvalue))
 # Invert subgroup and sampleid values
     oldsubgroups <- sdata(x)$subgroup[idx]
     newsubgroups <- vapply(oldsubgroups, invert.character, character(1),sep=sep)
@@ -915,8 +915,8 @@ invert.SummarizedExperiment <- function(
                                             oldsubgroups[i], newsubgroups[i])
     }
     newsampleids <- sdata(x)$sample_id[idx]
-    cmessage('\t\t\tsubgroups: %s -> %s', oldsubgroups[1], newsubgroups[1])
-    cmessage('\t\t\tsampleids: %s -> %s', oldsampleids[1], newsampleids[1])
+    message('\t\t\tsubgroups: ', oldsubgroups[1], ' -> ', newsubgroups[1])
+    message('\t\t\tsampleids: ', oldsampleids[1], ' -> ', newsampleids[1])
 
 # Order on subgroup
     x %<>% arrange_samples_('subgroup')

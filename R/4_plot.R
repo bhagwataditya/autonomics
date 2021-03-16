@@ -101,7 +101,7 @@ make_onefactor_colors <- function(
                     set_names(varlevels)
     if (show) pie(rep(1, length(colors)), names(colors),
                     col = colors)
-    if (verbose)  cmessage('\t\tMake default ggplot colors')
+    if (verbose)  message('\t\tMake default ggplot colors')
     colors
 }
 
@@ -115,7 +115,7 @@ make_onefactor_colors <- function(
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' varlevels <- subgroup_levels(object)
+#' varlevels <- slevels(object, 'Group')
 #' make_twofactor_colors(varlevels, show = TRUE)
 #' @noRd
 make_twofactor_colors <- function(
@@ -124,7 +124,7 @@ make_twofactor_colors <- function(
     # Assert
     assert_has_no_duplicates(varlevels)
     assert_is_not_null(sep)
-    if (verbose) cmessage('\t\tMake composite colors')
+    if (verbose)  message('\t\tMake composite colors')
 
     # Satisfy CHECK
     subgroup <- V1 <- V2 <- color <- hue <- luminance <- NULL
@@ -258,11 +258,10 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #' @examples
 #' # Read data
 #'     require(magrittr)
-#'     file <- download_data('halama18.metabolon.xlsx')
+#'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     object %<>% extract(, order(.$Group))
 #' # Plot distributions
-#'     plot_sample_densities(object)
 #'     plot_sample_densities(object, fill = Group)
 #'     plot_feature_densities(object)
 #' @export

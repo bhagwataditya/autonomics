@@ -26,7 +26,7 @@ has_some_svalues <- function(object, svar){
 #' @param object SummarizedExperiment
 #' @return logical
 #' @examples
-#' file <- download_data('billing19.proteingroups.txt')
+#' file <- download_data('billing16.proteingroups.txt')
 #' object <- read_proteingroups(file, plot=FALSE)
 #' contains_ratios(object)
 #'

@@ -117,7 +117,7 @@ rm_single_value_columns <- function(df){
     sid_cols <- content %>% extract(s_row) %>% stri_extract_all_words() %>%
                 unlist() %>% equals(sidvar) %>% which()
 # Read
-    object <- read_omics(file,
+    object <- read_rectangles(file,
         fid_rows   = fid_rows,          fid_cols   = fid_cols,
         sid_rows   =  sid_rows,         sid_cols   =  sid_cols,
         expr_rows  = (s_row+1):n_row,   expr_cols  = (f_col+1):n_col,

@@ -31,6 +31,7 @@ sumexp_to_wide_dt <- function(
 #'    \item \code{sumexp_to_long_dt}:   feature.sample
 #' }
 #' @param object sumexp
+#' @param subgroup subgroup (sym)
 #' @param fid    fvar carrying feature id
 #' @param fvars  additional fvars to include in table
 #' @param sid    svar carrying sample id
@@ -49,11 +50,11 @@ sumexp_to_wide_dt <- function(
 #'
 #' # Glutaminase
 #'    require(magrittr)
-#'    file <- download_data('halama18.metabolon.xlsx')
+#'    file <- download_data('atkin18.metabolon.xlsx')
 #'    object <- read_metabolon(file, plot=FALSE)
 #'    sumexp_to_wide_dt(object)
 #'    sumexp_to_long_dt(object)
-#'    sumexp_to_subrep_dt(object)
+#'    sumexp_to_subrep_dt(object, Group)
 #'
 #' # Fukuda
 #'    require(magrittr)
@@ -114,21 +115,25 @@ sumexp_to_long_dt <- function(
 
 #' @export
 #' @rdname sumexp_to_long_dt
-sumexp_to_subrep_dt <- function(object){
+sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
+    subgroup <- enquo(subgroup)
+    subgroupvar <- as_name(subgroup)
 
     # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset('subgroup', svars(object))
+    assert_is_subset(subgroupvar, svars(object))
     sample_id <- subgroup <- . <- NULL
 
     # Melt
-    dt <- sumexp_to_long_dt(object, svars = 'subgroup')
+    dt <- sumexp_to_long_dt(object, svars = subgroupvar)
     sep <- guess_sep(object)
-    dt[, replicate := stri_replace_first_fixed(sample_id, subgroup, '') %>%
-                        substr(2, nchar(.))]
+    dt[, replicate := stri_replace_first_fixed(
+                        sample_id, dt[[subgroupvar]], '') %>%
+                    substr(2, nchar(.))]
 
     # Partially recast
-    subrepdt <- data.table::dcast(dt, feature_id + subgroup ~ replicate)
+    formula <- as.formula(sprintf('feature_id + %s ~ replicate', subgroupvar))
+    subrepdt <- data.table::dcast(dt, formula=formula)
     subrepdt$feature_id %<>% factor(fid_values(object))
     setorderv(subrepdt, 'feature_id')
 
@@ -194,11 +199,11 @@ dt2sumexp  <- function(
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr) 
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' x <- values(read_metabolon(file, plot=FALSE))
 #' object <- matrix2sumexp(x)
 #' object %<>% pca()
-#' biplot(object, nloadings=0)
+#' biplot(object, nloadings=0, color=subgroup)
 #' @export
 matrix2sumexp <- function(
     x,
@@ -228,10 +233,16 @@ matrix2sumexp <- function(
 #' @param experiments named list of SummarizedExperiments
 #' @return MultiAssayExperiment
 #' @examples
+#' require(magrittr)
 #' somascanfile  <- download_data('atkin18.somascan.adat')
 #' metabolonfile <- download_data('atkin18.metabolon.xlsx')
 #' somascan <- read_somascan(somascanfile,   plot=FALSE)
 #' metabolon<- read_metabolon(metabolonfile, plot=FALSE)
+#' svars(somascan)  %<>% stringi::stri_replace_first_fixed(
+#'                         'SampleGroup', 'subgroup')
+#' svars(metabolon) %<>% stringi::stri_replace_first_fixed(
+#'                         'Group',       'subgroup')
+#' metabolon$replicate <- NULL
 #' object   <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
 #' @export
 sumexp2mae <- function(experiments){

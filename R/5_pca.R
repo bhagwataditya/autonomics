@@ -13,8 +13,8 @@
 flip_sign_if_all_exprs_are_negative <- function(x, verbose=TRUE){
     idx <- !is.na(x)
     if (all(sign(x[idx])==-1)){
-        if (verbose) cmessage(
-            '\t\tAll values negative: flip signs to prevent singularities.')
+        if (verbose)  message('\t\tAll values negative: ', 
+                                'flip signs to prevent singularities.')
         x %<>% multiply_by(-1)
     }
     x

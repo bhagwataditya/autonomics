@@ -15,7 +15,7 @@ fit_wilcoxon <- function(
 ){
 # fit
     dt <- sumexp_to_long_dt(object, svars = c(subgroupvar, block))
-    if (verbose)  cmessage('\t\tWilcoxon')
+    if (verbose)  message('\t\tWilcoxon')
     results <- lapply(vectorize_contrastdefs(contrastdefs), .wilcoxon, 
                     dt, subgroupvar, block, verbose)
     results %<>% Reduce(function(x,y) merge(x,y, by='feature_id', all=TRUE), .)
@@ -42,7 +42,7 @@ fit_wilcoxon <- function(
 # Return
     if (plot)  print(plot_volcano(object, fit='wilcoxon')) 
                     # plot_contrastogram(object)
-    if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object,'wilcoxon'))
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(object,'wilcoxon'))
     object
 }
 
@@ -66,7 +66,7 @@ fit_wilcoxon <- function(
 .wilcoxon_onesample <- function(
     dt, subgroupvar = NULL, subgrouplevels = NULL, block = NULL, verbose = TRUE
 ){
-    if (verbose)  cmessage('\t\t\twilcox.test(x = value)')
+    if (verbose)  message('\t\t\twilcox.test(x = value)')
     suppressWarnings(dt[, 
         .(  p      = wilcox.test(x = value, y = NULL, paired = FALSE)$p.value, 
             w      = wilcox.test(x = value, y = NULL, paired = FALSE)$statistic,
@@ -80,7 +80,7 @@ fit_wilcoxon <- function(
 ){
     xx <- subgrouplevels[[1]]
     yy <- subgrouplevels[[2]]
-    if (verbose)  cmessage('\t\t\twilcox.test(x = %s, y = %s)', xx, yy)
+    if (verbose)  message('\t\t\twilcox.test(x = ', xx, ', y = ', yy, ')')
     suppressWarnings(dt[, 
         .(  p = wilcox.test(x      = value[get(subgroupvar)==xx],
                             y      = value[get(subgroupvar)==yy], 
@@ -104,9 +104,9 @@ fit_wilcoxon <- function(
             value.var = 'value')
     xx <- subgrouplevels[[1]]
     yy <- subgrouplevels[[2]]
-    if (verbose)  cmessage(
-        "\t\t\twilcox.test(x = %s, y = %s, paired = TRUE) - pair on '%s'", 
-                            xx, yy, block)
+    if (verbose)  message(
+        "\t\t\twilcox.test(", "x = ", xx, ", y = ", yy, ", paired = TRUE) - ", 
+        "pair on '", block, "'")
     suppressWarnings(dt[!is.na(get(xx)) & !is.na(get(yy)), 
         .(  p = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$p.value, 
             w = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$statistic, 

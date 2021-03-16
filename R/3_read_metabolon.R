@@ -13,7 +13,7 @@
 #' @param pathway_var kegg pathway fvar
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' object %<>% add_kegg_pathways()
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
@@ -21,19 +21,17 @@
 add_kegg_pathways <- function(
     object, entry_var = 'KEGG', pathway_var = 'KEGGPATHWAYS'
 ){
-    # Add KEGG Pathways
+# Add KEGG Pathways
     fdata(object)[[pathway_var]] <- fdata(object)[[entry_var]]     %>%
                                     extract_first_from_collapsed() %>%
                                     kegg_entry_to_pathways()
-    # Report
-    cmessage(paste0(  '\t\tAdd KEGG Pathways: %3d features ',
-                        '-> %3d map to KEGG IDS ',
-                        '-> %3d map to KEGG Pathways'),
-                        nrow(object),
-                        sum(!is.na(fdata(object)[[entry_var  ]])),
-                        sum(!is.na(fdata(object)[[pathway_var]])))
-
-    # Return
+# Report
+    nkeggid  <- sum(!is.na(fdata(object)[[entry_var]]))
+    npathway <- sum(!is.na(fdata(object)[[pathway_var]]))
+    message('\t\tAdd KEGG Pathways: ', nrow(object), ' features ',
+            '-> ', nkeggid,  ' map to KEGG IDS ',
+            '-> ', npathway, ' map to KEGG Pathways')
+# Return
     object
 }
 
@@ -86,36 +84,36 @@ kegg_entry_to_pathways <- function(x){
 
 #' Add smiles
 #'
-#' @param x character/factor vector with pubchem ids
+#' @param object character/factor vector with pubchem ids
 #' @return character/factor vector
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' add_smiles(object)
+#' add_smiles(object[1:10, ])
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
-#' @noRd
-add_smiles <- function(x, pubchem_var = 'PUBCHEM', smiles_var = 'SMILES'){
+#' @export
+add_smiles <- function(object){
 # Satify CHECK
     . <- NULL
 # Assert
-    assert_is_subset(pubchem_var, fvars(x))
+    assert_is_subset('PUBCHEM', fvars(object))
 # Map to smiles
-    PUBCHEMIDS <- fvalues(x, pubchem_var) %>%
-                extract_first_from_collapsed(';')
-    SMILES <- PUBCHEMIDS %>%
-            (function(x) split(x, ceiling(seq_along(x)/100))) %>%
+    PUBCHEMIDS <- fdata(object)$PUBCHEM %>% split_extract(1,';')
+    SMILES <- rep(NA_character_, length(PUBCHEMIDS))
+    idx <- !is.na(PUBCHEMIDS)
+    SMILES[idx] <- PUBCHEMIDS[idx] %>%
+            (function(object) split(object, ceiling(seq_along(object)/100))) %>%
             lapply(pubchem_to_smiles) %>%
             unlist() %>%
             unname()
-    fdata(x)[[smiles_var]] <- SMILES
+    fdata(object)$SMILES <- SMILES
 # Report
-    cmessage(paste0('\t\tAdd SMILES: %3d features -> %3d map to PUBCHEM',
-                    ' -> %3d map to SMILES'),
-                    nrow(x),
-                    sum(!is.na(fdata(x)[[pubchem_var]])),
-                    sum(!is.na(fdata(x)[[smiles_var ]])))
+    npubchem <- sum(!is.na(fdata(object)$PUBCHEM))
+    nsmiles  <- sum(!is.na(fdata(object)$SMILES))
+    message('\t\tAdd SMILES: ', nrow(object), ' features -> ', 
+            npubchem, ' map to PUBCHEM -> ', nsmiles, ' map to SMILES')
 # Return
-    x
+    object
 }
 
 
@@ -230,7 +228,7 @@ stack <- function(x, y){
     fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
     sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
 # Systematic read
-    object <- read_omics(
+    object <- read_rectangles(
                 file,                       sheet      = sheet,
                 fid_rows   = fid_rows,      fid_cols   = fid_cols,
                 sid_rows   = sid_rows,      sid_cols   = sid_cols,

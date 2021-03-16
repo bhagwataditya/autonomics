@@ -462,10 +462,10 @@ download_gtf <- function(
     remote <- make_gtf_url(organism, release)
 
     if(file.exists(gtffile)){
-        cmessage("GTF file already available at %s", gtffile)
+        message("GTF file already available at ", gtffile)
     } else {
-        cmessage("download   %s'" , remote)
-        cmessage("to         %s", gtffile )
+        message("download   " ,remote)
+        message("to         ", gtffile )
         dir.create(dirname(gtffile), showWarnings = FALSE, recursive = TRUE)
         gtffile %<>% paste0('.gz')
         tryCatch(expr = { download.file(
@@ -791,7 +791,7 @@ add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
         blockvar <- block
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$dupcor)){
-            if (verbose)  cmessage('\t\t\tdupcor `%s`', blockvar)
+            if (verbose)  message('\t\t\tdupcor `', blockvar, '`')
             metadata(object)$dupcor <- 0.2#duplicateCorrelation(
                 #log2(cpm(object)), design=design, block=block
             #)$consensus.correlation 

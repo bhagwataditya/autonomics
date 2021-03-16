@@ -141,19 +141,19 @@ default_formula <- function(
 #' @param verbose whether to message
 #' @return design matrix
 #' @examples
-#' file <- download_data('billing16.rnacounts.txt')
+#' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
-#' create_design(object)
+#' unique(create_design(object))
 #'
-#' object$subgroup <- 'billing16'
-#' create_design(object)
+#' object$subgroup <- 'billing19'
+#' unique(create_design(object))
 #'
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
-#' create_design(object)
-#' create_design(object, ~ 0 + subgroup + Sex + T2D + age + bmi)
+#' unique(create_design(object))
+#' create_design(object, formula= ~ 0 + SampleGroup + Sex + T2D + age + bmi)
 #' object$subgroup <- 'atkin18'
-#' create_design(object)
+#' unique(create_design(object))
 #' @export
 create_design <- function(
     object, 
@@ -168,7 +168,7 @@ create_design <- function(
     for (var in all.vars(formula)){
         if (is.character(object[[var]])) object[[var]] %<>% factor() }
 # Create design matrix
-    if (verbose)  cmessage('\t\tDesign: %s', deparse(formula))
+    if (verbose)   message('\t\tDesign: ', formula2str(formula))
     myDesign <- model.matrix(formula,  data = sdata(object))
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     is_factor_var <- function(x, object) is.factor(object[[x]])
@@ -294,32 +294,16 @@ vectorize_contrastdefs <- function(contrastdefs){
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
-#' fit_wilcoxon(object, subgroupvar = 'SampleGroup')
-#' fit_lm(object, subgroupvar = 'SampleGroup')
-#' fit_limma(object, subgroupvar = 'SampleGroup')
-#' fit_limma(object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' fit_lme(  object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' fit_lmer( object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#'
-#' file <- download_data('billing19.proteingroups.txt')
-#' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-#' select %<>% paste0('_STD')
-#' object <- read_proteingroups(file, select_subgroups = select, plot = FALSE)
-#' object %<>% impute_systematic_nondetects(plot=FALSE)
-#' object %<>% fit_limma()
-#' object %<>% fit_lm()
-#'
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE, voom=TRUE)
-#' object %<>% fit_limma(plot=FALSE)
-#' weights(object) <- NULL; object %<>% fit_limma(plot=FALSE)
-#' object %<>% fit_lm(plot=FALSE)
-#'
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% impute_systematic_nondetects(plot=FALSE, subgroup = Group)
-#' object %<>% fit_limma(plot=FALSE, subgroupvar = 'Group')
-#' object %<>% fit_lm(plot=FALSE, subgroupvar = 'Group')
+#' object %<>% fit_lm(   subgroupvar = 'SampleGroup')
+#' object %<>% fit_limma(subgroupvar = 'SampleGroup')
+#' plot_venn(is_fdr(object, contrast='t3-t2'))
+#' 
+#' S4Vectors::metadata(object)$limma <- S4Vectors::metadata(object)$lm <- NULL
+#' object %<>% fit_limma(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' object %<>% fit_wilcoxon(subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' object %<>% fit_lme(     subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' #object%<>% fit_lmer(    subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' plot_venn(is_fdr(object, contrast='t3-t2'))
 #' @export
 fit_limma <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
@@ -331,10 +315,10 @@ fit_limma <- function(object,
 ){
 # Design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (verbose)  cmessage('\t\tlmFit(%s%s%s)', formula2str(formula),
+    if (verbose)  message('\t\tlmFit(', formula2str(formula),
         if(is.null(block))     '' else paste0(' | ',block),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
-                                            weightvar))
+                                            weightvar), ')')
     design <- create_design(object, formula=formula, verbose = FALSE)
     if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
     if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
@@ -345,7 +329,7 @@ fit_limma <- function(object,
         blockvar <- block
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$dupcor)){
-            if (verbose)  cmessage('\t\t\t\tdupcor `%s`', blockvar)
+            if (verbose)  message('\t\t\t\tdupcor `', blockvar, '`')
             metadata(object)$dupcor <- duplicateCorrelation(
                 values(object), design=design, block=block
             )$consensus.correlation }}
@@ -364,7 +348,7 @@ fit_limma <- function(object,
     object %<>% .limmacontrast(fit, formula)
     if (plot)  print(plot_volcano(object, fit='limma')) 
                     # plot_contrastogram(object)
-    if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object, 'limma'))
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(object, 'limma'))
     return(object)
 }
 

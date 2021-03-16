@@ -1,127 +1,99 @@
 #==============================================================================
 #
-#                   Switch between nondetect representations
+#                   Change nondetect representation
 #
 #==============================================================================
 
 
-#' Switch between nondetect representations
+#' Change nondetect representation
 #' @param x    matrix
 #' @param verbose   logical(1)
 #' @return Updated matrix
 #' @examples
-#' x <- matrix(c(0, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
-#' x
-#' zero_to_na(x)
+#' require(magrittr)
+#' matrix(c(0, 7), nrow=1)
+#' matrix(c(0, 7), nrow=1)    %>% zero_to_na(verbose=TRUE)
+#' 
+#' matrix(c(NA, 7), nrow=1)
+#' matrix(c(NA, 7), nrow=1)   %>% na_to_zero(verbose=TRUE)
+#' 
+#' matrix(c(NaN, 7), nrow=1)
+#' matrix(c(NaN, 7), nrow=1)  %>% nan_to_na(verbose=TRUE)
+#' 
+#' matrix(c(Inf, 7), nrow=1)
+#' matrix(c(Inf, 7), nrow=1)  %>% inf_to_na(verbose=TRUE)
+#' 
+#' matrix(c(-Inf, 7), nrow=1)
+#' matrix(c(-Inf, 7), nrow=1) %>% minusinf_to_na(verbose=TRUE)
 #' @export
 zero_to_na <- function(x, verbose = FALSE){
     selector <- x == 0
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose) cmessage(
-                    paste0('\t\tReplace 0 -> NA for %d/%d values ',
-                            '(in %d/%d features and %d/%d samples)'),
-                    sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
-                    sum(rowAnys(selector), na.rm=TRUE), nrow(x),
-                    sum(colAnys(selector), na.rm=TRUE), ncol(x))
+        if (verbose)  message('\t\tReplace 0->NA for ', 
+            sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
+            ' values (in ',  sum(rowAnys(selector), na.rm=TRUE), '/', nrow(x), 
+            ' features of ', sum(colAnys(selector), na.rm=TRUE), '/', ncol(x), 
+            ' samples)')
         x[selector] <- NA_real_
     }
     x
 }
 
 
-#' Convert NaN to NA
-#' @param x matrix
-#' @param verbose TRUE/FALSE
-#' @return matrix
-#' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-#' x <- values(read_proteingroups(
-#'               file, invert_subgroups=invert_subgroups, plot=FALSE))
-#' nan_to_na(x, verbose=TRUE)
+#' @rdname zero_to_na
 #' @export
 nan_to_na <- function(x, verbose = FALSE){
     selector <- is.nan(x)
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose) cmessage(
-                    paste0( '\t\tReplace NaN -> NA for %d/%d values ',
-                            '(in %d/%d features and %d/%d samples)'),
-                    sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
-                    sum(rowAnys(selector)), nrow(x),
-                    sum(colAnys(selector)), ncol(x))
+        if (verbose)  message('\t\tReplace NaN->NA for ', 
+          sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
+          ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
+          ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
         x[selector] <- NA_real_
     }
     x
 }
 
 
-#' Convert NA to zero
-#' @param x matrix
-#' @param verbose TRUE/FALSE
-#' @return matrix
-#' @examples
-#' x <- matrix(c(NA, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
-#' x
-#' na_to_zero(x)
+#' @rdname zero_to_na
 #' @export
 na_to_zero <- function(x, verbose = FALSE){
     selector <- is.na(x)
     if (any(selector)){
-        if (verbose) cmessage(
-                        paste0( '\t\tReplace NA -> 0 for %d/%d values ',
-                                '(in %d/%d features and %d/%d samples)'),
-                        sum(selector), nrow(selector)*ncol(selector),
-                        sum(rowAnys(selector)), nrow(x),
-                        sum(colAnys(selector)), ncol(x))
+        if (verbose)  message('\t\tReplace NA->0 for ', 
+            sum(selector), '/', nrow(selector)*ncol(selector), 
+            ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
+            ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
         x[selector] <- 0
     }
     x
 }
 
 
-#' Convert Inf to NA
-#' @param x matrix
-#' @param verbose TRUE/FALSE
-#' @return matrix
-#' @examples
-#' x <- matrix(c(-Inf, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
-#' x
-#' inf_to_na(x)
+#' @rdname zero_to_na
 #' @export
 inf_to_na <- function(x, verbose = FALSE){
     selector <- is.infinite(x)
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose) cmessage(
-                    paste0(
-                        '\t\tReplace -Inf -> NA for %d/%d values ',
-                        '(in %d/%d features and %d/%d samples)'),
-                    sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
-                    sum(rowAnys(selector)), nrow(x),
-                    sum(colAnys(selector)), ncol(x))
+        if (verbose)  message('\t\tReplace -Inf->NA for ', 
+            sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
+            ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
+            ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
         x[selector] <- NA_real_
     }
     x
 }
 
 
-#' Convert -Inf to NA
-#' @param x matrix
-#' @param verbose TRUE/FALSE
-#' @return matrix
-#' @examples
-#' x <- matrix(c(-Inf, 2, 3, 4, 5, 6), nrow=2, byrow=TRUE)
-#' x
-#' minusinf_to_na(x)
+#' @rdname zero_to_na
 #' @export
 minusinf_to_na <- function(x, verbose = FALSE){
     selector <- x==-Inf
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose) cmessage(
-                    paste0( '\t\tReplace -Inf -> NA for %d/%d values ',
-                            '(in %d/%d features and %d/%d samples)'),
-                    sum(selector, na.rm=TRUE), nrow(selector)*ncol(selector),
-                    sum(rowAnys(selector)), nrow(x),
-                    sum(colAnys(selector)), ncol(x))
+        if (verbose)  message('\t\tReplace -Inf->NA for ', 
+            sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
+            ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
+            ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
         x[selector] <- NA_real_
     }
     x
@@ -317,10 +289,9 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
 # Plot
     nrowimputed <- sum(rowAnys(is_imputed(object)))
     ncolimputed <- sum(colAnys(is_imputed(object)))
-    if (verbose & nrowimputed>0)  cmessage(
-        "\t\tImpute systematic nondetects for %d/%d features in %d/%d samples",
-        nrowimputed, nrow(object),
-        ncolimputed, ncol(object))
+    if (verbose & nrowimputed>0)  message('\t\tImpute systematic nondetects ', 
+        'for ', nrowimputed, '/', nrow(object), ' features ', 
+        'in ',  ncolimputed, '/', ncol(object), ' samples')
     if (plot)    print(plot_detections(object, subgroup = !!subgroup))
 # Return
     object
@@ -401,8 +372,8 @@ plot_detects <- function(...){
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
-#' plot_summarized_detections(object)
-#' plot_detections(object)
+#' plot_summarized_detections(object, Group)
+#' plot_detections(object, Group)
 #' @export
 plot_detections <- function(
     object, subgroup = subgroup, fill = !!enquo(subgroup)
@@ -544,6 +515,7 @@ plot_summarized_detections <- function(
 
 #' Explore imputations
 #' @param object SummarizedExperiment
+#' @param subgroup subgroup (sym)
 #' @param xbiplot biplot x axis. Default pca1 (symbol)
 #' @param ybiplot biplot y axis. Default pca2 (symbol)
 #' @param ... aesthetic mappings
@@ -551,13 +523,16 @@ plot_summarized_detections <- function(
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = FALSE, pca = TRUE, plot = FALSE)
-#' explore_imputations(object)
-#' explore_transformations(object)
+#' explore_imputations(object, subgroup=subgroup)
+#' explore_transformations(object, subgroup=subgroup)
 #' @export
-explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
-    imputed     <- impute_systematic_nondetects(object, plot=FALSE)
+explore_imputations <- function(
+    object, subgroup, xbiplot = pca1, ybiplot = pca2, ...
+){
+    subgroup <- enquo(subgroup)
+    imputed  <- impute_systematic_nondetects(object, plot=FALSE)
     zeroed <- impute_systematic_nondetects(
-                object, fun = zeroimpute, plot = FALSE)
+                object, subgroup = !!subgroup, fun = zeroimpute, plot = FALSE)
     legend <- gglegend(biplot(object))
 
     do_plot_sample_detections <- function(obj, ...){
@@ -565,7 +540,8 @@ explore_imputations <- function(object, xbiplot = pca1, ybiplot = pca2, ...){
     }
 
     do_biplot <- function(obj, ...){
-        biplot(obj, x=!!enquo(xbiplot), y=!!enquo(ybiplot), nloadings=0,...) +
+        biplot(obj, x = !!enquo(xbiplot), y = !!enquo(ybiplot), 
+               color = !!subgroup,  nloadings = 0,...) +
         guides(color=FALSE, fill=FALSE) +
         ggtitle(NULL)
     }

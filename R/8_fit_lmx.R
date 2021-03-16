@@ -116,7 +116,7 @@ fit_lmx <- function(object, fit,
     if (!is.null(weightvar)){   assert_is_character(weightvar)
                                 assert_is_subset(weightvar, assayNames(object)) 
                                 assnames %<>% c(weightvar)
-        cmessage('\t\t\tweights = assays(object)$%s', weightvar) }
+        message('\t\t\tweights = assays(object)$', weightvar) }
     dt <- sumexp_to_long_dt(object, svars = allx, assay = assnames)
     fixedx <- setdiff(allx, all.vars(block))
     for (x in fixedx){          dt[[x]] %<>% factor()
@@ -147,7 +147,7 @@ fit_lmx <- function(object, fit,
     colnames(fitarray) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     metadata(object)$fit <- fitarray
     names(metadata(object)) %<>% stri_replace_first_fixed('fit', fit)
-    if (verbose) cmessage_df('\t\t\t%s', summarize_fit(object, fit))
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
     if (is.null(contrastdefs)) contrastdefs <-colnames(metadata(object)[[fit]])
     if (length(contrastdefs) > 1) contrastdefs %<>% setdiff('(Intercept)')
     if (plot)  print(plot_volcano(object, fit=fit, contrastdefs = contrastdefs)) 
@@ -163,7 +163,7 @@ fit_lm <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
-    if (verbose)  cmessage('\t\tlm(%s)', formula2str(formula))
+    if (verbose)  message('\t\tlm(', formula2str(formula), ')')
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
             formula = formula, block = block, weightvar = weightvar, 
             contrastdefs = contrastdefs, verbose = verbose, plot = plot)
@@ -183,8 +183,8 @@ fit_lme <- function(
     if (is_a_string(block)){ 
         if (is_subset(block, svars(object)))  block %<>% sprintf('~1|%s', .)
         block %<>% as.formula() }
-    if (verbose)  cmessage('\t\tlme(%s, random = %s)', 
-                        formula2str(formula), formula2str(block))
+    if (verbose)  message('\t\tlme(', formula2str(formula), ', ', 
+                        'random = ',  formula2str(block),')')
     fit_lmx(object, fit = 'lme', subgroupvar = subgroupvar, 
             formula = formula, block = block, weightvar = weightvar, 
             contrastdefs = contrastdefs, verbose = verbose, plot = plot)
@@ -213,7 +213,7 @@ fit_lmer <- function(
         formula %<>% sprintf('%s + (%s)', ., block)
         formula %<>% as.formula()
     }
-    if (verbose)  cmessage('\t\tlmer(%s)', formula2str(formula))
+    if (verbose)  message('\t\tlmer(', formula2str(formula), ')')
     fit_lmx(object, fit = 'lmer', subgroupvar = subgroupvar, 
             formula = formula, block = NULL, weightvar = weightvar, 
             contrastdefs = contrastdefs, verbose = verbose, plot = plot)
