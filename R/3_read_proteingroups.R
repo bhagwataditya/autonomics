@@ -896,8 +896,8 @@ invert.SummarizedExperiment <- function(
     message('\t\tInvert subgroups ', paste0(subgroups, collapse = ', '))
 
 # Invert (log) ratios
-    if (all(values(x)>0, na.rm = TRUE)){ values(x)[, idx] %<>% (function(x){1/x})
-    } else {                            values(x)[, idx] %<>% (function(x){ -x})}
+    if (all(values(x)>0, na.rm=TRUE)){ values(x)[, idx] %<>% (function(x){1/x})
+    } else {                           values(x)[, idx] %<>% (function(x){ -x})}
     newvalue <- as.character(round(values(x)[first, idx[1]], 2))
     message('\t\t\texprs    : ', as.character(oldvalue), ' -> ', 
             as.character(newvalue))
@@ -1101,8 +1101,7 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
     fosdt <- sumexp_to_wide_dt(phosphosites, fvars = 'Protein group IDs')
     fosdt %<>% separate_rows(`Protein group IDs`, sep = ';' )
     fosdt %<>% data.table()
-    fosdt %<>% data.table::melt.data.table(
-        id.vars = c('feature_id', 'Protein group IDs'))
+    fosdt %<>% melt.data.table(id.vars = c('feature_id', 'Protein group IDs'))
     setnames(fosdt,
         c('feature_id', 'Protein group IDs', 'variable',  'value'),
         c('phospho_id', 'protein_id',        'sample_id', 'phospho'))
@@ -1158,6 +1157,7 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
 #==============================================================================
 
 add_pepcounts <- function(object, file, pepcountpattern, quantity){
+    . <- NULL
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_all_are_existing_files(file)
     assert_is_a_string(pepcountpattern)
@@ -1340,7 +1340,7 @@ read_phosphosites <- function(
     object %<>% transform_maxquant(impute=FALSE, verbose=verbose, plot=plot)
 # Analyze
     object %<>% analyze(pca=pca, fit=fit, subgroupvar=subgroupvar, 
-                        formula=formula, block=block, contrastdefs=contrastdefs, 
+                        formula=formula, block=block, contrastdefs=contrastdefs,
                         verbose=verbose, plot=plot)
 # Return
     object

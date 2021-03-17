@@ -26,6 +26,7 @@ which.medoid <- function(mat){
 #' @param object SummarizedExperiment
 #' @param by svar
 #' @param verbose  whether to message
+#' @return SummarizedExperiment
 #' @examples 
 #' require(magrittr)
 #' file <- download_data('billing19.rnacounts.txt')
@@ -134,7 +135,8 @@ subtract_pairs <- function(
 # Ensure single ref per block
     sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]
     sdata1 %<>% data.table()
-    singlerefperblock <- sdata1[,sum(get(subgroupvar)==subgroupctr)==1,by=block]$V1
+    singlerefperblock <- sdata1[,
+                            sum(get(subgroupvar)==subgroupctr)==1, by=block]$V1
     assert_is_identical_to_true(all(singlerefperblock))
 # Subtract ref
     splitobjects <- split_by_svar(object, !!sym(subgroupvar))
@@ -180,12 +182,12 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
     
     newdt  <- dt[, c(fvars0, block), with = FALSE]
     diffdt <- dt[, setdiff(names(dt), c(fvars0, block)), with=FALSE]
-    diffdt <- diffdt[, subgroups[-1], with=FALSE] - 
-              diffdt[, subgroups[-n], with=FALSE]
+    diffdt  <-  diffdt[, subgroups[-1], with=FALSE] - 
+                diffdt[, subgroups[-n], with=FALSE]
     names(diffdt) %<>% paste0('_', subgroups[-n])
     newdt %<>% cbind(diffdt)
     
-    newdt %<>% data.table::melt.data.table(
+    newdt %<>% melt.data.table(
                 id.vars =  c(fvars0, block), variable.name = subgroupvar)
     data.table::setorderv(newdt, c('feature_id', block, subgroupvar))
     newdt[, sample_id := paste0(get(block), '.', get(subgroupvar))]
@@ -397,7 +399,7 @@ plot_transformation_violins <- function(
     }
     dt$transfo %<>% factor(c('input', transformations))
     plot_data(dt, geom_violin, x = sample_id, y = value, group = sample_id, 
-              color = NULL, fill = !!subgroup, ..., fixed = fixed) +
+                color = NULL, fill = !!subgroup, ..., fixed = fixed) +
     facet_grid(rows = vars(!!subgroup), cols = vars(transfo), scales = "free") +
     coord_flip()
 }

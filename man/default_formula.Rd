@@ -16,6 +16,9 @@ default_formula(object, subgroupvar = default_subgroupvar(object), fit)
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer'}
 }
+\value{
+formula
+}
 \description{
 Create default formula
 }

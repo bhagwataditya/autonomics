@@ -21,7 +21,7 @@ fit_wilcoxon <- function(
                     dt, subgroupvar, block, verbose)
     results %<>% Reduce(function(x,y) merge(x,y, by='feature_id', all=TRUE), .)
     results %<>% merge(data.table(fdata(object))[, 'feature_id', drop = FALSE], 
-                       ., by = 'feature_id', all.x = TRUE)
+                        ., by = 'feature_id', all.x = TRUE)
 # extract
     extract_quantity <- function(quantity, results){
         quantitydot <- paste0(quantity, '.')

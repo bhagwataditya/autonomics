@@ -38,6 +38,9 @@ analyze(
 
 \item{plot}{whether to plot}
 }
+\value{
+SummarizedExperiment
+}
 \description{
 Analyze
 }

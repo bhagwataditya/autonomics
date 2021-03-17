@@ -13,4 +13,7 @@ AUTONOMICS_DATASETS
 \description{
 Data used in examples/vignette/tests/longtests
 }
+\examples{
+AUTONNOMICS_DATASETS
+}
 \keyword{datasets}

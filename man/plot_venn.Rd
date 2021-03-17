@@ -9,6 +9,9 @@ plot_venn(isfdr)
 \arguments{
 \item{isfdr}{matrix(nrow, ncontrast): -1 (down), +1 (up)}
 }
+\value{
+nothing returned
+}
 \description{
 Plot venn
 }

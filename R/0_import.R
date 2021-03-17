@@ -29,9 +29,10 @@
 #' @importFrom assertive   is_formula  is_scalar  is_subset
 #' @importFrom BiocGenerics cbind 
 #' @importFrom colorspace  sequential_hcl
-#' @importFrom data.table  as.data.table   copy   data.table   dcast
-#' @importFrom data.table  fread   fwrite
-#' @importFrom data.table  is.data.table    .N   rbindlist   setkeyv   set
+#' @importFrom data.table  as.data.table   copy  data.table  
+#' @importFrom data.table  dcast  dcast.data.table
+#' @importFrom data.table  fread   fwrite  is.data.table
+#' @importFrom data.table  melt.data.table   .N   rbindlist   setkeyv   set
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2
@@ -54,6 +55,7 @@
 #' @importFrom MultiAssayExperiment  colData       colData<-
 #' @importFrom MultiAssayExperiment  experiments   experiments<-
 #' @importFrom MultiAssayExperiment  MultiAssayExperiment
+#' @importFrom parallel      detectCores
 #' @importFrom readxl        read_excel   excel_sheets
 #' @importFrom rlang         as_string   enquo   eval_tidy   enexpr
 #' @importFrom rlang         expr_text   quo_name   as_name   quo_is_null
@@ -73,10 +75,4 @@
 #' @importFrom utils         download.file    getFromNamespace
 #' @importFrom utils         installed.packages    unzip
 NULL
-
-#utils::globalVariables(c('.'))
-#utils::globalVariables(c('subgroup', 'sample_id'))
-#utils::globalVariables(c('feature_id', 'feature_name'))
-#utils::globalVariables(c('pca1', 'pca2'))
-#utils::globalVariables('value')
 

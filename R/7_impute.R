@@ -46,9 +46,9 @@ nan_to_na <- function(x, verbose = FALSE){
     selector <- is.nan(x)
     if (any(c(selector), na.rm = TRUE)){
         if (verbose)  message('\t\tReplace NaN->NA for ', 
-          sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
-          ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
-          ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
+            sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
+            ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
+            ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
         x[selector] <- NA_real_
     }
     x
@@ -472,22 +472,20 @@ plot_summarized_detections <- function(
                                                         value := NA]
     dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
                     by = c(groupvar, 'feature_id'))
-    dt %<>% data.table::dcast.data.table(
+    dt %<>% dcast.data.table(
         as.formula(paste0('feature_id ~ ', groupvar)),value.var='quantified')
     dt %<>% merge(featuretypes, by = setdiff(names(featuretypes), 'type'))
     dt %<>% extract(,.(nfeature=.N),by='type')
     dt %<>% merge(featuretypes,by='type')
     dt[, ymax := cumsum(nfeature)]
     dt[, ymin := c(0,ymax[-.N])]
-    dt %<>% data.table::melt.data.table(
-        id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
-        variable.name = groupvar, value.name='quantified')
+    dt %<>% melt.data.table(id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
+                            variable.name = groupvar, value.name='quantified')
     dt$quantified %<>% as.factor()
     nsampledt <- data.table(sdata(object))[, .N, by=groupvar] %>% # preserves
                 set_names(c(groupvar, 'xmax'))                # factor order!
     setorderv(nsampledt, groupvar)
-    nsampledt[, xmax := cumsum(xmax)]
-    nsampledt[, xmin := c(0, xmax[-.N])]
+    nsampledt[, xmax := cumsum(xmax)]; nsampledt[, xmin := c(0, xmax[-.N])]
     dt %<>% merge(nsampledt, by = groupvar)
 # Plot
     colors <- make_colors(slevels(object, fillstr))
@@ -540,7 +538,7 @@ explore_imputations <- function(
 
     do_biplot <- function(obj, ...){
         biplot(obj, x = !!enquo(xbiplot), y = !!enquo(ybiplot), 
-               color = !!subgroup,  nloadings = 0,...) +
+                color = !!subgroup,  nloadings = 0,...) +
         guides(color=FALSE, fill=FALSE) +
         ggtitle(NULL)
     }

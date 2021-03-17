@@ -13,6 +13,9 @@ filter_medoid(object, by = NULL, verbose = FALSE)
 
 \item{verbose}{whether to message}
 }
+\value{
+SummarizedExperiment
+}
 \description{
 Filter medoid sample
 }

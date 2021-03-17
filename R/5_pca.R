@@ -243,10 +243,8 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 
 #' @rdname pca
 #' @export
-lda <- function(
-    object, subgroupvar = 'subgroup', ndim=2, minvar=0, 
-    verbose = TRUE, plot = FALSE, ...
-){
+lda <- function(object, subgroupvar = 'subgroup', ndim=2, minvar=0, 
+    verbose = TRUE, plot = FALSE, ...){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
         message("BiocManager::install('MASS'). Then re-run.")
@@ -285,13 +283,11 @@ lda <- function(
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
-# Merge
+# Merge - Filter - Return
     object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdata(mat2dt(features, 'feature_id'))
     metadata(object)$lda <- variances
-# Filter for minvar
     object %<>% .filter_minvar('lda', minvar)
-# Return
     lda1 <- lda2 <- NULL
     if (plot)  print(biplot(object, lda1, lda2, ...))
     object

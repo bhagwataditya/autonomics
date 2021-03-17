@@ -34,7 +34,7 @@
                     data      = sd,
                     weights   = weights,
                     na.action = stats::na.omit)))
-             #      F = stats::anova(fitres)[, 'F value'], 
+            #      F = stats::anova(fitres)[, 'F value'], 
             #       F.p = stats::anova(fitres)[, 'Pr(>F)'])
     colnames(fitres) %<>% stri_replace_first_fixed('Estimate', 'effect')
     colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
@@ -100,6 +100,8 @@
 }
 
 #' Statistical models supported in autonomics
+#' @examples
+#' TESTS
 #' @export
 TESTS <- c('limma','lm','lme','lmer', 'wilcoxon')
 
@@ -127,7 +129,7 @@ fit_lmx <- function(object, fit,
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
     fitres <- dt[, fitmethod(.SD, formula=formula, block=block, 
-             weights = get(weightvar)), by = 'feature_id' ]
+            weights = get(weightvar)), by = 'feature_id' ]
     fdt <- fitres[, c('feature_id', 'F', 'F.p'), with=FALSE]
     names(fdt) %<>% stri_replace_first_fixed('F.p', paste0('F.p.', fit))
     names(fdt) %<>% stri_replace_first_fixed('F',   paste0('F.',   fit))
@@ -151,7 +153,7 @@ fit_lmx <- function(object, fit,
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
     if (is.null(contrastdefs)) contrastdefs <-colnames(metadata(object)[[fit]])
     if (length(contrastdefs) > 1) contrastdefs %<>% setdiff('(Intercept)')
-    if (plot)  print(plot_volcano(object, fit=fit, contrastdefs = contrastdefs)) 
+    if (plot)  print(plot_volcano(object, fit=fit, contrastdefs = contrastdefs))
     object }
 
 

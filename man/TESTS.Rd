@@ -13,4 +13,7 @@ TESTS
 \description{
 Statistical models supported in autonomics
 }
+\examples{
+TESTS
+}
 \keyword{datasets}

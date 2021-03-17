@@ -761,7 +761,8 @@ preprocess_rnaseq_counts <- function(object,
                 assays(object) %<>% extract(c('cpm', other)) }
 # Voom  weight (counts) & dupcor (log2(cpm))
     if (voom){
-        object %<>% add_voom(formula, verbose=verbose, plot=plot & is.null(block))
+        object %<>% add_voom(
+                        formula, verbose=verbose, plot=plot & is.null(block))
         if (!is.null(block)){
             object %<>%
                 add_voom(formula, block=block, verbose=verbose, plot=plot) }}
@@ -836,7 +837,7 @@ add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_bams <- function(
-    dir, paired, genome, nthreads = parallel::detectCores(),
+    dir, paired, genome, nthreads = detectCores(),
     sfile = NULL, sfileby = NULL, subgroupvar = NULL,
     ffile = NULL, ffileby = NULL, fnamevar    = NULL, verbose = TRUE
 ){
@@ -910,7 +911,7 @@ add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
 #' @rdname read_rnaseq_counts
 #' @export
 read_rnaseq_bams <- function(
-    dir, paired, genome, nthreads = parallel::detectCores(),
+    dir, paired, genome, nthreads = detectCores(),
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
@@ -1046,6 +1047,7 @@ read_rnaseq_counts <- function(
 #' @param contrastdefs contrastdefs vector/matrix/list
 #' @param verbose      whether to msg
 #' @param plot         whether to plot
+#' @return SummarizedExperiment
 #' @examples 
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')

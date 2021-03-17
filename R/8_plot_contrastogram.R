@@ -18,9 +18,7 @@ compute_connections <- function(
     nsignif <- apply(pvalues < 0.05, 2, sum, na.rm=TRUE)
                 #colSums( pvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
     nup     <- apply(pvalues < 0.05 & effects>0, 2, sum, na.rm=TRUE)
-                #colSums((pvalues < 0.05) & (effects > 0), na.rm=TRUE)
     ndown   <- apply(pvalues < 0.05 & effects<0, 2, sum, na.rm=TRUE)
-                #colSums((pvalues < 0.05) & (effects < 0), na.rm=TRUE)
 # Create diagram
     sep <- guess_sep(object)
     subgroupmatrix <- subgroup_matrix(object, subgroupvar = subgroupvar)

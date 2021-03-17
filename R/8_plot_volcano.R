@@ -68,7 +68,7 @@ melt_contrastdefs <- function(contrastdefmat){
     contrastdefdt <- data.table(contrastdefmat, facetrow = "")
     if (!is.null(rownames(contrastdefmat))) contrastdefdt[,
                                         facetrow := rownames(contrastdefmat)]
-    data.table::melt.data.table(
+    melt.data.table(
         contrastdefdt,
         id.vars       = 'facetrow',
         variable.name = 'facetcol',

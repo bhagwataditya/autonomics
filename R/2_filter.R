@@ -230,7 +230,7 @@ filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose & sum(idx)<length(idx))  message('\t\t\tRetain ', sum(idx), '/', 
+    if (verbose & sum(idx)<length(idx))  message('\t\t\tRetain ', sum(idx), '/',
                                 length(idx), 'samples: ', expr_text(condition))
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
@@ -251,7 +251,8 @@ filter_samples_available_for_some_feature <- function(object, verbose = FALSE){
     subsetter <- is_available_for_some_feature(object)
     if (any(!subsetter)){
         if (verbose)  message('\t\t\tRetain ', sum(subsetter), '/', 
-          length(subsetter), ' samples with a value available for some feature')
+                            length(subsetter),
+                            ' samples with a value available for some feature')
     object %<>% extract(, subsetter)
     }
     object
@@ -280,7 +281,7 @@ rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
     selectedsamples <-
         data.table(sdata(object))[, .SD[.N>1], by = svar][['sample_id']]
     if (verbose)   message('\t\t\tRetain ', length(selectedsamples), '/', 
-                           ncol(object), ' samples with replicated ', svar)
+                            ncol(object), ' samples with replicated ', svar)
     object[, selectedsamples]
 }
 

@@ -308,7 +308,7 @@ extract_fit_quantity <- function(object, fit, quantity='p'){
     fitdt <- metadata(object)[[fit]][, , quantity, drop=FALSE]
     fitdt %<>% adrop(drop=3)
     fdt %<>% cbind(fitdt)
-    data.table::melt.data.table(
+    melt.data.table(
         fdt, id.vars = fvars0, variable.name = 'contrast', value.name=quantity)
 }
 
@@ -385,7 +385,7 @@ summarize_fit <- function(object, fit){
 #' @param object   SummarizedExperiment
 #' @param fit      subset of autonomics::TESTS
 #' @param contrast subset of 
-#' @return NULL
+#' @return matrix: -1 (downregulated), +1 (upregulatd), 0 (not fdr significant)
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
@@ -396,9 +396,9 @@ summarize_fit <- function(object, fit){
 #' plot_venn(isfdr)
 #' @export
 is_fdr <- function(
-     object,
-     fit = intersect(names(metadata(object)), TESTS),
-     contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1
+    object,
+    fit = intersect(names(metadata(object)), TESTS),
+    contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1
 ){
 # Assert
     . <- NULL
@@ -422,7 +422,7 @@ is_fdr <- function(
 
 #' Plot venn
 #' @param isfdr matrix(nrow, ncontrast): -1 (down), +1 (up)
-#' @return NULL
+#' @return nothing returned
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
@@ -433,7 +433,7 @@ is_fdr <- function(
 #' plot_venn(isfdr)
 #' @export
 plot_venn <- function(isfdr){
-    layout(matrix(1:2, nrow=2))
+    layout(matrix(c(1,2), nrow=2))
     vennDiagram(isfdr, include='up',   mar = rep(0,4), show.include=TRUE)
     vennDiagram(isfdr, include='down', mar = rep(0,4), show.include=TRUE)
 }

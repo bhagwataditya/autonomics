@@ -113,6 +113,7 @@ default_subgroupvar <- function(object){
 #' @param object SummarizedExperiment
 #' @param subgroupvar string
 #' @param fit 'limma', 'lm', 'lme', 'lmer'
+#' @return formula
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <-.read_metabolon(file)
@@ -158,7 +159,8 @@ default_formula <- function(
 create_design <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit = 'limma'), verbose = TRUE
+    formula = default_formula(object, subgroupvar, fit = 'limma'), 
+    verbose = TRUE
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')

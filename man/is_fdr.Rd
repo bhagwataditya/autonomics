@@ -17,6 +17,9 @@ is_fdr(
 
 \item{contrast}{subset of}
 }
+\value{
+matrix: -1 (downregulated), +1 (upregulatd), 0 (not fdr significant)
+}
 \description{
 Is fdr?
 }
