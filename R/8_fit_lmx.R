@@ -8,6 +8,7 @@
     fitres, fname = 'F value', f.pname = 'Pr(>F)', pname = 'Pr(>|t|)', 
     tname = 't value', effectname = 'Estimate', sename = 'Std. Error'
 ){
+    . <- NULL
     fval <- stats::anova(fitres)['subgroup', fname]
     f.p <- stats::anova(fitres)['subgroup', f.pname]
     fitres %<>% summary()
@@ -179,6 +180,7 @@ fit_lme <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
+    . <- NULL
     if (!requireNamespace('nlme', quietly = TRUE)){
         message("BiocManager::install('nlme'). Then re-run.")
         return(object) 
@@ -204,6 +206,7 @@ fit_lmer <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
+    . <- NULL
     if (!requireNamespace('lme4', quietly = TRUE)){
         message("`BiocManager::install('lme4')`. Then re-run.")
         return(object) }

@@ -14,6 +14,7 @@ fit_wilcoxon <- function(
     block = NULL, weightvar = NULL, verbose = TRUE, plot = FALSE
 ){
 # fit
+    . <- NULL
     dt <- sumexp_to_long_dt(object, svars = c(subgroupvar, block))
     if (verbose)  message('\t\tWilcoxon')
     results <- lapply(vectorize_contrastdefs(contrastdefs), .wilcoxon, 
@@ -65,6 +66,7 @@ fit_wilcoxon <- function(
 .wilcoxon_onesample <- function(
     dt, subgroupvar = NULL, subgrouplevels = NULL, block = NULL, verbose = TRUE
 ){
+    . <- value <- NULL
     if (verbose)  message('\t\t\twilcox.test(x = value)')
     suppressWarnings(dt[, 
         .(  p      = wilcox.test(x = value, y = NULL, paired = FALSE)$p.value, 
@@ -77,6 +79,7 @@ fit_wilcoxon <- function(
 .wilcoxon_unpaired <- function(
     dt, subgroupvar, subgrouplevels, block = NULL, verbose = TRUE
 ){
+    . <- value <- NULL
     xx <- subgrouplevels[[1]]
     yy <- subgrouplevels[[2]]
     if (verbose)  message('\t\t\twilcox.test(x = ', xx, ', y = ', yy, ')')
@@ -98,6 +101,7 @@ fit_wilcoxon <- function(
 .wilcoxon_paired <- function(
     dt, subgroupvar, subgrouplevels, block, verbose = TRUE
 ){
+    . <- NULL
     dt <- data.table::dcast(dt, as.formula(sprintf(
             'feature_id + feature_name + %s ~ %s', block, subgroupvar)),
             value.var = 'value')

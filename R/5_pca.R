@@ -401,7 +401,7 @@ opls <- function(
 #
 #==============================================================================
 
-
+pca1 <- pca2 <- subgroup <- NULL
 add_scores <- function(
     p, object, x = pca1, y = pca2, color = subgroup, group = NULL, ...,
     fixed = list(shape=15, size=3, na.rm=TRUE)
@@ -431,7 +431,7 @@ headtail <- function(x, n){
     c(x[seq(1, n)], x[seq(length(x)+1-n, length(x))])
 }
 
-
+pca1 <- pca2 <- NULL
 add_loadings <- function(
     p, object, x = pca1, y = pca2, label = feature_name, nloadings = 1
 ){
@@ -479,7 +479,7 @@ add_loadings <- function(
                 position ='identity')
 }
 
-
+pca1 <- pca2 <- feature_name <- NULL
 #' Biplot
 #' @param object         SummarizedExperiment
 #' @param x              pca1, etc.
@@ -567,6 +567,7 @@ plot_corrections <- function(...){
     biplot_corrections(...)
 }
 
+subgroup <- NULL
 #' Biplot batch corrections
 #'
 #' @param object      SummarizedExperiment
@@ -661,7 +662,7 @@ biplot_covariates <- function(
 }
 
 prep_covariates <- function(object, method='pca', ndim=6){
-
+    . <- NULL
     plotdt <- cbind(sdata(object)[FALSE,], x= character(0), y = character(0))
     projdt <- data.table(sdata(get(method)(object, ndim=ndim, verbose=FALSE)))
     alldims <- names(projdt) %>% extract(stri_detect_fixed(., method)) %>%

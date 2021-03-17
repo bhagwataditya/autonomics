@@ -235,7 +235,7 @@ filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
     if (record && !is.null(analysis(object))) {
-        analysis(object)$nsamples   %<>%  
+        analysis(object)$nsamples %<>%  
             c(structure(sum(idx), names = expr_text(condition)))
     }
     object

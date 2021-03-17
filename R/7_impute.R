@@ -195,6 +195,7 @@ split_by_svar <- function(object, svar = subgroup){
 
 
 is_systematic_detect <- function(object, subgroup = subgroup){
+    . <- NULL
     subgroup <- enquo(subgroup)
     split_by_svar(object, !!subgroup) %>%
     lapply(function(x) rowAlls(is.na(values(x)))) %>%
@@ -263,7 +264,7 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
     fun = halfnormimpute, plot = TRUE, verbose = TRUE
 ){
 # Process
-    absent <- replicated <- systematic <- NULL
+    absent <- replicated <- systematic <- value <- NULL
     subgroup <- enquo(subgroup)
     groupvar <- as_name(subgroup)
 # Filter
@@ -376,7 +377,7 @@ plot_detections <- function(
     object, subgroup = subgroup, fill = !!enquo(subgroup)
 ){
 # Process
-    detection <- feature_id <- NULL
+    . <- detection <- feature_id <- sample_id <- value <- NULL
     subgroup <- enquo(subgroup);         fill     <- enquo(fill)
     groupvar <- as_name(subgroup);    fillstr  <- as_name(fill)
 # Reorder samples
@@ -427,7 +428,7 @@ plot_detections <- function(
 
 
 get_subgroup_combinations <- function(object, subgroupvar){
-    type <- NULL
+    . <- type <- NULL
     subgroups <- slevels(object, subgroupvar)
     subgroups  %>%
         lapply(function(x) c(0,1) %>% set_names(rep(x,2))) %>%
@@ -453,6 +454,7 @@ plot_quantifications <- function(...){
 plot_summarized_detections <- function(
     object, subgroup = subgroup, fill = !!enquo(subgroup), na_imputes = TRUE){
 # Assert
+    . <- value <- NULL
     assert_is_all_of(object, "SummarizedExperiment")
     subgroup <- enquo(subgroup)
     if (quo_is_null(subgroup))  return(ggplot() + geom_blank())

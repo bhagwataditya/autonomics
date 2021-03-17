@@ -1164,6 +1164,7 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
     select_subgroups = NULL, invert_subgroups = character(0),
     include_pepcounts = FALSE, verbose = TRUE){
 # Read
+    . <- NULL
     assert_all_are_existing_files(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(include_pepcounts)
@@ -1282,6 +1283,7 @@ read_proteingroups <- function(
     pca = FALSE, fit = NULL, verbose = TRUE, plot = TRUE
 ){
 # Assert
+    . <- NULL
     assert_all_are_existing_files(file)
     if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
 # Read
@@ -1317,6 +1319,7 @@ read_phosphosites <- function(
     contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Assert
+    . <- NULL
     `Protein group IDs` <- `Localization prob` <- NULL
     assert_all_are_existing_files(c(file, proteinfile))
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))

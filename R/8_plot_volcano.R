@@ -21,8 +21,14 @@ invwhich <- function(indices, totlength) is.element(seq_len(totlength), indices)
 #' nmax(c(1,2,3,4,5), 2)
 #' nmin(c(1,2,3,4,5), 2)
 #' @noRd
-nmax <- function(x, n) sort(x, decreasing = TRUE) %>% extract(min(length(.), n))
-nmin <- function(x, n) sort(x) %>% extract(min(length(.), n))
+nmax <- function(x, n){
+    . <- NULL
+    sort(x, decreasing = TRUE) %>% extract(min(length(.), n))
+}
+nmin <- function(x, n){
+    . <- NULL
+    sort(x) %>% extract(min(length(.), n))
+}
 
 top_down <- function(effect, fdr, mlp, ntop){
     fdr_ok   <- fdr  < 0.05

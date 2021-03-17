@@ -736,6 +736,7 @@ preprocess_rnaseq_counts <- function(object,
     min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, tmm = cpm,
     voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
 # Initialize
+    . <- NULL
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
     if (is.null(formula))      formula <- default_formula(
                                             object, subgroupvar, fit='limma')

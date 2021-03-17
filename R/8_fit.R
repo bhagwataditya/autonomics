@@ -232,6 +232,7 @@ split_subgroup_levels <- function(object, subgroupvar){
 #' @rdname subgroup_matrix
 #' @export
 subgroup_array <- function(object, subgroupvar){
+    . <- NULL
     x <- slevels(object, subgroupvar)
     sep <- guess_sep(object)
     #x %<>% sort()
@@ -261,6 +262,7 @@ subgroup_array <- function(object, subgroupvar){
 #' subgroup_matrix(object, 'Group')
 #' @export
 subgroup_matrix <- function(object, subgroupvar){
+    . <- NULL
     subgroup_array <- subgroup_array(object, subgroupvar)
     if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
         byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
@@ -351,6 +353,7 @@ extract_fit_dt <- function(object, fit){
 #' summarize_fit(object, 'limma')
 #' @export
 summarize_fit <- function(object, fit){
+    . <- NULL
     effect <- fdr <- NULL
     extract_fit_dt(object, fit = fit)[,
         .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
@@ -398,6 +401,7 @@ is_fdr <- function(
      contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1
 ){
 # Assert
+    . <- NULL
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_character(fit)
     assert_is_subset(fit, names(metadata(object)))

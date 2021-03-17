@@ -74,9 +74,9 @@
 #' @importFrom utils         installed.packages    unzip
 NULL
 
-utils::globalVariables(c('.'))
-utils::globalVariables(c('subgroup', 'sample_id'))
-utils::globalVariables(c('feature_id', 'feature_name'))
-utils::globalVariables(c('pca1', 'pca2'))
-utils::globalVariables('value')
+#utils::globalVariables(c('.'))
+#utils::globalVariables(c('subgroup', 'sample_id'))
+#utils::globalVariables(c('feature_id', 'feature_name'))
+#utils::globalVariables(c('pca1', 'pca2'))
+#utils::globalVariables('value')
 

@@ -124,6 +124,7 @@ subtract_pairs <- function(
 # Report
     # PRO: optimized for many block levels
     # CON: works only with exactly one ref per block 
+    . <- NULL
     if (verbose){ 
         message("\t\tSubtract pairs")
         message("\t\t\tcontrols  : ", subgroupvar, "==", subgroupctr)
@@ -162,6 +163,7 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
     # PRO: robust (works with missing levels, or multiple replicates per level)
     # CON: performance not optimized for many block levels
     #      currently only performed on first assay (can off course be updated)
+    sample_id <- NULL
     if (verbose){ 
         message("\t\tSubtract differences")
         if (!is.null(block))  message("\t\t\tin block  : ", block)
@@ -224,6 +226,7 @@ log2transform <- function(object, verbose = FALSE){
 #' @rdname log2transform
 #' @export
 exp2 <- function(object, verbose = FALSE){
+    . <- NULL
     if (verbose)  message('\t\tExp2 transform')
     values(object) %<>% magrittr::raise_to_power(2, .)
     object
@@ -356,6 +359,7 @@ plot_transformation_densities <- function(
     ...,
     fixed = list(na.rm=TRUE, alpha=0.3)
 ){
+    value <- sample_id <- NULL
     subgroup <- enquo(subgroup); subgroupvar <- as_name(subgroup)
     assert_is_subset(subgroupvar, svars(object))
     dt <- sumexp_to_long_dt(object, svars = c(subgroupvar))
@@ -380,6 +384,7 @@ plot_transformation_violins <- function(
     ...,
     fixed = list(na.rm=TRUE)
 ){
+    value <- sample_id <- NULL
     subgroup <- enquo(subgroup); subgroupvar <- as_name(subgroup)
     assert_is_subset(subgroupvar, svars(object))
     dt <- sumexp_to_long_dt(object, svars = subgroupvar)
@@ -405,6 +410,7 @@ plot_transformation_biplots <- function(
     method = 'pca', xdim = 1, ydim = 2, color = !!enquo(subgroup), ...,
     fixed = list(shape=15, size=3)
 ){
+    . <- NULL
     subgroup <- enquo(subgroup)
     subgroupvar <- as_name(subgroup)
     assert_is_subset(subgroupvar, svars(object))

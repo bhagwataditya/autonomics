@@ -73,6 +73,7 @@ sumexp_to_long_dt <- function(
     assay = assayNames(object) %>% intersect(c(.[1], 'is_imputed'))
 ){
 # Assert
+    . <- NULL
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(fid,   autonomics::fvars(object))
     assert_is_subset(sid,   autonomics::svars(object))
@@ -163,6 +164,7 @@ dt2mat    <- function(x) x[,-1] %>% as.matrix() %>% set_rownames(x[[1]])
 #' @rdname dt2mat
 #' @export
 mat2dt    <- function(x, idvar){
+                . <- NULL
                 x %<>% data.table(keep.rownames = TRUE)
                 names(x)  %<>% gsub('rn', idvar, .,  fixed = TRUE)
                 x }
@@ -246,6 +248,7 @@ matrix2sumexp <- function(
 #' object   <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
 #' @export
 sumexp2mae <- function(experiments){
+    . <- NULL
     assert_is_list(experiments)
     assert_has_names(experiments)
     for (experiment in experiments){

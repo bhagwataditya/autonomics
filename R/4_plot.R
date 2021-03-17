@@ -18,15 +18,15 @@
 #'     object <- read_proteingroups(
 #'                file, invert_subgroups = invert_subgroups, plot=FALSE)
 #'     p <- plot_sample_densities(object)
-#'     add_color_scale(p, data=sdata(object))
+#'     add_color_scale(p, color=subgroup, data=sdata(object))
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('billing16.proteingroups.txt')
 #'    object <- read_proteingroups(
 #'               file, quantity = 'Intensity labeled', plot=FALSE)
 #'     p <- plot_sample_densities(object)
-#'    add_color_scale(p, data = sdata(object))
+#'    add_color_scale(p, color=subgroup, data = sdata(object))
 #' @noRd
-add_color_scale <- function(p, color = subgroup, data){
+add_color_scale <- function(p, color, data){
 # Assert
     assert_is_data.frame(data)
     color <- enquo(color)
@@ -47,7 +47,7 @@ add_color_scale <- function(p, color = subgroup, data){
 }
 
 
-add_fill_scale <- function(p, fill = subgroup, data){
+add_fill_scale <- function(p, fill, data){
 # Assert
     assert_is_data.frame(data)
     fill <- enquo(fill)
@@ -216,6 +216,7 @@ plot_data <- function(
 #
 #==============================================================================
 add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
+    feature_name <- NULL
     hl <- enquo(hl)
     if (quo_is_null(hl)) return(p)
     hlstr <- as_name(hl)
@@ -312,7 +313,7 @@ plot_sample_densities <- function(
     ggtitle("samples")
 }
 
-
+feature_id <- NULL
 #' @rdname plot_densities
 #' @export
 plot_feature_densities <- function(
@@ -404,6 +405,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     p
 }
 
+sample_id <- NULL
 #' @rdname plot_violins
 #' @export
 plot_sample_violins <- function(
@@ -414,7 +416,7 @@ plot_sample_violins <- function(
     highlight=!!enquo(highlight), fixed = fixed
 )
 
-
+feature_id <- feature_name <- NULL
 #' @rdname plot_violins
 #' @export
 plot_feature_violins <- function(
@@ -425,6 +427,7 @@ plot_feature_violins <- function(
     highlight=!!enquo(highlight), fixed = fixed
 )
 
+subgroup <- NULL
 #' @rdname plot_violins
 #' @export
 plot_subgroup_violins <- function(
@@ -521,6 +524,7 @@ plot_sample_boxplots <- function(
 )
 
 
+feature_id <- NULL
 #' @rdname plot_boxplots
 #' @export
 plot_feature_boxplots <- function(

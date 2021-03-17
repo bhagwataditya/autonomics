@@ -78,6 +78,7 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #'     download_data('halama18.metabolon.xlsx')        # metabolon intensities
 #' @export
 download_data <- function(filename, verbose = TRUE){
+    . <- NULL
     assert_is_subset(filename, AUTONOMICS_DATASETS)
     fileURL <- paste0(
         "https://bitbucket.org/graumannlabtools/autonomics/downloads/", 
