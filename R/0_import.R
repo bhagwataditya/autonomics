@@ -54,16 +54,11 @@
 #' @importFrom MultiAssayExperiment  colData       colData<-
 #' @importFrom MultiAssayExperiment  experiments   experiments<-
 #' @importFrom MultiAssayExperiment  MultiAssayExperiment
-#' @importFrom nlme          lme
-#' @importFrom parallel      detectCores
 #' @importFrom readxl        read_excel   excel_sheets
 #' @importFrom rlang         as_string   enquo   eval_tidy   enexpr
 #' @importFrom rlang         expr_text   quo_name   as_name   quo_is_null
-#' @importFrom RCurl         url.exists
-#' @importFrom Rsubread      featureCounts
 #' @importFrom R.utils       gunzip
 #' @importFrom S4Vectors     DataFrame   metadata   metadata<-
-#' @importFrom seqinr        read.fasta
 #' @importFrom stats         aggregate    approxfun   as.formula   dist   hclust
 #' @importFrom stats         lowess   lm  median   model.matrix   wilcox.test
 #' @importFrom stats         na.exclude   p.adjust qnorm   rnorm   sd

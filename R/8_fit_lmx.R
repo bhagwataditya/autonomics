@@ -47,7 +47,7 @@
 }
 
 .lme <- function(sd, formula, block, weights){
-    fitres <- stats::coefficients(summary(lme(
+    fitres <- stats::coefficients(summary(nlme::lme(
                     fixed     = formula, 
                     random    = block, 
                     data      = sd,
@@ -179,6 +179,10 @@ fit_lme <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
+    if (!requireNamespace('nlme', quietly = TRUE)){
+        message("BiocManager::install('nlme'). Then re-run.")
+        return(object) 
+    }
     assert_is_not_null(block)
     if (is_a_string(block)){ 
         if (is_subset(block, svars(object)))  block %<>% sprintf('~1|%s', .)
@@ -201,10 +205,10 @@ fit_lmer <- function(
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
     if (!requireNamespace('lme4', quietly = TRUE)){
-        stop("`BiocManager::install('lme4')`. Then re-run.")
+        message("`BiocManager::install('lme4')`. Then re-run.")
         return(object) }
     if (!requireNamespace('lmerTest', quietly = TRUE)){
-        stop("`BiocManager::install('lmerTest')`. Then re-run.")
+        message("`BiocManager::install('lmerTest')`. Then re-run.")
         return(object) }
     if (is_formula(block))  block %<>% formula2str()
     if (is_a_string(block)){ 

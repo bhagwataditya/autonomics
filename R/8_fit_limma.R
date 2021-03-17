@@ -301,8 +301,10 @@ vectorize_contrastdefs <- function(contrastdefs){
 #' S4Vectors::metadata(object)$limma <- S4Vectors::metadata(object)$lm <- NULL
 #' object %<>% fit_limma(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
 #' object %<>% fit_wilcoxon(subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' object %<>% fit_lme(     subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' #object%<>% fit_lmer(    subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' if (requireNamespace('nlme', quietly=TRUE)){
+#'   object %<>% fit_lme(   subgroupvar = 'SampleGroup', block = 'Subject_ID')}
+#' if (requireNamespace('lme4', quietly=TRUE)){
+#'     object%<>% fit_lmer( subgroupvar = 'SampleGroup', block = 'Subject_ID')}
 #' plot_venn(is_fdr(object, contrast='t3-t2'))
 #' @export
 fit_limma <- function(object, 
@@ -347,7 +349,6 @@ fit_limma <- function(object,
 # Contrast
     object %<>% .limmacontrast(fit, formula)
     if (plot)  print(plot_volcano(object, fit='limma')) 
-                    # plot_contrastogram(object)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, 'limma'))
     return(object)
 }

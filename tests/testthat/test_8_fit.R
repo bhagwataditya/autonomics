@@ -85,12 +85,13 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         fitdt <- summarize_fit(object, fit = 'limma')
         expect_s3_class(fitdt, 'data.table')
     })
-
-context('plot_contrastogram')
-    # subgroup vector
+    
+if (requireNamespace('diagram', quietly = TRUE)){
+    context('plot_contrastogram')
     msg <- 'plot_contrastogram("fukuda20.proteingroups.txt")'
     file <-  download_data('fukuda20.proteingroups.txt')
     object <- read_proteingroups(file, fit='limma', plot=FALSE)
     test_that(msg, expect_error(
         plot_contrastogram(object, subgroupvar = 'subgroup'), NA))
+}
 

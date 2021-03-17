@@ -41,7 +41,6 @@ fit_wilcoxon <- function(
                                         c('feature', subgroupvar, 'quantity')
 # Return
     if (plot)  print(plot_volcano(object, fit='wilcoxon')) 
-                    # plot_contrastogram(object)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object,'wilcoxon'))
     object
 }

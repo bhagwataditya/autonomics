@@ -122,7 +122,7 @@ pca <- function(
     row_means <- rowMeans(values(tmpobj), na.rm=TRUE)
     col_means <- colWeightedMeans(values(tmpobj), abs(row_means), na.rm = TRUE)
     global_mean <- mean(col_means)
-    values(tmpobj) %<>% apply(1, '-', col_means)   %>%   # Center columns
+    values(tmpobj) %<>% apply(1, '-', col_means)  %>%   # Center columns
                         apply(1, '-', row_means)  %>%   # Center rows
                         add(global_mean)          %>%   # Add doubly subtracted
                         divide_by(sd(., na.rm=TRUE))    # Normalize
@@ -155,9 +155,8 @@ pls <- function(
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
-        stop("BiocManager::install('mixOmics'). Then re-run.")
-        return(object)
-    }
+        message("BiocManager::install('mixOmics'). Then re-run.")
+        return(object) }
     assert_is_valid_sumexp(object)
     assert_is_subset(subgroupvar, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
@@ -313,7 +312,7 @@ spls <- function(
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
-        stop("BiocManager::install('mixOmics'). Then re-run.")
+        message("BiocManager::install('mixOmics'). Then re-run.")
         return(object)
     }
     assert_is_valid_sumexp(object)

@@ -43,28 +43,30 @@ add_kegg_pathways <- function(
 #' @param pathway_var kegg pathway fvar
 #' @return character vector
 #' @examples
-#' x <- c("C07326", "C04742", "C18218", "C18218", NA_character_,
-#'            NA_character_, "", "")
-#' kegg_entry_to_pathways(x)
+#' if (requireNamespace('RCurl', quietly = TRUE)){
+#'    x <- c("C07326", "C04742", "C18218", "C18218", NA_character_,
+#'               NA_character_, "", "")
+#'     kegg_entry_to_pathways(x)
+#' }
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
 #' @noRd
 kegg_entry_to_pathways <- function(x){
-
-    # Satisfy check
+# Assert
+    if (!requireNamespace('RCurl', quietly = TRUE)){
+        stop("BiocManager::install('RCurl'). Then re-run.") }
+# Satisfy check
     Entry <- Pathway <- . <- NULL
     x %<>% as.character()
-
-    # Map available values
+# Map available values
     idx <- !is.na(x) & x!=''
     if (sum(idx)==0) return(character(length(x)))
     keggurl <- sprintf('http://rest.kegg.jp/link/pathway/%s',
                         paste0(unique(x[idx]), collapse = '+'))
-    if (!url.exists(keggurl)) return(character(length(x)))
+    if (!RCurl::url.exists(keggurl)) return(character(length(x)))
     cachefile <- tempfile()
     download.file(keggurl, cachefile, quiet = TRUE)
     if (readLines(cachefile, n=1)=='') return(character(length(x)))
-
-    # Format and return
+# Format and return
     fread(cachefile, header = FALSE, col.names = c("Entry", "Pathway"))      %>%
     extract(, Entry   := stri_replace_first_fixed(Entry, 'cpd:',  ''))       %>%
     extract(, Pathway := stri_replace_first_fixed(Pathway, 'path:', ''))     %>%

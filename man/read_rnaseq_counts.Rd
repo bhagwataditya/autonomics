@@ -11,7 +11,7 @@
   dir,
   paired,
   genome,
-  nthreads = detectCores(),
+  nthreads = parallel::detectCores(),
   sfile = NULL,
   sfileby = NULL,
   subgroupvar = NULL,
@@ -36,7 +36,7 @@ read_rnaseq_bams(
   dir,
   paired,
   genome,
-  nthreads = detectCores(),
+  nthreads = parallel::detectCores(),
   sfile = NULL,
   sfileby = NULL,
   subgroupvar = NULL,
@@ -146,6 +146,12 @@ Read/analyze rnaseq counts / bamfiles
 \examples{
 file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file, pca= TRUE, fit='limma')
+
+if (requireNamespace('Rsubread', quietly = TRUE)){
+    file <- download_data('billing16.bam.zip')
+    object <- read_rnaseq_bams(file, paired=TRUE, genome='hg38', pca=TRUE, 
+                               fit='limma', plot=TRUE)
+}
 }
 \author{
 Aditya Bhagwat, Shahina Hayat

@@ -639,9 +639,7 @@ add_affy_fdata <- function(object){
 read_affymetrix <- function(celfiles){
 # Assert
     if (!requireNamespace('affy', quietly = TRUE)){
-        stop("`BiocManager::install('affy')`. Then re-run.")
-        return(object)
-    }
+        stop("`BiocManager::install('affy')`. Then re-run.") }
 # read
     message('Read Affymetrix CEL files: ', basename(celfiles)[1], ', ...')
     suppressWarnings(eset1 <- affy::just.rma(filenames = celfiles))

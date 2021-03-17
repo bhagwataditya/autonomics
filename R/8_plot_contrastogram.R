@@ -68,9 +68,11 @@ compute_connections <- function(
 #' @param curve        arrow curvature
 #' @return list returned by \code{\link[diagram]{plotmat}}
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit='limma', plot=FALSE)
-#' plot_contrastogram(object, subgroupvar = 'Group')
+#' if (requireNamespace('diagram', quietly = TRUE)){
+#'    file <- download_data('halama18.metabolon.xlsx')
+#'    object <- read_metabolon(file, fit='limma', plot=FALSE)
+#'    plot_contrastogram(object, subgroupvar = 'Group')
+#' }
 #' @export
 plot_contrastogram <- function(
     object, 
@@ -80,6 +82,8 @@ plot_contrastogram <- function(
 ){
 # Initialize
     V2 <- N <- NULL
+    if (!requireNamespace('diagram', quietly = TRUE)){
+        stop("BiocManager::install('diagram'). Then re-run.") }
 # Prepare
     contrastogram_matrices <- compute_connections(
                 object, subgroupvar = subgroupvar, colors = colors)

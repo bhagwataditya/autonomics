@@ -497,7 +497,14 @@ download_gtf <- function(
 #' @param verbose    TRUE or FALSE
 #' @noRd
 add_genenames <- function(object, gtffile, verbose = TRUE){
-
+    if (!requireNamespace('GenomicRanges', quietly = TRUE)){
+        message("BiocManager::install('GenomicRanges'). Then re-run.")
+        return(object) 
+    }
+    if (!requireNamespace('rtracklayer', quietly = TRUE)){
+        message("BiocManager::install('rtracklayer'). Then re-run.")
+        return(object) 
+    }
     gene_name <- NULL
 
     if (is.null(gtffile)) return(object)
@@ -547,13 +554,16 @@ entrezg_to_symbol <- function(x, genome){
 
 
 count_reads <- function(files, paired, nthreads, genome){
+# Assert
+    if (!requireNamespace('Rsubread', quietly = TRUE)){
+        stop("BiocManager::install('Rsubread'). Then re-run.") }
 # Common args
     . <- NULL
     args <- list(files = files, isPaired = paired, nthreads = nthreads)
 # Inbuilt genome
     if (genome %in% c('mm10', 'mm9', 'hg38', 'hg19')){
         args %<>% c(list(annot.inbuilt = genome))
-        fcounts <- do.call(featureCounts, args)
+        fcounts <- do.call(Rsubread::featureCounts, args)
         fcounts$annotation$gene_name <-
             entrezg_to_symbol(fcounts$annotation$GeneID, genome)
 # User GTF
@@ -561,7 +571,7 @@ count_reads <- function(files, paired, nthreads, genome){
         assert_all_are_existing_files(genome)
         args %<>% c(list(annot.ext = genome, isGTFAnnotationFile = TRUE,
                         GTF.attrType.extra  = 'gene_name'))
-        fcounts <- do.call(featureCounts, args)
+        fcounts <- do.call(Rsubread::featureCounts, args)
     }
 # Rename, Select, Return
     names(fcounts$annotation) %<>% gsub('GeneID',   'feature_id',   .)
@@ -825,7 +835,7 @@ add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_bams <- function(
-    dir, paired, genome, nthreads = detectCores(),
+    dir, paired, genome, nthreads = parallel::detectCores(),
     sfile = NULL, sfileby = NULL, subgroupvar = NULL,
     ffile = NULL, ffileby = NULL, fnamevar    = NULL, verbose = TRUE
 ){
@@ -899,7 +909,7 @@ add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
 #' @rdname read_rnaseq_counts
 #' @export
 read_rnaseq_bams <- function(
-    dir, paired, genome, nthreads = detectCores(),
+    dir, paired, genome, nthreads = parallel::detectCores(),
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
@@ -975,6 +985,12 @@ read_rnaseq_bams <- function(
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, pca= TRUE, fit='limma')
+#' 
+#' if (requireNamespace('Rsubread', quietly = TRUE)){
+#'     file <- download_data('billing16.bam.zip')
+#'     object <- read_rnaseq_bams(file, paired=TRUE, genome='hg38', pca=TRUE, 
+#'                                fit='limma', plot=TRUE)
+#' }
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_counts <- function(

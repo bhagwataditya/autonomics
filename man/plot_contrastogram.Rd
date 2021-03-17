@@ -27,7 +27,9 @@ list returned by \code{\link[diagram]{plotmat}}
 Plot contrastogram
 }
 \examples{
-file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, fit='limma', plot=FALSE)
-plot_contrastogram(object, subgroupvar = 'Group')
+if (requireNamespace('diagram', quietly = TRUE)){
+   file <- download_data('halama18.metabolon.xlsx')
+   object <- read_metabolon(file, fit='limma', plot=FALSE)
+   plot_contrastogram(object, subgroupvar = 'Group')
+}
 }

@@ -576,22 +576,21 @@ DEFAULT_FASTAFIELDS <- c('GENES', 'EXISTENCE', 'REVIEWED', 'PROTEIN-NAMES')
 #' @noRd
 load_uniprot_fasta <- function(
     fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE){
-# Assert, Read, Extract
+    if (!requireNamespace('seqinr', quietly = TRUE)){
+        stop("BiocManager::install('seqinr'). Then re-run.") }
     assert_all_are_existing_files(fastafile)
     CANONICAL <- REVIEWED <- ENTRYNAME <- VERSION <- EXISTENCE <- GENES <- NULL
     ORGID <- ORGNAME <- `PROTEIN-NAMES` <- UNIPROTKB <- annotation <- NULL
     if (verbose) message('\t\tLoad fasta file')
-    fasta <- read.fasta(fastafile)
+    fasta <- seqinr::read.fasta(fastafile)
     all_accessions <- extract_from_name(names(fasta), 2)
     dt <- data.table(UNIPROTKB = extract_from_name(names(fasta), 2),
             annotation = unname(vapply(fasta, attr, character(1), 'Annot')))
     dt[, CANONICAL := stri_replace_last_regex(UNIPROTKB, '[-][0-9]+','')]
-# Extract name components
-    message('\t\t\tExtract REVIEWED: 0=trembl, 1=swissprot')
+message('\t\t\tExtract REVIEWED: 0=trembl, 1=swissprot')
     dt[, REVIEWED := as.numeric(extract_from_name(names(fasta),1)=='sp')]
     message('\t\t\tExtract ENTRYNAME')
     dt [, ENTRYNAME := extract_from_name(names(fasta), 3)]
-# Extract annotation components
 message('\t\t\tExtract (sequence) VERSION')
     pattern <- ' SV=[0-9]'  # VERSION
     dt [, VERSION := as.numeric(extract_from_annot(annotation, pattern,5))]
@@ -621,7 +620,6 @@ message('\t\t\tExtract PROTEIN-NAMES')
     dt [,  annotation     := rm_from_annot(annotation, pattern)]
     dt [, `PROTEIN-NAMES` := `PROTEIN-NAMES`[UNIPROTKB==CANONICAL],
         by = 'CANONICAL'] # only canonical have this
-# Order & Return
     dt[, c('UNIPROTKB', 'CANONICAL', fastafields), with = FALSE]
 }
 

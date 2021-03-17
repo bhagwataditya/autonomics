@@ -20,6 +20,7 @@ SummarizedExperiment
 Rm singleton samples
 }
 \examples{
+require(magrittr)
 file <- download_data('atkin18.somascan.adat')
 object <- read_somascan(file, plot=FALSE)
 object \%<>\% filter_samples(SampleGroup \%in\% c('t1', 't2'), verbose = TRUE)

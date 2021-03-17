@@ -4,10 +4,7 @@
 \alias{venn_detects}
 \title{Venn detects}
 \usage{
-venn_detects(
-  object,
-  subgroup = if ("subgroup" \%in\% svars(object)) subgroup else NULL
-)
+venn_detects(object, subgroup)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -23,5 +20,5 @@ Venn diagram full/systematic/random detects
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
-venn_detects(object)
+venn_detects(object, subgroup)
 }

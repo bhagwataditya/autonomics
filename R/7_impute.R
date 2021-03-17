@@ -229,12 +229,9 @@ is_full_detect <- function(object){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
-#' venn_detects(object)
+#' venn_detects(object, subgroup)
 #' @export
-venn_detects <- function(
-    object, 
-    subgroup = if ('subgroup' %in% svars(object)) subgroup else NULL
-){
+venn_detects <- function(object, subgroup){
     subgroup <- enquo(subgroup)
     limma::vennDiagram(as.matrix(cbind(
         systematic = is_systematic_detect(object, !!subgroup),

@@ -106,7 +106,9 @@ plot_venn(is_fdr(object, contrast='t3-t2'))
 S4Vectors::metadata(object)$limma <- S4Vectors::metadata(object)$lm <- NULL
 object \%<>\% fit_limma(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
 object \%<>\% fit_wilcoxon(subgroupvar = 'SampleGroup', block = 'Subject_ID')
-object \%<>\% fit_lme(     subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#object\%<>\% fit_lmer(    subgroupvar = 'SampleGroup', block = 'Subject_ID')
+if (requireNamespace('nlme', quietly=TRUE)){
+  object \%<>\% fit_lme(   subgroupvar = 'SampleGroup', block = 'Subject_ID')}
+if (requireNamespace('lme4', quietly=TRUE)){
+    object\%<>\% fit_lmer( subgroupvar = 'SampleGroup', block = 'Subject_ID')}
 plot_venn(is_fdr(object, contrast='t3-t2'))
 }

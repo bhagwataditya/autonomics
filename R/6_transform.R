@@ -34,7 +34,7 @@ which.medoid <- function(mat){
 #' @export
 filter_medoid <- function(object, by = NULL, verbose = FALSE){
     if (!requireNamespace('ICSNP', quietly = TRUE)){
-        stop("`BiocManager::install('ICSNP')`. Then re-run.")
+        message("`BiocManager::install('ICSNP')`. Then re-run.")
         return(object) }
     if (is.null(by))  return(.filter_medoid(object, verbose=verbose))
     object %<>% split_by_svar(!!sym(by))
@@ -300,8 +300,7 @@ transform_to_fitting_normal <- function(x){
 
 estimate_mean_sd <- function(x){
     if (!requireNamespace('MASS', quietly = TRUE)){
-        message("BiocManager::install('MASS'). Then re-run.")
-        return(x)
+        stop("BiocManager::install('MASS'). Then re-run.")
     }
     . <- NULL
     x %<>% extract(!is.na(.) & !is.infinite(.))
