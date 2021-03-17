@@ -1149,6 +1149,7 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
 #==============================================================================
 #
 #                  .read_maxquant
+#                       add_pepcounts
 #                   read_proteingroups
 #                   read_phosphosites
 #                       phospho_expr_columns
@@ -1156,22 +1157,43 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
 #
 #==============================================================================
 
+add_pepcounts <- function(object, file, pepcountpattern, quantity){
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_all_are_existing_files(file)
+    assert_is_a_string(pepcountpattern)
+    assert_has_names(pepcountpattern)
+    assert_is_subset(pepcountpattern, MAXQUANT_PATTERNS_PEPCOUNTS)
+    assert_is_subset(quantity,  names(MAXQUANT_PATTERNS_QUANTITY))
+    
+    names1 <- names(fread(file, integer64 = 'numeric', nrows=1))
+    pepcselect <- names1 %>% extract(stri_detect_regex(., pepcountpattern))
+    pepcs <- as.matrix(fread(file, select=pepcselect, integer64='numeric'))
+    rownames(pepcs) <- rownames(object)
+    colnames(pepcs) %<>% stri_replace_first_regex(pepcountpattern, "$1")
+    exprsselect <- stri_replace_first_regex(
+        colnames(object), MAXQUANT_PATTERNS_QUANTITY[quantity], "$2")
+    pepcs %<>% extract(, exprsselect)
+    colnames(pepcs) <- colnames(object)
+    assays(object)$pepcounts <- pepcs
+    assayNames(object) %<>% stri_replace_first_fixed(
+                            'pepcounts', names(pepcountpattern))
+    object
+}
+
 
 #' @rdname read_proteingroups
 #' @export
 .read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
     sfile = NULL, sfileby = NULL, subgroupvar = 'subgroup',
     select_subgroups = NULL, invert_subgroups = character(0),
-    include_pepcounts = FALSE, verbose = TRUE){
+    pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], verbose = TRUE){
 # Read
     . <- NULL
     assert_all_are_existing_files(file)
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
-    assert_is_a_bool(include_pepcounts)
+    assert_is_subset(quantity,  names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
-    phospho <- stri_detect_fixed(
-                    basename(file), 'phospho', case_insensitive=TRUE)
-    if (verbose) message('\tRead ', file)
+    phospho <- stri_detect_fixed(basename(file),'phospho',case_insensitive=TRUE)
+    if (verbose)  message('\tRead ', file)
     names1 <- names(fread(file, integer64 = 'numeric', nrows=1))
     fids1  <- fread(file, select = 'id', colClasses = 'character')[[1]]
     FVARS <- if (phospho) PHOSPHOSITE_FVARS else PROTEINGROUP_FVARS
@@ -1180,9 +1202,9 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
     setnames(fdata1, 'id', 'feature_id')
     if ('Gene names' %in% names(fdata1)) setnames(fdata1, 'Gene names',
                                                         'feature_name')
+# Exprs/pepcounts
     select <- names1 %>%
-            extract(stri_detect_regex(
-                ., MAXQUANT_PATTERNS_QUANTITY[[quantity]]))
+            extract(stri_detect_regex(.,MAXQUANT_PATTERNS_QUANTITY[[quantity]]))
     if (phospho)  select %<>% extract(stri_endswith_fixed(., '___1'))
     exprs1 <- as.matrix(fread(file, select = select, integer64 = 'numeric'))
     if (is.character(exprs1)){
@@ -1190,39 +1212,15 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
         storage.mode(exprs1) <- 'numeric'}
     assert_all_are_non_missing_nor_empty_character(fids1)
     rownames(exprs1) <- fids1
-
-    if (include_pepcounts && !phospho) {
-        pepcselect <- lapply(MAXQUANT_PATTERNS_PEPCOUNTS,
-            function(x) names1 %>% extract(stri_detect_regex(., x)))
-        pepcs <- lapply(pepcselect,
-            function(x) as.matrix(
-                fread(file, select = x, integer64 = 'numeric'))) %>%
-            lapply(set_rownames, fids1)
-        pepcs %<>%
-            names %>%
-            lapply(function(x) set_colnames(
-                pepcs[[x]],
-                stringi::stri_replace_first_regex(colnames(
-                    pepcs[[x]]), MAXQUANT_PATTERNS_PEPCOUNTS[x], "$1"))) %>%
-            set_names(names(MAXQUANT_PATTERNS_PEPCOUNTS))
-        exprsselect <- stringi::stri_replace_first_regex(
-            colnames(exprs1), MAXQUANT_PATTERNS_QUANTITY[quantity], "$2")
-        pepcs %<>% lapply(extract, , exprsselect)
-    }
-# Simplify maxquant snames
-    sids1 <- colnames(exprs1)
-    if (phospho) sids1 %<>% stri_replace_last_fixed('___1', '')
-    sids1 %<>% standardize_maxquant_snames(quantity)
-    sids1 %<>% demultiplex()
-    colnames(exprs1) <- sids1
-    if (include_pepcounts && !phospho) pepcs %<>% lapply(set_colnames, sids1)
-# Create sumexp
-    object <- matrix2sumexp(exprs1, fdt = fdata1)
-    if (include_pepcounts && !phospho) {
-        for (i in seq_along(pepcs)) assays(object)[[i + 1]] <- pepcs[[i]]
-    }
+    object <- SummarizedExperiment(exprs1, rowData=fdata1)
+    if (!phospho)  object %<>% add_pepcounts(file, pepcountpattern, quantity)
+# Process
+    if (phospho)  colnames(object) %<>% stri_replace_last_fixed('___1', '')
+    colnames(object) %<>% standardize_maxquant_snames(quantity)
+    colnames(object) %<>% demultiplex()
+    object$sample_id <- colnames(object)
     object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id', by.y = sfileby)
-# Filter/Transform
+    object %<>% add_subgroup(subgroupvar=subgroupvar, verbose=verbose)
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
     values(object) %<>% zero_to_na(verbose = verbose)
@@ -1231,12 +1229,11 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
     object %<>% invert(invert_subgroups)
 # Return
     assayNames(object)[1] <- 'maxquant'
-    if (include_pepcounts && !phospho) assayNames(object)[2:4] <-
-        names(MAXQUANT_PATTERNS_PEPCOUNTS)
     metadata(object)$quantity <- quantity
     metadata(object)$file <- file
     object
 }
+
 
 
 #' Read/Analyze proteingroups/phosphosites
@@ -1260,7 +1257,7 @@ MAXQUANT_PATTERNS_PEPCOUNTS <- c(
 #' @param reverse       whether to return reverse peptides
 #' @param min_localization_prob min site localization probability (number)
 #' @param impute        whether to impute consistent nondetects
-#' @param include_pepcounts whether to include peptide count data
+#' @param pepcountpattern value in MAXQUANT_PATTERNS_PEPCOUNTS
 #' @param formula       desgnmat formula
 #' @param block         block svar
 #' @param contrastdefs  contrastdef vector/matrix/list
@@ -1278,7 +1275,7 @@ read_proteingroups <- function(
     sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
-    include_pepcounts = FALSE, subgroupvar = NULL,
+    pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], subgroupvar = NULL,
     formula = NULL, block = NULL, contrastdefs = NULL,
     pca = FALSE, fit = NULL, verbose = TRUE, plot = TRUE
 ){
@@ -1290,7 +1287,7 @@ read_proteingroups <- function(
     object <- .read_maxquant(file, quantity,
         sfile = sfile, sfileby = sfileby, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups,
-        include_pepcounts = include_pepcounts, verbose = verbose)
+        pepcountpattern = pepcountpattern, verbose = verbose)
     assayNames(object)[1] %<>% gsub('maxquant', 'proteingroups', .)
 # Preprocess
     object %<>% filter_maxquant_features(reverse = reverse,

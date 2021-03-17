@@ -14,7 +14,7 @@
   subgroupvar = "subgroup",
   select_subgroups = NULL,
   invert_subgroups = character(0),
-  include_pepcounts = FALSE,
+  pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1],
   verbose = TRUE
 )
 
@@ -29,7 +29,7 @@ read_proteingroups(
   fastafile = NULL,
   invert_subgroups = character(0),
   impute = stri_detect_regex(quantity, "[Ii]ntensity"),
-  include_pepcounts = FALSE,
+  pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1],
   subgroupvar = NULL,
   formula = NULL,
   block = NULL,
@@ -83,7 +83,7 @@ read_phosphosites(
 
 \item{invert_subgroups}{subgroups to be inverted (character vector)}
 
-\item{include_pepcounts}{whether to include peptide count data}
+\item{pepcountpattern}{value in MAXQUANT_PATTERNS_PEPCOUNTS}
 
 \item{verbose}{whether to message}
 
