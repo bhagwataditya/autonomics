@@ -14,6 +14,6 @@ AUTONOMICS_DATASETS
 Data used in examples/vignette/tests/longtests
 }
 \examples{
-AUTONNOMICS_DATASETS
+AUTONOMICS_DATASETS
 }
 \keyword{datasets}

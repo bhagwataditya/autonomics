@@ -13,7 +13,7 @@ CORE_DATASETS  <- c('atkin18.somascan.adat',
 
 #' Data used in examples/vignette/tests/longtests
 #' @examples 
-#' AUTONNOMICS_DATASETS
+#' AUTONOMICS_DATASETS
 #' @export
 AUTONOMICS_DATASETS <- c(CORE_DATASETS, 
                         'uniprot_hsa_20140515.fasta')
