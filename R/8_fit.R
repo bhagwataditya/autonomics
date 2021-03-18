@@ -426,7 +426,9 @@ is_fdr <- function(
     add_model_names <- function(isfdrmat, model){
                         colnames(isfdrmat) %<>% paste(model, sep='.')
                         isfdrmat }
-    res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
+    if (length(fit)>1){
+        res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
+    }
     res %<>% do.call(cbind, .)
     res
 }
