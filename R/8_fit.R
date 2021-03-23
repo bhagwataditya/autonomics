@@ -343,7 +343,7 @@ extract_fit_dt <- function(object, fit){
 }
 
 .summarize_fit <- function(object, fit){
-    effect <- fdr <- NULL
+    effect <- fdr <- . <- NULL
     extract_fit_dt(object, fit = fit)[,
         .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
             nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
@@ -363,6 +363,7 @@ summarize_fit <- function(
     object, 
     fit = intersect(names(metadata(object)), TESTS)[1]
 ){
+    . <- NULL
     if (is_scalar(fit)) return(.summarize_fit(object, fit))
     res <- mapply(.summarize_fit, 
                 fit = fit, 
