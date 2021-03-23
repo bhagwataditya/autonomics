@@ -129,8 +129,8 @@ subtract_pairs <- function(
     if (verbose){ 
         message("\t\tSubtract pairs")
         message("\t\t\tcontrols  : ", subgroupvar, "==", subgroupctr)
-        if (!is.null(block))  message("\t\t\tin block  : %s", block)
-        message("\t\t\tfor assays: %s", paste0(assaynames, collapse = ', '))
+        if (!is.null(block))  message("\t\t\tin block  : ", block)
+        message("\t\t\tfor assays: ", paste0(assaynames, collapse = ', '))
     }
 # Ensure single ref per block
     sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]

@@ -2,9 +2,9 @@
 % Please edit documentation in R/8_fit.R
 \name{summarize_fit}
 \alias{summarize_fit}
-\title{Extract fit summary}
+\title{Summarize fit}
 \usage{
-summarize_fit(object, fit)
+summarize_fit(object, fit = intersect(names(metadata(object)), TESTS)[1])
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -15,7 +15,7 @@ summarize_fit(object, fit)
 data.table(contrast, nup, ndown)
 }
 \description{
-Extract fit summary
+Summarize fit
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')

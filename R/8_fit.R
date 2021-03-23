@@ -301,7 +301,6 @@ subgroup_matrix <- function(object, subgroupvar){
 #' extract_fit_quantity(object, fit = 'limma')
 #' @noRd
 extract_fit_quantity <- function(object, fit, quantity='p'){
-    assert_is_subset(fit, TESTS)
     fvars0 <- c('feature_id','feature_name','imputed', 'control')
     fvars0 %<>% intersect(fvars(object))
     fdt <- data.table(fdata(object)[, fvars0, drop=FALSE])
@@ -343,7 +342,15 @@ extract_fit_dt <- function(object, fit){
                     SIMPLIFY = FALSE ))
 }
 
-#' Extract fit summary
+.summarize_fit <- function(object, fit){
+    effect <- fdr <- NULL
+    extract_fit_dt(object, fit = fit)[,
+        .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
+            nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
+        by='contrast']
+}
+
+#' Summarize fit
 #' @param object SummarizedExperiment
 #' @param fit 'limma', 'lme', 'lm', 'lme', 'wilcoxon'
 #' @return data.table(contrast, nup, ndown)
@@ -352,15 +359,20 @@ extract_fit_dt <- function(object, fit){
 #' object <- read_rnaseq_counts(file, fit='limma', plot=FALSE)
 #' summarize_fit(object, 'limma')
 #' @export
-summarize_fit <- function(object, fit){
-    . <- NULL
-    effect <- fdr <- NULL
-    extract_fit_dt(object, fit = fit)[,
-        .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
-            nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
-        by='contrast']
+summarize_fit <- function(
+    object, 
+    fit = intersect(names(metadata(object)), TESTS)[1]
+){
+    if (is_scalar(fit)) return(.summarize_fit(object, fit))
+    res <- mapply(.summarize_fit, 
+                fit = fit, 
+                MoreArgs = list(object = object), 
+                SIMPLIFY = FALSE)
+    res %<>% mapply(function(dt, model) cbind(model = model, dt), 
+                    dt = ., model = names(res), SIMPLIFY = FALSE)
+    res %<>% data.table::rbindlist()
+    res
 }
-
 
 #============================================================================
 #
@@ -414,7 +426,9 @@ is_fdr <- function(
     add_model_names <- function(isfdrmat, model){
                         colnames(isfdrmat) %<>% paste(model, sep='.')
                         isfdrmat }
-    res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
+    if (length(fit)>1){
+        res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
+    }
     res %<>% do.call(cbind, .)
     res
 }
