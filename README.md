@@ -15,20 +15,20 @@ subtitle: generifying and intuifying cross-platform omics analysis
                              
 # Run
     file <- download_data('billing16.bam.zip')                     # RNAseq BAM
-    read_bam(file, paired=TRUE, genome = 'hg38')
+    read_rnaseq_bams(file, paired=TRUE, genome = 'hg38')
     
     file <- download_data('billing16.rnacounts.txt')               # RNAseq counts
-    read_counts(file)
+    read_rnaseq_counts(file)
         
     file <- download_data('halama18.metabolon.xlsx')               # Metabolon xlsx
     read_metabolon(file)
     
-    rm_subgroups <- c('BLANK_BM00', 'BM00_BM00', 'EM01_EM00', 'EM05_EM02', 'EM30_EM15')
+    select <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
     proteingroups <- download_data('billing19.proteingroups.txt')  # LCMSMS Proteingroups
-    read_proteingroups(proteingroups, rm_subgroups = rm_subgroups)
+    read_proteingroups(proteingroups, select_subgroups = select)
     
     phosphosites <- download_data('billing19.phosphosites.txt')    # LCMSMS Phosphosites
-    read_phosphosites(phosphosites, proteingroups, rm_subgroups = rm_subgroups)
+    read_phosphosites(phosphosites, proteingroups, select = select_subgroups)
     
     file <- download_data('atkin18.somascan.adat')                 # SOMAscan adat
     read_somascan(file)

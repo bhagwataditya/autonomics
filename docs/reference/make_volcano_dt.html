@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create volcano datatable</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/8_plot_volcano.R'><code>R/8_plot_volcano.R</code></a></small>
     <div class="hidden name"><code>make_volcano_dt.Rd</code></div>
     </div>
 
@@ -124,7 +129,12 @@
     <p>Create volcano datatable</p>
     </div>
 
-    <pre class="usage"><span class='fu'>make_volcano_dt</span><span class='op'>(</span><span class='va'>object</span>, contrastdefmat <span class='op'>=</span> <span class='fu'><a href='contrastdefs.html'>contrastdefs</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>, ntop <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>make_volcano_dt</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  <span class='va'>fit</span>,
+  contrastdefmat <span class='op'>=</span> <span class='fu'><a href='contrastdefs.html'>contrastdefs</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>,
+  ntop <span class='op'>=</span> <span class='fl'>3</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -132,6 +142,10 @@
     <tr>
       <th>object</th>
       <td><p>SummarizedExperiment</p></td>
+    </tr>
+    <tr>
+      <th>fit</th>
+      <td><p>'limma', 'lme', 'lm', 'wilcoxon'</p></td>
     </tr>
     <tr>
       <th>contrastdefmat</th>
@@ -148,35 +162,46 @@
     <p>data.table</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>"billing16.proteingroups.txt"</span><span class='op'>)</span>
-<span class='va'>inv</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'EM_E'</span>, <span class='st'>'BM_E'</span>, <span class='st'>'BM_EM'</span><span class='op'>)</span>
-<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, invert_subgroups<span class='op'>=</span><span class='va'>inv</span>,
-            contrastdefs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'E_EM'</span>, <span class='st'>'E_BM'</span>, <span class='st'>'EM_BM'</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/billing16/billing16.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/billing16/billing16.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Invert subgroups EM_E, BM_E, BM_EM</span></div><div class='output co'>#&gt; <span class='message'>			exprs    : -3.8 -&gt; 3.8</span></div><div class='output co'>#&gt; <span class='message'>			subgroups: EM_E -&gt; E_EM</span></div><div class='output co'>#&gt; <span class='message'>			sampleids: EM_E.R1 -&gt; E_EM.R1</span></div><div class='output co'>#&gt; <span class='message'>		Order on subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7165/7877 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7165/7165 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9/9 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='make_volcano_dt-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>make_volcano_dt</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;        contrast feature_id feature_name      effect           p        fdr bonf
-#&gt;     1:    EM_BM          0        RBM47 -0.13776447 0.595603137 0.90414093    1
-#&gt;     2:    EM_BM          1        TTC26 -0.71223116 0.150496380 0.57133659    1
-#&gt;     3:    EM_BM         10        ILVBL  0.15593710 0.412331260 0.81770094    1
-#&gt;     4:    EM_BM        100        POLA1 -0.02084146 0.948238222 0.99279774    1
-#&gt;     5:    EM_BM       1002         PTK2  0.14894016 0.455097943 0.84315286    1
-#&gt;    ---                                                                         
-#&gt; 21491:     E_EM        993        MAST2 -1.83679629 0.005517594 0.01200598    1
-#&gt; 21492:     E_EM        995       ZC3H18 -0.19290185 0.268165751 0.32754988    1
-#&gt; 21493:     E_EM        997         HEPH -1.13222679 0.009957412 0.01977956    1
-#&gt; 21494:     E_EM        998        TTC38  0.70812806 0.028607905 0.04833191    1
-#&gt; 21495:     E_EM        999       HSPA4L  0.26714625 0.361279307 0.42470324    1
-#&gt;        facetrow facetcol        mlp topdown topup   significance
-#&gt;     1:             EM_BM 0.22504302   FALSE FALSE           down
-#&gt;     2:             EM_BM 0.82247395   FALSE FALSE           down
-#&gt;     3:             EM_BM 0.38475374   FALSE FALSE             up
-#&gt;     4:             EM_BM 0.02308254   FALSE FALSE           down
-#&gt;     5:             EM_BM 0.34189513   FALSE FALSE             up
-#&gt;    ---                                                          
-#&gt; 21491:              E_EM 2.25825022   FALSE FALSE down: fdr&lt;0.05
-#&gt; 21492:              E_EM 0.57159669   FALSE FALSE           down
-#&gt; 21493:              E_EM 2.00185352   FALSE FALSE down: fdr&lt;0.05
-#&gt; 21494:              E_EM 1.54351395   FALSE FALSE   up: fdr&lt;0.05
-#&gt; 21495:              E_EM 0.44215691   FALSE FALSE             up</div></pre>
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_maxquant.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, fit<span class='op'>=</span><span class='st'>'limma'</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a4255b2df6_fukuda20.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0-&gt;NA for 15654/41112 values (in 3998/6852 features of 6/6 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6735/6852 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6692/6735 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6679/6692 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4534/6679 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Impute systematic nondetects for 762/4534 features in 6/6 samples</span></div><div class='output co'>#&gt; <span class='message'>		lmFit(~0 + subgroup)</span></div><div class='output co'>#&gt; <span class='message'>			       contrast ndown nup</span>
+#&gt; <span class='message'>			1: Adult-X30dpt  1620 877</span></div><div class='input'><span class='fu'>make_volcano_dt</span><span class='op'>(</span><span class='va'>object</span>, fit <span class='op'>=</span> <span class='st'>'limma'</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;           contrast feature_id                       feature_name imputed
+#&gt;    1: Adult-X30dpt          1                           b3galtla   FALSE
+#&gt;    2: Adult-X30dpt         10 si:dkey-222h21.2;si:dkey-222h21.10    TRUE
+#&gt;    3: Adult-X30dpt       1001                    si:ch73-63e15.2   FALSE
+#&gt;    4: Adult-X30dpt       1002                                       TRUE
+#&gt;    5: Adult-X30dpt       1007                              npm1b   FALSE
+#&gt;   ---                                                                   
+#&gt; 4530: Adult-X30dpt        993                               mlf1   FALSE
+#&gt; 4531: Adult-X30dpt        994                              idh3b   FALSE
+#&gt; 4532: Adult-X30dpt        996                              psmb5   FALSE
+#&gt; 4533: Adult-X30dpt        998                              gabpa   FALSE
+#&gt; 4534: Adult-X30dpt        999                              pof1b   FALSE
+#&gt;            effect            p          fdr         bonf facetrow     facetcol
+#&gt;    1:  0.31593409 1.764259e-01 2.405759e-01 1.000000e+00          Adult-X30dpt
+#&gt;    2: 28.43901055 1.761821e-11 2.783308e-10 7.988095e-08          Adult-X30dpt
+#&gt;    3:  1.44409073 3.116279e-03 8.286927e-03 1.000000e+00          Adult-X30dpt
+#&gt;    4: 29.10106359 2.577863e-07 1.550137e-06 1.168803e-03          Adult-X30dpt
+#&gt;    5: -1.14066080 1.459356e-02 2.931645e-02 1.000000e+00          Adult-X30dpt
+#&gt;   ---                                                                         
+#&gt; 4530:  0.25740235 2.546589e-01 3.256794e-01 1.000000e+00          Adult-X30dpt
+#&gt; 4531:  0.97422785 3.438974e-04 1.320263e-03 1.000000e+00          Adult-X30dpt
+#&gt; 4532: -0.59433700 1.962011e-03 5.691464e-03 1.000000e+00          Adult-X30dpt
+#&gt; 4533: -0.39721230 3.411192e-01 4.167702e-01 1.000000e+00          Adult-X30dpt
+#&gt; 4534:  0.09650436 7.113070e-01 7.675682e-01 1.000000e+00          Adult-X30dpt
+#&gt;              mlp topdown topup   significance
+#&gt;    1:  0.7534377   FALSE FALSE             up
+#&gt;    2: 10.7540383   FALSE FALSE   up: fdr&lt;0.05
+#&gt;    3:  2.5063636   FALSE FALSE   up: fdr&lt;0.05
+#&gt;    4:  6.5887401   FALSE FALSE   up: fdr&lt;0.05
+#&gt;    5:  1.8358386   FALSE FALSE down: fdr&lt;0.05
+#&gt;   ---                                        
+#&gt; 4530:  0.5940412   FALSE FALSE             up
+#&gt; 4531:  3.4635712   FALSE FALSE   up: fdr&lt;0.05
+#&gt; 4532:  2.7072985   FALSE FALSE down: fdr&lt;0.05
+#&gt; 4533:  0.4670939   FALSE FALSE           down
+#&gt; 4534:  0.1479429   FALSE FALSE             up</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -188,7 +213,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

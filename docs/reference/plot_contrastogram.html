@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plot contrastogram</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/8_plot_contrastogram.R'><code>R/8_plot_contrastogram.R</code></a></small>
     <div class="hidden name"><code>plot_contrastogram.Rd</code></div>
     </div>
 
@@ -126,7 +131,8 @@
 
     <pre class="usage"><span class='fu'>plot_contrastogram</span><span class='op'>(</span>
   <span class='va'>object</span>,
-  colors <span class='op'>=</span> <span class='fu'>make_colors</span><span class='op'>(</span><span class='fu'><a href='slevels.html'>subgroup_levels</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>, <span class='fu'><a href='guess_sep.html'>guess_sep</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>,
+  <span class='va'>subgroupvar</span>,
+  colors <span class='op'>=</span> <span class='fu'>make_colors</span><span class='op'>(</span><span class='fu'><a href='slevels.html'>slevels</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>subgroupvar</span><span class='op'>)</span>, <span class='fu'><a href='guess_sep.html'>guess_sep</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>,
   curve <span class='op'>=</span> <span class='fl'>0.1</span>
 <span class='op'>)</span></pre>
 
@@ -136,6 +142,10 @@
     <tr>
       <th>object</th>
       <td><p>SummarizedExperiment</p></td>
+    </tr>
+    <tr>
+      <th>subgroupvar</th>
+      <td><p>subgroup svar</p></td>
     </tr>
     <tr>
       <th>colors</th>
@@ -152,31 +162,37 @@
     <p>list returned by <code><a href='https://rdrr.io/pkg/diagram/man/plotmat.html'>plotmat</a></code></p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># subgroup matrix</span>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span><span class='op'>(</span><span class='st'>'diagram'</span>, quietly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span><span class='op'>{</span>
    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
-   <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>   <span class='fu'>plot_contrastogram</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='img'><img src='plot_contrastogram-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># subgroup vector</span>
-    <span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span>  <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing19.proteingroups.txt'</span><span class='op'>)</span>
-    <span class='va'>select_subgroups</span> <span class='op'>&lt;-</span>  <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/sprintf.html'>sprintf</a></span><span class='op'>(</span>
-        <span class='st'>'%s_STD'</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'EM00'</span>,<span class='st'>'EM01'</span>, <span class='st'>'EM02'</span>,<span class='st'>'EM05'</span>,<span class='st'>'EM15'</span>,<span class='st'>'EM30'</span>, <span class='st'>'BM00'</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span>
-                <span class='va'>file</span>, select_subgroups <span class='op'>=</span> <span class='va'>select_subgroups</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/billing19/billing19.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized STD(L).EM00(M).EM01(H).R1  -&gt;  STD(L).EM00(M).EM01(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: STD(L).EM00(M).EM01(H).R1{M/L}  -&gt;  EM00_STD.R1</span></div><div class='output co'>#&gt; <span class='message'>		Uniquify snames: BM00_STD.R10 -&gt; BM00_STD.R10ML (for 2/33 snames)</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/billing19/billing19.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 21/33 samples: ~subgroup %in% select_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 77204/205338 values (in 5423/9778 features and 21/21 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9566/9778 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9470/9566 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7864/9470 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7094/7864 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7094/7094 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='va'>object</span><span class='op'>$</span><span class='va'>subgroup</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/grep.html'>gsub</a></span><span class='op'>(</span><span class='st'>'_STD'</span>, <span class='st'>''</span>, <span class='va'>.</span><span class='op'>)</span>
-    <span class='va'>object</span><span class='op'>$</span><span class='va'>subgroup</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/sort.html'>sort</a></span><span class='op'>(</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/duplicated.html'>unique</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span><span class='op'>)</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span><span class='op'>:</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='add_limma.html'>add_limma</a></span><span class='op'>(</span>plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='fu'>plot_contrastogram</span><span class='op'>(</span><span class='va'>object</span>, curve<span class='op'>=</span><span class='fl'>0.8</span><span class='op'>)</span>
-</div><div class='img'><img src='plot_contrastogram-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># subgroup vector</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span>  <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/fukuda20/fukuda20.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 376 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: LFQ intensity dpt30_1  -&gt;  dpt30_1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/fukuda20/fukuda20.proteingroups.LFQ.intensity.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 15654/41112 values (in 3998/6852 features and 6/6 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6735/6852 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6692/6735 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6583/6692 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/6583 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/4428 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>		Impute systematic nondetects for 806/4428 features in 6/6 samples</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 4428/4428 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='fu'>plot_contrastogram</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='img'><img src='plot_contrastogram-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># Ratios: self-contrasts</span>
-   <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing16.proteingroups.txt'</span><span class='op'>)</span>
-   <span class='va'>invert</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'EM_E'</span>, <span class='st'>'BM_E'</span>, <span class='st'>'BM_EM'</span><span class='op'>)</span>
-   <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, invert_subgroups<span class='op'>=</span><span class='va'>invert</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/billing16/billing16.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/billing16/billing16.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Invert subgroups EM_E, BM_E, BM_EM</span></div><div class='output co'>#&gt; <span class='message'>			exprs    : -3.8 -&gt; 3.8</span></div><div class='output co'>#&gt; <span class='message'>			subgroups: EM_E -&gt; E_EM</span></div><div class='output co'>#&gt; <span class='message'>			sampleids: EM_E.R1 -&gt; E_EM.R1</span></div><div class='output co'>#&gt; <span class='message'>		Order on subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7165/7877 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7165/7165 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>   <span class='fu'>plot_contrastogram</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='img'><img src='plot_contrastogram-4.png' alt='' width='700' height='433' /></div></pre>
+   <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, fit<span class='op'>=</span><span class='st'>'limma'</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+   <span class='fu'>plot_contrastogram</span><span class='op'>(</span><span class='va'>object</span>, subgroupvar <span class='op'>=</span> <span class='st'>'Group'</span><span class='op'>)</span>
+<span class='op'>}</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a45da971ad_halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		lmFit(~0 + Group)</span></div><div class='output co'>#&gt; <span class='message'>			             contrast ndown nup</span>
+#&gt; <span class='message'>			 1: uM10_h24-uM10_h10     2  47</span>
+#&gt; <span class='message'>			 2: uM10_h48-uM10_h24    30   4</span>
+#&gt; <span class='message'>			 3: uM10_h72-uM10_h48     3   2</span>
+#&gt; <span class='message'>			 4: uM05_h24-uM05_h10     1  26</span>
+#&gt; <span class='message'>			 5: uM05_h48-uM05_h24    10  26</span>
+#&gt; <span class='message'>			 6: uM05_h72-uM05_h48     3   1</span>
+#&gt; <span class='message'>			 7: dmso_h24-dmso_h10     4  74</span>
+#&gt; <span class='message'>			 8: dmso_h48-dmso_h24     7  52</span>
+#&gt; <span class='message'>			 9: dmso_h72-dmso_h48     1 183</span>
+#&gt; <span class='message'>			10: ctrl_h24-ctrl_h10     2  98</span>
+#&gt; <span class='message'>			11: ctrl_h48-ctrl_h24    17  41</span>
+#&gt; <span class='message'>			12: ctrl_h72-ctrl_h48     1 162</span>
+#&gt; <span class='message'>			13: uM10_h10-uM05_h10     0   0</span>
+#&gt; <span class='message'>			14: uM10_h24-uM05_h24     0   0</span>
+#&gt; <span class='message'>			15: uM10_h48-uM05_h48    23   0</span>
+#&gt; <span class='message'>			16: uM10_h72-uM05_h72    91   4</span>
+#&gt; <span class='message'>			17: uM05_h10-dmso_h10     2   6</span>
+#&gt; <span class='message'>			18: uM05_h24-dmso_h24     8   6</span>
+#&gt; <span class='message'>			19: uM05_h48-dmso_h48    41   9</span>
+#&gt; <span class='message'>			20: uM05_h72-dmso_h72   247   1</span>
+#&gt; <span class='message'>			21: dmso_h10-ctrl_h10     0   0</span>
+#&gt; <span class='message'>			22: dmso_h24-ctrl_h24     0   0</span>
+#&gt; <span class='message'>			23: dmso_h48-ctrl_h48     0   0</span>
+#&gt; <span class='message'>			24: dmso_h72-ctrl_h72     0   0</span>
+#&gt; <span class='message'>			             contrast ndown nup</span></div><div class='img'><img src='plot_contrastogram-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -188,7 +204,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

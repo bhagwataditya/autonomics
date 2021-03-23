@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create design</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/8_fit_limma.R'><code>R/8_fit_limma.R</code></a></small>
     <div class="hidden name"><code>create_design.Rd</code></div>
     </div>
 
@@ -126,7 +131,9 @@
 
     <pre class="usage"><span class='fu'>create_design</span><span class='op'>(</span>
   <span class='va'>object</span>,
-  formula <span class='op'>=</span> <span class='kw'>if</span> <span class='op'>(</span><span class='fu'>single_subgroup</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>~</span><span class='fl'>1</span> <span class='kw'>else</span> <span class='op'>~</span><span class='fl'>0</span> <span class='op'>+</span> <span class='va'>subgroup</span>
+  subgroupvar <span class='op'>=</span> <span class='kw'>if</span> <span class='op'>(</span><span class='st'>"subgroup"</span> <span class='op'>%in%</span> <span class='fu'><a href='svars.html'>svars</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span> <span class='st'>"subgroup"</span> <span class='kw'>else</span> <span class='cn'>NULL</span>,
+  formula <span class='op'>=</span> <span class='fu'><a href='default_subgroupvar.html'>default_formula</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>subgroupvar</span>, fit <span class='op'>=</span> <span class='st'>"limma"</span><span class='op'>)</span>,
+  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -137,8 +144,16 @@
       <td><p>SummarizedExperiment</p></td>
     </tr>
     <tr>
+      <th>subgroupvar</th>
+      <td><p>subgroup svar</p></td>
+    </tr>
+    <tr>
       <th>formula</th>
       <td><p>formula with svars</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>whether to message</p></td>
     </tr>
     </table>
 
@@ -147,127 +162,28 @@
     <p>design matrix</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing16.rnacounts.txt'</span><span class='op'>)</span>
-<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_counts.html'>read_counts</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/billing16/billing16.rnacounts.txt</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/billing16/billing16.rnacounts.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Keep 67/58734 features: count &gt;= 10 in at least some samples</span></div><div class='output co'>#&gt; <span class='message'>		TMM normalize and log2transform</span></div><div class='output co'>#&gt; <span class='message'>		Return object: counts(object)  = counts</span></div><div class='output co'>#&gt; <span class='message'>		               exprs(object)   = log2cpm</span></div><div class='output co'>#&gt; <span class='message'>		               weights(object) = voom weights (see plot)</span></div><div class='output co'>#&gt; <span class='message'>		               object$subgroup = subgroup values</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;       BM E EM
-#&gt; BM_R1  1 0  0
-#&gt; BM_R2  1 0  0
-#&gt; BM_R3  1 0  0
-#&gt; BM_R4  1 0  0
-#&gt; BM_R5  1 0  0
-#&gt; E_R1   0 1  0
-#&gt; E_R2   0 1  0
-#&gt; E_R3   0 1  0
-#&gt; EM_R1  0 0  1
-#&gt; EM_R2  0 0  1
-#&gt; EM_R3  0 0  1
-#&gt; attr(,"assign")
-#&gt; [1] 1 1 1
-#&gt; attr(,"contrasts")
-#&gt; attr(,"contrasts")$subgroup
-#&gt; [1] "contr.treatment"
-#&gt; </div><div class='input'>
-<span class='va'>object</span><span class='op'>$</span><span class='va'>subgroup</span> <span class='op'>&lt;-</span> <span class='st'>'billing16'</span>
-<span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;       billing16
-#&gt; BM_R1         1
-#&gt; BM_R2         1
-#&gt; BM_R3         1
-#&gt; BM_R4         1
-#&gt; BM_R5         1
-#&gt; E_R1          1
-#&gt; E_R2          1
-#&gt; E_R3          1
-#&gt; EM_R1         1
-#&gt; EM_R2         1
-#&gt; EM_R3         1
-#&gt; attr(,"assign")
-#&gt; [1] 0</div><div class='input'>
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing19.rnacounts.txt'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_rnaseq_bams.html'>read_rnaseq_counts</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a42cb13d9_billing19.rnacounts.txt</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Preprocess</span></div><div class='output co'>#&gt; <span class='message'>			Keep 22855/56269 features: count &gt;= 10 (~0 + subgroup)</span></div><div class='output co'>#&gt; <span class='message'>			pseudocount 0.5</span></div><div class='output co'>#&gt; <span class='message'>			cpm:    tmm scale libsizes</span></div><div class='output co'>#&gt; <span class='message'>				cpm</span></div><div class='output co'>#&gt; <span class='message'>			log2</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Design: ~0 + subgroup</span></div><div class='output co'>#&gt;          E00 E00.8 E01 E02 E05 E15 E30 M00
+#&gt; E00_R1     1     0   0   0   0   0   0   0
+#&gt; E00.8_R1   0     1   0   0   0   0   0   0
+#&gt; E01_R1     0     0   1   0   0   0   0   0
+#&gt; E02_R1     0     0   0   1   0   0   0   0
+#&gt; E05_R1     0     0   0   0   1   0   0   0
+#&gt; E15_R1     0     0   0   0   0   1   0   0
+#&gt; E30_R1     0     0   0   0   0   0   1   0
+#&gt; M00_R1     0     0   0   0   0   0   0   1</div><div class='input'>
+<span class='va'>object</span><span class='op'>$</span><span class='va'>subgroup</span> <span class='op'>&lt;-</span> <span class='st'>'billing19'</span>
+<span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Design: ~1</span></div><div class='output co'>#&gt;        Intercept
+#&gt; E00_R1         1</div><div class='input'>
 <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'atkin18.somascan.adat'</span><span class='op'>)</span>
 <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_somascan.html'>read_somascan</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/atkin18/atkin18.somascan.adat</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: t0.C15 =&gt; C15</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample types</span>
-#&gt; <span class='message'>		Sample </span>
-#&gt; <span class='message'>		    67 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 samples: ~SampleType %in% ~sample_type</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Sample qualities ("RowCheck")</span>
-#&gt; <span class='message'>		PASS </span>
-#&gt; <span class='message'>		  67 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 samples: ~RowCheck %in% ~sample_quality</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Feature qualities ("ColCheck")</span>
-#&gt; <span class='message'>		FAIL PASS </span>
-#&gt; <span class='message'>		   4 1125 </span></div><div class='output co'>#&gt; <span class='message'>		Retain 1125/1129 features: ~ColCheck %in% ~feature_quality</span></div><div class='output co'>#&gt; <span class='message'>		========================================================</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 1125/1125 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;        t0 t1 t2 t3
-#&gt; t0.C15  1  0  0  0
-#&gt; t0.D14  1  0  0  0
-#&gt; t3.D16  0  0  0  1
-#&gt; t2.D05  0  0  1  0
-#&gt; t0.D16  1  0  0  0
-#&gt; t0.C03  1  0  0  0
-#&gt; t1.C01  0  1  0  0
-#&gt; t3.D14  0  0  0  1
-#&gt; t1.C10  0  1  0  0
-#&gt; t0.C01  1  0  0  0
-#&gt; t2.D14  0  0  1  0
-#&gt; t1.C02  0  1  0  0
-#&gt; t3.D18  0  0  0  1
-#&gt; t1.D16  0  1  0  0
-#&gt; t0.D11  1  0  0  0
-#&gt; t1.C15  0  1  0  0
-#&gt; t0.D05  1  0  0  0
-#&gt; t1.D14  0  1  0  0
-#&gt; t2.D18  0  0  1  0
-#&gt; t1.D06  0  1  0  0
-#&gt; t0.D08  1  0  0  0
-#&gt; t2.D11  0  0  1  0
-#&gt; t3.C03  0  0  0  1
-#&gt; t3.D17  0  0  0  1
-#&gt; t0.D09  1  0  0  0
-#&gt; t1.D19  0  1  0  0
-#&gt; t2.C02  0  0  1  0
-#&gt; t3.C02  0  0  0  1
-#&gt; t2.C15  0  0  1  0
-#&gt; t0.C02  1  0  0  0
-#&gt; t3.D19  0  0  0  1
-#&gt; t0.C04  1  0  0  0
-#&gt; t1.D18  0  1  0  0
-#&gt; t2.D06  0  0  1  0
-#&gt; t1.C03  0  1  0  0
-#&gt; t1.D17  0  1  0  0
-#&gt; t0.D06  1  0  0  0
-#&gt; t1.D11  0  1  0  0
-#&gt; t3.D06  0  0  0  1
-#&gt; t1.D08  0  1  0  0
-#&gt; t0.D18  1  0  0  0
-#&gt; t3.D11  0  0  0  1
-#&gt; t2.D17  0  0  1  0
-#&gt; t3.C04  0  0  0  1
-#&gt; t2.D19  0  0  1  0
-#&gt; t3.C12  0  0  0  1
-#&gt; t0.D19  1  0  0  0
-#&gt; t2.C04  0  0  1  0
-#&gt; t1.C04  0  1  0  0
-#&gt; t1.C12  0  1  0  0
-#&gt; t0.C10  1  0  0  0
-#&gt; t0.D17  1  0  0  0
-#&gt; t3.D05  0  0  0  1
-#&gt; t1.D09  0  1  0  0
-#&gt; t1.D05  0  1  0  0
-#&gt; t0.C12  1  0  0  0
-#&gt; t3.D09  0  0  0  1
-#&gt; t2.C03  0  0  1  0
-#&gt; t3.C15  0  0  0  1
-#&gt; t3.D08  0  0  0  1
-#&gt; t2.C10  0  0  1  0
-#&gt; t2.C12  0  0  1  0
-#&gt; t2.D08  0  0  1  0
-#&gt; t2.D16  0  0  1  0
-#&gt; t2.D09  0  0  1  0
-#&gt; t3.C01  0  0  0  1
-#&gt; t3.C10  0  0  0  1
-#&gt; attr(,"assign")
-#&gt; [1] 1 1 1 1
-#&gt; attr(,"contrasts")
-#&gt; attr(,"contrasts")$subgroup
-#&gt; [1] "contr.treatment"
-#&gt; </div><div class='input'><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span>, <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>+</span> <span class='va'>subgroup</span> <span class='op'>+</span> <span class='va'>Sex</span> <span class='op'>+</span> <span class='va'>T2D</span> <span class='op'>+</span> <span class='va'>age</span> <span class='op'>+</span> <span class='va'>bmi</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;        t0 t1 t2 t3 M D age   bmi
+</div><div class='output co'>#&gt; <span class='message'>	Read: C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/2d00352b36b8_atkin18.somascan.adat</span></div><div class='output co'>#&gt; <span class='message'>		Retain 1125/1129 features: ~ColCheck %in% ~feature_quality</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Design: ~1</span></div><div class='output co'>#&gt;        Intercept
+#&gt; t0.C15         1</div><div class='input'><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span>, formula<span class='op'>=</span> <span class='op'>~</span> <span class='fl'>0</span> <span class='op'>+</span> <span class='va'>SampleGroup</span> <span class='op'>+</span> <span class='va'>Sex</span> <span class='op'>+</span> <span class='va'>T2D</span> <span class='op'>+</span> <span class='va'>age</span> <span class='op'>+</span> <span class='va'>bmi</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Design: ~0 + SampleGroup + Sex + T2D + age + bmi</span></div><div class='output co'>#&gt;        t0 t1 t2 t3 M D age   bmi
 #&gt; t0.C15  1  0  0  0 1 0  39 23.47
 #&gt; t0.D14  1  0  0  0 1 1  57 26.46
 #&gt; t3.D16  0  0  0  1 1 1  42 46.00
@@ -334,7 +250,7 @@
 #&gt; attr(,"assign")
 #&gt; [1] 1 1 1 1 2 3 4 5
 #&gt; attr(,"contrasts")
-#&gt; attr(,"contrasts")$subgroup
+#&gt; attr(,"contrasts")$SampleGroup
 #&gt; [1] "contr.treatment"
 #&gt; 
 #&gt; attr(,"contrasts")$Sex
@@ -343,77 +259,9 @@
 #&gt; attr(,"contrasts")$T2D
 #&gt; [1] "contr.treatment"
 #&gt; </div><div class='input'><span class='va'>object</span><span class='op'>$</span><span class='va'>subgroup</span> <span class='op'>&lt;-</span> <span class='st'>'atkin18'</span>
-<span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;        atkin18
-#&gt; t0.C15       1
-#&gt; t0.D14       1
-#&gt; t3.D16       1
-#&gt; t2.D05       1
-#&gt; t0.D16       1
-#&gt; t0.C03       1
-#&gt; t1.C01       1
-#&gt; t3.D14       1
-#&gt; t1.C10       1
-#&gt; t0.C01       1
-#&gt; t2.D14       1
-#&gt; t1.C02       1
-#&gt; t3.D18       1
-#&gt; t1.D16       1
-#&gt; t0.D11       1
-#&gt; t1.C15       1
-#&gt; t0.D05       1
-#&gt; t1.D14       1
-#&gt; t2.D18       1
-#&gt; t1.D06       1
-#&gt; t0.D08       1
-#&gt; t2.D11       1
-#&gt; t3.C03       1
-#&gt; t3.D17       1
-#&gt; t0.D09       1
-#&gt; t1.D19       1
-#&gt; t2.C02       1
-#&gt; t3.C02       1
-#&gt; t2.C15       1
-#&gt; t0.C02       1
-#&gt; t3.D19       1
-#&gt; t0.C04       1
-#&gt; t1.D18       1
-#&gt; t2.D06       1
-#&gt; t1.C03       1
-#&gt; t1.D17       1
-#&gt; t0.D06       1
-#&gt; t1.D11       1
-#&gt; t3.D06       1
-#&gt; t1.D08       1
-#&gt; t0.D18       1
-#&gt; t3.D11       1
-#&gt; t2.D17       1
-#&gt; t3.C04       1
-#&gt; t2.D19       1
-#&gt; t3.C12       1
-#&gt; t0.D19       1
-#&gt; t2.C04       1
-#&gt; t1.C04       1
-#&gt; t1.C12       1
-#&gt; t0.C10       1
-#&gt; t0.D17       1
-#&gt; t3.D05       1
-#&gt; t1.D09       1
-#&gt; t1.D05       1
-#&gt; t0.C12       1
-#&gt; t3.D09       1
-#&gt; t2.C03       1
-#&gt; t3.C15       1
-#&gt; t3.D08       1
-#&gt; t2.C10       1
-#&gt; t2.C12       1
-#&gt; t2.D08       1
-#&gt; t2.D16       1
-#&gt; t2.D09       1
-#&gt; t3.C01       1
-#&gt; t3.C10       1
-#&gt; attr(,"assign")
-#&gt; [1] 0</div></pre>
+<span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'>create_design</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Design: ~1</span></div><div class='output co'>#&gt;        Intercept
+#&gt; t0.C15         1</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -425,7 +273,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

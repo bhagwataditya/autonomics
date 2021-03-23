@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plot volcano</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/8_plot_volcano.R'><code>R/8_plot_volcano.R</code></a></small>
     <div class="hidden name"><code>plot_volcano.Rd</code></div>
     </div>
 
@@ -126,9 +131,10 @@
 
     <pre class="usage"><span class='fu'>plot_volcano</span><span class='op'>(</span>
   <span class='va'>object</span>,
-  contrastdefmat <span class='op'>=</span> <span class='fu'><a href='contrastdefs.html'>contrastdefs</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>,
+  fit <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/setops.html'>intersect</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='fu'>metadata</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>, <span class='va'>TESTS</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span>,
+  contrastdefs <span class='op'>=</span> <span class='fu'>autonomics</span><span class='fu'>::</span><span class='fu'><a href='contrastdefs.html'>contrastdefs</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>,
   label <span class='op'>=</span> <span class='va'>feature_name</span>,
-  ntop <span class='op'>=</span> <span class='fl'>3</span>
+  ntop <span class='op'>=</span> <span class='fl'>1</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -139,8 +145,12 @@
       <td><p>SummarizedExperiment</p></td>
     </tr>
     <tr>
-      <th>contrastdefmat</th>
-      <td><p>contrast layout matrix</p></td>
+      <th>fit</th>
+      <td><p>'limma', 'lme', 'lm', 'wilcoxon'</p></td>
+    </tr>
+    <tr>
+      <th>contrastdefs</th>
+      <td><p>contrastdef vector / matrix / list</p></td>
     </tr>
     <tr>
       <th>label</th>
@@ -157,34 +167,11 @@
     <p>ggplot object</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># proteingroup group ratios</span>
-    <span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>"billing16.proteingroups.txt"</span><span class='op'>)</span>
-    <span class='va'>inv</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'EM_E'</span>, <span class='st'>'BM_E'</span>, <span class='st'>'BM_EM'</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, invert_subgroups<span class='op'>=</span><span class='va'>inv</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/billing16/billing16.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/billing16/billing16.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Invert subgroups EM_E, BM_E, BM_EM</span></div><div class='output co'>#&gt; <span class='message'>			exprs    : -3.8 -&gt; 3.8</span></div><div class='output co'>#&gt; <span class='message'>			subgroups: EM_E -&gt; E_EM</span></div><div class='output co'>#&gt; <span class='message'>			sampleids: EM_E.R1 -&gt; E_EM.R1</span></div><div class='output co'>#&gt; <span class='message'>		Order on subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7165/7877 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7165/7165 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='fu'>plot_volcano</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='img'><img src='plot_volcano-1.png' alt='' width='700' height='433' /></div><div class='input'>    <span class='va'>contrasts</span> <span class='op'>&lt;-</span> <span class='fu'><a href='subgroup_array.html'>subgroup_matrix</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='add_limma.html'>add_limma</a></span><span class='op'>(</span>contrasts <span class='op'>=</span> <span class='va'>contrasts</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='fu'>plot_volcano</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='img'><img src='plot_volcano-2.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># proteingroup LFQ intensities</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/fukuda20/fukuda20.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 376 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: LFQ intensity dpt30_1  -&gt;  dpt30_1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/fukuda20/fukuda20.proteingroups.LFQ.intensity.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0 -&gt; NA for 15654/41112 values (in 3998/6852 features and 6/6 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6735/6852 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6692/6735 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6583/6692 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/6583 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4428/4428 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>		Impute systematic nondetects for 806/4428 features in 6/6 samples</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 4428/4428 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='fu'>plot_volcano</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='img'><img src='plot_volcano-3.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># metabolon intensities: complex design</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='fu'>plot_volcano</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='warning'>Warning: ggrepel: 1 unlabeled data points (too many overlaps). Consider increasing max.overlaps</span></div><div class='img'><img src='plot_volcano-4.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># proteingroup internalstandard ratios</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span>  <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing19.proteingroups.txt'</span><span class='op'>)</span>
-    <span class='va'>select_subgroups</span> <span class='op'>&lt;-</span>  <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/sprintf.html'>sprintf</a></span><span class='op'>(</span>
-        <span class='st'>'%s_STD'</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'EM00'</span>,<span class='st'>'EM01'</span>, <span class='st'>'EM02'</span>,<span class='st'>'EM05'</span>,<span class='st'>'EM15'</span>,<span class='st'>'EM30'</span>, <span class='st'>'BM00'</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span>
-        <span class='va'>file</span>, select_subgroups <span class='op'>=</span> <span class='va'>select_subgroups</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/billing19/billing19.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Rm 70 features with missing 'feature_id' values</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized STD(L).EM00(M).EM01(H).R1  -&gt;  STD(L).EM00(M).EM01(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: STD(L).EM00(M).EM01(H).R1{M/L}  -&gt;  EM00_STD.R1</span></div><div class='output co'>#&gt; <span class='message'>		Uniquify snames: BM00_STD.R10 -&gt; BM00_STD.R10ML (for 2/33 snames)</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/billing19/billing19.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Retain 21/33 samples: ~subgroup %in% select_subgroups</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 77204/205338 values (in 5423/9778 features and 21/21 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9566/9778 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 9470/9566 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7864/9470 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7094/7864 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7094/7094 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='fu'>plot_volcano</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='img'><img src='plot_volcano-5.png' alt='' width='700' height='433' /></div></pre>
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_maxquant.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, fit<span class='op'>=</span><span class='st'>'limma'</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a4255b2df6_fukuda20.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0-&gt;NA for 15654/41112 values (in 3998/6852 features of 6/6 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6735/6852 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6692/6735 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6679/6692 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4534/6679 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Impute systematic nondetects for 762/4534 features in 6/6 samples</span></div><div class='output co'>#&gt; <span class='message'>		lmFit(~0 + subgroup)</span></div><div class='output co'>#&gt; <span class='message'>			       contrast ndown nup</span>
+#&gt; <span class='message'>			1: Adult-X30dpt  1620 877</span></div><div class='input'><span class='fu'>plot_volcano</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='img'><img src='plot_volcano-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -196,7 +183,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

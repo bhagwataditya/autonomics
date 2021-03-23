@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Read affymetrix microarray</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/3_read_omics.R'><code>R/3_read_omics.R</code></a></small>
     <div class="hidden name"><code>read_affymetrix.Rd</code></div>
     </div>
 
@@ -149,20 +154,13 @@
     <span class='fu'><a href='https://rdrr.io/r/utils/untar.html'>untar</a></span><span class='op'>(</span><span class='va'>localfile</span>, exdir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/path.expand.html'>path.expand</a></span><span class='op'>(</span><span class='st'>'~/autonomicscache'</span><span class='op'>)</span><span class='op'>)</span>
 <span class='op'>}</span>
 <span class='va'>localfile</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/substr.html'>substr</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fu'><a href='https://rdrr.io/r/base/nchar.html'>nchar</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span><span class='op'>-</span><span class='fl'>4</span><span class='op'>)</span>
-<span class='kw'>if</span> <span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span><span class='op'>(</span><span class='st'>"BiocManager"</span>, quietly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span><span class='op'>{</span>
-    <span class='fu'><a href='https://rdrr.io/r/utils/install.packages.html'>install.packages</a></span><span class='op'>(</span><span class='st'>'BiocManager'</span><span class='op'>)</span>
-<span class='op'>}</span>
-<span class='fu'>BiocManager</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/BiocManager/man/install.html'>install</a></span><span class='op'>(</span><span class='st'>'hgu95av2.db'</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Bioconductor version 3.12 (BiocManager 1.30.10), R 4.0.3 (2020-10-10)</span></div><div class='output co'>#&gt; <span class='message'>Installing package(s) 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>installing the source package 'hgu95av2.db'</span></div><div class='output co'>#&gt; <span class='message'>Installation path not writeable, unable to update packages: foreign, Matrix</span></div><div class='output co'>#&gt; <span class='message'>Old packages: 'cowplot', 'data.table', 'ggplot2', 'rlang'</span></div><div class='input'><span class='fu'>read_affymetrix</span><span class='op'>(</span>celfiles <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.files.html'>list.files</a></span><span class='op'>(</span><span class='va'>localfile</span>, full.names <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Read Affymetrix CEL files: 01003.CEL, ...</span></div><div class='output co'>#&gt; </div><div class='output co'>#&gt; </div><div class='output co'>#&gt; class: RangedSummarizedExperiment 
-#&gt; dim: 12625 33 
-#&gt; metadata(3): experimentData annotation protocolData
-#&gt; assays(2): exprs se.exprs
-#&gt; rownames(12625): 100_g_at 1000_at ... AFFX-YEL021w/URA3_at
-#&gt;   AFFX-YEL024w/RIP1_at
-#&gt; rowData names(3): feature_id feature_name feature_descr
-#&gt; colnames(33): 01003 01007 ... 83001 LAL4
-#&gt; colData names(1): sample_id</div></pre>
+<span class='kw'>if</span> <span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span><span class='op'>(</span><span class='st'>"BiocManager"</span>, quietly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span>  <span class='fu'><a href='https://rdrr.io/r/utils/install.packages.html'>install.packages</a></span><span class='op'>(</span>
+                                                            <span class='st'>'BiocManager'</span><span class='op'>)</span>
+<span class='kw'>if</span> <span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/ns-load.html'>requireNamespace</a></span><span class='op'>(</span><span class='st'>"hgu95av2.db"</span>, quietly <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span>  <span class='fu'>BiocManager</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/BiocManager/man/install.html'>install</a></span><span class='op'>(</span>
+                                                            <span class='st'>'hgu95av2.db'</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; </div><div class='input'><span class='co'># read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))</span>
+<span class='co'># currently openblas issue: https://stackoverflow.com/questions/61629861/</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -174,7 +172,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

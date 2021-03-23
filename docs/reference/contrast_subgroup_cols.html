@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Row/Col contrasts</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/8_fit_limma.R'><code>R/8_fit_limma.R</code></a></small>
     <div class="hidden name"><code>contrast_subgroup_cols.Rd</code></div>
     </div>
 
@@ -124,9 +129,9 @@
     <p>Row/Col contrasts</p>
     </div>
 
-    <pre class="usage"><span class='fu'>contrast_subgroup_cols</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+    <pre class="usage"><span class='fu'>contrast_subgroup_cols</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>subgroupvar</span><span class='op'>)</span>
 
-<span class='fu'>contrast_subgroup_rows</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span></pre>
+<span class='fu'>contrast_subgroup_rows</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>subgroupvar</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -134,6 +139,10 @@
     <tr>
       <th>object</th>
       <td><p>SummarizedExperiment</p></td>
+    </tr>
+    <tr>
+      <th>subgroupvar</th>
+      <td><p>subgroup svar</p></td>
     </tr>
     </table>
 
@@ -144,25 +153,25 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
 <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'><a href='subgroup_array.html'>subgroup_matrix</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a45da971ad_halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='input'><span class='fu'><a href='subgroup_array.html'>subgroup_matrix</a></span><span class='op'>(</span><span class='va'>object</span>, subgroupvar <span class='op'>=</span> <span class='st'>'Group'</span><span class='op'>)</span>
 </div><div class='output co'>#&gt;      h10        h24        h48        h72       
 #&gt; uM10 "uM10_h10" "uM10_h24" "uM10_h48" "uM10_h72"
 #&gt; uM05 "uM05_h10" "uM05_h24" "uM05_h48" "uM05_h72"
 #&gt; dmso "dmso_h10" "dmso_h24" "dmso_h48" "dmso_h72"
-#&gt; ctrl "ctrl_h10" "ctrl_h24" "ctrl_h48" "ctrl_h72"</div><div class='input'><span class='fu'>contrast_subgroup_cols</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;      h24 - h10             h48 - h24             h72 - h48            
-#&gt; uM10 "uM10_h24 - uM10_h10" "uM10_h48 - uM10_h24" "uM10_h72 - uM10_h48"
-#&gt; uM05 "uM05_h24 - uM05_h10" "uM05_h48 - uM05_h24" "uM05_h72 - uM05_h48"
-#&gt; dmso "dmso_h24 - dmso_h10" "dmso_h48 - dmso_h24" "dmso_h72 - dmso_h48"
-#&gt; ctrl "ctrl_h24 - ctrl_h10" "ctrl_h48 - ctrl_h24" "ctrl_h72 - ctrl_h48"</div><div class='input'><span class='fu'>contrast_subgroup_rows</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;             h10                   h24                   h48                  
-#&gt; uM10 - uM05 "uM10_h10 - uM05_h10" "uM10_h24 - uM05_h24" "uM10_h48 - uM05_h48"
-#&gt; uM05 - dmso "uM05_h10 - dmso_h10" "uM05_h24 - dmso_h24" "uM05_h48 - dmso_h48"
-#&gt; dmso - ctrl "dmso_h10 - ctrl_h10" "dmso_h24 - ctrl_h24" "dmso_h48 - ctrl_h48"
-#&gt;             h72                  
-#&gt; uM10 - uM05 "uM10_h72 - uM05_h72"
-#&gt; uM05 - dmso "uM05_h72 - dmso_h72"
-#&gt; dmso - ctrl "dmso_h72 - ctrl_h72"</div></pre>
+#&gt; ctrl "ctrl_h10" "ctrl_h24" "ctrl_h48" "ctrl_h72"</div><div class='input'><span class='fu'>contrast_subgroup_cols</span><span class='op'>(</span><span class='va'>object</span>, subgroupvar <span class='op'>=</span> <span class='st'>'Group'</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;      h24-h10             h48-h24             h72-h48            
+#&gt; uM10 "uM10_h24-uM10_h10" "uM10_h48-uM10_h24" "uM10_h72-uM10_h48"
+#&gt; uM05 "uM05_h24-uM05_h10" "uM05_h48-uM05_h24" "uM05_h72-uM05_h48"
+#&gt; dmso "dmso_h24-dmso_h10" "dmso_h48-dmso_h24" "dmso_h72-dmso_h48"
+#&gt; ctrl "ctrl_h24-ctrl_h10" "ctrl_h48-ctrl_h24" "ctrl_h72-ctrl_h48"</div><div class='input'><span class='fu'>contrast_subgroup_rows</span><span class='op'>(</span><span class='va'>object</span>, subgroupvar <span class='op'>=</span> <span class='st'>'Group'</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;           h10                 h24                 h48                
+#&gt; uM10-uM05 "uM10_h10-uM05_h10" "uM10_h24-uM05_h24" "uM10_h48-uM05_h48"
+#&gt; uM05-dmso "uM05_h10-dmso_h10" "uM05_h24-dmso_h24" "uM05_h48-dmso_h48"
+#&gt; dmso-ctrl "dmso_h10-ctrl_h10" "dmso_h24-ctrl_h24" "dmso_h48-ctrl_h48"
+#&gt;           h72                
+#&gt; uM10-uM05 "uM10_h72-uM05_h72"
+#&gt; uM05-dmso "uM05_h72-dmso_h72"
+#&gt; dmso-ctrl "dmso_h72-ctrl_h72"</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -174,7 +183,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

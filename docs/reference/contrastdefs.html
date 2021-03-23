@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Get/set contrastdefs</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/8_fit_limma.R'><code>R/8_fit_limma.R</code></a></small>
     <div class="hidden name"><code>contrastdefs.Rd</code></div>
     </div>
 
@@ -154,11 +159,14 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing16.proteingroups.txt'</span><span class='op'>)</span>
 <span class='va'>inv</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'EM_E'</span>, <span class='st'>'BM_E'</span>, <span class='st'>'BM_EM'</span><span class='op'>)</span>
-<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_proteingroups.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, invert_subgroups<span class='op'>=</span><span class='va'>inv</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/billing16/billing16.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>	Prepare samples</span></div><div class='output co'>#&gt; <span class='message'>		Standardize snames: Ratio M/L normalized E(L).EM(M).BM(H).R1  -&gt;  E(L).EM(M).BM(H).R1{M/L}</span></div><div class='output co'>#&gt; <span class='message'>		Demultiplex snames: E(L).EM(M).BM(H).R1{M/L}  -&gt;  EM_E.R1</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/billing16/billing16.proteingroups.Ratio.normalized.design.txt</span></div><div class='output co'>#&gt; <span class='message'>	Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN -&gt; NA for 12544/77643 values (in 2226/8627 features and 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Invert subgroups EM_E, BM_E, BM_EM</span></div><div class='output co'>#&gt; <span class='message'>			exprs    : -3.8 -&gt; 3.8</span></div><div class='output co'>#&gt; <span class='message'>			subgroups: EM_E -&gt; E_EM</span></div><div class='output co'>#&gt; <span class='message'>			sampleids: EM_E.R1 -&gt; E_EM.R1</span></div><div class='output co'>#&gt; <span class='message'>		Order on subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7165/7877 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7165/7165 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='fu'>contrastdefs</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_maxquant.html'>read_proteingroups</a></span><span class='op'>(</span>
+            <span class='va'>file</span>, invert_subgroups<span class='op'>=</span><span class='va'>inv</span>, fit<span class='op'>=</span><span class='st'>'limma'</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a4141f7b55_billing16.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Replace NaN-&gt;NA for 12544/77643 values (in 2226/8627 features of 9/9 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>		Invert subgroups EM_E, BM_E, BM_EM</span></div><div class='output co'>#&gt; <span class='message'>			exprs    : -3.8 -&gt; 3.8</span></div><div class='output co'>#&gt; <span class='message'>			subgroups: EM_E -&gt; E_EM</span></div><div class='output co'>#&gt; <span class='message'>			sampleids: EM_E.R1 -&gt; E_EM.R1</span></div><div class='output co'>#&gt; <span class='message'>		Order on subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8528/8627 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 8408/8528 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 7877/8408 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 7165/7877 features: expr != 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		lmFit(~0 + subgroup)</span></div><div class='output co'>#&gt; <span class='message'>			     contrast ndown  nup</span>
+#&gt; <span class='message'>			1:  E_EM-E_BM     3   14</span>
+#&gt; <span class='message'>			2: EM_BM-E_EM  1669 1350</span></div><div class='input'><span class='fu'>contrastdefs</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [[1]]
-#&gt;      E_EM - E_BM   EM_BM - E_EM  
-#&gt; [1,] "E_EM - E_BM" "EM_BM - E_EM"
+#&gt;      E_EM-E_BM   EM_BM-E_EM  
+#&gt; [1,] "E_EM-E_BM" "EM_BM-E_EM"
 #&gt; 
 #&gt; [[2]]
 #&gt;      [,1] [,2] [,3]
@@ -174,7 +182,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

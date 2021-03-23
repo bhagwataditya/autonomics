@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -94,13 +94,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -140,9 +145,9 @@
       <tr>
         
         <td>
-          <p><code><a href="add_limma.html">add_limma()</a></code> </p>
+          <p><code><a href="add_smiles.html">add_smiles()</a></code> </p>
         </td>
-        <td><p>Contrast</p></td>
+        <td><p>Add smiles</p></td>
       </tr><tr>
         
         <td>
@@ -152,9 +157,21 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="assert_is_valid_sumexp.html">assert_is_valid_sumexp()</a></code> </p>
+          <p><code><a href="analyze.html">analyze()</a></code> </p>
+        </td>
+        <td><p>Analyze</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="assert_is_valid_sumexp.html">assert_is_valid_sumexp()</a></code> <code><a href="assert_is_valid_sumexp.html">assert_is_valid_sumexp()</a></code> </p>
         </td>
         <td><p>Assert that x is a valid SummarizedExperiment</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AUTONOMICS_DATASETS.html">AUTONOMICS_DATASETS</a></code> </p>
+        </td>
+        <td><p>Data used in examples/vignette/tests/longtests</p></td>
       </tr><tr>
         
         <td>
@@ -200,33 +217,63 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="counts2cpm.html">counts2cpm()</a></code> <code><a href="counts2cpm.html">cpm2counts()</a></code> </p>
+        </td>
+        <td><p>Convert between counts and cpm</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="counts2tpm.html">counts2tpm()</a></code> </p>
+        </td>
+        <td><p>counts to tpm</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="cpm.html">cpm()</a></code> <code><a href="cpm.html">`cpm&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set cpm</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="create_design.html">create_design()</a></code> </p>
         </td>
         <td><p>Create design</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="demultiplex.html">demultiplex()</a></code> </p>
+          <p><code><a href="create_sfile.html">create_sfile()</a></code> </p>
         </td>
-        <td><p>Demultiplex snames</p></td>
+        <td><p>Create sfile</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="designmat.html">designmat()</a></code> <code><a href="designmat.html">`designmat&lt;-`()</a></code> </p>
+          <p><code><a href="default_formula.html">default_subgroupvar()</a></code> <code><a href="default_formula.html">default_formula()</a></code> </p>
         </td>
-        <td><p>Get/set design matrix</p></td>
+        <td><p>Create default formula</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="default_sfile.html">default_sfile()</a></code> </p>
+        </td>
+        <td><p>Default sfile</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="download_data.html">download_data()</a></code> </p>
         </td>
-        <td><p>Download example datasets</p></td>
+        <td><p>Download autonomics example data</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="download_gtf.html">download_gtf()</a></code> </p>
         </td>
         <td><p>Download GTF file</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="dt2mat.html">dt2mat()</a></code> <code><a href="dt2mat.html">mat2dt()</a></code> </p>
+        </td>
+        <td><p>`data.table` to `matrix`</p></td>
       </tr><tr>
         
         <td>
@@ -239,12 +286,6 @@
           <p><code><a href="explore_transformations.html">explore_transformations()</a></code> </p>
         </td>
         <td><p>Explore transformations</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="exprs.html">exprs()</a></code> <code><a href="exprs.html">`exprs&lt;-`()</a></code> </p>
-        </td>
-        <td><p>Get/Set exprs</p></td>
       </tr><tr>
         
         <td>
@@ -278,6 +319,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="filter_medoid.html">filter_medoid()</a></code> </p>
+        </td>
+        <td><p>Filter medoid sample</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="filter_replicated.html">filter_replicated()</a></code> </p>
         </td>
         <td><p>Filter for replicated features</p></td>
@@ -290,6 +337,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="fit_limma.html">fit_limma()</a></code> <code><a href="fit_limma.html">fit_lm()</a></code> <code><a href="fit_limma.html">fit_lme()</a></code> <code><a href="fit_limma.html">fit_lmer()</a></code> <code><a href="fit_limma.html">fit_wilcoxon()</a></code> </p>
+        </td>
+        <td><p>Fit model and test for differential expression</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="flevels.html">flevels()</a></code> </p>
         </td>
         <td><p>Get fvar levels</p></td>
@@ -299,6 +352,12 @@
           <p><code><a href="fnames.html">fnames()</a></code> <code><a href="fnames.html">`fnames&lt;-`()</a></code> </p>
         </td>
         <td><p>Get/Set fnames</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="formula2str.html">formula2str()</a></code> </p>
+        </td>
+        <td><p>formula to string</p></td>
       </tr><tr>
         
         <td>
@@ -326,12 +385,6 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="guess_subgroup_values.html">guess_subgroup_values()</a></code> <code><a href="guess_subgroup_values.html">guess_replicate_values()</a></code> </p>
-        </td>
-        <td><p>Guess subgroup/replicate values</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="halfnormimpute.html">normimpute()</a></code> <code><a href="halfnormimpute.html">halfnormimpute()</a></code> <code><a href="halfnormimpute.html">zeroimpute()</a></code> </p>
         </td>
         <td><p>Impute from half-normal distribution around 0</p></td>
@@ -344,15 +397,15 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="inf_to_na.html">inf_to_na()</a></code> </p>
-        </td>
-        <td><p>Convert Inf to NA</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="invert.html">invert()</a></code> </p>
         </td>
         <td><p>Invert</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="is_fdr.html">is_fdr()</a></code> </p>
+        </td>
+        <td><p>Is fdr?</p></td>
       </tr><tr>
         
         <td>
@@ -368,9 +421,45 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="log2counts.html">log2counts()</a></code> <code><a href="log2counts.html">`log2counts&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set log2counts</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="log2countsratios.html">log2countsratios()</a></code> <code><a href="log2countsratios.html">`log2countsratios&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set log2countsratios</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="log2cpm.html">log2cpm()</a></code> <code><a href="log2cpm.html">`log2cpm&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set log2cpm</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="log2cpmratios.html">log2cpmratios()</a></code> <code><a href="log2cpmratios.html">`log2cpmratios&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set log2cpmratios</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="log2tpm.html">log2tpm()</a></code> <code><a href="log2tpm.html">`log2tpm&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set log2tpm</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="log2tpmratios.html">log2tpmratios()</a></code> <code><a href="log2tpmratios.html">`log2tpmratios&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set log2tpmratios</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="log2transform.html">log2transform()</a></code> <code><a href="log2transform.html">exp2()</a></code> <code><a href="log2transform.html">zscore()</a></code> <code><a href="log2transform.html">quantnorm()</a></code> <code><a href="log2transform.html">invnorm()</a></code> </p>
         </td>
-        <td><p>Log2 transform</p></td>
+        <td><p>Transform values</p></td>
       </tr><tr>
         
         <td>
@@ -386,33 +475,33 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="MAXQUANT_PATTERNS.html">MAXQUANT_PATTERNS</a></code> </p>
+          <p><code><a href="MAXQUANT_PATTERNS_PEPCOUNTS.html">MAXQUANT_PATTERNS_PEPCOUNTS</a></code> </p>
         </td>
-        <td><p>maxquant patterns</p></td>
+        <td><p>maxquant peptide count patterns</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="merge_sdata.html">merge_fdata()</a></code> <code><a href="merge_sdata.html">merge_sdata()</a></code> </p>
+          <p><code><a href="MAXQUANT_PATTERNS_QUANTITY.html">MAXQUANT_PATTERNS_QUANTITY</a></code> </p>
+        </td>
+        <td><p>maxquant quantity patterns</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="merge_sdata.html">merge_sdata()</a></code> <code><a href="merge_sdata.html">merge_fdata()</a></code> </p>
         </td>
         <td><p>Merge sample/feature data</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="minusinf_to_na.html">minusinf_to_na()</a></code> </p>
+          <p><code><a href="merge_sfile.html">merge_sfile()</a></code> <code><a href="merge_sfile.html">merge_ffile()</a></code> </p>
         </td>
-        <td><p>Convert -Inf to NA</p></td>
+        <td><p>Merge sample/feature file</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="nan_to_na.html">nan_to_na()</a></code> </p>
+          <p><code><a href="message_df.html">message_df()</a></code> </p>
         </td>
-        <td><p>Convert NaN to NA</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="na_to_zero.html">na_to_zero()</a></code> </p>
-        </td>
-        <td><p>Convert NA to zero</p></td>
+        <td><p>message dataframe</p></td>
       </tr><tr>
         
         <td>
@@ -422,7 +511,7 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="pca.html">pca()</a></code> <code><a href="pca.html">sma()</a></code> <code><a href="pca.html">lda()</a></code> <code><a href="pca.html">pls()</a></code> </p>
+          <p><code><a href="pca.html">pca()</a></code> <code><a href="pca.html">pls()</a></code> <code><a href="pca.html">sma()</a></code> <code><a href="pca.html">lda()</a></code> </p>
         </td>
         <td><p>Add PCA, SMA, LDA, PLS</p></td>
       </tr><tr>
@@ -464,9 +553,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_samples.html">plot_samples()</a></code> </p>
+          <p><code><a href="plot_venn.html">plot_venn()</a></code> </p>
         </td>
-        <td><p>Plot samples</p></td>
+        <td><p>Plot venn</p></td>
       </tr><tr>
         
         <td>
@@ -482,21 +571,21 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="preprocess_rnaseq_counts.html">preprocess_rnaseq_counts()</a></code> </p>
+        </td>
+        <td><p>Preprocess RNAseq counts</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="proteingroups.html">proteingroups()</a></code> <code><a href="proteingroups.html">`proteingroups&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set proteingroups</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="read_affymetrix.html">read_affymetrix()</a></code> </p>
         </td>
         <td><p>Read affymetrix microarray</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="read_bam.html">read_bam()</a></code> </p>
-        </td>
-        <td><p>Read RNAseq SAM/BAM files into SummarizedExperiment</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="read_counts.html">read_counts()</a></code> </p>
-        </td>
-        <td><p>Read RNAseq counts</p></td>
       </tr><tr>
         
         <td>
@@ -506,21 +595,39 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="read_omics.html">read_omics()</a></code> </p>
+          <p><code><a href="read_proteingroups.html">.read_maxquant()</a></code> <code><a href="read_proteingroups.html">read_proteingroups()</a></code> <code><a href="read_proteingroups.html">read_phosphosites()</a></code> </p>
+        </td>
+        <td><p>Read/Analyze proteingroups/phosphosites</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="read_rectangles.html">.read_rectangles()</a></code> <code><a href="read_rectangles.html">read_rectangles()</a></code> </p>
         </td>
         <td><p>Read omics data from rectangular file</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="read_proteingroups.html">read_proteingroups()</a></code> <code><a href="read_proteingroups.html">read_phosphosites()</a></code> </p>
+          <p><code><a href="read_rnaseq_counts.html">.read_rnaseq_bams()</a></code> <code><a href="read_rnaseq_counts.html">.read_rnaseq_counts()</a></code> <code><a href="read_rnaseq_counts.html">read_rnaseq_bams()</a></code> <code><a href="read_rnaseq_counts.html">read_rnaseq_counts()</a></code> </p>
         </td>
-        <td><p>Read proteingroups/phosphosites</p></td>
+        <td><p>Read rnaseq</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="read_somascan.html">.read_somascan()</a></code> <code><a href="read_somascan.html">read_somascan()</a></code> </p>
         </td>
         <td><p>Read somascan</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="rm_singleton_samples.html">rm_singleton_samples()</a></code> </p>
+        </td>
+        <td><p>Rm singleton samples</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="scaledlibsizes.html">scaledlibsizes()</a></code> </p>
+        </td>
+        <td><p>Get tmm-scaled libsizes</p></td>
       </tr><tr>
         
         <td>
@@ -566,6 +673,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="subtract_baseline.html">subtract_baseline()</a></code> <code><a href="subtract_baseline.html">subtract_pairs()</a></code> <code><a href="subtract_baseline.html">subtract_differences()</a></code> </p>
+        </td>
+        <td><p>Subtract baseline</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="sumexp2mae.html">sumexp2mae()</a></code> </p>
         </td>
         <td><p>Create MultiAssayExperiment from SummarizedExperiment list</p></td>
@@ -575,6 +688,12 @@
           <p><code><a href="sumexp_to_long_dt.html">sumexp_to_wide_dt()</a></code> <code><a href="sumexp_to_long_dt.html">sumexp_to_long_dt()</a></code> <code><a href="sumexp_to_long_dt.html">sumexp_to_subrep_dt()</a></code> </p>
         </td>
         <td><p>Convert SummarizedExperiment into data.table</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="summarize_fit.html">summarize_fit()</a></code> </p>
+        </td>
+        <td><p>Summarize fit</p></td>
       </tr><tr>
         
         <td>
@@ -590,6 +709,24 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="TESTS.html">TESTS</a></code> </p>
+        </td>
+        <td><p>Statistical models supported in autonomics</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="tpm.html">tpm()</a></code> <code><a href="tpm.html">`tpm&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set tpm</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="values.html">values()</a></code> <code><a href="values.html">`values&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Get/Set expr values</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="venn_detects.html">venn_detects()</a></code> </p>
         </td>
         <td><p>Venn detects</p></td>
@@ -602,9 +739,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="zero_to_na.html">zero_to_na()</a></code> </p>
+          <p><code><a href="zero_to_na.html">zero_to_na()</a></code> <code><a href="zero_to_na.html">nan_to_na()</a></code> <code><a href="zero_to_na.html">na_to_zero()</a></code> <code><a href="zero_to_na.html">inf_to_na()</a></code> <code><a href="zero_to_na.html">minusinf_to_na()</a></code> </p>
         </td>
-        <td><p>Switch between nondetect representations</p></td>
+        <td><p>Change nondetect representation</p></td>
       </tr>
     </tbody>
     </table>
@@ -620,7 +757,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Filter features on condition</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/2_filter.R'><code>R/2_filter.R</code></a></small>
     <div class="hidden name"><code>filter_features.Rd</code></div>
     </div>
 
@@ -148,18 +153,17 @@
     <p>filtered eSet</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># GLUTAMINASE</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
-    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='output co'>#&gt; <span class='message'>		Retain 96/96 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='filter_features-1.png' alt='' width='700' height='433' /></div><div class='input'>    <span class='fu'>filter_features</span><span class='op'>(</span><span class='va'>object</span>,   <span class='va'>SUPER_PATHWAY</span><span class='op'>==</span><span class='st'>'Lipid'</span>,  verbose <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>		Retain 140/391 features: ~SUPER_PATHWAY == "Lipid"</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
-#&gt; dim: 140 96 
-#&gt; metadata(7): analysis file ... contrastdefs limma
-#&gt; assays(1): exprs
-#&gt; rownames(140): 52603 52457 ... 52436 53255
-#&gt; rowData names(20): feature_id feature_name ... F F.p
-#&gt; colnames(96): ctrl_h10_R1 ctrl_h10_R2 ... uM10_h72_R5 uM10_h72_R6
-#&gt; colData names(15): sample_id subgroup ... pca1 pca2</div></pre>
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'atkin18.metabolon.xlsx'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a459efbda_atkin18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='input'><span class='fu'>filter_features</span><span class='op'>(</span><span class='va'>object</span>,   <span class='va'>SUPER_PATHWAY</span><span class='op'>==</span><span class='st'>'Lipid'</span>,  verbose <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>		Retain 216/975 features: ~SUPER_PATHWAY == "Lipid"</span></div><div class='output co'>#&gt; class: SummarizedExperiment 
+#&gt; dim: 216 67 
+#&gt; metadata(2): analysis file
+#&gt; assays(1): metabolon
+#&gt; rownames(216): 33228 35186 ... 40406 1605
+#&gt; rowData names(16): feature_id feature_name ... KEGG HMDB_ID
+#&gt; colnames(67): t0.C01 t0.C02 ... t3.D18 t3.D19
+#&gt; colData names(15): sample_id SAMPLE_NAME ... Group replicate</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -171,7 +175,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

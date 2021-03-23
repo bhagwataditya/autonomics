@@ -14,7 +14,7 @@
 <script src="pkgdown.js"></script><meta property="og:title" content="Generifying and intuifying cross-platform omics analysis">
 <meta property="og:description" content="
   This package offers a generic and intuitive solution for cross-platform omics data analysis.
-  It contains functions for import, preprocessing, exploration, contrast analysis and visualization of omics data.
+  It has functions for import, preprocessing, exploration, contrast analysis and visualization of omics data.
   It follows a tidy, functional programming paradigm.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -57,12 +57,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/using_importomics.html">autonomics</a>
+      <a href="articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -86,20 +93,20 @@
                              
 # Run
     file &lt;- download_data('billing16.bam.zip')                     # RNAseq BAM
-    read_bam(file, paired=TRUE, genome = 'hg38')
+    read_rnaseq_bams(file, paired=TRUE, genome = 'hg38')
     
     file &lt;- download_data('billing16.rnacounts.txt')               # RNAseq counts
-    read_counts(file)
+    read_rnaseq_counts(file)
         
     file &lt;- download_data('halama18.metabolon.xlsx')               # Metabolon xlsx
     read_metabolon(file)
     
-    rm_subgroups &lt;- c('BLANK_BM00', 'BM00_BM00', 'EM01_EM00', 'EM05_EM02', 'EM30_EM15')
+    select &lt;- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
     proteingroups &lt;- download_data('billing19.proteingroups.txt')  # LCMSMS Proteingroups
-    read_proteingroups(proteingroups, rm_subgroups = rm_subgroups)
+    read_proteingroups(proteingroups, select_subgroups = select)
     
     phosphosites &lt;- download_data('billing19.phosphosites.txt')    # LCMSMS Phosphosites
-    read_phosphosites(phosphosites, proteingroups, rm_subgroups = rm_subgroups)
+    read_phosphosites(phosphosites, proteingroups, select = select_subgroups)
     
     file &lt;- download_data('atkin18.somascan.adat')                 # SOMAscan adat
     read_somascan(file)</a></code></pre>
@@ -110,6 +117,10 @@
     <div class="links">
 <h2>Links</h2>
 <ul class="list-unstyled">
+<li>Download from BIOC at <br><a href="https://www.bioconductor.org/packages/autonomics">https://​www.bioconductor.org/​packages/​autonomics</a>
+</li>
+<li>Browse source code at <br><a href="https://github.com/bhagwataditya/autonomics/">https://​github.com/​bhagwataditya/​autonomics/​</a>
+</li>
 <li>Report a bug at <br><a href="https://bitbucket.org/graumannlabtools/autonomics%20">https://​bitbucket.org/​graumannlabtools/​autonomics </a>
 </li>
 </ul>
@@ -117,15 +128,15 @@
 <div class="license">
 <h2>License</h2>
 <ul class="list-unstyled">
-<li>GPL (&gt;= 3)</li>
+<li><a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a></li>
 </ul>
 </div>
 <div class="developers">
 <h2>Developers</h2>
 <ul class="list-unstyled">
 <li>Aditya Bhagwat <br><small class="roles"> Author, maintainer </small>  </li>
-<li>Johannes Graumann <br><small class="roles"> Author, scientific advisor, research team head </small>  </li>
 <li>Shahina Hayat <br><small class="roles"> Author </small>  </li>
+<li>Johannes Graumann <br><small class="roles"> Author, scientific advisor, research team head </small>  </li>
 <li><a href="authors.html">All authors...</a></li>
 </ul>
 </div>
@@ -135,7 +146,7 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

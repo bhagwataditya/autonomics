@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plot sample/feature densities</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/4_plot.R'><code>R/4_plot.R</code></a></small>
     <div class="hidden name"><code>plot_densities.Rd</code></div>
     </div>
 
@@ -134,7 +139,7 @@
 
 <span class='fu'>plot_sample_densities</span><span class='op'>(</span>
   <span class='va'>object</span>,
-  fill <span class='op'>=</span> <span class='va'>subgroup</span>,
+  fill <span class='op'>=</span> <span class='va'>sample_id</span>,
   color <span class='op'>=</span> <span class='cn'>NULL</span>,
   group <span class='op'>=</span> <span class='va'>sample_id</span>,
   fixed <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>alpha <span class='op'>=</span> <span class='fl'>0.5</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,
@@ -192,11 +197,11 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># Read data</span>
     <span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
+    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'atkin18.metabolon.xlsx'</span><span class='op'>)</span>
     <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'>    <span class='va'>object</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span>, <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/setorder.html'>order</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>$</span><span class='va'>subgroup</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a459efbda_atkin18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='input'>    <span class='va'>object</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://magrittr.tidyverse.org/reference/aliases.html'>extract</a></span><span class='op'>(</span>, <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/setorder.html'>order</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>$</span><span class='va'>Group</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'># Plot distributions</span>
-    <span class='fu'>plot_sample_densities</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+    <span class='fu'>plot_sample_densities</span><span class='op'>(</span><span class='va'>object</span>, fill <span class='op'>=</span> <span class='va'>Group</span><span class='op'>)</span>
 </div><div class='img'><img src='plot_densities-1.png' alt='' width='700' height='433' /></div><div class='input'>    <span class='fu'>plot_feature_densities</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
 </div><div class='img'><img src='plot_densities-2.png' alt='' width='700' height='433' /></div></pre>
   </div>
@@ -210,7 +215,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

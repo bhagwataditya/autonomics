@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Guess maxquant quantity from snames</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/3_read_proteingroups.R'><code>R/3_read_proteingroups.R</code></a></small>
     <div class="hidden name"><code>guess_maxquant_quantity.Rd</code></div>
     </div>
 
@@ -150,42 +155,42 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>string: value from names(MAXQUANT_PATTERNS)</p>
+    <p>string: value from names(MAXQUANT_PATTERNS_QUANTITY)</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># file</span>
-    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing16.proteingroups.txt'</span><span class='op'>)</span>
-    <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] "Ratio normalized"</div><div class='input'>
+    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
+    <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>file</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] "LFQ intensity"</div><div class='input'>
 <span class='co'># character vector</span>
-    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Ratio M/L normalized STD(L)_EM00(M)_EM01(H)_R1"</span>
+    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"</span>
     <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "Ratio normalized"</div><div class='input'>
-    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Ratio M/L STD(L)_EM00(M)_EM01(H)_R1"</span>
+    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Ratio M/L STD(L)_E00(M)_E01(H)_R1"</span>
     <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "Ratio"</div><div class='input'>
-    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"LFQ intensity EM00.R1"</span>
+    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"LFQ intensity E00.R1"</span>
     <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "LFQ intensity"</div><div class='input'>
-    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Reporter intensity corrected 0 STD(0)EM00(1)EM01(2)_R1"</span>
+    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Reporter intensity corrected 0 STD(0)E00(1)E01(2)_R1"</span>
     <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "Reporter intensity corrected"</div><div class='input'>
-    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Reporter intensity 0 STD(0)EM00(1)EM01(2)_R1"</span>
+    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Reporter intensity 0 STD(0)E00(1)E01(2)_R1"</span>
     <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "Reporter intensity"</div><div class='input'>
-    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Intensity H STD(L)_EM00(M)_EM01(H)_R1"</span>
+    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='st'>"Intensity H STD(L)_E00(M)_E01(H)_R1"</span>
     <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "Intensity labeled"</div><div class='input'>
 <span class='co'># dataframe</span>
-    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span> <span class='st'>'billing16.proteingroups.txt'</span><span class='op'>)</span>
+    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
     <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fread.html'>fread</a></span><span class='op'>(</span><span class='va'>file</span><span class='op'>)</span>
     <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] "Ratio normalized"</div><div class='input'>
+</div><div class='output co'>#&gt; [1] "LFQ intensity"</div><div class='input'>
 <span class='co'># SummarizedExperiment</span>
-     <span class='va'>file</span> <span class='op'>&lt;-</span><span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span> <span class='st'>'billing16.proteingroups.txt'</span><span class='op'>)</span>
-     <span class='co'># x &lt;- .read_proteingroups(file)</span>
-     <span class='co'># guess_maxquant_quantity(x)</span>
-</div></pre>
+    <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>
+    <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_maxquant.html'>read_proteingroups</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a4255b2df6_fukuda20.proteingroups.txt</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Replace 0-&gt;NA for 15654/41112 values (in 3998/6852 features of 6/6 samples)</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Filter features</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6735/6852 features: ~Reverse != "+"</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6692/6735 features: contaminant != '+'</span></div><div class='output co'>#&gt; <span class='message'>		Retain 6679/6692 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Filter 4534/6679 features: expr &gt; 0 for at least two samples in some subgroup</span></div><div class='output co'>#&gt; <span class='message'>	Transform exprs</span></div><div class='output co'>#&gt; <span class='message'>		Impute systematic nondetects for 762/4534 features in 6/6 samples</span></div><div class='input'>    <span class='fu'>guess_maxquant_quantity</span><span class='op'>(</span><span class='va'>file</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] "LFQ intensity"</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -197,7 +202,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

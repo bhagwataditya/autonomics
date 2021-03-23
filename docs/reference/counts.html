@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Get/Set counts</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/3_read_rnaseq.R'><code>R/3_read_rnaseq.R</code></a></small>
     <div class="hidden name"><code>counts.Rd</code></div>
     </div>
 
@@ -135,6 +140,9 @@
 <span class='fu'>counts</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>value</span>
 
 <span class='co'># S4 method for SummarizedExperiment,numeric</span>
+<span class='fu'>counts</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>value</span>
+
+<span class='co'># S4 method for SummarizedExperiment,`NULL`</span>
 <span class='fu'>counts</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>value</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -155,14 +163,14 @@
     <p>count matrix (get) or updated object (set)</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing16.rnacounts.txt'</span><span class='op'>)</span>
-<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='read_counts.html'>read_counts</a></span><span class='op'>(</span><span class='va'>file</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/billing16/billing16.rnacounts.txt</span></div><div class='output co'>#&gt; <span class='message'>		Read design (update if required!): ~/autonomicscache/datasets/billing16/billing16.rnacounts.design.txt</span></div><div class='output co'>#&gt; <span class='message'>		Keep 67/58734 features: count &gt;= 10 in at least some samples</span></div><div class='output co'>#&gt; <span class='message'>		TMM normalize and log2transform</span></div><div class='output co'>#&gt; <span class='message'>		Return object: counts(object)  = counts</span></div><div class='output co'>#&gt; <span class='message'>		               exprs(object)   = log2cpm</span></div><div class='output co'>#&gt; <span class='message'>		               weights(object) = voom weights (see plot)</span></div><div class='output co'>#&gt; <span class='message'>		               object$subgroup = subgroup values</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 67/67 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='output co'>#&gt; <span class='message'>		Retain 11/11 samples: ~!is.na(~subgroup)</span></div><div class='img'><img src='counts-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='counts-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>counts</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='exprs.html'>exprs</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
+    <pre class="examples"><div class='input'><span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'billing19.rnacounts.txt'</span><span class='op'>)</span>
+<span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_rnaseq_bams.html'>read_rnaseq_counts</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a42cb13d9_billing19.rnacounts.txt</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Infer subgroup from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Preprocess</span></div><div class='output co'>#&gt; <span class='message'>			Keep 22855/56269 features: count &gt;= 10 (~0 + subgroup)</span></div><div class='output co'>#&gt; <span class='message'>			pseudocount 0.5</span></div><div class='output co'>#&gt; <span class='message'>			cpm:    tmm scale libsizes</span></div><div class='output co'>#&gt; <span class='message'>				cpm</span></div><div class='output co'>#&gt; <span class='message'>			log2</span></div><div class='input'><span class='fu'>counts</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='values.html'>values</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>
 <span class='fu'>counts</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span>
-</div><div class='output co'>#&gt;                     BM_R1     BM_R2    BM_R3
-#&gt; ENSG00000227232  9.122051  9.878962 9.953150
-#&gt; ENSG00000268903  9.642883  8.004493 4.280725
-#&gt; ENSG00000241860 11.074222 10.055119 8.368187</div></pre>
+</div><div class='output co'>#&gt;                      E00_R1    E00_R2      E00_R3
+#&gt; ENSG00000000003.14 6.494453 5.7896284  6.52734242
+#&gt; ENSG00000000005.5  1.236208 0.9926154 -0.09983754
+#&gt; ENSG00000000419.12 5.323671 5.4993527  5.24293371</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -174,7 +182,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

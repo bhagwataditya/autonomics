@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +121,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>stri_split and extract</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/8_fit.R'><code>R/8_fit.R</code></a></small>
     <div class="hidden name"><code>split_extract.Rd</code></div>
     </div>
 
@@ -153,12 +158,80 @@
     <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>require</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
 <span class='va'>file</span> <span class='op'>&lt;-</span> <span class='fu'><a href='download_data.html'>download_data</a></span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>
 <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'><a href='.read_metabolon.html'>read_metabolon</a></span><span class='op'>(</span><span class='va'>file</span>, plot<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>	Read: ~/autonomicscache/datasets/halama18/halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Infer design from sample_ids</span></div><div class='output co'>#&gt; <span class='message'>		Guess replicate values from sampleids: ctrl_h10_R1 =&gt; R1</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='output co'>#&gt; <span class='message'>	Add PCA</span></div><div class='output co'>#&gt; <span class='message'>		Retain 391/391 features: non-zero, non-NA, and non-NaN for some sample</span></div><div class='output co'>#&gt; <span class='message'>		Run limma</span></div><div class='input'><span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>object</span><span class='op'>$</span><span class='va'>sample_id</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>]</span>
+</div><div class='output co'>#&gt; <span class='message'>	Read: C:\Users\abhagwa\AppData\Local\autonomics\autonomics\Cache/46a45da971ad_halama18.metabolon.xlsx</span></div><div class='output co'>#&gt; <span class='message'>		Log2 transform</span></div><div class='input'><span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>object</span><span class='op'>$</span><span class='va'>sample_id</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>]</span>
 <span class='fu'>nfactors</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] 3</div><div class='input'><span class='fu'>split_extract</span><span class='op'>(</span><span class='va'>x</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "ctrl_h10" "ctrl_h10" "ctrl_h10" "ctrl_h10" "ctrl_h10"</div><div class='input'><span class='fu'>split_extract</span><span class='op'>(</span><span class='va'>x</span>, <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span><span class='op'>(</span><span class='fu'>nfactors</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; [1] "ctrl_h10" "ctrl_h10" "ctrl_h10" "ctrl_h10" "ctrl_h10"</div><div class='input'><span class='fu'>split_extract</span><span class='op'>(</span><span class='va'>x</span>, <span class='fu'>nfactors</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] "R1" "R2" "R3" "R4" "R5"</div></pre>
+</div><div class='output co'>#&gt; [1] "R1" "R2" "R3" "R4" "R5"</div><div class='input'>
+<span class='co'># With NA values</span>
+<span class='fu'>split_extract</span><span class='op'>(</span><span class='fu'><a href='fdata.html'>fdata</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>$</span><span class='va'>PUBCHEM</span>, <span class='fl'>1</span>, <span class='st'>';'</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;   [1] "5288075"  "10350317" "9546757"  NA         NA         "452110"  
+#&gt;   [7] "94190"    NA         NA         NA         NA         NA        
+#&gt;  [13] NA         NA         NA         NA         "11146967" NA        
+#&gt;  [19] "9547058"  NA         NA         NA         NA         NA        
+#&gt;  [25] "42607465" NA         "5282281"  NA         NA         NA        
+#&gt;  [31] NA         NA         "11988421" "52925130" "5283469"  "92105"   
+#&gt;  [37] "75810"    "10129985" "79050"    NA         "9546753"  "16081932"
+#&gt;  [43] "9547071"  NA         "9547099"  "24779461" "10747814" "9546800" 
+#&gt;  [49] NA         "5287971"  "9546747"  "6436017"  "5283496"  "5283509" 
+#&gt;  [55] "5283499"  NA         NA         "86554"    "9547069"  "14900"   
+#&gt;  [61] "16219824" "5289133"  NA         NA         NA         "9546749" 
+#&gt;  [67] NA         NA         NA         "9547087"  "497299"   "9547068" 
+#&gt;  [73] NA         NA         "9547101"  "13730"    "13711"    "469"     
+#&gt;  [79] "193530"   "43"       "6426901"  NA         "15061532" NA        
+#&gt;  [85] "9378"     "1662"     "53481617" NA         "26612"    "49"      
+#&gt;  [91] "47"       "64969"    "724"      "111"      "18189"    "500"     
+#&gt;  [97] NA         "439902"   "96215"    "70"       "138"      "1826"    
+#&gt; [103] "439176"   "7405"     "7339"     "3014237"  "91493"    "444493"  
+#&gt; [109] "1"        NA         "190"      "60961"    "6076"     "6022"    
+#&gt; [115] "192"      "6083"     "65110"    "5950"     "259583"   "204"     
+#&gt; [121] "51"       NA         NA         "444899"   "232"      "16950"   
+#&gt; [127] "6267"     "5960"     NA         "243"      "67701"    "247"     
+#&gt; [133] "171548"   "439829"   "10981970" "273"      "2572"     "10917"   
+#&gt; [139] "439224"   "11025495" "305"      "1014"     "311"      "317"     
+#&gt; [145] "586"      "587"      "588"      "5862"     "439498"   "6175"    
+#&gt; [151] "13804"    "6131"     "448209"   "6132"     "6176"     "134"     
+#&gt; [157] "668"      "123831"   "673"      "445580"   "6441454"  "446284"  
+#&gt; [163] "3032311"  "222285"   "2781043"  "11756"    "643975"   "5984"    
+#&gt; [169] "444972"   "128869"   "119"      "40772"    "7015684"  "842"     
+#&gt; [175] "92865"    "150914"   "14253342" "151023"   NA         "7015683" 
+#&gt; [181] "10690"    "79025"    "444791"   "611"      "68662"    "5961"    
+#&gt; [187] "743"      "65359"    "124886"   "752"      "753"      "754"     
+#&gt; [193] "123874"   "439964"   NA         "71920"    "750"      NA        
+#&gt; [199] "764"      "6802"     "6804"     NA         "6830"     "9794176" 
+#&gt; [205] "23831"    "8094"     "6426853"  "464"      "6274"     "9085"    
+#&gt; [211] "441447"   "107812"   "440129"   "70630"    "6021"     NA        
+#&gt; [217] "168379"   "1198"     "6306"     "6426851"  "161166"   "612"     
+#&gt; [223] NA         "10427569" "6106"     "6435901"  "5962"     "525"     
+#&gt; [229] "867"      "22833583" "5780"     "6137"     "69961"    "158980"  
+#&gt; [235] "13130"    "892"      NA         "5248"     "53477791" "5255"    
+#&gt; [241] "88064"    "67427"    "99715"    "65065"    NA         "123826"  
+#&gt; [247] "70914"    "182230"   "75619"    "448580"   "193368"   "439197"  
+#&gt; [253] "74839"    "122356"   "65249"    "159864"   "152204"   "66789"   
+#&gt; [259] "93072"    "9920500"  "439750"   "123802"   "557"      "5283564" 
+#&gt; [265] "168274"   NA         "440120"   "936"      "5893"     "439153"  
+#&gt; [271] "14180"    "439924"   "76957"    "123701"   "5283387"  "6441392" 
+#&gt; [277] "7018721"  "6262"     "967"      "92751"    "69421"    NA        
+#&gt; [283] "9939965"  "9939941"  "461"      "6613"     "5904"     "4766"    
+#&gt; [289] "74426"    "68144"    "6140"     "1061"     "1005"     "1015"    
+#&gt; [295] "849"      "8082"     "145742"   "107738"   "73000"    "1045"    
+#&gt; [301] "1050"     "1051"     "1052"     "1053"     "1054"     "134508"  
+#&gt; [307] "1060"     "6912"     "5460677"  "1196"     "439155"   "34755"   
+#&gt; [313] "440018"   "3605667"  "3514"     "338"      "616"      "5951"    
+#&gt; [319] "5202"     "1102"     "1103"     "3126"     "11433862" NA        
+#&gt; [325] NA         "6443882"  NA         NA         NA         NA        
+#&gt; [331] NA         NA         "5353955"  "115244"   "27902"    "6453725" 
+#&gt; [337] "6426855"  "1110"     NA         "1118"     "1123"     "1130"    
+#&gt; [343] "1132"     "93176"    "6288"     "22833596" "5810"     NA        
+#&gt; [349] "543855"   "5570"     "6503"     "6305"     "6057"     "18068"   
+#&gt; [355] "8629"     "17473"    "445675"   "1175"     "6029"     "6031"    
+#&gt; [361] "6030"     "6133"     "6287"     "1188"     "64959"    NA        
+#&gt; [367] NA         NA         NA         NA         NA         NA        
+#&gt; [373] NA         NA         NA         NA         NA         NA        
+#&gt; [379] NA         NA         NA         NA         NA         NA        
+#&gt; [385] NA         NA         NA         NA         NA         NA        
+#&gt; [391] NA        </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -170,7 +243,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">

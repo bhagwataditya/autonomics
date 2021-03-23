@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Download example datasets — download_data • autonomics</title>
+<title>Download autonomics example data — download_data • autonomics</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Download example datasets — download_data" />
-<meta property="og:description" content="Download example datasets" />
+<meta property="og:title" content="Download autonomics example data — download_data" />
+<meta property="og:description" content="Download autonomics example data" />
 
 
 
@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">autonomics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.99.18</span>
       </span>
     </div>
 
@@ -95,13 +95,18 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/using_importomics.html">autonomics</a>
+      <a href="../articles/using_autonomics.html">autonomics</a>
     </li>
   </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/bhagwataditya/autonomics/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -115,60 +120,92 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Download example datasets</h1>
-    
+    <h1>Download autonomics example data</h1>
+    <small class="dont-index">Source: <a href='https://github.com/bhagwataditya/autonomics/blob/master/R/1_download.R'><code>R/1_download.R</code></a></small>
     <div class="hidden name"><code>download_data.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Download example datasets</p>
+    <p>Download autonomics example data</p>
     </div>
 
-    <pre class="usage"><span class='fu'>download_data</span><span class='op'>(</span><span class='va'>file</span>, localdir <span class='op'>=</span> <span class='st'>"~/autonomicscache/datasets"</span>, unzip <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>download_data</span><span class='op'>(</span><span class='va'>filename</span>, verbose <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>file</th>
-      <td><p>name of file to download</p></td>
+      <th>filename</th>
+      <td><p>file name</p><ul>
+<li><p><a href='https://pubmed.ncbi.nlm.nih.gov/26857143/'>
+                Billing 2016: stemcell comparison:</a> E, EM, BM</p><ul>
+<li><p><code>'billing16.bam.zip'</code></p></li>
+<li><p><code>'billing16.rnacounts.txt'</code></p></li>
+<li><p><code>'billing16.somascan.adat'</code></p></li>
+<li><p><code>'billing16.proteingroups.txt'</code></p></li>
+</ul></li>
+<li><p><a href='https://pubmed.ncbi.nlm.nih.gov/30525282/'>
+                Atkin 2018: hypoglycemia:</a> t0, t1, t2, t3</p><ul>
+<li><p><code>'atkin18.somascan.adat'</code></p></li>
+<li><p><code>'atkin18.metbolon.xlsx'</code></p></li>
+</ul></li>
+<li><p><a href='https://pubmed.ncbi.nlm.nih.gov/29777783/'>
+                Halama 2018: glutaminase inhibition: </a> 4 conc, 4 timepoints</p><ul>
+<li><p><code>'halama18.metabolon.xlsx'</code></p></li>
+</ul></li>
+<li><p><a href='https://pubmed.ncbi.nlm.nih.gov/31332097/'>
+           Billing 2019: stemcell differentiation:</a> 
+           E00, E01, E02, E05, EM15, EM30, M00</p><ul>
+<li><p><code>'billing19.rnacounts.txt'    </code></p></li>
+<li><p><code>'billing19.proteingroups.txt'</code></p></li>
+<li><p><code>'billing19.phosphosites.txt'</code></p></li>
+</ul></li>
+<li><p><a href='https://pubmed.ncbi.nlm.nih.gov/32648304/'>
+          Fukuda 2020: zebrafish development:</a> X30dpt, Adult</p><ul>
+<li><p><code>'fukuda20.proteingroups.txt'</code></p></li>
+</ul></li>
+</ul></td>
     </tr>
     <tr>
-      <th>localdir</th>
-      <td><p>directory where results will be saved</p></td>
-    </tr>
-    <tr>
-      <th>unzip</th>
-      <td><p>TRUE (default) or FALSE: whether to unzip</p></td>
+      <th>verbose</th>
+      <td><p>TRUE / FALSE</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>return   localfile invisibly</p>
+    <p>local file path</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># atkin18 - hypoglycemia - pubmed 30525282</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'atkin18.somascan.adat'</span><span class='op'>)</span>        <span class='co'># somascan  intensities</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'atkin18.metabolon.xlsx'</span><span class='op'>)</span>       <span class='co'># metabolon intensities</span>
-
-<span class='co'># billing16 - stemcell characterization - pubmed 26857143  pride PXD001856</span>
+    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'atkin18.somascan.adat'</span><span class='op'>)</span>          <span class='co'># somascan  intensities</span>
+</div><div class='output co'>#&gt;                                                                                                   BFC1 
+#&gt; "C:\\Users\\abhagwa\\AppData\\Local\\autonomics\\autonomics\\Cache/2d00352b36b8_atkin18.somascan.adat" </div><div class='input'>    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'atkin18.metabolon.xlsx'</span><span class='op'>)</span>         <span class='co'># metabolon intensities</span>
+</div><div class='output co'>#&gt;                                                                                                   BFC2 
+#&gt; "C:\\Users\\abhagwa\\AppData\\Local\\autonomics\\autonomics\\Cache/46a459efbda_atkin18.metabolon.xlsx" </div><div class='input'>
+<span class='co'># billing16 - stemcell characterization - pubmed 26857143</span>
     <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing16.proteingroups.txt'</span><span class='op'>)</span>  <span class='co'># proteingroup ratios</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing16.somascan.adat'</span><span class='op'>)</span>      <span class='co'># somascan     intensities</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing16.rnacounts.txt'</span><span class='op'>)</span>      <span class='co'># rnaseq       counts</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing16.bam.zip'</span><span class='op'>)</span>          <span class='co'># rnaseq       alignments</span>
+</div><div class='output co'>#&gt;                                                                                                         BFC3 
+#&gt; "C:\\Users\\abhagwa\\AppData\\Local\\autonomics\\autonomics\\Cache/46a4141f7b55_billing16.proteingroups.txt" </div><div class='input'>    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing16.somascan.adat'</span><span class='op'>)</span>      <span class='co'># somascan  intensities</span>
+</div><div class='output co'>#&gt;                                                                                                     BFC4 
+#&gt; "C:\\Users\\abhagwa\\AppData\\Local\\autonomics\\autonomics\\Cache/46a43a043303_billing16.somascan.adat" </div><div class='input'>    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing16.rnacounts.txt'</span><span class='op'>)</span>      <span class='co'># rnaseq    counts</span>
+</div><div class='output co'>#&gt;                                                                                                     BFC5 
+#&gt; "C:\\Users\\abhagwa\\AppData\\Local\\autonomics\\autonomics\\Cache/46a46daa5baa_billing16.rnacounts.txt" </div><div class='input'>    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing16.bam.zip'</span><span class='op'>)</span>            <span class='co'># rnaseq    alignments</span>
+</div><div class='output co'>#&gt; <span class='message'>unzip</span></div><div class='output co'>#&gt;                                                                                           BFC6 
+#&gt; "C:\\Users\\abhagwa\\AppData\\Local\\autonomics\\autonomics\\Cache/46a418574204_billing16.bam" </div><div class='input'>
+<span class='co'># billing19 - stemcell differentiation - pubmed 31332097</span>
+    <span class='co'># download_data('billing19.proteingroups.txt')    # proteingroup ratios</span>
+    <span class='co'># download_data('billing19.phosphosites.txt')     # phosphosite  ratios</span>
+    <span class='co'># download_data('billing19.rnacounts.txt')        # rnaseq       counts</span>
 
-<span class='co'># billing19 - stemcell differentiation - pubmed 31332097  pride PXD004652</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing19.proteingroups.txt'</span><span class='op'>)</span>  <span class='co'># proteingroup ratios</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing19.phosphosites.txt'</span><span class='op'>)</span>   <span class='co'># phosphosite  ratios</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'billing19.rnacounts.txt'</span><span class='op'>)</span>      <span class='co'># rnaseq       counts</span>
-
-<span class='co'># fukuda20 - heart regeneration - pubmed PXD016235  pride PXD016235</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>   <span class='co'># proteingroup LFQ intens.</span>
-
+<span class='co'># fukuda20 - heart regeneration - pubmed PXD016235</span>
+    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'fukuda20.proteingroups.txt'</span><span class='op'>)</span>     <span class='co'># proteingroup LFQ</span>
+</div><div class='output co'>#&gt;                                                                                                        BFC9 
+#&gt; "C:\\Users\\abhagwa\\AppData\\Local\\autonomics\\autonomics\\Cache/46a4255b2df6_fukuda20.proteingroups.txt" </div><div class='input'>
 <span class='co'># halama18 - glutaminase inhibition - pubmed 30525282</span>
-    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>      <span class='co'># metabolon intensities</span>
-</div></pre>
+    <span class='fu'>download_data</span><span class='op'>(</span><span class='st'>'halama18.metabolon.xlsx'</span><span class='op'>)</span>        <span class='co'># metabolon intensities</span>
+</div><div class='output co'>#&gt;                                                                                                    BFC10 
+#&gt; "C:\\Users\\abhagwa\\AppData\\Local\\autonomics\\autonomics\\Cache/46a45da971ad_halama18.metabolon.xlsx" </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -180,7 +217,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Aditya Bhagwat, Johannes Graumann, Shahina Hayat.</p>
+  <p>Developed by Aditya Bhagwat, Shahina Hayat, Johannes Graumann.</p>
 </div>
 
 <div class="pkgdown">
