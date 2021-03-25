@@ -377,14 +377,14 @@ summarize_fit <- function(
 
 #============================================================================
 #
-#                   is_fdr  .is_fdr
+#                   is_sig  .is_sig
 #                   plot_venn
 #
 #============================================================================
 
-.is_fdr <- function(object, fit, contrast){
+.is_sig <- function(object, fit, contrast, quantity = 'fdr'){
     fitres <- metadata(object)[[fit]]
-    isfdr  <- adrop(fitres[, , 'fdr', drop = FALSE] < 0.05, 3)
+    isfdr  <- adrop(fitres[, , quantity, drop = FALSE] < 0.05, 3)
     isdown <- isfdr & adrop(fitres[, , 'effect', drop=FALSE]<0, 3)
     isup   <- isfdr & adrop(fitres[, , 'effect', drop=FALSE]>0, 3)
     testmat <- matrix(0, nrow(isfdr), ncol(isfdr), dimnames=dimnames(isfdr))
@@ -394,10 +394,11 @@ summarize_fit <- function(
 }
 
 
-#' Is fdr?
-#' @param object   SummarizedExperiment
-#' @param fit      subset of autonomics::TESTS
-#' @param contrast subset of 
+#' Is significant?
+#' @param object    SummarizedExperiment
+#' @param fit       subset of autonomics::TESTS
+#' @param contrast  subset of colnames(metadata(object)[[fit]])
+#' @param quantity  value in dimnames(metadata(object)[[fit]])[3]
 #' @return matrix: -1 (downregulated), +1 (upregulatd), 0 (not fdr significant)
 #' @examples
 #' require(magrittr)
@@ -405,13 +406,14 @@ summarize_fit <- function(
 #' object <- read_proteingroups(file, plot=FALSE)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
-#' isfdr <- is_fdr(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
-#' plot_venn(isfdr)
+#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
+#' plot_venn(issig)
 #' @export
-is_fdr <- function(
+is_sig <- function(
     object,
     fit = intersect(names(metadata(object)), TESTS),
-    contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1
+    contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1,
+    quantity = 'fdr'
 ){
 # Assert
     . <- NULL
@@ -421,8 +423,8 @@ is_fdr <- function(
     if (is.character(contrast))  for (fi in fit)  assert_is_subset(
                         contrast, colnames(metadata(object)[[fi]]))
 # Run across models
-    res <-  mapply(.is_fdr, fit, 
-                    MoreArgs = list(object=object, contrast=contrast),
+    res <-  mapply(.is_sig, fit, 
+                    MoreArgs = list(object=object, contrast=contrast, quantity=quantity),
                     SIMPLIFY = FALSE)
     add_model_names <- function(isfdrmat, model){
                         colnames(isfdrmat) %<>% paste(model, sep='.')
@@ -444,7 +446,7 @@ is_fdr <- function(
 #' object <- read_somascan(file, plot=FALSE)
 #' object %<>% fit_wilcoxon(subgroupvar='SampleGroup', block = 'Subject_ID')
 #' object %<>% fit_limma(   subgroupvar='SampleGroup', block = 'Subject_ID')
-#' isfdr <- is_fdr(object, contrast = 't3-t2')
+#' isfdr <- is_sig(object, contrast = 't3-t2')
 #' plot_venn(isfdr)
 #' @export
 plot_venn <- function(isfdr){

@@ -298,14 +298,14 @@ vectorize_contrastdefs <- function(contrastdefs){
 #' object <- read_somascan(file, plot=FALSE)
 #' object %<>% fit_limma(subgroupvar = 'SampleGroup')
 #' object %<>% fit_lm(   subgroupvar = 'SampleGroup')
-#' plot_venn(is_fdr(object, contrast='t3-t2'))
+#' plot_venn(is_sig(object, contrast='t3-t2'))
 #' 
 #' S4Vectors::metadata(object)$limma <- S4Vectors::metadata(object)$lm <- NULL
 #' object %<>% fit_limma(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
 #' object %<>% fit_wilcoxon(subgroupvar = 'SampleGroup', block = 'Subject_ID')
 #' # object %<>% fit_lme(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
 #' # object %<>% fit_lmer(  subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' plot_venn(is_fdr(object, contrast='t3-t2'))
+#' plot_venn(is_sig(object, contrast='t3-t2'))
 #' @export
 fit_limma <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
@@ -369,7 +369,7 @@ fit_limma <- function(object,
                                             quantity = limma_quantities))
     limma(object)[,,'effect'] <- fit$coefficients
     limma(object)[,,'rank'  ] <- apply(-abs(fit$coefficients), 2, rank)
-    names(dimnames(limma(object)))[2] <- formula2str(formula)
+    #names(dimnames(limma(object)))[2] <- formula2str(formula)
     # perform moderated t test
     if (!all(fit$df.residual==0)){
         fit %<>% eBayes()

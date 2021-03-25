@@ -9,7 +9,7 @@
 true_names <- function(x) names(x[x])
 
 compute_connections <- function(
-    object, subgroupvar, 
+    object, subgroupvar, formula,
     colors = make_colors(slevels(object, subgroupvar), guess_sep(object))
 ){
 # subgroup matrix, difference contrasts, limma
@@ -29,7 +29,6 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    formula <- as.formula(names(dimnames(limma(object)))[2])
     design <- create_design(object, formula = formula, verbose = FALSE)
     colcontrasts <- contrastdefs(object)[[1]]
     rowcontrasts <- contrastdefs(object)[[2]]
@@ -62,6 +61,7 @@ compute_connections <- function(
 #' Plot contrastogram
 #' @param object       SummarizedExperiment
 #' @param subgroupvar  subgroup svar
+#' @param formula      formula
 #' @param colors       named color vector (names = subgroups)
 #' @param curve        arrow curvature
 #' @return list returned by \code{\link[diagram]{plotmat}}
@@ -75,6 +75,7 @@ compute_connections <- function(
 plot_contrastogram <- function(
     object, 
     subgroupvar,
+    formula = default_formula(object, subgroupvar, 'limma'),
     colors = make_colors(slevels(object, subgroupvar), guess_sep(object)),
     curve  = 0.1
 ){
@@ -83,8 +84,8 @@ plot_contrastogram <- function(
     if (!requireNamespace('diagram', quietly = TRUE)){
         stop("BiocManager::install('diagram'). Then re-run.") }
 # Prepare
-    contrastogram_matrices <- compute_connections(
-                object, subgroupvar = subgroupvar, colors = colors)
+    contrastogram_matrices <- compute_connections(object, 
+        subgroupvar = subgroupvar, formula = formula, colors = colors)
     arrowsizes  <- contrastogram_matrices$arrowsizes
     arrowcolors <- contrastogram_matrices$arrowcolors
     arrowlabels <- contrastogram_matrices$arrowlabels

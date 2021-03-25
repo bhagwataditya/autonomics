@@ -101,12 +101,12 @@ file <- download_data('atkin18.somascan.adat')
 object <- read_somascan(file, plot=FALSE)
 object \%<>\% fit_limma(subgroupvar = 'SampleGroup')
 object \%<>\% fit_lm(   subgroupvar = 'SampleGroup')
-plot_venn(is_fdr(object, contrast='t3-t2'))
+plot_venn(is_sig(object, contrast='t3-t2'))
 
 S4Vectors::metadata(object)$limma <- S4Vectors::metadata(object)$lm <- NULL
 object \%<>\% fit_limma(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
 object \%<>\% fit_wilcoxon(subgroupvar = 'SampleGroup', block = 'Subject_ID')
 # object \%<>\% fit_lme(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
 # object \%<>\% fit_lmer(  subgroupvar = 'SampleGroup', block = 'Subject_ID')
-plot_venn(is_fdr(object, contrast='t3-t2'))
+plot_venn(is_sig(object, contrast='t3-t2'))
 }

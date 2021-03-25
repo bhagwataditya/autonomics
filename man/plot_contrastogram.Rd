@@ -7,6 +7,7 @@
 plot_contrastogram(
   object,
   subgroupvar,
+  formula = default_formula(object, subgroupvar, "limma"),
   colors = make_colors(slevels(object, subgroupvar), guess_sep(object)),
   curve = 0.1
 )
@@ -15,6 +16,8 @@ plot_contrastogram(
 \item{object}{SummarizedExperiment}
 
 \item{subgroupvar}{subgroup svar}
+
+\item{formula}{formula}
 
 \item{colors}{named color vector (names = subgroups)}
 

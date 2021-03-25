@@ -86,8 +86,6 @@ test_that(  "read_proteingroups(file, fit='limma')", {
                     contrastdefs = c('BM_EM', 'E_EM', 'E_BM'), plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('limma' %in% names(metadata(object)))
-    formulastr <- formula2str(formula)
-    expect_identical(names(dimnames(metadata(object)$limma))[2], formulastr)
 })
 
 # test_that(  "read_proteingroups(file, fit='lm')", {
@@ -98,8 +96,6 @@ test_that(  "read_proteingroups(file, fit='limma')", {
 #                             fit = 'lm', formula = formula, plot = FALSE)
 #     expect_s4_class(object, 'SummarizedExperiment')
 #     expect_true('lm' %in% names(metadata(object)))
-#     formulastr <- formula2str(formula)
-#     expect_identical(names(dimnames(metadata(object)$lm))[2], formulastr)
 # })
 
 test_that(  "read_proteingroups(file, fit='wilcoxon')", {
@@ -109,5 +105,4 @@ test_that(  "read_proteingroups(file, fit='wilcoxon')", {
                     fit = 'wilcoxon', subgroupvar = 'subgroup', plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('wilcoxon' %in% names(metadata(object)))
-    expect_identical(names(dimnames(metadata(object)$wilcoxon))[2], 'subgroup')
 })

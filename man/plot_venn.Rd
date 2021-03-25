@@ -21,6 +21,6 @@ file <- download_data('atkin18.somascan.adat')
 object <- read_somascan(file, plot=FALSE)
 object \%<>\% fit_wilcoxon(subgroupvar='SampleGroup', block = 'Subject_ID')
 object \%<>\% fit_limma(   subgroupvar='SampleGroup', block = 'Subject_ID')
-isfdr <- is_fdr(object, contrast = 't3-t2')
+isfdr <- is_sig(object, contrast = 't3-t2')
 plot_venn(isfdr)
 }

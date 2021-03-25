@@ -146,7 +146,8 @@ fit_lmx <- function(object, fit,
     formula %<>% droplhs() %<>% formula2str()
     if (!is.null(weights))  formula %<>% 
                                 paste0(', weights = assays(object)$', weightvar)
-    names(dimnames(fitarray)) <- c('feature', formula,'quantity')
+    # names(dimnames(fitarray)) <- c('feature', formula,'quantity')
+    names(dimnames(fitarray)) <- c('feature', 'contrast','quantity')
     colnames(fitarray) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     metadata(object)$fit <- fitarray
     names(metadata(object)) %<>% stri_replace_first_fixed('fit', fit)

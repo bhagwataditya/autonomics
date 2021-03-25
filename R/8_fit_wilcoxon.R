@@ -39,7 +39,8 @@ fit_wilcoxon <- function(
 # wrap
     metadata(object)$wilcoxon <- do.call(abind::abind, c(results, along = 3))
     names(dimnames(metadata(object)$wilcoxon)) <-
-                                        c('feature', subgroupvar, 'quantity')
+                                        c('feature', 'contrast', 'quantity')
+                                      #  c('feature', subgroupvar, 'quantity')
 # Return
     if (plot)  print(plot_volcano(object, fit='wilcoxon')) 
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object,'wilcoxon'))
