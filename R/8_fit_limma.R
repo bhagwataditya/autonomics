@@ -273,6 +273,40 @@ vectorize_contrastdefs <- function(contrastdefs){
     unname(unlist(lapply(contrastdefs, function(x) na.exclude(c(t(x))))))
 }
 
+
+.limmacontrast <- function(object, fit, formula){
+    # compute contrasts
+    design <- create_design(object, formula=formula, verbose = FALSE)
+    contrastmat <- makeContrasts(
+        contrasts = vectorize_contrastdefs(contrastdefs(object)),
+        levels    = design)
+    fit %<>% contrasts.fit(contrasts = contrastmat)
+    limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
+    } else { c('effect','rank','t','se','p','fdr','bonf') }
+    limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
+                            dimnames = list(feature  = rownames(fit),
+                                            contrast = colnames(fit),
+                                            quantity = limma_quantities))
+    limma(object)[,,'effect'] <- fit$coefficients
+    limma(object)[,,'rank'  ] <- apply(-abs(fit$coefficients), 2, rank)
+    #names(dimnames(limma(object)))[2] <- formula2str(formula)
+    # perform moderated t test
+    if (!all(fit$df.residual==0)){
+        fit %<>% eBayes()
+        pp <- fit$p.value
+        limma(object)[,,'t' ] <- fit$t
+        limma(object)[,,'se'] <- sqrt(fit$s2.post) * fit$stdev.unscaled
+        limma(object)[,,'p' ] <- pp
+        limma(object)[,,'rank'] <- apply(pp, 2, rank)
+        limma(object)[,,'fdr' ] <- apply(pp, 2, p.adjust, 'fdr')
+        limma(object)[,,'bonf'] <- apply(pp, 2, p.adjust, 'bonferroni')
+        fdata(object)$F.limma   <- fit$F
+        fdata(object)$F.p.limma <- fit$F.p
+    }
+    return(object)
+}
+
+
 #' Fit model and test for differential expression
 #'
 #' @param object       SummarizedExperiment
@@ -353,38 +387,6 @@ fit_limma <- function(object,
     return(object)
 }
 
-
-.limmacontrast <- function(object, fit, formula){
-    # compute contrasts
-    design <- create_design(object, formula=formula, verbose = FALSE)
-    contrastmat <- makeContrasts(
-        contrasts = vectorize_contrastdefs(contrastdefs(object)),
-        levels    = design)
-    fit %<>% contrasts.fit(contrasts = contrastmat)
-    limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
-    } else { c('effect','rank','t','se','p','fdr','bonf') }
-    limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
-                            dimnames = list(feature  = rownames(fit),
-                                            contrast = colnames(fit),
-                                            quantity = limma_quantities))
-    limma(object)[,,'effect'] <- fit$coefficients
-    limma(object)[,,'rank'  ] <- apply(-abs(fit$coefficients), 2, rank)
-    #names(dimnames(limma(object)))[2] <- formula2str(formula)
-    # perform moderated t test
-    if (!all(fit$df.residual==0)){
-        fit %<>% eBayes()
-        pp <- fit$p.value
-        limma(object)[,,'t' ] <- fit$t
-        limma(object)[,,'se'] <- sqrt(fit$s2.post) * fit$stdev.unscaled
-        limma(object)[,,'p' ] <- pp
-        limma(object)[,,'rank'] <- apply(pp, 2, rank)
-        limma(object)[,,'fdr' ] <- apply(pp, 2, p.adjust, 'fdr')
-        limma(object)[,,'bonf'] <- apply(pp, 2, p.adjust, 'bonferroni')
-        fdata(object)$F.limma   <- fit$F
-        fdata(object)$F.p.limma <- fit$F.p
-    }
-    return(object)
-}
 
 #' formula to string
 #' @param formula formula
