@@ -395,7 +395,3 @@ fit_limma <- function(object,
 formula2str <- function(formula)  Reduce(paste, deparse(formula))
 
 
-addlhs  <- function(formula)  as.formula(paste0('value ', formula2str(formula)))
-droplhs <- function(formula)  as.formula(stri_replace_first_regex(
-                                formula2str(formula), '^value[ ]*', ''))
-

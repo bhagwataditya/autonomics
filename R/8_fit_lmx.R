@@ -105,6 +105,9 @@
 #' @export
 TESTS <- c('limma','lm','lme','lmer', 'wilcoxon')
 
+addlhs  <- function(formula)  as.formula(paste0('value ', formula2str(formula)))
+droplhs <- function(formula)  as.formula(stri_replace_first_regex(
+    formula2str(formula), '^value[ ]*', ''))
 
 fit_lmx <- function(object, fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
