@@ -193,6 +193,14 @@ split_by_svar <- function(object, svar = subgroup){
 #
 #=============================================================================
 
+has_complete_nondetects <- function(object) any(rowAlls(is.na(values(object))))
+
+has_consistent_nondetects <- function(object, ssym){
+    any( vapply(split_by_svar(object, !!enquo(ssym)), 
+                has_complete_nondetects, 
+                logical(1)))
+}
+
 
 is_systematic_detect <- function(object, subgroup = subgroup){
     . <- NULL

@@ -111,10 +111,13 @@ droplhs <- function(formula)  as.formula(stri_replace_first_regex(
 
 fit_lmx <- function(object, fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit), block = NULL, 
+    formula = default_formula(object, subgroupvar, fit), 
+    block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE){
 # Initialize
+    for (var in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, !!sym(var)))
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
     formula %<>% addlhs()
     allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
@@ -125,9 +128,9 @@ fit_lmx <- function(object, fit,
         message('\t\t\tweights = assays(object)$', weightvar) }
     dt <- sumexp_to_long_dt(object, svars = allx, assay = assnames)
     fixedx <- setdiff(allx, all.vars(block))
-    for (x in fixedx){          dt[[x]] %<>% factor()
-                                n <- length(levels(dt[[x]]))
-        if (n>1) stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]]))}
+    #for (x in fixedx){          dt[[x]] %<>% factor()
+    #                            n <- length(levels(dt[[x]]))
+    #    if (n>1) stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]]))}
 # fit
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
@@ -152,8 +155,7 @@ fit_lmx <- function(object, fit,
     # names(dimnames(fitarray)) <- c('feature', formula,'quantity')
     names(dimnames(fitarray)) <- c('feature', 'contrast','quantity')
     colnames(fitarray) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
-    metadata(object)$fit <- fitarray
-    names(metadata(object)) %<>% stri_replace_first_fixed('fit', fit)
+    metadata(object)[[fit]] <- fitarray
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
     if (is.null(contrastdefs)) contrastdefs <-colnames(metadata(object)[[fit]])
     if (length(contrastdefs) > 1) contrastdefs %<>% setdiff('(Intercept)')
@@ -166,14 +168,17 @@ fit_lmx <- function(object, fit,
 fit_lm <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lm'), block = NULL, 
+    formula = default_formula(object, subgroupvar, fit='lm'), 
+    block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
+    metadata(object)$lm <- NULL
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
-            formula = formula, block = block, weightvar = weightvar, 
-            contrastdefs = contrastdefs, verbose = verbose, plot = plot)
+            formula = formula, block = block, 
+            weightvar = weightvar, contrastdefs = contrastdefs, 
+            verbose = verbose, plot = plot)
 }
 
 
@@ -182,7 +187,8 @@ fit_lm <- function(
 fit_lme <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lme'), block = NULL, 
+    formula = default_formula(object, subgroupvar, fit='lme'), 
+    block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
@@ -197,9 +203,11 @@ fit_lme <- function(
         block %<>% as.formula() }
     if (verbose)  message('\t\tlme(', formula2str(formula), ', ', 
                         'random = ',  formula2str(block),')')
+    metadata(object)$lme <- NULL
     fit_lmx(object, fit = 'lme', subgroupvar = subgroupvar, 
-            formula = formula, block = block, weightvar = weightvar, 
-            contrastdefs = contrastdefs, verbose = verbose, plot = plot)
+            formula = formula, block = block, 
+            weightvar = weightvar, contrastdefs = contrastdefs, 
+            verbose = verbose, plot = plot)
 }
 
 
@@ -208,7 +216,8 @@ fit_lme <- function(
 fit_lmer <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lmer'), block = NULL, 
+    formula = default_formula(object, subgroupvar, fit='lmer'), 
+    block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){
@@ -227,7 +236,9 @@ fit_lmer <- function(
         formula %<>% as.formula()
     }
     if (verbose)  message('\t\tlmer(', formula2str(formula), ')')
+    metadata(object)$lmer <- NULL
     fit_lmx(object, fit = 'lmer', subgroupvar = subgroupvar, 
-            formula = formula, block = NULL, weightvar = weightvar, 
-            contrastdefs = contrastdefs, verbose = verbose, plot = plot)
+            formula = formula, block = NULL, 
+            weightvar = weightvar, contrastdefs = contrastdefs, 
+            verbose = verbose, plot = plot)
 }

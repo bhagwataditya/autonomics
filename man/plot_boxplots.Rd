@@ -14,7 +14,8 @@ plot_boxplots(
   color = NULL,
   facet = NULL,
   highlight = NULL,
-  fixed = list(na.rm = TRUE)
+  fixed = list(na.rm = TRUE),
+  hlevels = NULL
 )
 
 plot_sample_boxplots(
@@ -42,8 +43,9 @@ plot_subgroup_boxplots(
   fill = !!enquo(subgroup),
   color = NULL,
   highlight = NULL,
-  facet = feature_id,
-  fixed = list(na.rm = TRUE)
+  facet = vars(feature_id),
+  fixed = list(na.rm = TRUE),
+  hlevels = NULL
 )
 }
 \arguments{
@@ -72,18 +74,18 @@ Plot sample/feature boxplots
 \examples{
 # data
     require(magrittr)
-    file <- download_data('halama18.metabolon.xlsx')
+    file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
-    object \%<>\% extract(, order(.$Group))
     fdata(object) \%<>\% cbind(
                         control=.$feature_name \%in\% c('biotin','phosphate'))
 # plot
-    plot_boxplots(object[1:9,], x = feature_id, fill = feature_id)
-    plot_boxplots(object[,1:9], x = sample_id,  fill = sample_id )
+    plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
+    plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
+    plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet =feature_id)
     plot_feature_boxplots(object[1:9, ])
     plot_sample_boxplots(object[, 1:12])
     plot_sample_boxplots(object[, 1:12], highlight = control)
-    plot_subgroup_boxplots(object[1:2, ], subgroup = Group)
+    plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
 }
 \seealso{
 \code{\link{plot_sample_densities}},

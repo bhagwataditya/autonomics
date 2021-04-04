@@ -450,35 +450,35 @@ plot_subgroup_violins <- function(
 
 #' Plot sample/feature boxplots
 #'
-#' @param object      SummarizedExperiment
-#' @param subgroup    subgroup svar symbol
-#' @param x           svar mapped to x
-#' @param fill        svar mapped to fill
-#' @param color       svar mapped to color
-#' @param facet       svar mapped to facet
-#' @param highlight   fvar expressing which feature should be highlighted
-#' @param fixed       fixed aesthetics
+#' @param object           SummarizedExperiment
+#' @param subgroup         subgroup svar symbol
+#' @param x                svar mapped to x
+#' @param fill             svar mapped to fill
+#' @param color            svar mapped to color
+#' @param facet            svar mapped to facet
+#' @param highlight        fvar expressing which feature should be highlighted
+#' @param fixed            fixed aesthetics
 #' @return  ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
 #' @examples
 #' # data
 #'     require(magrittr)
-#'     file <- download_data('halama18.metabolon.xlsx')
+#'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$Group))
 #'     fdata(object) %<>% cbind(
 #'                         control=.$feature_name %in% c('biotin','phosphate'))
 #' # plot
-#'     plot_boxplots(object[1:9,], x = feature_id, fill = feature_id)
-#'     plot_boxplots(object[,1:9], x = sample_id,  fill = sample_id )
+#'     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
+#'     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
+#'     plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet =feature_id)
 #'     plot_feature_boxplots(object[1:9, ])
 #'     plot_sample_boxplots(object[, 1:12])
 #'     plot_sample_boxplots(object[, 1:12], highlight = control)
-#'     plot_subgroup_boxplots(object[1:2, ], subgroup = Group)
+#'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
 #' @export
-plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
-    highlight = NULL, fixed = list(na.rm=TRUE)
+plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL, 
+    highlight = NULL, fixed = list(na.rm=TRUE), hlevels = NULL
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -487,26 +487,36 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
     fill      <- enquo(fill)
     color     <- enquo(color)
     highlight <- enquo(highlight)
-    facet     <- enquo(facet)
-    xstr         <- as_name(x)
-    fillstr      <- if (quo_is_null(fill))   character(0) else as_name(fill)
-    colorstr     <- if (quo_is_null(color))  character(0) else as_name(color)
+    #facet     <- enquo(facet)
+    xstr     <- as_name(x)
+    fillstr  <- if (quo_is_null(fill))   character(0) else  as_name(fill)
+    colorstr <- if (quo_is_null(color))  character(0) else  as_name(color)
+    facetstr <- if (is.null(facet))  character(0) else  vapply(facet, as_name, character(1))
     highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
-                                                                    highlight)
+                                                highlight)
 # Prepare
-    plotvars <- unique(c('feature_name', xstr, fillstr, colorstr, highlightstr))
+    plotvars <- unique(c('feature_name', xstr, fillstr, colorstr, highlightstr, 
+                        facetstr))
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
     dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+    dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
 # Plot
     p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
                 fill = !!fill, color = !!color, fixed = fixed)
+    p <- p + facet_wrap(facet, scales = 'free_y')
     p %<>% add_highlights(!!highlight, geom = geom_point, fixed_color="darkred")
-    p <- p + facet_wrap(vars(!!facet), scales = 'free_y')
+# Add hline
+    if (!is.null(hlevels)){
+        mediandt <- unique(dt[, unique(c('feature_id', xstr, 'medianvalue', facetstr)), with=FALSE])
+        mediandt[, present := FALSE]
+        mediandt[get(xstr) %in% hlevels, present := TRUE]
+        p <- p + geom_hline(data=mediandt, aes(yintercept = medianvalue, color=!!fill, alpha=present), linetype='longdash')
+    }
 # Finish
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
-    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) +
+    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + guides(color=FALSE, alpha=FALSE)
         theme(axis.text.x = element_text(angle=90, hjust=1))
 # Return
     p
@@ -532,24 +542,27 @@ plot_feature_boxplots <- function(
     fixed = list(na.rm=TRUE)
 ) plot_boxplots(
     object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
-    highlight=!!enquo(highlight), fixed=fixed
-)
+    highlight=!!enquo(highlight), fixed=fixed)
 
 #' @rdname plot_boxplots
 #' @export
 plot_subgroup_boxplots <- function(
     object, subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
-    color = NULL, highlight = NULL, facet = feature_id, fixed = list(na.rm=TRUE)
-) plot_boxplots(
-    object, x = !!enquo(x), fill = !!enquo(fill), color = !!color,
-    facet = !!enquo(facet), highlight = !!enquo(highlight), fixed = fixed
-)
+    color = NULL, highlight = NULL, facet = vars(feature_id),
+    fixed = list(na.rm=TRUE), hlevels = NULL
+){
+    p <- plot_boxplots(
+        object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
+        facet = facet, highlight = !!enquo(highlight), fixed = fixed, hlevels = hlevels)
+    #p <- p + stat_summary(fun='mean', geom='line', aes(group=1), color='black', size=0.7, na.rm = TRUE)
+    p
+}
 
 
 
 #=============================================================================
 #
-#                 plot_feature_boxplots()
+#                 plot_feature_points()
 #
 #=============================================================================
 
@@ -566,51 +579,140 @@ plot_subgroup_boxplots <- function(
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=TRUE, plot = FALSE)
-#' idx <- order(abs(fdata(object)$pca1), decreasing=TRUE)[1:9]
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit='limma', plot = FALSE)
+#' idx <- order(fdata(object)$F.p.limma)[1:9]
 #' object %<>% extract(idx, )
+#' plot_sample_boxplots( object)
 #' plot_feature_boxplots(object)
-#' plot_subgroup_boxplots(object, subgroup=Group)
-#' plot_feature_profiles( object, subgroup=Group)
+#' plot_subgroup_boxplots(object,subgroup=SET)
+#' plot_subgroup_points( object, subgroup=SET)
+#' plot_subgroup_points( object, subgroup=SET, block=SUB)
 #' @export
-plot_features <- function(
-    object,
-    geom,
-    subgroup, 
-    x     = !!enquo(subgroup),
-    fill  = !!enquo(subgroup),
-    color = !!enquo(subgroup),
-    ...,
+plot_subgroup_points <- function(
+    object, subgroup, block=NULL, x=!!enquo(subgroup), color=!!enquo(subgroup), 
+    group=!!enquo(block), facet=vars(feature_id), 
+    nrow = NULL, ...,
     fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
     theme = list(axis.text.x = element_blank(),
                 axis.title.x = element_blank(),
                 axis.ticks.x = element_blank())
 ){
-    fill  <- enquo(fill)
-    color <- enquo(color)
     x     <- enquo(x)
+    color <- enquo(color)
+    group <- enquo(group)
+    
     dt <- sumexp_to_long_dt(
             object, svars = svars(object), fvars = fvars(object))
     value <- NULL
-    p <- plot_data(
-            dt, geom = geom, x = !!x, y = value, fill = !!fill,
-            color = !!color, ..., fixed = fixed)
-    p <- p + facet_wrap(~ feature_name, scales = 'free_y')
+    p <- plot_data(dt, geom=geom_point, x=!!x, y=value, color=!!color, 
+                    group=!!group, ..., fixed=fixed)
+    if (!quo_is_null(enquo(block)))  p <- p + geom_line()
+    p <- p + facet_wrap(facet = facet, scales = 'free_y', nrow = nrow)
     p <- p + do.call(ggplot2::theme, theme)
     p
 }
 
-# @rdname plot_features
-# @export
-#plot_feature_boxplots <- function(...){
-#    plot_features(geom = geom_boxplot, color = NULL, ...)
-#}
 
 
-#' @rdname plot_features
-#' @export
-plot_feature_profiles <- function(...){
-    plot_features(geom = geom_point, ...)
+plot_contrast_boxplots <- function(
+    object, subgroupvar, contrast, quantity='fdr', fit
+){
+# Order/Extract on p value
+    extract_p    <- function(x)      x[,contrast,'p']
+    extract_fdr  <- function(x)      x[,contrast,'fdr']
+    extract_sign <- function(x) sign(x[,contrast,'effect'])
+    signs <- vapply(metadata(object)[fit], extract_sign, numeric(nrow(object)))
+    pvals <- vapply(metadata(object)[fit], extract_p,    numeric(nrow(object)))
+    fdrs  <- vapply(metadata(object)[fit], extract_fdr,  numeric(nrow(object)))
+    pvals %<>% apply(1, min)  # we also want single method features
+    fdrs  %<>% apply(1, min)  # we also want single method features
+    signs %<>% apply(1, mean)
+    dnfeatures <- names(    sort(pvals[fdrs<0.05 & signs<0]))
+    upfeatures <- names(rev(sort(pvals[fdrs<0.05 & signs>0])))
+    object %<>% extract_features(c(dnfeatures, upfeatures))
+    metadata(object)[fit] %<>% lapply(extract, rownames(object), , )
+    fdata(object)$feature_id %<>% factor(c(dnfeatures, upfeatures))
+# Interpret contrasts
+    contrastmat <- stats::contrasts(object[[subgroupvar]])
+    if (all(contrastmat[1,]==0)) contrastmat[1,] <- -1
+    uplevels <- which.names(contrastmat[, contrast] > 0)
+    dnlevels <- which.names(contrastmat[, contrast] < 0)
+# Prepare dt
+    dt <- sumexp_to_long_dt(object, fvars = c('feature_id', 'feature_name'), 
+                      svars = c('sample_id', subgroupvar))
+    dt %<>% merge_fdr(object, contrast=contrast, fit=fit)
+    mediandt <- summarize_median(dt, subgroupvar)
+    mediandt[, contrastsubgroup := SET %in% c(uplevels, dnlevels)]
+# Plot
+    p <- ggplot(dt, aes(x=SET, y=value, fill=SET)) +
+    facet_wrap(c('feature_id', fit), scales='free_y', labeller='label_both') + 
+    theme_bw() + xlab(NULL) + ggtitle(contrast) + 
+    geom_boxplot() + 
+    geom_hline( data = mediandt, linetype = 'longdash',
+                aes(yintercept=value, alpha=contrastsubgroup, color = SET)) + 
+    guides(alpha=FALSE)
+# Color facets
+    colors <- make_colors(levels(object[[subgroupvar]]))
+    colors <-c(expand_into_vector(colors[ uplevels[[1]] ], upfeatures),
+                expand_into_vector(colors[ dnlevels[[1]] ], dnfeatures))
+    g <- color_facets(p, colors)
+    grid::grid.draw(g)
+    invisible(g)
 }
 
+merge_fdr <- function(dt, object, contrast, fit){
+    for (curfit in fit){
+        fdrdt <- metadata(object)[[curfit]][, contrast, ][, 'fdr', drop=FALSE]
+        fdrdt %<>% data.table(keep.rownames=TRUE)
+        names(fdrdt) <- c('feature_id', curfit)
+        fdrdt[, (curfit) := formatC(get(curfit), format='e', digits=0)]
+        dt %<>% merge(fdrdt, by='feature_id', all.x=TRUE)
+    }
+    dt$feature_id %<>% factor(fdata(object)$feature_id)
+    dt
+}
+
+summarize_median <- function(dt, subgroupvar){
+    mediandt <- copy(dt)
+    mediandt[,value:=median(value, na.rm=TRUE), by=c('feature_id', subgroupvar)]
+    mediandt[,sample_id := NULL]
+    unique(mediandt)
+}
+
+color_facets <- function(p, colors){
+    g <- ggplot_gtable(ggplot_build(p))
+    strips <- which(grepl('strip-', g$layout$name))
+    for (strip in strips){
+        if (!is(g$grobs[[strip]], 'zeroGrob')){
+            feature <- g$grobs[[strip]]$grobs[[1]]$children[[2]]$children[[
+                                                                    1]]$label
+            feature %<>% gsub('feature_id: ', '', ., fixed=TRUE)
+            anyfdr <- FALSE
+            for (i in seq_along(g$grobs[[strip]]$grobs)[-1]){
+                fdrvalue <- g$grobs[[strip]]$grobs[[i]]$children[[2]]$children[[
+                                                                    1]]$label
+                fdrvalue %<>% gsub('^[^:]+[:] ', '', .)
+                fdrvalue %<>% as.numeric()
+                if (fdrvalue < 0.05){
+                    anyfdr <- TRUE
+                    g$grobs[[strip]]$grobs[[i]]$children[[1]]$gp$fill <- 
+                                                            colors[[feature]]
+                }
+            }
+            if (anyfdr) g$grobs[[strip]]$grobs[[1]]$children[[1]]$gp$fill <- 
+                    colors[[feature]]
+        }
+        #g$grobs[[strip]]$grobs[[1]]$children[[1]]$gp$fill <- colors[[feature]]
+        #g$grobs[[strip]]$grobs[[3]]$children[[1]]$gp$fill <- colors[[feature]]
+    }
+    g
+}
+
+which.names <- function(x) names(x[x])
+
+expand_into_vector <- function(value, templatevector){
+    y <- rep(value, length(templatevector))
+    names(y) <- templatevector
+    y
+}

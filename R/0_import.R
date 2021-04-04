@@ -17,7 +17,9 @@
 #' @importFrom assertive   assert_is_a_bool
 #' @importFrom assertive   assert_is_a_number       assert_is_a_string
 #' @importFrom assertive   assert_is_character      assert_is_data.frame
-#' @importFrom assertive   assert_is_function       assert_is_identical_to_true
+#' @importFrom assertive   assert_is_factor         assert_is_formula
+#' @importFrom assertive   assert_is_function       assert_is_identical_to_false
+#' @importFrom assertive   assert_is_identical_to_true
 #' @importFrom assertive   assert_is_list
 #' @importFrom assertive   assert_is_logical        assert_is_non_empty
 #' @importFrom assertive   assert_is_non_scalar     assert_is_not_null
