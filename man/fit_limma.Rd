@@ -104,24 +104,17 @@ Fit model and test for differential expression
     object$SUB \%<>\% factor()
     
 # Fitting a linear model
+# Default in R is treatment coding: coefficients = baseline differences
     # the traditional approach: lm
-    # R default is teatment coding: coefficients = baseline differences
-        object \%<>\% fit_lm(subgroupvar = 'SET')
-        object \%<>\% fit_lm(formula = ~SET)
-        
-    # limma: pools information across features
-    #        moderates statistics: ensure reasonable effect size
+        object \%<>\% fit_lm(subgroupvar = 'SET')   # subgroupvar
+        object \%<>\% fit_lm(formula = ~SET)        # formula
+    # limma: prefers (large) effect size over (small) standard deviation
+    # so it gives slightly different results:
         object \%<>\% fit_limma(subgroupvar = 'SET')
         object \%<>\% fit_limma(formula = ~SET)
-        issig <- is_sig(object, contrast = 't3')
-        plot_venn(issig)
-        plot_contrast_boxplots(object, 'SET', 't3',fit=c('lm', 'limma'))
-        object[rownames(issig)[rowSums(issig)==1]]
-        
-    
-    # treatment coding: coefficients = baseline differences
-        object \%<>\% fit_lm(subgroupvar = 'SET')
-        object \%<>\% fit_lm(formula = ~SET)
+        plot_venn(is_sig(object, contrast = 't3'))
+        plot_contrast_boxplots(
+            object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
         
 # Baseline differences
     # limma.design: contrasts encoded in design

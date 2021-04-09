@@ -68,7 +68,7 @@ cluster <- function(object, formula=~SUB+SET){
     contrast.arg <- rep('contr.sum', length(factors))
     names(contrast.arg) <- factors
     mode(contrast.arg) <- 'list'
-    contrastdefs <- create_design(object, formula = formula, contrast.arg = contrast.arg)
+    contrastdefs <- create_design(object, formula = formula)
     fit_limma(object, formula=formula, contrastdefs = contrastdefs)
 
 # Filter
