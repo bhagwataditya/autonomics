@@ -82,7 +82,7 @@ filter_features <- function(object, condition, verbose = FALSE){
 #' @param object  SummarizedExperiment
 #' @param verbose TRUE (default) or FALSE
 #' @return  filtered SummarizedExperiment
-#' @noRd
+#' @export
 rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # . != 0 needed due to stupid behaviour of rowAnys
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
