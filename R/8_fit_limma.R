@@ -350,12 +350,10 @@ vectorize_contrastdefs <- function(contrastdefs){
 
 
 .limmacontrast <- function(object, fit, design, coefficients, contrastdefs){
-    assert_is_identical_to_true(
-        ( is.null(coefficients) & !is.null(contrastdefs)) |
-        (!is.null(coefficients) &  is.null(contrastdefs)))
-    contrastmat <- if (is.null(contrastdefs))  NULL else makeContrasts(
-                        contrasts = contrastdefs, levels = design)
-    fit %<>% contrasts.fit(coefficients = coefficients, contrasts = contrastmat)
+    if (is.null(contrastdefs)){ 
+                fit %<>% contrasts.fit(coefficients = coefficients) 
+    } else {    fit %<>% contrasts.fit(contrasts    = makeContrasts(
+                            contrasts = contrastdefs, levels = design)) }
     limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
     } else { c('effect','rank','t','se','p','fdr','bonf') }
     limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
