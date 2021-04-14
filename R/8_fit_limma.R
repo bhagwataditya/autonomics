@@ -349,10 +349,13 @@ vectorize_contrastdefs <- function(contrastdefs){
 }
 
 
-.limmacontrast <- function(object, fit, design, contrastdefs){
-    # compute contrasts
-    contrastmat <- makeContrasts(contrasts = contrastdefs, levels = design)
-    fit %<>% contrasts.fit(contrasts = contrastmat)
+.limmacontrast <- function(object, fit, design, coefficients, contrastdefs){
+    assert_is_identical_to_true(
+        ( is.null(coefficients) & !is.null(contrastdefs)) |
+        (!is.null(coefficients) &  is.null(contrastdefs)))
+    contrastmat <- if (is.null(contrastdefs))  NULL else makeContrasts(
+                        contrasts = contrastdefs, levels = design)
+    fit %<>% contrasts.fit(coefficients = coefficients, contrasts = contrastmat)
     limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
     } else { c('effect','rank','t','se','p','fdr','bonf') }
     limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
@@ -384,7 +387,8 @@ vectorize_contrastdefs <- function(contrastdefs){
 #' @param object       SummarizedExperiment
 #' @param subgroupvar  subgroup variable
 #' @param formula      modeling formula
-#' @param contrastdefs    coefficient contrasts to be computed (only for limma)
+#' @param coefficients character vector: subset of `colnames(create_design(object, formula=formula))`
+#' @param contrastdefs character vector: linear combinations of coefficients (only for fit='limma')  
 #' \itemize{
 #' \item{c("t1-t0", "t2-t1", "t3-t2")}
 #' \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -498,11 +502,12 @@ vectorize_contrastdefs <- function(contrastdefs){
 #'     plot_venn(is_sig(object, contrast='t3_t2'))
 #' @export
 fit_limma <- function(object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    formula = default_formula(object, subgroupvar, 'limma'), 
-    contrastdefs = colnames(create_design(object, formula=formula)),
-    block   = NULL, 
-    weightvar  = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
+    formula      = default_formula(object, subgroupvar, 'limma'), 
+    coefficients = colnames(create_design(object, formula=formula)), 
+    contrastdefs = NULL,
+    block        = NULL, 
+    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     verbose = TRUE, plot=FALSE
 ){
 # Design/contrasts
@@ -534,7 +539,8 @@ fit_limma <- function(object,
                 block = block, correlation = metadata(object)$dupcor,
                 weights = weightmat))
 # Contrast
-    object %<>% .limmacontrast(fit, design, contrastdefs)
+    object %<>% .limmacontrast(fit, design, coefficients = coefficients, 
+                                contrastdefs = contrastdefs)
     if (plot)  print(plot_volcano(object, fit='limma')) 
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, 'limma'))
     return(object)
