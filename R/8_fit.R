@@ -337,7 +337,7 @@ merge_fit_quantities <- function(x, y){
 extract_fit_dt <- function(object, fit){
     Reduce( merge_fit_quantities,
             mapply( extract_fit_quantity,
-                    quantity = c('effect', 'p', 'fdr', 'bonf'),
+                    quantity = c('effect', 'p', 'fdr'),
                     MoreArgs = list(object=object, fit=fit),
                     SIMPLIFY = FALSE ))
 }

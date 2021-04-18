@@ -34,16 +34,17 @@
                     data      = sd,
                     weights   = weights,
                     na.action = stats::na.omit)))
+    fitres %<>% extract(, c('Estimate', 'Pr(>|t|)', 't value'), drop=FALSE)
             #      F = stats::anova(fitres)[, 'F value'], 
             #       F.p = stats::anova(fitres)[, 'Pr(>F)'])
     colnames(fitres) %<>% stri_replace_first_fixed('Estimate', 'effect')
-    colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
-    colnames(fitres) %<>% stri_replace_first_fixed('t value', 't')
+    # colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
+    colnames(fitres) %<>% stri_replace_first_fixed('t value',  't')
     colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
                         rep(rownames(fitres), times =ncol(fitres)), sep = '.')
-    fitmat %<>% cbind(F=0, F.p=1)
+    #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
 
@@ -53,15 +54,16 @@
                     random    = block, 
                     data      = sd,
                     na.action = stats::na.omit)))
+    fitres %<>% extract(, c('Value', 'p-value', 't-value'), drop = FALSE)
     colnames(fitres) %<>% stri_replace_first_fixed('Value', 'effect')
-    colnames(fitres) %<>% stri_replace_first_fixed('Std.Error', 'se')
+    #colnames(fitres) %<>% stri_replace_first_fixed('Std.Error', 'se')
     colnames(fitres) %<>% stri_replace_first_fixed('t-value', 't')
     colnames(fitres) %<>% stri_replace_first_fixed('p-value', 'p')
-    fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
+    #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep = '.')
-    fitmat %<>% cbind(F=0, F.p=1)
+    #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
 
@@ -79,15 +81,16 @@
             
     fitres %<>% lmerTest::as_lmerModLmerTest()
     fitres %<>% summary() %>% stats::coefficients()
+    fitres %<>% extract(, c('Estimate', 'Pr(>|t|)', 't value'), drop=FALSE)
     colnames(fitres) %<>% stri_replace_first_fixed('Estimate', 'effect')
-    colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
-    colnames(fitres) %<>% stri_replace_first_fixed('t value', 't')
+    #colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
+    colnames(fitres) %<>% stri_replace_first_fixed('t value',  't')
     colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
-    fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
+    #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep = '.')
-    fitmat %<>% cbind(F=0, F.p=1)
+    #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
 
@@ -116,8 +119,6 @@ fit_lmx <- function(object, fit,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefficients = NULL, verbose = TRUE, plot =  FALSE){
 # Initialize
-    for (var in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, !!sym(var)))
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
     formula %<>% addlhs()
     allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
@@ -136,29 +137,28 @@ fit_lmx <- function(object, fit,
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
     fitres <- dt[, fitmethod(.SD, formula=formula, block=block, 
             weights = get(weightvar)), by = 'feature_id' ]
-    fdt <- fitres[, c('feature_id', 'F', 'F.p'), with=FALSE]
-    names(fdt) %<>% stri_replace_first_fixed('F.p', paste0('F.p.', fit))
-    names(fdt) %<>% stri_replace_first_fixed('F',   paste0('F.',   fit))
-    object %<>% merge_fdata(fdt)
+    names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
+    for (var in setdiff(all.vars(formula), 'value'))  names(fitres) %<>% 
+        stri_replace_first_fixed(paste0('.', var), '.')
+    idx <- fvars(object) %>% extract(stri_endswith_fixed(., paste0('.', fit)))
+    fdata(object)[idx] <- NULL
+    fitres %<>% add_fdr()
+    object %<>% merge_fitres(fitres, fit=fit)
 # extract
-    for (x in setdiff(all.vars(formula), 'value'))  names(fitres) %<>% 
-        stri_replace_first_fixed(x, '')
-    quantities <- c('p', 't', 'effect', 'se')
+    #quantities <- c('p', 't', 'effect', 'se')
+    quantities <- c('effect', 'fdr', 'p', 't')
     fitres <- mapply(.extractstat, quantity=quantities, 
                             MoreArgs = list(fitres=fitres), SIMPLIFY = FALSE)
-    fitres$fdr  <- apply(fitres$p, 2, p.adjust, 'fdr')
-    fitres$bonf <- apply(fitres$p, 2, p.adjust, 'bonf')
     fitarray <- do.call(abind::abind, c(fitres, along=3))
     formula %<>% droplhs() %<>% formula2str()
     if (!is.null(weights))  formula %<>% 
                                 paste0(', weights = assays(object)$', weightvar)
     # names(dimnames(fitarray)) <- c('feature', formula,'quantity')
     names(dimnames(fitarray)) <- c('feature', 'contrast','quantity')
-    colnames(fitarray) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     metadata(object)[[fit]] <- fitarray
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
     if (is.null(coefficients)) coefficients <- colnames(metadata(object)[[fit]])
-    if (length(coefficients) > 1) coefficients %<>% setdiff('(Intercept)')
+    if (length(coefficients) > 1) coefficients %<>% setdiff('Intercept')
     if (plot)  print(plot_volcano(object, fit=fit, contrastdefs = coefficients))
     object }
 
@@ -173,6 +173,12 @@ fit_lm <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefficients = NULL, verbose = TRUE, plot =  FALSE
 ){
+# Assert
+    for (var in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, !!sym(var)))
+        # cannot be generified into fit_lmx because for lme/lmer block is 
+        # integrated in formula and also gets checked for (unnecessarily!)
+# Fit    
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
     metadata(object)$lm <- NULL
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
@@ -192,15 +198,22 @@ fit_lme <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefficients = NULL, verbose = TRUE, plot =  FALSE
 ){
+# Assert
     . <- NULL
     if (!requireNamespace('nlme', quietly = TRUE)){
         message("BiocManager::install('nlme'). Then re-run.")
         return(object) 
     }
+    for (var in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, !!sym(var)))
+        # cannot be generified into fit_lmx because for lme/lmer block is 
+        # integrated in formula and also gets checked for (unnecessarily!)
     assert_is_not_null(block)
+# Prepare
     if (is_a_string(block)){ 
         if (is_subset(block, svars(object)))  block %<>% sprintf('~1|%s', .)
         block %<>% as.formula() }
+# Fit
     if (verbose)  message('\t\tlme(', formula2str(formula), ', ', 
                         'random = ',  formula2str(block),')')
     metadata(object)$lme <- NULL
@@ -221,6 +234,7 @@ fit_lmer <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefficients = NULL, verbose = TRUE, plot =  FALSE
 ){
+# Assert
     . <- NULL
     if (!requireNamespace('lme4', quietly = TRUE)){
         message("`BiocManager::install('lme4')`. Then re-run.")
@@ -228,6 +242,11 @@ fit_lmer <- function(
     if (!requireNamespace('lmerTest', quietly = TRUE)){
         message("`BiocManager::install('lmerTest')`. Then re-run.")
         return(object) }
+    for (var in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, !!sym(var)))
+        # cannot be generified into fit_lmx because for lme/lmer block is 
+        # integrated in formula and also gets checked for (unnecessarily!)
+# Prepare
     if (is_formula(block))  block %<>% formula2str()
     if (is_a_string(block)){ 
         if (is_subset(block, svars(object)))  block %<>% sprintf('1|%s', .)
@@ -235,6 +254,7 @@ fit_lmer <- function(
         formula %<>% sprintf('%s + (%s)', ., block)
         formula %<>% as.formula()
     }
+# Fit
     if (verbose)  message('\t\tlmer(', formula2str(formula), ')')
     metadata(object)$lmer <- NULL
     fit_lmx(object, fit = 'lmer', subgroupvar = subgroupvar, 

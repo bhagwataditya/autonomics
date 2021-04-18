@@ -348,33 +348,61 @@ vectorize_contrastdefs <- function(contrastdefs){
     unname(unlist(lapply(contrastdefs, function(x) na.exclude(c(t(x))))))
 }
 
+add_fdr <- function(fitres){
+    fdr <- fitres %>% extract(, stri_startswith_fixed(names(.),'p.'),with=FALSE)
+    fdr[] %<>% lapply(p.adjust, method='fdr')
+    names(fdr) %<>% stri_replace_first_regex('^p.', 'fdr.')
+    fitres %<>% cbind(fdr)
+    fitres
+}
+
+# object: SumExp
+# fitres: data.table(p.contr1, p.contr2, effect.contr1, effect.contr2)
+# stat:  'p', 'effect', 'fdr', 't'
+# fit:   'limma', 'wilcoxon'
+merge_fitres <- function(object, fitres, fit, stat=NULL){
+    statsdt <- data.table::copy(fitres)   # dont change in original
+    statsdt %<>% extract(,c('feature_id', sort(names(.)[-1])), with=FALSE)
+    if (!is.null(stat))  names(statsdt)[-1] %<>% paste0(stat, '.', .)
+    names(statsdt)[-1] %<>% paste0('.', fit)
+    object %<>% merge_fdata(statsdt)
+    object
+}
+
+mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 
 .limmacontrast <- function(object, fit, design, coefficients, contrastdefs){
     if (is.null(contrastdefs)){ 
                 fit %<>% contrasts.fit(coefficients = coefficients) 
     } else {    fit %<>% contrasts.fit(contrasts    = makeContrasts(
                             contrasts = contrastdefs, levels = design)) }
-    limma_quantities <- if (all(fit$df.residual==0)){ c('effect', 'rank')
-    } else { c('effect','rank','t','se','p','fdr','bonf') }
+    limma_quantities <- if (all(fit$df.residual==0)){ 'effect'
+                        } else { c('effect','fdr', 'p', 't') }
     limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
                             dimnames = list(feature  = rownames(fit),
                                             contrast = colnames(fit),
                                             quantity = limma_quantities))
     limma(object)[,,'effect'] <- fit$coefficients
-    limma(object)[,,'rank'  ] <- apply(-abs(fit$coefficients), 2, rank)
-    #names(dimnames(limma(object)))[2] <- formula2str(formula)
+    limmacols <- fvars(object) %>% extract(stri_detect_fixed(., '.limma.'))
+    fdata(object)[limmacols] <- NULL
+    object %<>% merge_fitres(mat2fdt(fit$coefficients),stat='effect',fit='limma')
     # perform moderated t test
     if (!all(fit$df.residual==0)){
         fit %<>% eBayes()
-        pp <- fit$p.value
-        limma(object)[,,'t' ] <- fit$t
-        limma(object)[,,'se'] <- sqrt(fit$s2.post) * fit$stdev.unscaled
-        limma(object)[,,'p' ] <- pp
-        limma(object)[,,'rank'] <- apply(pp, 2, rank)
-        limma(object)[,,'fdr' ] <- apply(pp, 2, p.adjust, 'fdr')
-        limma(object)[,,'bonf'] <- apply(pp, 2, p.adjust, 'bonferroni')
-        fdata(object)$F.limma   <- fit$F
-        fdata(object)$F.p.limma <- fit$F.p
+        tvalues <- fit$t
+        pvalues <- fit$p.value
+        fdrvals <- apply(pvalues, 2, p.adjust, 'fdr')
+        limma(object)[,,'p'  ] <- pvalues
+        limma(object)[,,'fdr'] <- fdrvals
+        limma(object)[,,'t'  ] <- tvalues
+        # limma(object)[,,'se'  ] <- sqrt(fit$s2.post) * fit$stdev.unscaled
+        # limma(object)[,,'rank'] <- apply(fit$p.value, 2, rank)
+        #object %<>% merge_contrastmat(fit$t,       't')
+        object %<>% merge_fitres(mat2fdt(fdrvals), stat='fdr', fit='limma')
+        object %<>% merge_fitres(mat2fdt(pvalues), stat='p',   fit='limma')
+        object %<>% merge_fitres(mat2fdt(tvalues), stat='t',   fit='limma')
+        #fdata(object)$F.limma   <- fit$F
+        #fdata(object)$F.p.limma <- fit$F.p
     }
     return(object)
 }
