@@ -140,9 +140,8 @@ fit_lmx <- function(object, fit,
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     for (var in setdiff(all.vars(formula), 'value'))  names(fitres) %<>% 
         stri_replace_first_fixed(paste0('.', var), '.')
-    idx <- fvars(object) %>% extract(stri_endswith_fixed(., paste0('.', fit)))
-    fdata(object)[idx] <- NULL
     fitres %<>% add_fdr()
+    object %<>% reset_fitres(fit)
     object %<>% merge_fitres(fitres, fit=fit)
 # extract
     #quantities <- c('p', 't', 'effect', 'se')

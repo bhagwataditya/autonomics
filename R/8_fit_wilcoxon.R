@@ -85,6 +85,9 @@ fit_wilcoxon <- function(
     contrastdefs = contrast_coefs(object, formula=formula),
     block = NULL, weightvar = NULL, verbose = TRUE, plot = FALSE
 ){
+# assert
+    for (var in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, !!sym(var)))
 # fit
     . <- NULL
     dt <- sumexp_to_long_dt(object, svars = c(subgroupvar, block))
@@ -95,6 +98,7 @@ fit_wilcoxon <- function(
     fitres %<>% merge(data.table(fdata(object))[, 'feature_id', drop = FALSE], 
                         ., by = 'feature_id', all.x = TRUE)
     fitres %<>% add_fdr()
+    object %<>% reset_fitres('wilcoxon')
     object %<>% merge_fitres(fitres, fit='wilcoxon')
 # extract
     extract_quantity <- function(quantity, fitres){

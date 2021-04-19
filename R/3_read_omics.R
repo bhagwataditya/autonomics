@@ -471,9 +471,8 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
     if (is.null(dt))  return(objectdt)
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame'))
 # Convert to data.table
-# Important: * both have to be data.table, because merge.data.frame
-#              and merge.data.frame are differently behaved!
-#            * as.data.table does not work directly on a DataFrame object!
+# Important: * merge.data.frame and merge.data.table behave differently!
+#            * as.data.table does not work directly on a DataFrame!
 #              data.table::data.table(S4Vectors::DataFrame(a=1, b=2))
     rownames1 <- rownames(objectdt)
     objectdtclass <- class(objectdt)[1]
@@ -492,7 +491,15 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
     duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
     for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
 # Merge
-    objectdt %<>% merge(dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
+    objectdt %<>% merge.data.frame(
+                    dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
+    # objectdt %<>% merge(
+    #                 dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
+        # merge.data.table is currently not working properly
+        # some common feature_id values are being dropped
+        # this emerges when running fit_wilcoxon(atkin18.metabolon)
+        # which propagates fitres: merge_fitres -> merge_fdata -> merge_data
+        # could not isolate the problem so far into a reprex
     objectdt %<>% as(objectdtclass)
     rownames(objectdt) <- rownames1 # merging drops rownames
 # Return

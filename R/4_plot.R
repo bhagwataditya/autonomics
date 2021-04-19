@@ -616,26 +616,28 @@ plot_subgroup_points <- function(
 
 
 plot_contrast_boxplots <- function(
-    object, subgroupvar, contrast, quantity='fdr', fit
+    object, subgroupvar, fit, formula = default_formula(object, subgroupvar, fit), contrast
 ){
 # Order/Extract on p value
-    extract_p    <- function(x)      x[,contrast,'p']
-    extract_fdr  <- function(x)      x[,contrast,'fdr']
-    extract_sign <- function(x) sign(x[,contrast,'effect'])
-    signs <- vapply(metadata(object)[fit], extract_sign, numeric(nrow(object)))
-    pvals <- vapply(metadata(object)[fit], extract_p,    numeric(nrow(object)))
-    fdrs  <- vapply(metadata(object)[fit], extract_fdr,  numeric(nrow(object)))
+    fdrvar    <- paste0('fdr',   '.',contrast,'.',fit)
+    effectvar <- paste0('effect','.',contrast,'.',fit)
+    pvar      <- paste0('p',     '.',contrast,'.',fit)
+    pvals   <- fdata(object)[, pvar,      drop=FALSE ]
+    fdrs    <- fdata(object)[, fdrvar,    drop=FALSE ]
+    effects <- fdata(object)[, effectvar, drop=FALSE ]
+    signs   <- sign(effects)
+
     pvals %<>% apply(1, min)  # we also want single method features
     fdrs  %<>% apply(1, min)  # we also want single method features
     signs %<>% apply(1, mean)
     dnfeatures <- names(    sort(pvals[fdrs<0.05 & signs<0]))
     upfeatures <- names(rev(sort(pvals[fdrs<0.05 & signs>0])))
     object %<>% extract_features(c(dnfeatures, upfeatures))
-    metadata(object)[fit] %<>% lapply(extract, rownames(object), , )
     fdata(object)$feature_id %<>% factor(c(dnfeatures, upfeatures))
 # Interpret contrasts
-    contrastmat <- stats::contrasts(object[[subgroupvar]])
-    if (all(contrastmat[1,]==0)) contrastmat[1,] <- -1
+    contrastmat <- makeContrasts(contrasts = contrast, 
+                                levels = create_design(object, formula=formula))
+        # should work also for wilcoxon
     uplevels <- which.names(contrastmat[, contrast] > 0)
     dnlevels <- which.names(contrastmat[, contrast] < 0)
 # Prepare dt
@@ -648,7 +650,7 @@ plot_contrast_boxplots <- function(
     p <- ggplot(dt, aes(x=SET, y=value, fill=SET)) +
     facet_wrap(c('feature_id', fit), scales='free_y', labeller='label_both') + 
     theme_bw() + xlab(NULL) + ggtitle(contrast) + 
-    geom_boxplot() + 
+    geom_boxplot(na.rm = TRUE) + 
     geom_hline( data = mediandt, linetype = 'longdash',
                 aes(yintercept=value, alpha=contrastsubgroup, color = SET)) + 
     guides(alpha=FALSE)
@@ -663,7 +665,7 @@ plot_contrast_boxplots <- function(
 
 merge_fdr <- function(dt, object, contrast, fit){
     for (curfit in fit){
-        fdrdt <- metadata(object)[[curfit]][, contrast, ][, 'fdr', drop=FALSE]
+        fdrdt <- fdata(object)[, paste0('fdr.', contrast, '.', curfit), drop=FALSE]
         fdrdt %<>% data.table(keep.rownames=TRUE)
         names(fdrdt) <- c('feature_id', curfit)
         fdrdt[, (curfit) := formatC(get(curfit), format='e', digits=0)]
