@@ -398,7 +398,7 @@ testmat <- function(object, quantity='fdr', cutoff=0.05){
     data.matrix(df * sign(object))
 }
 
-#' Model fits
+#' Get fit models or extracted coefs/contrasts
 #' 
 #' @param object SummarizedExperiment
 #' @return  character vector
@@ -407,13 +407,21 @@ testmat <- function(object, quantity='fdr', cutoff=0.05){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, fit='limma', plot=FALSE)
 #' fits(object)
+#' coefs(object)
 #' @export
 fits <- function(object){
-    pvars(object)  %>% 
+    pvars(object)          %>% 
     split_extract(3, '.')  %>% 
     unique()
 }
 
+#' @rdname fits
+#' @export
+coefs <- function(object, fit = fits(object)){
+    pvars(object)                        %>% 
+    stri_replace_first_regex('^p.', '')  %>% 
+    stri_replace_first_regex(paste0('.', fit[1], '$'), '') 
+}
 
 #==============================================================================
 #

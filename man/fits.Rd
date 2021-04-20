@@ -2,9 +2,12 @@
 % Please edit documentation in R/8_fit.R
 \name{fits}
 \alias{fits}
-\title{Model fits}
+\alias{coefs}
+\title{Get fit models or extracted coefs/contrasts}
 \usage{
 fits(object)
+
+coefs(object, fit = fits(object))
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -13,11 +16,12 @@ fits(object)
 character vector
 }
 \description{
-Model fits
+Get fit models or extracted coefs/contrasts
 }
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, fit='limma', plot=FALSE)
 fits(object)
+coefs(object)
 }

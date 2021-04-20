@@ -84,15 +84,29 @@ melt_contrastdefs <- function(contrastdefmat){
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, fit='limma', plot=FALSE)
+#' object <- read_proteingroups(file, fit='limma', impute=TRUE, plot=FALSE)
 #' make_volcano_dt(object, fit = 'limma')
 #' @export
 make_volcano_dt <- function(
-    object, fit, contrastdefmat = contrastdefs(object)[[1]], ntop = 3
+    object, fit, coefs, ntop = 3
 ){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
-    dt <- extract_fit_dt(object, fit)
-    dt %<>% merge(melt_contrastdefs(contrastdefmat), by = 'contrast')
+    id.vars <- c('feature_id', 'feature_name', 'imputed') 
+    id.vars %<>% intersect(fvars(object))
+    fvars0 <- c(id.vars, effectvars(object), pvars(object), fdrvars(object))
+    dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
+    dt %<>% melt.data.table(id.vars = id.vars)
+    dt %<>% tidyr::separate(variable, into = c('quantity', 'coef', 'fit'))
+    dt %<>% extract(coefs, on = 'coef')
+    dt %<>% extract(fit,   on = 'fit')
+    
+    id.vars %<>% c('coef', 'fit')
+    #dt %<>% dcast.data.table(feature_id+feature_name+coef+fit ~ quantity, value.var = 'value')
+    dt %<>% tidyr::pivot_wider(
+            id_cols = id.vars, names_from = 'quantity', values_from = 'value')
+    dt %<>% data.table()
+    #dt <- extract_fit_dt(object, fit)
+    #dt %<>% merge(melt_contrastdefs(contrastdefmat), by = 'coef')
     dt %<>% extract(!is.na(effect) & !is.na(p))
     dt[, mlp  := -log10(p)]
 
@@ -100,7 +114,7 @@ make_volcano_dt <- function(
     # Note: Using effect <= 0 (rather than effect <0) is required.
     # Otherwise the (very few) features with effect=0 will have no effect for
     # 'significance'
-    by <- intersect(c('contrast', 'imputed'), names(dt))
+    by <- intersect(c('coef', 'imputed', 'fit'), names(dt))
     dt[,topdown := top_down(effect, fdr, mlp, ntop), by=by]
     dt[,topup   := top_up(  effect, fdr, mlp, ntop), by=by]
     dt[effect<=0,            significance := 'down']
@@ -115,35 +129,38 @@ make_volcano_dt <- function(
 }
 
 #' Plot volcano
-#' @param object         SummarizedExperiment
-#' @param fit           'limma', 'lme', 'lm', 'wilcoxon'
-#' @param contrastdefs   contrastdef vector / matrix / list
-#' @param label          fvar for labeling top features
-#' @param ntop           number: n top features to be annotated
+#' @param object  SummarizedExperiment
+#' @param fit     'limma', 'lme', 'lm', 'wilcoxon'
+#' @param coefs   character vector
+#' @param label   fvar for labeling top features
+#' @param ntop    number: n top features to be annotated
 #' @return ggplot object
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit='limma', plot=FALSE)
 #' plot_volcano(object)
+#' object %<>% fit_lm()
+#' plot_volcano(object)
+#' 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, impute=TRUE, fit='limma', plot=FALSE)
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'))
+#' object %<>% fit_lm(subgroupvar = 'SET')
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
+#' 
 #' @export
 plot_volcano <- function(object, 
-    fit = intersect(names(metadata(object)), TESTS)[1], 
-    contrastdefs = autonomics::contrastdefs(object)[[1]], 
-    label = feature_name, ntop = 1
+    fit = fits(object), coefs = autonomics::coefs(object, fit[1]), 
+    label = feature_name, ntop = 1, nrow=NULL
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
-    assert_is_a_string(fit)
-    assert_is_subset(fit, TESTS)
-    assert_is_subset(fit, names(metadata(object)))
-    if (is.null(contrastdefs)) contrastdefs <- colnames(metadata(object)[[fit]])
-    if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
-    if (is.list(contrastdefs))      contrastdefs %<>% extract2(1)
-    assert_is_matrix(contrastdefs)
+    assert_is_subset(fit, fits(object))
     topup <- topdown <- effect <- mlp <- facetrow <- facetcol <- NULL
     label <- enquo(label)
 # Prepare
-    plotdt <- make_volcano_dt(object, fit, contrastdefs, ntop = ntop)
+    plotdt <- make_volcano_dt(object, fit, coefs, ntop = ntop)
     txtdt  <- copy(plotdt)[topup==TRUE | topdown==TRUE]
     colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100), # 20 70 100
                     hcl(h=120, l=c(100, 70, 20), c=100)) # 100 70 20
@@ -151,10 +168,7 @@ plot_volcano <- function(object,
 # Plot
     imputed <- NULL # fallback when plotdt misses "imputed"
     significance <- NULL
-    p <- ggplot(plotdt) + facet_grid(
-        rows = if (all(stri_isempty(plotdt$facetrow))) NULL else vars(facetrow),
-        cols = if (all(stri_isempty(plotdt$facetcol))) NULL else vars(facetcol),
-        scales = 'fixed') +
+    p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow) +  
     geom_point(aes(x=effect,y=mlp,color=significance,shape=imputed),na.rm=TRUE)
     if (!quo_is_null(label)) p <- p + geom_text_repel(
                         data = txtdt,
@@ -167,6 +181,6 @@ plot_volcano <- function(object,
         scale_color_manual(values = colorvalues, name = NULL) +
         xlab('log2(FC)') +
         ylab('-log10(p)') +
-        ggtitle(fit)#+
+        ggtitle('volcano')#+
         #guides(color=FALSE)
 }

@@ -6,10 +6,11 @@
 \usage{
 plot_volcano(
   object,
-  fit = intersect(names(metadata(object)), TESTS)[1],
-  contrastdefs = autonomics::contrastdefs(object)[[1]],
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit[1]),
   label = feature_name,
-  ntop = 1
+  ntop = 1,
+  nrow = NULL
 )
 }
 \arguments{
@@ -17,7 +18,7 @@ plot_volcano(
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
-\item{contrastdefs}{contrastdef vector / matrix / list}
+\item{coefs}{character vector}
 
 \item{label}{fvar for labeling top features}
 
@@ -33,4 +34,14 @@ Plot volcano
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, fit='limma', plot=FALSE)
 plot_volcano(object)
+object \%<>\% fit_lm()
+plot_volcano(object)
+
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file, impute=TRUE, fit='limma', plot=FALSE)
+plot_volcano(object, coefs = c('t1', 't2', 't3'))
+object \%<>\% fit_lm(subgroupvar = 'SET')
+plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
+plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
+
 }
