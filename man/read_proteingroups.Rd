@@ -33,6 +33,7 @@ read_proteingroups(
   subgroupvar = NULL,
   formula = NULL,
   block = NULL,
+  coefs = NULL,
   contrastdefs = NULL,
   pca = FALSE,
   fit = NULL,
@@ -57,6 +58,7 @@ read_phosphosites(
   subgroupvar = NULL,
   formula = NULL,
   block = NULL,
+  coefs = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -99,7 +101,9 @@ read_phosphosites(
 
 \item{block}{block svar}
 
-\item{contrastdefs}{contrastdef vector/matrix/list}
+\item{coefs}{NULL or character vector: model coefficients to test}
+
+\item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
 
 \item{pca}{whether to pca}
 

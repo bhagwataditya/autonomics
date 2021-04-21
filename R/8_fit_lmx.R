@@ -43,7 +43,7 @@
     colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times =ncol(fitres)), sep = '.')
+                        rep(rownames(fitres), times =ncol(fitres)), sep=FITSEP)
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
@@ -62,7 +62,7 @@
     #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = ncol(fitres)), sep = '.')
+                        rep(rownames(fitres), times = ncol(fitres)), sep=FITSEP)
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
@@ -89,16 +89,16 @@
     #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = ncol(fitres)), sep = '.')
+                        rep(rownames(fitres), times = ncol(fitres)), sep=FITSEP)
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
 
 .extractstat <- function(fitres, quantity){
-    idx <- stri_startswith_fixed(names(fitres), paste0(quantity, '.'))
+    idx <- stri_startswith_fixed(names(fitres), paste0(quantity, FITSEP))
     mat <- as.matrix(fitres[, idx, with=FALSE])
     rownames(mat) <- fitres$feature_id
-    colnames(mat) %<>% stri_replace_first_fixed(paste0(quantity, '.'), '')
+    colnames(mat) %<>% stri_replace_first_fixed(paste0(quantity, FITSEP), '')
     mat
 }
 
@@ -117,7 +117,7 @@ fit_lmx <- function(object, fit,
     formula = default_formula(object, subgroupvar, fit), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefficients = NULL, verbose = TRUE, plot =  FALSE){
+    coefs = NULL, verbose = TRUE, plot =  FALSE){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
     formula %<>% addlhs()
@@ -139,7 +139,7 @@ fit_lmx <- function(object, fit,
             weights = get(weightvar)), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     for (var in setdiff(all.vars(formula), 'value'))  names(fitres) %<>% 
-        stri_replace_first_fixed(paste0('.', var), '.')
+        stri_replace_first_fixed(paste0(FITSEP, var), FITSEP)
     fitres %<>% add_fdr()
     object %<>% reset_fitres(fit)
     object %<>% merge_fitres(fitres, fit=fit)
@@ -156,9 +156,9 @@ fit_lmx <- function(object, fit,
     names(dimnames(fitarray)) <- c('feature', 'contrast','quantity')
     metadata(object)[[fit]] <- fitarray
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
-    if (is.null(coefficients)) coefficients <- colnames(metadata(object)[[fit]])
-    if (length(coefficients) > 1) coefficients %<>% setdiff('Intercept')
-    if (plot)  print(plot_volcano(object, fit=fit, contrastdefs = coefficients))
+    if (is.null(coefs)) coefs <- colnames(metadata(object)[[fit]])
+    if (length(coefs) > 1) coefs %<>% setdiff('Intercept')
+    if (plot)  print(plot_volcano(object, fit=fit, coefs = coefs))
     object }
 
 
@@ -170,7 +170,7 @@ fit_lm <- function(
     formula = default_formula(object, subgroupvar, fit='lm'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefficients = NULL, verbose = TRUE, plot =  FALSE
+    coefs = NULL, verbose = TRUE, plot =  FALSE
 ){
 # Assert
     for (var in all.vars(formula))  assert_is_identical_to_false(
@@ -182,7 +182,7 @@ fit_lm <- function(
     metadata(object)$lm <- NULL
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
             formula = formula, block = block, 
-            weightvar = weightvar, coefficients = coefficients, 
+            weightvar = weightvar, coefs = coefs, 
             verbose = verbose, plot = plot)
 }
 
@@ -195,7 +195,7 @@ fit_lme <- function(
     formula = default_formula(object, subgroupvar, fit='lme'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefficients = NULL, verbose = TRUE, plot =  FALSE
+    coefs = NULL, verbose = TRUE, plot =  FALSE
 ){
 # Assert
     . <- NULL
@@ -218,7 +218,7 @@ fit_lme <- function(
     metadata(object)$lme <- NULL
     fit_lmx(object, fit = 'lme', subgroupvar = subgroupvar, 
             formula = formula, block = block, 
-            weightvar = weightvar, coefficients = coefficients, 
+            weightvar = weightvar, coefs = coefs, 
             verbose = verbose, plot = plot)
 }
 
@@ -231,7 +231,7 @@ fit_lmer <- function(
     formula = default_formula(object, subgroupvar, fit='lmer'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefficients = NULL, verbose = TRUE, plot =  FALSE
+    coefs = NULL, verbose = TRUE, plot =  FALSE
 ){
 # Assert
     . <- NULL
@@ -258,6 +258,6 @@ fit_lmer <- function(
     metadata(object)$lmer <- NULL
     fit_lmx(object, fit = 'lmer', subgroupvar = subgroupvar, 
             formula = formula, block = NULL, 
-            weightvar = weightvar, coefficients = coefficients, 
+            weightvar = weightvar, coefs = coefs, 
             verbose = verbose, plot = plot)
 }

@@ -270,7 +270,8 @@ stack <- function(x, y){
 #' @param fit       fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
 #' @param formula         designmat formula
 #' @param block           block svar
-#' @param contrastdefs    contrastdef vector/matrix/list
+#' @param coefs           NULL or character vector: model coefficients to test
+#' @param contrastdefs    NULL or character vector: coefficient contrasts to test
 #' @param verbose         whether to msg
 #' @param plot            whether to plot
 #' @return SummarizedExperiment
@@ -284,7 +285,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fname_var = 'BIOCHEMICAL',
     impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
     pca = FALSE, fit = NULL, formula = NULL, block = NULL, 
-    contrastdefs = NULL, verbose = TRUE, plot = TRUE
+    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
     subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
@@ -303,7 +304,8 @@ read_metabolon <- function(file, sheet = 'OrigScale',
 # Analyze
     object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar, 
                     formula = formula, block = block, 
-                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
+                    coefs=coefs, contrastdefs = contrastdefs, 
+                    verbose = verbose, plot = plot)
 # Return
     object
 }

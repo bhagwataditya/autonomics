@@ -1260,7 +1260,8 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
 #' @param pepcountpattern value in MAXQUANT_PATTERNS_PEPCOUNTS
 #' @param formula       desgnmat formula
 #' @param block         block svar
-#' @param contrastdefs  contrastdef vector/matrix/list
+#' @param coefs        NULL or character vector: model coefficients to test
+#' @param contrastdefs NULL or character vector: coefficient contrasts to test
 #' @param pca           whether to pca
 #' @param fit           fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'
 #' @param verbose       whether to message
@@ -1276,7 +1277,7 @@ read_proteingroups <- function(
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], subgroupvar = NULL,
-    formula = NULL, block = NULL, contrastdefs = NULL,
+    formula = NULL, block = NULL, coefs = NULL, contrastdefs = NULL,
     pca = FALSE, fit = NULL, verbose = TRUE, plot = TRUE
 ){
 # Assert
@@ -1298,7 +1299,7 @@ read_proteingroups <- function(
 # Analyze
     object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
                         formula = formula, block = block, 
-                        contrastdefs = contrastdefs, 
+                        coefs = coefs, contrastdefs = contrastdefs, 
                         verbose = verbose, plot = plot)
 # Return
     object
@@ -1313,7 +1314,7 @@ read_phosphosites <- function(
     reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
     invert_subgroups = character(0), pca = FALSE,
     fit = NULL, subgroupvar = NULL, formula = NULL, block = NULL, 
-    contrastdefs = NULL, verbose = TRUE, plot = TRUE
+    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Assert
     . <- NULL
@@ -1340,7 +1341,8 @@ read_phosphosites <- function(
     object %<>% transform_maxquant(impute=FALSE, verbose=verbose, plot=plot)
 # Analyze
     object %<>% analyze(pca=pca, fit=fit, subgroupvar=subgroupvar, 
-                        formula=formula, block=block, contrastdefs=contrastdefs,
+                        formula=formula, block=block, 
+                        coefs=coefs, contrastdefs=contrastdefs,
                         verbose=verbose, plot=plot)
 # Return
     object

@@ -349,9 +349,11 @@ vectorize_contrastdefs <- function(contrastdefs){
 }
 
 add_fdr <- function(fitres){
-    fdr <- fitres %>% extract(, stri_startswith_fixed(names(.),'p.'),with=FALSE)
+    fdr <- fitres %>% extract(, stri_startswith_fixed(
+                                    names(.), paste0('p', FITSEP)), with=FALSE)
     fdr[] %<>% lapply(p.adjust, method='fdr')
-    names(fdr) %<>% stri_replace_first_regex('^p.', 'fdr.')
+    names(fdr) %<>% stri_replace_first_fixed(
+                paste0('p', FITSEP), paste0('fdr', FITSEP))
     fitres %<>% cbind(fdr)
     fitres
 }
@@ -364,26 +366,30 @@ reset_fitres <- function(object, fit){
     metadata(object)[[fit]] <- NULL
     object
 }
-    
+
+FITSEP <- '~'
+
 # object: SumExp
 # fitres: data.table(p.contr1, p.contr2, effect.contr1, effect.contr2)
 # stat:  'p', 'effect', 'fdr', 't'
 # fit:   'limma', 'wilcoxon'
 merge_fitres <- function(object, fitres, fit, statistic=NULL){
     fitresdt <- data.table::copy(fitres)   # dont change in original
-    fitresdt %<>% extract(,c('feature_id', sort(names(.)[-1])), with=FALSE)
-    if (!is.null(statistic))  names(fitresdt)[-1] %<>% paste0(statistic, '.', .)
-    names(fitresdt)[-1] %<>% paste0('.', fit)
+    firstcols <- intersect(c('feature_id', 'Intercept'), names(fitresdt))
+    fitresdt %<>% extract(,c(firstcols, 
+                            sort(setdiff(names(.), firstcols))), with=FALSE)
+    if (!is.null(statistic)) names(fitresdt)[-1] %<>% paste0(statistic,FITSEP,.)
+    names(fitresdt)[-1] %<>% paste0(FITSEP, fit)
     object %<>% merge_fdata(fitresdt)
     object
 }
 
 mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 
-.limmacontrast <- function(object, fit, design, coefficients, contrastdefs){
+.limmacontrast <- function(object, fit, design, coefs, contrastdefs){
     object %<>% reset_fitres('limma')
     if (is.null(contrastdefs)){ 
-                fit %<>% contrasts.fit(coefficients = coefficients) 
+                fit %<>% contrasts.fit(coefficients = coefs) 
     } else {    fit %<>% contrasts.fit(contrasts    = makeContrasts(
                             contrasts = contrastdefs, levels = design)) }
     limma_quantities <- if (all(fit$df.residual==0)){ 'effect'
@@ -422,8 +428,8 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param object       SummarizedExperiment
 #' @param subgroupvar  subgroup variable
 #' @param formula      modeling formula
-#' @param coefficients character vector: subset of `colnames(create_design(object, formula=formula))`
-#' @param contrastdefs character vector: linear combinations of coefficients (only for fit='limma')  
+#' @param coefs        NULL or character vector: model coefficients to test
+#' @param contrastdefs NULL or character vector: coefficient contrasts to test
 #' \itemize{
 #' \item{c("t1-t0", "t2-t1", "t3-t2")}
 #' \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -446,7 +452,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     object$SUB %<>% factor()
 #'     
 #' # Fitting a linear model
-#' # Default in R is treatment coding: coefficients = baseline differences
+#' # Default in R is treatment coding: coefs = baseline differences
 #'     # the traditional approach: lm
 #'         object %<>% fit_lm(subgroupvar = 'SET')   # subgroupvar
 #'         object %<>% fit_lm(formula = ~SET)        # formula
@@ -539,7 +545,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 fit_limma <- function(object, 
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula      = default_formula(object, subgroupvar, 'limma'), 
-    coefficients = colnames(create_design(object, formula=formula)), 
+    coefs        = colnames(create_design(object, formula=formula)), 
     contrastdefs = NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
@@ -574,7 +580,7 @@ fit_limma <- function(object,
                 block = block, correlation = metadata(object)$dupcor,
                 weights = weightmat))
 # Contrast
-    object %<>% .limmacontrast(fit, design, coefficients = coefficients, 
+    object %<>% .limmacontrast(fit, design, coefs = coefs, 
                                 contrastdefs = contrastdefs)
     if (plot)  print(plot_volcano(object, fit='limma')) 
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, 'limma'))

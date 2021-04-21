@@ -281,13 +281,184 @@ subgroup_matrix <- function(object, subgroupvar){
     #subgroupmat %>% extract(rev(order(rownames(.))), order(colnames(.)))
 }
 
+#==============================================================================
+#
+#                   pvars /  fdrvars  / effectvars
+#                 pvalues / fdrvalues / effectvalues
+#                             fits
+#
+#==============================================================================
+
+#' Get p vars/values
+#' 
+#' @param object SummarizedExperiment
+#' @return  character vector
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit='limma', plot=FALSE)
+#' 
+#' effect(object)[7:10, ]
+#'      p(object)[7:10, ]
+#'    fdr(object)[7:10, ]
+#'   down(object)[7:10, ]
+#'     up(object)[7:10, ]
+#'   sign(object)[7:10, ]
+#'testmat(object)[7:10, ]
+#' 
+#'  pvars(object)
+#'    fdr(object)
+#' effect(object)
+#' 
+#' @export
+pvars <- function(object){
+    fvars(object) %>% extract(stri_startswith_fixed(., paste0('p', FITSEP)))
+}
+
+#' @rdname pvars
+#' @export
+effectvars <- function(object){
+    pvars0 <- pvars(object)
+    effectvars0 <- pvars0 %>% stri_replace_first_fixed('p', 'effect')
+    assert_is_subset(effectvars0, fvars(object))
+    effectvars0
+}
+
+#' @rdname pvars
+#' @export
+fdrvars <- function(object){
+    pvars0 <- pvars(object)
+    fdrvars0 <- pvars0 %>% stri_replace_first_fixed('p', 'fdr')
+    assert_is_subset(fdrvars0, fvars(object))
+    fdrvars0
+}
+
+fdf2fdt <- function(fdf){
+    dt <- data.table(fdf, keep.rownames = TRUE)
+    setnames(dt, 'rn', 'feature_id')
+    dt
+}
+    
+#' @rdname pvars
+#' @export
+p <- function(object){
+    df <- fdata(object)[, pvars(object), drop=FALSE]
+    names(df) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
+    df
+}  
+
+#' @rdname pvars
+#' @export
+effect <- function(object){
+    df <- fdata(object)[, effectvars(object), drop=FALSE]
+    names(df) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
+    df
+}
+
+#' @rdname pvars
+#' @export
+fdr <- function(object){
+    df <- fdata(object)[, fdrvars(object),    drop=FALSE]
+    names(df) %<>% stri_replace_first_regex(paste0('fdr', FITSEP), '')
+    df
+}
+
+sign <- function(object){
+    df <- base::sign(effect(object))
+    df
+}
+
+#' @rdname pvars
+#' @export
+down <- function(object, quantity='fdr', cutoff = 0.05){
+    df <- (get(quantity)(object) < cutoff) &
+        (effect(object) < 0)
+    mode(df) <- 'numeric'
+    df[is.na(df)] <- FALSE
+    df
+}
+
+#' @rdname pvars
+#' @export
+up <- function(object, quantity='fdr', cutoff = 0.05){
+    df <- (get(quantity)(object) < cutoff) &
+        (effect(object) > 0)
+    mode(df) <- 'numeric'
+    df[is.na(df)] <- FALSE
+    df
+}
+
+
+testmat <- function(object, quantity='fdr', cutoff=0.05){
+    df <- get(quantity)(object) < cutoff
+    mode(df) <- 'numeric'
+    data.matrix(df * sign(object))
+}
+
+#' Get fit models or extracted coefs/contrasts
+#' 
+#' @param object SummarizedExperiment
+#' @return  character vector
+#' @examples 
+#' require(magrittr)
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit='limma', plot=FALSE)
+#' fits(object)
+#' coefs(object)
+#' @export
+fits <- function(object){
+    pvars(object)          %>% 
+    split_extract(3, FITSEP)  %>% 
+    unique()
+}
+
+#' @rdname fits
+#' @export
+coefs <- function(object, fit = fits(object)){
+    pvars(object)                        %>% 
+    stri_replace_first_fixed(paste0('p', FITSEP), '')  %>% 
+    stri_replace_first_fixed(paste0(FITSEP, fit[1]), '') 
+}
 
 #==============================================================================
 #
-#                    limma & limma<-
-#                    extract_fit_dt
+#                    summarize_fit
+#                    old_summarize_fit
 #
 #==============================================================================
+
+#' Summarize fit
+#' @param object SummarizedExperiment
+#' @param fit 'limma', 'lme', 'lm', 'lme', 'wilcoxon'
+#' @return data.table(contrast, nup, ndown)
+#' @examples
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, subgroupvar = 'SET', impute=TRUE, plot=FALSE)
+#' object %<>% fit_limma(subgroupvar = 'SET')
+#' object %<>% fit_lm(subgroupvar = 'SET')
+#' summarize_fit(object)
+#' @export
+summarize_fit <- function(object, fit = fits(object)){
+    downdt <- colSums(down(object)) %>% data.table(coef = names(.), ndown = .)
+    downdt %<>% tidyr::separate(
+                    col = coef, into = c('contrast', 'fit'), sep = FITSEP)
+    
+    updt <- colSums(up(object)) %>% data.table(coef = names(.), nup = .)
+    updt %<>% tidyr::separate(
+                    col = coef, into = c('contrast', 'fit'), sep = FITSEP)
+    
+    sumdt <- merge(downdt, updt, by = c('fit', 'contrast'))
+    sumdt$contrast %<>% factor()
+    sumdt$contrast %<>% pull_level('Intercept')
+    setorderv(sumdt, c('fit', 'contrast'))
+    sumdt %<>% extract(fit, on = 'fit')
+    sumdt
+}
+
+pull_level <- function(x, lev){
+    assert_is_factor(x)
+    assertive::assert_is_subset(lev, levels(x))
+    factor(x, levels = c(lev, setdiff(levels(x), lev)))
+}
 
 #' Extract fit quantity
 #' @param object SummarizedExperiment
@@ -328,8 +499,7 @@ merge_fit_quantities <- function(x, y){
 #' object <- read_proteingroups(file, fit='limma', plot=FALSE)
 #' extract_fit_dt(object, fit = 'limma')
 #'
-#' file <- download_data('billing16.proteingroups.txt')
-#' inv <- c('EM_E', 'BM_E', 'BM_EM')
+#' file <- download_data('atkin18.metabolo.xlsx')
 #' object <- read_proteingroups(
 #'            file, invert_subgroups=inv, fit='limma', plot=FALSE)
 #' extract_fit_dt(object, fit = 'limma')
@@ -343,6 +513,7 @@ extract_fit_dt <- function(object, fit){
 }
 
 .summarize_fit <- function(object, fit){
+    
     effect <- fdr <- . <- NULL
     extract_fit_dt(object, fit = fit)[,
         .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
@@ -350,18 +521,10 @@ extract_fit_dt <- function(object, fit){
         by='contrast']
 }
 
-#' Summarize fit
-#' @param object SummarizedExperiment
-#' @param fit 'limma', 'lme', 'lm', 'lme', 'wilcoxon'
-#' @return data.table(contrast, nup, ndown)
-#' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, fit='limma', plot=FALSE)
-#' summarize_fit(object, 'limma')
-#' @export
-summarize_fit <- function(
+
+old_summarize_fit <- function(
     object, 
-    fit = intersect(names(metadata(object)), TESTS)[1]
+    fit = fits(object)
 ){
     . <- NULL
     if (is_scalar(fit)) return(.summarize_fit(object, fit))

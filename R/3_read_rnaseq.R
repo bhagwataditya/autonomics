@@ -957,32 +957,33 @@ read_rnaseq_bams <- function(
 #'
 #' Read/analyze rnaseq counts / bamfiles
 #'
-#' @param dir   read_rnaseq_bams: bam/samfile dir
-#' @param paired   read_rnaseq_bams: whether paired end reads
-#' @param genome   read_rnaseq_bams: mm10"/"hg38"/etc. or GTF file
-#' @param nthreads read_rnaseq_bams: nthreads used by Rsubread::featureCounts()
-#' @param file     read_rnaseq_counts: count file
-#' @param fid_col  featureid fvar
-#' @param sfile    sample file
-#' @param sfileby  sample file mergeby column
+#' @param dir          read_rnaseq_bams: bam/samfile dir
+#' @param paired       read_rnaseq_bams: whether paired end reads
+#' @param genome       read_rnaseq_bams: mm10"/"hg38"/etc. or GTF file
+#' @param nthreads  read_rnaseq_bams: nthreads used by Rsubread::featureCounts()
+#' @param file         read_rnaseq_counts: count file
+#' @param fid_col      featureid fvar
+#' @param sfile        sample file
+#' @param sfileby      sample file mergeby column
 #' @param subgroupvar  subgroup svar
-#' @param block    block svar
-#' @param ffile    feature file
-#' @param ffileby  feature file mergeby column
-#' @param fnamevar featurename fvar
-#' @param formula  designmat formula
-#' @param contrastdefs contrastdef vector/matrix/list
+#' @param block        block svar
+#' @param ffile        feature file
+#' @param ffileby      feature file mergeby column
+#' @param fnamevar     featurename fvar
+#' @param formula      designmat formula
+#' @param coefs        NULL or character vector: model coefficients to test
+#' @param contrastdefs NULL or character vector: coefficient contrasts to test
 #' @param min_count    min feature count required in some samples
 #' @param pseudocount  added pseudocount to prevent -Inf log2 values
 #' @param genesize     genesize fvar for tpm
-#' @param tmm      whether to tmm-scale library sizes
-#' @param cpm      whether to compute cpm
-#' @param voom     whether to compute voom precision weights
-#' @param log2     whether to log2 transform
-#' @param pca      whether to pca
-#' @param fit      fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param verbose  whether to message
-#' @param plot     whether to plot
+#' @param tmm          whether to tmm-scale library sizes
+#' @param cpm          whether to compute cpm
+#' @param voom         whether to compute voom precision weights
+#' @param log2         whether to log2 transform
+#' @param pca          whether to pca
+#' @param fit          fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
+#' @param verbose      whether to message
+#' @param plot         whether to plot
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
@@ -1000,7 +1001,7 @@ read_rnaseq_counts <- function(
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
     cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, 
-    fit = NULL, voom = !is.null(fit), contrastdefs = NULL, 
+    fit = NULL, voom = !is.null(fit), coefs = NULL, contrastdefs = NULL, 
     verbose = TRUE, plot = TRUE
 ){
 # Read
@@ -1029,7 +1030,8 @@ read_rnaseq_counts <- function(
     object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
                     formula = formula, block = block, 
                     weightvar = if (voom) 'weights' else NULL,
-                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
+                    coefs = coefs, contrastdefs = contrastdefs, 
+                    verbose = verbose, plot=plot)
 # Return
     object
 }
@@ -1043,7 +1045,8 @@ read_rnaseq_counts <- function(
 #' @param formula      model formula
 #' @param block        block svar
 #' @param weightvar    NULL or name of weight matrix in assays(object)
-#' @param contrastdefs contrastdefs vector/matrix/list
+#' @param coefs        NULL or character vector: model coefficients to test
+#' @param contrastdefs NULL or character vector: coefficient contrasts to test
 #' @param verbose      whether to msg
 #' @param plot         whether to plot
 #' @return SummarizedExperiment
@@ -1061,6 +1064,7 @@ analyze <- function(
     formula = default_formula(object, subgroupvar, fit),
     block = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+    coefs = colnames(create_design(object, formula = formula)),
     contrastdefs = contrast_coefs(object, formula),
     verbose = TRUE,
     plot = TRUE
@@ -1083,9 +1087,11 @@ analyze <- function(
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
         if (is.null(formula)) formula <- default_formula(object,subgroupvar,fit)
-        if (is.null(contrastdefs)) contrastdefs<- contrast_coefs(object,formula)
+        if (is.null(coefs)) coefs <- colnames(create_design(
+                                                object, formula = formula))
         object %<>% fitfun( subgroupvar  = subgroupvar,
                             formula      = formula,
+                            coefs        = coefs,
                             contrastdefs = contrastdefs,
                             block        = block,
                             weightvar    = weightvar,

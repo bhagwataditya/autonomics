@@ -159,7 +159,8 @@ rm_single_value_columns <- function(df){
 #' @param fit           fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'
 #' @param formula       design formula (using svars)
 #' @param block         block var
-#' @param contrastdefs  contrastdef vector/matrix/list
+#' @param coefs        NULL or character vector: model coefficients to test
+#' @param contrastdefs NULL or character vector: coefficient contrasts to test
 #' @param verbose       whether to msg
 #' @param plot          whether to plot
 #' @return Summarizedexperiment
@@ -173,8 +174,8 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, pca = FALSE, 
-    fit = NULL, formula = NULL, block = NULL, contrastdefs = NULL,
-    verbose = TRUE, plot = TRUE
+    fit = NULL, formula = NULL, block = NULL, 
+    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_somascan(
@@ -202,7 +203,8 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 # Analyze
     object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
                     formula = formula, block = block, 
-                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
+                    coefs = coefs, contrastdefs = contrastdefs, 
+                    verbose = verbose, plot=plot)
 # Return
     object
 }

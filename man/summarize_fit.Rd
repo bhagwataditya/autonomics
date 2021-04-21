@@ -4,7 +4,7 @@
 \alias{summarize_fit}
 \title{Summarize fit}
 \usage{
-summarize_fit(object, fit = intersect(names(metadata(object)), TESTS)[1])
+summarize_fit(object, fit = fits(object))
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -18,7 +18,9 @@ data.table(contrast, nup, ndown)
 Summarize fit
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, fit='limma', plot=FALSE)
-summarize_fit(object, 'limma')
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file, subgroupvar = 'SET', impute=TRUE, plot=FALSE)
+object \%<>\% fit_limma(subgroupvar = 'SET')
+object \%<>\% fit_lm(subgroupvar = 'SET')
+summarize_fit(object)
 }
