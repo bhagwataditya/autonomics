@@ -96,7 +96,8 @@ make_volcano_dt <- function(
     fvars0 <- c(id.vars, effectvars(object), pvars(object), fdrvars(object))
     dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
     dt %<>% melt.data.table(id.vars = id.vars)
-    dt %<>% tidyr::separate(variable, into = c('quantity', 'coef', 'fit'))
+    dt %<>% tidyr::separate(
+                variable, into = c('quantity', 'coef', 'fit'), sep = FITSEP)
     dt %<>% extract(coefs, on = 'coef')
     dt %<>% extract(fit,   on = 'fit')
     

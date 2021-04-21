@@ -72,7 +72,7 @@
                 subgrouplevels = subgrouplevels, 
                 block = block, verbose = verbose)
     data.table::setnames(resdt, c('p', 't', 'effect'), 
-                        sprintf('%s.%s', c('p', 't', 'effect'), contrastdef))
+                        paste(c('p', 't', 'effect'), contrastdef, sep=FITSEP))
     resdt
 }
 
@@ -102,7 +102,7 @@ fit_wilcoxon <- function(
     object %<>% merge_fitres(fitres, fit='wilcoxon')
 # extract
     extract_quantity <- function(quantity, fitres){
-        quantitydot <- paste0(quantity, '.')
+        quantitydot <- paste0(quantity, FITSEP)
         quantitymat <- fitres[, stri_startswith_fixed(
                         names(fitres), quantitydot), with=FALSE]
         quantitymat %<>% as.matrix()

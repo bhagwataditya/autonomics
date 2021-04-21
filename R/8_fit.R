@@ -310,13 +310,13 @@ subgroup_matrix <- function(object, subgroupvar){
 #' effect(object)
 #' 
 #' @export
-pvars        <- function(object){
-    fvars(object) %>% extract(stri_startswith_fixed(., 'p.'))
+pvars <- function(object){
+    fvars(object) %>% extract(stri_startswith_fixed(., paste0('p', FITSEP)))
 }
 
 #' @rdname pvars
 #' @export
-effectvars   <- function(object){
+effectvars <- function(object){
     pvars0 <- pvars(object)
     effectvars0 <- pvars0 %>% stri_replace_first_fixed('p', 'effect')
     assert_is_subset(effectvars0, fvars(object))
@@ -325,7 +325,7 @@ effectvars   <- function(object){
 
 #' @rdname pvars
 #' @export
-fdrvars      <- function(object){
+fdrvars <- function(object){
     pvars0 <- pvars(object)
     fdrvars0 <- pvars0 %>% stri_replace_first_fixed('p', 'fdr')
     assert_is_subset(fdrvars0, fvars(object))
@@ -340,9 +340,9 @@ fdf2fdt <- function(fdf){
     
 #' @rdname pvars
 #' @export
-p      <- function(object){
+p <- function(object){
     df <- fdata(object)[, pvars(object), drop=FALSE]
-    names(df) %<>% stri_replace_first_regex('^p.', '')
+    names(df) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
     df
 }  
 
@@ -350,21 +350,21 @@ p      <- function(object){
 #' @export
 effect <- function(object){
     df <- fdata(object)[, effectvars(object), drop=FALSE]
-    names(df) %<>% stri_replace_first_regex('^effect.', '')
+    names(df) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
     df
 }
 
 #' @rdname pvars
 #' @export
-fdr    <- function(object){
+fdr <- function(object){
     df <- fdata(object)[, fdrvars(object),    drop=FALSE]
-    names(df) %<>% stri_replace_first_regex('^fdr.', '')
+    names(df) %<>% stri_replace_first_regex(paste0('fdr', FITSEP), '')
     df
 }
 
 #' @rdname pvars
 #' @export
-sign   <- function(object){
+sign <- function(object){
     df <- base::sign(effect(object))
     df
 }
@@ -411,7 +411,7 @@ testmat <- function(object, quantity='fdr', cutoff=0.05){
 #' @export
 fits <- function(object){
     pvars(object)          %>% 
-    split_extract(3, '.')  %>% 
+    split_extract(3, FITSEP)  %>% 
     unique()
 }
 
@@ -419,8 +419,8 @@ fits <- function(object){
 #' @export
 coefs <- function(object, fit = fits(object)){
     pvars(object)                        %>% 
-    stri_replace_first_regex('^p.', '')  %>% 
-    stri_replace_first_regex(paste0('.', fit[1], '$'), '') 
+    stri_replace_first_fixed(paste0('p', FITSEP), '')  %>% 
+    stri_replace_first_fixed(paste0(FITSEP, fit[1]), '') 
 }
 
 #==============================================================================
@@ -443,10 +443,12 @@ coefs <- function(object, fit = fits(object)){
 #' @export
 summarize_fit <- function(object, fit = fits(object)){
     downdt <- colSums(down(object)) %>% data.table(coef = names(.), ndown = .)
-    downdt %<>% tidyr::separate(col = coef, into = c('contrast', 'fit'))
+    downdt %<>% tidyr::separate(
+                    col = coef, into = c('contrast', 'fit'), sep = FITSEP)
     
     updt <- colSums(up(object)) %>% data.table(coef = names(.), nup = .)
-    updt %<>% tidyr::separate(col = coef, into = c('contrast', 'fit'))
+    updt %<>% tidyr::separate(
+                    col = coef, into = c('contrast', 'fit'), sep = FITSEP)
     
     sumdt <- merge(downdt, updt, by = c('fit', 'contrast'))
     sumdt %<>% extract(fit, on = 'fit')

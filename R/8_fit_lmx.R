@@ -43,7 +43,7 @@
     colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times =ncol(fitres)), sep = '.')
+                        rep(rownames(fitres), times =ncol(fitres)), sep=FITSEP)
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
@@ -62,7 +62,7 @@
     #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = ncol(fitres)), sep = '.')
+                        rep(rownames(fitres), times = ncol(fitres)), sep=FITSEP)
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
@@ -89,16 +89,16 @@
     #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = ncol(fitres)), sep = '.')
+                        rep(rownames(fitres), times = ncol(fitres)), sep=FITSEP)
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
 
 .extractstat <- function(fitres, quantity){
-    idx <- stri_startswith_fixed(names(fitres), paste0(quantity, '.'))
+    idx <- stri_startswith_fixed(names(fitres), paste0(quantity, FITSEP))
     mat <- as.matrix(fitres[, idx, with=FALSE])
     rownames(mat) <- fitres$feature_id
-    colnames(mat) %<>% stri_replace_first_fixed(paste0(quantity, '.'), '')
+    colnames(mat) %<>% stri_replace_first_fixed(paste0(quantity, FITSEP), '')
     mat
 }
 
@@ -139,7 +139,7 @@ fit_lmx <- function(object, fit,
             weights = get(weightvar)), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     for (var in setdiff(all.vars(formula), 'value'))  names(fitres) %<>% 
-        stri_replace_first_fixed(paste0('.', var), '.')
+        stri_replace_first_fixed(paste0(FITSEP, var), FITSEP)
     fitres %<>% add_fdr()
     object %<>% reset_fitres(fit)
     object %<>% merge_fitres(fitres, fit=fit)
