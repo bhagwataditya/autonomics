@@ -387,7 +387,8 @@ up <- function(object, quantity='fdr', cutoff = 0.05){
     df
 }
 
-
+#' @rdname pvars
+#' @export
 testmat <- function(object, quantity='fdr', cutoff=0.05){
     df <- get(quantity)(object) < cutoff
     mode(df) <- 'numeric'
@@ -456,8 +457,9 @@ summarize_fit <- function(object, fit = fits(object)){
 
 pull_level <- function(x, lev){
     assert_is_factor(x)
-    assertive::assert_is_subset(lev, levels(x))
-    factor(x, levels = c(lev, setdiff(levels(x), lev)))
+    if (lev %in% levels(x))  x %<>% 
+        factor(levels = c(lev, setdiff(levels(x), lev)))
+    x
 }
 
 #' Extract fit quantity

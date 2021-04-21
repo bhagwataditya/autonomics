@@ -9,6 +9,7 @@
 \alias{fdr}
 \alias{down}
 \alias{up}
+\alias{testmat}
 \title{Get p vars/values}
 \usage{
 pvars(object)
@@ -26,6 +27,8 @@ fdr(object)
 down(object, quantity = "fdr", cutoff = 0.05)
 
 up(object, quantity = "fdr", cutoff = 0.05)
+
+testmat(object, quantity = "fdr", cutoff = 0.05)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

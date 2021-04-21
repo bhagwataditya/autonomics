@@ -367,6 +367,10 @@ reset_fitres <- function(object, fit){
     object
 }
 
+#' Fit results separator
+#' @examples
+#' FITSEP
+#' @export
 FITSEP <- '~'
 
 # object: SumExp

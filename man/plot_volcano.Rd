@@ -10,7 +10,7 @@ plot_volcano(
   coefs = autonomics::coefs(object, fit[1]),
   label = feature_name,
   ntop = 1,
-  nrow = NULL
+  nrow = length(fit)
 )
 }
 \arguments{
