@@ -619,45 +619,47 @@ plot_contrast_boxplots <- function(
     object, subgroupvar, fit, formula = default_formula(object, subgroupvar, fit), contrast
 ){
 # Order/Extract on p value
-    fdrvar    <- paste0('fdr',   '.',contrast,'.',fit)
-    effectvar <- paste0('effect','.',contrast,'.',fit)
-    pvar      <- paste0('p',     '.',contrast,'.',fit)
+    fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
+    effectvar <- paste('effect', contrast, fit, sep = FITSEP)
+    pvar      <- paste('p',      contrast, fit, sep = FITSEP)
     pvals   <- fdata(object)[, pvar,      drop=FALSE ]
     fdrs    <- fdata(object)[, fdrvar,    drop=FALSE ]
     effects <- fdata(object)[, effectvar, drop=FALSE ]
-    signs   <- sign(effects)
+    signs   <- base::sign(effects)
 
     pvals %<>% apply(1, min)  # we also want single method features
     fdrs  %<>% apply(1, min)  # we also want single method features
     signs %<>% apply(1, mean)
     dnfeatures <- names(    sort(pvals[fdrs<0.05 & signs<0]))
     upfeatures <- names(rev(sort(pvals[fdrs<0.05 & signs>0])))
-    object %<>% extract_features(c(dnfeatures, upfeatures))
+    object %<>% extract(c(dnfeatures, upfeatures), )
     fdata(object)$feature_id %<>% factor(c(dnfeatures, upfeatures))
 # Interpret contrasts
+    contrasts(object[[subgroupvar]])
     contrastmat <- makeContrasts(contrasts = contrast, 
                                 levels = create_design(object, formula=formula))
         # should work also for wilcoxon
     uplevels <- which.names(contrastmat[, contrast] > 0)
     dnlevels <- which.names(contrastmat[, contrast] < 0)
+    if (assertive::is_empty(dnlevels)) dnlevels <- levels(object[[subgroupvar]])[1]
 # Prepare dt
     dt <- sumexp_to_long_dt(object, fvars = c('feature_id', 'feature_name'), 
                       svars = c('sample_id', subgroupvar))
     dt %<>% merge_fdr(object, contrast=contrast, fit=fit)
     mediandt <- summarize_median(dt, subgroupvar)
-    mediandt[, contrastsubgroup := SET %in% c(uplevels, dnlevels)]
+    mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, dnlevels)]
 # Plot
-    p <- ggplot(dt, aes(x=SET, y=value, fill=SET)) +
+    p <- ggplot(dt, aes(x=!!sym(subgroupvar), y=value, fill=!!sym(subgroupvar))) +
     facet_wrap(c('feature_id', fit), scales='free_y', labeller='label_both') + 
     theme_bw() + xlab(NULL) + ggtitle(contrast) + 
     geom_boxplot(na.rm = TRUE) + 
     geom_hline( data = mediandt, linetype = 'longdash',
-                aes(yintercept=value, alpha=contrastsubgroup, color = SET)) + 
+                aes(yintercept=value, alpha=contrastsubgroup, color = !!sym(subgroupvar))) + 
     guides(alpha=FALSE)
 # Color facets
     colors <- make_colors(levels(object[[subgroupvar]]))
     colors <-c(expand_into_vector(colors[ uplevels[[1]] ], upfeatures),
-                expand_into_vector(colors[ dnlevels[[1]] ], dnfeatures))
+               expand_into_vector(colors[ dnlevels[[1]] ], dnfeatures))
     g <- color_facets(p, colors)
     grid::grid.draw(g)
     invisible(g)
@@ -665,7 +667,7 @@ plot_contrast_boxplots <- function(
 
 merge_fdr <- function(dt, object, contrast, fit){
     for (curfit in fit){
-        fdrdt <- fdata(object)[, paste0('fdr.', contrast, '.', curfit), drop=FALSE]
+        fdrdt <- fdata(object)[, paste('fdr', contrast, curfit, sep=FITSEP), drop=FALSE]
         fdrdt %<>% data.table(keep.rownames=TRUE)
         names(fdrdt) <- c('feature_id', curfit)
         fdrdt[, (curfit) := formatC(get(curfit), format='e', digits=0)]
@@ -687,9 +689,9 @@ color_facets <- function(p, colors){
     strips <- which(grepl('strip-', g$layout$name))
     for (strip in strips){
         if (!is(g$grobs[[strip]], 'zeroGrob')){
-            feature <- g$grobs[[strip]]$grobs[[1]]$children[[2]]$children[[
-                                                                    1]]$label
-            feature %<>% gsub('feature_id: ', '', ., fixed=TRUE)
+            g$grobs[[strip]]$grobs[[1]]$children[[2]]$children[[1]]$label %<>% 
+                gsub('feature_id: ', '', ., fixed=TRUE)
+            feature <- g$grobs[[strip]]$grobs[[1]]$children[[2]]$children[[1]]$label 
             anyfdr <- FALSE
             for (i in seq_along(g$grobs[[strip]]$grobs)[-1]){
                 fdrvalue <- g$grobs[[strip]]$grobs[[i]]$children[[2]]$children[[
