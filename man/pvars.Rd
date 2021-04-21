@@ -7,10 +7,8 @@
 \alias{p}
 \alias{effect}
 \alias{fdr}
-\alias{sign}
 \alias{down}
 \alias{up}
-\alias{testmat}
 \title{Get p vars/values}
 \usage{
 pvars(object)
@@ -25,13 +23,9 @@ effect(object)
 
 fdr(object)
 
-sign(object)
-
 down(object, quantity = "fdr", cutoff = 0.05)
 
 up(object, quantity = "fdr", cutoff = 0.05)
-
-testmat(object, quantity = "fdr", cutoff = 0.05)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

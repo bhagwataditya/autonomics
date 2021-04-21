@@ -12,6 +12,7 @@ analyze(
   formula = default_formula(object, subgroupvar, fit),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
+  coefs = colnames(create_design(object, formula = formula)),
   contrastdefs = contrast_coefs(object, formula),
   verbose = TRUE,
   plot = TRUE
@@ -32,7 +33,9 @@ analyze(
 
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
 
-\item{contrastdefs}{contrastdefs vector/matrix/list}
+\item{coefs}{NULL or character vector: model coefficients to test}
+
+\item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
 
 \item{verbose}{whether to msg}
 

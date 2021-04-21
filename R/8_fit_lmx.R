@@ -117,7 +117,7 @@ fit_lmx <- function(object, fit,
     formula = default_formula(object, subgroupvar, fit), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefficients = NULL, verbose = TRUE, plot =  FALSE){
+    coefs = NULL, verbose = TRUE, plot =  FALSE){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
     formula %<>% addlhs()
@@ -156,9 +156,9 @@ fit_lmx <- function(object, fit,
     names(dimnames(fitarray)) <- c('feature', 'contrast','quantity')
     metadata(object)[[fit]] <- fitarray
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
-    if (is.null(coefficients)) coefficients <- colnames(metadata(object)[[fit]])
-    if (length(coefficients) > 1) coefficients %<>% setdiff('Intercept')
-    if (plot)  print(plot_volcano(object, fit=fit, contrastdefs = coefficients))
+    if (is.null(coefs)) coefs <- colnames(metadata(object)[[fit]])
+    if (length(coefs) > 1) coefs %<>% setdiff('Intercept')
+    if (plot)  print(plot_volcano(object, fit=fit, coefs = coefs))
     object }
 
 
@@ -170,7 +170,7 @@ fit_lm <- function(
     formula = default_formula(object, subgroupvar, fit='lm'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefficients = NULL, verbose = TRUE, plot =  FALSE
+    coefs = NULL, verbose = TRUE, plot =  FALSE
 ){
 # Assert
     for (var in all.vars(formula))  assert_is_identical_to_false(
@@ -182,7 +182,7 @@ fit_lm <- function(
     metadata(object)$lm <- NULL
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
             formula = formula, block = block, 
-            weightvar = weightvar, coefficients = coefficients, 
+            weightvar = weightvar, coefs = coefs, 
             verbose = verbose, plot = plot)
 }
 
@@ -195,7 +195,7 @@ fit_lme <- function(
     formula = default_formula(object, subgroupvar, fit='lme'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefficients = NULL, verbose = TRUE, plot =  FALSE
+    coefs = NULL, verbose = TRUE, plot =  FALSE
 ){
 # Assert
     . <- NULL
@@ -218,7 +218,7 @@ fit_lme <- function(
     metadata(object)$lme <- NULL
     fit_lmx(object, fit = 'lme', subgroupvar = subgroupvar, 
             formula = formula, block = block, 
-            weightvar = weightvar, coefficients = coefficients, 
+            weightvar = weightvar, coefs = coefs, 
             verbose = verbose, plot = plot)
 }
 
@@ -231,7 +231,7 @@ fit_lmer <- function(
     formula = default_formula(object, subgroupvar, fit='lmer'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefficients = NULL, verbose = TRUE, plot =  FALSE
+    coefs = NULL, verbose = TRUE, plot =  FALSE
 ){
 # Assert
     . <- NULL
@@ -258,6 +258,6 @@ fit_lmer <- function(
     metadata(object)$lmer <- NULL
     fit_lmx(object, fit = 'lmer', subgroupvar = subgroupvar, 
             formula = formula, block = NULL, 
-            weightvar = weightvar, coefficients = coefficients, 
+            weightvar = weightvar, coefs = coefs, 
             verbose = verbose, plot = plot)
 }

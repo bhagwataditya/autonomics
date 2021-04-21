@@ -13,7 +13,7 @@ fit_limma(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, "limma"),
-  coefficients = colnames(create_design(object, formula = formula)),
+  coefs = colnames(create_design(object, formula = formula)),
   contrastdefs = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
@@ -27,7 +27,7 @@ fit_lm(
   formula = default_formula(object, subgroupvar, fit = "lm"),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefficients = NULL,
+  coefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -38,7 +38,7 @@ fit_lme(
   formula = default_formula(object, subgroupvar, fit = "lme"),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefficients = NULL,
+  coefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -49,7 +49,7 @@ fit_lmer(
   formula = default_formula(object, subgroupvar, fit = "lmer"),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefficients = NULL,
+  coefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -72,9 +72,9 @@ fit_wilcoxon(
 
 \item{formula}{modeling formula}
 
-\item{coefficients}{character vector: subset of `colnames(create_design(object, formula=formula))`}
+\item{coefs}{NULL or character vector: model coefficients to test}
 
-\item{contrastdefs}{character vector: linear combinations of coefficients (only for fit='limma')
+\item{contrastdefs}{NULL or character vector: coefficient contrasts to test
 \itemize{
 \item{c("t1-t0", "t2-t1", "t3-t2")}
 \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -107,7 +107,7 @@ Fit model and test for differential expression
     object$SUB \%<>\% factor()
     
 # Fitting a linear model
-# Default in R is treatment coding: coefficients = baseline differences
+# Default in R is treatment coding: coefs = baseline differences
     # the traditional approach: lm
         object \%<>\% fit_lm(subgroupvar = 'SET')   # subgroupvar
         object \%<>\% fit_lm(formula = ~SET)        # formula

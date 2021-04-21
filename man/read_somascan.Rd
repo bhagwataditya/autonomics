@@ -34,6 +34,7 @@ read_somascan(
   fit = NULL,
   formula = NULL,
   block = NULL,
+  coefs = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -78,7 +79,9 @@ read_somascan(
 
 \item{block}{block var}
 
-\item{contrastdefs}{contrastdef vector/matrix/list}
+\item{coefs}{NULL or character vector: model coefficients to test}
+
+\item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
 
 \item{verbose}{whether to msg}
 

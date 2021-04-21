@@ -79,6 +79,7 @@ read_rnaseq_counts(
   pca = FALSE,
   fit = NULL,
   voom = !is.null(fit),
+  coefs = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
   plot = TRUE
@@ -133,9 +134,11 @@ read_rnaseq_counts(
 
 \item{voom}{whether to compute voom precision weights}
 
-\item{contrastdefs}{contrastdef vector/matrix/list}
+\item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
 
 \item{plot}{whether to plot}
+
+\item{coefs}{NULL or character vector: model coefficients to test}
 }
 \value{
 SummarizedExperiment

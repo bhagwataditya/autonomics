@@ -362,8 +362,6 @@ fdr <- function(object){
     df
 }
 
-#' @rdname pvars
-#' @export
 sign <- function(object){
     df <- base::sign(effect(object))
     df
@@ -390,8 +388,6 @@ up <- function(object, quantity='fdr', cutoff = 0.05){
 }
 
 
-#' @rdname pvars
-#' @export
 testmat <- function(object, quantity='fdr', cutoff=0.05){
     df <- get(quantity)(object) < cutoff
     mode(df) <- 'numeric'
@@ -451,8 +447,17 @@ summarize_fit <- function(object, fit = fits(object)){
                     col = coef, into = c('contrast', 'fit'), sep = FITSEP)
     
     sumdt <- merge(downdt, updt, by = c('fit', 'contrast'))
+    sumdt$contrast %<>% factor()
+    sumdt$contrast %<>% pull_level('Intercept')
+    setorderv(sumdt, c('fit', 'contrast'))
     sumdt %<>% extract(fit, on = 'fit')
     sumdt
+}
+
+pull_level <- function(x, lev){
+    assert_is_factor(x)
+    assertive::assert_is_subset(lev, levels(x))
+    factor(x, levels = c(lev, setdiff(levels(x), lev)))
 }
 
 #' Extract fit quantity

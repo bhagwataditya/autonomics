@@ -153,7 +153,7 @@ make_volcano_dt <- function(
 #' @export
 plot_volcano <- function(object, 
     fit = fits(object), coefs = autonomics::coefs(object, fit[1]), 
-    label = feature_name, ntop = 1, nrow=NULL
+    label = feature_name, ntop = 1, nrow=length(fit)
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
