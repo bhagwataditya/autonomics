@@ -616,7 +616,9 @@ plot_subgroup_points <- function(
 
 
 plot_contrast_boxplots <- function(
-    object, subgroupvar, fit, formula = default_formula(object, subgroupvar, fit), contrast
+    object, subgroupvar, fit, 
+    formula = default_formula(object, subgroupvar, fit[1]), contrast, 
+    title = contrast
 ){
 # Order/Extract on p value
     fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
@@ -635,7 +637,6 @@ plot_contrast_boxplots <- function(
     object %<>% extract(c(dnfeatures, upfeatures), )
     fdata(object)$feature_id %<>% factor(c(dnfeatures, upfeatures))
 # Interpret contrasts
-    contrasts(object[[subgroupvar]])
     contrastmat <- makeContrasts(contrasts = contrast, 
                                 levels = create_design(object, formula=formula))
         # should work also for wilcoxon
@@ -651,7 +652,7 @@ plot_contrast_boxplots <- function(
 # Plot
     p <- ggplot(dt, aes(x=!!sym(subgroupvar), y=value, fill=!!sym(subgroupvar))) +
     facet_wrap(c('feature_id', fit), scales='free_y', labeller='label_both') + 
-    theme_bw() + xlab(NULL) + ggtitle(contrast) + 
+    theme_bw() + xlab(NULL) + ggtitle(title) + 
     geom_boxplot(na.rm = TRUE) + 
     geom_hline( data = mediandt, linetype = 'longdash',
                 aes(yintercept=value, alpha=contrastsubgroup, color = !!sym(subgroupvar))) + 
