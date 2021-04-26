@@ -113,15 +113,15 @@ Proper preprocessing leads to increased power:
 # log2counts
   object <- read_rnaseq_counts(file, 
        cpm = FALSE, voom = FALSE, fit = 'limma', verbose = FALSE, plot = FALSE)
-  colSums(summarize_fit(object, 'limma')[, -1])
+  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
 # log2cpm
   object <- read_rnaseq_counts(file,
        cpm = TRUE,  voom = FALSE, fit = 'limma', verbose = FALSE, plot=FALSE)
-  colSums(summarize_fit(object, 'limma')[, -1])
+  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
 # log2cpm + voom
   object <- read_rnaseq_counts(file,  # log2 cpm + voom
        cpm = TRUE,  voom = TRUE,  fit = 'limma', verbose = FALSE, plot=FALSE)
-  colSums(summarize_fit(object, 'limma')[, -1])
+  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
 ```
 
 ## Proteingroups/phosphosites
