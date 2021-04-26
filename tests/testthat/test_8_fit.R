@@ -1,7 +1,6 @@
 sumexp_contains_fit <- function(object, fit = 'limma'){
     is(object, 'SummarizedExperiment') &
-    is.array(S4Vectors::metadata(object)[[fit]]) &
-    (nrow(S4Vectors::metadata(object)[[fit]])==nrow(object)) 
+    any(stri_detect_fixed(names(fdata(object)), paste0('~', fit)))
 }
 
 # UNPAIRED: wilcoxon generally fails

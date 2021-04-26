@@ -298,7 +298,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     object %<>% log2transform(verbose = TRUE)
     if (impute)             object %<>% impute_systematic_nondetects(
-                                            subgroup = !!subgroup, plot = plot)
+                                            subgroup = !!subgroup, plot = FALSE)
     if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Analyze

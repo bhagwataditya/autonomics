@@ -24,19 +24,23 @@ plot_subgroup_points(
 
 \item{subgroup}{subgroup svar}
 
+\item{block}{block svar}
+
 \item{x}{svar mapped to x}
 
 \item{color}{svar mapped to color}
+
+\item{group}{svar mapped to group}
+
+\item{facet}{svar mapped to facets}
+
+\item{nrow}{number of rows}
 
 \item{...}{mapped aesthetics}
 
 \item{fixed}{fixed aesthetics}
 
 \item{theme}{ggplot theme specifications}
-
-\item{geom}{geom_point, geom_boxplot, etc.}
-
-\item{fill}{svar mapped to fill}
 }
 \value{
 ggplot object

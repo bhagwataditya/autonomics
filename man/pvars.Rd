@@ -7,9 +7,6 @@
 \alias{p}
 \alias{effect}
 \alias{fdr}
-\alias{down}
-\alias{up}
-\alias{testmat}
 \title{Get p vars/values}
 \usage{
 pvars(object)
@@ -23,12 +20,6 @@ p(object)
 effect(object)
 
 fdr(object)
-
-down(object, quantity = "fdr", cutoff = 0.05)
-
-up(object, quantity = "fdr", cutoff = 0.05)
-
-testmat(object, quantity = "fdr", cutoff = 0.05)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -41,7 +32,9 @@ Get p vars/values
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, fit='limma', plot=FALSE)
+object <- read_metabolon(file, impute=TRUE, plot=FALSE)
+object \%<>\% fit_limma(subgroupvar='SET')
+object \%<>\% fit_lm(subgroupvar = 'SET')
 
 effect(object)[7:10, ]
      p(object)[7:10, ]
@@ -54,5 +47,4 @@ testmat(object)[7:10, ]
  pvars(object)
    fdr(object)
 effect(object)
-
 }

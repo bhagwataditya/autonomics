@@ -450,14 +450,15 @@ plot_subgroup_violins <- function(
 
 #' Plot sample/feature boxplots
 #'
-#' @param object           SummarizedExperiment
-#' @param subgroup         subgroup svar symbol
-#' @param x                svar mapped to x
-#' @param fill             svar mapped to fill
-#' @param color            svar mapped to color
-#' @param facet            svar mapped to facet
-#' @param highlight        fvar expressing which feature should be highlighted
-#' @param fixed            fixed aesthetics
+#' @param object     SummarizedExperiment
+#' @param subgroup   subgroup svar symbol
+#' @param x          svar mapped to x
+#' @param fill       svar mapped to fill
+#' @param color      svar mapped to color
+#' @param facet      svar mapped to facet
+#' @param highlight  fvar expressing which feature should be highlighted
+#' @param fixed      fixed aesthetics
+#' @param hlevels    xlevels for which to plot horizontal lines
 #' @return  ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
@@ -482,7 +483,7 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
-    sample_id <- value <- NULL
+    sample_id <- value <- medianvalue <- present <- NULL
     x         <- enquo(x)
     fill      <- enquo(fill)
     color     <- enquo(color)
@@ -504,7 +505,7 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
 # Plot
     p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
                 fill = !!fill, color = !!color, fixed = fixed)
-    p <- p + facet_wrap(facet, scales = 'free_y')
+    p <- p + facet_wrap(facets = facet, scales = 'free_y')
     p %<>% add_highlights(!!highlight, geom = geom_point, fixed_color="darkred")
 # Add hline
     if (!is.null(hlevels)){
@@ -568,11 +569,13 @@ plot_subgroup_boxplots <- function(
 
 #' Plot features
 #' @param object      SummarizedExperiment
-#' @param geom        geom_point, geom_boxplot, etc.
 #' @param subgroup    subgroup svar
+#' @param block       block svar
 #' @param x           svar mapped to x
-#' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param group       svar mapped to group
+#' @param facet       svar mapped to facets
+#' @param nrow        number of rows
 #' @param ...         mapped aesthetics
 #' @param fixed       fixed aesthetics
 #' @param theme       ggplot theme specifications
@@ -608,13 +611,28 @@ plot_subgroup_points <- function(
     p <- plot_data(dt, geom=geom_point, x=!!x, y=value, color=!!color, 
                     group=!!group, ..., fixed=fixed)
     if (!quo_is_null(enquo(block)))  p <- p + geom_line()
-    p <- p + facet_wrap(facet = facet, scales = 'free_y', nrow = nrow)
+    p <- p + facet_wrap(facets = facet, scales = 'free_y', nrow = nrow)
     p <- p + do.call(ggplot2::theme, theme)
     p
 }
 
 
-
+#' Plot contrast boxplots
+#' @param object       SummarizedExperiment
+#' @param subgroupvar  string: subgroup svar
+#' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
+#' @param formula      formula
+#' @param contrast     string 
+#' @param title        string
+#' @examples 
+#' require(magrittr)
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot=FALSE, fit='limma')
+#' object$SET %<>% factor()
+#' object$SUB %<>% factor()
+#' plot_contrast_boxplots(
+#'     object, subgroupvar='SET', fit='limma', contrast = 't3')
+#' @export
 plot_contrast_boxplots <- function(
     object, subgroupvar, fit, 
     formula = default_formula(object, subgroupvar, fit[1]), contrast, 
@@ -642,20 +660,24 @@ plot_contrast_boxplots <- function(
         # should work also for wilcoxon
     uplevels <- which.names(contrastmat[, contrast] > 0)
     dnlevels <- which.names(contrastmat[, contrast] < 0)
-    if (assertive::is_empty(dnlevels)) dnlevels <- levels(object[[subgroupvar]])[1]
+    if (assertive::is_empty(dnlevels)) dnlevels <- 
+                                            levels(object[[subgroupvar]])[1]
 # Prepare dt
     dt <- sumexp_to_long_dt(object, fvars = c('feature_id', 'feature_name'), 
                       svars = c('sample_id', subgroupvar))
     dt %<>% merge_fdr(object, contrast=contrast, fit=fit)
     mediandt <- summarize_median(dt, subgroupvar)
+    contrastsubgroup <- NULL
     mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, dnlevels)]
 # Plot
-    p <- ggplot(dt, aes(x=!!sym(subgroupvar), y=value, fill=!!sym(subgroupvar))) +
+    p <- ggplot(dt, aes(
+            x=!!sym(subgroupvar), y=!!sym('value'), fill=!!sym(subgroupvar))) +
     facet_wrap(c('feature_id', fit), scales='free_y', labeller='label_both') + 
     theme_bw() + xlab(NULL) + ggtitle(title) + 
     geom_boxplot(na.rm = TRUE) + 
     geom_hline( data = mediandt, linetype = 'longdash',
-                aes(yintercept=value, alpha=contrastsubgroup, color = !!sym(subgroupvar))) + 
+                aes(yintercept=sym('value'), alpha=contrastsubgroup, 
+                    color = !!sym(subgroupvar))) + 
     guides(alpha=FALSE)
 # Color facets
     colors <- make_colors(levels(object[[subgroupvar]]))
@@ -668,7 +690,8 @@ plot_contrast_boxplots <- function(
 
 merge_fdr <- function(dt, object, contrast, fit){
     for (curfit in fit){
-        fdrdt <- fdata(object)[, paste('fdr', contrast, curfit, sep=FITSEP), drop=FALSE]
+        fdrdt <- fdata(object)[, paste('fdr', contrast, curfit, sep=FITSEP), 
+                                                                    drop=FALSE]
         fdrdt %<>% data.table(keep.rownames=TRUE)
         names(fdrdt) <- c('feature_id', curfit)
         fdrdt[, (curfit) := formatC(get(curfit), format='e', digits=0)]
@@ -679,6 +702,7 @@ merge_fdr <- function(dt, object, contrast, fit){
 }
 
 summarize_median <- function(dt, subgroupvar){
+    value <- NULL
     mediandt <- copy(dt)
     mediandt[,value:=median(value, na.rm=TRUE), by=c('feature_id', subgroupvar)]
     mediandt[,sample_id := NULL]
@@ -686,6 +710,7 @@ summarize_median <- function(dt, subgroupvar){
 }
 
 color_facets <- function(p, colors){
+    . <- NULL
     g <- ggplot_gtable(ggplot_build(p))
     strips <- which(grepl('strip-', g$layout$name))
     for (strip in strips){

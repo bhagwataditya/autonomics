@@ -82,12 +82,15 @@ fit_wilcoxon <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula = default_formula(object, subgroupvar, fit = 'wilcoxon'),
+    coefs = NULL, 
     contrastdefs = contrast_coefs(object, formula=formula),
     block = NULL, weightvar = NULL, verbose = TRUE, plot = FALSE
 ){
 # assert
     for (var in all.vars(formula))  assert_is_identical_to_false(
                                 has_consistent_nondetects(object, !!sym(var)))
+    if (is.null(contrastdefs))  contrastdefs <- 
+                                    contrast_coefs(object, formula=formula)
 # fit
     . <- NULL
     dt <- sumexp_to_long_dt(object, svars = c(subgroupvar, block))

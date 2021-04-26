@@ -7,7 +7,7 @@
 plot_contrastogram(
   object,
   subgroupvar,
-  formula = default_formula(object, subgroupvar, "limma"),
+  formula = as.formula(paste0("~ 0 +", subgroupvar)),
   colors = make_colors(slevels(object, subgroupvar), guess_sep(object)),
   curve = 0.1
 )

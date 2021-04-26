@@ -77,15 +77,15 @@ melt_contrastdefs <- function(contrastdefmat){
 
 
 #' Create volcano datatable
-#' @param object          SummarizedExperiment
-#' @param fit            'limma', 'lme', 'lm', 'wilcoxon'
-#' @param contrastdefmat  contrastdef matrix
-#' @param ntop            no of top features to be annotated
+#' @param object  SummarizedExperiment
+#' @param fit     'limma', 'lme', 'lm', 'wilcoxon'
+#' @param coefs   character vector: coefs for which to plot volcanoes
+#' @param ntop    no of top features to be annotated
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit='limma', impute=TRUE, plot=FALSE)
-#' make_volcano_dt(object, fit = 'limma')
+#' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 #' @export
 make_volcano_dt <- function(
     object, fit, coefs, ntop = 3
@@ -97,7 +97,7 @@ make_volcano_dt <- function(
     dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
     dt %<>% melt.data.table(id.vars = id.vars)
     dt %<>% tidyr::separate(
-                variable, into = c('quantity', 'coef', 'fit'), sep = FITSEP)
+                .data$variable, into = c('quantity', 'coef', 'fit'), sep = FITSEP)
     dt %<>% extract(coefs, on = 'coef')
     dt %<>% extract(fit,   on = 'fit')
     
@@ -135,6 +135,7 @@ make_volcano_dt <- function(
 #' @param coefs   character vector
 #' @param label   fvar for labeling top features
 #' @param ntop    number: n top features to be annotated
+#' @param nrow    number: no of rows in plot
 #' @param intercept TRUE/FALSE: plot also intercept?
 #' @return ggplot object
 #' @examples

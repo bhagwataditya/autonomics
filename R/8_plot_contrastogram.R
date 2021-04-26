@@ -9,10 +9,14 @@
 true_names <- function(x) names(x[x])
 
 compute_connections <- function(
-    object, subgroupvar, formula,
+    object, subgroupvar, formula = as.formula(paste0('~ 0 + ', subgroupvar)),
     colors = make_colors(slevels(object, subgroupvar), guess_sep(object))
 ){
 # subgroup matrix, difference contrasts, limma
+    colcontrasts <- contrast_subgroup_cols(object, subgroupvar)
+    rowcontrasts <- contrast_subgroup_rows(object, subgroupvar)
+    contrastdefs <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
+    object %<>% fit_limma(formula = formula, contrastdefs = contrastdefs)
     pvalues <- limma(object)[, , 'p',      drop=FALSE]
     effects <- limma(object)[, , 'effect', drop=FALSE]
     nsignif <- apply(pvalues < 0.05, 2, sum, na.rm=TRUE)
@@ -30,9 +34,6 @@ compute_connections <- function(
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
     design <- create_design(object, formula = formula, verbose = FALSE)
-    colcontrasts <- contrastdefs(object)[[1]]
-    rowcontrasts <- contrastdefs(object)[[2]]
-    contrastdefs <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
     contrastmat  <- makeContrasts(contrasts = contrastdefs, levels = design)
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
@@ -75,7 +76,7 @@ compute_connections <- function(
 plot_contrastogram <- function(
     object, 
     subgroupvar,
-    formula = default_formula(object, subgroupvar, 'limma'),
+    formula = as.formula(paste0('~ 0 +', subgroupvar)),
     colors = make_colors(slevels(object, subgroupvar), guess_sep(object)),
     curve  = 0.1
 ){

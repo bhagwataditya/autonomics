@@ -136,66 +136,7 @@ default_formula <- function(
 
 character2factor <- function(x)  if (is.character(x)) factor(x) else x
 
-#' Create contrastmat
-#' 
-#' Create contrast for linear modeling
-#' 
-#' \code{contr_treatment}: compare level to firstlevel \cr
-#' \code{contr_sum}:       compare level to globalmean \cr
-#' \code{contr_sdif}:      compare level to prevlevel  \cr
-#' 
-#' @param x factor
-#' @return matrix
-#' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' object$SET %<>% factor()
-#' contr_treatment(object$SET)
-#' contr_sum(      object$SET)
-#' contr_sdif(     object$SET)
-#' @export
-contr_treatment <- function(x){
-    assertive::assert_is_factor(x)
-    l <- levels(x)
-    contrastmat <- stats::contr.treatment(l)
-    colnames(contrastmat) %<>% paste0('-', l[1])
-    contrastmat
-}
 
-#' @rdname contr_treatment
-#' @export
-contr_sum <- function(x){
-    assertive::assert_is_factor(x)
-    l <- levels(x)
-    contrastmat <- stats::contr.sum(l)
-    n <- length(l)
-    colnames(contrastmat) <- paste0(l[-n], '-mean')
-    contrastmat
-}
-
-#' @rdname contr_treatment
-#' @export
-contr_sdif <- function(x){
-    assertive::assert_is_factor(x)
-    l <- levels(x)
-    contrastmat <- MASS::contr.sdif(l)
-    contrastmat
-}
-
-# formula <- ~SET+SUB
-categorical.vars <- function(formula, object){
-    isfactor <- 
-        vapply(sdata(object)[all.vars(formula)], is.factor, logical(1)) | 
-        vapply(sdata(object)[all.vars(formula)], is.character, logical(1))
-    names(isfactor)[isfactor]
-}
-
-rep2 <- function(x, y)  set_names(rep(list(x), length(y)), y)
-
-function(object, formula){
-    factor.vars(formula, object)
-}
-    
 #' Create design
 #'
 #'  Create design matrix  for statistical analysis
@@ -349,6 +290,7 @@ vectorize_contrastdefs <- function(contrastdefs){
 }
 
 add_fdr <- function(fitres){
+    . <- NULL
     fdr <- fitres %>% extract(, stri_startswith_fixed(
                                     names(.), paste0('p', FITSEP)), with=FALSE)
     fdr[] %<>% lapply(p.adjust, method='fdr')
@@ -359,6 +301,7 @@ add_fdr <- function(fitres){
 }
 
 reset_fitres <- function(object, fit){
+    . <- NULL
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_a_string(fit)
     fitcols <- fvars(object) %>% extract(stri_detect_fixed(., fit))
@@ -378,6 +321,7 @@ FITSEP <- '~'
 # stat:  'p', 'effect', 'fdr', 't'
 # fit:   'limma', 'wilcoxon'
 merge_fitres <- function(object, fitres, fit, statistic=NULL){
+    . <- NULL
     fitresdt <- data.table::copy(fitres)   # dont change in original
     firstcols <- intersect(c('feature_id', 'Intercept'), names(fitresdt))
     fitresdt %<>% extract(,c(firstcols, 

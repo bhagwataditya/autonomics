@@ -63,6 +63,8 @@ plot_subgroup_boxplots(
 
 \item{fixed}{fixed aesthetics}
 
+\item{hlevels}{xlevels for which to plot horizontal lines}
+
 \item{subgroup}{subgroup svar symbol}
 }
 \value{

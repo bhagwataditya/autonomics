@@ -1,0 +1,105 @@
+---
+title: "A unified modeling interface"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{unified_modeling_interface}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, message=FALSE, include=TRUE}
+knitr::opts_chunk$set(
+  echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
+#str(knitr::opts_chunk$get())
+```
+<!-- ![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png) -->
+
+
+# Read 
+
+First we read the example data from the **hypoglycemia metabolomics** profiling study of Halama et al. and Atkin (2018), in which participants (**t0**) were subjected to mild (**t1**) and  stronger (**t2**) hypoglycemia, and then brought back to normal levels, additionally being profiled again the next day (**t3**).
+
+```{r}
+   require(magrittr)
+   require(autonomics)
+   file <- download_data('atkin18.metabolon.xlsx')
+   object <- read_metabolon(file, impute=TRUE)
+   object$SET %<>% factor()
+   object$SUB %<>% factor()
+```
+
+# Classicial: **lm** and **limma**
+
+## lm {-}
+
+Autonomics provides a one-liner interface to *the* classical statistics modeling engine `lm`.  
+The design is defined by specifying either `subgroupvar` or  `formula`:
+
+```{r}
+object %<>% fit_lm(subgroupvar = 'SET')   # subgroupvar
+object %<>% fit_lm(formula = ~SET)        # formula
+```
+## limma {-}
+
+`limma` innovated statistcis modeling for Bioinformatics over lm in several ways, out of which the three most fundamental are:
+
+(1) **fast** for even a large number of features.
+(2) A **generalized contrast analysis** framework that allows to compute statistics for any contrast (i.e. linear combination of model coefficients)
+(3) A **moderated t-test** that places upweights effect size (and downweights standard deviation) in significance computation, increasing biological meaningfulness of the results.
+
+Autonomics provides a similar one-liner interface to the limma modeling engine.
+The results of lm and limma are quite similar for coefficient (`t3`, i.e. the residual effect of the hypoglycemia study after 24h), which is, in fact re-assuring.
+
+```{r}
+# limma: prefers (large) effect size over (small) standard deviation
+# so it gives slightly different results:
+object %<>% fit_limma(subgroupvar = 'SET')
+object %<>% fit_limma(formula = ~SET)
+
+str(is_sig(object, contrast = 't3'))
+plot_venn(testmat(object, coef = 't3'))
+# plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
+```
+
+# Blocked: **limma**, **lme**, **lmer**
+
+Block effects (i.e. subject) need to be accounted for.  
+**lme**, **lmer** and **limma** all support the modeling of block effects as random effects.
+Autonomics provides easy access to model block effects with the `block` variable:
+
+
+```{r}
+object %<>% fit_limma(subgroupvar = 'SET', block = 'SUB')
+object %<>% fit_lme(  subgroupvar = 'SET', block = 'SUB')
+object %<>% fit_lmer( subgroupvar = 'SET', block = 'SUB') # results identical for this basic 
+plot_venn(testmat(object, coef = 't3', fit = c('limma', 'lme', 'lmer')))
+# plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
+```
+
+```{r}
+sessionInfo()
+```
+
+
+# References {-}
+
+A  M Billing, S S Dib, A M Bhagwat, I T da Silva, R D Drummond, S Hayat, R Al-Mismar, H Ben-Hamidane, N Goswami, K Engholm-Keller, M R Larsen, K Suhre, A Rafii, J Graummann (2019). Mol Cell Proteomics. 18(10):1950-1966. doi: 10.1074/mcp.RA119.001356.
+
+A M Billing, H Ben Hamidane, S S Dib, R J Cotton, A M Bhagwat, P Kumar, S Hayat, N A Yousri, N Goswami, K Suhre, A Rafii, J Graumann (2016). Comprehensive transcriptomics and proteomics characterization of human mesenchymal stem cells reveals source specific cellular markers. Sci Rep. 9;6:21507. doi: 10.1038/srep21507.
+
+R Fukuda, R Marin-Juez, H El-Sammak, A Beisaw, R Ramadass, C Kuenne, S Guenther, A Konzer, A M Bhagwat, J Graumann, D YR Stainier (2020). EMBO Rep. 21(8): e49752. doi: 10.15252/embr.201949752
+
+A Halama, M Kulinski, S Dib, S B Zaghlool, K S Siveen, A Iskandarani, J Zierer 3, K S Prabhu, N J Satheesh, A M Bhagwat, S Uddin, G Kastenmüller, O Elemento, S S Gross, K Suhre (2018). Accelerated lipid catabolism and autophagy are cancer survival mechanisms under inhibited glutaminolysis. Cancer Lett., 430:133-147. doi:10.1016/j.canlet.2018.05.017
+
+A Halama, H Kahal, A M Bhagwat, J Zierer, T Sathyapalan, J Graumann, K Suhre, S L Atkin (2018). Metabolic and proteomics signatures of hypoglycaemia in type 2 diabetes. Diabetes, obesity and metabolism,  https://doi.org/10.1111/dom.13602
+
+
+
+
+
+
+
+
+
+
+

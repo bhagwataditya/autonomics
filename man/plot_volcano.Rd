@@ -25,6 +25,8 @@ plot_volcano(
 
 \item{ntop}{number: n top features to be annotated}
 
+\item{nrow}{number: no of rows in plot}
+
 \item{intercept}{TRUE/FALSE: plot also intercept?}
 }
 \value{

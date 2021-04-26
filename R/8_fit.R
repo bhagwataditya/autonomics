@@ -295,7 +295,9 @@ subgroup_matrix <- function(object, subgroupvar){
 #' @return  character vector
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit='limma', plot=FALSE)
+#' object <- read_metabolon(file, impute=TRUE, plot=FALSE)
+#' object %<>% fit_limma(subgroupvar='SET')
+#' object %<>% fit_lm(subgroupvar = 'SET')
 #' 
 #' effect(object)[7:10, ]
 #'      p(object)[7:10, ]
@@ -308,9 +310,9 @@ subgroup_matrix <- function(object, subgroupvar){
 #'  pvars(object)
 #'    fdr(object)
 #' effect(object)
-#' 
 #' @export
 pvars <- function(object){
+    . <- NULL
     fvars(object) %>% extract(stri_startswith_fixed(., paste0('p', FITSEP)))
 }
 
@@ -367,7 +369,20 @@ sign <- function(object){
     df
 }
 
-#' @rdname pvars
+#' Is down/up regulated?
+#' 
+#' Is down/up and quantity < cutoff ?
+#' 
+#' @param object    SummarizedExperiment
+#' @param quantity  string: 'p', 'fdr'
+#' @param cutoff    number
+#' @return  character vector
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit='limma', plot=FALSE)
+#'    down(object)[7:10, ]
+#'      up(object)[7:10, ]
+#' testmat(object)[7:10, ]
 #' @export
 down <- function(object, quantity='fdr', cutoff = 0.05){
     df <- (get(quantity)(object) < cutoff) &
@@ -377,7 +392,7 @@ down <- function(object, quantity='fdr', cutoff = 0.05){
     df
 }
 
-#' @rdname pvars
+#' @rdname down
 #' @export
 up <- function(object, quantity='fdr', cutoff = 0.05){
     df <- (get(quantity)(object) < cutoff) &
@@ -387,15 +402,20 @@ up <- function(object, quantity='fdr', cutoff = 0.05){
     df
 }
 
-#' @rdname pvars
+#' @rdname down
 #' @export
-testmat <- function(object, quantity='fdr', cutoff=0.05){
+testmat <- function(
+    object, quantity='fdr', cutoff=0.05, coef=coefs(object), fit=fits(object)
+){
     df <- get(quantity)(object) < cutoff
     mode(df) <- 'numeric'
-    data.matrix(df * sign(object))
+    testmat0 <- data.matrix(df * sign(object))
+    idx <- split_extract(colnames(testmat0), 1, FITSEP) %in% coef &
+           split_extract(colnames(testmat0), 2, FITSEP) %in% fit
+    testmat0[, idx, drop=FALSE]
 }
 
-#' Get fit models or extracted coefs/contrasts
+#' Get fit models
 #' 
 #' @param object SummarizedExperiment
 #' @return  character vector
@@ -404,7 +424,6 @@ testmat <- function(object, quantity='fdr', cutoff=0.05){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, fit='limma', plot=FALSE)
 #' fits(object)
-#' coefs(object)
 #' @export
 fits <- function(object){
     pvars(object)          %>% 
@@ -412,12 +431,21 @@ fits <- function(object){
     unique()
 }
 
-#' @rdname fits
+#' Get fit coefs
+#' 
+#' @param object SummarizedExperiment
+#' @param fit 'limma', 'lm', 'lme', 'lmer'
+#' @return  character vector
+#' @examples 
+#' require(magrittr)
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit='limma', plot=FALSE)
+#' coefs(object)
 #' @export
 coefs <- function(object, fit = fits(object)){
-    pvars(object)                        %>% 
-    stri_replace_first_fixed(paste0('p', FITSEP), '')  %>% 
-    stri_replace_first_fixed(paste0(FITSEP, fit[1]), '') 
+    coefs0 <- split_extract(pvars(object), 2, FITSEP)
+    fits0  <- split_extract(pvars(object), 3, FITSEP)
+    unique(coefs0[fits0 %in% fit])
 }
 
 #==============================================================================
@@ -439,13 +467,14 @@ coefs <- function(object, fit = fits(object)){
 #' summarize_fit(object)
 #' @export
 summarize_fit <- function(object, fit = fits(object)){
+    . <- NULL
     downdt <- colSums(down(object)) %>% data.table(coef = names(.), ndown = .)
     downdt %<>% tidyr::separate(
-                    col = coef, into = c('contrast', 'fit'), sep = FITSEP)
+                    col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
     
     updt <- colSums(up(object)) %>% data.table(coef = names(.), nup = .)
     updt %<>% tidyr::separate(
-                    col = coef, into = c('contrast', 'fit'), sep = FITSEP)
+                    col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
     
     sumdt <- merge(downdt, updt, by = c('fit', 'contrast'))
     sumdt$contrast %<>% factor()

@@ -58,6 +58,7 @@ fit_wilcoxon(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "wilcoxon"),
+  coefs = NULL,
   contrastdefs = contrast_coefs(object, formula = formula),
   block = NULL,
   weightvar = NULL,
