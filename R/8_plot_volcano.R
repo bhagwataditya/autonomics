@@ -135,6 +135,7 @@ make_volcano_dt <- function(
 #' @param coefs   character vector
 #' @param label   fvar for labeling top features
 #' @param ntop    number: n top features to be annotated
+#' @param intercept TRUE/FALSE: plot also intercept?
 #' @return ggplot object
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
@@ -153,11 +154,12 @@ make_volcano_dt <- function(
 #' @export
 plot_volcano <- function(object, 
     fit = fits(object), coefs = autonomics::coefs(object, fit[1]), 
-    label = feature_name, ntop = 1, nrow=length(fit)
+    label = feature_name, ntop=1, nrow=length(fit), intercept=FALSE
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
     assert_is_subset(fit, fits(object))
+    if (!intercept) coefs %<>% setdiff('Intercept')
     topup <- topdown <- effect <- mlp <- facetrow <- facetcol <- NULL
     label <- enquo(label)
 # Prepare

@@ -10,7 +10,8 @@ plot_volcano(
   coefs = autonomics::coefs(object, fit[1]),
   label = feature_name,
   ntop = 1,
-  nrow = length(fit)
+  nrow = length(fit),
+  intercept = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ plot_volcano(
 \item{label}{fvar for labeling top features}
 
 \item{ntop}{number: n top features to be annotated}
+
+\item{intercept}{TRUE/FALSE: plot also intercept?}
 }
 \value{
 ggplot object
