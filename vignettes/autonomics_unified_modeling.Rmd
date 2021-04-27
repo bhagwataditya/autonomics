@@ -1,8 +1,8 @@
 ---
-title: "A unified modeling interface"
+title: "autonomics: unified modeling"
 output: BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{unified_modeling_interface}
+  %\VignetteIndexEntry{autonomics_unified_modeling}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,10 +14,11 @@ knitr::opts_chunk$set(
 ```
 <!-- ![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png) -->
 
+# Introduction
 
-# Read 
+Statistical modeling is a powerful tool, but it can also be a bit overwhelming to use efficiently. Different modeling engines exist (lm, limma, lme, lmer, wilcoxon), with each different interfaces. Autonomics offers a unified modeling interface to these different modeling engines. This makes them easy to use and also to compare.  
 
-First we read the example data from the **hypoglycemia metabolomics** profiling study of Halama et al. and Atkin (2018), in which participants (**t0**) were subjected to mild (**t1**) and  stronger (**t2**) hypoglycemia, and then brought back to normal levels, additionally being profiled again the next day (**t3**).
+We illustrate the functionality using data from the **hypoglycemia metabolomics** profiling study of Halama et al. and Atkin (2018), in which participants (**t0**) were subjected to mild (**t1**) and  stronger (**t2**) hypoglycemia, and then brought back to normal levels, additionally being profiled again the next day (**t3**).
 
 ```{r}
    require(magrittr)
@@ -36,6 +37,9 @@ Autonomics provides a one-liner interface to *the* classical statistics modeling
 The design is defined by specifying either `subgroupvar` or  `formula`:
 
 ```{r}
+object <- read_metabolon(file, impute=TRUE, plot=FALSE)
+object$SET %<>% factor()
+object$SUB %<>% factor()
 object %<>% fit_lm(subgroupvar = 'SET')   # subgroupvar
 object %<>% fit_lm(formula = ~SET)        # formula
 ```
@@ -51,12 +55,11 @@ Autonomics provides a similar one-liner interface to the limma modeling engine.
 The results of lm and limma are quite similar for coefficient (`t3`, i.e. the residual effect of the hypoglycemia study after 24h), which is, in fact re-assuring.
 
 ```{r}
-# limma: prefers (large) effect size over (small) standard deviation
-# so it gives slightly different results:
-object %<>% fit_limma(subgroupvar = 'SET')
+object <- read_metabolon(file, impute=TRUE, plot=FALSE)
+object$SET %<>% factor()
+object$SUB %<>% factor()
+object %<>% fit_limma(subgroupvar = 'SET') # prefers large effects over small sds
 object %<>% fit_limma(formula = ~SET)
-
-str(is_sig(object, contrast = 't3'))
 plot_venn(testmat(object, coef = 't3'))
 # plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
 ```
@@ -69,12 +72,51 @@ Autonomics provides easy access to model block effects with the `block` variable
 
 
 ```{r}
+object <- read_metabolon(file, impute=TRUE, plot=FALSE)
+object$SET %<>% factor()
+object$SUB %<>% factor()
 object %<>% fit_limma(subgroupvar = 'SET', block = 'SUB')
 object %<>% fit_lme(  subgroupvar = 'SET', block = 'SUB')
 object %<>% fit_lmer( subgroupvar = 'SET', block = 'SUB') # results identical for this basic 
-plot_venn(testmat(object, coef = 't3', fit = c('limma', 'lme', 'lmer')))
+plot_venn(testmat(object, coef = 't3'))
 # plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
 ```
+
+# Flexible: **limma**'s contrasts.fit
+
+autonomics also provides easy access to limma's extremely flexible contrasts.fit interface: for any linear combination between model coefficients statistics can be computed.
+
+```{r}
+object <- read_metabolon(file, impute=TRUE, plot=FALSE)
+object$SET %<>% factor(); object$SUB %<>% factor()
+levels(object$SET)
+object %<>% fit_limma(formula=~0+SET, contrastdefs =c('t1-t0', 't2-t0', 't3-t0'), block = 'SUB')
+object %<>% fit_limma(formula=~0+SET, contrastdefs =c('t1-t0', 't2-t1', 't3-t2'), block = 'SUB')
+```
+
+# Alternative coding schemes: limma, lm, lme, lmer
+
+An alternative approach to compute statistics of interest is to use alternative coding systems for contrast variables. This system is less intuitive than limma's flexible contrast interface, but it is shared by all modeling engines (limma's approach is limited to limma only). In this system one specifies which coding system to use for a factor variable. The default is to use treatment coding (where the different model coefficients express baseline differences), but an alternative would be to use backward difference coding.
+
+```{r}
+object <- read_metabolon(file, impute=TRUE, plot=FALSE)
+object$SET %<>% factor(); object$SUB %<>% factor()
+object %<>% fit_limma(formula=~SET, block = 'SUB')  # baseline diffs
+stats::contrasts(object$SET) <- MASS::contr.sdif(levels(object$SET))
+object %<>% fit_limma(formula=~SET, block = 'SUB')  # backward diffs
+```
+
+# A non-parameteric alternative: **wilcoxon**
+
+```{r}
+object <- read_metabolon(file, impute=TRUE, plot=FALSE)
+object$SET %<>% factor(); object$SUB %<>% factor()
+object %<>% fit_limma(formula=~0+SET, contrastdefs = c('t3-t0'), block = 'SUB')
+object %<>% fit_wilcoxon(subgroupvar='SET', contrastdefs = c('t3-t0'), block = 'SUB')
+plot_venn(testmat(object, coef = 't3-t0'))
+```
+
+
 
 ```{r}
 sessionInfo()

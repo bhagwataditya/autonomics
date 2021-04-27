@@ -37,28 +37,28 @@ test_that(  "read_metabolon(file, subgroupvar='SET', pca=TRUE)", {
 
 test_that(  "read_metabolon(file, subgroupvar='SET', fit='limma')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    sgvar <- 'SET'
-    object <- read_metabolon(file, subgroupvar = sgvar, fit='limma', plot=FALSE)
+    object <- read_metabolon(file, subgroupvar = 'SET', fit='limma', plot=FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('limma' %in% names(metadata(object)))
+    expect_true(any(
+        stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
 })
 
 test_that(  "read_metabolon(file, subgroupvar='SET', fit='lm')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    sgvar <- 'SET'
     object <- read_metabolon(
-                file, subgroupvar = sgvar, impute = TRUE, fit='lm', plot=FALSE)
+                file, subgroupvar = 'SET', impute = TRUE, fit='lm', plot=FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('lm' %in% names(metadata(object)))
+    expect_true(any(
+        stri_detect_fixed(fvars(object), paste0(FITSEP, 'lm'))))
 })
 
 test_that("read_metabolon(file, subgroupvar='SET', fit='limma', block='SUB')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    sgvar <- 'SET'; block <- 'SUB'
-    object <- suppressWarnings(read_metabolon(file, subgroupvar = sgvar, 
-                  block = block, impute = TRUE, fit = 'limma', plot = FALSE))
+    object <- suppressWarnings(read_metabolon(file, subgroupvar = 'SET', 
+                  block = 'SUB', impute = TRUE, fit = 'limma', plot = FALSE))
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('limma' %in% names(metadata(object)))
+    expect_true(any(
+        stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
     expect_true('dupcor' %in% names(metadata(object)))
 })
 
@@ -82,9 +82,9 @@ test_that("read_metabolon(file, subgroupvar='SET', fit='limma', block='SUB')", {
 
 test_that("read_metabolon(file,subgroupvar='SET',fit='wilcoxon',block='SUB')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    sgvar <- 'SET'; block <- 'SUB'
-    object <- read_metabolon(file, subgroupvar = sgvar, block = block, 
-                            fit = 'wilcoxon', plot = FALSE)
+    object <- read_metabolon(file, subgroupvar = 'SET', block = 'SUB', 
+                            fit='wilcoxon', plot=FALSE, impute=TRUE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('wilcoxon' %in% names(metadata(object)))
+    expect_true(any(
+        stri_detect_fixed(fvars(object), paste0(FITSEP, 'wilcoxon'))))
 })

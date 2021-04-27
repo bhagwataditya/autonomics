@@ -117,7 +117,7 @@ fit_lmx <- function(object, fit,
     formula = default_formula(object, subgroupvar, fit), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, verbose = TRUE, plot =  FALSE){
+    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
     formula %<>% addlhs()
@@ -170,8 +170,8 @@ fit_lm <- function(
     formula = default_formula(object, subgroupvar, fit='lm'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, verbose = TRUE, plot =  FALSE
-){
+    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+){                # note: contrastdefs not actually used!
 # Assert
     for (var in all.vars(formula))  assert_is_identical_to_false(
                                 has_consistent_nondetects(object, !!sym(var)))
@@ -195,8 +195,8 @@ fit_lme <- function(
     formula = default_formula(object, subgroupvar, fit='lme'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, verbose = TRUE, plot =  FALSE
-){
+    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+){                  # note: contrastdefs not actually used!
 # Assert
     . <- NULL
     if (!requireNamespace('nlme', quietly = TRUE)){
@@ -231,8 +231,8 @@ fit_lmer <- function(
     formula = default_formula(object, subgroupvar, fit='lmer'), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, verbose = TRUE, plot =  FALSE
-){
+    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+){                # note: contrastdefs not actually used!
 # Assert
     . <- NULL
     if (!requireNamespace('lme4', quietly = TRUE)){

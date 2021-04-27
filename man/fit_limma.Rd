@@ -28,6 +28,7 @@ fit_lm(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
+  contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -39,6 +40,7 @@ fit_lme(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
+  contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -50,6 +52,7 @@ fit_lmer(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
+  contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -100,101 +103,36 @@ Updated SummarizedExperiment
 Fit model and test for differential expression
 }
 \examples{
-# Read
+# classical: lm & limma
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, plot=FALSE, impute=TRUE)
-    object$SET \%<>\% factor()
-    object$SUB \%<>\% factor()
-    
-# Fitting a linear model
-# Default in R is treatment coding: coefs = baseline differences
-    # the traditional approach: lm
-        object \%<>\% fit_lm(subgroupvar = 'SET')   # subgroupvar
-        object \%<>\% fit_lm(formula = ~SET)        # formula
-    # limma: prefers (large) effect size over (small) standard deviation
-    # so it gives slightly different results:
-        object \%<>\% fit_limma(subgroupvar = 'SET')
-        object \%<>\% fit_limma(formula = ~SET)
-        plot_venn(is_sig(object, contrast = 't3'))
-        plot_contrast_boxplots(
-            object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
-        
-# Baseline differences
-    # limma.design: contrasts encoded in design
-        object \%<>\% fit_limma(subgroupvar = 'SET', block='SUB')
-        object \%<>\% fit_limma(formula=~SET,   block = 'SUB')
-        colnames(limma(object))[-1] \%<>\% paste0('-t0')
-        names(metadata(object)) \%<>\% gsub('^limma$', 'limma.design', .)
-    # limma.contr: contrasts computed through contrasts.fit
-        contr <- c('t1-t0', 't2-t0', 't3-t0')
-        object \%<>\% fit_limma(formula=~0+SET, block='SUB', contrastdefs=contr)
-        names(metadata(object)) \%<>\% gsub('^limma$', 'limma.contr', .)
-        plot_venn(is_sig(object, contrast = 't3-t0', 
-                        fit = c('limma.design','limma.contr')))
-        # no-intercept models: sometimes approximate results
-        # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
-    # limma.fixed: block modeled with fixed effects
-        object \%<>\% fit_limma(formula=~SET+SUB, contrastdefs=c('t1','t2','t3'))
-        object \%<>\% fit_limma(formula=~SUB+SET, contrastdefs=c('t1','t2','t3'))
-        object \%<>\% fit_limma(formula=~0+SUB+SET,contrastdefs=c('t1','t2','t3'))
-        colnames(limma(object)) \%<>\% paste0('-t0')
-        names(metadata(object)) \%<>\% gsub('^limma$', 'limma.fixed', .)
-        names(metadata(object)) \%<>\% gsub('^limma.design$', 'limma.random',.)
-        plot_venn(is_sig(object, contrast = 't3-t0', 
-                        fit = c('limma.random', 'limma.fixed')))
-    # wilcoxon
-        object \%<>\% fit_wilcoxon(subgroupvar='SET', block='SUB', 
-                        contrastdefs=c('t1-t0', 't2-t0', 't3-t0'))
-        names(metadata(object)) \%<>\% gsub('^limma.random$', 'limma',.)
-        plot_venn(is_sig(object, contrast='t3-t0',fit=c('limma','wilcoxon')))
-    # lme
-        object \%<>\% fit_lme(subgroupvar='SET', block='SUB')
-        colnames(metadata(object)$lme) \%<>\% paste0('-t0')
-        plot_venn(is_sig(object, contrast = 't3-t0', fit=c('limma', 'lme')))
-        
-# Backward differences
-    # limma.intercept
-    stats::contrasts(object$SET) <- MASS::contr.sdif(levels(object$SET))
-    colnames(stats::contrasts(object$SET)) \%<>\% gsub('-', '_', ., fixed=TRUE)
-    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB')
-    object \%<>\% fit_limma(formula=~SET,        block = 'SUB')
-    colnames(limma(object)) \%<>\% gsub('_', '-', .)
-    names(metadata(object)) \%<>\% gsub('limma', 'limma.intercept', .)
-    
-    # limma
-    contrastdefs <- c('t1-t0', 't2-t1', 't3-t2')
-    object \%<>\% fit_limma(formula=~0+SET, block='SUB', contrastdefs= contrastdefs) 
-        # no-intercept models: sometimes approximate results
-        # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
-    
-    # wilcoxon
-    object \%<>\% fit_wilcoxon(
-                    subgroupvar='SET', block='SUB', contrastdefs=contrastdefs)
-     plot_venn(is_sig(object, contrast = 't3-t2', 
-                     fit = c('limma.intercept', 'limma', 'wilcoxon')))
-                     
-# Fixed effect block
-    contrastdefs <- c('t1-t0', 't2-t1', 't3-t2')
-    object \%<>\% fit_limma(formula=~0+SET+SUB, contrastdefs=contrastdefs)
-          # approximate:
-          # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
-    coefs <- c('t1_t0', 't2_t1', 't3_t2')
-    object \%<>\% fit_limma(formula=~SET+SUB, contrastdefs = coefs)
-    object \%<>\% fit_limma(formula=~SUB+SET, contrastdefs = coefs)
-    object \%<>\% fit_limma(formula=~0+SUB+SET, contrastdefs=coefs)
-    object \%<>\% fit_limma(formula=~SET, block='SUB')           # random
-    
-# Different modeling engines
-    object \%<>\% fit_limma(formula=~SET)                 # ignore block
+    object$SET \%<>\% factor(); object$SUB \%<>\% factor()
+    object \%<>\% fit_limma(subgroupvar = 'SET')
     object \%<>\% fit_lm(subgroupvar = 'SET')
-    plot_venn(is_sig(object, contrast='t3_t2'))
+    plot_venn(testmat(object, coef = 't3'))
     
-    metadata(object)$lm <- NULL
-    object \%<>\% fit_limma(formula=~SET, block = 'SUB')  # with block
-    object \%<>\% fit_wilcoxon(subgroupvar = 'SET', block = 'SUB')
-    colnames(metadata(object)$wilcoxon) \%<>\% gsub('-', '_', ., fixed=TRUE)
-  # object \%<>\% fit_lme(   subgroupvar = 'SET', block = 'SUB')
-  # object \%<>\% fit_lmer(  subgroupvar = 'SET', block = 'SUB')
-    plot_venn(is_sig(object, contrast='t3_t2'))
+# blocked: limma, lme, lmer
+    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB')
+    object \%<>\% fit_lme(subgroupvar = 'SET', block = 'SUB')
+    # object \%<>\% fit_lme(subgroupvar = 'SET', block = 'SUB') # slow
+    plot_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
+    
+# flexible: limma contrastdefs
+    object \%<>\% fit_limma(formula=~SET,   coef='t3',            block='SUB')
+    object \%<>\% fit_limma(formula=~0+SET, contrastdefs='t3-t0', block='SUB')
+        # flexible, but only approximate
+        # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
+
+# alternative coding: 
+    stats::contrasts(object$SET) <- MASS::contr.sdif(levels(object$SET))
+    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB') # backward difs
+    stats::contrasts(object$SET) <-stats::contr.treatment(levels(object$SET))
+    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB') # baseline difs
+    
+# non-parametric: wilcoxon
+    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB')
+    object \%<>\% fit_wilcoxon(subgroupvar='SET', block='SUB', 
+                   contrastdefs=c('t1-t0', 't2-t0', 't3-t0'))
+    plot_venn(testmat(object,coef=c('t3','t3-t0'),fit=c('limma','wilcoxon')))
 }

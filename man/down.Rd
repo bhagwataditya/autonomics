@@ -24,6 +24,10 @@ testmat(
 \item{quantity}{string: 'p', 'fdr'}
 
 \item{cutoff}{number}
+
+\item{coef}{character vector: coefs}
+
+\item{fit}{character vector: fitted models}
 }
 \value{
 character vector

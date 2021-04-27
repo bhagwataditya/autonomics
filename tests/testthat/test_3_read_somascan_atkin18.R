@@ -38,14 +38,16 @@ test_that(  "read_somascan(file, fit='limma')", {
     file <- download_data('atkin18.somascan.adat')
     object <- read_somascan(file, fit='limma', plot=FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('limma' %in% names(metadata(object)))
+    expect_true(any(
+        stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
 })
 
 test_that(  "read_somascan(file, fit='lm')", {
     file <- download_data('atkin18.somascan.adat')
     object <- read_somascan(file, fit='lm', plot=FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('lm' %in% names(metadata(object)))
+    expect_true(any(
+        stri_detect_fixed(fvars(object), paste0(FITSEP, 'lm'))))
 })
 
 test_that("read_somascan(file, fit='limma', block='Subject_ID')", {
@@ -53,7 +55,8 @@ test_that("read_somascan(file, fit='limma', block='Subject_ID')", {
     block <- 'Subject_ID'
     object <- read_somascan(file, block = block, fit = 'limma', plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('limma' %in% names(metadata(object)))
+    expect_true(any(
+        stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
     expect_true('dupcor' %in% names(metadata(object)))
 })
 
@@ -78,5 +81,6 @@ test_that("read_somascan(file, fit='wilcoxon', block='Subject_ID')", {
     block <- 'Subject_ID'
     object <- read_somascan(file, block = block, fit = 'wilcoxon', plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('wilcoxon' %in% names(metadata(object)))
+    expect_true(any(
+        stri_detect_fixed(fvars(object), paste0(FITSEP, 'wilcoxon'))))
 })

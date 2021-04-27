@@ -376,6 +376,8 @@ sign <- function(object){
 #' @param object    SummarizedExperiment
 #' @param quantity  string: 'p', 'fdr'
 #' @param cutoff    number
+#' @param coef      character vector: coefs
+#' @param fit       character vector: fitted models
 #' @return  character vector
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
