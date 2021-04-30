@@ -474,34 +474,36 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 # Important: * merge.data.frame and merge.data.table behave differently!
 #            * as.data.table does not work directly on a DataFrame!
 #              data.table::data.table(S4Vectors::DataFrame(a=1, b=2))
-    rownames1 <- rownames(objectdt)
     objectdtclass <- class(objectdt)[1]
     # First convert DataFrame to dataframe
         if (is(      dt, 'DataFrame'))        dt %<>% as.data.frame()
         if (is(objectdt, 'DataFrame'))  objectdt %<>% as.data.frame()
     # Then convert dataframe to data.table
-        dt %<>% as.data.table()
-        objectdt %<>% as.data.table()
+        dt       %<>% as.data.table()
+        objectdt %<>% as.data.table(keep.rownames=TRUE)
 # Rm duplicate keys
     n0 <- nrow(dt)
     dt %<>% unique(by = by.y) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
-            ' rows after removing duplicate `', by.y, '` entries')
+        '/', n0, ' rows after removing duplicate `', by.y, '` entries')
 # Rm duplicate cols: https://stackoverflow.com/questions/9202413
     duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
     for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
 # Merge
     objectdt %<>% merge.data.frame(
-                    dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
-    # objectdt %<>% merge(
-    #                 dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
-        # merge.data.table is currently not working properly
-        # some common feature_id values are being dropped
-        # this emerges when running fit_wilcoxon(atkin18.metabolon)
-        # which propagates fitres: merge_fitres -> merge_fdata -> merge_data
-        # could not isolate the problem so far into a reprex
+                   dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
+    #objectdt %<>% merge(
+    #                dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
+        # merge.data.table is currently failing!
+        # some common feature_id values are being dropped.
+        # reprex: see the difference in results for:
+        #     file <- download_data('atkin18.metabolon.xlsx')
+        #     object <- read_metabolon(file, plot=FALSE, impute=TRUE)
+        #     object %<>% fit_wilcoxon(subgroupvar='SET', block='SUB', 
+        #                    contrastdefs=c('t1-t0', 't2-t0', 't3-t0')
     objectdt %<>% as(objectdtclass)
-    rownames(objectdt) <- rownames1 # merging drops rownames
+    rownames(objectdt) <- objectdt$rn # merging drops rownames
+    objectdt$rn <- NULL
 # Return
     objectdt
 }
