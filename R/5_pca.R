@@ -171,7 +171,7 @@ pls <- function(
     pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
-    variances <- round(100*pls_out$explained_variance$X)
+    variances <- round(100*pls_out$prop_expl_var$X)
     colnames(samples)  <- sprintf('pls%d', seq_len(ncol(samples)))
     colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
@@ -325,7 +325,7 @@ spls <- function(
     pls_out <- mixOmics::splsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
-    variances <- round(100*pls_out$explained_variance$X)
+    variances <- round(100*pls_out$prop_expl_var$X)
     colnames(samples)  <- sprintf('spls%d', seq_len(ncol(samples)))
     colnames(features) <- sprintf('spls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('spls%d', seq_len(length(variances)))
