@@ -116,15 +116,16 @@ na_to_string <- function(x){
 
 #' @rdname halfnormimpute
 #' @export
-normimpute <- function(x, selector = is.na(x)){
-    x[selector] <- rnorm(length(x[selector]), sd = sd(x[!is.na(x)]))
+normimpute <- function(x, selector = is.na(x), mean = 0){
+    x[selector] <- rnorm(
+        length(x[selector]), mean = mean, sd = sd(x[!selector]))
     x
 }
-
 
 #' Impute from half-normal distribution around 0
 #' @param x          NA-containing numeric vector
 #' @param selector   which values to impute
+#' @param mean       which mean to impute around
 #' @return numeric vector of same length
 #' @examples
 #' require(data.table)
@@ -144,7 +145,7 @@ normimpute <- function(x, selector = is.na(x)){
 #' geom_density(alpha=0.5)
 #' @export
 halfnormimpute <- function(x, selector = is.na(x)){
-    x[selector] <- abs(rnorm(length(x[selector]), sd = 2*sd(x[!is.na(x)])))
+    x[selector] <- abs(rnorm(length(x[selector]), sd = 2*sd(x[!selector])))
     x
 }
 
