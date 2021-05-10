@@ -157,6 +157,21 @@ zeroimpute <- function(x, selector = is.na(x)){
     x
 }
 
+#' @rdname halfnormimpute
+#' @export
+halfnormimpute_and_translate <- function(
+    x, selector = is.na(x), ref = mean, pos = 3*sd(x[!selector])){
+    x[!selector] <- translate(x[!selector], ref, pos)
+    halfnormimpute(x, selector)
+}
+
+translate <- function(x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x)){
+    assertive::assert_any_are_true(
+        sapply(c(min, mean, median, max), identical, ref))
+    shift <- ref(x, na.rm = TRUE) - pos
+    x - shift
+}
+
 #=============================================================================
 #
 #                        split_by_svar
@@ -241,14 +256,11 @@ venn_detects <- function(object, subgroup){
         full       = is_full_detect(      object))))
 }
 
-
 #=============================================================================
 #
 #                     impute_systematic_nondetects
 #
 #==============================================================================
-
-
 #' Impute systematic nondetects
 #' @param object    SummarizedExperiment
 #' @param subgroup     subgroup svar
