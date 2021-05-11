@@ -4,7 +4,6 @@
 \alias{normimpute}
 \alias{halfnormimpute}
 \alias{zeroimpute}
-\alias{halfnormimpute_and_translate}
 \title{Impute from half-normal distribution around 0}
 \usage{
 normimpute(x, selector = is.na(x), mean = 0)
@@ -12,13 +11,6 @@ normimpute(x, selector = is.na(x), mean = 0)
 halfnormimpute(x, selector = is.na(x))
 
 zeroimpute(x, selector = is.na(x))
-
-halfnormimpute_and_translate(
-  x,
-  selector = is.na(x),
-  ref = mean,
-  pos = 3 * sd(x[!selector])
-)
 }
 \arguments{
 \item{x}{NA-containing numeric vector}

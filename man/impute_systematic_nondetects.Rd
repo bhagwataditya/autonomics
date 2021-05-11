@@ -9,7 +9,8 @@ impute_systematic_nondetects(
   subgroup = subgroup,
   fun = halfnormimpute,
   plot = TRUE,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{

@@ -145,7 +145,8 @@ normimpute <- function(x, selector = is.na(x), mean = 0){
 #' geom_density(alpha=0.5)
 #' @export
 halfnormimpute <- function(x, selector = is.na(x)){
-    x[selector] <- abs(rnorm(length(x[selector]), sd = 2*sd(x[!selector])))
+    x[selector] <- abs(
+        rnorm(length(x[selector]), sd = 2*sd(x[!selector], na.rm = TRUE)))
     x
 }
 
@@ -157,14 +158,7 @@ zeroimpute <- function(x, selector = is.na(x)){
     x
 }
 
-#' @rdname halfnormimpute
 #' @export
-halfnormimpute_and_translate <- function(
-    x, selector = is.na(x), ref = mean, pos = 3*sd(x[!selector])){
-    x[!selector] <- translate(x[!selector], ref, pos)
-    halfnormimpute(x, selector)
-}
-
 translate <- function(x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x)){
     assertive::assert_any_are_true(
         sapply(c(min, mean, median, max), identical, ref))
@@ -273,8 +267,8 @@ venn_detects <- function(object, subgroup){
 #' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
 #' impute_systematic_nondetects(object)
 #' @export
-impute_systematic_nondetects <- function(object, subgroup = subgroup, 
-    fun = halfnormimpute, plot = TRUE, verbose = TRUE
+impute_systematic_nondetects <- function(object, subgroup = subgroup,
+    fun = halfnormimpute, plot = TRUE, verbose = TRUE, ...
 ){
 # Process
     absent <- replicated <- systematic <- value <- NULL
@@ -289,7 +283,7 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
     dt[, replicated := sum(!is.na(value))>1, by = c('feature_id', groupvar)]
     dt[, systematic := any(absent) & any(replicated), by = 'feature_id']
     dt[, is_imputed := systematic & absent]
-    dt[, value := fun(value, is_imputed), by='feature_id']
+    dt[, value := fun(value, is_imputed, ...), by='feature_id']
 # Update object
     ff <- fnames(object)
     ss <- snames(object)
