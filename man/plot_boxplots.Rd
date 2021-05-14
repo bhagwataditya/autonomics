@@ -14,6 +14,7 @@ plot_boxplots(
   color = NULL,
   facet = NULL,
   highlight = NULL,
+  jitter = FALSE,
   fixed = list(na.rm = TRUE),
   hlevels = NULL
 )
@@ -43,6 +44,7 @@ plot_subgroup_boxplots(
   fill = !!enquo(subgroup),
   color = NULL,
   highlight = NULL,
+  jitter = TRUE,
   facet = vars(feature_id),
   fixed = list(na.rm = TRUE),
   hlevels = NULL
@@ -60,6 +62,8 @@ plot_subgroup_boxplots(
 \item{facet}{svar mapped to facet}
 
 \item{highlight}{fvar expressing which feature should be highlighted}
+
+\item{jitter}{whether to add jittered data points}
 
 \item{fixed}{fixed aesthetics}
 

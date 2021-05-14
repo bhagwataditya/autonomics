@@ -457,6 +457,7 @@ plot_subgroup_violins <- function(
 #' @param color      svar mapped to color
 #' @param facet      svar mapped to facet
 #' @param highlight  fvar expressing which feature should be highlighted
+#' @param jitter     whether to add jittered data points
 #' @param fixed      fixed aesthetics
 #' @param hlevels    xlevels for which to plot horizontal lines
 #' @return  ggplot object
@@ -479,7 +480,7 @@ plot_subgroup_violins <- function(
 #'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
 #' @export
 plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL, 
-    highlight = NULL, fixed = list(na.rm=TRUE), hlevels = NULL
+    highlight = NULL, jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -514,6 +515,8 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
         mediandt[get(xstr) %in% hlevels, present := TRUE]
         p <- p + geom_hline(data=mediandt, aes(yintercept = medianvalue, color=!!fill, alpha=present), linetype='longdash')
     }
+# Add jitter
+    if (jitter) p <- p + geom_jitter(position = position_jitter(width=.1, height=0))
 # Finish
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
@@ -545,16 +548,18 @@ plot_feature_boxplots <- function(
     object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
     highlight=!!enquo(highlight), fixed=fixed)
 
+
 #' @rdname plot_boxplots
 #' @export
 plot_subgroup_boxplots <- function(
     object, subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
-    color = NULL, highlight = NULL, facet = vars(feature_id),
+    color = NULL, highlight = NULL, jitter = TRUE, facet = vars(feature_id),
     fixed = list(na.rm=TRUE), hlevels = NULL
 ){
     p <- plot_boxplots(
         object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
-        facet = facet, highlight = !!enquo(highlight), fixed = fixed, hlevels = hlevels)
+        facet = facet, highlight = !!enquo(highlight), jitter = jitter, 
+        fixed = fixed, hlevels = hlevels)
     #p <- p + stat_summary(fun='mean', geom='line', aes(group=1), color='black', size=0.7, na.rm = TRUE)
     p
 }
