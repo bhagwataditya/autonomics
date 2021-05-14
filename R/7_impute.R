@@ -116,15 +116,16 @@ na_to_string <- function(x){
 
 #' @rdname halfnormimpute
 #' @export
-normimpute <- function(x, selector = is.na(x)){
-    x[selector] <- rnorm(length(x[selector]), sd = sd(x[!is.na(x)]))
+normimpute <- function(x, selector = is.na(x), mean = 0){
+    x[selector] <- rnorm(
+        length(x[selector]), mean = mean, sd = sd(x[!selector]))
     x
 }
-
 
 #' Impute from half-normal distribution around 0
 #' @param x          NA-containing numeric vector
 #' @param selector   which values to impute
+#' @param mean       which mean to impute around
 #' @return numeric vector of same length
 #' @examples
 #' require(data.table)
@@ -144,7 +145,8 @@ normimpute <- function(x, selector = is.na(x)){
 #' geom_density(alpha=0.5)
 #' @export
 halfnormimpute <- function(x, selector = is.na(x)){
-    x[selector] <- abs(rnorm(length(x[selector]), sd = 2*sd(x[!is.na(x)])))
+    x[selector] <- abs(
+        rnorm(length(x[selector]), sd = 2*sd(x[!selector], na.rm = TRUE)))
     x
 }
 
@@ -154,6 +156,14 @@ halfnormimpute <- function(x, selector = is.na(x)){
 zeroimpute <- function(x, selector = is.na(x)){
     x[selector] <- 0
     x
+}
+
+#' @export
+translate <- function(x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x)){
+    assertive::assert_any_are_true(
+        sapply(c(min, mean, median, max), identical, ref))
+    shift <- ref(x, na.rm = TRUE) - pos
+    x - shift
 }
 
 #=============================================================================
@@ -248,14 +258,11 @@ venn_detects <- function(object, subgroup){
         full       = is_full_detect(      object))))
 }
 
-
 #=============================================================================
 #
 #                     impute_systematic_nondetects
 #
 #==============================================================================
-
-
 #' Impute systematic nondetects
 #' @param object    SummarizedExperiment
 #' @param subgroup     subgroup svar
@@ -268,8 +275,8 @@ venn_detects <- function(object, subgroup){
 #' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
 #' impute_systematic_nondetects(object)
 #' @export
-impute_systematic_nondetects <- function(object, subgroup = subgroup, 
-    fun = halfnormimpute, plot = TRUE, verbose = TRUE
+impute_systematic_nondetects <- function(object, subgroup = subgroup,
+    fun = halfnormimpute, plot = TRUE, verbose = TRUE, ...
 ){
 # Process
     absent <- replicated <- systematic <- value <- NULL
@@ -284,7 +291,7 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
     dt[, replicated := sum(!is.na(value))>1, by = c('feature_id', groupvar)]
     dt[, systematic := any(absent) & any(replicated), by = 'feature_id']
     dt[, is_imputed := systematic & absent]
-    dt[, value := fun(value, is_imputed), by='feature_id']
+    dt[, value := fun(value, is_imputed, ...), by='feature_id']
 # Update object
     ff <- fnames(object)
     ss <- snames(object)

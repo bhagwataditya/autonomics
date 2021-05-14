@@ -6,7 +6,7 @@
 \alias{zeroimpute}
 \title{Impute from half-normal distribution around 0}
 \usage{
-normimpute(x, selector = is.na(x))
+normimpute(x, selector = is.na(x), mean = 0)
 
 halfnormimpute(x, selector = is.na(x))
 
@@ -16,6 +16,8 @@ zeroimpute(x, selector = is.na(x))
 \item{x}{NA-containing numeric vector}
 
 \item{selector}{which values to impute}
+
+\item{mean}{which mean to impute around}
 }
 \value{
 numeric vector of same length
