@@ -470,6 +470,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
     assert_is_any_of(objectdt,c('data.frame', 'DataFrame'))
     if (is.null(dt))  return(objectdt)
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame'))
+
 # Convert to data.table
 # Important: * merge.data.frame and merge.data.table behave differently!
 #            * as.data.table does not work directly on a DataFrame!
@@ -490,7 +491,9 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
     duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
     for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
 # Merge
-    objectdt %<>% merge.data.frame(
+    objectdt[[by.x]] %<>% as.character()  # having one of these as a factor
+    dt[[by.y]]       %<>% as.character()  # leads to a horrible bug!
+    objectdt %<>% merge.data.table(
                    dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
     #objectdt %<>% merge(
     #                dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
