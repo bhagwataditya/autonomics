@@ -125,7 +125,7 @@ MAXQUANT_PATTERNS_QUANTITY <- c(
 `Intensity labeled`            =
     '^Intensity ([HML]) (.+)$',
 `Intensity`                    =
-    '^Intensity ([HML])? ?(.+)$')
+    '^Intensity (.+)$')
 
 
 #' Guess maxquant quantity from snames
@@ -1170,8 +1170,13 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
     pepcs <- as.matrix(fread(file, select=pepcselect, integer64='numeric'))
     rownames(pepcs) <- rownames(object)
     colnames(pepcs) %<>% stri_replace_first_regex(pepcountpattern, "$1")
-    exprsselect <- stri_replace_first_regex(
-        colnames(object), MAXQUANT_PATTERNS_QUANTITY[quantity], "$2")
+    if (quantity == 'Intensity'){
+        exprsselect <- stri_replace_first_regex(
+            colnames(object), MAXQUANT_PATTERNS_QUANTITY[quantity], "$1")
+    } else {
+        exprsselect <- stri_replace_first_regex(
+            colnames(object), MAXQUANT_PATTERNS_QUANTITY[quantity], "$2")
+    }
     pepcs %<>% extract(, exprsselect)
     colnames(pepcs) <- colnames(object)
     assays(object)$pepcounts <- pepcs
