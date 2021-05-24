@@ -125,7 +125,7 @@ MAXQUANT_PATTERNS_QUANTITY <- c(
 `Intensity labeled`            =
     '^Intensity ([HML]) (.+)$',
 `Intensity`                    =
-    '^Intensity (.+)$')
+    '^Intensity ([HML])? ?(.+)$')
 
 
 #' Guess maxquant quantity from snames
