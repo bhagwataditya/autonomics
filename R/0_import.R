@@ -7,7 +7,7 @@
 #' @importFrom assertive   assert_all_are_less_than_or_equal_to
 #' @importFrom assertive   assert_all_are_non_missing_nor_empty_character
 #' @importFrom assertive   assert_all_are_not_matching_fixed
-#' @importFrom assertive   assert_all_are_true
+#' @importFrom assertive   assert_all_are_true   assert_any_are_true
 #' @importFrom assertive   assert_all_are_whole_numbers
 #' @importFrom assertive   assert_any_are_not_nan
 #' @importFrom assertive   assert_are_identical     assert_are_same_length

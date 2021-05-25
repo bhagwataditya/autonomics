@@ -38,6 +38,9 @@ dt2 <- data.table(value = halfnormimpute(x), distr = 'halfnorm')
 x <- abs(rnorm(1e5)); x[idx] <- NA
 dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
 
+x <- abs(rnorm(1e5)); x[idx] <- NA
+translate(x)
+
 require(ggplot2)
 ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) +
 geom_density(alpha=0.5)
