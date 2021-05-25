@@ -266,6 +266,7 @@ venn_detects <- function(object, subgroup){
 #' @param fun       imputation function
 #' @param plot      TRUE or FALSE
 #' @param verbose   TRUE or FALSE
+#' @param ...       passed to `fun`
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
