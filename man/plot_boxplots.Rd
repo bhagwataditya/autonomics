@@ -13,6 +13,8 @@ plot_boxplots(
   fill,
   color = NULL,
   facet = NULL,
+  scales = "free_y",
+  nrow = NULL,
   highlight = NULL,
   jitter = FALSE,
   fixed = list(na.rm = TRUE),
@@ -46,6 +48,8 @@ plot_subgroup_boxplots(
   highlight = NULL,
   jitter = TRUE,
   facet = vars(feature_id),
+  scales = "free_y",
+  nrow = NULL,
   fixed = list(na.rm = TRUE),
   hlevels = NULL
 )
@@ -60,6 +64,10 @@ plot_subgroup_boxplots(
 \item{color}{svar mapped to color}
 
 \item{facet}{svar mapped to facet}
+
+\item{scales}{passed to ggplot::facet_wrap}
+
+\item{nrow}{passed to ggplot::facet_wrap}
 
 \item{highlight}{fvar expressing which feature should be highlighted}
 

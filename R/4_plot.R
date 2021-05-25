@@ -456,6 +456,8 @@ plot_subgroup_violins <- function(
 #' @param fill       svar mapped to fill
 #' @param color      svar mapped to color
 #' @param facet      svar mapped to facet
+#' @param scales     passed to ggplot::facet_wrap
+#' @param nrow       passed to ggplot::facet_wrap
 #' @param highlight  fvar expressing which feature should be highlighted
 #' @param jitter     whether to add jittered data points
 #' @param fixed      fixed aesthetics
@@ -480,6 +482,7 @@ plot_subgroup_violins <- function(
 #'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
 #' @export
 plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL, 
+    scales = 'free_y', nrow = NULL,
     highlight = NULL, jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL
 ){
 # Assert/Process
@@ -493,7 +496,8 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
     xstr     <- as_name(x)
     fillstr  <- if (quo_is_null(fill))   character(0) else  as_name(fill)
     colorstr <- if (quo_is_null(color))  character(0) else  as_name(color)
-    facetstr <- if (is.null(facet))  character(0) else  vapply(facet, as_name, character(1))
+    facetstr <- if (is.null(facet))  character(0) else  vapply(
+                                                facet, as_name, character(1))
     highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
                                                 highlight)
 # Prepare
@@ -506,21 +510,27 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
 # Plot
     p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
                 fill = !!fill, color = !!color, fixed = fixed)
-    p <- p + facet_wrap(facets = facet, scales = 'free_y')
+    p <- p + facet_wrap(facets = facet, scales = scales, nrow = nrow)
     p %<>% add_highlights(!!highlight, geom = geom_point, fixed_color="darkred")
 # Add hline
     if (!is.null(hlevels)){
-        mediandt <- unique(dt[, unique(c('feature_id', xstr, 'medianvalue', facetstr)), with=FALSE])
+        mediandt <- unique(dt[, 
+          unique(c('feature_id', xstr, 'medianvalue', facetstr)), with=FALSE])
         mediandt[, present := FALSE]
         mediandt[get(xstr) %in% hlevels, present := TRUE]
-        p <- p + geom_hline(data=mediandt, aes(yintercept = medianvalue, color=!!fill, alpha=present), linetype='longdash')
+        p <- p + geom_hline(
+                    data=mediandt, 
+                    aes(yintercept = medianvalue, color=!!fill, alpha=present), 
+                    linetype='longdash')
     }
 # Add jitter
-    if (jitter) p <- p + geom_jitter(position = position_jitter(width=.1, height=0))
+    if (jitter) p <- p + geom_jitter(
+                            position = position_jitter(width=.1, height=0))
 # Finish
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
-    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + guides(color=FALSE, alpha=FALSE)
+    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
+        guides(color=FALSE, alpha=FALSE) +
         theme(axis.text.x = element_text(angle=90, hjust=1))
 # Return
     p
@@ -554,11 +564,12 @@ plot_feature_boxplots <- function(
 plot_subgroup_boxplots <- function(
     object, subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
     color = NULL, highlight = NULL, jitter = TRUE, facet = vars(feature_id),
-    fixed = list(na.rm=TRUE), hlevels = NULL
+    scales = 'free_y', nrow = NULL, fixed = list(na.rm=TRUE), hlevels = NULL
 ){
     p <- plot_boxplots(
         object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
-        facet = facet, highlight = !!enquo(highlight), jitter = jitter, 
+        facet = facet, scales = scales, nrow = nrow, 
+        highlight = !!enquo(highlight), jitter = jitter, 
         fixed = fixed, hlevels = hlevels)
     #p <- p + stat_summary(fun='mean', geom='line', aes(group=1), color='black', size=0.7, na.rm = TRUE)
     p
