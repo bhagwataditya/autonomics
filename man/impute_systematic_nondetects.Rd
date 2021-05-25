@@ -23,6 +23,8 @@ impute_systematic_nondetects(
 \item{plot}{TRUE or FALSE}
 
 \item{verbose}{TRUE or FALSE}
+
+\item{...}{passed to `fun`}
 }
 \value{
 SummarizedExperiment
