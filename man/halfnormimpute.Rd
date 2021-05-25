@@ -4,6 +4,7 @@
 \alias{normimpute}
 \alias{halfnormimpute}
 \alias{zeroimpute}
+\alias{translate}
 \title{Impute from half-normal distribution around 0}
 \usage{
 normimpute(x, selector = is.na(x), mean = 0)
@@ -11,6 +12,12 @@ normimpute(x, selector = is.na(x), mean = 0)
 halfnormimpute(x, selector = is.na(x))
 
 zeroimpute(x, selector = is.na(x))
+
+translate(
+  x,
+  ref = c(min, mean, median, max)[[1]],
+  pos = 3 * sd(x, na.rm = TRUE)
+)
 }
 \arguments{
 \item{x}{NA-containing numeric vector}
@@ -38,7 +45,10 @@ dt2 <- data.table(value = halfnormimpute(x), distr = 'halfnorm')
 x <- abs(rnorm(1e5)); x[idx] <- NA
 dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
 
+x <- abs(rnorm(1e5)); x[idx] <- NA
+dt4 <- data.table(value = translate(x), distr = 'translate')
+
 require(ggplot2)
-ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) +
+ggplot(rbind(dt1,dt2,dt3, dt4), aes(x=value, fill=distr)) +
 geom_density(alpha=0.5)
 }

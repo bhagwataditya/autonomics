@@ -140,8 +140,11 @@ normimpute <- function(x, selector = is.na(x), mean = 0){
 #' x <- abs(rnorm(1e5)); x[idx] <- NA
 #' dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
 #'
+#' x <- abs(rnorm(1e5)); x[idx] <- NA
+#' dt4 <- data.table(value = translate(x), distr = 'translate')
+#'
 #' require(ggplot2)
-#' ggplot(rbind(dt1,dt2,dt3), aes(x=value, fill=distr)) +
+#' ggplot(rbind(dt1,dt2,dt3, dt4), aes(x=value, fill=distr)) +
 #' geom_density(alpha=0.5)
 #' @export
 halfnormimpute <- function(x, selector = is.na(x)){
@@ -158,10 +161,12 @@ zeroimpute <- function(x, selector = is.na(x)){
     x
 }
 
+#' @rdname halfnormimpute
 #' @export
-translate <- function(x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x)){
-    assertive::assert_any_are_true(
-        sapply(c(min, mean, median, max), identical, ref))
+translate <- function(
+    x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x, na.rm = TRUE)
+){
+    assert_any_are_true(sapply(c(min, mean, median, max), identical, ref))
     shift <- ref(x, na.rm = TRUE) - pos
     x - shift
 }
