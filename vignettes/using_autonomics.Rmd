@@ -92,7 +92,8 @@ The `block` argument in both importers allows to model e.g. subject_id as a rand
 
 **Billing et al. (2016)** compared three types of stem cells: embryonic (**E**), embryonic differentiated into mesenchymal  (**EM**), and bone-marrow mesenchymal (**BM**). Importing a downsized version of the RNAseq BAM files (with only a subset of all reads):
 
-```{r, results = 'hide'}
+```{r, results = 'hide', eval = FALSE}
+# not run to avoid issues with R CMD CHECK 
 if (requireNamespace('Rsubread')){
   object <- read_rnaseq_bams(
                 dir    = download_data('billing16.bam.zip'), 
