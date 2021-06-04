@@ -10,8 +10,8 @@ context('fit: GSE161731')
 
     # Prepare minimal full-feature datset: subgroup, block, weights
     require(magrittr)
-    basedir <- '~/autonomicscache/datasets'
-    subdir  <- '~/autonomicscache/datasets/GSE161731'
+    basedir <- rappdirs::user_cache_dir(appname = 'autonomics')
+    subdir  <- file.path(basedir, 'GSE161731')
     if (!dir.exists(subdir)){
         GEOquery::getGEOSuppFiles("GSE161731",baseDir=basedir) }
     file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
@@ -158,7 +158,7 @@ context('fit: GSE161731')
         select %<>% paste0('_STD')
         object <- read_proteingroups(
                     file, select_subgroups = select, plot = FALSE)
-        exprs(object) %<>% na_to_zero()
+        values(object) %<>% na_to_zero()
         expect_true(sumexp_contains_fit(fit_wilcoxon(object), 'wilcoxon'))
         expect_true(sumexp_contains_fit(fit_lm(object),       'lm'))
         expect_true(sumexp_contains_fit(fit_limma(object),    'limma'))

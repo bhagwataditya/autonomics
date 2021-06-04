@@ -3,34 +3,38 @@ require(Rsubread)
 require(magrittr)
 
 # Read quality
-QS <- qualityScores("~/autonomicscache/stemcells.fastq/SRR1909613_1.fastq")
+QS <- qualityScores("~/.cache/autonomics/stemcells/stemcells.fastq/SRR1909613_1.fastq")
 boxplot(QS, ylab="Quality score", xlab="Base position", main="SRR1909613_1.fastq", cex=0.25, col="orange")
 
 # Index
 url <- 'ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_28/GRCh38.primary_assembly.genome.fa.gz'
-download.file(url, '~/autonomicscache/genomes/GRCh38.primary_assembly.genome.fa.gz')
-setwd('~/autonomicscache/genomes/GRCh38')
+cachedir <- rappdirs::user_cache_dir(appname='autonomics')
+genomesdir <- file.path(cachedir, 'genomes')
+dir.create(genomesdir)
+download.file(url, file.path(genomesdir, 'GRCh38.primary_assembly.genome.fa.gz'))
+setwd(file.path(genomesdir, 'GRCh38'))
 buildindex(
     basename = "GRCh38",
-    reference = '~/autonomicscache/genomes/GRCh38.primary_assembly.genome.fa.gz')
+    reference = file.path(genomesdir, 'GRCh38.primary_assembly.genome.fa.gz'))
 
 # Align
-dir('~/autonomicscache/stemcells.fastq')
-reads1 <- list.files('~/autonomicscache/datasets/stemcells/stemcells.fastq', pattern = '_1', full.names = TRUE)
-reads2 <- list.files('~/autonomicscache/datasets/stemcells/stemcells.fastq', pattern = '_2', full.names = TRUE)
+stemcellsdir <- file.path(cachedir, 'stemcells')
+dir.create(stemcellsdir)
+reads1 <- list.files(file.path(stemcellsdir, 'stemcells.fastq'), pattern = '_1', full.names = TRUE)
+reads2 <- list.files(file.path(stemcellsdir, 'stemcells.fastq'), pattern = '_2', full.names = TRUE)
 sample_design <- c(
     SRR1909613 = 'BM.R1', SRR1909637 = 'BM.R2', SRR1909638 = 'BM.R3', SRR1909639 = 'BM.R4',
     SRR1926136 = 'EM.R1', SRR1926132 = 'EM.R2', SRR1926133 = 'EM.R3',
     SRR1926134 = 'E.R1',  SRR1926135 = 'E.R2',  SRR1867792 = 'E.R3')
 bams <- paste0(unname(sample_design[sub('_1.fastq', '', basename(reads1))]), '.bam')
-bams %<>% paste0('~/autonomicscache/datasets/stemcells/stemcells.bam/', .)
-setwd('~/autonomicscache/genomes/GRCh38')
+bams %<>% paste0(stemcellsdir, 'stemcells.bam/', .)
+setwd(file.path(genomesdir, 'GRCh38'))
 #align(index = "GRCh38", readfile1 = reads1, readfile2 = reads2, output_file = bams, nthreads = 10)
     #    BM.R1.bam    BM.R2    BM.R3    BM.R4    EM.R1    EM.R2    EM.R3   E.R1    E.R2    E.R3
     #                  10       18        13         18     17        9     3      9              => approx 2 hours in total
 
 # Read bam into analysis-ready SummarizedExperiment
-object <- read_bam('~/autonomicscache/datasets/stemcells/stemcells.bam/', ispaired = TRUE)
+object <- read_bam(file.path(stemcellsdir, 'stemcells.bam/'), ispaired = TRUE)
 
 # Alternative: specify manually
 # Count
