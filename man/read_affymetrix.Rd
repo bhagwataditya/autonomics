@@ -19,10 +19,12 @@ Read affymetrix microarray
 require(magrittr)
 url <- paste0('http://www.bioconductor.org/help/publications/2003/',
                 'Chiaretti/chiaretti2/T33.tgz')
-localfile <- file.path('~/autonomicscache', basename(url))
+localdir  <- file.path(rappdirs::user_cache_dir(appname = 'autonomics'), 'T33')
+dir.create(localdir, showWarnings=FALSE)
+localfile <- file.path(localdir, basename(url))
 if (!file.exists(localfile)){
     download.file(url, destfile = localfile)
-    untar(localfile, exdir = path.expand('~/autonomicscache'))
+    untar(localfile, exdir = path.expand(localdir))
 }
 localfile \%<>\% substr(1, nchar(.)-4)
 if (!requireNamespace("BiocManager", quietly = TRUE))  install.packages(

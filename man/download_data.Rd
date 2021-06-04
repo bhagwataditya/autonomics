@@ -4,10 +4,17 @@
 \alias{download_data}
 \title{Download autonomics example data}
 \usage{
-download_data(filename, verbose = TRUE)
+download_data(
+  filename,
+  url = paste0("https://bitbucket.org/graumannlabtools/autonomics/downloads/",
+    filename),
+  verbose = TRUE
+)
 }
 \arguments{
-\item{filename}{file name
+\item{filename}{file name}
+
+\item{url}{web url
 \itemize{
     \item \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{
                 Billing 2016: stemcell comparison:} E, EM, BM
