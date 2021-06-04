@@ -485,7 +485,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 # Rm duplicate keys
     n0 <- nrow(dt)
     dt %<>% unique(by = by.y) # keys should be unique!
-    if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
+    if (n0>nrow(dt) & verbose)  message('\t\t\tRetain ', nrow(dt),
         '/', n0, ' rows after removing duplicate `', by.y, '` entries')
 # Rm duplicate cols: https://stackoverflow.com/questions/9202413
     duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
