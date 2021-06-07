@@ -25,6 +25,10 @@ translate(
 \item{selector}{which values to impute}
 
 \item{mean}{which mean to impute around}
+
+\item{ref}{reference (\code{translate})}
+
+\item{pos}{position (\code{translate})}
 }
 \value{
 numeric vector of same length

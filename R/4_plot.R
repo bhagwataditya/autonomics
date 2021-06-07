@@ -475,7 +475,7 @@ plot_subgroup_violins <- function(
 #' # plot
 #'     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
 #'     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
-#'     plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet =feature_id)
+#'     plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet = ggplot2::vars(feature_id))
 #'     plot_feature_boxplots(object[1:9, ])
 #'     plot_sample_boxplots(object[, 1:12])
 #'     plot_sample_boxplots(object[, 1:12], highlight = control)
@@ -487,12 +487,12 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
+    if (!is.null(facet)) assert_is_all_of(facet, 'quosures') # e.g. facet = ggplot2::vars(feature_id)
     sample_id <- value <- medianvalue <- present <- NULL
     x         <- enquo(x)
     fill      <- enquo(fill)
     color     <- enquo(color)
     highlight <- enquo(highlight)
-    #facet     <- enquo(facet)
     xstr     <- as_name(x)
     fillstr  <- if (quo_is_null(fill))   character(0) else  as_name(fill)
     colorstr <- if (quo_is_null(color))  character(0) else  as_name(color)
@@ -692,7 +692,7 @@ plot_contrast_boxplots <- function(
     theme_bw() + xlab(NULL) + ggtitle(title) + 
     geom_boxplot(na.rm = TRUE) + 
     geom_hline( data = mediandt, linetype = 'longdash',
-                aes(yintercept=sym('value'), alpha=contrastsubgroup, 
+                aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 
                     color = !!sym(subgroupvar))) + 
     guides(alpha=FALSE)
 # Color facets

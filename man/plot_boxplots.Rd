@@ -95,7 +95,7 @@ Plot sample/feature boxplots
 # plot
     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
-    plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet =feature_id)
+    plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet = ggplot2::vars(feature_id))
     plot_feature_boxplots(object[1:9, ])
     plot_sample_boxplots(object[, 1:12])
     plot_sample_boxplots(object[, 1:12], highlight = control)

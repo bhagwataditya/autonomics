@@ -122,10 +122,14 @@ normimpute <- function(x, selector = is.na(x), mean = 0){
     x
 }
 
+
 #' Impute from half-normal distribution around 0
+#' 
 #' @param x          NA-containing numeric vector
 #' @param selector   which values to impute
 #' @param mean       which mean to impute around
+#' @param ref        reference (\code{translate})
+#' @param pos        position (\code{translate})
 #' @return numeric vector of same length
 #' @examples
 #' require(data.table)

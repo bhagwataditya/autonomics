@@ -17,6 +17,7 @@
 #' @importFrom assertive   assert_is_a_bool
 #' @importFrom assertive   assert_is_a_number       assert_is_a_string
 #' @importFrom assertive   assert_is_character      assert_is_data.frame
+#' @importFrom assertive   assert_is_data.table
 #' @importFrom assertive   assert_is_factor         assert_is_formula
 #' @importFrom assertive   assert_is_function       assert_is_identical_to_false
 #' @importFrom assertive   assert_is_identical_to_true
@@ -34,7 +35,8 @@
 #' @importFrom data.table  as.data.table   copy  data.table  
 #' @importFrom data.table  dcast  dcast.data.table
 #' @importFrom data.table  fread   fwrite  is.data.table
-#' @importFrom data.table  melt.data.table   .N   rbindlist   setkeyv   set
+#' @importFrom data.table  melt.data.table   merge.data.table   
+#' @importFrom data.table  .N   rbindlist   setkeyv   set
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2

@@ -304,7 +304,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #'    fdr(object)[7:10, ]
 #'   down(object)[7:10, ]
 #'     up(object)[7:10, ]
-#'   sign(object)[7:10, ]
+#'   effectsign(object)[7:10, ]
 #'testmat(object)[7:10, ]
 #' 
 #'  pvars(object)
@@ -364,7 +364,7 @@ fdr <- function(object){
     df
 }
 
-sign <- function(object){
+effectsign <- function(object){
     df <- base::sign(effect(object))
     df
 }
@@ -411,7 +411,7 @@ testmat <- function(
 ){
     df <- get(quantity)(object) < cutoff
     mode(df) <- 'numeric'
-    testmat0 <- data.matrix(df * sign(object))
+    testmat0 <- data.matrix(df * effectsign(object))
     idx <- split_extract(colnames(testmat0), 1, FITSEP) %in% coef &
            split_extract(colnames(testmat0), 2, FITSEP) %in% fit
     testmat0[, idx, drop=FALSE]
@@ -602,7 +602,7 @@ old_summarize_fit <- function(
 #' object <- read_proteingroups(file, plot=FALSE)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
-#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
+#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
 #' plot_venn(issig)
 #' @export
 is_sig <- function(

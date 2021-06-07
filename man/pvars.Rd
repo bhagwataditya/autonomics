@@ -41,7 +41,7 @@ effect(object)[7:10, ]
    fdr(object)[7:10, ]
   down(object)[7:10, ]
     up(object)[7:10, ]
-  sign(object)[7:10, ]
+  effectsign(object)[7:10, ]
 testmat(object)[7:10, ]
 
  pvars(object)
