@@ -86,4 +86,6 @@ Suggests:
   rtracklayer, 
   seqinr,
   statmod,
-  testthat
+  testthat,
+  UniProt.ws
+

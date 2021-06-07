@@ -6,15 +6,17 @@
 \alias{annotate_uniprot_ws.SummarizedExperiment}
 \title{Annotate uniprotids using UniProt.ws}
 \usage{
-annotate_uniprot_ws(x)
+annotate_uniprot_ws(x, ...)
 
-\method{annotate_uniprot_ws}{data.table}(x, upws, columns = c("ENSEMBL"), collapse = ";")
+\method{annotate_uniprot_ws}{data.table}(x, upws, columns = c("ENSEMBL"), collapse = ";", ...)
 
-\method{annotate_uniprot_ws}{SummarizedExperiment}(x, upws, columns = c("ENSEMBL"), collapse = ";")
+\method{annotate_uniprot_ws}{SummarizedExperiment}(x, upws, columns = c("ENSEMBL"), collapse = ";", ...)
 }
 \arguments{
 \item{x}{data.table/SummarizedExperiment with (s)var "uniprot" \cr
 with single (data.table) or collapsed (SummarizedExperiment) uniprot values}
+
+\item{...}{used for S3 generic definition}
 
 \item{upws}{return value of Uniprot.ws::Uniprot.ws()}
 
