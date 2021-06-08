@@ -164,7 +164,7 @@ create_design <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit = 'limma'),
-    verbose = TRUE
+    verbose = FALSE
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -248,7 +248,7 @@ contrast_subgroup_rows <- function(object, subgroupvar){
 
 # contrast_coefs <- function(object, formula){
 #     subgroupvar <- all.vars(formula)[1]
-#     design <- create_design(object, formula = formula, verbose = FALSE)
+#     design <- create_design(object, formula = formula)
 #     if (ncol(design)==1){
 #         list(matrix(colnames(design), nrow=1, ncol=1), 
 #             matrix(nrow=0, ncol=0))
@@ -262,7 +262,7 @@ contrast_subgroup_rows <- function(object, subgroupvar){
 
 contrast_coefs <- function(object, formula){
     subgroupvar <- all.vars(formula)[1]
-    design <- create_design(object, formula = formula, verbose = FALSE)
+    design <- create_design(object, formula = formula)
     if (ncol(design)==1){  
         colnames(design)
     } else if (all(design[, 1]==1)){ 
@@ -440,7 +440,7 @@ fit_limma <- function(object,
         if(is.null(block))     '' else paste0(' | ',block),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
                                             weightvar), ')')
-    design <- create_design(object, formula=formula, verbose=FALSE)
+    design <- create_design(object, formula=formula)
 # Block
     if (!is.null(block)){
         assert_is_subset(block, svars(object))

@@ -120,17 +120,17 @@ subtract_baseline <- function(
 #' @export
 subtract_pairs <- function(
     object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], block,
-    assaynames = setdiff(assayNames(object), 'weights'), verbose = TRUE
+    assaynames = assayNames(object)[1], verbose = TRUE
 ){
 # Report
     # PRO: optimized for many block levels
     # CON: works only with exactly one ref per block 
     . <- NULL
     if (verbose){ 
-        message("\t\tSubtract pairs")
-        message("\t\t\tcontrols  : ", subgroupvar, "==", subgroupctr)
-        if (!is.null(block))  message("\t\t\tin block  : ", block)
-        message("\t\t\tfor assays: ", paste0(assaynames, collapse = ', '))
+        txt <- paste0("\t\tSubtract ", subgroupvar, "==", subgroupctr, ' ')
+        txt %<>% paste0(paste0(assaynames, collapse = '/'))
+        if (!is.null(block))  txt %<>% paste0(" per ", block)
+        message(txt)
     }
 # Ensure single ref per block
     sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]
