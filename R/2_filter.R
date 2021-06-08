@@ -280,7 +280,7 @@ is_available_for_some_feature <- function(object){
 rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
     selectedsamples <-
         data.table(sdata(object))[, .SD[.N>1], by = svar][['sample_id']]
-    if (verbose)   message('\t\t\tRetain ', length(selectedsamples), '/', 
+    if (verbose)   message('\t\tRetain ', length(selectedsamples), '/', 
                             ncol(object), ' samples with replicated ', svar)
     object[, selectedsamples]
 }
