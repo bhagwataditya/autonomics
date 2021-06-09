@@ -62,7 +62,7 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' object <- read_metabolon(file, plot=FALSE)
 #' filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 #' @export
-filter_features <- function(object, condition, verbose = FALSE){
+filter_features <- function(object, condition, verbose = TRUE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
@@ -218,15 +218,15 @@ filter_replicated  <- function(
 #' Filter samples on condition
 #' @param object    SummarizedExperiment
 #' @param condition filter condition
-#' @param verbose   TRUE or FALSE (default)
-#' @param record    TRUE (default) or FALSE
+#' @param verbose   TRUE/FALSE 
+#' @param record    TRUE/FALSE 
 #' @return filtered SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' filter_samples(object, Group != 't0', verbose = TRUE)
 #' @export
-filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
+filter_samples <- function(object, condition, verbose = TRUE, record = TRUE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
