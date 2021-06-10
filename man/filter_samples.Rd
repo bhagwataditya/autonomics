@@ -4,7 +4,7 @@
 \alias{filter_samples}
 \title{Filter samples on condition}
 \usage{
-filter_samples(object, condition, verbose = TRUE, record = TRUE)
+filter_samples(object, condition, verbose = FALSE, record = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

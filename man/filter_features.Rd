@@ -4,7 +4,7 @@
 \alias{filter_features}
 \title{Filter features on condition}
 \usage{
-filter_features(object, condition, verbose = TRUE)
+filter_features(object, condition, verbose = FALSE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
