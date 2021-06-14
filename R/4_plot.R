@@ -487,6 +487,7 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
+    if (nrow(object)==0)  return(ggplot2::ggplot())
     if (!is.null(facet)) assert_is_all_of(facet, 'quosures') # e.g. facet = ggplot2::vars(feature_id)
     sample_id <- value <- medianvalue <- present <- NULL
     x         <- enquo(x)
