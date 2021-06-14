@@ -442,8 +442,6 @@ plot_subgroup_violins <- function(
 #==============================================================================
 #
 #                   plot_boxplots()
-#                       plot_sample_boxplots()
-#                       plot_feature_boxplots
 #
 #==============================================================================
 
@@ -466,47 +464,55 @@ plot_subgroup_violins <- function(
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
 #' @examples
-#' # data
+#' # Boxplots
 #'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
-#'     fdata(object) %<>% cbind(
-#'                         control=.$feature_name %in% c('biotin','phosphate'))
-#' # plot
+#'     controlfeatures <- c('biotin','phosphate')
+#'     fdata(object) %<>% cbind(control=.$feature_name %in% controlfeatures)
 #'     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
 #'     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
-#'     plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet = ggplot2::vars(feature_id))
+#'     facets <- ggplot2::vars(feature_id)
+#'     plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet = facets)
+#' # Feature/Sample/Subgroup boxplots
 #'     plot_feature_boxplots(object[1:9, ])
 #'     plot_sample_boxplots(object[, 1:12])
 #'     plot_sample_boxplots(object[, 1:12], highlight = control)
 #'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
+#' # data.table boxplots
+#'     rnafile <- download_data('billing19.rnacounts.txt')
+#'     profile <- download_data('billing19.proteingroups.txt')
+#'     fosfile <- download_data('billing19.phosphosites.txt')
+#'     rna <- read_rnaseq_counts(rnafile)
+#'     pro <- read_proteingroups(profile)
+#'     fos <- read_phosphosites(fosfile, profile)
+#'     integrate_omics 
 #' @export
-plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL, 
-    scales = 'free_y', nrow = NULL,
-    highlight = NULL, jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL
+plot_boxplots <- function(object, ...){
+    UseMethod("plot_boxplots", object)
+}
+
+#' @rdname plot_boxplots
+#' @export
+plot_boxplots.data.table <- function(
+    object, x, fill, color = NULL, facet = NULL, scales = 'free_y', nrow = NULL, 
+    highlight = NULL, jitter = FALSE, fixed = list(na.rm = TRUE), 
+    hlevels = NULL, ...
 ){
-# Assert/Process
-    assert_is_all_of(object, "SummarizedExperiment")
-    if (nrow(object)==0)  return(ggplot2::ggplot())
-    if (!is.null(facet)) assert_is_all_of(facet, 'quosures') # e.g. facet = ggplot2::vars(feature_id)
-    sample_id <- value <- medianvalue <- present <- NULL
+# Assert
+    assert_is_data.table(object)
+    if (!is.null(facet)) assert_is_all_of(facet, 'quosures') 
+        # e.g. facet = ggplot2::vars(feature_id)
+# Process
     x         <- enquo(x)
     fill      <- enquo(fill)
     color     <- enquo(color)
     highlight <- enquo(highlight)
-    xstr     <- as_name(x)
-    fillstr  <- if (quo_is_null(fill))   character(0) else  as_name(fill)
-    colorstr <- if (quo_is_null(color))  character(0) else  as_name(color)
+    xstr      <- as_name(x)
+    fillstr   <- as_name(fill)
     facetstr <- if (is.null(facet))  character(0) else  vapply(
                                                 facet, as_name, character(1))
-    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
-                                                highlight)
-# Prepare
-    plotvars <- unique(c('feature_name', xstr, fillstr, colorstr, highlightstr, 
-                        facetstr))
-    plottedsvars <- intersect(plotvars, svars(object))
-    plottedfvars <- intersect(plotvars, fvars(object))
-    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+    dt <- object
     dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
 # Plot
     p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
@@ -537,6 +543,47 @@ plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
     p
 }
 
+#'@rdname plot_boxplots
+#'@export
+plot_boxplots.SummarizedExperiment <- function(object, x, fill, color = NULL, facet = NULL, 
+    scales = 'free_y', nrow = NULL,
+    highlight = NULL, jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL
+){
+# Assert/Process
+    assert_is_all_of(object, "SummarizedExperiment")
+    if (nrow(object)==0)  return(ggplot2::ggplot())
+    if (!is.null(facet)) assert_is_all_of(facet, 'quosures') # e.g. facet = ggplot2::vars(feature_id)
+    sample_id <- value <- medianvalue <- present <- NULL
+    x         <- enquo(x)
+    fill      <- enquo(fill)
+    color     <- enquo(color)
+    highlight <- enquo(highlight)
+    xstr      <- as_name(x)
+    fillstr  <- if (quo_is_null(fill))   character(0) else  as_name(fill)
+    colorstr <- if (quo_is_null(color))  character(0) else  as_name(color)
+    facetstr <- if (is.null(facet))  character(0) else  vapply(
+                                                facet, as_name, character(1))
+    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
+                                                highlight)
+# Prepare
+    plotvars <- unique(c('feature_name', xstr, fillstr, colorstr, highlightstr, 
+                        facetstr))
+    plottedsvars <- intersect(plotvars, svars(object))
+    plottedfvars <- intersect(plotvars, fvars(object))
+    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+    plot_boxplots.data.table(dt,
+        x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color), facet=facet, 
+        scales=scales, nrow=nrow, highlight=!!enquo(highlight), jitter=jitter, 
+        fixed=fixed, hlevels=hlevels)
+}
+
+#============================================================================
+#
+#                       plot_sample_boxplots()
+#                       plot_feature_boxplots
+#                       plot_subgroup_boxplots
+#
+#============================================================================
 
 #' @rdname plot_boxplots
 #' @export

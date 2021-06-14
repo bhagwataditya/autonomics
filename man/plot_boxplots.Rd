@@ -2,12 +2,31 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_boxplots}
 \alias{plot_boxplots}
+\alias{plot_boxplots.data.table}
+\alias{plot_boxplots.SummarizedExperiment}
 \alias{plot_sample_boxplots}
 \alias{plot_feature_boxplots}
 \alias{plot_subgroup_boxplots}
 \title{Plot sample/feature boxplots}
 \usage{
-plot_boxplots(
+plot_boxplots(object, ...)
+
+\method{plot_boxplots}{data.table}(
+  object,
+  x,
+  fill,
+  color = NULL,
+  facet = NULL,
+  scales = "free_y",
+  nrow = NULL,
+  highlight = NULL,
+  jitter = FALSE,
+  fixed = list(na.rm = TRUE),
+  hlevels = NULL,
+  ...
+)
+
+\method{plot_boxplots}{SummarizedExperiment}(
   object,
   x,
   fill,
@@ -86,20 +105,29 @@ ggplot object
 Plot sample/feature boxplots
 }
 \examples{
-# data
+# Boxplots
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
-    fdata(object) \%<>\% cbind(
-                        control=.$feature_name \%in\% c('biotin','phosphate'))
-# plot
+    controlfeatures <- c('biotin','phosphate')
+    fdata(object) \%<>\% cbind(control=.$feature_name \%in\% controlfeatures)
     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
-    plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet = ggplot2::vars(feature_id))
+    facets <- ggplot2::vars(feature_id)
+    plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet = facets)
+# Feature/Sample/Subgroup boxplots
     plot_feature_boxplots(object[1:9, ])
     plot_sample_boxplots(object[, 1:12])
     plot_sample_boxplots(object[, 1:12], highlight = control)
     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
+# data.table boxplots
+    rnafile <- download_data('billing19.rnacounts.txt')
+    profile <- download_data('billing19.proteingroups.txt')
+    fosfile <- download_data('billing19.phosphosites.txt')
+    rna <- read_rnaseq_counts(rnafile)
+    pro <- read_proteingroups(profile)
+    fos <- read_phosphosites(fosfile, profile)
+    integrate_omics 
 }
 \seealso{
 \code{\link{plot_sample_densities}},
