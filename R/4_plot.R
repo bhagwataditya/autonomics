@@ -460,6 +460,7 @@ plot_subgroup_violins <- function(
 #' @param jitter     whether to add jittered data points
 #' @param fixed      fixed aesthetics
 #' @param hlevels    xlevels for which to plot horizontal lines
+#' @param ...        required to s3ify
 #' @return  ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
@@ -502,6 +503,7 @@ plot_boxplots.data.table <- function(
 # Assert
     assert_is_data.table(object)
     if (!is.null(facet)) assert_is_all_of(facet, 'quosures') 
+    medianvalue <- value <- present <- NULL
         # e.g. facet = ggplot2::vars(feature_id)
 # Process
     x         <- enquo(x)
@@ -545,9 +547,9 @@ plot_boxplots.data.table <- function(
 
 #'@rdname plot_boxplots
 #'@export
-plot_boxplots.SummarizedExperiment <- function(object, x, fill, color = NULL, facet = NULL, 
-    scales = 'free_y', nrow = NULL,
-    highlight = NULL, jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL
+plot_boxplots.SummarizedExperiment <- function(object, x, fill, color = NULL, 
+    facet = NULL, scales = 'free_y', nrow = NULL, highlight = NULL, 
+    jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL, ...
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -690,56 +692,87 @@ plot_subgroup_points <- function(
 #' @param title        string
 #' @examples 
 #' require(magrittr)
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE, fit='limma')
-#' object$SET %<>% factor()
-#' object$SUB %<>% factor()
+#' file <- download_data('atkin18.somascan.adat')
+#' object <- read_somascan(file, plot=FALSE)
+#' object %<>% fit_limma(subgroupvar='SampleGroup', block='Subject_ID')
+#' object %<>% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
+#' object$SampleId   %<>% factor()
+#' object$Subject_ID %<>% factor()
 #' plot_contrast_boxplots(
-#'     object, subgroupvar='SET', fit='limma', contrast = 't3')
+#'     object, subgroupvar='SampleGroup', fit=c('limma', 'lme'), contrast='t1')
 #' @export
-plot_contrast_boxplots <- function(
-    object, subgroupvar, fit, 
-    formula = default_formula(object, subgroupvar, fit[1]), contrast, 
+plot_contrast_boxplots <- function(object, ...){
+    UseMethod('plot_contrast_boxplots')
+}
+
+#' @rdname plot_contrast_boxplots
+#' @export
+plot_contrast_boxplots.SummarizedExperiment <- function(
+    object, 
+    subgroupvar, 
+    fit, 
+    formula = default_formula(object, subgroupvar, fit[1]), 
+    contrast, 
     title = contrast
 ){
 # Order/Extract on p value
     fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
     effectvar <- paste('effect', contrast, fit, sep = FITSEP)
     pvar      <- paste('p',      contrast, fit, sep = FITSEP)
-    pvals   <- fdata(object)[, pvar,      drop=FALSE ]
-    fdrs    <- fdata(object)[, fdrvar,    drop=FALSE ]
-    effects <- fdata(object)[, effectvar, drop=FALSE ]
+    fvars0 <- c('feature_id', 'feature_name', fdrvar, pvar, effectvar)
+    dt <- sumexp_to_long_dt(object, svars = subgroupvar, fvars = fvars0)
+    plot_contrast_boxplots.data.table(dt, subgroupvar, fit, contrast)
+}
+
+#' @rdname plot_contrast_boxplots
+#' @export
+plot_contrast_boxplots.data.table <- function(
+    object, 
+    subgroupvar, 
+    fit, 
+    contrast, 
+    title = contrast
+){
+    fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
+    effectvar <- paste('effect', contrast, fit, sep = FITSEP)
+    pvar      <- paste('p',      contrast, fit, sep = FITSEP)
+    fdt <- unique(object[, c('feature_id', fdrvar, effectvar, pvar), with=FALSE])
+    
+    pvals   <- fdt[, pvar,      drop=FALSE, with=FALSE]
+    fdrs    <- fdt[, fdrvar,    drop=FALSE, with=FALSE]
+    effects <- fdt[, effectvar, drop=FALSE, with=FALSE]
     signs   <- base::sign(effects)
 
-    pvals %<>% apply(1, min)  # we also want single method features
-    fdrs  %<>% apply(1, min)  # we also want single method features
-    signs %<>% apply(1, mean)
+    pvals %<>% apply(1, min)  %>% set_names(fdt$feature_id)  # we also want single method features
+    fdrs  %<>% apply(1, min)  %>% set_names(fdt$feature_id)  # we also want single method features
+    signs %<>% apply(1, mean) %>% set_names(fdt$feature_id)
     dnfeatures <- names(    sort(pvals[fdrs<0.05 & signs<0]))
     upfeatures <- names(rev(sort(pvals[fdrs<0.05 & signs>0])))
-    object %<>% extract(c(dnfeatures, upfeatures), )
-    fdata(object)$feature_id %<>% factor(c(dnfeatures, upfeatures))
+    object %<>% extract(c(dnfeatures, upfeatures), on = 'feature_id')
+    fdt    %<>% extract(c(dnfeatures, upfeatures), on = 'feature_id')
+    object$feature_id %<>% factor(c(dnfeatures, upfeatures))
 # Interpret contrasts
-    contrastmat <- makeContrasts(contrasts = contrast, 
-                                levels = create_design(object, formula=formula))
+    sdt <- object %>% extract(, seq(which(names(.) == 'sample_id'), ncol(.)-1), with=FALSE)
+    design <- create_design(sdt, formula=formula)
+    contrastmat <- makeContrasts(contrasts = contrast, levels = design)
         # should work also for wilcoxon
     uplevels <- which.names(contrastmat[, contrast] > 0)
     dnlevels <- which.names(contrastmat[, contrast] < 0)
-    if (assertive::is_empty(dnlevels)) dnlevels <- 
-                                            levels(object[[subgroupvar]])[1]
+    if (is_empty(dnlevels)) dnlevels <- levels(object[[subgroupvar]])[1]
 # Prepare dt
-    dt <- sumexp_to_long_dt(object, fvars = c('feature_id', 'feature_name'), 
-                      svars = c('sample_id', subgroupvar))
-    dt %<>% merge_fdr(object, contrast=contrast, fit=fit)
-    mediandt <- summarize_median(dt, subgroupvar)
+# Plot
+    vars <- c(effectvar, pvar, fdrvar)
+    for (var in vars) object[[var]] %<>% formatC(format='e', digits=0)
+    mediandt <- summarize_median(object, subgroupvar)
     contrastsubgroup <- NULL
     mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, dnlevels)]
-# Plot
-    p <- ggplot(dt, aes(
-            x=!!sym(subgroupvar), y=!!sym('value'), fill=!!sym(subgroupvar))) +
-    facet_wrap(c('feature_id', fit), scales='free_y', labeller='label_both') + 
-    theme_bw() + xlab(NULL) + ggtitle(title) + 
-    geom_boxplot(na.rm = TRUE) + 
-    geom_hline( data = mediandt, linetype = 'longdash',
+    p <- ggplot(object, 
+        aes(x=!!sym(subgroupvar), y=!!sym('value'), fill=!!sym(subgroupvar))) +
+        facet_wrap(vars(feature_id, !!!syms(fdrvar)), scales='free_y', 
+                    labeller='label_both') + 
+        theme_bw() + xlab(NULL) + ggtitle(title) + 
+        geom_boxplot(na.rm = TRUE) + 
+        geom_hline( data = mediandt, linetype = 'longdash',
                 aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 
                     color = !!sym(subgroupvar))) + 
     guides(alpha=FALSE)
@@ -752,10 +785,10 @@ plot_contrast_boxplots <- function(
     invisible(g)
 }
 
-merge_fdr <- function(dt, object, contrast, fit){
+merge_fdr <- function(object, contrast, fit){
     for (curfit in fit){
-        fdrdt <- fdata(object)[, paste('fdr', contrast, curfit, sep=FITSEP), 
-                                                                    drop=FALSE]
+        fdrvar <- paste('fdr', contrast, curfit, sep=FITSEP)
+        fdrdt  <- object[, fdrvar, drop=FALSE, with=FALSE]
         fdrdt %<>% data.table(keep.rownames=TRUE)
         names(fdrdt) <- c('feature_id', curfit)
         fdrdt[, (curfit) := formatC(get(curfit), format='e', digits=0)]

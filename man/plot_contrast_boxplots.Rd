@@ -2,9 +2,13 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_contrast_boxplots}
 \alias{plot_contrast_boxplots}
+\alias{plot_contrast_boxplots.SummarizedExperiment}
+\alias{plot_contrast_boxplots.data.table}
 \title{Plot contrast boxplots}
 \usage{
-plot_contrast_boxplots(
+plot_contrast_boxplots(object, ...)
+
+\method{plot_contrast_boxplots}{SummarizedExperiment}(
   object,
   subgroupvar,
   fit,
@@ -12,6 +16,8 @@ plot_contrast_boxplots(
   contrast,
   title = contrast
 )
+
+\method{plot_contrast_boxplots}{data.table}(object, subgroupvar, fit, contrast, title = contrast)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -31,10 +37,12 @@ Plot contrast boxplots
 }
 \examples{
 require(magrittr)
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE, fit='limma')
-object$SET \%<>\% factor()
-object$SUB \%<>\% factor()
+file <- download_data('atkin18.somascan.adat')
+object <- read_somascan(file, plot=FALSE)
+object \%<>\% fit_limma(subgroupvar='SampleGroup', block='Subject_ID')
+object \%<>\% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
+object$SampleId   \%<>\% factor()
+object$Subject_ID \%<>\% factor()
 plot_contrast_boxplots(
-    object, subgroupvar='SET', fit='limma', contrast = 't3')
+    object, subgroupvar='SampleGroup', fit=c('limma', 'lme'), contrast='t1')
 }

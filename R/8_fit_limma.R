@@ -142,7 +142,7 @@ create_design <- function(object, ...)  UseMethod('create_design')
 #' Create design
 #'
 #'  Create design matrix  for statistical analysis
-#' @param object  SummarizedExperiment
+#' @param object  SummarizedExperiment or sample dataframe
 #' @param subgroupvar subgroup svar
 #' @param formula formula with svars
 #' @param verbose whether to message
@@ -172,14 +172,15 @@ create_design.SummarizedExperiment <- function(
     formula = default_formula(object, subgroupvar, fit = 'limma'),
     verbose = FALSE, ...
 ){
-    sdt <- data.table(sdata(object))
-    create_design.data.table(
-        sdt, subgroupvar=subgroupvar, formula=formula, verbose=verbose)
+    create_design.data.frame(sdata(object), 
+                            subgroupvar = subgroupvar, 
+                            formula     = formula, 
+                            verbose     = verbose)
 }
 
 #' @rdname create_design
 #' @export
-create_design.data.table <- function(
+create_design.data.frame <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula = default_formula(object, subgroupvar, fit = 'limma'),

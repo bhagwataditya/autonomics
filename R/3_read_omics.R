@@ -706,6 +706,7 @@ read_genex <- function(file){
 #' @param fvars character vector
 #' @return data.table
 #' @examples
+#' require(magrittr)
 #' rnafile <- download_data('billing19.rnacounts.txt')
 #' profile <- download_data('billing19.proteingroups.txt')
 #' fosfile <- download_data('billing19.phosphosites.txt')

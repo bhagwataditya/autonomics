@@ -37,7 +37,8 @@ plot_boxplots(object, ...)
   highlight = NULL,
   jitter = FALSE,
   fixed = list(na.rm = TRUE),
-  hlevels = NULL
+  hlevels = NULL,
+  ...
 )
 
 plot_sample_boxplots(
@@ -75,6 +76,8 @@ plot_subgroup_boxplots(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{...}{required to s3ify}
 
 \item{x}{svar mapped to x}
 

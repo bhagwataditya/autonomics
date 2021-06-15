@@ -24,6 +24,7 @@ data.table
 Integrate platforms
 }
 \examples{
+require(magrittr)
 rnafile <- download_data('billing19.rnacounts.txt')
 profile <- download_data('billing19.proteingroups.txt')
 fosfile <- download_data('billing19.phosphosites.txt')

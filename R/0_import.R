@@ -28,7 +28,8 @@
 #' @importFrom assertive   assert_is_of_length      assert_is_subset
 #' @importFrom assertive   false                    get_name_in_parent
 #' @importFrom assertive   has_names                has_no_duplicates
-#' @importFrom assertive   is_a_string  is_empty_character  is_existing_file
+#' @importFrom assertive   is_a_string  is_empty    is_empty_character  
+#' @importFrom assertive   is_existing_file
 #' @importFrom assertive   is_formula  is_scalar  is_subset
 #' @importFrom BiocGenerics cbind 
 #' @importFrom colorspace  sequential_hcl

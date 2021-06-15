@@ -63,6 +63,7 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 #' @export
 filter_features <- function(object, condition, verbose = TRUE){
+    . <- NULL
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
@@ -228,6 +229,7 @@ filter_replicated  <- function(
 #' filter_samples(object, Group != 't0', verbose = TRUE)
 #' @export
 filter_samples <- function(object, condition, verbose = TRUE, record = TRUE){
+    . <- NULL
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
