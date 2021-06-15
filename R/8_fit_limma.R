@@ -136,16 +136,15 @@ default_formula <- function(
 
 character2factor <- function(x)  if (is.character(x)) factor(x) else x
 
-create_design <- function(object, ...)  UseMethod('create_design')
-
 
 #' Create design
 #'
 #'  Create design matrix  for statistical analysis
-#' @param object  SummarizedExperiment or sample dataframe
-#' @param subgroupvar subgroup svar
-#' @param formula formula with svars
-#' @param verbose whether to message
+#' @param object       SummarizedExperiment or sample dataframe
+#' @param subgroupvar  subgroup svar
+#' @param formula      formula with svars
+#' @param verbose      whether to message
+#' @param ...          required to s3ify
 #' @return design matrix
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')

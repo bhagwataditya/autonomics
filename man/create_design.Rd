@@ -27,6 +27,8 @@ create_design(object, ...)
 \arguments{
 \item{object}{SummarizedExperiment or sample dataframe}
 
+\item{...}{required to s3ify}
+
 \item{subgroupvar}{subgroup svar}
 
 \item{formula}{formula with svars}

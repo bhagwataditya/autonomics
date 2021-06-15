@@ -721,7 +721,13 @@ plot_contrast_boxplots.SummarizedExperiment <- function(
     pvar      <- paste('p',      contrast, fit, sep = FITSEP)
     fvars0 <- c('feature_id', 'feature_name', fdrvar, pvar, effectvar)
     dt <- sumexp_to_long_dt(object, svars = subgroupvar, fvars = fvars0)
-    plot_contrast_boxplots.data.table(dt, subgroupvar, fit, contrast)
+    plot_contrast_boxplots.data.table(
+        dt, 
+        subgroupvar = subgroupvar, 
+        fit         = fit, 
+        formula     = formula, 
+        contrast    = contrast, 
+        title       = title)
 }
 
 #' @rdname plot_contrast_boxplots
@@ -730,9 +736,11 @@ plot_contrast_boxplots.data.table <- function(
     object, 
     subgroupvar, 
     fit, 
+    formula,
     contrast, 
     title = contrast
 ){
+    . <- NULL
     fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
     effectvar <- paste('effect', contrast, fit, sep = FITSEP)
     pvar      <- paste('p',      contrast, fit, sep = FITSEP)

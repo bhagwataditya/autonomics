@@ -33,8 +33,8 @@ fdata(rna)$feature_name <- fdata(rna)$gene_name
 select <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
 pro <- read_proteingroups(profile, plot=FALSE, select_subgroups = select)
 fos <- read_phosphosites(fosfile, profile, select_subgroups = select, plot=FALSE)
-pro$subgroup \%<>\% stri_replace_first_fixed('_STD', '')
-fos$subgroup \%<>\% stri_replace_first_fixed('_STD', '')
+pro$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
+fos$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
 sumexplist <- list(rna=rna, pro=pro, fos=fos)
 dt <- integrate_platforms(sumexplist)[feature_name \%in\% c('TNMD', 'TSPAN6')]
 plot_boxplots(dt, x=subgroup, fill=subgroup)

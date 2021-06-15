@@ -17,7 +17,14 @@ plot_contrast_boxplots(object, ...)
   title = contrast
 )
 
-\method{plot_contrast_boxplots}{data.table}(object, subgroupvar, fit, contrast, title = contrast)
+\method{plot_contrast_boxplots}{data.table}(
+  object,
+  subgroupvar,
+  fit,
+  formula,
+  contrast,
+  title = contrast
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
