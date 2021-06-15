@@ -2,6 +2,8 @@
 
 S3method(annotate_uniprot_ws,SummarizedExperiment)
 S3method(annotate_uniprot_ws,data.table)
+S3method(create_design,SummarizedExperiment)
+S3method(create_design,data.table)
 S3method(extract_rectangle,character)
 S3method(extract_rectangle,data.table)
 S3method(extract_rectangle,matrix)

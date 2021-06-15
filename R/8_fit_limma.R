@@ -136,6 +136,8 @@ default_formula <- function(
 
 character2factor <- function(x)  if (is.character(x)) factor(x) else x
 
+create_design <- function(object, ...)  UseMethod('create_design')
+
 
 #' Create design
 #'
@@ -160,22 +162,38 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' object$subgroup <- 'atkin18'
 #' unique(create_design(object))
 #' @export
-create_design <- function(
+create_design <- function(object, ...) UseMethod('create_design')
+
+#' @rdname create_design
+#' @export
+create_design.SummarizedExperiment <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit = 'limma'),
-    verbose = FALSE
+    verbose = FALSE, ...
+){
+    sdt <- data.table(sdata(object))
+    create_design.data.table(
+        sdt, subgroupvar=subgroupvar, formula=formula, verbose=verbose)
+}
+
+#' @rdname create_design
+#' @export
+create_design.data.table <- function(
+    object, 
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
+    formula = default_formula(object, subgroupvar, fit = 'limma'),
+    verbose = FALSE, ...
 ){
 # Assert
-    assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(all.vars(formula), svars(object))
+    assert_is_subset(all.vars(formula), names(object))
     . <- NULL
 # Ensure that subgroup vector is a factor to preserve order of levels
     for (var in all.vars(formula)){
         if (is.character(object[[var]])) object[[var]] %<>% factor() }
 # Create design matrix
     if (verbose)   message('\t\tDesign: ', formula2str(formula))
-    myDesign <- model.matrix(formula, data=sdata(object))
+    myDesign <- model.matrix(formula, data=object)
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     is_factor_var <- function(x, object) is.factor(object[[x]])
     for (predictor in all.vars(formula)){
