@@ -10,9 +10,10 @@
 #' @importFrom assertive   assert_all_are_true   assert_any_are_true
 #' @importFrom assertive   assert_all_are_whole_numbers
 #' @importFrom assertive   assert_any_are_not_nan
-#' @importFrom assertive   assert_are_identical     assert_are_same_length
+#' @importFrom assertive   assert_are_disjoint_sets   assert_are_identical
+#' @importFrom assertive   assert_are_same_length
 #' @importFrom assertive   assert_engine
-#' @importFrom assertive   assert_has_names         assert_has_no_duplicates
+#' @importFrom assertive   assert_has_names           assert_has_no_duplicates
 #' @importFrom assertive   assert_is_all_of         assert_is_any_of
 #' @importFrom assertive   assert_is_a_bool
 #' @importFrom assertive   assert_is_a_number       assert_is_a_string
@@ -41,6 +42,7 @@
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2
+#' @importFrom ggforce     facet_wrap_paginate
 #' @importFrom ggrepel     geom_text_repel
 #' @importFrom graphics    lines    pie    title
 #' @importFrom grDevices   hcl

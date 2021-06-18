@@ -7,7 +7,7 @@
 \alias{plot_sample_boxplots}
 \alias{plot_feature_boxplots}
 \alias{plot_subgroup_boxplots}
-\title{Plot sample/feature boxplots}
+\title{Plot boxplots}
 \usage{
 plot_boxplots(object, ...)
 
@@ -19,8 +19,12 @@ plot_boxplots(object, ...)
   facet = NULL,
   scales = "free_y",
   nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value",
   highlight = NULL,
   jitter = FALSE,
+  palette = NULL,
   fixed = list(na.rm = TRUE),
   hlevels = NULL,
   ...
@@ -34,6 +38,9 @@ plot_boxplots(object, ...)
   facet = NULL,
   scales = "free_y",
   nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value",
   highlight = NULL,
   jitter = FALSE,
   fixed = list(na.rm = TRUE),
@@ -47,7 +54,12 @@ plot_sample_boxplots(
   fill = sample_id,
   color = NULL,
   highlight = NULL,
-  fixed = list(na.rm = TRUE)
+  palette = NULL,
+  fixed = list(na.rm = TRUE),
+  nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value"
 )
 
 plot_feature_boxplots(
@@ -56,7 +68,12 @@ plot_feature_boxplots(
   fill = feature_id,
   color = NULL,
   highlight = NULL,
-  fixed = list(na.rm = TRUE)
+  palette = NULL,
+  fixed = list(na.rm = TRUE),
+  nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value"
 )
 
 plot_subgroup_boxplots(
@@ -70,6 +87,10 @@ plot_subgroup_boxplots(
   facet = vars(feature_id),
   scales = "free_y",
   nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value",
+  palette = NULL,
   fixed = list(na.rm = TRUE),
   hlevels = NULL
 )
@@ -77,7 +98,7 @@ plot_subgroup_boxplots(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{...}{required to s3ify}
+\item{...}{s3 dispatch}
 
 \item{x}{svar mapped to x}
 
@@ -87,9 +108,13 @@ plot_subgroup_boxplots(
 
 \item{facet}{svar mapped to facet}
 
-\item{scales}{passed to ggplot::facet_wrap}
+\item{scales}{'free', 'fixed', 'free_x', 'free_y'}
 
-\item{nrow}{passed to ggplot::facet_wrap}
+\item{nrow}{number of facet rows}
+
+\item{ncol}{number of facet columns}
+
+\item{page}{number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}}
 
 \item{highlight}{fvar expressing which feature should be highlighted}
 
@@ -105,7 +130,7 @@ plot_subgroup_boxplots(
 ggplot object
 }
 \description{
-Plot sample/feature boxplots
+Plot boxplots
 }
 \examples{
 # Boxplots
@@ -123,14 +148,6 @@ Plot sample/feature boxplots
     plot_sample_boxplots(object[, 1:12])
     plot_sample_boxplots(object[, 1:12], highlight = control)
     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
-# data.table boxplots
-    rnafile <- download_data('billing19.rnacounts.txt')
-    profile <- download_data('billing19.proteingroups.txt')
-    fosfile <- download_data('billing19.phosphosites.txt')
-    rna <- read_rnaseq_counts(rnafile)
-    pro <- read_proteingroups(profile)
-    fos <- read_phosphosites(fosfile, profile)
-    integrate_omics 
 }
 \seealso{
 \code{\link{plot_sample_densities}},

@@ -699,40 +699,47 @@ read_genex <- function(file){
 }
 
 
-#' Integrate platforms
+#' SummarizedExperiment list to long data.table
 #' 
-#' @param sumexplist list of SummarizedExperiments
-#' @param svars character vector
-#' @param fvars character vector
+#' @param sumexplist  list of SummarizedExperiments
+#' @param svars       character vector
+#' @param fvars       character vector
 #' @return data.table
 #' @examples
-#' require(magrittr)
-#' rnafile <- download_data('billing19.rnacounts.txt')
-#' profile <- download_data('billing19.proteingroups.txt')
-#' fosfile <- download_data('billing19.phosphosites.txt')
-#' rna <- read_rnaseq_counts(rnafile, plot=FALSE)
-#' fdata(rna)$feature_name <- fdata(rna)$gene_name
-#' select <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-#' pro <- read_proteingroups(profile, plot=FALSE, select_subgroups = select)
-#' fos <- read_phosphosites(fosfile, profile, select_subgroups = select, plot=FALSE)
-#' pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
-#' fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
-#' sumexplist <- list(rna=rna, pro=pro, fos=fos)
-#' dt <- integrate_platforms(sumexplist)[feature_name %in% c('TNMD', 'TSPAN6')]
-#' plot_boxplots(dt, x=subgroup, fill=subgroup)
-#' plot_subgroup_boxplots(dt, subgroup=subgroup, facet=vars(feature_name, feature_id))
+#' RNA
+#'     require(magrittr)
+#'     rnafile <- download_data('billing19.rnacounts.txt')
+#'     rna <- read_rnaseq_counts(rnafile, plot=FALSE)
+#' PRO/FOS
+#'     fdata(rna)$feature_name <- fdata(rna)$gene_name
+#'     profile <- download_data('billing19.proteingroups.txt')
+#'     fosfile <- download_data('billing19.phosphosites.txt')
+#'     select <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
+#'     pro <- read_proteingroups(profile, plot=FALSE, select_subgroups = select)
+#'     fos <- read_phosphosites(fosfile, profile, select_subgroups = select, plot=FALSE)
+#'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
+#'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
+#' sumexplist to longdt
+#'     sumexplist <- list(rna=rna, pro=pro, fos=fos)
+#'     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
+#'     dt %<>% extract(feature_name %in% c('TNMD', 'TSPAN6'))
+#'     plot_boxplots(dt, x=subgroup, fill=subgroup)
+#'     plot_subgroup_boxplots(dt, subgroup=subgroup, facet=vars(feature_name, feature_id))
 #' @export
-integrate_platforms <- function(
+sumexplist_to_long_dt <- function(
     sumexplist, 
-    svars = intersect('subgroup', autonomics::svars(sumexplist[[1]])),
-    fvars = intersect('feature_name', autonomics::fvars(sumexplist[[1]]))
+    svars = intersect('subgroup',     autonomics::svars(sumexplist[[1]])),
+    fvars = intersect('feature_name', autonomics::fvars(sumexplist[[1]])), 
+    setvarname = 'set'
 ){
-    se_to_dt <- function(se, platform) cbind(
-                    sumexp_to_long_dt(se, svars={{svars}}, fvars={{fvars}}), 
-                    platform=platform)
-    
-    data.table::rbindlist(
-        mapply(se_to_dt, sumexplist, names(sumexplist), SIMPLIFY=FALSE))
+    assert_are_disjoint_sets(c(setvarname, 'xxxxx'), svars)
+    assert_are_disjoint_sets(c(setvarname, 'xxxxx'), fvars)
+    .sumexp_to_dt <- function(sumexp, set){
+        dt <- sumexp_to_long_dt(sumexp, svars={{svars}}, fvars={{fvars}})
+        dt %<>% cbind(xxxxx = set)
+        setnames(dt, 'xxxxx', setvarname)
+    }
+    rbindlist(mapply(.sumexp_to_dt, sumexplist, names(sumexplist), SIMPLIFY=FALSE))
 }
 
 

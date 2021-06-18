@@ -11,19 +11,31 @@ plot_contrast_boxplots(object, ...)
 \method{plot_contrast_boxplots}{SummarizedExperiment}(
   object,
   subgroupvar,
+  downlevels,
+  uplevels,
   fit,
-  formula = default_formula(object, subgroupvar, fit[1]),
   contrast,
-  title = contrast
+  palette = NULL,
+  title = contrast,
+  ylab = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  labeller = "label_both"
 )
 
 \method{plot_contrast_boxplots}{data.table}(
   object,
   subgroupvar,
+  downlevels,
+  uplevels,
   fit,
-  formula,
   contrast,
-  title = contrast
+  palette = NULL,
+  title = contrast,
+  ylab = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  labeller = "label_both"
 )
 }
 \arguments{
@@ -31,13 +43,19 @@ plot_contrast_boxplots(object, ...)
 
 \item{subgroupvar}{string: subgroup svar}
 
-\item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
+\item{downlevels}{character vector}
 
-\item{formula}{formula}
+\item{uplevels}{character vector}
+
+\item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
 \item{contrast}{string}
 
+\item{palette}{color palette (named character vector)}
+
 \item{title}{string}
+
+\item{formula}{formula}
 }
 \description{
 Plot contrast boxplots

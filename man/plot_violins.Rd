@@ -15,6 +15,7 @@ plot_violins(
   group = NULL,
   facet = NULL,
   highlight = NULL,
+  palette = NULL,
   fixed = list(na.rm = TRUE)
 )
 
@@ -61,6 +62,8 @@ plot_subgroup_violins(
 \item{facet}{svar mapped to facets}
 
 \item{highlight}{fvar expressing which feature should be highlighted}
+
+\item{palette}{named character vector with colors}
 
 \item{fixed}{fixed aesthetics}
 
