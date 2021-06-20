@@ -251,6 +251,7 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #' @param object      SummarizedExperiment
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param palette     named character vector
 #' @param group       svar mapped to group
 #' @param fixed       fixed aesthetics
 #' @param subsetter   subsetter for showing a subset of samples/features
@@ -267,7 +268,7 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #'     plot_sample_densities(object, fill = Group)
 #'     plot_feature_densities(object)
 #' @export
-plot_densities <- function(object, group, fill, color = NULL,
+plot_densities <- function(object, group, fill, color = NULL, palette = NULL,
     fixed = list(alpha = 0.5, na.rm = TRUE)
 ){
 # Process
