@@ -69,5 +69,6 @@ object \%<>\% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
 object$SampleId   \%<>\% factor()
 object$Subject_ID \%<>\% factor()
 plot_contrast_boxplots(
-    object, subgroupvar='SampleGroup', fit=c('limma', 'lme'), contrast='t1')
+    object, subgroupvar='SampleGroup', fit=c('limma', 'lme'), contrast='t1', 
+    downlevels = 't0', uplevels = 't1')
 }

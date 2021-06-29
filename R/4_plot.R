@@ -251,6 +251,7 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #' @param object      SummarizedExperiment
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param palette     named character vector
 #' @param group       svar mapped to group
 #' @param fixed       fixed aesthetics
 #' @param subsetter   subsetter for showing a subset of samples/features
@@ -267,7 +268,7 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
 #'     plot_sample_densities(object, fill = Group)
 #'     plot_feature_densities(object)
 #' @export
-plot_densities <- function(object, group, fill, color = NULL,
+plot_densities <- function(object, group, fill, color = NULL, palette = NULL,
     fixed = list(alpha = 0.5, na.rm = TRUE)
 ){
 # Process
@@ -660,7 +661,17 @@ plot_subgroup_boxplots <- function(
 #' object$SampleId   %<>% factor()
 #' object$Subject_ID %<>% factor()
 #' plot_contrast_boxplots(
-#'     object, subgroupvar='SampleGroup', fit=c('limma', 'lme'), contrast='t1')
+#'     object, subgroupvar='SampleGroup', fit=c('limma', 'lme'), contrast='t1', 
+#'     downlevels = 't0', uplevels = 't1')
+#'     
+#' rnafile <- download_data('billing19.rnacounts.txt')
+#' profile <- download_data('billing19.proteingroups.txt')
+#' fosfile <- download_data('billing19.phosphosites.txt')
+#' rna <- read_rnaseq_counts(rnafile, plot=FALSE)
+#' select <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
+#' pro <- read_proteingroups(profile, select_subgroups = select, plot=FALSE)
+#' fos <- read_phosphosites(fosfile, profile, select_subgroups = select, plot=FALSE)
+#' #sumexplist_to_long_dt(list(RNA=rna, PRO=pro, FOS=fos), fvars = 'feature_id')
 #' @export
 plot_contrast_boxplots <- function(object, ...){
     UseMethod('plot_contrast_boxplots')
