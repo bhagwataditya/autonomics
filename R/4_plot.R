@@ -518,6 +518,7 @@ plot_boxplots.data.table <- function(
     p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
                 fill = !!fill, color = !!color, palette = palette, 
                 fixed = fixed)
+    if (nrow(dt)==0) return(p)
     p <- p + facet_wrap_paginate(facets = facet, scales = scales, 
                 nrow = nrow, ncol = ncol, page = page, labeller = labeller)
     p %<>% add_highlights(!!highlight, geom = geom_point, fixed_color="darkred")
@@ -670,7 +671,7 @@ plot_contrast_boxplots <- function(object, ...){
 plot_contrast_boxplots.SummarizedExperiment <- function(
     object, subgroupvar, downlevels, uplevels, fit, contrast, 
     palette = NULL, title = contrast, ylab = NULL, 
-    nrow = NULL, ncol = NULL, labeller = 'label_both'
+    nrow = NULL, ncol = NULL, labeller = 'label_both', ...
 ){
 # Order/Extract on p value
     fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
@@ -691,7 +692,7 @@ plot_contrast_boxplots.SummarizedExperiment <- function(
 plot_contrast_boxplots.data.table <- function(
     object, subgroupvar, downlevels, uplevels, fit, contrast, 
     palette = NULL, title = contrast, ylab = NULL, 
-    nrow = NULL, ncol = NULL, labeller = 'label_both'
+    nrow = NULL, ncol = NULL, labeller = 'label_both', ...
 ){
     . <- NULL
     fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
@@ -702,11 +703,12 @@ plot_contrast_boxplots.data.table <- function(
     pvals   <- fdt[, pvar,      drop=FALSE, with=FALSE]
     fdrs    <- fdt[, fdrvar,    drop=FALSE, with=FALSE]
     effects <- fdt[, effectvar, drop=FALSE, with=FALSE]
-    signs   <- sign(effects)
+    signs <- data.table::copy(effects)
+    if (nrow(signs)>0)  signs %<>% sign() # otherwise breaks
 
     pvals %<>% apply(1, min)  %>% set_names(fdt$feature_id)  # we also want single method features
     fdrs  %<>% apply(1, min)  %>% set_names(fdt$feature_id)  # we also want single method features
-    signs %<>% apply(1, mean) %>% set_names(fdt$feature_id)
+    if (nrow(signs)>0) signs %<>% apply(1, mean) %>% set_names(fdt$feature_id) # dont break
     dnfeatures <- names(    sort(pvals[signs<0]))
     upfeatures <- names(rev(sort(pvals[signs>0])))
     # dnfeatures <- names(    sort(pvals[fdrs<0.05 & signs<0]))
@@ -741,7 +743,6 @@ plot_contrast_boxplots.data.table <- function(
         guides(alpha=FALSE)
 # Color facets
     if (is.null(palette))  palette <- make_colors(levels(object[[subgroupvar]]))
-    p <- p + scale_fill_manual(values = palette)
     palette <- c(expand_into_vector(palette[ uplevels[[1]] ], upfeatures),
                expand_into_vector(palette[ downlevels[[1]] ], dnfeatures))
     g <- color_facets(p, palette)
