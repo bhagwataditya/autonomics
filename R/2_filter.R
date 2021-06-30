@@ -67,7 +67,7 @@ filter_features <- function(object, condition, verbose = TRUE){
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose){
+    if (verbose & sum(idx) < length(idx)){
         message('\t\tRetain ', sum(idx), '/', length(idx), 
                 ' features: ', expr_text(condition) %>% substr(1, min(80, nchar(.))))}
     object %<>% extract(idx,)

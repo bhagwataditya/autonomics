@@ -511,6 +511,15 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
     objectdt
 }
 
+# Abbreviate file path
+# @param file file path
+# @export
+#abbrev_path <- function(file){
+#    fileparts <- fs::path_split(file)[[1]]
+#    fileparts <- fs::path_join(c(fileparts[1:3], '...', rev(fileparts)[1]))
+#    fileparts
+#}
+
 
 #' Merge sample/feature file
 #'
