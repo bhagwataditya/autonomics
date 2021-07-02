@@ -32,6 +32,7 @@ plot_boxplots(object, ...)
 
 \method{plot_boxplots}{SummarizedExperiment}(
   object,
+  assay = assayNames(x)[1],
   x,
   fill,
   color = NULL,
@@ -50,6 +51,7 @@ plot_boxplots(object, ...)
 
 plot_sample_boxplots(
   object,
+  assay = assayNames(object)[1],
   x = sample_id,
   fill = sample_id,
   color = NULL,
@@ -64,6 +66,7 @@ plot_sample_boxplots(
 
 plot_feature_boxplots(
   object,
+  assay = assayNames(object)[1],
   x = feature_id,
   fill = feature_id,
   color = NULL,
@@ -78,6 +81,7 @@ plot_feature_boxplots(
 
 plot_subgroup_boxplots(
   object,
+  assay = assayNames(object)[1],
   subgroup,
   x = !!enquo(subgroup),
   fill = !!enquo(subgroup),
@@ -123,6 +127,8 @@ plot_subgroup_boxplots(
 \item{fixed}{fixed aesthetics}
 
 \item{hlevels}{xlevels for which to plot horizontal lines}
+
+\item{assay}{string}
 
 \item{subgroup}{subgroup svar symbol}
 }

@@ -453,6 +453,7 @@ plot_subgroup_violins <- function(
 #' Plot boxplots
 #'
 #' @param object     SummarizedExperiment
+#' @param assay      string
 #' @param subgroup   subgroup svar symbol
 #' @param x          svar mapped to x
 #' @param fill       svar mapped to fill
@@ -549,7 +550,7 @@ plot_boxplots.data.table <- function(
 
 #'@rdname plot_boxplots
 #'@export
-plot_boxplots.SummarizedExperiment <- function(object, x, fill, color = NULL, 
+plot_boxplots.SummarizedExperiment <- function(object, assay = assayNames(x)[1], x, fill, color = NULL, 
     facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value',
     highlight = NULL, 
     jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL, ...
@@ -575,7 +576,7 @@ plot_boxplots.SummarizedExperiment <- function(object, x, fill, color = NULL,
                         facetstr))
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
-    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+    dt <- sumexp_to_long_dt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
     plot_boxplots.data.table(dt,
         x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color), facet=facet, 
         scales=scales, nrow=nrow, ncol=ncol, page=page, labeller=labeller,
@@ -595,13 +596,15 @@ plot_boxplots.SummarizedExperiment <- function(object, x, fill, color = NULL,
 #' @rdname plot_boxplots
 #' @export
 plot_sample_boxplots <- function(
-    object, x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
+    object, assay = assayNames(object)[1], 
+    x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
     palette = NULL, 
     fixed = list(na.rm=TRUE), 
     nrow=NULL, ncol=NULL, page=1, labeller = 'label_value'
 ){
     plot_boxplots(
-        object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
+        object, assay = assay, 
+        x = !!enquo(x), fill=!!enquo(fill), color=!!color,
         highlight=!!enquo(highlight), palette=palette, fixed=fixed, 
         nrow=nrow, ncol=ncol, page=page, labeller=labeller)
 }
@@ -611,12 +614,14 @@ feature_id <- NULL
 #' @rdname plot_boxplots
 #' @export
 plot_feature_boxplots <- function(
-    object, x = feature_id, fill = feature_id, color = NULL, highlight = NULL,
+    object, assay = assayNames(object)[1],
+    x = feature_id, fill = feature_id, color = NULL, highlight = NULL,
     palette = NULL, fixed = list(na.rm=TRUE), 
     nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value'
 ){
     plot_boxplots(
-        object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
+        object, assay = assay,
+        x = !!enquo(x), fill=!!enquo(fill), color=!!color,
         highlight=!!enquo(highlight), palette = palette, fixed=fixed, 
         nrow=nrow, ncol=ncol, page=page, labeller=labeller)
 }
@@ -625,13 +630,15 @@ plot_feature_boxplots <- function(
 #' @rdname plot_boxplots
 #' @export
 plot_subgroup_boxplots <- function(
-    object, subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
+    object, assay = assayNames(object)[1],
+    subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
     color = NULL, highlight = NULL, jitter = TRUE, facet = vars(feature_id),
     scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value',
     palette = NULL, fixed = list(na.rm=TRUE), hlevels = NULL
 ){
     p <- plot_boxplots(
-           object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
+            object, assay = assay,
+            x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
             facet = facet, scales = scales, nrow = nrow, ncol=ncol, page=page, labeller=labeller,
             highlight = !!enquo(highlight), jitter = jitter, 
             palette = palette, fixed = fixed, hlevels = hlevels)
@@ -642,7 +649,9 @@ plot_subgroup_boxplots <- function(
 
 
 #' Plot contrast boxplots
+#'
 #' @param object       SummarizedExperiment
+#' @param assay        string
 #' @param subgroupvar  string: subgroup svar
 #' @param downlevels   character vector
 #' @param uplevels     character vector
@@ -680,7 +689,8 @@ plot_contrast_boxplots <- function(object, ...){
 #' @rdname plot_contrast_boxplots
 #' @export
 plot_contrast_boxplots.SummarizedExperiment <- function(
-    object, subgroupvar, downlevels, uplevels, fit, contrast, 
+    object, assay = assayNames(object)[1], 
+    subgroupvar, downlevels, uplevels, fit, contrast, 
     palette = NULL, title = contrast, ylab = NULL, 
     nrow = NULL, ncol = NULL, labeller = 'label_both', ...
 ){
@@ -689,7 +699,7 @@ plot_contrast_boxplots.SummarizedExperiment <- function(
     effectvar <- paste('effect', contrast, fit, sep = FITSEP)
     pvar      <- paste('p',      contrast, fit, sep = FITSEP)
     fvars0 <- c('feature_id', 'feature_name', fdrvar, pvar, effectvar)
-    dt <- sumexp_to_long_dt(object, svars = subgroupvar, fvars = fvars0)
+    dt <- sumexp_to_long_dt(object, assay = assay, svars = subgroupvar, fvars = fvars0)
     plot_contrast_boxplots.data.table(
         dt, 
         subgroupvar = subgroupvar, downlevels = downlevels, uplevels = uplevels, 

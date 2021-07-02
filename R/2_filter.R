@@ -69,7 +69,7 @@ filter_features <- function(object, condition, verbose = TRUE){
     idx <- idx & !is.na(idx)
     if (verbose & sum(idx) < length(idx)){
         message('\t\tRetain ', sum(idx), '/', length(idx), 
-                ' features: ', expr_text(condition) %>% substr(1, min(80, nchar(.))))}
+                ' features: ', expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(idx,)
     fdata(object) %<>% droplevels()
     if (!is.null(analysis(object))) {
@@ -235,7 +235,7 @@ filter_samples <- function(object, condition, verbose = TRUE, record = TRUE){
     idx <- idx & !is.na(idx)
     if (verbose & sum(idx)<length(idx)){
         message('\t\tRetain ', sum(idx), '/', length(idx), ' samples: ', 
-                expr_text(condition) %>% substr(1, min(80, nchar(.))))}
+                expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
     if (record && !is.null(analysis(object))) {

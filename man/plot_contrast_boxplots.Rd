@@ -10,6 +10,7 @@ plot_contrast_boxplots(object, ...)
 
 \method{plot_contrast_boxplots}{SummarizedExperiment}(
   object,
+  assay = assayNames(object)[1],
   subgroupvar,
   downlevels,
   uplevels,
@@ -42,6 +43,8 @@ plot_contrast_boxplots(object, ...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{assay}{string}
 
 \item{subgroupvar}{string: subgroup svar}
 
