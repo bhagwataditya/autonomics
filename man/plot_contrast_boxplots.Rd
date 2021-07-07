@@ -83,13 +83,13 @@ object \%<>\% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
 object$SampleId   \%<>\% factor()
 object$Subject_ID \%<>\% factor()
 grid.draw(plot_contrast_boxplots(
-    object, subgroup = SampleGroup, block = Sample_ID, 
-    fit='limma', contrast='t1', downlevels = 't0', uplevels = 't1')_
+    object, subgroup = SampleGroup, block = Subject_ID, 
+    fit='limma', contrast='t1', downlevels = 't0', uplevels = 't1'))
 grid.draw(plot_contrast_boxplots(
     object, subgroup=SampleGroup, block = Subject_ID, fit='limma', 
     contrast='t1', downlevels = 't0', uplevels = 't1', fdrcutoff=0.05))
 grid.draw(plot_contrast_boxplots(
-    object, subgroup='SampleGroup', block = Subject_ID, 
+    object, subgroup=SampleGroup, block = Subject_ID, 
      fit=c('limma', 'lme'), contrast='t1', 
     downlevels = 't0', uplevels = 't1', fdrcutoff=0.05))
 }
