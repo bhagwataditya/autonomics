@@ -550,7 +550,7 @@ plot_boxplots.data.table <- function(
 
 #'@rdname plot_boxplots
 #'@export
-plot_boxplots.SummarizedExperiment <- function(object, assay = assayNames(x)[1], x, fill, color = NULL, 
+plot_boxplots.SummarizedExperiment <- function(object, assay = assayNames(object)[1], x, fill, color = NULL, 
     facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value',
     highlight = NULL, 
     jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL, ...

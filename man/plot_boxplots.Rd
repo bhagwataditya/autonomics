@@ -32,7 +32,7 @@ plot_boxplots(object, ...)
 
 \method{plot_boxplots}{SummarizedExperiment}(
   object,
-  assay = assayNames(x)[1],
+  assay = assayNames(object)[1],
   x,
   fill,
   color = NULL,
