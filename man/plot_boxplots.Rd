@@ -16,6 +16,7 @@ plot_boxplots(object, ...)
   x,
   fill,
   color = NULL,
+  block = NULL,
   facet = NULL,
   scales = "free_y",
   nrow = NULL,
@@ -36,6 +37,7 @@ plot_boxplots(object, ...)
   x,
   fill,
   color = NULL,
+  block = NULL,
   facet = NULL,
   scales = "free_y",
   nrow = NULL,
@@ -86,6 +88,7 @@ plot_subgroup_boxplots(
   x = !!enquo(subgroup),
   fill = !!enquo(subgroup),
   color = NULL,
+  block = NULL,
   highlight = NULL,
   jitter = TRUE,
   facet = vars(feature_id),
@@ -109,6 +112,8 @@ plot_subgroup_boxplots(
 \item{fill}{svar mapped to fill}
 
 \item{color}{svar mapped to color}
+
+\item{block}{svar used to connect points}
 
 \item{facet}{svar mapped to facet}
 
@@ -139,21 +144,31 @@ ggplot object
 Plot boxplots
 }
 \examples{
-# Boxplots
+# Read
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
     controlfeatures <- c('biotin','phosphate')
     fdata(object) \%<>\% cbind(control=.$feature_name \%in\% controlfeatures)
+    
+# SummarizedExperiment
+    vars <- ggplot2::vars
     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
-    facets <- ggplot2::vars(feature_id)
-    plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet = facets)
-# Feature/Sample/Subgroup boxplots
+    plot_boxplots(object[1:9, ], x = SET, fill = SET, facet = vars(feature_id))
+    plot_boxplots(object[1, ], x = SET, fill = SET, jitter=TRUE)
+    plot_boxplots(object[1, ], x = SET, fill = SET, jitter=TRUE, block = SUB)
     plot_feature_boxplots(object[1:9, ])
     plot_sample_boxplots(object[, 1:12])
     plot_sample_boxplots(object[, 1:12], highlight = control)
     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
+    plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
+    
+# data.table
+    object \%<>\% extract(1, )
+    object \%<>\% sumexp_to_long_dt(svars = c('SET', 'SUB'))
+    plot_boxplots(object, x = SET, fill = SET, jitter = TRUE)
+    plot_boxplots(object, x = SET, fill = SET, block = SUB, jitter = TRUE)
 }
 \seealso{
 \code{\link{plot_sample_densities}},

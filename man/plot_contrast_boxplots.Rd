@@ -11,11 +11,13 @@ plot_contrast_boxplots(object, ...)
 \method{plot_contrast_boxplots}{SummarizedExperiment}(
   object,
   assay = assayNames(object)[1],
-  subgroupvar,
+  subgroup,
   downlevels,
   uplevels,
   fit,
   contrast,
+  block = NULL,
+  fdrcutoff = 0.05,
   palette = NULL,
   title = contrast,
   ylab = NULL,
@@ -27,11 +29,13 @@ plot_contrast_boxplots(object, ...)
 
 \method{plot_contrast_boxplots}{data.table}(
   object,
-  subgroupvar,
+  subgroup,
   downlevels,
   uplevels,
   fit,
   contrast,
+  block = NULL,
+  fdrcutoff = 0.05,
   palette = NULL,
   title = contrast,
   ylab = NULL,
@@ -46,7 +50,7 @@ plot_contrast_boxplots(object, ...)
 
 \item{assay}{string}
 
-\item{subgroupvar}{string: subgroup svar}
+\item{subgroup}{symbol: subgroup svar}
 
 \item{downlevels}{character vector}
 
@@ -55,6 +59,10 @@ plot_contrast_boxplots(object, ...)
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
 \item{contrast}{string}
+
+\item{block}{symbol: block var}
+
+\item{fdrcutoff}{number}
 
 \item{palette}{color palette (named character vector)}
 
@@ -67,22 +75,21 @@ Plot contrast boxplots
 }
 \examples{
 require(magrittr)
+require(grid)
 file <- download_data('atkin18.somascan.adat')
 object <- read_somascan(file, plot=FALSE)
 object \%<>\% fit_limma(subgroupvar='SampleGroup', block='Subject_ID')
 object \%<>\% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
 object$SampleId   \%<>\% factor()
 object$Subject_ID \%<>\% factor()
-plot_contrast_boxplots(
-    object, subgroupvar='SampleGroup', fit=c('limma', 'lme'), contrast='t1', 
-    downlevels = 't0', uplevels = 't1')
-    
-rnafile <- download_data('billing19.rnacounts.txt')
-profile <- download_data('billing19.proteingroups.txt')
-fosfile <- download_data('billing19.phosphosites.txt')
-rna <- read_rnaseq_counts(rnafile, plot=FALSE)
-select <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-pro <- read_proteingroups(profile, select_subgroups = select, plot=FALSE)
-fos <- read_phosphosites(fosfile, profile, select_subgroups = select, plot=FALSE)
-#sumexplist_to_long_dt(list(RNA=rna, PRO=pro, FOS=fos), fvars = 'feature_id')
+grid.draw(plot_contrast_boxplots(
+    object, subgroup = SampleGroup, block = Sample_ID, 
+    fit='limma', contrast='t1', downlevels = 't0', uplevels = 't1')_
+grid.draw(plot_contrast_boxplots(
+    object, subgroup=SampleGroup, block = Subject_ID, fit='limma', 
+    contrast='t1', downlevels = 't0', uplevels = 't1', fdrcutoff=0.05))
+grid.draw(plot_contrast_boxplots(
+    object, subgroup='SampleGroup', block = Subject_ID, 
+     fit=c('limma', 'lme'), contrast='t1', 
+    downlevels = 't0', uplevels = 't1', fdrcutoff=0.05))
 }
