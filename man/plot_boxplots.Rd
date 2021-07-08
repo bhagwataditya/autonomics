@@ -26,7 +26,6 @@ plot_boxplots(object, ...)
   highlight = NULL,
   jitter = FALSE,
   palette = NULL,
-  fixed = list(na.rm = TRUE),
   hlevels = NULL,
   ...
 )
@@ -46,7 +45,6 @@ plot_boxplots(object, ...)
   labeller = "label_value",
   highlight = NULL,
   jitter = FALSE,
-  fixed = list(na.rm = TRUE),
   hlevels = NULL,
   ...
 )
@@ -59,7 +57,6 @@ plot_sample_boxplots(
   color = NULL,
   highlight = NULL,
   palette = NULL,
-  fixed = list(na.rm = TRUE),
   nrow = NULL,
   ncol = NULL,
   page = 1,
@@ -129,8 +126,6 @@ plot_subgroup_boxplots(
 
 \item{jitter}{whether to add jittered data points}
 
-\item{fixed}{fixed aesthetics}
-
 \item{hlevels}{xlevels for which to plot horizontal lines}
 
 \item{assay}{string}
@@ -150,7 +145,6 @@ Plot boxplots
     object <- read_metabolon(file, plot = FALSE)
     controlfeatures <- c('biotin','phosphate')
     fdata(object) \%<>\% cbind(control=.$feature_name \%in\% controlfeatures)
-    
 # SummarizedExperiment
     vars <- ggplot2::vars
     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
@@ -163,7 +157,6 @@ Plot boxplots
     plot_sample_boxplots(object[, 1:12], highlight = control)
     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
     plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
-    
 # data.table
     object \%<>\% extract(1, )
     object \%<>\% sumexp_to_long_dt(svars = c('SET', 'SUB'))

@@ -216,8 +216,9 @@ plot_data <- function(
 #                  add_highlights
 #
 #==============================================================================
-add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
+add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
     feature_name <- NULL
+    x <- enquo(x)
     hl <- enquo(hl)
     if (quo_is_null(hl)) return(p)
     hlstr <- as_name(hl)
@@ -227,7 +228,7 @@ add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
         many_hl <- length(unique(args$data$feature_name)) > 6
         if (many_hl) args$data$feature_name <- hlstr
         args %<>% c(
-            list(aes(shape = feature_name), size = rel(3), color = fixed_color))
+            list(aes(shape = feature_name, x = !!x, y = value), size = rel(3), color = fixed_color))
     }
     p <- p + do.call(geom, args)
     if (identical(geom, geom_point)) p <- p +
@@ -398,7 +399,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     p <- plot_data(dt, geom = geom_violin, x = !!x, y = value,
                 fill = !!fill, color= !!color, group=!!group, 
                 palette = palette, fixed = fixed)
-    p %<>% add_highlights(!!highlight, geom = geom_point)
+    p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point)
     p <- p + facet_wrap(vars(!!facet), scales = "free_y")
     # Finish
     breaks <- unique(dt[[xstr]])
@@ -466,7 +467,6 @@ plot_subgroup_violins <- function(
 #' @param page       number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}
 #' @param highlight  fvar expressing which feature should be highlighted
 #' @param jitter     whether to add jittered data points
-#' @param fixed      fixed aesthetics
 #' @param hlevels    xlevels for which to plot horizontal lines
 #' @param ...        s3 dispatch
 #' @return  ggplot object
@@ -479,7 +479,6 @@ plot_subgroup_violins <- function(
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     controlfeatures <- c('biotin','phosphate')
 #'     fdata(object) %<>% cbind(control=.$feature_name %in% controlfeatures)
-#'     
 #' # SummarizedExperiment
 #'     vars <- ggplot2::vars
 #'     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
@@ -492,7 +491,6 @@ plot_subgroup_violins <- function(
 #'     plot_sample_boxplots(object[, 1:12], highlight = control)
 #'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
 #'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
-#'     
 #' # data.table
 #'     object %<>% extract(1, )
 #'     object %<>% sumexp_to_long_dt(svars = c('SET', 'SUB'))
@@ -509,56 +507,53 @@ plot_boxplots.data.table <- function(
     object, x, fill, color = NULL, block = NULL, facet = NULL, scales = 'free_y', 
     nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value',
     highlight = NULL, jitter = FALSE, palette = NULL, 
-    fixed = list(na.rm = TRUE), hlevels = NULL, ...
+    hlevels = NULL, ...
 ){
-# Assert
+# Assert/Process
     assert_is_data.table(object)
-    if (!is.null(facet)) assert_is_all_of(facet, 'quosures') 
+    if (!is.null(facet)) assert_is_all_of(facet, 'quosures')  # vars(...)
     medianvalue <- value <- present <- NULL
-        # e.g. facet = ggplot2::vars(feature_id)
-# Process
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    block     <- enquo(block)
-    highlight <- enquo(highlight)
-    xstr      <- as_name(x)
-    fillstr   <- as_name(fill)
-    facetstr <- if (is.null(facet))  character(0) else  vapply(
-                                                facet, as_name, character(1))
+    x <- enquo(x);  fill <- enquo(fill);  color <- enquo(color);  block <- enquo(block); 
+    highlight <- enquo(highlight); xstr <- as_name(x); fillstr <- as_name(fill);
+    facetstr <- if (is.null(facet))  character(0) else  vapply(facet, as_name, character(1))
+    blockstr <- if (quo_is_null(block))  character(0) else as_name(block)
     dt <- object
     dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
 # Plot
-    p <- plot_data(dt, geom = geom_boxplot, x = !!x, y = value,
-                fill = !!fill, color = !!color, palette = palette, 
-                fixed = fixed)
-    if (!is.null(block))  p <- p + 
-        geom_line(aes(x=!!x, y=value, color=!!fill, group=!!block))
+    p <- ggplot(dt) 
     if (nrow(dt)==0) return(p)
     p <- p + facet_wrap_paginate(facets = facet, scales = scales, 
                 nrow = nrow, ncol = ncol, page = page, labeller = labeller)
-    p %<>% add_highlights(!!highlight, geom = geom_point, fixed_color="darkred")
+    if (!quo_is_null(block)){
+        xlevels <- as.character(unique(dt[[xstr]]))
+        for (i in seq_len(length(xlevels)-1)){ 
+            dt[get(xstr) %in% xlevels[seq(i, i+1)], 
+                direction := get(xstr)[which.max(value)], 
+                by = c(blockstr, 'feature_id')] }
+        p <- p + geom_line(aes(x=!!x, y=value, color=direction, group=!!block))
+        p <- add_color_scale(p, direction, data=dt, palette=palette) }
+    p <- p + geom_boxplot(aes(x = !!x, y = value, fill = !!fill, color = !!color))
+    p <- add_color_scale(p, !!color, data=dt, palette=palette)
+    p <- add_fill_scale( p, !!fill,  data=dt, palette=palette)
+    p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point, fixed_color="darkred")
 # Add hline
     if (!is.null(hlevels)){
         mediandt <- unique(dt[, 
           unique(c('feature_id', xstr, 'medianvalue', facetstr)), with=FALSE])
         mediandt[, present := FALSE]
         mediandt[get(xstr) %in% hlevels, present := TRUE]
-        p <- p + geom_hline(
-                    data=mediandt, 
+        p <- p + geom_hline(data=mediandt, 
                     aes(yintercept = medianvalue, color=!!fill, alpha=present), 
-                    linetype='longdash')
-    }
+                    linetype='longdash') }
 # Add jitter
-    if (jitter) p <- p + geom_jitter(
-                            position = position_jitter(width=.1, height=0))
-# Finish
+    if (jitter) p <- p + geom_jitter(aes(x=!!x, y=value),
+                            position = position_jitter(width=.1, height=0), size=0.8)
+# Finish and Return
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
     p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
         guides(color=FALSE, alpha=FALSE) +
         theme(axis.text.x = element_text(angle=90, hjust=1))
-# Return
     p
 }
 
@@ -568,7 +563,7 @@ plot_boxplots.SummarizedExperiment <- function(
     object, assay = assayNames(object)[1], x, fill, color = NULL, block = NULL,
     facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, 
     labeller = 'label_value', highlight = NULL, 
-    jitter = FALSE, fixed = list(na.rm=TRUE), hlevels = NULL, ...
+    jitter = FALSE, hlevels = NULL, ...
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -596,13 +591,13 @@ plot_boxplots.SummarizedExperiment <- function(
     dt <- sumexp_to_long_dt(
             object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
     plot_boxplots.data.table(dt,  
-        x         = !!(x),         fill      = !!(fill), 
-        color     = !!(color),     block     = !!(block),  
-        facet     = facet,         scales    = scales,
-        nrow      = nrow,          ncol      = ncol, 
-        page      = page,          labeller  = labeller,      
-        highlight = !!(highlight), jitter    = jitter, 
-        fixed     = fixed,         hlevels   = hlevels)
+        x         = !!x,           fill      = !!fill, 
+        color     = !!color,       block     = !!block,  
+        highlight = !!highlight,   facet     = facet,
+        scales    = scales,        nrow      = nrow,          
+        ncol      = ncol,          page      = page,          
+        labeller  = labeller,      jitter    = jitter,
+        hlevels   = hlevels)
 }
 
 #============================================================================
@@ -619,15 +614,17 @@ plot_boxplots.SummarizedExperiment <- function(
 plot_sample_boxplots <- function(
     object, assay = assayNames(object)[1], 
     x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
-    palette = NULL, 
-    fixed = list(na.rm=TRUE), 
-    nrow=NULL, ncol=NULL, page=1, labeller = 'label_value'
+    palette = NULL, nrow=NULL, ncol=NULL, page=1, labeller = 'label_value'
 ){
+    x         <- enquo(x)
+    fill      <- enquo(fill)
+    color     <- enquo(color)
+    highlight <- enquo(highlight)
     plot_boxplots(
         object, assay = assay, 
-        x = !!enquo(x), fill=!!enquo(fill), color=!!color,
-        highlight=!!enquo(highlight), palette=palette, fixed=fixed, 
-        nrow=nrow, ncol=ncol, page=page, labeller=labeller)
+        x = !!x, fill = !!fill, color = !!color,
+        highlight = !!highlight, palette = palette,  
+        nrow = nrow, ncol = ncol, page = page, labeller = labeller)
 }
 
 
@@ -640,11 +637,15 @@ plot_feature_boxplots <- function(
     palette = NULL, fixed = list(na.rm=TRUE), 
     nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value'
 ){
+    x         <- enquo(x)
+    fill      <- enquo(fill)
+    color     <- enquo(color)
+    highlight <- enquo(highlight)
     plot_boxplots(
         object, assay = assay,
-        x = !!enquo(x), fill=!!enquo(fill), color=!!color,
-        highlight=!!enquo(highlight), palette = palette, fixed=fixed, 
-        nrow=nrow, ncol=ncol, page=page, labeller=labeller)
+        x = !!x, fill = !!fill, color = !!color,
+        highlight = !!highlight, palette = palette,  
+        nrow = nrow, ncol = ncol, page = page, labeller = labeller)
 }
 
 
@@ -658,12 +659,18 @@ plot_subgroup_boxplots <- function(
     page = 1, labeller = 'label_value',
     palette = NULL, fixed = list(na.rm=TRUE), hlevels = NULL
 ){
+    x         <- enquo(x)
+    fill      <- enquo(fill)
+    color     <- enquo(color)
+    block     <- enquo(block)
+    highlight <- enquo(highlight)
     p <- plot_boxplots(
             object, assay = assay,
-            x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
-            block = !!enquo(block), facet = facet, scales = scales, nrow = nrow,
+            x = !!x, fill = !!fill, color = !!color,
+            block = !!block, highlight = !!highlight, 
+            facet = facet, scales = scales, nrow = nrow,
             ncol = ncol, page = page,  labeller = labeller, 
-            highlight = !!enquo(highlight), jitter = jitter, palette = palette, 
+            jitter = jitter, palette = palette, 
             fixed = fixed, hlevels = hlevels)
     #p <- p + stat_summary(fun='mean', geom='line', aes(group=1), color='black', size=0.7, na.rm = TRUE)
     p
@@ -747,7 +754,6 @@ plot_contrast_boxplots.data.table <- function(
     subgroup <- enquo(subgroup)
     block    <- enquo(block)
     subgroupvar <- if (quo_is_null(subgroup)) character(0) else as_name(subgroup)
-    blockvar    <- if (quo_is_null(block))    character(0) else as_name(block)
     . <- NULL
     fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
     effectvar <- paste('effect', contrast, fit, sep = FITSEP)
@@ -765,8 +771,6 @@ plot_contrast_boxplots.data.table <- function(
     if (nrow(signs)>0) signs %<>% apply(1, mean) %>% set_names(fdt$feature_id) # dont break
     dnfeatures <- names(    sort(pvals[signs<0 & fdrs < fdrcutoff]))
     upfeatures <- names(rev(sort(pvals[signs>0 & fdrs < fdrcutoff])))
-    # dnfeatures <- names(    sort(pvals[fdrs<0.05 & signs<0]))
-    # upfeatures <- names(rev(sort(pvals[fdrs<0.05 & signs>0])))
     object %<>% extract(c(dnfeatures, upfeatures), on = 'feature_id')
     fdt    %<>% extract(c(dnfeatures, upfeatures), on = 'feature_id')
     object$feature_id %<>% factor(c(dnfeatures, upfeatures))
@@ -781,16 +785,9 @@ plot_contrast_boxplots.data.table <- function(
     contrastsubgroup <- NULL
     mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, downlevels)]
     p <- plot_subgroup_boxplots(
-            object, 
-            subgroup = !!subgroup, 
-            x        = !!subgroup, 
-            fill     = !!subgroup, 
-            block    = !!block,
-            facet    = vars(feature_id, !!!syms(fdrvar)), 
-            scales   = 'free_y', 
-            nrow     = nrow, 
-            ncol     = ncol, 
-            labeller = labeller)  + 
+            object, subgroup = !!subgroup, block = !!block, x = !!subgroup, fill = !!subgroup, 
+            facet = vars(feature_id, !!!syms(fdrvar)), scales = 'free_y', nrow = nrow, 
+            ncol = ncol, labeller = labeller, palette  = palette)  + 
         theme_bw() + xlab(NULL) + ggtitle(title) + ylab(ylab) + 
         geom_hline( data = mediandt, linetype = 'longdash',
                 aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 
