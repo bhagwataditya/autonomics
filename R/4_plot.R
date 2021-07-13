@@ -532,7 +532,8 @@ plot_boxplots.data.table <- function(
                 by = c(blockstr, 'feature_id')] }
         p <- p + geom_line(aes(x=!!x, y=value, color=direction, group=!!block))
         p <- add_color_scale(p, direction, data=dt, palette=palette) }
-    p <- p + geom_boxplot(aes(x = !!x, y = value, fill = !!fill, color = !!color))
+    outlier.shape <- if (jitter) NA else 19
+    p <- p + geom_boxplot(aes(x = !!x, y = value, fill = !!fill, color = !!color), outlier.shape = outlier.shape)
     p <- add_color_scale(p, !!color, data=dt, palette=palette)
     p <- add_fill_scale( p, !!fill,  data=dt, palette=palette)
     p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point, fixed_color="darkred")
@@ -741,7 +742,7 @@ plot_contrast_boxplots.SummarizedExperiment <- function(
         subgroup = !!subgroup, downlevels = downlevels, uplevels = uplevels, 
         fit = fit, contrast = contrast, block = !!block, 
         fdrcutoff = fdrcutoff, palette = palette, title = title, 
-        nrow = nrow, ncol = ncol, labeller = labeller)
+        nrow = nrow, ncol = ncol, labeller = labeller, ylab=assay)
 }
 
 #' @rdname plot_contrast_boxplots
