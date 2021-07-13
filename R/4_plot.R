@@ -553,7 +553,7 @@ plot_boxplots.data.table <- function(
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
     p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
-        guides(color=FALSE, alpha=FALSE) +
+        guides(color='none', alpha='none') +
         theme(axis.text.x = element_text(angle=90, hjust=1))
     p
 }
@@ -793,7 +793,7 @@ plot_contrast_boxplots.data.table <- function(
         geom_hline( data = mediandt, linetype = 'longdash',
                 aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 
                     color = !!sym(subgroupvar))) + 
-        guides(alpha=FALSE)
+        guides(alpha = 'none')
 # Color facets
     if (is.null(palette))  palette <- make_colors(levels(object[[subgroupvar]]))
     palette <- c(expand_into_vector(palette[ uplevels[[1]] ], upfeatures),
