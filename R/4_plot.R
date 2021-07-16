@@ -691,9 +691,13 @@ plot_subgroup_boxplots <- function(
 #' @param contrast     string
 #' @param fdrcutoff    number
 #' @param palette      color palette (named character vector)
-#' @param formula      formula
-#' @param contrast     string 
 #' @param title        string
+#' @param ylab         NULL or string
+#' @param nrow         number
+#' @param ncol         number
+#' @param labeller     string or function
+#' @param scales       'free', 'free_x', 'free_y', 'fixed'
+#' @param ...          required for S3 dispatch
 #' @examples 
 #' require(magrittr)
 #' require(grid)
@@ -722,9 +726,9 @@ plot_contrast_boxplots <- function(object, ...){
 #' @export
 plot_contrast_boxplots.SummarizedExperiment <- function(
     object, assay = assayNames(object)[1], 
-    subgroup, downlevels, uplevels, fit, contrast, block = NULL, 
+    subgroup, block = NULL, downlevels, uplevels, fit, contrast,
     fdrcutoff = 0.05, palette = NULL, title = contrast, ylab = NULL, 
-    nrow = NULL, ncol = NULL, labeller = 'label_both', ...
+    nrow = NULL, ncol = NULL, labeller = 'label_both', scales = 'free_y', ...
 ){
 # Order/Extract on p value
     subgroup <- enquo(subgroup)
@@ -742,7 +746,7 @@ plot_contrast_boxplots.SummarizedExperiment <- function(
         subgroup = !!subgroup, downlevels = downlevels, uplevels = uplevels, 
         fit = fit, contrast = contrast, block = !!block, 
         fdrcutoff = fdrcutoff, palette = palette, title = title, 
-        nrow = nrow, ncol = ncol, labeller = labeller, ylab=assay)
+        nrow = nrow, ncol = ncol, labeller = labeller, scales = scales, ylab=assay)
 }
 
 #' @rdname plot_contrast_boxplots
@@ -750,7 +754,7 @@ plot_contrast_boxplots.SummarizedExperiment <- function(
 plot_contrast_boxplots.data.table <- function(
     object, subgroup, downlevels, uplevels, fit, contrast, block = NULL, 
     fdrcutoff = 0.05, palette = NULL, title = contrast, ylab = NULL, 
-    nrow = NULL, ncol = NULL, labeller = 'label_both', ...
+    nrow = NULL, ncol = NULL, labeller = 'label_both', scales = 'free_y', ...
 ){
     subgroup <- enquo(subgroup)
     block    <- enquo(block)
@@ -770,8 +774,8 @@ plot_contrast_boxplots.data.table <- function(
     pvals %<>% apply(1, min)  %>% set_names(fdt$feature_id)  # we also want single method features
     fdrs  %<>% apply(1, min)  %>% set_names(fdt$feature_id)  # we also want single method features
     if (nrow(signs)>0) signs %<>% apply(1, mean) %>% set_names(fdt$feature_id) # dont break
-    dnfeatures <- names(    sort(pvals[signs<0 & fdrs < fdrcutoff]))
-    upfeatures <- names(rev(sort(pvals[signs>0 & fdrs < fdrcutoff])))
+    upfeatures <- names(    sort(pvals[signs>0 & fdrs < fdrcutoff]))
+    dnfeatures <- names(rev(sort(pvals[signs<0 & fdrs < fdrcutoff])))
     object %<>% extract(c(dnfeatures, upfeatures), on = 'feature_id')
     fdt    %<>% extract(c(dnfeatures, upfeatures), on = 'feature_id')
     object$feature_id %<>% factor(c(dnfeatures, upfeatures))
@@ -787,7 +791,7 @@ plot_contrast_boxplots.data.table <- function(
     mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, downlevels)]
     p <- plot_subgroup_boxplots(
             object, subgroup = !!subgroup, block = !!block, x = !!subgroup, fill = !!subgroup, 
-            facet = vars(feature_id, !!!syms(fdrvar)), scales = 'free_y', nrow = nrow, 
+            facet = vars(feature_id, !!!syms(fdrvar)), scales = scales, nrow = nrow, 
             ncol = ncol, labeller = labeller, palette  = palette)  + 
         theme_bw() + xlab(NULL) + ggtitle(title) + ylab(ylab) + 
         geom_hline( data = mediandt, linetype = 'longdash',
@@ -796,10 +800,13 @@ plot_contrast_boxplots.data.table <- function(
         guides(alpha = 'none')
 # Color facets
     if (is.null(palette))  palette <- make_colors(levels(object[[subgroupvar]]))
-    palette <- c(expand_into_vector(palette[ uplevels[[1]] ], upfeatures),
-               expand_into_vector(palette[ downlevels[[1]] ], dnfeatures))
-    g <- color_facets(p, palette)
-    #grid::grid.draw(g)
+    facetdt <- unique(object[, c('feature_id', fdrvar, effectvar, subgroupvar), with=FALSE])
+    facetdt <- rbind(
+        facetdt[ as.numeric(get(fdrvar   )) < fdrcutoff & as.numeric(get(effectvar)) > 0, .SD[get(subgroupvar) %in% uplevels  ]],
+        facetdt[ as.numeric(get(fdrvar   )) < fdrcutoff & as.numeric(get(effectvar)) < 0, .SD[get(subgroupvar) %in% downlevels]])
+    facetpalette <- facetdt[, palette[get(subgroupvar)] %>% set_names(feature_id)]
+    g <- color_facets(p, facetpalette)
+    grid::grid.draw(g)
     invisible(g)
 }
 
