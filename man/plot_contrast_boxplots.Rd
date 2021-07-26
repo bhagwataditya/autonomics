@@ -12,11 +12,11 @@ plot_contrast_boxplots(object, ...)
   object,
   assay = assayNames(object)[1],
   subgroup,
+  block = NULL,
   downlevels,
   uplevels,
   fit,
   contrast,
-  block = NULL,
   fdrcutoff = 0.05,
   palette = NULL,
   title = contrast,
@@ -24,6 +24,7 @@ plot_contrast_boxplots(object, ...)
   nrow = NULL,
   ncol = NULL,
   labeller = "label_both",
+  scales = "free_y",
   ...
 )
 
@@ -39,18 +40,24 @@ plot_contrast_boxplots(object, ...)
   palette = NULL,
   title = contrast,
   ylab = NULL,
+  facet = vars(feature_id),
   nrow = NULL,
   ncol = NULL,
   labeller = "label_both",
+  scales = "free_y",
   ...
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{...}{required for S3 dispatch}
+
 \item{assay}{string}
 
 \item{subgroup}{symbol: subgroup svar}
+
+\item{block}{symbol: block var}
 
 \item{downlevels}{character vector}
 
@@ -60,15 +67,21 @@ plot_contrast_boxplots(object, ...)
 
 \item{contrast}{string}
 
-\item{block}{symbol: block var}
-
 \item{fdrcutoff}{number}
 
 \item{palette}{color palette (named character vector)}
 
 \item{title}{string}
 
-\item{formula}{formula}
+\item{ylab}{NULL or string}
+
+\item{nrow}{number}
+
+\item{ncol}{number}
+
+\item{labeller}{string or function}
+
+\item{scales}{'free', 'free_x', 'free_y', 'fixed'}
 }
 \description{
 Plot contrast boxplots
