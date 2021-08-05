@@ -528,6 +528,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' @param ffile             ffile path
 #' @param by.x              object mergevar
 #' @param by.y              file mergevvar
+#' @param select            [sf]file columns to select
 #' @param stringsAsFactors  TRUE or FALSE
 #' @param verbose           TRUE (default) or FALSE
 #' @return SummarizedExperiment
@@ -543,13 +544,13 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' merge_sfile(object, sfile)
 #'@export
 merge_sfile <- function(
-    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, 
+    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, select = NULL,
     stringsAsFactors = TRUE, verbose = TRUE
 ){
     if (is.null(sfile))  return(object)
     assert_all_are_existing_files(sfile)
     if (verbose) message('\t\tMerge sdata: ', sfile)
-    dt <- fread(sfile, stringsAsFactors = stringsAsFactors)
+    dt <- fread(sfile, select = select, stringsAsFactors = stringsAsFactors)
     if (is.null(by.y))  by.y <- names(dt)[1]
     assert_is_subset(by.y, names(dt))
     dt[[by.y]] %<>% as.character()
@@ -560,13 +561,13 @@ merge_sfile <- function(
 #' @rdname merge_sfile
 #' @export
 merge_ffile <- function(
-    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, 
+    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, select = NULL,
     stringsAsFactors = TRUE, verbose = TRUE
 ){
     if (is.null(ffile))  return(object)
     assert_all_are_existing_files(ffile)
     if (verbose) message('\t\tMerge fdata: ', ffile)
-    dt <- fread(ffile, stringsAsFactors = stringsAsFactors)
+    dt <- fread(ffile, select = select, stringsAsFactors = stringsAsFactors)
     if (is.null(by.y))  by.y <- names(dt)[1]
     assert_is_subset(by.y, names(dt))
     dt[[by.y]] %<>% as.character()
