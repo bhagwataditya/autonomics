@@ -10,6 +10,7 @@ merge_sfile(
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
+  select = NULL,
   stringsAsFactors = TRUE,
   verbose = TRUE
 )
@@ -19,6 +20,7 @@ merge_ffile(
   ffile = NULL,
   by.x = "feature_id",
   by.y = NULL,
+  select = NULL,
   stringsAsFactors = TRUE,
   verbose = TRUE
 )
@@ -31,6 +33,8 @@ merge_ffile(
 \item{by.x}{object mergevar}
 
 \item{by.y}{file mergevvar}
+
+\item{select}{[sf]file columns to select}
 
 \item{stringsAsFactors}{TRUE or FALSE}
 
