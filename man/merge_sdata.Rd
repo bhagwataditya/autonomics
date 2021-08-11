@@ -10,6 +10,7 @@ merge_sdata(
   dt,
   by.x = "sample_id",
   by.y = names(dt)[1],
+  all.x = TRUE,
   verbose = TRUE
 )
 
@@ -18,6 +19,7 @@ merge_fdata(
   dt,
   by.x = "feature_id",
   by.y = names(dt)[1],
+  all.x = TRUE,
   verbose = TRUE
 )
 }
@@ -26,11 +28,13 @@ merge_fdata(
 
 \item{dt}{data.frame, data.table, DataFrame}
 
-\item{by.x}{object mergevar}
+\item{by.x}{string : object mergevar}
 
-\item{by.y}{df mergevar}
+\item{by.y}{string : df mergevar}
 
-\item{verbose}{TRUE/FALSE}
+\item{all.x}{TRUE / FALSE : whether to keep samples / features without annotation}
+
+\item{verbose}{TRUE / FALSE : whether to msg}
 }
 \value{
 SummarizedExperiment
