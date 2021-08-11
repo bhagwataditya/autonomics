@@ -436,9 +436,10 @@ split_values <- function(x){
 #' Merge sample/feature data
 #' @param object          SummarizedExperiment
 #' @param dt              data.frame, data.table, DataFrame
-#' @param by.x            object mergevar
-#' @param by.y            df mergevar
-#' @param verbose         TRUE/FALSE
+#' @param by.x            string : object mergevar
+#' @param by.y            string : df mergevar
+#' @param all.x           TRUE / FALSE : whether to keep samples / features without annotation
+#' @param verbose         TRUE / FALSE : whether to msg
 #' @return                SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -448,19 +449,21 @@ split_values <- function(x){
 #'                                     number = seq_along(object$sample_id)))
 #' head(sdata(object))
 #'@export
-merge_sdata <- function(object, dt, by.x = 'sample_id',
-    by.y = names(dt)[1], verbose=TRUE
+merge_sdata <- function(
+    object, dt, by.x = 'sample_id',  by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
 ){
-    sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
+    if (!all.x)  object %<>% filter_samples(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = verbose)
+    sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
 
 #'@rdname merge_sdata
 #'@export
-merge_fdata <- function(object, dt, by.x = 'feature_id',
-    by.y = names(dt)[1], verbose=TRUE
+merge_fdata <- function(
+    object, dt, by.x = 'feature_id', by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
 ){
-    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
+    if (!all.x)  object %<>% filter_features(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = TRUE)
+    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
 
@@ -521,16 +524,17 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #}
 
 
-#' Merge sample/feature file
+#' Merge sample / feature file
 #'
 #' @param object            SummarizedExperiment
-#' @param sfile             sample file path
-#' @param ffile             ffile path
-#' @param by.x              object mergevar
-#' @param by.y              file mergevvar
-#' @param select            [sf]file columns to select
-#' @param stringsAsFactors  TRUE or FALSE
-#' @param verbose           TRUE (default) or FALSE
+#' @param sfile             string       : sample file path
+#' @param ffile             string       : ffile path
+#' @param by.x              string       : object mergevar
+#' @param by.y              string       : file mergevvar
+#' @param all.x             TRUE / FALSE : whether to keep samples / feature without annotation
+#' @param select            character    : [sf]file columns to select
+#' @param stringsAsFactors  TRUE / FALSE
+#' @param verbose           TRUE / FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -544,8 +548,8 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' merge_sfile(object, sfile)
 #'@export
 merge_sfile <- function(
-    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, select = NULL,
-    stringsAsFactors = TRUE, verbose = TRUE
+    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, all.x = TRUE, 
+    select = NULL, stringsAsFactors = TRUE, verbose = TRUE
 ){
     if (is.null(sfile))  return(object)
     assert_all_are_existing_files(sfile)
@@ -554,15 +558,15 @@ merge_sfile <- function(
     if (is.null(by.y))  by.y <- names(dt)[1]
     assert_is_subset(by.y, names(dt))
     dt[[by.y]] %<>% as.character()
-    object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
+    object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
     object
 }
 
 #' @rdname merge_sfile
 #' @export
 merge_ffile <- function(
-    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, select = NULL,
-    stringsAsFactors = TRUE, verbose = TRUE
+    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, all.x = TRUE,
+    select = NULL, stringsAsFactors = TRUE, verbose = TRUE
 ){
     if (is.null(ffile))  return(object)
     assert_all_are_existing_files(ffile)
@@ -571,7 +575,7 @@ merge_ffile <- function(
     if (is.null(by.y))  by.y <- names(dt)[1]
     assert_is_subset(by.y, names(dt))
     dt[[by.y]] %<>% as.character()
-    object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
+    object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
     object
 }
 
