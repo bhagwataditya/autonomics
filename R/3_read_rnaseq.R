@@ -716,13 +716,14 @@ explicitly_compute_voom_weights <- function(
 #' @param block        blocK svar
 #' @param min_count    min count required in some samples
 #' @param pseudocount  added pseudocount to avoid log(x)=-Inf
-#' @param genesize     genesize fvar to compute tpm
-#' @param cpm          whether to compute counts per million (scaled) reads
-#' @param tmm          whether to tmm normalize
-#' @param voom         whether to voom weight
-#' @param log2         whether to log2
-#' @param verbose      whether to msg
-#' @param plot         whether to plot
+#' @param tpm          TRUE/FALSE : tpm normalize?
+#' @param genesizevar  string     : tpm normalization genesize fvar 
+#' @param cpm          TRUE/FALSE : cpm normalize? (counts per million (scaled) reads)
+#' @param tmm          TRUE/FALSE : tmm normalize? (library sizes -> effective library sizes)
+#' @param voom         TRUE/FALSE : voom weight?
+#' @param log2         TRUE/FALSE : log2 transform?
+#' @param verbose      TRUE/FALSE : msg?
+#' @param plot         TRUE/FALSE : plot?
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -734,8 +735,9 @@ explicitly_compute_voom_weights <- function(
 preprocess_rnaseq_counts <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
-    min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, tmm = cpm,
-    voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
+    min_count = 10, pseudocount = 0.5, tpm  = FALSE, genesizevar = 'genesize', 
+    cpm = TRUE, tmm = cpm, voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE
+){
 # Initialize
     . <- NULL
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
@@ -744,16 +746,15 @@ preprocess_rnaseq_counts <- function(object,
 # Filter
     if (verbose) message('\t\tPreprocess')
     object$libsize <- matrixStats::colSums2(counts(object))
-    object %<>% filter_by_expr(
-                    formula=formula, min_count = min_count, verbose=verbose)
+    if (min_count>0)  object %<>% filter_by_expr(
+                          formula = formula, min_count = min_count, verbose = verbose)
 # Add pseudocount
     if (pseudocount>0){ if (verbose)  message('\t\t\tpseudocount ', pseudocount)
                         counts(object) %<>% add(pseudocount) }
-# Tpm/Cpm normalize
-    if (!is.null(genesize)){
-        assert_is_subset(genesize, fvars(object))
-        if (verbose)  message('\t\t\ttpm')
-        tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesize]])}
+# tpm/tmm/cpm normalize
+    if (tpm){   assert_is_subset(  genesizevar, fvars(object))
+                if (verbose)  message('\t\t\ttpm')
+                tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesizevar]]) }
     if (tmm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
                 object$libsize <- scaledlibsizes(counts(object)) }
     if (cpm){   if (verbose)  message('\t\t\t\tcpm')
@@ -761,20 +762,13 @@ preprocess_rnaseq_counts <- function(object,
                 other <- setdiff(assayNames(object), 'cpm')
                 assays(object) %<>% extract(c('cpm', other)) }
 # Voom  weight (counts) & dupcor (log2(cpm))
-    if (voom){
-        object %<>% add_voom(
-                        formula, verbose=verbose, plot=plot & is.null(block))
-        if (!is.null(block)){
-            object %<>%
-                add_voom(formula, block=block, verbose=verbose, plot=plot) }}
+    if (voom){  object %<>% add_voom(formula, verbose=verbose, plot=plot & is.null(block))
+                if (!is.null(block))  object %<>% add_voom(
+                                     formula, block=block, verbose=verbose, plot=plot) }
 # Log2 transform
-    if (log2){  if (verbose)  message('\t\t\tlog2')
-                selectedassays <- c('counts','cpm','tpm')
+    if (log2){  selectedassays <- c('counts','cpm','tpm')
                 selectedassays %<>% intersect(assayNames(object))
-                for (curassay in selectedassays){
-                    i <- match(curassay, assayNames(object))
-                    assays(object)[[i]] %<>% log2()
-                    assayNames(object)[[i]] %<>% paste0('log2', .)}}
+                object %<>% log2transform(assay = selectedassays, verbose = verbose) }
 # Return
     object
 }
