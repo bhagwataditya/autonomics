@@ -722,6 +722,7 @@ explicitly_compute_voom_weights <- function(
 #' @param tmm          TRUE/FALSE : tmm normalize? (library sizes -> effective library sizes)
 #' @param voom         TRUE/FALSE : voom weight?
 #' @param log2         TRUE/FALSE : log2 transform?
+#' @param quantnorm    TRUE/FLASE ; quantile normalize?
 #' @param verbose      TRUE/FALSE : msg?
 #' @param plot         TRUE/FALSE : plot?
 #' @return SummarizedExperiment
@@ -736,7 +737,8 @@ preprocess_rnaseq_counts <- function(object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
     min_count = 10, pseudocount = 0.5, tpm  = FALSE, genesizevar = 'genesize', 
-    cpm = TRUE, tmm = cpm, voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE
+    cpm = TRUE, tmm = cpm, voom = TRUE, log2 = TRUE, quantnorm = FALSE, 
+    verbose = TRUE, plot = TRUE
 ){
 # Initialize
     . <- NULL
@@ -769,6 +771,8 @@ preprocess_rnaseq_counts <- function(object,
     if (log2){  selectedassays <- c('counts','cpm','tpm')
                 selectedassays %<>% intersect(assayNames(object))
                 object %<>% log2transform(assay = selectedassays, verbose = verbose) }
+# Quantile normalize
+    if ({{quantnorm}})  object %<>% quantnorm(verbose = verbose)
 # Return
     object
 }
@@ -975,6 +979,7 @@ read_rnaseq_bams <- function(
 #' @param cpm          whether to compute cpm
 #' @param voom         whether to compute voom precision weights
 #' @param log2         whether to log2 transform
+#' @param quantnorm    whether to quantile normalize
 #' @param pca          whether to pca
 #' @param fit          fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
 #' @param verbose      whether to message
@@ -995,7 +1000,7 @@ read_rnaseq_counts <- function(
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
     formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
-    cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, 
+    cpm = TRUE, tmm = cpm, log2 = TRUE, quantnorm = FALSE, pca = FALSE, 
     fit = NULL, voom = !is.null(fit), coefs = NULL, contrastdefs = NULL, 
     verbose = TRUE, plot = TRUE
 ){
@@ -1019,6 +1024,7 @@ read_rnaseq_counts <- function(
                                         tmm         = tmm,
                                         voom        = voom,
                                         log2        = log2,
+                                        quantnorm   = quantnorm,
                                         verbose     = verbose,
                                         plot        = plot)
 # Analyze

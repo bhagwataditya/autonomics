@@ -76,6 +76,7 @@ read_rnaseq_counts(
   cpm = TRUE,
   tmm = cpm,
   log2 = TRUE,
+  quantnorm = FALSE,
   pca = FALSE,
   fit = NULL,
   voom = !is.null(fit),
@@ -137,6 +138,8 @@ read_rnaseq_counts(
 \item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
 
 \item{plot}{whether to plot}
+
+\item{quantnorm}{whether to quantile normalize}
 
 \item{coefs}{NULL or character vector: model coefficients to test}
 }
