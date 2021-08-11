@@ -198,8 +198,11 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 
 
 #' Transform values
-#' @param object SummarizedExperiment
-#' @param verbose TRUE or FALSE
+#' 
+#' @param  object   SummarizedExperiment
+#' @param  assay    character vector : assays for which to perform transformation
+#' @param  pseudo   number           : pseudo value to be added prior to transformation
+#' @param  verbose  TRUE/FALSE       : whether to msg
 #' @return Transformed sumexp
 #' @examples
 #' require(magrittr)
@@ -219,11 +222,23 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' exp2(object)                 %>% plot_sample_densities()
 #' log2transform(exp2(object))  %>% plot_sample_densities()
 #' @export
-log2transform <- function(object, verbose = FALSE){
-    if (verbose)  message('\t\tLog2 transform')
-    values(object) %<>% log2()
+log2transform <- function(
+    object, 
+    assay   = assayNames(object)[1], 
+    pseudo  = 0,
+    verbose = FALSE
+){
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(assay, assayNames(object))
+    for (ass in assay){
+        i <- match(ass, assayNames(object))
+        if (verbose)  message('\t\t\tAdd ', pseudo) ;  assays(object)[[i]] %<>% add(pseudo) 
+        if (verbose)  message('\t\t\tlog2', ass);      assays(object)[[i]] %<>% log2()
+        assayNames(object)[i] %<>% paste0('log2', .)
+    }
     object
 }
+
 
 #' @rdname log2transform
 #' @export
