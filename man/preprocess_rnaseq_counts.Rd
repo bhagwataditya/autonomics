@@ -17,7 +17,6 @@ preprocess_rnaseq_counts(
   tmm = cpm,
   voom = TRUE,
   log2 = TRUE,
-  quantnorm = FALSE,
   verbose = TRUE,
   plot = TRUE
 )
@@ -46,8 +45,6 @@ preprocess_rnaseq_counts(
 \item{voom}{TRUE/FALSE : voom weight?}
 
 \item{log2}{TRUE/FALSE : log2 transform?}
-
-\item{quantnorm}{TRUE/FLASE ; quantile normalize?}
 
 \item{verbose}{TRUE/FALSE : msg?}
 
