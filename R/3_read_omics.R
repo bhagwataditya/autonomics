@@ -486,7 +486,8 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
         dt       %<>% as.data.table()
         objectdt %<>% as.data.table(keep.rownames=TRUE)
 # Rm duplicate keys
-    n0 <- nrow(dt)
+    dt %<>% unique() # drop duplicate rows with identical info 
+    n0 <- nrow(dt)   # drop rows with duplicate key values 
     dt %<>% unique(by = by.y) # keys should be unique!
     if (n0>nrow(dt) & verbose)  message('\t\t\tRetain ', nrow(dt),
         '/', n0, ' rows after removing duplicate `', by.y, '` entries')
