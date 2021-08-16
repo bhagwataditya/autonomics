@@ -10,7 +10,7 @@ preprocess_rnaseq_counts(
   formula = default_formula(object, subgroupvar, "limma"),
   block = NULL,
   min_count = 10,
-  pseudocount = 0.5,
+  pseudo = 0.5,
   tpm = FALSE,
   genesizevar = "genesize",
   cpm = TRUE,
@@ -32,7 +32,7 @@ preprocess_rnaseq_counts(
 
 \item{min_count}{min count required in some samples}
 
-\item{pseudocount}{added pseudocount to avoid log(x)=-Inf}
+\item{pseudo}{added pseudocount to avoid log(x)=-Inf}
 
 \item{tpm}{TRUE/FALSE : tpm normalize?}
 
