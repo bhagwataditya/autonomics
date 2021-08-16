@@ -715,7 +715,7 @@ explicitly_compute_voom_weights <- function(
 #' @param formula      designmat formula
 #' @param block        blocK svar
 #' @param min_count    min count required in some samples
-#' @param pseudocount  added pseudocount to avoid log(x)=-Inf
+#' @param pseudo       added pseudocount to avoid log(x)=-Inf
 #' @param tpm          TRUE/FALSE : tpm normalize?
 #' @param genesizevar  string     : tpm normalization genesize fvar 
 #' @param cpm          TRUE/FALSE : cpm normalize? (counts per million (scaled) reads)
@@ -735,7 +735,7 @@ explicitly_compute_voom_weights <- function(
 preprocess_rnaseq_counts <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
-    min_count = 10, pseudocount = 0.5, tpm  = FALSE, genesizevar = 'genesize', 
+    min_count = 10, pseudo = 0.5, tpm  = FALSE, genesizevar = 'genesize', 
     cpm = TRUE, tmm = cpm, voom = TRUE, log2 = TRUE,
     verbose = TRUE, plot = TRUE
 ){
@@ -744,18 +744,19 @@ preprocess_rnaseq_counts <- function(object,
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
     if (is.null(formula))      formula <- default_formula(
                                             object, subgroupvar, fit='limma')
-# Filter
+# tpm
     if (verbose) message('\t\tPreprocess')
-    object$libsize <- matrixStats::colSums2(counts(object))
-    if (min_count>0)  object %<>% filter_by_expr(
-                          formula = formula, min_count = min_count, verbose = verbose)
-# Add pseudocount
-    if (pseudocount>0){ if (verbose)  message('\t\t\tpseudocount ', pseudocount)
-                        counts(object) %<>% add(pseudocount) }
-# tpm/tmm/cpm normalize
     if (tpm){   assert_is_subset(  genesizevar, fvars(object))
                 if (verbose)  message('\t\t\ttpm')
                 tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesizevar]]) }
+# Filter
+    object$libsize <- matrixStats::colSums2(counts(object))
+    if (min_count>0)  object %<>% filter_by_expr(
+                          formula = formula, min_count = min_count, verbose = verbose)
+# Add pseudo
+    if (pseudo>0){ if (verbose)  message('\t\t\tcounts: add ', pseudo)
+                        counts(object) %<>% add(pseudo) }
+# tpm/tmm/cpm normalize
     if (tmm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
                 object$libsize <- scaledlibsizes(counts(object)) }
     if (cpm){   if (verbose)  message('\t\t\t\tcpm')
@@ -771,6 +772,13 @@ preprocess_rnaseq_counts <- function(object,
         if (tpm)  assays(object)$log2tpm    <- log2(pseudo + tpm(object))
         if (cpm)  assays(object)$log2cpm    <- log2(pseudo + cpm(object))
     }
+# Rm pseudocounts
+    if (pseudo>0){ if (verbose)  message('\t\t\tcounts: rm ', pseudo)
+                        counts(object) %<>% subtract(pseudo) }
+# Order assays
+    ass <- c('log2cpm', 'log2tpm', 'log2counts', 'cpm', 'tpm', 'counts')
+    ass %<>% intersect(assayNames(object))
+    assays(object) %<>% extract(ass)
 # Return
     object
 }
@@ -911,7 +919,7 @@ read_rnaseq_bams <- function(
     dir, paired, genome, nthreads = detectCores(),
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
-    formula = NULL, min_count = 10, pseudocount = 0.5, tpm = FALSE,
+    formula = NULL, min_count = 10, pseudo = 0.5, tpm = FALSE,
     genesizevar = NULL, cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, fit = NULL,
     voom = !is.null(fit), contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
@@ -931,7 +939,7 @@ read_rnaseq_bams <- function(
                                         formula      = formula,
                                         block        = block,
                                         min_count    = min_count,
-                                        pseudocount  = pseudocount,
+                                        pseudo       = pseudo,
                                         tpm          = tpm,
                                         genesizevar  = genesizevar,
                                         cpm          = cpm,
@@ -972,7 +980,7 @@ read_rnaseq_bams <- function(
 #' @param coefs        NULL or character vector: model coefficients to test
 #' @param contrastdefs NULL or character vector: coefficient contrasts to test
 #' @param min_count    min feature count required in some samples
-#' @param pseudocount  added pseudocount to prevent -Inf log2 values
+#' @param pseudo       added pseudocount to prevent -Inf log2 values
 #' @param genesizevar  genesize fvar for tpm
 #' @param tmm          whether to tmm-scale library sizes
 #' @param cpm          whether to compute cpm
@@ -997,7 +1005,7 @@ read_rnaseq_counts <- function(
     file, fid_col = 1,
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
-    formula = NULL, min_count = 10, pseudocount = 0.5,
+    formula = NULL, min_count = 10, pseudo = 0.5,
     tpm = FALSE, genesizevar = NULL, cpm = TRUE, tmm = cpm, log2 = TRUE,
     pca = FALSE, fit = NULL, voom = !is.null(fit), coefs = NULL,
     contrastdefs = NULL, verbose = TRUE, plot = TRUE
@@ -1016,7 +1024,7 @@ read_rnaseq_counts <- function(
                                         formula     = formula,
                                         block       = block,
                                         min_count   = min_count,
-                                        pseudocount = pseudocount,
+                                        pseudo      = pseudo,
                                         tpm         = tpm,
                                         genesizevar = genesizevar,
                                         cpm         = cpm,
