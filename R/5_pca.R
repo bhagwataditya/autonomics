@@ -83,13 +83,14 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' Add sample scores, feature loadings, and dimension variances to object.
 #'
 #' @param object  SummarizedExperiment
-#' @param subgroupvar subgroup svar
-#' @param ndim    number
-#' @param minvar  number
-#' @param verbose TRUE (default) or FALSE
-#' @param plot    TRUE/FALSE
-#' @param ...     passed to biplot
-#' @return        SummarizedExperiment
+#' @param subgroupvar   subgroup svar
+#' @param ndim          number
+#' @param minvar        number
+#' @param doublecenter  whether to double center data prior to pca
+#' @param verbose       TRUE (default) or FALSE
+#' @param plot          TRUE/FALSE
+#' @param ...           passed to biplot
+#' @return              SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
@@ -102,7 +103,7 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
-    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...
+    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, doublecenter = TRUE, ...
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -119,13 +120,15 @@ pca <- function(
     values(tmpobj) %<>% nan_to_na(verbose=verbose)
     tmpobj %<>% rm_missing_in_all_samples(verbose = verbose)
 # (Double) center and (global) normalize
-    row_means <- rowMeans(values(tmpobj), na.rm=TRUE)
-    col_means <- colWeightedMeans(values(tmpobj), abs(row_means), na.rm = TRUE)
-    global_mean <- mean(col_means)
-    values(tmpobj) %<>% apply(1, '-', col_means)  %>%   # Center columns
-                        apply(1, '-', row_means)  %>%   # Center rows
-                        add(global_mean)          %>%   # Add doubly subtracted
-                        divide_by(sd(., na.rm=TRUE))    # Normalize
+    if (doublecenter){
+        row_means <- rowMeans(values(tmpobj), na.rm=TRUE)
+        col_means <- colWeightedMeans(values(tmpobj), abs(row_means), na.rm = TRUE)
+        global_mean <- mean(col_means)
+        values(tmpobj) %<>% apply(1, '-', col_means)  %>%   # Center columns
+                            apply(1, '-', row_means)  %>%   # Center rows
+                            add(global_mean)          %>%   # Add doubly subtracted
+                            divide_by(sd(., na.rm=TRUE))    # Normalize
+    }
 # Perform PCA
     pca_res  <- pcaMethods::pca(t(values(tmpobj)),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')

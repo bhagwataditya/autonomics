@@ -7,7 +7,15 @@
 \alias{lda}
 \title{Add PCA, SMA, LDA, PLS}
 \usage{
-pca(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
+pca(
+  object,
+  ndim = 2,
+  minvar = 0,
+  verbose = TRUE,
+  plot = FALSE,
+  doublecenter = TRUE,
+  ...
+)
 
 pls(
   object,
@@ -41,6 +49,8 @@ lda(
 \item{verbose}{TRUE (default) or FALSE}
 
 \item{plot}{TRUE/FALSE}
+
+\item{doublecenter}{whether to double center data prior to pca}
 
 \item{...}{passed to biplot}
 
