@@ -753,28 +753,26 @@ preprocess_rnaseq_counts <- function(object,
     object$libsize <- matrixStats::colSums2(counts(object))
     if (min_count>0)  object %<>% filter_by_expr(
                           formula = formula, min_count = min_count, verbose = verbose)
-# Add pseudo
+# tmm/cpm/voom normalize
     if (pseudo>0){ if (verbose)  message('\t\t\tcounts: add ', pseudo)
                         counts(object) %<>% add(pseudo) }
-# tpm/tmm/cpm normalize
     if (tmm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
                 object$libsize <- scaledlibsizes(counts(object)) }
     if (cpm){   if (verbose)  message('\t\t\t\tcpm')
                 cpm(object) <- counts2cpm(counts(object), object$libsize)
                 other <- setdiff(assayNames(object), 'cpm')
                 assays(object) %<>% extract(c('cpm', other)) }
-# Voom  weight (counts) & dupcor (log2(cpm))
     if (voom){  object %<>% add_voom(formula, verbose=verbose, plot=plot & is.null(block))
                 if (!is.null(block))  object %<>% add_voom(
                                      formula, block=block, verbose=verbose, plot=plot) }
+    if (pseudo>0){ if (verbose)  message('\t\t\tcounts: rm ', pseudo)
+                        counts(object) %<>% subtract(pseudo) }
 # Log2 transform
     if (log2){    assays(object)$log2counts <- log2(pseudo + counts(object))
         if (tpm)  assays(object)$log2tpm    <- log2(pseudo + tpm(object))
         if (cpm)  assays(object)$log2cpm    <- log2(pseudo + cpm(object))
     }
 # Rm pseudocounts
-    if (pseudo>0){ if (verbose)  message('\t\t\tcounts: rm ', pseudo)
-                        counts(object) %<>% subtract(pseudo) }
 # Order assays
     ass <- c('log2cpm', 'log2tpm', 'log2counts', 'cpm', 'tpm', 'counts')
     ass %<>% intersect(assayNames(object))
