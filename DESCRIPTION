@@ -80,6 +80,7 @@ Suggests:
   nlme,
   org.Hs.eg.db, 
   org.Mm.eg.db,
+  progeny,
   RCurl,
   remotes,
   rmarkdown,
