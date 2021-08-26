@@ -548,7 +548,7 @@ plot_boxplots.data.table <- function(
                     linetype='longdash') }
 # Add jitter
     if (jitter) p <- p + geom_jitter(aes(x=!!x, y=value),
-                            position = position_jitter(width=.1, height=0), size=0.8, na.rm = TRUE)
+                            position = position_jitter(width=.1, height=0), size=0.5, na.rm = TRUE)
 # Finish and Return
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
