@@ -196,9 +196,9 @@ create_design.data.frame <- function(
     myDesign <- model.matrix(formula, data=object)
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     is_factor_var <- function(x, object) is.factor(object[[x]])
-    for (predictor in all.vars(formula)){
-        if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
-                    stri_replace_first_fixed(predictor, '') }
+    #for (predictor in all.vars(formula)){
+    #    if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
+    #                stri_replace_first_fixed(predictor, '') }
         # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
         # For other cases it works wonderfully, so I keep it for now.
         # If it gives too many issues, roll back to doing the dropping only
