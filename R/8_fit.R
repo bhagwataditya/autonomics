@@ -316,6 +316,15 @@ pvars <- function(object){
     fvars(object) %>% extract(stri_startswith_fixed(., paste0('p', FITSEP)))
 }
 
+
+#' @rdname pvars
+#' @export
+tvars <- function(object){
+    . <- NULL
+    fvars(object) %>% extract(stri_startswith_fixed(., paste0('t', FITSEP)))
+}
+
+
 #' @rdname pvars
 #' @export
 effectvars <- function(object){
@@ -650,3 +659,31 @@ plot_venn <- function(isfdr){
     vennDiagram(isfdr, include='up',   mar = rep(0,4), show.include=TRUE)
     vennDiagram(isfdr, include='down', mar = rep(0,4), show.include=TRUE)
 }
+
+
+#' Select (fdr) contrasts
+#'
+#' @param object   SummarizedExperiment
+#' @param contrast character vector
+#' @export
+select_contrasts <- function(object, contrast){
+    .pvars      <- pvars(object)
+    .tvars      <- tvars(object)
+    .fdrvars    <- fdrvars(object)
+    .effectvars <- effectvars(object)
+    idx <- split_extract(.pvars, 2, FITSEP) %in% contrast
+    fdata(object)[     .pvars[!idx] ] <- NULL
+    fdata(object)[     .tvars[!idx] ] <- NULL
+    fdata(object)[   .fdrvars[!idx] ] <- NULL
+    fdata(object)[.effectvars[!idx] ] <- NULL
+    object
+}
+
+#' @rdname select_contrasts
+#' @export
+select_fdr_contrasts <- function(object){
+    fdrcontrasts <- (fdr(object) < 0.05) %>% extract(, colAnys(.)) %>%  colnames()
+    fdrcontrasts %<>% split_extract(1, '~')
+    select_contrasts(object, fdrcontrasts)
+}
+
