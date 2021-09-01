@@ -520,16 +520,12 @@ plot_boxplots.data.table <- function(
     dt <- object
     dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
 # Plot
-    p <- ggplot(dt) 
+    p <- ggplot(dt) + theme_bw() 
     if (nrow(dt)==0) return(p)
     p <- p + facet_wrap_paginate(facets = facet, scales = scales, 
                 nrow = nrow, ncol = ncol, page = page, labeller = labeller)
     if (!quo_is_null(block)){
-        xlevels <- as.character(unique(dt[[xstr]]))
-        for (i in seq_len(length(xlevels)-1)){ 
-            dt[get(xstr) %in% xlevels[seq(i, i+1)], 
-                direction := get(xstr)[which.max(value)], 
-                by = c(blockstr, 'feature_id')] }
+        dt[, direction := get(fillstr)[which.max(value)], by = c(facetstr, blockstr)]
         p <- p + geom_line(aes(x=!!x, y=value, color=direction, group=!!block), na.rm = TRUE)
         p <- add_color_scale(p, direction, data=dt, palette=palette) }
     outlier.shape <- if (jitter) NA else 19
