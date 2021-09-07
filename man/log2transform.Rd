@@ -6,6 +6,7 @@
 \alias{zscore}
 \alias{quantnorm}
 \alias{invnorm}
+\alias{vsn}
 \title{Transform values}
 \usage{
 log2transform(object, verbose = FALSE)
@@ -17,6 +18,8 @@ zscore(object, verbose = FALSE)
 quantnorm(object, verbose = FALSE)
 
 invnorm(object, verbose = FALSE)
+
+vsn(object, verbose = FALSE, delog = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -39,6 +42,9 @@ invnorm(object)              \%>\% plot_sample_densities()
 
 object                       \%>\% plot_sample_densities()
 quantnorm(object)            \%>\% plot_sample_densities()
+
+object                       \%>\% plot_sample_densities()
+vsn(object)                  \%>\% plot_sample_densities()
 
 object                       \%>\% plot_sample_densities()
 zscore(object)               \%>\% plot_sample_densities()

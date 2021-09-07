@@ -213,6 +213,9 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' quantnorm(object)            %>% plot_sample_densities()
 #'
 #' object                       %>% plot_sample_densities()
+#' vsn(object)                  %>% plot_sample_densities()
+#'
+#' object                       %>% plot_sample_densities()
 #' zscore(object)               %>% plot_sample_densities()
 #'
 #' object                       %>% plot_sample_densities()
@@ -293,6 +296,14 @@ invnorm <- function(object, verbose = FALSE){
     object
 }
 
+#' @rdname log2transform
+#' @export
+vsn <- function(object, verbose = FALSE, delog = TRUE){
+    if (verbose) message('\t\tVSN')
+    if (delog) object %<>% exp2()
+    values(object) %<>% vsn::justvsn()
+    object
+}
 
 #' Transform vector to fitting normal distribution
 #' @param x numeric vector
