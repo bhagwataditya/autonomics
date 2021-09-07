@@ -48,7 +48,7 @@ cduplicated <- function(x){
 #'    type   = c('proteincoding', 'proteincoding'))
 #' first_cols <- c('id', 'symbol', 'location', 'uniprot')
 #' pull_columns(df, first_cols)
-#' @noRd
+#' @export
 pull_columns <- function(df, first_cols, verbose = TRUE){
 
     assert_is_data.frame(df)

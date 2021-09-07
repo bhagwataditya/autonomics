@@ -2,39 +2,107 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_contrast_boxplots}
 \alias{plot_contrast_boxplots}
+\alias{plot_contrast_boxplots.SummarizedExperiment}
+\alias{plot_contrast_boxplots.data.table}
 \title{Plot contrast boxplots}
 \usage{
-plot_contrast_boxplots(
+plot_contrast_boxplots(object, ...)
+
+\method{plot_contrast_boxplots}{SummarizedExperiment}(
   object,
-  subgroupvar,
+  assay = assayNames(object)[1],
+  subgroup,
+  block = NULL,
+  downlevels,
+  uplevels,
   fit,
-  formula = default_formula(object, subgroupvar, fit[1]),
   contrast,
-  title = contrast
+  fdrcutoff = 0.05,
+  palette = NULL,
+  title = contrast,
+  ylab = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  labeller = "label_both",
+  scales = "free_y",
+  ...
+)
+
+\method{plot_contrast_boxplots}{data.table}(
+  object,
+  subgroup,
+  downlevels,
+  uplevels,
+  fit,
+  contrast,
+  block = NULL,
+  fdrcutoff = 0.05,
+  palette = NULL,
+  title = contrast,
+  ylab = NULL,
+  facet = vars(feature_id),
+  nrow = NULL,
+  ncol = NULL,
+  labeller = "label_both",
+  scales = "free_y",
+  ...
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroupvar}{string: subgroup svar}
+\item{...}{required for S3 dispatch}
+
+\item{assay}{string}
+
+\item{subgroup}{symbol: subgroup svar}
+
+\item{block}{symbol: block var}
+
+\item{downlevels}{character vector}
+
+\item{uplevels}{character vector}
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
-\item{formula}{formula}
-
 \item{contrast}{string}
 
+\item{fdrcutoff}{number}
+
+\item{palette}{color palette (named character vector)}
+
 \item{title}{string}
+
+\item{ylab}{NULL or string}
+
+\item{nrow}{number}
+
+\item{ncol}{number}
+
+\item{labeller}{string or function}
+
+\item{scales}{'free', 'free_x', 'free_y', 'fixed'}
 }
 \description{
 Plot contrast boxplots
 }
 \examples{
 require(magrittr)
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE, fit='limma')
-object$SET \%<>\% factor()
-object$SUB \%<>\% factor()
-plot_contrast_boxplots(
-    object, subgroupvar='SET', fit='limma', contrast = 't3')
+require(grid)
+file <- download_data('atkin18.somascan.adat')
+object <- read_somascan(file, plot=FALSE)
+object \%<>\% fit_limma(subgroupvar='SampleGroup', block='Subject_ID')
+object \%<>\% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
+object$SampleId   \%<>\% factor()
+object$Subject_ID \%<>\% factor()
+grid.draw(plot_contrast_boxplots(
+    object, subgroup = SampleGroup, block = Subject_ID, 
+    fit='limma', contrast='t1', downlevels = 't0', uplevels = 't1'))
+grid.draw(plot_contrast_boxplots(
+    object, subgroup=SampleGroup, block = Subject_ID, fit='limma', 
+    contrast='t1', downlevels = 't0', uplevels = 't1', fdrcutoff=0.05))
+grid.draw(plot_contrast_boxplots(
+    object, subgroup=SampleGroup, block = Subject_ID, 
+     fit=c('limma', 'lme'), contrast='t1', 
+    downlevels = 't0', uplevels = 't1', fdrcutoff=0.05))
 }

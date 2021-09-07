@@ -4,16 +4,16 @@
 \alias{filter_samples}
 \title{Filter samples on condition}
 \usage{
-filter_samples(object, condition, verbose = FALSE, record = TRUE)
+filter_samples(object, condition, verbose = TRUE, record = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
 \item{condition}{filter condition}
 
-\item{verbose}{TRUE or FALSE (default)}
+\item{verbose}{TRUE/FALSE}
 
-\item{record}{TRUE (default) or FALSE}
+\item{record}{TRUE/FALSE}
 }
 \value{
 filtered SummarizedExperiment

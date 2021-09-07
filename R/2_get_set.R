@@ -107,6 +107,28 @@ function(object, value){
     rowData(object) <- DataFrame(value, check.names = FALSE)
     object })
 
+#' Get fdata/sdata head
+#'
+#' @param object SummarizedExperiment
+#' @param n number
+#' @return
+#' @examples
+#' file <- download_data('billing16.proteingroups.txt')
+#' object <- read_proteingroups(file, plot=FALSE)
+#' fhead(object)
+#' shead(object)
+#' @export
+fhead <- function(object, n=3){
+    n %<>% min(nrow(n))
+    fdata(object)[seq_len(n), ]
+}
+
+#' @rdname fhead
+#' @export
+shead <- function(object, n=3){
+    n %<>% min(nrow(n))
+    sdata(object)[seq_len(n), ]
+}
 
 #==============================================================================
 

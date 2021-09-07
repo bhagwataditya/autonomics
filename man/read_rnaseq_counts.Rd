@@ -46,8 +46,9 @@ read_rnaseq_bams(
   fnamevar = NULL,
   formula = NULL,
   min_count = 10,
-  pseudocount = 0.5,
-  genesize = NULL,
+  pseudo = 0.5,
+  tpm = FALSE,
+  genesizevar = NULL,
   cpm = TRUE,
   tmm = cpm,
   log2 = TRUE,
@@ -71,8 +72,9 @@ read_rnaseq_counts(
   fnamevar = NULL,
   formula = NULL,
   min_count = 10,
-  pseudocount = 0.5,
-  genesize = NULL,
+  pseudo = 0.5,
+  tpm = FALSE,
+  genesizevar = NULL,
   cpm = TRUE,
   tmm = cpm,
   log2 = TRUE,
@@ -118,9 +120,9 @@ read_rnaseq_counts(
 
 \item{min_count}{min feature count required in some samples}
 
-\item{pseudocount}{added pseudocount to prevent -Inf log2 values}
+\item{pseudo}{added pseudocount to prevent -Inf log2 values}
 
-\item{genesize}{genesize fvar for tpm}
+\item{genesizevar}{genesize fvar for tpm}
 
 \item{cpm}{whether to compute cpm}
 

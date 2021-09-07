@@ -11,6 +11,7 @@ plot_densities(
   group,
   fill,
   color = NULL,
+  palette = NULL,
   fixed = list(alpha = 0.5, na.rm = TRUE)
 )
 
@@ -42,6 +43,8 @@ plot_feature_densities(
 \item{fill}{svar mapped to fill}
 
 \item{color}{svar mapped to color}
+
+\item{palette}{named character vector}
 
 \item{fixed}{fixed aesthetics}
 

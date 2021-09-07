@@ -32,6 +32,6 @@ file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, plot=FALSE)
 object \%<>\% fit_lm()
 object \%<>\% fit_limma()
-issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
+issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
 plot_venn(issig)
 }

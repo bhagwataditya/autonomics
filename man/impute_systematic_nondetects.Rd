@@ -9,7 +9,8 @@ impute_systematic_nondetects(
   subgroup = subgroup,
   fun = halfnormimpute,
   plot = TRUE,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ impute_systematic_nondetects(
 \item{plot}{TRUE or FALSE}
 
 \item{verbose}{TRUE or FALSE}
+
+\item{...}{passed to `fun`}
 }
 \value{
 SummarizedExperiment

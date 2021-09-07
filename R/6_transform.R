@@ -120,17 +120,17 @@ subtract_baseline <- function(
 #' @export
 subtract_pairs <- function(
     object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], block,
-    assaynames = setdiff(assayNames(object), 'weights'), verbose = TRUE
+    assaynames = assayNames(object)[1], verbose = TRUE
 ){
 # Report
     # PRO: optimized for many block levels
     # CON: works only with exactly one ref per block 
     . <- NULL
     if (verbose){ 
-        message("\t\tSubtract pairs")
-        message("\t\t\tcontrols  : ", subgroupvar, "==", subgroupctr)
-        if (!is.null(block))  message("\t\t\tin block  : ", block)
-        message("\t\t\tfor assays: ", paste0(assaynames, collapse = ', '))
+        txt <- paste0("\t\tSubtract ", subgroupvar, "==", subgroupctr, ' ')
+        txt %<>% paste0(paste0(assaynames, collapse = '/'))
+        if (!is.null(block))  txt %<>% paste0(" per ", block)
+        message(txt)
     }
 # Ensure single ref per block
     sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]
@@ -198,8 +198,11 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 
 
 #' Transform values
-#' @param object SummarizedExperiment
-#' @param verbose TRUE or FALSE
+#' 
+#' @param  object   SummarizedExperiment
+#' @param  assay    character vector : assays for which to perform transformation
+#' @param  pseudo   number           : pseudo value to be added prior to transformation
+#' @param  verbose  TRUE/FALSE       : whether to msg
 #' @return Transformed sumexp
 #' @examples
 #' require(magrittr)
@@ -222,11 +225,23 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' exp2(object)                 %>% plot_sample_densities()
 #' log2transform(exp2(object))  %>% plot_sample_densities()
 #' @export
-log2transform <- function(object, verbose = FALSE){
-    if (verbose)  message('\t\tLog2 transform')
-    values(object) %<>% log2()
+log2transform <- function(
+    object, 
+    assay   = assayNames(object)[1], 
+    pseudo  = 0,
+    verbose = FALSE
+){
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(assay, assayNames(object))
+    for (ass in assay){
+        i <- match(ass, assayNames(object))
+        if (verbose)  message('\t\t\tAdd ', pseudo) ;  assays(object)[[i]] %<>% add(pseudo) 
+        if (verbose)  message('\t\t\tlog2', ass);      assays(object)[[i]] %<>% log2()
+        assayNames(object)[i] %<>% paste0('log2', .)
+    }
     object
 }
+
 
 #' @rdname log2transform
 #' @export

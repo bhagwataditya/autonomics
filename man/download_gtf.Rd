@@ -7,8 +7,8 @@
 download_gtf(
   organism,
   release = 100,
-  gtffile = sprintf("~/autonomicscache/gtf/\%s", basename(make_gtf_url(organism,
-    release) \%>\% substr(1, nchar(.) - 3)))
+  gtffile = sprintf("\%s/gtf/\%s", rappdirs::user_cache_dir(appname = "autonomics"),
+    basename(make_gtf_url(organism, release) \%>\% substr(1, nchar(.) - 3)))
 )
 }
 \arguments{

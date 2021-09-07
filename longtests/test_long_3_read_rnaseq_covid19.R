@@ -1,6 +1,6 @@
 context('read_rnaseq_counts: GSE161731')
-    basedir <- '~/autonomicscache/datasets'
-    subdir  <- '~/autonomicscache/datasets/GSE161731'
+    basedir <- rappdirs::user_cache_dir(appname = 'autonomics')
+    subdir  <- file.path(basedir, 'GSE161731')
     if (!dir.exists(subdir)){
         GEOquery::getGEOSuppFiles("GSE161731",baseDir=basedir) }
     file  <- paste0(subdir,'/GSE161731_counts.csv.gz')

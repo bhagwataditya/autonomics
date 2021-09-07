@@ -304,7 +304,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #'    fdr(object)[7:10, ]
 #'   down(object)[7:10, ]
 #'     up(object)[7:10, ]
-#'   sign(object)[7:10, ]
+#'   effectsign(object)[7:10, ]
 #'testmat(object)[7:10, ]
 #' 
 #'  pvars(object)
@@ -315,6 +315,15 @@ pvars <- function(object){
     . <- NULL
     fvars(object) %>% extract(stri_startswith_fixed(., paste0('p', FITSEP)))
 }
+
+
+#' @rdname pvars
+#' @export
+tvars <- function(object){
+    . <- NULL
+    fvars(object) %>% extract(stri_startswith_fixed(., paste0('t', FITSEP)))
+}
+
 
 #' @rdname pvars
 #' @export
@@ -364,7 +373,7 @@ fdr <- function(object){
     df
 }
 
-sign <- function(object){
+effectsign <- function(object){
     df <- base::sign(effect(object))
     df
 }
@@ -411,7 +420,7 @@ testmat <- function(
 ){
     df <- get(quantity)(object) < cutoff
     mode(df) <- 'numeric'
-    testmat0 <- data.matrix(df * sign(object))
+    testmat0 <- data.matrix(df * effectsign(object))
     idx <- split_extract(colnames(testmat0), 1, FITSEP) %in% coef &
            split_extract(colnames(testmat0), 2, FITSEP) %in% fit
     testmat0[, idx, drop=FALSE]
@@ -602,7 +611,7 @@ old_summarize_fit <- function(
 #' object <- read_proteingroups(file, plot=FALSE)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
-#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
+#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
 #' plot_venn(issig)
 #' @export
 is_sig <- function(
@@ -650,3 +659,62 @@ plot_venn <- function(isfdr){
     vennDiagram(isfdr, include='up',   mar = rep(0,4), show.include=TRUE)
     vennDiagram(isfdr, include='down', mar = rep(0,4), show.include=TRUE)
 }
+
+
+#' Select (fdr) contrasts
+#'
+#' @param object   SummarizedExperiment
+#' @param contrast character vector
+#' @export
+select_contrasts <- function(object, contrast){
+    .pvars      <- pvars(object)
+    .tvars      <- tvars(object)
+    .fdrvars    <- fdrvars(object)
+    .effectvars <- effectvars(object)
+    idx <- split_extract(.pvars, 2, FITSEP) %in% contrast
+    fdata(object)[     .pvars[!idx] ] <- NULL
+    fdata(object)[     .tvars[!idx] ] <- NULL
+    fdata(object)[   .fdrvars[!idx] ] <- NULL
+    fdata(object)[.effectvars[!idx] ] <- NULL
+    object
+}
+
+
+#' @rdname select_contrasts
+#' @export
+select_fdr_contrasts <- function(object){
+    fdrcontrasts <- (fdr(object) < 0.05) %>% extract(, colAnys(.)) %>%  colnames()
+    fdrcontrasts %<>% split_extract(1, '~')
+    select_contrasts(object, fdrcontrasts)
+}
+
+
+#' Filter for contrast features
+#' @param object    SummarizedExperiment
+#' @param contrast  character vector
+#' @param var       string
+#' @param cutoff    number
+#' @param verbose   TRUE/FALSE
+#' @return
+#' @export
+filter_contrast_features <- function(
+    object, 
+    contrast = coefs(object), 
+    fit = fits(object)[1],
+    var = 'fdr', cutoff = 0.05, verbose = TRUE
+){
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_character(contrast)
+    assert_is_subset(contrast, coefs(object))
+    assert_is_subset(var, c('fdr', 'p'))
+    assert_is_a_number(cutoff)
+    assert_all_are_less_than_or_equal_to(cutoff, 1)
+    pvalues <- get(var)(object)
+    pvalues %<>% extract(, paste0(contrast, FITSEP, fit), drop=FALSE)
+    idx <- rowAnys(pvalues < cutoff )
+    if (verbose)  message('\t\tRetain ', sum(idx), '/', length(idx), ' features : ', var, '<', cutoff)
+    object[idx,]
+}
+
+
+

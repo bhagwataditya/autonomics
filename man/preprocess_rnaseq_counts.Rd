@@ -10,8 +10,9 @@ preprocess_rnaseq_counts(
   formula = default_formula(object, subgroupvar, "limma"),
   block = NULL,
   min_count = 10,
-  pseudocount = 0.5,
-  genesize = NULL,
+  pseudo = 0.5,
+  tpm = FALSE,
+  genesizevar = "genesize",
   cpm = TRUE,
   tmm = cpm,
   voom = TRUE,
@@ -31,21 +32,23 @@ preprocess_rnaseq_counts(
 
 \item{min_count}{min count required in some samples}
 
-\item{pseudocount}{added pseudocount to avoid log(x)=-Inf}
+\item{pseudo}{added pseudocount to avoid log(x)=-Inf}
 
-\item{genesize}{genesize fvar to compute tpm}
+\item{tpm}{TRUE/FALSE : tpm normalize?}
 
-\item{cpm}{whether to compute counts per million (scaled) reads}
+\item{genesizevar}{string     : tpm normalization genesize fvar}
 
-\item{tmm}{whether to tmm normalize}
+\item{cpm}{TRUE/FALSE : cpm normalize? (counts per million (scaled) reads)}
 
-\item{voom}{whether to voom weight}
+\item{tmm}{TRUE/FALSE : tmm normalize? (library sizes -> effective library sizes)}
 
-\item{log2}{whether to log2}
+\item{voom}{TRUE/FALSE : voom weight?}
 
-\item{verbose}{whether to msg}
+\item{log2}{TRUE/FALSE : log2 transform?}
 
-\item{plot}{whether to plot}
+\item{verbose}{TRUE/FALSE : msg?}
+
+\item{plot}{TRUE/FALSE : plot?}
 }
 \value{
 SummarizedExperiment

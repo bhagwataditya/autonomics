@@ -20,7 +20,7 @@ subtract_pairs(
   subgroupvar,
   subgroupctr = slevels(object, subgroupvar)[1],
   block,
-  assaynames = setdiff(assayNames(object), "weights"),
+  assaynames = assayNames(object)[1],
   verbose = TRUE
 )
 

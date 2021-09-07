@@ -2,48 +2,99 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_boxplots}
 \alias{plot_boxplots}
+\alias{plot_boxplots.data.table}
+\alias{plot_boxplots.SummarizedExperiment}
 \alias{plot_sample_boxplots}
 \alias{plot_feature_boxplots}
 \alias{plot_subgroup_boxplots}
-\title{Plot sample/feature boxplots}
+\title{Plot boxplots}
 \usage{
-plot_boxplots(
+plot_boxplots(object, ...)
+
+\method{plot_boxplots}{data.table}(
   object,
   x,
   fill,
   color = NULL,
+  block = NULL,
   facet = NULL,
+  scales = "free_y",
+  nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value",
   highlight = NULL,
-  fixed = list(na.rm = TRUE),
-  hlevels = NULL
+  jitter = FALSE,
+  palette = NULL,
+  hlevels = NULL,
+  ...
+)
+
+\method{plot_boxplots}{SummarizedExperiment}(
+  object,
+  assay = assayNames(object)[1],
+  x,
+  fill,
+  color = NULL,
+  block = NULL,
+  facet = NULL,
+  scales = "free_y",
+  nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value",
+  highlight = NULL,
+  jitter = FALSE,
+  hlevels = NULL,
+  ...
 )
 
 plot_sample_boxplots(
   object,
+  assay = assayNames(object)[1],
   x = sample_id,
   fill = sample_id,
   color = NULL,
   highlight = NULL,
-  fixed = list(na.rm = TRUE)
+  palette = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value"
 )
 
 plot_feature_boxplots(
   object,
+  assay = assayNames(object)[1],
   x = feature_id,
   fill = feature_id,
   color = NULL,
   highlight = NULL,
-  fixed = list(na.rm = TRUE)
+  palette = NULL,
+  fixed = list(na.rm = TRUE),
+  nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value"
 )
 
 plot_subgroup_boxplots(
   object,
+  assay = assayNames(object)[1],
   subgroup,
   x = !!enquo(subgroup),
   fill = !!enquo(subgroup),
   color = NULL,
+  block = NULL,
   highlight = NULL,
+  jitter = TRUE,
   facet = vars(feature_id),
+  scales = "free_y",
+  nrow = NULL,
+  ncol = NULL,
+  page = 1,
+  labeller = "label_value",
+  palette = NULL,
   fixed = list(na.rm = TRUE),
   hlevels = NULL
 )
@@ -51,19 +102,33 @@ plot_subgroup_boxplots(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{...}{s3 dispatch}
+
 \item{x}{svar mapped to x}
 
 \item{fill}{svar mapped to fill}
 
 \item{color}{svar mapped to color}
 
+\item{block}{svar used to connect points}
+
 \item{facet}{svar mapped to facet}
+
+\item{scales}{'free', 'fixed', 'free_x', 'free_y'}
+
+\item{nrow}{number of facet rows}
+
+\item{ncol}{number of facet columns}
+
+\item{page}{number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}}
 
 \item{highlight}{fvar expressing which feature should be highlighted}
 
-\item{fixed}{fixed aesthetics}
+\item{jitter}{whether to add jittered data points}
 
 \item{hlevels}{xlevels for which to plot horizontal lines}
+
+\item{assay}{string}
 
 \item{subgroup}{subgroup svar symbol}
 }
@@ -71,23 +136,32 @@ plot_subgroup_boxplots(
 ggplot object
 }
 \description{
-Plot sample/feature boxplots
+Plot boxplots
 }
 \examples{
-# data
+# Read
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
-    fdata(object) \%<>\% cbind(
-                        control=.$feature_name \%in\% c('biotin','phosphate'))
-# plot
+    controlfeatures <- c('biotin','phosphate')
+    fdata(object) \%<>\% cbind(control=.$feature_name \%in\% controlfeatures)
+# SummarizedExperiment
+    vars <- ggplot2::vars
     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
-    plot_boxplots(object[1:9, ], x = SET,  fill = SET, facet =feature_id)
+    plot_boxplots(object[1:9, ], x = SET, fill = SET, facet = vars(feature_id))
+    plot_boxplots(object[1, ], x = SET, fill = SET, jitter=TRUE)
+    plot_boxplots(object[1, ], x = SET, fill = SET, jitter=TRUE, block = SUB)
     plot_feature_boxplots(object[1:9, ])
     plot_sample_boxplots(object[, 1:12])
     plot_sample_boxplots(object[, 1:12], highlight = control)
     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
+    plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
+# data.table
+    object \%<>\% extract(1, )
+    object \%<>\% sumexp_to_long_dt(svars = c('SET', 'SUB'))
+    plot_boxplots(object, x = SET, fill = SET, jitter = TRUE)
+    plot_boxplots(object, x = SET, fill = SET, block = SUB, jitter = TRUE)
 }
 \seealso{
 \code{\link{plot_sample_densities}},

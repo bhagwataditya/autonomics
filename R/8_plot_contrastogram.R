@@ -96,9 +96,10 @@ plot_contrastogram <- function(
     nrow <- dt[, data.table::uniqueN(V2)]
     nperrow <- dt[, .N, by = 'V1'][, N]
     if (all(nperrow==1)) nperrow %<>% length()
-    #dir.create('~/autonomicscache/contrastogram')
-    #pdf('~/autonomicscache/contrastogram/directed_contrastogram.pdf',
-    #width = 9, height = 9)
+    # basedir <- file.path(rappdirs::user_cache_dir(appname = 'autonomics'), 'contrastogram')
+    # dir.create(basedir)
+    # pdf(file.path(basedir, 'directed_contrastogram.pdf'), 
+    # width = 9, height = 9)
     arrowlabels %<>% as.data.frame()
     diagram::plotmat(A          = arrowlabels,
                     pos         = nperrow,

@@ -7,16 +7,18 @@
 #' @importFrom assertive   assert_all_are_less_than_or_equal_to
 #' @importFrom assertive   assert_all_are_non_missing_nor_empty_character
 #' @importFrom assertive   assert_all_are_not_matching_fixed
-#' @importFrom assertive   assert_all_are_true
+#' @importFrom assertive   assert_all_are_true   assert_any_are_true
 #' @importFrom assertive   assert_all_are_whole_numbers
 #' @importFrom assertive   assert_any_are_not_nan
-#' @importFrom assertive   assert_are_identical     assert_are_same_length
+#' @importFrom assertive   assert_are_disjoint_sets   assert_are_identical
+#' @importFrom assertive   assert_are_same_length
 #' @importFrom assertive   assert_engine
-#' @importFrom assertive   assert_has_names         assert_has_no_duplicates
+#' @importFrom assertive   assert_has_names           assert_has_no_duplicates
 #' @importFrom assertive   assert_is_all_of         assert_is_any_of
 #' @importFrom assertive   assert_is_a_bool
 #' @importFrom assertive   assert_is_a_number       assert_is_a_string
 #' @importFrom assertive   assert_is_character      assert_is_data.frame
+#' @importFrom assertive   assert_is_data.table
 #' @importFrom assertive   assert_is_factor         assert_is_formula
 #' @importFrom assertive   assert_is_function       assert_is_identical_to_false
 #' @importFrom assertive   assert_is_identical_to_true
@@ -27,17 +29,20 @@
 #' @importFrom assertive   assert_is_of_length      assert_is_subset
 #' @importFrom assertive   false                    get_name_in_parent
 #' @importFrom assertive   has_names                has_no_duplicates
-#' @importFrom assertive   is_a_string  is_empty_character  is_existing_file
+#' @importFrom assertive   is_a_string  is_empty    is_empty_character  
+#' @importFrom assertive   is_existing_file
 #' @importFrom assertive   is_formula  is_scalar  is_subset
 #' @importFrom BiocGenerics cbind 
 #' @importFrom colorspace  sequential_hcl
 #' @importFrom data.table  as.data.table   copy  data.table  
 #' @importFrom data.table  dcast  dcast.data.table
 #' @importFrom data.table  fread   fwrite  is.data.table
-#' @importFrom data.table  melt.data.table   .N   rbindlist   setkeyv   set
+#' @importFrom data.table  melt.data.table   merge.data.table   
+#' @importFrom data.table  .N   rbindlist   setkeyv   set
 #' @importFrom data.table  setnames    setorderv   tstrsplit   :=   .SD   .I
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2
+#' @importFrom ggforce     facet_wrap_paginate
 #' @importFrom ggrepel     geom_text_repel
 #' @importFrom graphics    lines    pie    title
 #' @importFrom grDevices   hcl

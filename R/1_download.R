@@ -21,6 +21,7 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' Download autonomics example data
 #' 
 #' @param filename file name
+#' @param url web url
 #' \itemize{
 #'     \item \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{
 #'                 Billing 2016: stemcell comparison:} E, EM, BM
@@ -79,17 +80,19 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' # halama18 - glutaminase inhibition - pubmed 30525282
 #'     download_data('halama18.metabolon.xlsx')        # metabolon intensities
 #' @export
-download_data <- function(filename, verbose = TRUE){
+download_data <- function(
+    filename, 
+    url = paste0("https://bitbucket.org/graumannlabtools/autonomics/downloads/",
+        filename),
+    verbose = TRUE
+){
     . <- NULL
     assert_is_subset(filename, AUTONOMICS_DATASETS)
-    fileURL <- paste0(
-        "https://bitbucket.org/graumannlabtools/autonomics/downloads/", 
-        filename)
     bfc <- .get_cache()
     rid <- BiocFileCache::bfcquery(bfc, filename, "rname")$rid
     if (!length(rid)) {
         if(verbose) message( "Downloading ", filename)
-        rid <- names(BiocFileCache::bfcadd(bfc, filename, fileURL ))
+        rid <- names(BiocFileCache::bfcadd(bfc, filename, url ))
     }
     #if (!isFALSE(bfcneedsupdate(bfc, rid)))
     #bfcdownload(bfc, rid)

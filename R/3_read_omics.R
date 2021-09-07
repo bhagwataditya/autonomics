@@ -436,9 +436,10 @@ split_values <- function(x){
 #' Merge sample/feature data
 #' @param object          SummarizedExperiment
 #' @param dt              data.frame, data.table, DataFrame
-#' @param by.x            object mergevar
-#' @param by.y            df mergevar
-#' @param verbose         TRUE/FALSE
+#' @param by.x            string : object mergevar
+#' @param by.y            string : df mergevar
+#' @param all.x           TRUE / FALSE : whether to keep samples / features without annotation
+#' @param verbose         TRUE / FALSE : whether to msg
 #' @return                SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -448,19 +449,21 @@ split_values <- function(x){
 #'                                     number = seq_along(object$sample_id)))
 #' head(sdata(object))
 #'@export
-merge_sdata <- function(object, dt, by.x = 'sample_id',
-    by.y = names(dt)[1], verbose=TRUE
+merge_sdata <- function(
+    object, dt, by.x = 'sample_id',  by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
 ){
-    sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
+    if (!all.x)  object %<>% filter_samples(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = verbose)
+    sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
 
 #'@rdname merge_sdata
 #'@export
-merge_fdata <- function(object, dt, by.x = 'feature_id',
-    by.y = names(dt)[1], verbose=TRUE
+merge_fdata <- function(
+    object, dt, by.x = 'feature_id', by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
 ){
-    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
+    if (!all.x)  object %<>% filter_features(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = TRUE)
+    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
 
@@ -470,6 +473,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
     assert_is_any_of(objectdt,c('data.frame', 'DataFrame'))
     if (is.null(dt))  return(objectdt)
     assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame'))
+
 # Convert to data.table
 # Important: * merge.data.frame and merge.data.table behave differently!
 #            * as.data.table does not work directly on a DataFrame!
@@ -482,15 +486,18 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
         dt       %<>% as.data.table()
         objectdt %<>% as.data.table(keep.rownames=TRUE)
 # Rm duplicate keys
-    n0 <- nrow(dt)
+    dt %<>% unique() # drop duplicate rows with identical info 
+    n0 <- nrow(dt)   # drop rows with duplicate key values 
     dt %<>% unique(by = by.y) # keys should be unique!
-    if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
+    if (n0>nrow(dt) & verbose)  message('\t\t\tRetain ', nrow(dt),
         '/', n0, ' rows after removing duplicate `', by.y, '` entries')
 # Rm duplicate cols: https://stackoverflow.com/questions/9202413
     duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
     for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
 # Merge
-    objectdt %<>% merge.data.frame(
+    objectdt[[by.x]] %<>% as.character()  # having one of these as a factor
+    dt[[by.y]]       %<>% as.character()  # leads to a horrible bug!
+    objectdt %<>% merge.data.table(
                    dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
     #objectdt %<>% merge(
     #                dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
@@ -508,16 +515,27 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
     objectdt
 }
 
+# Abbreviate file path
+# @param file file path
+# @export
+#abbrev_path <- function(file){
+#    fileparts <- fs::path_split(file)[[1]]
+#    fileparts <- fs::path_join(c(fileparts[1:3], '...', rev(fileparts)[1]))
+#    fileparts
+#}
 
-#' Merge sample/feature file
+
+#' Merge sample / feature file
 #'
 #' @param object            SummarizedExperiment
-#' @param sfile             sample file path
-#' @param ffile             ffile path
-#' @param by.x              object mergevar
-#' @param by.y              file mergevvar
-#' @param stringsAsFactors  TRUE or FALSE
-#' @param verbose           TRUE (default) or FALSE
+#' @param sfile             string       : sample file path
+#' @param ffile             string       : ffile path
+#' @param by.x              string       : object mergevar
+#' @param by.y              string       : file mergevvar
+#' @param all.x             TRUE / FALSE : whether to keep samples / feature without annotation
+#' @param select            character    : [sf]file columns to select
+#' @param stringsAsFactors  TRUE / FALSE
+#' @param verbose           TRUE / FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -531,34 +549,34 @@ merge_data <- function(objectdt, dt, by.x, by.y, verbose){
 #' merge_sfile(object, sfile)
 #'@export
 merge_sfile <- function(
-    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, 
-    stringsAsFactors = TRUE, verbose = TRUE
+    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, all.x = TRUE, 
+    select = NULL, stringsAsFactors = TRUE, verbose = TRUE
 ){
     if (is.null(sfile))  return(object)
     assert_all_are_existing_files(sfile)
     if (verbose) message('\t\tMerge sdata: ', sfile)
-    dt <- fread(sfile, stringsAsFactors = stringsAsFactors)
+    dt <- fread(sfile, select = select, stringsAsFactors = stringsAsFactors)
     if (is.null(by.y))  by.y <- names(dt)[1]
     assert_is_subset(by.y, names(dt))
     dt[[by.y]] %<>% as.character()
-    object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
+    object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
     object
 }
 
 #' @rdname merge_sfile
 #' @export
 merge_ffile <- function(
-    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, 
-    stringsAsFactors = TRUE, verbose = TRUE
+    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, all.x = TRUE,
+    select = NULL, stringsAsFactors = TRUE, verbose = TRUE
 ){
     if (is.null(ffile))  return(object)
     assert_all_are_existing_files(ffile)
     if (verbose) message('\t\tMerge fdata: ', ffile)
-    dt <- fread(ffile, stringsAsFactors = stringsAsFactors)
+    dt <- fread(ffile, select = select, stringsAsFactors = stringsAsFactors)
     if (is.null(by.y))  by.y <- names(dt)[1]
     assert_is_subset(by.y, names(dt))
     dt[[by.y]] %<>% as.character()
-    object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
+    object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
     object
 }
 
@@ -632,10 +650,12 @@ add_affy_fdata <- function(object){
 #' require(magrittr)
 #' url <- paste0('http://www.bioconductor.org/help/publications/2003/',
 #'                 'Chiaretti/chiaretti2/T33.tgz')
-#' localfile <- file.path('~/autonomicscache', basename(url))
+#' localdir  <- file.path(rappdirs::user_cache_dir(appname = 'autonomics'), 'T33')
+#' dir.create(localdir, showWarnings=FALSE)
+#' localfile <- file.path(localdir, basename(url))
 #' if (!file.exists(localfile)){
 #'     download.file(url, destfile = localfile)
-#'     untar(localfile, exdir = path.expand('~/autonomicscache'))
+#'     untar(localfile, exdir = path.expand(localdir))
 #' }
 #' localfile %<>% substr(1, nchar(.)-4)
 #' if (!requireNamespace("BiocManager", quietly = TRUE))  install.packages(
@@ -692,5 +712,50 @@ read_genex <- function(file){
         transpose  = TRUE,
         verbose    = TRUE)
 }
+
+
+#' SummarizedExperiment list to long data.table
+#' 
+#' @param sumexplist  list of SummarizedExperiments
+#' @param svars       character vector
+#' @param fvars       character vector
+#' @return data.table
+#' @examples
+#' RNA
+#'     require(magrittr)
+#'     rnafile <- download_data('billing19.rnacounts.txt')
+#'     rna <- read_rnaseq_counts(rnafile, plot=FALSE)
+#' PRO/FOS
+#'     fdata(rna)$feature_name <- fdata(rna)$gene_name
+#'     profile <- download_data('billing19.proteingroups.txt')
+#'     fosfile <- download_data('billing19.phosphosites.txt')
+#'     select <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
+#'     pro <- read_proteingroups(profile, plot=FALSE, select_subgroups = select)
+#'     fos <- read_phosphosites(fosfile, profile, select_subgroups = select, plot=FALSE)
+#'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
+#'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
+#' sumexplist to longdt
+#'     sumexplist <- list(rna=rna, pro=pro, fos=fos)
+#'     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
+#'     dt %<>% extract(feature_name %in% c('TNMD', 'TSPAN6'))
+#'     plot_boxplots(dt, x=subgroup, fill=subgroup)
+#'     plot_subgroup_boxplots(dt, subgroup=subgroup, facet=vars(feature_name, feature_id))
+#' @export
+sumexplist_to_long_dt <- function(
+    sumexplist, 
+    svars = intersect('subgroup',     autonomics::svars(sumexplist[[1]])),
+    fvars = intersect('feature_name', autonomics::fvars(sumexplist[[1]])), 
+    setvarname = 'set'
+){
+    assert_are_disjoint_sets(c(setvarname, 'xxxxx'), svars)
+    assert_are_disjoint_sets(c(setvarname, 'xxxxx'), fvars)
+    .sumexp_to_dt <- function(sumexp, set){
+        dt <- sumexp_to_long_dt(sumexp, svars={{svars}}, fvars={{fvars}})
+        dt %<>% cbind(xxxxx = set)
+        setnames(dt, 'xxxxx', setvarname)
+    }
+    rbindlist(mapply(.sumexp_to_dt, sumexplist, names(sumexplist), SIMPLIFY=FALSE))
+}
+
 
 

@@ -2,17 +2,32 @@
 % Please edit documentation in R/8_fit_limma.R
 \name{create_design}
 \alias{create_design}
+\alias{create_design.SummarizedExperiment}
+\alias{create_design.data.frame}
 \title{Create design}
 \usage{
-create_design(
+create_design(object, ...)
+
+\method{create_design}{SummarizedExperiment}(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "limma"),
-  verbose = TRUE
+  verbose = FALSE,
+  ...
+)
+
+\method{create_design}{data.frame}(
+  object,
+  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
+  formula = default_formula(object, subgroupvar, fit = "limma"),
+  verbose = FALSE,
+  ...
 )
 }
 \arguments{
-\item{object}{SummarizedExperiment}
+\item{object}{SummarizedExperiment or sample dataframe}
+
+\item{...}{required to s3ify}
 
 \item{subgroupvar}{subgroup svar}
 

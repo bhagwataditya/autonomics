@@ -453,7 +453,8 @@ make_gtf_url <- function(organism, release){
 download_gtf <- function(
     organism,
     release = 100,
-    gtffile = sprintf("~/autonomicscache/gtf/%s",
+    gtffile = sprintf("%s/gtf/%s",
+        rappdirs::user_cache_dir(appname = 'autonomics'),
         basename(make_gtf_url(organism, release) %>% substr(1, nchar(.)-3)))
 ){
     assert_is_subset(organism,
@@ -714,14 +715,15 @@ explicitly_compute_voom_weights <- function(
 #' @param formula      designmat formula
 #' @param block        blocK svar
 #' @param min_count    min count required in some samples
-#' @param pseudocount  added pseudocount to avoid log(x)=-Inf
-#' @param genesize     genesize fvar to compute tpm
-#' @param cpm          whether to compute counts per million (scaled) reads
-#' @param tmm          whether to tmm normalize
-#' @param voom         whether to voom weight
-#' @param log2         whether to log2
-#' @param verbose      whether to msg
-#' @param plot         whether to plot
+#' @param pseudo       added pseudocount to avoid log(x)=-Inf
+#' @param tpm          TRUE/FALSE : tpm normalize?
+#' @param genesizevar  string     : tpm normalization genesize fvar 
+#' @param cpm          TRUE/FALSE : cpm normalize? (counts per million (scaled) reads)
+#' @param tmm          TRUE/FALSE : tmm normalize? (library sizes -> effective library sizes)
+#' @param voom         TRUE/FALSE : voom weight?
+#' @param log2         TRUE/FALSE : log2 transform?
+#' @param verbose      TRUE/FALSE : msg?
+#' @param plot         TRUE/FALSE : plot?
 #' @return SummarizedExperiment
 #' @examples
 #' require(magrittr)
@@ -733,47 +735,48 @@ explicitly_compute_voom_weights <- function(
 preprocess_rnaseq_counts <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
-    min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, tmm = cpm,
-    voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
+    min_count = 10, pseudo = 0.5, tpm  = FALSE, genesizevar = 'genesize', 
+    cpm = TRUE, tmm = cpm, voom = TRUE, log2 = TRUE,
+    verbose = TRUE, plot = TRUE
+){
 # Initialize
     . <- NULL
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
     if (is.null(formula))      formula <- default_formula(
                                             object, subgroupvar, fit='limma')
-# Filter
+# tpm
     if (verbose) message('\t\tPreprocess')
+    if (tpm){   assert_is_subset(  genesizevar, fvars(object))
+                if (verbose)  message('\t\t\ttpm')
+                tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesizevar]]) }
+# Filter
     object$libsize <- matrixStats::colSums2(counts(object))
-    object %<>% filter_by_expr(
-                    formula=formula, min_count = min_count, verbose=verbose)
-# Add pseudocount
-    if (pseudocount>0){ if (verbose)  message('\t\t\tpseudocount ', pseudocount)
-                        counts(object) %<>% add(pseudocount) }
-# Tpm/Cpm normalize
-    if (!is.null(genesize)){
-        assert_is_subset(genesize, fvars(object))
-        if (verbose)  message('\t\t\ttpm')
-        tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesize]])}
+    if (min_count>0)  object %<>% filter_by_expr(
+                          formula = formula, min_count = min_count, verbose = verbose)
+# tmm/cpm/voom normalize
+    if (pseudo>0){ if (verbose)  message('\t\t\tcounts: add ', pseudo)
+                        counts(object) %<>% add(pseudo) }
     if (tmm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
                 object$libsize <- scaledlibsizes(counts(object)) }
     if (cpm){   if (verbose)  message('\t\t\t\tcpm')
                 cpm(object) <- counts2cpm(counts(object), object$libsize)
                 other <- setdiff(assayNames(object), 'cpm')
                 assays(object) %<>% extract(c('cpm', other)) }
-# Voom  weight (counts) & dupcor (log2(cpm))
-    if (voom){
-        object %<>% add_voom(
-                        formula, verbose=verbose, plot=plot & is.null(block))
-        if (!is.null(block)){
-            object %<>%
-                add_voom(formula, block=block, verbose=verbose, plot=plot) }}
+    if (voom){  object %<>% add_voom(formula, verbose=verbose, plot=plot & is.null(block))
+                if (!is.null(block))  object %<>% add_voom(
+                                     formula, block=block, verbose=verbose, plot=plot) }
+    if (pseudo>0){ if (verbose)  message('\t\t\tcounts: rm ', pseudo)
+                        counts(object) %<>% subtract(pseudo) }
 # Log2 transform
-    if (log2){  if (verbose)  message('\t\t\tlog2')
-                selectedassays <- c('counts','cpm','tpm')
-                selectedassays %<>% intersect(assayNames(object))
-                for (curassay in selectedassays){
-                    i <- match(curassay, assayNames(object))
-                    assays(object)[[i]] %<>% log2()
-                    assayNames(object)[[i]] %<>% paste0('log2', .)}}
+    if (log2){    assays(object)$log2counts <- log2(pseudo + counts(object))
+        if (tpm)  assays(object)$log2tpm    <- log2(pseudo + tpm(object))
+        if (cpm)  assays(object)$log2cpm    <- log2(pseudo + cpm(object))
+    }
+# Rm pseudocounts
+# Order assays
+    ass <- c('log2cpm', 'log2tpm', 'log2counts', 'cpm', 'tpm', 'counts')
+    ass %<>% intersect(assayNames(object))
+    assays(object) %<>% extract(ass)
 # Return
     object
 }
@@ -914,8 +917,8 @@ read_rnaseq_bams <- function(
     dir, paired, genome, nthreads = detectCores(),
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
-    formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
-    cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, fit = NULL, 
+    formula = NULL, min_count = 10, pseudo = 0.5, tpm = FALSE,
+    genesizevar = NULL, cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, fit = NULL,
     voom = !is.null(fit), contrastdefs = NULL, verbose = TRUE, plot=TRUE
 ){
 # Read
@@ -934,8 +937,9 @@ read_rnaseq_bams <- function(
                                         formula      = formula,
                                         block        = block,
                                         min_count    = min_count,
-                                        pseudocount  = pseudocount,
-                                        genesize     = genesize,
+                                        pseudo       = pseudo,
+                                        tpm          = tpm,
+                                        genesizevar  = genesizevar,
                                         cpm          = cpm,
                                         tmm          = tmm,
                                         voom         = voom,
@@ -943,7 +947,7 @@ read_rnaseq_bams <- function(
                                         verbose      = verbose,
                                         plot         = plot)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
+    object %<>% analyze(pca = pca, fit=fit, subgroupvar = subgroupvar,
                         formula = formula, block = block, 
                         contrastdefs = contrastdefs, 
                         verbose = verbose, plot = plot)
@@ -974,8 +978,8 @@ read_rnaseq_bams <- function(
 #' @param coefs        NULL or character vector: model coefficients to test
 #' @param contrastdefs NULL or character vector: coefficient contrasts to test
 #' @param min_count    min feature count required in some samples
-#' @param pseudocount  added pseudocount to prevent -Inf log2 values
-#' @param genesize     genesize fvar for tpm
+#' @param pseudo       added pseudocount to prevent -Inf log2 values
+#' @param genesizevar  genesize fvar for tpm
 #' @param tmm          whether to tmm-scale library sizes
 #' @param cpm          whether to compute cpm
 #' @param voom         whether to compute voom precision weights
@@ -999,10 +1003,10 @@ read_rnaseq_counts <- function(
     file, fid_col = 1,
     sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
     ffile = NULL, ffileby = NULL, fnamevar = NULL,
-    formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
-    cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, 
-    fit = NULL, voom = !is.null(fit), coefs = NULL, contrastdefs = NULL, 
-    verbose = TRUE, plot = TRUE
+    formula = NULL, min_count = 10, pseudo = 0.5,
+    tpm = FALSE, genesizevar = NULL, cpm = TRUE, tmm = cpm, log2 = TRUE,
+    pca = FALSE, fit = NULL, voom = !is.null(fit), coefs = NULL,
+    contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
     object <- .read_rnaseq_counts(file,
@@ -1018,8 +1022,9 @@ read_rnaseq_counts <- function(
                                         formula     = formula,
                                         block       = block,
                                         min_count   = min_count,
-                                        pseudocount = pseudocount,
-                                        genesize    = genesize,
+                                        pseudo      = pseudo,
+                                        tpm         = tpm,
+                                        genesizevar = genesizevar,
                                         cpm         = cpm,
                                         tmm         = tmm,
                                         voom        = voom,
@@ -1027,7 +1032,7 @@ read_rnaseq_counts <- function(
                                         verbose     = verbose,
                                         plot        = plot)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
+    object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar,
                     formula = formula, block = block, 
                     weightvar = if (voom) 'weights' else NULL,
                     coefs = coefs, contrastdefs = contrastdefs, 

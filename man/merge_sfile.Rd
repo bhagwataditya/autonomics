@@ -3,13 +3,15 @@
 \name{merge_sfile}
 \alias{merge_sfile}
 \alias{merge_ffile}
-\title{Merge sample/feature file}
+\title{Merge sample / feature file}
 \usage{
 merge_sfile(
   object,
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
+  all.x = TRUE,
+  select = NULL,
   stringsAsFactors = TRUE,
   verbose = TRUE
 )
@@ -19,6 +21,8 @@ merge_ffile(
   ffile = NULL,
   by.x = "feature_id",
   by.y = NULL,
+  all.x = TRUE,
+  select = NULL,
   stringsAsFactors = TRUE,
   verbose = TRUE
 )
@@ -26,23 +30,27 @@ merge_ffile(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{sfile}{sample file path}
+\item{sfile}{string       : sample file path}
 
-\item{by.x}{object mergevar}
+\item{by.x}{string       : object mergevar}
 
-\item{by.y}{file mergevvar}
+\item{by.y}{string       : file mergevvar}
 
-\item{stringsAsFactors}{TRUE or FALSE}
+\item{all.x}{TRUE / FALSE : whether to keep samples / feature without annotation}
 
-\item{verbose}{TRUE (default) or FALSE}
+\item{select}{character    : [sf]file columns to select}
 
-\item{ffile}{ffile path}
+\item{stringsAsFactors}{TRUE / FALSE}
+
+\item{verbose}{TRUE / FALSE}
+
+\item{ffile}{string       : ffile path}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Merge sample/feature file
+Merge sample / feature file
 }
 \examples{
 require(magrittr)

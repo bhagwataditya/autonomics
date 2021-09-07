@@ -62,12 +62,14 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' object <- read_metabolon(file, plot=FALSE)
 #' filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 #' @export
-filter_features <- function(object, condition, verbose = FALSE){
+filter_features <- function(object, condition, verbose = TRUE){
+    . <- NULL
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose) message('\t\tRetain ', sum(idx), '/', length(idx), 
-                        ' features: ', expr_text(condition))
+    if (verbose & sum(idx) < length(idx)){
+        message('\t\t\tRetain ', sum(idx), '/', length(idx), 
+                ' features: ', expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(idx,)
     fdata(object) %<>% droplevels()
     if (!is.null(analysis(object))) {
@@ -218,20 +220,22 @@ filter_replicated  <- function(
 #' Filter samples on condition
 #' @param object    SummarizedExperiment
 #' @param condition filter condition
-#' @param verbose   TRUE or FALSE (default)
-#' @param record    TRUE (default) or FALSE
+#' @param verbose   TRUE/FALSE 
+#' @param record    TRUE/FALSE 
 #' @return filtered SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
 #' filter_samples(object, Group != 't0', verbose = TRUE)
 #' @export
-filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
+filter_samples <- function(object, condition, verbose = TRUE, record = TRUE){
+    . <- NULL
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose & sum(idx)<length(idx))  message('\t\tRetain ', sum(idx), '/',
-                                length(idx), ' samples: ', expr_text(condition))
+    if (verbose & sum(idx)<length(idx)){
+        message('\t\t\tRetain ', sum(idx), '/', length(idx), ' samples: ', 
+                expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
     if (record && !is.null(analysis(object))) {
@@ -280,7 +284,7 @@ is_available_for_some_feature <- function(object){
 rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
     selectedsamples <-
         data.table(sdata(object))[, .SD[.N>1], by = svar][['sample_id']]
-    if (verbose)   message('\t\t\tRetain ', length(selectedsamples), '/', 
+    if (verbose)   message('\t\tRetain ', length(selectedsamples), '/', 
                             ncol(object), ' samples with replicated ', svar)
     object[, selectedsamples]
 }

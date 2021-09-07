@@ -9,7 +9,12 @@
 \alias{vsn}
 \title{Transform values}
 \usage{
-log2transform(object, verbose = FALSE)
+log2transform(
+  object,
+  assay = assayNames(object)[1],
+  pseudo = 0,
+  verbose = FALSE
+)
 
 exp2(object, verbose = FALSE)
 
@@ -24,7 +29,11 @@ vsn(object, verbose = FALSE, delog = TRUE)
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{verbose}{TRUE or FALSE}
+\item{assay}{character vector : assays for which to perform transformation}
+
+\item{pseudo}{number           : pseudo value to be added prior to transformation}
+
+\item{verbose}{TRUE/FALSE       : whether to msg}
 }
 \value{
 Transformed sumexp

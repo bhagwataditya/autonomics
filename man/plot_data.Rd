@@ -10,6 +10,7 @@ plot_data(
   color = NULL,
   fill = !!enquo(color),
   ...,
+  palette = NULL,
   fixed = list(),
   theme = list()
 )
@@ -24,6 +25,8 @@ plot_data(
 \item{fill}{variable mapped to fill (symbol)}
 
 \item{...}{mapped aesthetics}
+
+\item{palette}{color palette (named character vector)}
 
 \item{fixed}{fixed  aesthetics (list)}
 

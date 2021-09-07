@@ -42,6 +42,6 @@ test_that(  "read_proteingroups(file, fit='wilcoxon')", {
     file <- download_data('fukuda20.proteingroups.txt')
     object <- read_proteingroups(file, fit = 'wilcoxon', plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true(stri_detect_fixed(fvars(object), paste0('~wilcoxon')))
+    expect_true(any(stri_detect_fixed(fvars(object), '~wilcoxon')))
     expect_true('wilcoxon' %in% names(metadata(object)))
 })

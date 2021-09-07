@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Generifying and intuifying cross-platform omics analysis
-Version: 0.99.22
+Version: 1.1.7
 Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.de",    role = c("aut", "cre")), 
              person("Shahina",  "Hayat",     email = "shh2026@qatar-med.cornell.edu",   role = "aut"), 
              person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",   role = "ctb"), 
@@ -34,6 +34,8 @@ Imports:
   colorspace,
   data.table,
   edgeR,
+  fs,
+  ggforce,
   ggplot2,
   ggrepel,
   graphics,
@@ -63,6 +65,7 @@ Suggests:
   affy,
   AnnotationDbi,
   BiocManager,
+  BiocStyle,
   diagram,
   GenomicRanges,
   GEOquery,
@@ -77,6 +80,7 @@ Suggests:
   nlme,
   org.Hs.eg.db, 
   org.Mm.eg.db,
+  progeny,
   RCurl,
   remotes,
   rmarkdown,
@@ -85,4 +89,6 @@ Suggests:
   rtracklayer, 
   seqinr,
   statmod,
-  testthat
+  testthat,
+  UniProt.ws
+

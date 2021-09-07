@@ -2,6 +2,7 @@
 % Please edit documentation in R/8_fit.R
 \name{pvars}
 \alias{pvars}
+\alias{tvars}
 \alias{effectvars}
 \alias{fdrvars}
 \alias{p}
@@ -10,6 +11,8 @@
 \title{Get p vars/values}
 \usage{
 pvars(object)
+
+tvars(object)
 
 effectvars(object)
 
@@ -41,7 +44,7 @@ effect(object)[7:10, ]
    fdr(object)[7:10, ]
   down(object)[7:10, ]
     up(object)[7:10, ]
-  sign(object)[7:10, ]
+  effectsign(object)[7:10, ]
 testmat(object)[7:10, ]
 
  pvars(object)
