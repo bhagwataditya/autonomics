@@ -316,7 +316,7 @@ invnorm <- function(object, verbose = FALSE){
 vsn <- function(object, verbose = FALSE, delog = TRUE){
     if (verbose) message('\t\tVSN')
     if (delog) object %<>% exp2()
-    values(object) %<>% vsn::justvsn()
+    values(object) %<>% vsn::justvsn(verbose = FALSE)
     object
 }
 
@@ -383,7 +383,7 @@ gglegend<-function(p){
 plot_transformation_densities <- function(
     object,
     subgroup = sym('subgroup'),
-    transformations = c('quantnorm', 'zscore', 'invnorm'),
+    transformations = c('quantnorm', 'vns' , 'zscore', 'invnorm'),
     ...,
     fixed = list(na.rm=TRUE, alpha=0.3)
 ){
@@ -408,12 +408,12 @@ plot_transformation_densities <- function(
 plot_transformation_violins <- function(
     object,
     subgroup = sym('subgroup'),
-    transformations = c('quantnorm', 'zscore', 'invnorm'),
+    transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
     ...,
     fixed = list(na.rm=TRUE)
 ){
     value <- sample_id <- NULL
-    subgroup <- enquo(subgroup); subgroupvar <- as_name(subgroup)
+    subgroupvar <- as_name(subgroup); subgroup <- enquo(subgroup)
     assert_is_subset(subgroupvar, svars(object))
     dt <- sumexp_to_long_dt(object, svars = subgroupvar)
     dt$transfo <- 'input'
@@ -434,7 +434,7 @@ plot_transformation_violins <- function(
 plot_transformation_biplots <- function(
     object,
     subgroup = sym('subgroup'),
-    transformations = c('quantnorm', 'zscore', 'invnorm'),
+    transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
     method = 'pca', xdim = 1, ydim = 2, color = !!enquo(subgroup), ...,
     fixed = list(shape=15, size=3)
 ){
@@ -491,7 +491,7 @@ plot_transformation_biplots <- function(
 explore_transformations <- function(
     object, 
     subgroup = subgroup,
-    transformations = c('quantnorm', 'zscore', 'invnorm'),
+    transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
     method='pca', xdim=1, ydim=2, ...
 ){
     subgroup <- enquo(subgroup)
