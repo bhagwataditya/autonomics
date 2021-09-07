@@ -288,7 +288,7 @@ quantnorm <- function(object, verbose = FALSE){
 #' @rdname log2transform
 #' @export
 invnorm <- function(object, verbose = FALSE){
-    if (verbose)  message('Invnorm')
+    if (verbose)  message('\t\tInvnorm')
     values(object) %<>% apply(2, transform_to_fitting_normal)
     object
 }
