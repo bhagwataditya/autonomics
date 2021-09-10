@@ -163,6 +163,21 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' @export
 create_design <- function(object, ...) UseMethod('create_design')
 
+
+#' @rdname create_design
+#' @export
+create_design.MultiAssayExperiment <- function(
+    object,
+    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    formula = default_formula(object, subgroupvar, fit = 'limma'),
+    verbose = FALSE, ...
+){
+    create_design.data.frame(sdata(object), 
+                            subgroupvar = subgroupvar, 
+                            formula     = formula, 
+                            verbose     = verbose)
+}
+
 #' @rdname create_design
 #' @export
 create_design.SummarizedExperiment <- function(
@@ -196,9 +211,9 @@ create_design.data.frame <- function(
     myDesign <- model.matrix(formula, data=object)
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     is_factor_var <- function(x, object) is.factor(object[[x]])
-    for (predictor in all.vars(formula)){
-        if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
-                    stri_replace_first_fixed(predictor, '') }
+    #for (predictor in all.vars(formula)){
+        #if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
+        #            stri_replace_first_fixed(predictor, '') }
         # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
         # For other cases it works wonderfully, so I keep it for now.
         # If it gives too many issues, roll back to doing the dropping only
@@ -352,48 +367,13 @@ merge_fitres <- function(object, fitres, fit, statistic=NULL){
 
 mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 
-.limmacontrast <- function(object, fit, design, coefs, contrastdefs){
-    object %<>% reset_fitres('limma')
-    if (is.null(contrastdefs)){ 
-                fit %<>% contrasts.fit(coefficients = coefs) 
-    } else {    fit %<>% contrasts.fit(contrasts    = makeContrasts(
-                            contrasts = contrastdefs, levels = design)) }
-    limma_quantities <- if (all(fit$df.residual==0)){ 'effect'
-                        } else { c('effect','fdr', 'p', 't') }
-    limma(object) <- array( dim=c(nrow(fit),ncol(fit),length(limma_quantities)),
-                            dimnames = list(feature  = rownames(fit),
-                                            contrast = colnames(fit),
-                                            quantity = limma_quantities))
-    limma(object)[,,'effect'] <- fit$coefficients
-    object %<>% merge_fitres(
-                    mat2fdt(fit$coefficients), statistic='effect', fit='limma')
-    # perform moderated t test
-    if (!all(fit$df.residual==0)){
-        fit %<>% eBayes()
-        tvalues <- fit$t
-        pvalues <- fit$p.value
-        fdrvals <- apply(pvalues, 2, p.adjust, 'fdr')
-        limma(object)[,,'p'  ] <- pvalues
-        limma(object)[,,'fdr'] <- fdrvals
-        limma(object)[,,'t'  ] <- tvalues
-        # limma(object)[,,'se'  ] <- sqrt(fit$s2.post) * fit$stdev.unscaled
-        # limma(object)[,,'rank'] <- apply(fit$p.value, 2, rank)
-        #object %<>% merge_contrastmat(fit$t,       't')
-        object %<>% merge_fitres(mat2fdt(fdrvals), statistic='fdr', fit='limma')
-        object %<>% merge_fitres(mat2fdt(pvalues), statistic='p',   fit='limma')
-        object %<>% merge_fitres(mat2fdt(tvalues), statistic='t',   fit='limma')
-        #fdata(object)$F.limma   <- fit$F
-        #fdata(object)$F.p.limma <- fit$F.p
-    }
-    return(object)
-}
-
 
 #' Fit model and test for differential expression
 #'
 #' @param object       SummarizedExperiment
 #' @param subgroupvar  subgroup variable
 #' @param formula      modeling formula
+#' @param design       design matrix
 #' @param coefs        NULL or character vector: model coefficients to test
 #' @param contrastdefs NULL or character vector: coefficient contrasts to test
 #' \itemize{
@@ -404,10 +384,12 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
 #'      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
 #'      nrow=1, byrow=TRUE))}}
-#' @param block     block svar (or NULL)
-#' @param weightvar NULL or name of weight matrix in assays(object)
-#' @param verbose   whether to msg
-#' @param plot      whether to plot
+#' @param block       block svar (or NULL)
+#' @param weightvar   NULL or name of weight matrix in assays(object)
+#' @param statvars  character vector: subset of c('effect', 'p', 'fdr', 't')
+#' @param verbose     whether to msg
+#' @param plot        whether to plot
+#' @param ...         s3 dispatch
 #' @return Updated SummarizedExperiment
 #' @examples
 #' # classical: lm & limma
@@ -441,24 +423,103 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     object %<>% fit_limma(subgroupvar = 'SET', block = 'SUB')
 #'     object %<>% fit_wilcoxon(subgroupvar='SET', block='SUB', 
 #'                    contrastdefs=c('t1-t0', 't2-t0', 't3-t0'))
-#'     plot_venn(testmat(object,coef=c('t3','t3-t0'),fit=c('limma','wilcoxon')))
 #' @export
-fit_limma <- function(object, 
+fit_limma <- function(object, ...){
+    UseMethod('fit_limma', object)
+}
+
+
+#' @rdname fit_limma
+#' @export
+fit_limma.SummarizedExperiment <- function(
+    object, 
+    subgroupvar  = if ('subgroup' %in% svars(object))  'subgroup' else NULL,
+    formula      = default_formula(object, subgroupvar, 'limma'), 
+    design       = create_design(object, formula = formula),
+    coefs        = colnames(design),
+    contrastdefs = NULL,
+    block        = NULL,
+    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+    statvars   = c('effect', 'p', 'fdr'),
+    verbose      = TRUE, 
+    plot         = FALSE,
+    ...
+){
+    limmadt <- .fit_limma(
+                    object       = object, 
+                    subgroupvar  = subgroupvar, 
+                    formula      = formula, 
+                    design       = design, 
+                    coefs        = coefs,
+                    contrastdefs = contrastdefs,
+                    block        = block,
+                    weightvar    = weightvar,
+                    verbose      = verbose)
+    object %<>% reset_fitres('limma')
+    object %<>% merge_fdata(limmadt, by.x = 'feature_id', by.y = 'feature_id')
+        #fdata(object)$F.limma   <- limmares$F
+        #fdata(object)$F.p.limma <- limmares$F.p
+    if (plot)  print(plot_volcano(object, fit = 'limma')) 
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(object, 'limma'))
+    object
+}
+
+
+#' @rdname fit_limma
+#' @export
+fit_limma.MultiAssayExperiment <- function(
+    object,
+    subgroupvar  = if ('subgroup' %in% svars(object))  'subgroup' else NULL,
+    formula      = default_formula(object, subgroupvar, 'limma'),
+    design       = create_design(object, formula = formula),
+    coefs        = colnames(design),
+    contrastdefs = NULL,
+    block        = NULL,
+    statvars   = c('effect', 'p', 'fdr'),
+    verbose      = TRUE,
+    plot         = FALSE,
+    ...    
+){
+    for (ass in names(object)){
+        if (verbose)  message('\t', ass)
+        obj <- getWithColData(object, ass)
+        limmadt <- .fit_limma(
+                        object       = obj, 
+                        subgroupvar  = subgroupvar, 
+                        formula      = formula, 
+                        design       = design, 
+                        coefs        = coefs,
+                        contrastdefs = contrastdefs,
+                        block        = block,
+                        verbose      = verbose)
+        object[[ass]] %<>% merge_fdata(limmadt, by.x = 'feature_id', by.y = 'feature_id')
+    }
+    object
+}
+
+#' @rdname fit_limma
+#' @export
+.fit_limma <- function(
+    object, 
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula      = default_formula(object, subgroupvar, 'limma'), 
-    coefs        = colnames(create_design(object, formula=formula)), 
+    design       = create_design(object, formula = formula),
+    coefs        = colnames(design),
     contrastdefs = NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    verbose = TRUE, plot=FALSE
+    statvars     = c('effect', 'p', 'fdr'),
+    suffix       = paste0(FITSEP, limma),
+    verbose      = TRUE, 
+    plot         = FALSE
 ){
 # Design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(statvars, c('effect', 'p', 'fdr', 't'))
     if (verbose)  message('\t\tlmFit(', formula2str(formula),
         if(is.null(block))     '' else paste0(' | ',block),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
                                             weightvar), ')')
-    design <- create_design(object, formula=formula)
 # Block
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
@@ -470,23 +531,41 @@ fit_limma <- function(object,
                 values(object), design=design, block=block
             )$consensus.correlation }}
 # Exprs/Weights
+    design %<>% extract(intersect(snames(object), rownames(.)), , drop = FALSE) # required in mae
     exprmat <-  values(object)[, rownames(design)]
     weightmat <- if (is.null(weightvar)){ NULL 
             } else {assert_is_a_string(weightvar)
                     assert_is_subset(weightvar, assayNames(object))
                     assays(object)[[weightvar]][, rownames(design)] }
 # Fit
-    fit <- suppressWarnings(lmFit(
+    limmafit <- suppressWarnings(lmFit(
                 object = exprmat, design = design, 
                 block = block, correlation = metadata(object)$dupcor,
                 weights = weightmat))
-# Contrast
-    object %<>% .limmacontrast(fit, design, coefs = coefs, 
-                                contrastdefs = contrastdefs)
-    if (plot)  print(plot_volcano(object, fit='limma')) 
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(object, 'limma'))
-    return(object)
+# Effect
+    if (is.null(contrastdefs)){  limmafit %<>% contrasts.fit(coefficients = coefs) 
+    } else {                     limmafit %<>% contrasts.fit(contrasts = makeContrasts(
+                                                  contrasts = contrastdefs, levels = design)) }
+    limmadt <- data.table(feature_id = rownames(limmafit))
+    if ('effect' %in% statvars){
+        dt0 <- data.table(limmafit$coefficients)
+        names(dt0) %<>% paste0('effect~', ., suffix)
+        limmadt %<>% cbind(data.table(dt0))      }
+# p/t/fdr
+    if (!all(limmafit$df.residual==0)){
+        limmafit %<>% eBayes()
+        if ('p' %in% statvars){ 
+            dt0 <- data.table(limmafit$p.value)
+            names(dt0) %<>% paste0('p~', ., suffix); limmadt %<>% cbind(dt0)  }
+        if ('t' %in% statvars){ 
+            dt0 <- data.table(limmafit$t)
+            names(dt0) %<>% paste0('t~', ., suffix); limmadt %<>% cbind(dt0)  }
+        if ('fdr' %in% statvars){
+            dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
+            names(dt0) %<>% paste0('fdr~',.,suffix); limmadt %<>% cbind(dt0)  } }
+    limmadt
 }
+
 
 
 #' formula to string
