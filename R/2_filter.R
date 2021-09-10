@@ -62,7 +62,12 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' object <- read_metabolon(file, plot=FALSE)
 #' filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
 #' @export
-filter_features <- function(object, condition, verbose = TRUE){
+setGeneric('filter_features', function(object, ...)  standardGeneric('filter_features'))
+
+#' @rdname filter_features
+#' @export
+setMethod('filter_features', signature(object = 'SummarizedExperiment'), 
+function(object, condition, verbose = TRUE){
     . <- NULL
     condition <- enquo(condition)
     idx <- eval_tidy(condition, fdata(object))
@@ -77,8 +82,18 @@ filter_features <- function(object, condition, verbose = TRUE){
             c(structure(sum(idx), names = quo_name(condition)))
     }
     object
-}
+})
 
+#' @rdname filter_features
+#' @export
+setMethod('filter_features', signature(object = 'MultiAssayExperiment'), 
+function(object, condition, verbose = TRUE){
+    condition <- enquo(condition)
+    for (ass in names(object)){
+        object[[ass]] %<>% filter_features(!!condition, verbose = verbose)
+    }
+    object
+})
 
 #' Rm features missing in all samples
 #' @param object  SummarizedExperiment
