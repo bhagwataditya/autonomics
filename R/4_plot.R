@@ -871,6 +871,87 @@ expand_into_vector <- function(value, templatevector){
     y
 }
 
+
+
+#===========================================================================
+#
+#                plot_svar_boxplots
+#
+#===========================================================================
+
+
+.prep_svar_boxplots <- function(
+    object,
+    svar,
+    contrast,
+    xvar,
+    fillvar,
+    blockvar,
+    fit = fits(object) [1]
+){
+    pvar   <- paste('p',   contrast, fit, sep = FITSEP)
+    fdrvar <- paste('fdr', contrast, fit, sep = FITSEP)
+    topfid <- fnames(object)[which.min(fdata(object)[[pvar]])]
+    topfname <- as.character(fdata(object)[topfid, ]$feature_name)
+    subject <- object[topfid, ]
+    subject$xinteraction <- interaction(subject[[xvar]], subject[[svar]])
+    plotdt <- sumexp_to_long_dt(subject,
+                                svars = c('xinteraction', fillvar, blockvar),
+                                fvars = c('feature_name', pvar, fdrvar))
+    setnames(plotdt, pvar,   'p')
+    setnames(plotdt, fdrvar, 'fdr')
+    plotdt$facet <- paste0(topfname, ' ~ ', contrast)
+    plotdt
+}
+
+
+prep_svar_boxplots <- function(
+    object, svar, contrasts, xvar, fillvar, blockvar
+){
+    plotdt <- mapply(
+        .prep_svar_boxplots,
+        svar = svar,
+        contrast = contrasts,
+        MoreArgs = list(object   = object,
+                        xvar     = xvar,
+                        fillvar  = fillvar,
+                        blockvar = blockvar),
+        SIMPLIFY = FALSE)
+    plotdt %<>% data.table::rbindlist()
+    plotdt %<>% setorder(p)
+    plotdt[, fdr := paste0('FDR ', formatC(fdr, format='e', digits=2))]
+    plotdt$facet %<>% factor(unique(.))
+    plotdt
+}
+
+
+plot_svar_boxplots <- function(
+    object, svar, contrasts = coefs(object, svars = svar),
+    xvar, fillvar, blockvar,
+    nrow = NULL, ncol = NULL, palette = NULL
+){
+    plotdt <- prep_svar_boxplots(
+                object    = object,
+                svar      = svar,
+                contrasts = contrasts,
+                xvar      = xvar,
+                fillvar   = fillvar,
+                blockvar  = blockvar)
+    plot_boxplots(
+        plotdt,
+        x       = xinteraction,
+        fill    = !!sym(fillvar),
+        block   = !!sym(blockvar),
+        facet   = vars(facet, fdr),
+        jitter  = TRUE,
+        scales  = 'free',
+        nrow    = nrow,
+        ncol    = ncol,
+        palette = palette)
+
+}
+
+
 #=============================================================================
 #
 #                 plot_feature_points()
