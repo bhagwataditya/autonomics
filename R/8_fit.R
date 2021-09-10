@@ -444,8 +444,9 @@ fits <- function(object){
 
 #' Get fit coefs
 #' 
-#' @param object SummarizedExperiment
-#' @param fit 'limma', 'lm', 'lme', 'lmer'
+#' @param object  SummarizedExperiment
+#' @param fit    string: 'limma', 'lm', 'lme', 'lmer'
+#' @param svars   NULL/charactervec : retain only coefficients relevant for this svar
 #' @return  character vector
 #' @examples 
 #' require(magrittr)
@@ -453,10 +454,13 @@ fits <- function(object){
 #' object <- read_metabolon(file, fit='limma', plot=FALSE)
 #' coefs(object)
 #' @export
-coefs <- function(object, fit = fits(object)){
+coefs <- function(object, fit = fits(object), svars = NULL){
     coefs0 <- split_extract(pvars(object), 2, FITSEP)
     fits0  <- split_extract(pvars(object), 3, FITSEP)
-    unique(coefs0[fits0 %in% fit])
+    coefs0 %<>% extract(fits0 %in% fit)
+    coefs0 %<>% unique()
+    if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))
+    coefs0 
 }
 
 #==============================================================================
