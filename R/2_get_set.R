@@ -260,15 +260,12 @@ setReplaceMethod("fvars", signature("SummarizedExperiment", "character"),
 function(object, value){ names(rowData(object)) <- value
                         object })
 
-
-
 #==============================================================================
 
-#' @title Get/Set sdata
-#' @description Get/Set sample data
-#' @param object SummarizedExperiment, eSet, or EList
-#' @param value dataframe
-#' @return sample dataframe (get) or updated object (set)
+#' Get/Set sample dataframe/table
+#' @param object SummarizedExperiment/MultiAssayExperiment
+#' @param value data.frame
+#' @return sample data.frame (get) or updated object (set)
 #' @examples
 #' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
@@ -277,48 +274,70 @@ function(object, value){ names(rowData(object)) <- value
 #' head(sdata(object) %<>% cbind(z=1))
 #' @rdname sdata
 #' @export
-setGeneric('sdata',
-function(object) standardGeneric('sdata'))
-
-
-#' @rdname sdata
-setMethod('sdata', signature('SummarizedExperiment'),
-function(object) as(colData(object), "data.frame"))
-    # !! as.data.frame somehow somewhere performs a check.names
-
-
-#' @rdname sdata
-setMethod('sdata', signature('MultiAssayExperiment'),
-function(object)  as(colData(object), "data.frame"))
-
+setGeneric('sdata',  function(object) standardGeneric('sdata'))                # sdata generic
 
 #' @rdname sdata
 #' @export
-setGeneric('sdata<-', function(object, value)  standardGeneric('sdata<-'))
+setGeneric('sdt',    function(object) standardGeneric('sdt'))                  # sdt generic
 
 #' @rdname sdata
-setReplaceMethod('sdata', signature('SummarizedExperiment', 'data.frame'),
+setMethod('sdata', signature('SummarizedExperiment'),                          # sdata(se, df)
+function(object) as(colData(object), "data.frame")) 
+    # !! as.data.frame somehow somewhere performs a check.names
+
+#' @rdname sdata
+setMethod('sdt',  signature('SummarizedExperiment'),                           # sdt(se,dt)
+function(object)  data.table(data.frame(colData(object))))
+
+#' @rdname sdata
+setMethod('sdata', signature('MultiAssayExperiment'),                          # sdata(mae, df)
+function(object)  as(colData(object), "data.frame"))
+
+#' @rdname sdata
+setMethod('sdt', signature('MultiAssayExperiment'),                            # sdt(mae, dt)
+function(object)  data.table(data.frame(colData(object))))
+
+#' @rdname sdata
+#' @export
+setGeneric('sdata<-', function(object, value)  standardGeneric('sdata<-'))     # sdata<- generic
+
+#' @rdname sdata
+setGeneric('sdt<-',   function(object, value)  standardGeneric('sdt<-'))       # sdt<- generic
+
+#' @rdname sdata
+setReplaceMethod('sdata',  signature('SummarizedExperiment', 'data.frame'),    # sdata<-(se, df)
 function(object, value){
     colData(object) <- DataFrame(value, check.names = FALSE)
     object })
 
 #' @rdname sdata
-setReplaceMethod('sdata',
-signature('SummarizedExperiment', 'DataFrame'),
+setReplaceMethod('sdata', signature('SummarizedExperiment', 'DataFrame'),      # sdata<-(se, DF)
 function(object, value){
     colData(object) <- value
     object })
 
 #' @rdname sdata
-setReplaceMethod('sdata', signature('MultiAssayExperiment', 'data.frame'),
+setReplaceMethod('sdt', signature('SummarizedExperiment', 'data.table'),       # sdt<-(se, dt)
+function(object, value){
+    colData(object) <- DataFrame(value, check.names = FALSE, row.names = value$sample_id)
+    object })
+
+#' @rdname sdata
+setReplaceMethod('sdata', signature('MultiAssayExperiment', 'data.frame'),     # sdata<-(mae, df)
 function(object, value){
     colData(object) <- DataFrame(value, check.names = FALSE)
     object })
 
 #' @rdname sdata
-setReplaceMethod('sdata', signature('MultiAssayExperiment', 'DataFrame'),
+setReplaceMethod('sdata', signature('MultiAssayExperiment', 'DataFrame'),      # sdata<-(mae, DF)
 function(object, value){
     colData(object) <- value
+    object })
+
+#' @rdname sdata
+setReplaceMethod('sdt', signature('MultiAssayExperiment', 'data.table'),       # sdt<-(mae, dt)
+function(object, value){
+    colData(object) <- DataFrame(value, check.names = FALSE, row.names = value$sample_id)
     object })
 
 
