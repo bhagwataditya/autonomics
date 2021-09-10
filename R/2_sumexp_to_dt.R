@@ -23,7 +23,9 @@ sumexp_to_wide_dt <- function(
 }
 
 
+
 #' Convert SummarizedExperiment into data.table
+#'
 #' @details
 #' \itemize{
 #'    \item \code{sumexp_to_wide_dt}:   feature          x sample
@@ -72,7 +74,7 @@ sumexp_to_long_dt <- function(
     svars = intersect('subgroup', autonomics::svars(object)),
     assay = assayNames(object) %>% intersect(c(.[1], 'is_imputed'))
 ){
-# Assert
+    # Assert
     . <- NULL
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(fid,   autonomics::fvars(object))
@@ -86,12 +88,12 @@ sumexp_to_long_dt <- function(
         fvars %<>% setdiff(common) # Avoid name clashes
         svars %<>% setdiff(common)
     }
-# Melt
+    # Melt
     melt <- data.table::melt.data.table
     dt <- sumexp_to_wide_dt(object, fid, fvars, assay = assay[1])
     dt %<>% melt(id.vars = unique(c(fid, fvars)), variable.name = sid,
                 value.name = 'value')
-# Merge
+    # Merge
     if (length(assay)>1){
         for (ass in assay[-1]){
             assdt <- sumexp_to_wide_dt(
@@ -106,12 +108,35 @@ sumexp_to_long_dt <- function(
                 c(fid, fvars, sid, svars, 'value', assay[-1])), names(dt))
     dt %<>% extract(, cols, with = FALSE)
         # Note: unique is to avoid duplication of same fields in fid and fvars
-# Order
+    # Order
     dt[, (fid) := factor(get(fid), unique(fdata(object)[[fid]]))]
     dt[, (sid) := factor(get(sid), unique(sdata(object)[[sid]]))]
-# Return
+    # Return
     dt[]
 }
+
+#' @rdname sumexp_to_long_dt
+#' @export
+mae_to_long_dt <- function(
+    object, 
+    fid   = 'feature_id', 
+    fvars = character(0),
+    sid   = 'sample_id',
+    svars = character(0)
+){
+    assert_is_all_of(object, 'MultiAssayExperiment')
+    .mae_to_long_dt <- function(i){
+        obj <- getWithColData(object, i)
+        dt <- sumexp_to_long_dt(obj, fid = fid, fvars = fvars, sid = sid, svars = svars)
+        dt$assay <- names(object)[[i]]
+        dt
+    }
+    dt <- lapply(seq_along(object), .mae_to_long_dt)
+    dt %<>% data.table::rbindlist()
+    dt$assay %<>% factor(names(object))
+    dt
+}
+
 
 
 #' @export
@@ -228,44 +253,6 @@ matrix2sumexp <- function(
     object %<>% add_subgroup(subgroupvar, verbose = verbose)
 # return
     object
-}
-
-
-#' Create MultiAssayExperiment from SummarizedExperiment list
-#' @param experiments named list of SummarizedExperiments
-#' @return MultiAssayExperiment
-#' @examples
-#' require(magrittr)
-#' somascanfile  <- download_data('atkin18.somascan.adat')
-#' metabolonfile <- download_data('atkin18.metabolon.xlsx')
-#' somascan <- read_somascan(somascanfile,   plot=FALSE)
-#' metabolon<- read_metabolon(metabolonfile, plot=FALSE)
-#' svars(somascan)  %<>% stringi::stri_replace_first_fixed(
-#'                         'SampleGroup', 'subgroup')
-#' svars(metabolon) %<>% stringi::stri_replace_first_fixed(
-#'                         'Group',       'subgroup')
-#' metabolon$replicate <- NULL
-#' object   <- sumexp2mae(list(somascan=somascan, metabolon=metabolon))
-#' @export
-sumexp2mae <- function(experiments){
-    . <- NULL
-    assert_is_list(experiments)
-    assert_has_names(experiments)
-    for (experiment in experiments){
-        assert_is_all_of(experiment, 'SummarizedExperiment')
-        assert_is_subset(c('sample_id', 'subgroup'), svars(experiment))
-    }
-    for (i in seq_along(experiments))  experiments[[i]] %<>%
-                                            extract(, order(colnames(.)))
-    extract_sdata <- function(sumexp){
-        extractvars <- c('sample_id', 'subgroup', 'replicate')
-        extractvars %<>% intersect(svars(sumexp))
-        sdata(sumexp)[, extractvars, drop=FALSE]
-    }
-    sdata1 <- unique(Reduce(rbind, lapply(experiments, extract_sdata)))
-    sdata1 %<>% extract(order(.$sample_id), )
-    assert_all_are_true(table(sdata1$sample_id)==1)
-    MultiAssayExperiment(experiments = experiments, colData = sdata1)
 }
 
 
