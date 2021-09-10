@@ -2,41 +2,59 @@
 % Please edit documentation in R/2_get_set.R
 \name{sdata}
 \alias{sdata}
+\alias{sdt}
 \alias{sdata,SummarizedExperiment-method}
+\alias{sdt,SummarizedExperiment-method}
 \alias{sdata,MultiAssayExperiment-method}
+\alias{sdt,MultiAssayExperiment-method}
 \alias{sdata<-}
+\alias{sdt<-}
 \alias{sdata<-,SummarizedExperiment,data.frame-method}
 \alias{sdata<-,SummarizedExperiment,DataFrame-method}
+\alias{sdt<-,SummarizedExperiment,data.table-method}
 \alias{sdata<-,MultiAssayExperiment,data.frame-method}
 \alias{sdata<-,MultiAssayExperiment,DataFrame-method}
-\title{Get/Set sdata}
+\alias{sdt<-,MultiAssayExperiment,data.table-method}
+\title{Get/Set sample dataframe/table}
 \usage{
 sdata(object)
 
+sdt(object)
+
 \S4method{sdata}{SummarizedExperiment}(object)
+
+\S4method{sdt}{SummarizedExperiment}(object)
 
 \S4method{sdata}{MultiAssayExperiment}(object)
 
+\S4method{sdt}{MultiAssayExperiment}(object)
+
 sdata(object) <- value
+
+sdt(object) <- value
 
 \S4method{sdata}{SummarizedExperiment,data.frame}(object) <- value
 
 \S4method{sdata}{SummarizedExperiment,DataFrame}(object) <- value
 
+\S4method{sdt}{SummarizedExperiment,data.table}(object) <- value
+
 \S4method{sdata}{MultiAssayExperiment,data.frame}(object) <- value
 
 \S4method{sdata}{MultiAssayExperiment,DataFrame}(object) <- value
+
+\S4method{sdt}{MultiAssayExperiment,data.table}(object) <- value
 }
 \arguments{
-\item{object}{SummarizedExperiment, eSet, or EList}
+\item{object}{SummarizedExperiment/MultiAssayExperiment}
 
-\item{value}{dataframe}
+\item{value}{data.frame}
 }
 \value{
-sample dataframe (get) or updated object (set)
+sample data.frame (get) or updated object (set)
 }
 \description{
-Get/Set sample data
+Get/Set sample dataframe/table
 }
 \examples{
 require(magrittr)

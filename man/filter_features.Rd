@@ -2,9 +2,15 @@
 % Please edit documentation in R/2_filter.R
 \name{filter_features}
 \alias{filter_features}
+\alias{filter_features,SummarizedExperiment-method}
+\alias{filter_features,MultiAssayExperiment-method}
 \title{Filter features on condition}
 \usage{
-filter_features(object, condition, verbose = TRUE)
+filter_features(object, ...)
+
+\S4method{filter_features}{SummarizedExperiment}(object, condition, verbose = TRUE)
+
+\S4method{filter_features}{MultiAssayExperiment}(object, condition, verbose = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

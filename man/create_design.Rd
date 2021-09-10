@@ -2,11 +2,20 @@
 % Please edit documentation in R/8_fit_limma.R
 \name{create_design}
 \alias{create_design}
+\alias{create_design.MultiAssayExperiment}
 \alias{create_design.SummarizedExperiment}
 \alias{create_design.data.frame}
 \title{Create design}
 \usage{
 create_design(object, ...)
+
+\method{create_design}{MultiAssayExperiment}(
+  object,
+  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
+  formula = default_formula(object, subgroupvar, fit = "limma"),
+  verbose = FALSE,
+  ...
+)
 
 \method{create_design}{SummarizedExperiment}(
   object,

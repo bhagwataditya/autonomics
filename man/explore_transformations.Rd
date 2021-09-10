@@ -7,7 +7,7 @@
 explore_transformations(
   object,
   subgroup = subgroup,
-  transformations = c("quantnorm", "zscore", "invnorm"),
+  transformations = c("quantnorm", "vsn", "zscore", "invnorm"),
   method = "pca",
   xdim = 1,
   ydim = 2,

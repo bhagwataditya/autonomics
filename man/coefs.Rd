@@ -4,12 +4,14 @@
 \alias{coefs}
 \title{Get fit coefs}
 \usage{
-coefs(object, fit = fits(object))
+coefs(object, fit = fits(object), svars = NULL)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{fit}{'limma', 'lm', 'lme', 'lmer'}
+\item{fit}{string: 'limma', 'lm', 'lme', 'lmer'}
+
+\item{svars}{NULL/charactervec : retain only coefficients relevant for this svar}
 }
 \value{
 character vector
