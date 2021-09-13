@@ -509,7 +509,7 @@ fit_limma.MultiAssayExperiment <- function(
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars     = c('effect', 'p', 'fdr'),
-    suffix       = paste0(FITSEP, limma),
+    suffix       = paste0(FITSEP, 'limma'),
     verbose      = TRUE, 
     plot         = FALSE
 ){
