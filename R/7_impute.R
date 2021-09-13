@@ -441,7 +441,7 @@ plot_detections <- function(
             legend.title = element_blank(),
             panel.grid   = element_blank()) +
     geom_hline(yintercept = cumsum(c(nfull, nrandom, nsystematic))) +
-    guides(alpha=FALSE)
+    guides(alpha = 'none')
 
 }
 
@@ -521,7 +521,7 @@ plot_summarized_detections <- function(
                 geom_segment(aes(x=xmax, xend=xmax, y = ymin, yend=ymax)) +
                 geom_segment(aes(x=xmin, xend=xmin, y = ymin, yend=ymax)) +
                 theme_minimal() + xlab('Samples') + ylab('Features') +
-                theme(panel.grid = element_blank()) + guides(alpha='none') +
+                theme(panel.grid = element_blank()) + guides(alpha = 'none') +
                 scale_fill_manual(values = colors) +
                 scale_alpha_manual(values=c(`0`=0, `1`=1)) +
                 ggtitle('detections')
@@ -558,19 +558,19 @@ explore_imputations <- function(
     legend <- gglegend(biplot(object))
 
     do_plot_sample_detections <- function(obj, ...){
-        plot_detections(obj, ...) + guides(color=FALSE, fill=FALSE)
+        plot_detections(obj, ...) + guides(color = 'none', fill = 'none')
     }
 
     do_biplot <- function(obj, ...){
         biplot(obj, x = !!enquo(xbiplot), y = !!enquo(ybiplot), 
                 color = !!subgroup,  nloadings = 0,...) +
-        guides(color=FALSE, fill=FALSE) +
+        guides(color = 'none', fill = 'none') +
         ggtitle(NULL)
     }
 
     do_plot_sample_densities <- function(obj, ...){
         plot_sample_densities(obj, ...) +
-        guides(color=FALSE, fill=FALSE) +
+        guides(color = 'none', fill = 'none') +
         ggtitle(NULL)
     }
 
