@@ -186,5 +186,5 @@ plot_volcano <- function(object,
         xlab('log2(FC)') +
         ylab('-log10(p)') +
         ggtitle('volcano')#+
-        #guides(color=FALSE)
+        #guides(color = 'none')
 }

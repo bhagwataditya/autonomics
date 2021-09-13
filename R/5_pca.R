@@ -593,7 +593,7 @@ biplot_corrections <- function(
     p <- biplot(object, !!sym(x), !!sym(y), color = !!enquo(color),
                 nloadings=0)
     p <- p + ggtitle('INPUT')
-    p <- p + guides(color=FALSE, fill=FALSE)
+    p <- p + guides(color = 'none', fill = 'none')
     plotlist <- list(p)
     for (ibatch in covariates){
         tmp_object <- object
@@ -603,7 +603,7 @@ biplot_corrections <- function(
         p <- biplot(tmp_object, !!sym(x), !!sym(y), color = !!enquo(color),
                     nloadings=0)
         p <- p + ggtitle(paste0(' - ', ibatch))
-        p <- p + guides(color=FALSE, fill=FALSE)
+        p <- p + guides(color = 'none', fill = 'none')
         plotlist %<>% c(list(p))
     }
     pp <- arrangeGrob(grobs = plotlist, ncol = varcols)

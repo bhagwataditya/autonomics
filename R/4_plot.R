@@ -549,7 +549,7 @@ plot_boxplots.data.table <- function(
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
     p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
-        guides(color='none', alpha='none') +
+        guides(color = 'none', alpha = 'none') +
         theme(axis.text.x = element_text(angle=90, hjust=1))
     p
 }

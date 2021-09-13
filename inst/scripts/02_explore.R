@@ -7,7 +7,7 @@ glutaminase <- autonomics.data::glutaminase
 #object %<>% extract(, !stringi::stri_startswith_fixed(.$subgroup, 'UT'))
 
 blanken <- function(p, axis.text.x = element_text()){
-    p + guides(color = FALSE, fill = FALSE) + theme(axis.text.x = axis.text.x)
+    p + guides(color = 'none', fill = 'none') + theme(axis.text.x = axis.text.x)
 }
 
 hypoplots <- list(
@@ -50,7 +50,7 @@ multiplot(  plotlist=plotlist,
                               3,3,3,6,6,6,0,9,9,9,12,12,12), nrow=3, byrow=TRUE))
 
 
-plot_lda_features(object, dim = 1) + guides(color = FALSE)
+plot_lda_features(object, dim = 1) + guides(color = 'none')
 autonomics.plot::multiplot(p3, p4, layout = matrix(c(1,0,2), nrow=1))
 
 p3 <- plot_pca_features(object)
