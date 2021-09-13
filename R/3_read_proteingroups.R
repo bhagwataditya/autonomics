@@ -1211,7 +1211,9 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
     select <- names1 %>%
             extract(stri_detect_regex(.,MAXQUANT_PATTERNS_QUANTITY[[quantity]]))
     if (phospho)  select %<>% extract(stri_endswith_fixed(., '___1'))
-    exprs1 <- as.matrix(fread(file, select = select, integer64 = 'numeric'))
+    exprs1 <- fread(file, select = select, integer64 = 'numeric') %>%
+        un_int64() %>%
+        as.matrix()
     if (is.character(exprs1)){
         message("File contains strings rather than numbers - convert")
         storage.mode(exprs1) <- 'numeric'}
@@ -1239,7 +1241,9 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
     object
 }
 
-
+un_int64 <- function(x) {
+    dplyr::mutate(x, dplyr::across(where(bit64::is.integer64), as.numeric))
+}
 
 #' Read/Analyze proteingroups/phosphosites
 #'
