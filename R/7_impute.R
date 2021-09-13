@@ -521,7 +521,7 @@ plot_summarized_detections <- function(
                 geom_segment(aes(x=xmax, xend=xmax, y = ymin, yend=ymax)) +
                 geom_segment(aes(x=xmin, xend=xmin, y = ymin, yend=ymax)) +
                 theme_minimal() + xlab('Samples') + ylab('Features') +
-                theme(panel.grid = element_blank()) + guides(alpha=FALSE) +
+                theme(panel.grid = element_blank()) + guides(alpha='none') +
                 scale_fill_manual(values = colors) +
                 scale_alpha_manual(values=c(`0`=0, `1`=1)) +
                 ggtitle('detections')
