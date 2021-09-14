@@ -663,7 +663,7 @@ biplot_covariates <- function(
 prep_covariates <- function(object, method='pca', ndim=6){
     . <- NULL
     plotdt <- cbind(sdata(object)[FALSE,], x= character(0), y = character(0))
-    projdt <- data.table(sdata(get(method)(object, ndim=ndim, verbose=FALSE)))
+    projdt <- sdt(get(method)(object, ndim=ndim, verbose=FALSE))
     alldims <- names(projdt) %>% extract(stri_detect_fixed(., method)) %>%
                 stri_replace_first_fixed(method, '') %>% as.numeric()
     ndim <- min(c(max(alldims), ndim))

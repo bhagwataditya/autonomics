@@ -507,7 +507,7 @@ plot_summarized_detections <- function(
     dt %<>% melt.data.table(id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
                             variable.name = groupvar, value.name='quantified')
     dt$quantified %<>% as.factor()
-    nsampledt <- data.table(sdata(object))[, .N, by=groupvar] %>% # preserves
+    nsampledt <- sdt(object)[, .N, by=groupvar] %>% # preserves
                 set_names(c(groupvar, 'xmax'))                # factor order!
     setorderv(nsampledt, groupvar)
     nsampledt[, xmax := cumsum(xmax)]; nsampledt[, xmin := c(0, xmax[-.N])]
