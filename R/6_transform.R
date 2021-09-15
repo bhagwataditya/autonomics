@@ -235,8 +235,8 @@ log2transform <- function(
     assert_is_subset(assay, assayNames(object))
     for (ass in assay){
         i <- match(ass, assayNames(object))
-        if (verbose)  message('\t\t\tAdd ', pseudo) ;  assays(object)[[i]] %<>% add(pseudo) 
-        if (verbose)  message('\t\t\tlog2', ass);      assays(object)[[i]] %<>% log2()
+        if (verbose)  message('\t\tAdd pseudo value ', pseudo) ;  assays(object)[[i]] %<>% add(pseudo) 
+        if (verbose)  message('\t\tLogarithmize (log2) ', ass);      assays(object)[[i]] %<>% log2()
         assayNames(object)[i] %<>% paste0('log2', .)
     }
     object
