@@ -503,9 +503,11 @@ explore_transformations <- function(
             object, subgroup=!!subgroup, transformations, method, 
             xdim1 = xdim, ydim = ydim, ...)
 
-    grid.arrange(arrangeGrob(p1 + theme(legend.position='none'),
-                            p2  + theme(legend.position='none'), nrow=2),
-                            gglegend(p2), ncol=2, widths = c(8, 1))
-
+    p3 <- arrangeGrob(
+        p1 + theme(legend.position='none'),
+        p2  + theme(legend.position='none'),
+        nrow=2, right = gglegend(p2))
+    grid.draw(p3)
+    invisible(p3)
 }
 
