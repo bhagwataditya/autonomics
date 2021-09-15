@@ -593,6 +593,8 @@ biplot_corrections <- function(
     p <- biplot(object, !!sym(x), !!sym(y), color = !!enquo(color),
                 nloadings=0)
     p <- p + ggtitle('INPUT')
+    legend  <- gglegend(
+        p + theme(legend.position = 'bottom', legend.title = element_blank()))
     p <- p + guides(color = 'none', fill = 'none')
     plotlist <- list(p)
     for (ibatch in covariates){
@@ -606,7 +608,9 @@ biplot_corrections <- function(
         p <- p + guides(color = 'none', fill = 'none')
         plotlist %<>% c(list(p))
     }
-    pp <- arrangeGrob(grobs = plotlist, ncol = varcols)
+    pp <- arrangeGrob(
+      grobs = plotlist, ncol = varcols,nrow = ceiling(length(covariates)/2),
+      bottom = legend)
     if (plot) grid::grid.draw(pp)
     invisible(pp)
 }
