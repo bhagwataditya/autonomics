@@ -191,7 +191,7 @@ make_twofactor_colors <- function(
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
-    data, geom = geom_point, color = NULL, fill = !!enquo(color), 
+    data, geom = geom_point, color = NULL, fill = NULL, 
     ..., palette = NULL, fixed = list(), theme = list()
 ){
     color <- enquo(color)
