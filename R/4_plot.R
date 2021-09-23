@@ -887,11 +887,12 @@ expand_into_vector <- function(value, templatevector){
     xvar,
     fillvar,
     blockvar,
-    fit = fits(object) [1]
+    fit = fits(object) [1],
+    nfeature = 1
 ){
     pvar   <- paste('p',   contrast, fit, sep = FITSEP)
     fdrvar <- paste('fdr', contrast, fit, sep = FITSEP)
-    topfid <- fnames(object)[which.min(fdata(object)[[pvar]])]
+    topfid <- fnames(object)[order(fdata(object)[[pvar]])[nfeature]]
     topfname <- as.character(fdata(object)[topfid, ]$feature_name)
     subject <- object[topfid, ]
     subject$xinteraction <- interaction(subject[[xvar]], subject[[svar]])
@@ -906,7 +907,7 @@ expand_into_vector <- function(value, templatevector){
 
 
 prep_svar_boxplots <- function(
-    object, svar, contrasts, xvar, fillvar, blockvar
+    object, svar, contrasts, xvar, fillvar, blockvar, nfeature
 ){
     plotdt <- mapply(
         .prep_svar_boxplots,
@@ -915,7 +916,8 @@ prep_svar_boxplots <- function(
         MoreArgs = list(object   = object,
                         xvar     = xvar,
                         fillvar  = fillvar,
-                        blockvar = blockvar),
+                        blockvar = blockvar, 
+                        nfeature = nfeature),
         SIMPLIFY = FALSE)
     plotdt %<>% data.table::rbindlist()
     plotdt %<>% setorder(p)
@@ -925,10 +927,34 @@ prep_svar_boxplots <- function(
 }
 
 
-plot_svar_boxplots <- function(
-    object, svar, contrasts = coefs(object, svars = svar),
-    xvar, fillvar, blockvar,
-    nrow = NULL, ncol = NULL, palette = NULL
+plot_svar_boxplots <- function(...){
+    .Deprecated('plot_svar_contrasts')
+}
+
+
+
+#' Plot svar contrasts
+#' @param object    SummarizedExperiment
+#' @param svar      string
+#' @param contrasts character vector
+#' @param xvar      string
+#' @param fillvar   string
+#' @param blockvar  string
+#' @param nfeature  number of plotted features per contrast
+#' @param nrow      number of plot rows
+#' @param ncol      number of plot columns
+#' @param palette   named character vector : color palette
+plot_svar_contrasts <- function(
+    object, 
+    svar, 
+    blockvar  = NULL, 
+    contrasts = coefs(object, svars = svar),
+    xvar      = svar, 
+    fillvar   = svar,
+    nfeature  = 1, 
+    nrow      = NULL, 
+    ncol      = NULL, 
+    palette   = NULL
 ){
     plotdt <- prep_svar_boxplots(
                 object    = object,
@@ -936,7 +962,8 @@ plot_svar_boxplots <- function(
                 contrasts = contrasts,
                 xvar      = xvar,
                 fillvar   = fillvar,
-                blockvar  = blockvar)
+                blockvar  = blockvar, 
+                nfeature  = nfeature)
     plot_boxplots(
         plotdt,
         x       = xinteraction,
