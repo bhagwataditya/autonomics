@@ -302,6 +302,7 @@ function(object)  data.table(data.frame(colData(object))))
 setGeneric('sdata<-', function(object, value)  standardGeneric('sdata<-'))     # sdata<- generic
 
 #' @rdname sdata
+#' @export
 setGeneric('sdt<-',   function(object, value)  standardGeneric('sdt<-'))       # sdt<- generic
 
 #' @rdname sdata
