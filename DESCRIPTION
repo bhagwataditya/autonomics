@@ -60,7 +60,8 @@ Imports:
   SummarizedExperiment,
   tidyr,
   tools,
-  utils
+  utils,
+  vsn
 Suggests: 
   affy,
   AnnotationDbi,

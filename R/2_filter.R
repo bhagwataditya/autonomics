@@ -73,7 +73,7 @@ function(object, condition, verbose = TRUE){
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
     if (verbose & sum(idx) < length(idx)){
-        message('\t\t\tRetain ', sum(idx), '/', length(idx), 
+        message('\t\tRetain ', sum(idx), '/', length(idx), 
                 ' features: ', expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(idx,)
     fdata(object) %<>% droplevels()

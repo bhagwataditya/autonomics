@@ -235,8 +235,8 @@ log2transform <- function(
     assert_is_subset(assay, assayNames(object))
     for (ass in assay){
         i <- match(ass, assayNames(object))
-        if (verbose)  message('\t\t\tAdd ', pseudo) ;  assays(object)[[i]] %<>% add(pseudo) 
-        if (verbose)  message('\t\t\tlog2', ass);      assays(object)[[i]] %<>% log2()
+        if (verbose)  message('\t\tAdd pseudo value ', pseudo) ;  assays(object)[[i]] %<>% add(pseudo) 
+        if (verbose)  message('\t\tLogarithmize (log2) ', ass);      assays(object)[[i]] %<>% log2()
         assayNames(object)[i] %<>% paste0('log2', .)
     }
     object
@@ -503,9 +503,11 @@ explore_transformations <- function(
             object, subgroup=!!subgroup, transformations, method, 
             xdim1 = xdim, ydim = ydim, ...)
 
-    grid.arrange(arrangeGrob(p1 + theme(legend.position='none'),
-                            p2  + theme(legend.position='none'), nrow=2),
-                            gglegend(p2), ncol=2, widths = c(8, 1))
-
+    p3 <- arrangeGrob(
+        p1 + theme(legend.position='none'),
+        p2  + theme(legend.position='none'),
+        nrow=2, right = gglegend(p2))
+    grid.draw(p3)
+    invisible(p3)
 }
 

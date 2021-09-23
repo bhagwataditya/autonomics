@@ -91,7 +91,7 @@ make_volcano_dt <- function(
     object, fit, coefs, ntop = 3
 ){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
-    id.vars <- c('feature_id', 'feature_name', 'imputed') 
+    id.vars <- c('feature_id', 'feature_name', 'imputed', 'control') 
     id.vars %<>% intersect(fvars(object))
     fvars0 <- c(id.vars, effectvars(object), pvars(object), fdrvars(object))
     dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
