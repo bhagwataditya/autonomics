@@ -599,8 +599,11 @@ biplot_corrections <- function(
     plotlist <- list(p)
     for (ibatch in covariates){
         tmp_object <- object
-        values(tmp_object) %<>%
-            removeBatchEffect(batch=sdata(tmp_object)[[ibatch]])
+        tmp_b <- sdata(tmp_object)[[ibatch]]
+        if (any(is.na(tmp_b))) {
+            tmp_object %<>% filter_samples(!is.na(!!sym(ibatch)))
+        }
+        values(tmp_object) %<>% removeBatchEffect(batch = tmp_b)
         tmp_object <- get(method)(tmp_object, ndim=2, verbose=FALSE)
         p <- biplot(tmp_object, !!sym(x), !!sym(y), color = !!enquo(color),
                     nloadings=0)
