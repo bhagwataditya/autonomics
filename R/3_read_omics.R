@@ -453,9 +453,10 @@ merge_sdata <- function(
     object, dt, by.x = 'sample_id',  by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
 ){
     if (!all.x)  object %<>% filter_samples(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = verbose)
-    sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
+    sdt(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
+
 
 #'@rdname merge_sdata
 #'@export
@@ -463,55 +464,32 @@ merge_fdata <- function(
     object, dt, by.x = 'feature_id', by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
 ){
     if (!all.x)  object %<>% filter_features(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = TRUE)
-    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
+    fdt(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
 
 
-merge_data <- function(objectdt, dt, by.x, by.y, verbose){
+merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 # Assert
-    assert_is_any_of(objectdt,c('data.frame', 'DataFrame'))
     if (is.null(dt))  return(objectdt)
-    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame'))
-
-# Convert to data.table
-# Important: * merge.data.frame and merge.data.table behave differently!
-#            * as.data.table does not work directly on a DataFrame!
-#              data.table::data.table(S4Vectors::DataFrame(a=1, b=2))
-    objectdtclass <- class(objectdt)[1]
-    # First convert DataFrame to dataframe
-        if (is(      dt, 'DataFrame'))        dt %<>% as.data.frame()
-        if (is(objectdt, 'DataFrame'))  objectdt %<>% as.data.frame()
-    # Then convert dataframe to data.table
-        dt       %<>% as.data.table()
-        objectdt %<>% as.data.table(keep.rownames=TRUE)
-# Rm duplicate keys
-    dt %<>% unique() # drop duplicate rows with identical info 
-    n0 <- nrow(dt)   # drop rows with duplicate key values 
-    dt %<>% unique(by = by.y) # keys should be unique!
-    if (n0>nrow(dt) & verbose)  message('\t\t\tRetain ', nrow(dt),
-        '/', n0, ' rows after removing duplicate `', by.y, '` entries')
-# Rm duplicate cols: https://stackoverflow.com/questions/9202413
-    duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
-    for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
+    assert_is_data.table(objectdt)
+    assert_is_data.table(dt)
+# Prepare
+    # Rm duplicate keys
+        dt %<>% unique() # drop duplicate rows with identical info 
+        n0 <- nrow(dt)   # drop rows with duplicate key values 
+        dt %<>% unique(by = by.y) # keys should be unique!
+        if (n0>nrow(dt) & verbose)  message('\t\t\tRetain ', nrow(dt),
+            '/', n0, ' rows after removing duplicate `', by.y, '` entries')
+    # Rm duplicate cols: https://stackoverflow.com/questions/9202413
+        duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
+        for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
+    # Ensure character class for merge column
+        objectdt[[by.x]] %<>% as.character()  # having one of these as a factor
+        dt[[by.y]]       %<>% as.character()  # leads to a horrible bug!
 # Merge
-    objectdt[[by.x]] %<>% as.character()  # having one of these as a factor
-    dt[[by.y]]       %<>% as.character()  # leads to a horrible bug!
     objectdt %<>% merge.data.table(
-                   dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
-    #objectdt %<>% merge(
-    #                dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
-        # merge.data.table is currently failing!
-        # some common feature_id values are being dropped.
-        # reprex: see the difference in results for:
-        #     file <- download_data('atkin18.metabolon.xlsx')
-        #     object <- read_metabolon(file, plot=FALSE, impute=TRUE)
-        #     object %<>% fit_wilcoxon(subgroupvar='SET', block='SUB', 
-        #                    contrastdefs=c('t1-t0', 't2-t0', 't3-t0')
-    objectdt %<>% as(objectdtclass)
-    rownames(objectdt) <- objectdt$rn # merging drops rownames
-    objectdt$rn <- NULL
-# Return
+                   dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
     objectdt
 }
 

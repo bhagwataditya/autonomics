@@ -8,7 +8,7 @@ plot_data(
   data,
   geom = geom_point,
   color = NULL,
-  fill = !!enquo(color),
+  fill = NULL,
   ...,
   palette = NULL,
   fixed = list(),
