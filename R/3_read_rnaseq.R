@@ -774,7 +774,7 @@ preprocess_rnaseq_counts <- function(object,
     }
 # Rm pseudocounts
 # Order assays
-    ass <- c('log2cpm', 'log2tpm', 'log2counts', 'cpm', 'tpm', 'counts')
+    ass <- c('log2cpm', 'log2tpm', 'log2counts', 'cpm', 'tpm', 'counts', 'weights')
     ass %<>% intersect(assayNames(object))
     assays(object) %<>% extract(ass)
 # Return
