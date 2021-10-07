@@ -479,6 +479,7 @@ add_loadings <- function(
 }
 
 pca1 <- pca2 <- feature_name <- NULL
+
 #' Biplot
 #' @param object         SummarizedExperiment
 #' @param x              pca1, etc.
@@ -567,6 +568,7 @@ plot_corrections <- function(...){
 }
 
 subgroup <- NULL
+
 #' Biplot batch corrections
 #'
 #' @param object      SummarizedExperiment

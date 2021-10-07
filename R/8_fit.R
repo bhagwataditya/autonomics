@@ -592,14 +592,15 @@ old_summarize_fit <- function(
 #============================================================================
 
 .is_sig <- function(object, fit, contrast, quantity = 'fdr'){
-    fitres <- metadata(object)[[fit]]
-    isfdr  <- adrop(fitres[, , quantity, drop = FALSE] < 0.05, 3)
-    isdown <- isfdr & adrop(fitres[, , 'effect', drop=FALSE]<0, 3)
-    isup   <- isfdr & adrop(fitres[, , 'effect', drop=FALSE]>0, 3)
-    testmat <- matrix(0, nrow(isfdr), ncol(isfdr), dimnames=dimnames(isfdr))
+    issig  <- get(quantity)(object) < 0.05
+    isdown <- issig & effect(object) < 0
+    isup   <- issig & effect(object) > 0
+    isdown[is.na(isdown)] <- FALSE
+    isup[  is.na(isup)  ] <- FALSE
+    testmat <- matrix(0, nrow(issig), ncol(issig), dimnames=dimnames(issig))
     testmat[isdown] <- -1
     testmat[isup]   <-  1
-    testmat[, contrast, drop=FALSE]
+    testmat[, paste0(contrast, FITSEP, fit), drop=FALSE]
 }
 
 
@@ -620,20 +621,20 @@ old_summarize_fit <- function(
 #' @export
 is_sig <- function(
     object,
-    fit = intersect(names(metadata(object)), TESTS),
-    contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1,
+    fit = fits(object)[1],
+    contrast = coefs(object),
     quantity = 'fdr'
 ){
 # Assert
     . <- NULL
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_character(fit)
-    assert_is_subset(fit, names(metadata(object)))
-    if (is.character(contrast))  for (fi in fit)  assert_is_subset(
-                        contrast, colnames(metadata(object)[[fi]]))
+    assert_is_subset(fit, fits(object))
+    if (is.character(contrast))  for (fi in fit){
+        assert_is_subset(contrast, coefs(object, fit=fi)) }
 # Run across models
     res <-  mapply(.is_sig, fit, 
-                    MoreArgs = list(object=object, contrast=contrast, quantity=quantity),
+                    MoreArgs = list(object = object, contrast = contrast, quantity = quantity),
                     SIMPLIFY = FALSE)
     add_model_names <- function(isfdrmat, model){
                         colnames(isfdrmat) %<>% paste(model, sep='.')
@@ -658,10 +659,10 @@ is_sig <- function(
 #' isfdr <- is_sig(object, contrast = 't3-t2')
 #' plot_venn(isfdr)
 #' @export
-plot_venn <- function(isfdr){
+plot_venn <- function(issig, colors = NULL){
     layout(matrix(c(1,2), nrow=2))
-    vennDiagram(isfdr, include='up',   mar = rep(0,4), show.include=TRUE)
-    vennDiagram(isfdr, include='down', mar = rep(0,4), show.include=TRUE)
+    vennDiagram(issig, include='up',   mar = rep(0,4), show.include=TRUE, circle.col = colors)
+    vennDiagram(issig, include='down', mar = rep(0,4), show.include=TRUE, circle.col = colors)
 }
 
 

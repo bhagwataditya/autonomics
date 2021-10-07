@@ -723,9 +723,10 @@ plot_contrast_boxplots <- function(object, ...){
 #' @export
 plot_contrast_boxplots.SummarizedExperiment <- function(
     object, assay = assayNames(object)[1], 
-    subgroup, block = NULL, downlevels, uplevels, fit, contrast,
+    subgroup, block = NULL, fit = fits(object)[1], contrast = coefs(object)[1],
     fdrcutoff = 0.05, palette = NULL, title = contrast, ylab = NULL, 
-    nrow = NULL, ncol = NULL, labeller = 'label_both', scales = 'free_y', ...
+    nrow = NULL, ncol = NULL, ntop = 4,
+    labeller = 'label_both', scales = 'free_y', ...
 ){
 # Order/Extract on p value
     subgroup <- enquo(subgroup)
@@ -740,18 +741,18 @@ plot_contrast_boxplots.SummarizedExperiment <- function(
     dt <- sumexp_to_long_dt(object, assay = assay, svars=svars0, fvars = fvars0)
     plot_contrast_boxplots.data.table(
         dt, 
-        subgroup = !!subgroup, downlevels = downlevels, uplevels = uplevels, 
-        fit = fit, contrast = contrast, block = !!block, 
+        subgroup = !!subgroup, fit = fit, contrast = contrast, block = !!block, 
         fdrcutoff = fdrcutoff, palette = palette, title = title, 
-        nrow = nrow, ncol = ncol, labeller = labeller, scales = scales, ylab=assay)
+        nrow = nrow, ncol = ncol, ntop = ntop, 
+        labeller = labeller, scales = scales, ylab=assay)
 }
 
 
-extract_top_features <- function(object, effectvar, pvar, fdrvar, fdrcutoff){  
+extract_top_features <- function(object, effectvar, pvar, fdrvar, fdrcutoff, ntop){  
     fdt <- unique(object[, c('feature_id', fdrvar, effectvar, pvar), with=FALSE])
-    pvals   <- fdt[, pvar,      drop=FALSE, with=FALSE]
-    fdrs    <- fdt[, fdrvar,    drop=FALSE, with=FALSE]
-    effects <- fdt[, effectvar, drop=FALSE, with=FALSE]
+    pvals   <- fdt[, pvar,      drop = FALSE, with = FALSE]
+    fdrs    <- fdt[, fdrvar,    drop = FALSE, with = FALSE]
+    effects <- fdt[, effectvar, drop = FALSE, with = FALSE]
     signs <- data.table::copy(effects)
     if (nrow(signs)>0)  signs %<>% sign() # otherwise breaks
 
@@ -760,6 +761,8 @@ extract_top_features <- function(object, effectvar, pvar, fdrvar, fdrcutoff){
     if (nrow(signs)>0) signs %<>% apply(1, mean) %>% set_names(fdt$feature_id) # dont break
     upfeatures <- names(    sort(pvals[signs>0 & fdrs < fdrcutoff]))
     dnfeatures <- names(rev(sort(pvals[signs<0 & fdrs < fdrcutoff])))
+    upfeatures %<>% head(ntop %/% 2)
+    dnfeatures %<>% tail(ntop-length(upfeatures))
     featurelevels <- object$feature_id %>% (function(x) if (is.factor(x)) levels(x) else unique(x) )
     object %<>% extract(c(dnfeatures, upfeatures), on = 'feature_id')
     object$feature_id %<>% factor(featurelevels) %>% droplevels()      # preserve feature order
@@ -777,9 +780,9 @@ extract_top_features <- function(object, effectvar, pvar, fdrvar, fdrcutoff){
 #' @rdname plot_contrast_boxplots
 #' @export
 plot_contrast_boxplots.data.table <- function(
-    object, subgroup, downlevels, uplevels, fit, contrast, block = NULL, 
+    object, subgroup, fit = fits(object)[1], contrast = coefs(object)[1], block = NULL, 
     fdrcutoff = 0.05, palette = NULL, title = contrast, ylab = NULL, 
-    facet = vars(feature_id), nrow = NULL, ncol = NULL, labeller = 'label_both', scales = 'free_y', 
+    facet = vars(feature_id), nrow = NULL, ncol = NULL, ntop = 4, labeller = 'label_both', scales = 'free_y', 
     ...
 ){
 # Assert
@@ -791,11 +794,12 @@ plot_contrast_boxplots.data.table <- function(
     fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
     effectvar <- paste('effect', contrast, fit, sep = FITSEP)
     pvar      <- paste('p',      contrast, fit, sep = FITSEP)
-    object %<>% extract_top_features(effectvar = effectvar, pvar = pvar, fdrvar = fdrvar, fdrcutoff = fdrcutoff)
+    object %<>% extract_top_features(effectvar = effectvar, pvar = pvar, 
+                    fdrvar = fdrvar, fdrcutoff = fdrcutoff, ntop = ntop)
 # Plot
     mediandt <- summarize_median(object, subgroupvar)
     contrastsubgroup <- NULL
-    mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, downlevels)]
+    #mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, downlevels)]
     facet %<>% c(vars( !!!syms(fdrvar)))
     facetstr <- vapply(facet, as_name, character(1))
     p <- plot_subgroup_boxplots(
@@ -803,9 +807,9 @@ plot_contrast_boxplots.data.table <- function(
             facet = facet, scales = scales, nrow = nrow, 
             ncol = ncol, labeller = labeller, palette  = palette)  + 
         theme_bw() + xlab(NULL) + ggtitle(title) + ylab(ylab) + 
-        geom_hline( data = mediandt, linetype = 'longdash',
-                aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 
-                    color = !!sym(subgroupvar))) + 
+        # geom_hline( data = mediandt, linetype = 'longdash',
+        #        aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 
+        #            color = !!sym(subgroupvar))) + 
         guides(alpha = 'none')
     p
 # Color
@@ -901,7 +905,7 @@ expand_into_vector <- function(value, templatevector){
                                 fvars = c('feature_name', pvar, fdrvar))
     setnames(plotdt, pvar,   'p')
     setnames(plotdt, fdrvar, 'fdr')
-    plotdt$facet <- paste0(topfname, ' ~ ', contrast)
+    plotdt$facet <- contrast
     plotdt
 }
 
@@ -920,7 +924,7 @@ prep_svar_boxplots <- function(
                         nfeature = nfeature),
         SIMPLIFY = FALSE)
     plotdt %<>% data.table::rbindlist()
-    plotdt %<>% setorder(p)
+    plotdt %<>% data.table::setorder(p)
     plotdt[, fdr := paste0('FDR ', formatC(fdr, format='e', digits=2))]
     plotdt$facet %<>% factor(unique(.))
     plotdt
@@ -944,33 +948,44 @@ plot_svar_boxplots <- function(...){
 #' @param nrow      number of plot rows
 #' @param ncol      number of plot columns
 #' @param palette   named character vector : color palette
-plot_svar_contrasts <- function(
+plot_subgroup_contrasts <- function(
     object, 
-    svar, 
-    blockvar  = NULL, 
-    contrasts = coefs(object, svars = svar),
-    xvar      = svar, 
-    fillvar   = svar,
+    subgroup, 
+    block     = NULL, 
+    contrasts = coefs(object), #, svars = as_name(!!enquo(subgroup))),
+    x         = !!enquo(subgroup), 
+    fill      = !!enquo(subgroup),
+    jitter    = FALSE,
     nfeature  = 1, 
     nrow      = NULL, 
     ncol      = NULL, 
     palette   = NULL
 ){
+    subgroup <- enquo(subgroup)
+    x        <- enquo(x)
+    fill     <- enquo(fill)
+    block    <- enquo(block)
+
+    subgroupstr <- as_name(subgroup)
+    xstr     <- as_name(x)
+    fillstr  <- as_name(fill)
+    blockstr <- if (quo_is_null(block)) NULL else as_name(block)
+
     plotdt <- prep_svar_boxplots(
-                object    = object,
-                svar      = svar,
-                contrasts = contrasts,
-                xvar      = xvar,
-                fillvar   = fillvar,
-                blockvar  = blockvar, 
-                nfeature  = nfeature)
+                object      = object,
+                svar        = subgroupstr,
+                contrasts   = contrasts,
+                xvar        = xstr,
+                fillvar     = fillstr,
+                blockvar    = blockstr, 
+                nfeature    = nfeature)
     plot_boxplots(
         plotdt,
-        x       = xinteraction,
-        fill    = !!sym(fillvar),
-        block   = !!sym(blockvar),
-        facet   = vars(facet, fdr),
-        jitter  = TRUE,
+        x       = !!x,
+        fill    = !!fill,
+        block   = !!block,
+        facet   = vars(feature_name, facet, fdr),
+        jitter  = jitter,
         scales  = 'free',
         nrow    = nrow,
         ncol    = ncol,
