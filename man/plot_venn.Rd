@@ -4,7 +4,7 @@
 \alias{plot_venn}
 \title{Plot venn}
 \usage{
-plot_venn(isfdr)
+plot_venn(issig, colors = NULL)
 }
 \arguments{
 \item{isfdr}{matrix(nrow, ncontrast): -1 (down), +1 (up)}

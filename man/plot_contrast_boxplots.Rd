@@ -13,16 +13,15 @@ plot_contrast_boxplots(object, ...)
   assay = assayNames(object)[1],
   subgroup,
   block = NULL,
-  downlevels,
-  uplevels,
-  fit,
-  contrast,
+  fit = fits(object)[1],
+  contrast = coefs(object)[1],
   fdrcutoff = 0.05,
   palette = NULL,
   title = contrast,
   ylab = NULL,
   nrow = NULL,
   ncol = NULL,
+  ntop = 4,
   labeller = "label_both",
   scales = "free_y",
   ...
@@ -31,10 +30,8 @@ plot_contrast_boxplots(object, ...)
 \method{plot_contrast_boxplots}{data.table}(
   object,
   subgroup,
-  downlevels,
-  uplevels,
-  fit,
-  contrast,
+  fit = fits(object)[1],
+  contrast = coefs(object)[1],
   block = NULL,
   fdrcutoff = 0.05,
   palette = NULL,
@@ -43,6 +40,7 @@ plot_contrast_boxplots(object, ...)
   facet = vars(feature_id),
   nrow = NULL,
   ncol = NULL,
+  ntop = 4,
   labeller = "label_both",
   scales = "free_y",
   ...
@@ -58,10 +56,6 @@ plot_contrast_boxplots(object, ...)
 \item{subgroup}{symbol: subgroup svar}
 
 \item{block}{symbol: block var}
-
-\item{downlevels}{character vector}
-
-\item{uplevels}{character vector}
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
@@ -82,6 +76,10 @@ plot_contrast_boxplots(object, ...)
 \item{labeller}{string or function}
 
 \item{scales}{'free', 'free_x', 'free_y', 'fixed'}
+
+\item{downlevels}{character vector}
+
+\item{uplevels}{character vector}
 }
 \description{
 Plot contrast boxplots

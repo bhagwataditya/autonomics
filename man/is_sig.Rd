@@ -6,8 +6,8 @@
 \usage{
 is_sig(
   object,
-  fit = intersect(names(metadata(object)), TESTS),
-  contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1,
+  fit = fits(object)[1],
+  contrast = coefs(object),
   quantity = "fdr"
 )
 }
