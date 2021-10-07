@@ -2,35 +2,97 @@
 % Please edit documentation in R/2_get_set.R
 \name{fdata}
 \alias{fdata}
+\alias{sdata}
+\alias{fdt}
+\alias{sdt}
 \alias{fdata,SummarizedExperiment-method}
+\alias{sdata,SummarizedExperiment-method}
+\alias{sdata,MultiAssayExperiment-method}
+\alias{fdt,SummarizedExperiment-method}
+\alias{sdt,SummarizedExperiment-method}
+\alias{sdt,MultiAssayExperiment-method}
 \alias{fdata<-}
+\alias{sdata<-}
+\alias{fdt<-}
+\alias{sdt<-}
 \alias{fdata<-,SummarizedExperiment,data.frame-method}
-\title{Get/Set fdata}
+\alias{sdata<-,SummarizedExperiment,data.frame-method}
+\alias{sdata<-,SummarizedExperiment,DataFrame-method}
+\alias{sdata<-,MultiAssayExperiment,data.frame-method}
+\alias{sdata<-,MultiAssayExperiment,DataFrame-method}
+\alias{fdt<-,SummarizedExperiment,data.table-method}
+\alias{sdt<-,SummarizedExperiment,data.table-method}
+\alias{sdt<-,MultiAssayExperiment,data.table-method}
+\title{Get/Set sample/feature data}
 \usage{
 fdata(object)
 
+sdata(object)
+
+fdt(object)
+
+sdt(object)
+
 \S4method{fdata}{SummarizedExperiment}(object)
+
+\S4method{sdata}{SummarizedExperiment}(object)
+
+\S4method{sdata}{MultiAssayExperiment}(object)
+
+\S4method{fdt}{SummarizedExperiment}(object)
+
+\S4method{sdt}{SummarizedExperiment}(object)
+
+\S4method{sdt}{MultiAssayExperiment}(object)
 
 fdata(object) <- value
 
+sdata(object) <- value
+
+fdt(object) <- value
+
+sdt(object) <- value
+
 \S4method{fdata}{SummarizedExperiment,data.frame}(object) <- value
+
+\S4method{sdata}{SummarizedExperiment,data.frame}(object) <- value
+
+\S4method{sdata}{SummarizedExperiment,DataFrame}(object) <- value
+
+\S4method{sdata}{MultiAssayExperiment,data.frame}(object) <- value
+
+\S4method{sdata}{MultiAssayExperiment,DataFrame}(object) <- value
+
+\S4method{fdt}{SummarizedExperiment,data.table}(object) <- value
+
+\S4method{sdt}{SummarizedExperiment,data.table}(object) <- value
+
+\S4method{sdt}{MultiAssayExperiment,data.table}(object) <- value
 }
 \arguments{
-\item{object}{SummarizedExperiment, eSet, or EList}
+\item{object}{SummarizedExperiment/MultiAssayExperiment}
 
-\item{value}{data.frame}
+\item{value}{data.frame/data.table}
 }
 \value{
-feature dataframe (get) or updated object (set)
+data.frame/data.table (get) or updated object (set)
 }
 \description{
-Get/Set feature data
+Get/Set sample/feature data
 }
 \examples{
-require(magrittr)
-file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file, plot=FALSE)
-head(fdata(object)) # Getter
-fdata(object) \%<>\% cbind(z=1)
-head(fdata(object)) # Setter
+# Read data
+    require(magrittr)
+    file <- download_data('billing16.proteingroups.txt')
+    object <- read_proteingroups(file, plot=FALSE)
+# sdata/fdata
+    sdata(object)[1:3, ]
+    fdata(object)[1:3, ]
+   (sdata(object)[1:3, ] \%<>\% cbind(z=1))
+   (fdata(object)[1:3, ] \%<>\% cbind(z=1))
+# sdt/fdt
+    sdt(object)[1:3, ]
+    fdt(object)[1:3, ]
+   (sdt(object)[1:3, ] \%<>\% cbind(z=1))
+   (fdt(object)[1:3, ] \%<>\% cbind(z=1))
 }
