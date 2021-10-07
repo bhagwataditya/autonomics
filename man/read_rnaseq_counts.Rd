@@ -152,10 +152,12 @@ Read/analyze rnaseq counts / bamfiles
 file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file, pca= TRUE, fit='limma')
 
-# requires Rsubread
-# file <- download_data('billing16.bam.zip')
-# object <- read_rnaseq_bams(file, paired=TRUE, genome='hg38', pca=TRUE, 
-#                            fit='limma', plot=TRUE)
+if (requireNamespace('Rsubread')){
+    dir <- download_data('billing16.bam.zip')
+    object <- read_rnaseq_bams(
+                dir, paired = TRUE, genome = 'hg38', pca = TRUE, 
+                fit = 'limma', plot = TRUE)
+}
 }
 \author{
 Aditya Bhagwat, Shahina Hayat
