@@ -613,9 +613,7 @@ biplot_corrections <- function(
         p <- p + guides(color = 'none', fill = 'none')
         plotlist %<>% c(list(p))
     }
-    pp <- arrangeGrob(
-      grobs = plotlist, ncol = varcols,nrow = ceiling(length(covariates)/2),
-      bottom = legend)
+    pp <- arrangeGrob(grobs = plotlist, ncol = varcols, bottom = legend)
     if (plot) grid::grid.draw(pp)
     invisible(pp)
 }
