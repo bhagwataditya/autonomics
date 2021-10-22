@@ -1117,7 +1117,6 @@ subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
                             protein = median(protein, na.rm = TRUE),
                             subgroup      = unique(subgroup)),
                         by = c('phospho_id', 'sample_id') )
-    fosdt[ is.na(protein), protein := 0 ]
 # compute occupancy
     fosdt[, occupancy := phospho - protein]
     occ <- dt2mat(dcast(fosdt, phospho_id ~ sample_id, value.var = 'occupancy'))
