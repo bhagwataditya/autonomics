@@ -153,13 +153,13 @@ Fit model and test for differential expression
     object$SET \%<>\% factor(); object$SUB \%<>\% factor()
     object \%<>\% fit_limma(subgroupvar = 'SET')
     object \%<>\% fit_lm(subgroupvar = 'SET')
-    plot_venn(testmat(object, coef = 't3'))
+    plot_contrast_venn(testmat(object, coef = 't3'))
     
 # blocked: limma, lme, lmer
     object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB')
     object \%<>\% fit_lme(subgroupvar = 'SET', block = 'SUB')
     # object \%<>\% fit_lme(subgroupvar = 'SET', block = 'SUB') # slow
-    plot_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
+    plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
     
 # flexible: limma contrastdefs
     object \%<>\% fit_limma(formula=~SET,   coef='t3',            block='SUB')

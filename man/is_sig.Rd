@@ -33,5 +33,5 @@ object <- read_proteingroups(file, plot=FALSE)
 object \%<>\% fit_lm()
 object \%<>\% fit_limma()
 issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
-plot_venn(issig)
+plot_contrast_venn(issig)
 }
