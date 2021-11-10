@@ -587,7 +587,7 @@ old_summarize_fit <- function(
 #============================================================================
 #
 #                   is_sig  .is_sig
-#                   plot_venn
+#                   plot_contrast_venn
 #
 #============================================================================
 
@@ -617,7 +617,7 @@ old_summarize_fit <- function(
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
 #' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
-#' plot_venn(issig)
+#' plot_contrast_venn(issig)
 #' @export
 is_sig <- function(
     object,
@@ -644,25 +644,6 @@ is_sig <- function(
     }
     res %<>% do.call(cbind, .)
     res
-}
-
-
-#' Plot venn
-#' @param isfdr matrix(nrow, ncontrast): -1 (down), +1 (up)
-#' @return nothing returned
-#' @examples
-#' require(magrittr)
-#' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
-#' object %<>% fit_wilcoxon(subgroupvar='SampleGroup', block = 'Subject_ID')
-#' object %<>% fit_limma(   subgroupvar='SampleGroup', block = 'Subject_ID')
-#' isfdr <- is_sig(object, contrast = 't3-t2')
-#' plot_venn(isfdr)
-#' @export
-plot_venn <- function(issig, colors = NULL){
-    layout(matrix(c(1,2), nrow=2))
-    vennDiagram(issig, include='up',   mar = rep(0,4), show.include=TRUE, circle.col = colors)
-    vennDiagram(issig, include='down', mar = rep(0,4), show.include=TRUE, circle.col = colors)
 }
 
 
