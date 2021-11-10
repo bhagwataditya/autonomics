@@ -100,6 +100,8 @@ minusinf_to_na <- function(x, verbose = FALSE){
 }
 
 
+#' @rdname zero_to_na
+#' @export
 na_to_string <- function(x){
     x[is.na(x)] <- ''
     x
