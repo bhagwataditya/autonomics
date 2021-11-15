@@ -724,24 +724,25 @@ plot_contrast_boxplots <- function(object, ...){
 plot_contrast_boxplots.SummarizedExperiment <- function(
     object, assay = assayNames(object)[1], 
     subgroup, block = NULL, fit = fits(object)[1], contrast = coefs(object)[1],
+    facet = vars(feature_id, !!sym(paste('fdr', contrast, fit, sep = FITSEP))),
     fdrcutoff = 0.05, palette = NULL, title = contrast, ylab = NULL, 
     nrow = NULL, ncol = NULL, ntop = 4,
     labeller = 'label_both', scales = 'free_y', ...
 ){
 # Order/Extract on p value
-    subgroup <- enquo(subgroup)
-    block    <- enquo(block)
-    subgroupvar <- if (quo_is_null(subgroup)) character(0) else as_name(subgroup)
-    blockvar    <- if (quo_is_null(block))    character(0) else as_name(block)
-    fdrvar    <- paste('fdr',    contrast, fit, sep = FITSEP)
-    effectvar <- paste('effect', contrast, fit, sep = FITSEP)
-    pvar      <- paste('p',      contrast, fit, sep = FITSEP)
-    fvars0 <- c('feature_id', 'feature_name', fdrvar, pvar, effectvar)
+    subgroup  <- enquo(subgroup); subgroupvar <- if (quo_is_null(subgroup)) character(0) else as_name(subgroup)
+    block     <- enquo(block);    blockvar    <- if (quo_is_null(block))    character(0) else as_name(block)
+    facetvars <- vapply(facet, as_name, character(1))
     svars0 <- c(subgroupvar, blockvar)
-    dt <- sumexp_to_long_dt(object, assay = assay, svars=svars0, fvars = fvars0)
+    fvars0 <- c(facetvars, 
+                paste('fdr',    contrast, fit, sep = FITSEP), 
+                paste('p',      contrast, fit, sep = FITSEP), 
+                paste('effect', contrast, fit, sep = FITSEP))
+    dt <- sumexp_to_long_dt(object, assay = assay, svars = svars0, fvars = fvars0)
     plot_contrast_boxplots.data.table(
         dt, 
         subgroup = !!subgroup, fit = fit, contrast = contrast, block = !!block, 
+        facet = facet, 
         fdrcutoff = fdrcutoff, palette = palette, title = title, 
         nrow = nrow, ncol = ncol, ntop = ntop, 
         labeller = labeller, scales = scales, ylab=assay)
@@ -782,7 +783,8 @@ extract_top_features <- function(object, effectvar, pvar, fdrvar, fdrcutoff, nto
 plot_contrast_boxplots.data.table <- function(
     object, subgroup, fit = fits(object)[1], contrast = coefs(object)[1], block = NULL, 
     fdrcutoff = 0.05, palette = NULL, title = contrast, ylab = NULL, 
-    facet = vars(feature_id), nrow = NULL, ncol = NULL, ntop = 4, labeller = 'label_both', scales = 'free_y', 
+    facet = vars(feature_id, !!sym(paste('fdr', contrast, fit, sep = FITSEP))),
+    nrow = NULL, ncol = NULL, ntop = 4, labeller = 'label_both', scales = 'free_y', 
     ...
 ){
 # Assert
@@ -800,7 +802,6 @@ plot_contrast_boxplots.data.table <- function(
     mediandt <- summarize_median(object, subgroupvar)
     contrastsubgroup <- NULL
     #mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, downlevels)]
-    facet %<>% c(vars( !!!syms(fdrvar)))
     facetstr <- vapply(facet, as_name, character(1))
     p <- plot_subgroup_boxplots(
             object, subgroup = !!subgroup, block = !!block, x = !!subgroup, fill = !!subgroup, 
