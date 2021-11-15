@@ -8,7 +8,7 @@ plot_volcano(
   object,
   fit = fits(object),
   coefs = autonomics::coefs(object, fit[1]),
-  label = feature_name,
+  label = feature_id,
   ntop = 1,
   nrow = length(fit),
   intercept = FALSE

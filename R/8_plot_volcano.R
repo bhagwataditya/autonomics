@@ -88,10 +88,13 @@ melt_contrastdefs <- function(contrastdefmat){
 #' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 #' @export
 make_volcano_dt <- function(
-    object, fit, coefs, ntop = 3
+    object, fit = fits(object)[1], coefs = autonomics::coefs(object)[1], 
+    label = feature_id, ntop = 3
 ){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
-    id.vars <- c('feature_id', 'feature_name', 'imputed', 'control') 
+    label <- enquo(label)
+    labelstr <- as_name(label)
+    id.vars <- c('feature_id', labelstr, 'imputed', 'control') 
     id.vars %<>% intersect(fvars(object))
     fvars0 <- c(id.vars, effectvars(object), pvars(object), fdrvars(object))
     dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
@@ -155,7 +158,7 @@ make_volcano_dt <- function(
 #' @export
 plot_volcano <- function(object, 
     fit = fits(object), coefs = autonomics::coefs(object, fit[1]), 
-    label = feature_name, ntop=1, nrow=length(fit), intercept=FALSE
+    label = feature_id, ntop=1, nrow=length(fit), intercept=FALSE
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -163,8 +166,10 @@ plot_volcano <- function(object,
     if (!intercept) coefs %<>% setdiff('Intercept')
     topup <- topdown <- effect <- mlp <- facetrow <- facetcol <- NULL
     label <- enquo(label)
+    labelstr <- rlang::as_name(label)
+    assert_is_subset(labelstr, fvars(object))
 # Prepare
-    plotdt <- make_volcano_dt(object, fit, coefs, ntop = ntop)
+    plotdt <- make_volcano_dt(object, fit, coefs, ntop = ntop, label = !!label)
     txtdt  <- copy(plotdt)[topup==TRUE | topdown==TRUE]
     colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100), # 20 70 100
                     hcl(h=120, l=c(100, 70, 20), c=100)) # 100 70 20
