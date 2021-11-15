@@ -279,11 +279,11 @@ function(object)  as(colData(object), "data.frame"))
 
 #' @rdname fdata
 setMethod('fdt',  signature('SummarizedExperiment'),                           # fdt se
-function(object)  data.table(data.frame(rowData(object))))
+function(object)  data.table(data.frame(rowData(object), check.names = FALSE)))
 
 #' @rdname fdata
 setMethod('sdt',  signature('SummarizedExperiment'),                           # sdt se
-function(object)  data.table(data.frame(colData(object))))
+function(object)  data.table(data.frame(colData(object), check.names = FALSE)))
 
 #' @rdname fdata
 setMethod('sdt', signature('MultiAssayExperiment'),                            # sdt mae
