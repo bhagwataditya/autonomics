@@ -549,23 +549,33 @@ fit_limma.MultiAssayExperiment <- function(
     limmadt <- data.table(feature_id = rownames(limmafit))
     if ('effect' %in% statvars){
         dt0 <- data.table(limmafit$coefficients)
+        dt0 %<>% setna(0)
         names(dt0) %<>% paste0('effect~', ., suffix)
-        limmadt %<>% cbind(data.table(dt0))      }
+        limmadt %<>% cbind(data.table(dt0)) 
+    }
 # p/t/fdr
     if (!all(limmafit$df.residual==0)){
         limmafit %<>% eBayes()
         if ('p' %in% statvars){ 
             dt0 <- data.table(limmafit$p.value)
+            dt0 %<>% setna(1)
             names(dt0) %<>% paste0('p~', ., suffix); limmadt %<>% cbind(dt0)  }
         if ('t' %in% statvars){ 
             dt0 <- data.table(limmafit$t)
+            dt0 %<>% setna(0)
             names(dt0) %<>% paste0('t~', ., suffix); limmadt %<>% cbind(dt0)  }
         if ('fdr' %in% statvars){
             dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
+            dt0 %<>% setna(1)
             names(dt0) %<>% paste0('fdr~',.,suffix); limmadt %<>% cbind(dt0)  } }
     limmadt
 }
 
+
+setna <- function(dt, value){
+   for (j in seq_len(ncol(dt)))  set(dt, which(is.na(dt[[j]])), j, value)
+    dt
+}
 
 
 #' formula to string
