@@ -1,5 +1,57 @@
 #==============================================================================
 #
+#                           rm_unmatched_samples
+#                           rm_singleton_samples
+#
+#==============================================================================
+
+#' rm unmatched/singleton samples
+#'
+#' @param object       SummarizedExperiment
+#' @param subgroupvar  subgroup variable (string)
+#' @param subgroupctr  control subgroup (string)
+#' @param block        block variable (string)
+#' @param verbose      TRUE/FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' require(magrittr)
+#' file <- download_data('atkin18.somascan.adat')
+#' object <- read_somascan(file, plot=FALSE)
+#' object %<>% filter_samples(SampleGroup %in% c('t1', 't2'), verbose = TRUE)
+#' rm_singleton_samples(object, svar = 'Subject_ID')
+#' rm_unmatched_samples(object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' @export
+rm_unmatched_samples <- function(
+    object,
+    subgroupvar = 'subgroup',
+    subgroupctr = slevels(object, subgroupvar)[1],
+    block,
+    verbose = TRUE
+){
+    snames1 <- sdt(object)[,
+                .SD[(sum(get(subgroupvar)==subgroupctr)==1) &
+                    (sum(get(subgroupvar)!=subgroupctr) >0)],  by = block]$sample_id
+    n <- length(snames1)
+    if (verbose & n < ncol(object)){
+        message('\t\tRetain ', n, '/', ncol(object), ' samples with matching normals') }
+    object %<>% extract(, snames1)
+    object
+}
+
+#' @rdname rm_unmatched_samples
+#' @export
+rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
+    selectedsamples <- sdt(object)[, .SD[.N>1], by = svar][['sample_id']]
+    n <- length(selectedsamples)
+    if (verbose & n < ncol(object)){
+        message('\t\tRetain ', length(selectedsamples), '/',
+                ncol(object), ' samples with replicated ', svar) }
+    object[, selectedsamples]
+}
+
+
+#==============================================================================
+#
 #                           log2transform()
 #                           zscore()
 #                           quantnorm()
@@ -133,10 +185,8 @@ subtract_pairs <- function(
         message(txt)
     }
 # Ensure single ref per block
-    sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]
-    sdata1 %<>% data.table()
-    singlerefperblock <- sdata1[,
-                            sum(get(subgroupvar)==subgroupctr)==1, by=block]$V1
+    sdt1 <- sdt(object)[, c('sample_id', subgroupvar, block), with = FALSE]
+    singlerefperblock <- sdt1[, sum(get(subgroupvar)==subgroupctr)==1, by=block]$V1
     assert_is_identical_to_true(all(singlerefperblock))
 # Subtract ref
     splitobjects <- split_by_svar(object, !!sym(subgroupvar))

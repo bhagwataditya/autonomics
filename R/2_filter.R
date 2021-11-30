@@ -283,26 +283,4 @@ is_available_for_some_feature <- function(object){
 }
 
 
-#' Rm singleton samples
-#'
-#' @param object  SummarizedExperiment
-#' @param svar    sample var
-#' @param verbose TRUE/FALSE
-#' @return SummarizedExperiment
-#' @examples
-#' require(magrittr)
-#' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
-#' object %<>% filter_samples(SampleGroup %in% c('t1', 't2'), verbose = TRUE)
-#' rm_singleton_samples(object, 'Subject_ID')
-#' @export
-rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
-    selectedsamples <- sdt(object)[, .SD[.N>1], by = svar][['sample_id']]
-    n <- length(selectedsamples)
-    if (verbose & n < ncol(object)){
-        message('\t\tRetain ', length(selectedsamples), '/', 
-                ncol(object), ' samples with replicated ', svar) }
-    object[, selectedsamples]
-}
-
 
