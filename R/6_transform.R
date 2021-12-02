@@ -33,7 +33,7 @@ rm_unmatched_samples <- function(
                     (sum(get(subgroupvar)!=subgroupctr) >0)],  by = block]$sample_id
     n <- length(snames1)
     if (verbose & n < ncol(object)){
-        message('\t\tRetain ', n, '/', ncol(object), ' samples with matching normals') }
+        message('\t\tRetain ', n, '/', ncol(object), ' samples with matching ', subgroupctr) }
     object %<>% extract(, snames1)
     object
 }
