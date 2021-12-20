@@ -885,7 +885,7 @@ expand_into_vector <- function(value, templatevector){
 #===========================================================================
 
 
-.prep_svar_boxplots <- function(
+.prep_subgroup_contrasts <- function(
     object,
     svar,
     contrast,
@@ -911,11 +911,11 @@ expand_into_vector <- function(value, templatevector){
 }
 
 
-prep_svar_boxplots <- function(
+prep_subgroup_contrasts <- function(
     object, svar, contrasts, xvar, fillvar, blockvar, nfeature
 ){
     plotdt <- mapply(
-        .prep_svar_boxplots,
+        .prep_subgroup_contrasts,
         svar = svar,
         contrast = contrasts,
         MoreArgs = list(object   = object,
@@ -933,12 +933,12 @@ prep_svar_boxplots <- function(
 
 
 plot_svar_boxplots <- function(...){
-    .Deprecated('plot_svar_contrasts')
+    .Deprecated('plot_subgroup_contrasts')
 }
 
 
 
-#' Plot svar contrasts
+#' Plot subgroup contrasts
 #' @param object    SummarizedExperiment
 #' @param svar      string
 #' @param contrasts character vector
@@ -949,6 +949,14 @@ plot_svar_boxplots <- function(...){
 #' @param nrow      number of plot rows
 #' @param ncol      number of plot columns
 #' @param palette   named character vector : color palette
+#' @return ggplot 
+#' @examples
+#' require(magrittr)
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' object %<>% fit_limma(subgroupvar = 'SET')
+#' plot_subgroup_contrasts(object, subgroup = SET, block = SUB)
+#' @export
 plot_subgroup_contrasts <- function(
     object, 
     subgroup, 
@@ -972,7 +980,7 @@ plot_subgroup_contrasts <- function(
     fillstr  <- as_name(fill)
     blockstr <- if (quo_is_null(block)) NULL else as_name(block)
 
-    plotdt <- prep_svar_boxplots(
+    plotdt <- prep_subgroup_contrasts(
                 object      = object,
                 svar        = subgroupstr,
                 contrasts   = contrasts,

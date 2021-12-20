@@ -2,7 +2,7 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_subgroup_contrasts}
 \alias{plot_subgroup_contrasts}
-\title{Plot svar contrasts}
+\title{Plot subgroup contrasts}
 \usage{
 plot_subgroup_contrasts(
   object,
@@ -39,6 +39,16 @@ plot_subgroup_contrasts(
 
 \item{blockvar}{string}
 }
+\value{
+ggplot
+}
 \description{
-Plot svar contrasts
+Plot subgroup contrasts
+}
+\examples{
+require(magrittr)
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file, plot = FALSE)
+object \%<>\% fit_limma(subgroupvar = 'SET')
+plot_subgroup_contrasts(object, subgroup = SET, block = SUB)
 }
