@@ -33,9 +33,9 @@ nmin <- function(x, n){
 top_down <- function(effect, fdr, mlp, ntop){
     fdr_ok   <- fdr  < 0.05
     coef_ok  <- effect < -1
-    coef_top <- if (any(fdr_ok)){  effect < nmin(effect[fdr_ok], ntop+1)
+    coef_top <- if (any(fdr_ok)) {  effect < nmin(effect[fdr_ok], ntop + 1)
                 } else {           rep(FALSE, length(effect))            }
-    mlp_top  <- if (any(coef_ok)){ mlp  > nmax(mlp[coef_ok], ntop+1)
+    mlp_top  <- if (any(coef_ok)) { mlp  > nmax(mlp[coef_ok], ntop + 1)
                 } else {           rep(FALSE, length(effect))            }
     fdr_ok & coef_ok & (coef_top | mlp_top)
 }
@@ -54,10 +54,10 @@ top_down <- function(effect, fdr, mlp, ntop){
 #' @noRd
 top_up <- function(effect, fdr, mlp, ntop){
     fdr_ok   <- fdr  < 0.05
-    coef_ok  <- effect >  0 # currently no filter 
-    coef_top <- if(any(fdr_ok)){  effect > nmax(effect[fdr_ok], ntop+1)
+    coef_ok  <- effect >  0 # currently no filter
+    coef_top <- if (any(fdr_ok)) {  effect > nmax(effect[fdr_ok], ntop + 1)
                 } else {          rep(FALSE, length(effect)) }
-    mlp_top  <- if (any(coef_ok)){ mlp > nmax(mlp[coef_ok], ntop+1)
+    mlp_top  <- if (any(coef_ok)) { mlp > nmax(mlp[coef_ok], ntop + 1)
                 } else {           rep(FALSE, length(effect)) }
     fdr_ok & coef_ok & (coef_top | mlp_top)
 }
@@ -88,22 +88,22 @@ melt_contrastdefs <- function(contrastdefmat){
 #' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 #' @export
 make_volcano_dt <- function(
-    object, fit = fits(object)[1], coefs = autonomics::coefs(object)[1], 
+    object, fit = fits(object)[1], coefs = autonomics::coefs(object)[1],
     label = feature_id, ntop = 3
 ){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
     label <- enquo(label)
     labelstr <- as_name(label)
-    id.vars <- c('feature_id', labelstr, 'imputed', 'control') 
+    id.vars <- c('feature_id', labelstr, 'imputed', 'control')
     id.vars %<>% intersect(fvars(object))
     fvars0 <- c(id.vars, effectvars(object), pvars(object), fdrvars(object))
-    dt <- data.table(fdata(object)[, fvars0, drop=FALSE])
+    dt <- data.table(fdata(object)[, fvars0, drop = FALSE])
     dt %<>% melt.data.table(id.vars = id.vars)
     dt %<>% tidyr::separate(
                 .data$variable, into = c('quantity', 'coef', 'fit'), sep = FITSEP)
     dt %<>% extract(coefs, on = 'coef')
     dt %<>% extract(fit,   on = 'fit')
-    
+
     id.vars %<>% c('coef', 'fit')
     #dt %<>% dcast.data.table(feature_id+feature_name+coef+fit ~ quantity, value.var = 'value')
     dt %<>% tidyr::pivot_wider(
@@ -119,14 +119,14 @@ make_volcano_dt <- function(
     # Otherwise the (very few) features with effect=0 will have no effect for
     # 'significance'
     by <- intersect(c('coef', 'imputed', 'fit'), names(dt))
-    dt[,topdown := top_down(effect, fdr, mlp, ntop), by=by]
-    dt[,topup   := top_up(  effect, fdr, mlp, ntop), by=by]
-    dt[effect<=0,            significance := 'down']
-    dt[effect> 0,            significance :=   'up']
-    dt[effect<=0 & fdr<0.05, significance := 'down: fdr<0.05']
-    dt[effect> 0 & fdr<0.05, significance :=   'up: fdr<0.05']
-    dt[topdown==TRUE,        significance := 'down: top']
-    dt[topup  ==TRUE,        significance :=   'up: top']
+    dt[,topdown := top_down(effect, fdr, mlp, ntop), by = by]
+    dt[,topup   := top_up(  effect, fdr, mlp, ntop), by = by]
+    dt[effect <= 0,            significance := 'down']
+    dt[effect > 0,            significance :=   'up']
+    dt[effect <= 0 & fdr < 0.05, significance := 'down: fdr<0.05']
+    dt[effect > 0 & fdr < 0.05, significance :=   'up: fdr<0.05']
+    dt[topdown == TRUE,        significance := 'down: top']
+    dt[topup == TRUE,        significance :=   'up: top']
     dt[,significance := factor(significance, c(
         'down: top','down: fdr<0.05','down','up','up: fdr<0.05','up: top'))]
     dt[]
@@ -147,18 +147,19 @@ make_volcano_dt <- function(
 #' plot_volcano(object)
 #' object %<>% fit_lm()
 #' plot_volcano(object)
-#' 
+#'
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute=TRUE, fit='limma', plot=FALSE)
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'))
 #' object %<>% fit_lm(subgroupvar = 'SET')
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
-#' 
+#'
 #' @export
-plot_volcano <- function(object, 
-    fit = fits(object), coefs = autonomics::coefs(object, fit[1]), 
-    label = feature_id, ntop=1, nrow=length(fit), intercept=FALSE
+plot_volcano <- function(object,
+    fit = fits(object), coefs = autonomics::coefs(object, fit[1]),
+    label = feature_id, ntop = 1, nrow = length(fit),
+    intercept = identical("Intercept", coefs)
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -170,18 +171,23 @@ plot_volcano <- function(object,
     assert_is_subset(labelstr, fvars(object))
 # Prepare
     plotdt <- make_volcano_dt(object, fit, coefs, ntop = ntop, label = !!label)
-    txtdt  <- copy(plotdt)[topup==TRUE | topdown==TRUE]
-    colorvalues <-c(hcl(h=  0, l=c(20, 70, 100), c=100), # 20 70 100
-                    hcl(h=120, l=c(100, 70, 20), c=100)) # 100 70 20
+    txtdt  <- copy(plotdt)[topup == TRUE | topdown == TRUE]
+    colorvalues <- c(hcl(h =   0, l = c(20, 70, 100), c = 100), # 20 70 100
+                     hcl(h = 120, l = c(100, 70, 20), c = 100)) # 100 70 20
     names(colorvalues) <- levels(plotdt$significance)
 # Plot
     imputed <- NULL # fallback when plotdt misses "imputed"
     significance <- NULL
-    p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow) +  
-    geom_point(aes(x=effect,y=mlp,color=significance,shape=imputed),na.rm=TRUE)
+    p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow) +
+    geom_point(
+        aes(
+            x = effect,y = mlp,color = significance, shape = imputed),
+        na.rm = TRUE)
     if (!quo_is_null(label)) p <- p + geom_text_repel(
                         data = txtdt,
-                        aes(x=effect, y=mlp, label=!!label, color=significance),
+                        aes(
+                            x = effect, y = mlp, label = !!label,
+                            color = significance),
                         #hjust = 'outward',
                         na.rm = TRUE,
                         show.legend = FALSE)#,
