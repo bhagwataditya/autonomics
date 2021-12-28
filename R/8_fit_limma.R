@@ -509,7 +509,8 @@ fit_limma.MultiAssayExperiment <- function(
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars     = c('effect', 'p', 'fdr'),
-    suffix       = paste0(FITSEP, 'limma'),
+    sep          = FITSEP,
+    suffix       = paste0(sep, 'limma'),
     verbose      = TRUE, 
     plot         = FALSE
 ){
@@ -550,7 +551,7 @@ fit_limma.MultiAssayExperiment <- function(
     if ('effect' %in% statvars){
         dt0 <- data.table(limmafit$coefficients)
         dt0 %<>% setna(0)
-        names(dt0) %<>% paste0('effect~', ., suffix)
+        names(dt0) %<>% paste0('effect', sep, ., suffix)
         limmadt %<>% cbind(data.table(dt0)) 
     }
 # p/t/fdr
@@ -559,15 +560,15 @@ fit_limma.MultiAssayExperiment <- function(
         if ('p' %in% statvars){ 
             dt0 <- data.table(limmafit$p.value)
             dt0 %<>% setna(1)
-            names(dt0) %<>% paste0('p~', ., suffix); limmadt %<>% cbind(dt0)  }
+            names(dt0) %<>% paste0('p', sep, ., suffix); limmadt %<>% cbind(dt0)  }
         if ('t' %in% statvars){ 
             dt0 <- data.table(limmafit$t)
             dt0 %<>% setna(0)
-            names(dt0) %<>% paste0('t~', ., suffix); limmadt %<>% cbind(dt0)  }
+            names(dt0) %<>% paste0('t', sep, ., suffix); limmadt %<>% cbind(dt0)  }
         if ('fdr' %in% statvars){
             dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
             dt0 %<>% setna(1)
-            names(dt0) %<>% paste0('fdr~',.,suffix); limmadt %<>% cbind(dt0)  } }
+            names(dt0) %<>% paste0('fdr', sep, .,suffix); limmadt %<>% cbind(dt0)  } }
     limmadt
 }
 

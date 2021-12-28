@@ -53,7 +53,8 @@ fit_limma(object, ...)
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
-  suffix = paste0(FITSEP, "limma"),
+  sep = FITSEP,
+  suffix = paste0(sep, "limma"),
   verbose = TRUE,
   plot = FALSE
 )
