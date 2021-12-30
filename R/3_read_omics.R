@@ -528,7 +528,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 #'@export
 merge_sfile <- function(
     object, sfile = NULL, by.x = 'sample_id', by.y = NULL, all.x = TRUE, 
-    select = NULL, stringsAsFactors = TRUE, verbose = TRUE
+    select = NULL, stringsAsFactors = FALSE, verbose = TRUE
 ){
     if (is.null(sfile))  return(object)
     assert_all_are_existing_files(sfile)
@@ -545,7 +545,7 @@ merge_sfile <- function(
 #' @export
 merge_ffile <- function(
     object, ffile = NULL, by.x = 'feature_id', by.y = NULL, all.x = TRUE,
-    select = NULL, stringsAsFactors = TRUE, verbose = TRUE
+    select = NULL, stringsAsFactors = FALSE, verbose = TRUE
 ){
     if (is.null(ffile))  return(object)
     assert_all_are_existing_files(ffile)

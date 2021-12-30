@@ -12,7 +12,7 @@ merge_sfile(
   by.y = NULL,
   all.x = TRUE,
   select = NULL,
-  stringsAsFactors = TRUE,
+  stringsAsFactors = FALSE,
   verbose = TRUE
 )
 
@@ -23,7 +23,7 @@ merge_ffile(
   by.y = NULL,
   all.x = TRUE,
   select = NULL,
-  stringsAsFactors = TRUE,
+  stringsAsFactors = FALSE,
   verbose = TRUE
 )
 }

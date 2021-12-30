@@ -11,7 +11,7 @@ plot_volcano(
   label = feature_id,
   ntop = 1,
   nrow = length(fit),
-  intercept = FALSE
+  intercept = identical("Intercept", coefs)
 )
 }
 \arguments{
