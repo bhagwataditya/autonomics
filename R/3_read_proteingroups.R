@@ -573,7 +573,7 @@ DEFAULT_FASTAFIELDS <- c('GENES', 'EXISTENCE', 'REVIEWED', 'PROTEIN-NAMES')
 #' @return data.table(uniprot, genename, proteinname, reviewed, existence)
 #' @note EXISTENCE values are always those of the canonical isoform
 #'       (no isoform-level resolution for this field)
-#' @noRd
+#' @export
 load_uniprot_fasta <- function(
     fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE){
     if (!requireNamespace('seqinr', quietly = TRUE)){
