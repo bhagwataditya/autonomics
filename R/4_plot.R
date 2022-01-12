@@ -511,6 +511,7 @@ plot_boxplots.data.table <- function(
 ){
 # Assert/Process
     assert_is_data.table(object)
+    direction <- NULL
     if (!is.null(facet)) assert_is_all_of(facet, 'quosures')  # vars(...)
     medianvalue <- value <- present <- NULL
     x <- enquo(x);  fill <- enquo(fill);  color <- enquo(color);  block <- enquo(block); 
@@ -901,6 +902,7 @@ expand_into_vector <- function(value, templatevector){
 prep_subgroup_contrasts <- function(
     object, svar, contrasts, xvar, fillvar, blockvar, nfeature
 ){
+    . <- NULL
     plotdt <- mapply(
         .prep_subgroup_contrasts,
         svar = svar,
@@ -957,6 +959,7 @@ plot_subgroup_contrasts <- function(
     ncol      = NULL, 
     palette   = NULL
 ){
+    facet <- palette <- NULL
     subgroup <- enquo(subgroup)
     x        <- enquo(x)
     fill     <- enquo(fill)
