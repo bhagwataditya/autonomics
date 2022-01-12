@@ -648,32 +648,3 @@ is_sig <- function(
 }
 
 
-#' Filter for contrast features
-#' @param object    SummarizedExperiment
-#' @param contrast  character vector
-#' @param var       string
-#' @param cutoff    number
-#' @param verbose   TRUE/FALSE
-#' @return
-#' @export
-filter_contrast_features <- function(
-    object, 
-    contrast = coefs(object), 
-    fit = fits(object)[1],
-    var = 'fdr', cutoff = 0.05, verbose = TRUE
-){
-    assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_character(contrast)
-    assert_is_subset(contrast, coefs(object))
-    assert_is_subset(var, c('fdr', 'p'))
-    assert_is_a_number(cutoff)
-    assert_all_are_less_than_or_equal_to(cutoff, 1)
-    pvalues <- get(var)(object)
-    pvalues %<>% extract(, paste0(contrast, FITSEP, fit), drop=FALSE)
-    idx <- rowAnys(pvalues < cutoff )
-    if (verbose)  message('\t\tRetain ', sum(idx), '/', length(idx), ' features : ', var, '<', cutoff)
-    object[idx,]
-}
-
-
-
