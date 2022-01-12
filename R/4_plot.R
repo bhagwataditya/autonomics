@@ -1083,7 +1083,7 @@ list2mat <- function(x){
 #' plot_venn_heatmap(x)
 #' @export
 plot_venn_heatmap <- function(x){
-    if (!requireNamespace(pheatmap, quietly = TRUE)){
+    if (!requireNamespace('pheatmap', quietly = TRUE)){
         stop("`BiocManager::install('pheatmap')`")
     }
     assert_is_list(x)

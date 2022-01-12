@@ -1240,6 +1240,7 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
     object
 }
 
+utils::globalVariables('where')
 un_int64 <- function(x) {
     dplyr::mutate(x, dplyr::across(where(bit64::is.integer64), as.numeric))
 }
