@@ -826,19 +826,6 @@ plot_contrast_boxplots.data.table <- function(
     #invisible(g)
 }
 
-merge_fdr <- function(object, contrast, fit){
-    for (curfit in fit){
-        fdrvar <- paste('fdr', contrast, curfit, sep=FITSEP)
-        fdrdt  <- object[, fdrvar, drop=FALSE, with=FALSE]
-        fdrdt %<>% data.table(keep.rownames=TRUE)
-        names(fdrdt) <- c('feature_id', curfit)
-        fdrdt[, (curfit) := formatC(get(curfit), format='e', digits=0)]
-        dt %<>% merge(fdrdt, by='feature_id', all.x=TRUE)
-    }
-    dt$feature_id %<>% factor(fdata(object)$feature_id)
-    dt
-}
-
 summarize_median <- function(dt, subgroupvar){
     value <- NULL
     mediandt <- copy(dt)
