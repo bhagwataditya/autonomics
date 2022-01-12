@@ -567,6 +567,7 @@ DEFAULT_FASTAFIELDS <- c('GENES', 'EXISTENCE', 'REVIEWED', 'PROTEIN-NAMES')
 #'
 #' @param fastafile    path to fasta file
 #' @param fastafields  character vector
+#' @param verbose      bool
 #' @examples
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' load_uniprot_fasta(fastafile)
@@ -575,7 +576,8 @@ DEFAULT_FASTAFIELDS <- c('GENES', 'EXISTENCE', 'REVIEWED', 'PROTEIN-NAMES')
 #'       (no isoform-level resolution for this field)
 #' @export
 load_uniprot_fasta <- function(
-    fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE){
+    fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE
+){
     if (!requireNamespace('seqinr', quietly = TRUE)){
         stop("BiocManager::install('seqinr'). Then re-run.") }
     assert_all_are_existing_files(fastafile)
