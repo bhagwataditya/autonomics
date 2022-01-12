@@ -217,7 +217,7 @@ plot_data <- function(
 #
 #==============================================================================
 add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
-    feature_name <- NULL
+    feature_name <- value <- NULL
     x <- enquo(x)
     hl <- enquo(hl)
     if (quo_is_null(hl)) return(p)
@@ -762,8 +762,8 @@ extract_top_features <- function(object, effectvar, pvar, fdrvar, fdrcutoff, nto
     if (nrow(signs)>0) signs %<>% apply(1, mean) %>% set_names(fdt$feature_id) # dont break
     upfeatures <- names(    sort(pvals[signs>0 & fdrs < fdrcutoff]))
     dnfeatures <- names(rev(sort(pvals[signs<0 & fdrs < fdrcutoff])))
-    upfeatures %<>% head(ntop %/% 2)
-    dnfeatures %<>% tail(ntop-length(upfeatures))
+    upfeatures %<>% utils::head(ntop %/% 2)
+    dnfeatures %<>% utils::tail(ntop-length(upfeatures))
     featurelevels <- object$feature_id %>% (function(x) if (is.factor(x)) levels(x) else unique(x) )
     object %<>% extract(c(dnfeatures, upfeatures), on = 'feature_id')
     object$feature_id %<>% factor(featurelevels) %>% droplevels()      # preserve feature order

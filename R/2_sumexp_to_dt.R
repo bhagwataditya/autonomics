@@ -126,7 +126,7 @@ mae_to_long_dt <- function(
 ){
     assert_is_all_of(object, 'MultiAssayExperiment')
     .mae_to_long_dt <- function(i){
-        obj <- getWithColData(object, i)
+        obj <- MultiAssayExperiment::getWithColData(object, i)
         dt <- sumexp_to_long_dt(obj, fid = fid, fvars = fvars, sid = sid, svars = svars)
         dt$assay <- names(object)[[i]]
         dt

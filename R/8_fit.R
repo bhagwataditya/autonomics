@@ -455,6 +455,7 @@ fits <- function(object){
 #' coefs(object)
 #' @export
 coefs <- function(object, fit = fits(object), svars = NULL){
+    . <- NULL
     coefs0 <- split_extract(pvars(object), 2, FITSEP)
     fits0  <- split_extract(pvars(object), 3, FITSEP)
     coefs0 %<>% extract(fits0 %in% fit)

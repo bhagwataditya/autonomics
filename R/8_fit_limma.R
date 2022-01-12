@@ -477,6 +477,7 @@ fit_limma <- function(
 # Design/contrasts
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(statvars, c('effect', 'p', 'fdr', 't'))
+    . <- NULL
     if (verbose)  message('\t\tlmFit(', formula2str(formula),
         if(is.null(block))     '' else paste0(' | ',block),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 

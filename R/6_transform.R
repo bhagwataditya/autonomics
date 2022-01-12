@@ -283,6 +283,7 @@ log2transform <- function(
 ){
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(assay, assayNames(object))
+    . <- NULL
     for (ass in assay){
         i <- match(ass, assayNames(object))
         if (verbose)  message('\t\tAdd pseudo value ', pseudo) ;  assays(object)[[i]] %<>% add(pseudo) 
