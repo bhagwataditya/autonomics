@@ -115,29 +115,6 @@ sumexp_to_long_dt <- function(
     dt[]
 }
 
-#' @rdname sumexp_to_long_dt
-#' @export
-mae_to_long_dt <- function(
-    object, 
-    fid   = 'feature_id', 
-    fvars = character(0),
-    sid   = 'sample_id',
-    svars = character(0)
-){
-    assert_is_all_of(object, 'MultiAssayExperiment')
-    .mae_to_long_dt <- function(i){
-        obj <- MultiAssayExperiment::getWithColData(object, i)
-        dt <- sumexp_to_long_dt(obj, fid = fid, fvars = fvars, sid = sid, svars = svars)
-        dt$assay <- names(object)[[i]]
-        dt
-    }
-    dt <- lapply(seq_along(object), .mae_to_long_dt)
-    dt %<>% data.table::rbindlist()
-    dt$assay %<>% factor(names(object))
-    dt
-}
-
-
 
 #' @export
 #' @rdname sumexp_to_long_dt

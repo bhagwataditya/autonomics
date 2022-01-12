@@ -3,7 +3,6 @@
 \name{sumexp_to_wide_dt}
 \alias{sumexp_to_wide_dt}
 \alias{sumexp_to_long_dt}
-\alias{mae_to_long_dt}
 \alias{sumexp_to_subrep_dt}
 \title{Convert SummarizedExperiment into data.table}
 \usage{
@@ -21,14 +20,6 @@ sumexp_to_long_dt(
   sid = "sample_id",
   svars = intersect("subgroup", autonomics::svars(object)),
   assay = assayNames(object) \%>\% intersect(c(.[1], "is_imputed"))
-)
-
-mae_to_long_dt(
-  object,
-  fid = "feature_id",
-  fvars = character(0),
-  sid = "sample_id",
-  svars = character(0)
 )
 
 sumexp_to_subrep_dt(object, subgroup = subgroup)
