@@ -387,9 +387,10 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param block       block svar (or NULL)
 #' @param weightvar   NULL or name of weight matrix in assays(object)
 #' @param statvars  character vector: subset of c('effect', 'p', 'fdr', 't')
-#' @param verbose     whether to msg
-#' @param plot        whether to plot
-#' @param ...         s3 dispatch
+#' @param sep       string: pvar separator  ("~" in "p~t2~limma")
+#' @param suffix    string: pvar suffix ("limma" in "p~t2~limma")
+#' @param verbose   whether to msg
+#' @param plot      whether to plot
 #' @return Updated SummarizedExperiment
 #' @examples
 #' # classical: lm & limma
@@ -433,7 +434,9 @@ fit_limma <- function(
     contrastdefs = NULL,
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    statvars   = c('effect', 'p', 'fdr'),
+    statvars     = c('effect', 'p', 'fdr'),
+    sep          = FITSEP,
+    suffix       = paste0(sep, 'limma'),
     verbose      = TRUE, 
     plot         = FALSE
 ){
@@ -446,6 +449,9 @@ fit_limma <- function(
                     contrastdefs = contrastdefs,
                     block        = block,
                     weightvar    = weightvar,
+                    statvars     = statvars,
+                    sep          = sep,
+                    suffix       = suffix,
                     verbose      = verbose)
     object %<>% reset_fitres('limma')
     object %<>% merge_fdata(limmadt, by.x = 'feature_id', by.y = 'feature_id')

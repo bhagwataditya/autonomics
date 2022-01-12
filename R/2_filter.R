@@ -53,9 +53,10 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #=================
 
 #' Filter features on condition
-#' @param object SummarizedExperiment
-#' @param condition filter condition
-#' @param verbose logical
+#' @param object     SummarizedExperiment
+#' @param condition  expression
+#' @param verbose    logical
+#' @param ...        required for s4 dispatch
 #' @return filtered eSet
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')

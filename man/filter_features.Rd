@@ -15,7 +15,9 @@ filter_features(object, ...)
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{condition}{filter condition}
+\item{...}{required for s4 dispatch}
+
+\item{condition}{expression}
 
 \item{verbose}{logical}
 }

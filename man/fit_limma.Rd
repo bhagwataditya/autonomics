@@ -20,6 +20,8 @@ fit_limma(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
+  sep = FITSEP,
+  suffix = paste0(sep, "limma"),
   verbose = TRUE,
   plot = FALSE
 )
@@ -115,11 +117,13 @@ fit_wilcoxon(
 
 \item{statvars}{character vector: subset of c('effect', 'p', 'fdr', 't')}
 
+\item{sep}{string: pvar separator  ("~" in "p~t2~limma")}
+
+\item{suffix}{string: pvar suffix ("limma" in "p~t2~limma")}
+
 \item{verbose}{whether to msg}
 
 \item{plot}{whether to plot}
-
-\item{...}{s3 dispatch}
 }
 \value{
 Updated SummarizedExperiment
