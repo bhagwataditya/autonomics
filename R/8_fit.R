@@ -667,14 +667,6 @@ select_contrasts <- function(object, contrast){
 }
 
 
-#' @rdname select_contrasts
-#' @export
-select_fdr_contrasts <- function(object){
-    fdrcontrasts <- (fdr(object) < 0.05) %>% extract(, colAnys(.)) %>%  colnames()
-    fdrcontrasts %<>% split_extract(1, '~')
-    select_contrasts(object, fdrcontrasts)
-}
-
 
 #' Filter for contrast features
 #' @param object    SummarizedExperiment

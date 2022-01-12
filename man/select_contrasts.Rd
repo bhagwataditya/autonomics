@@ -2,12 +2,9 @@
 % Please edit documentation in R/8_fit.R
 \name{select_contrasts}
 \alias{select_contrasts}
-\alias{select_fdr_contrasts}
 \title{Select (fdr) contrasts}
 \usage{
 select_contrasts(object, contrast)
-
-select_fdr_contrasts(object)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
