@@ -1026,10 +1026,10 @@ plot_subgroup_contrasts <- function(
 #' plot_subgroup_points( object, subgroup=SET, block=SUB)
 #' @export
 plot_subgroup_points <- function(
-    object, subgroup, block=NULL, x=!!enquo(subgroup), color=!!enquo(subgroup), 
-    group=!!enquo(block), facet=vars(feature_id), 
-    nrow = NULL, ...,
-    palett = NULL,
+    object, subgroup, block = NULL, x = !!enquo(subgroup), 
+    color = !!enquo(subgroup), group = !!enquo(block), 
+    facet = vars(feature_id), nrow = NULL, ...,
+    palette = NULL,
     fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
     theme = list(axis.text.x = element_blank(),
                 axis.title.x = element_blank(),

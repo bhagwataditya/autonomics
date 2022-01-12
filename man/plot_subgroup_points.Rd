@@ -14,7 +14,7 @@ plot_subgroup_points(
   facet = vars(feature_id),
   nrow = NULL,
   ...,
-  palett = NULL,
+  palette = NULL,
   fixed = list(na.rm = TRUE),
   theme = list(axis.text.x = element_blank(), axis.title.x = element_blank(),
     axis.ticks.x = element_blank())
@@ -39,11 +39,11 @@ plot_subgroup_points(
 
 \item{...}{mapped aesthetics}
 
+\item{palette}{color palette (named character vector)}
+
 \item{fixed}{fixed aesthetics}
 
 \item{theme}{ggplot theme specifications}
-
-\item{palette}{color palette (named character vector)}
 }
 \value{
 ggplot object

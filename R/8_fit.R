@@ -648,26 +648,6 @@ is_sig <- function(
 }
 
 
-#' Select (fdr) contrasts
-#'
-#' @param object   SummarizedExperiment
-#' @param contrast character vector
-#' @export
-select_contrasts <- function(object, contrast){
-    .pvars      <- pvars(object)
-    .tvars      <- tvars(object)
-    .fdrvars    <- fdrvars(object)
-    .effectvars <- effectvars(object)
-    idx <- split_extract(.pvars, 2, FITSEP) %in% contrast
-    fdata(object)[     .pvars[!idx] ] <- NULL
-    fdata(object)[     .tvars[!idx] ] <- NULL
-    fdata(object)[   .fdrvars[!idx] ] <- NULL
-    fdata(object)[.effectvars[!idx] ] <- NULL
-    object
-}
-
-
-
 #' Filter for contrast features
 #' @param object    SummarizedExperiment
 #' @param contrast  character vector
