@@ -424,14 +424,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     object %<>% fit_wilcoxon(subgroupvar='SET', block='SUB', 
 #'                    contrastdefs=c('t1-t0', 't2-t0', 't3-t0'))
 #' @export
-fit_limma <- function(object, ...){
-    UseMethod('fit_limma', object)
-}
-
-
-#' @rdname fit_limma
-#' @export
-fit_limma.SummarizedExperiment <- function(
+fit_limma <- function(
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object))  'subgroup' else NULL,
     formula      = default_formula(object, subgroupvar, 'limma'), 
@@ -442,8 +435,7 @@ fit_limma.SummarizedExperiment <- function(
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
     statvars   = c('effect', 'p', 'fdr'),
     verbose      = TRUE, 
-    plot         = FALSE,
-    ...
+    plot         = FALSE
 ){
     limmadt <- .fit_limma(
                     object       = object, 
@@ -464,38 +456,6 @@ fit_limma.SummarizedExperiment <- function(
     object
 }
 
-
-#' @rdname fit_limma
-#' @export
-fit_limma.MultiAssayExperiment <- function(
-    object,
-    subgroupvar  = if ('subgroup' %in% svars(object))  'subgroup' else NULL,
-    formula      = default_formula(object, subgroupvar, 'limma'),
-    design       = create_design(object, formula = formula),
-    coefs        = colnames(design),
-    contrastdefs = NULL,
-    block        = NULL,
-    statvars   = c('effect', 'p', 'fdr'),
-    verbose      = TRUE,
-    plot         = FALSE,
-    ...    
-){
-    for (ass in names(object)){
-        if (verbose)  message('\t', ass)
-        obj <- getWithColData(object, ass)
-        limmadt <- .fit_limma(
-                        object       = obj, 
-                        subgroupvar  = subgroupvar, 
-                        formula      = formula, 
-                        design       = design, 
-                        coefs        = coefs,
-                        contrastdefs = contrastdefs,
-                        block        = block,
-                        verbose      = verbose)
-        object[[ass]] %<>% merge_fdata(limmadt, by.x = 'feature_id', by.y = 'feature_id')
-    }
-    object
-}
 
 #' @rdname fit_limma
 #' @export

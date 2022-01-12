@@ -3,8 +3,6 @@
 %   R/8_fit_wilcoxon.R
 \name{fit_limma}
 \alias{fit_limma}
-\alias{fit_limma.SummarizedExperiment}
-\alias{fit_limma.MultiAssayExperiment}
 \alias{.fit_limma}
 \alias{fit_lm}
 \alias{fit_lme}
@@ -12,9 +10,7 @@
 \alias{fit_wilcoxon}
 \title{Fit model and test for differential expression}
 \usage{
-fit_limma(object, ...)
-
-\method{fit_limma}{SummarizedExperiment}(
+fit_limma(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, "limma"),
@@ -25,22 +21,7 @@ fit_limma(object, ...)
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
   verbose = TRUE,
-  plot = FALSE,
-  ...
-)
-
-\method{fit_limma}{MultiAssayExperiment}(
-  object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, "limma"),
-  design = create_design(object, formula = formula),
-  coefs = colnames(design),
-  contrastdefs = NULL,
-  block = NULL,
-  statvars = c("effect", "p", "fdr"),
-  verbose = TRUE,
-  plot = FALSE,
-  ...
+  plot = FALSE
 )
 
 .fit_limma(
@@ -110,8 +91,6 @@ fit_wilcoxon(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{...}{s3 dispatch}
-
 \item{subgroupvar}{subgroup variable}
 
 \item{formula}{modeling formula}
@@ -139,6 +118,8 @@ fit_wilcoxon(
 \item{verbose}{whether to msg}
 
 \item{plot}{whether to plot}
+
+\item{...}{s3 dispatch}
 }
 \value{
 Updated SummarizedExperiment
