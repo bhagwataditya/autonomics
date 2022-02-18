@@ -21,7 +21,6 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' Download autonomics example data
 #' 
 #' @param filename file name
-#' @param url web url
 #' \itemize{
 #'     \item \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{
 #'                 Billing 2016: stemcell comparison:} E, EM, BM
@@ -82,8 +81,6 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' @export
 download_data <- function(
     filename, 
-    url = paste0("https://bitbucket.org/graumannlabtools/autonomics/downloads/",
-        filename),
     verbose = TRUE
 ){
     . <- NULL
@@ -92,6 +89,8 @@ download_data <- function(
     rid <- bfcquery(bfc, filename, "rname")$rid
     if (!length(rid)) {
         if(verbose) message( "Downloading ", filename)
+        url <- "https://bitbucket.org/graumannlabtools/autonomics/downloads"
+        url %<>% paste0('/', filename)
         rid <- names(bfcadd(bfc, filename, url ))
     }
     #if (!isFALSE(bfcneedsupdate(bfc, rid)))
