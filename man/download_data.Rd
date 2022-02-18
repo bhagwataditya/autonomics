@@ -4,7 +4,11 @@
 \alias{download_data}
 \title{Download autonomics example data}
 \usage{
-download_data(filename, verbose = TRUE)
+download_data(
+  filename,
+  localdir = R_user_dir("autonomics", "cache"),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{filename}{file name
@@ -42,6 +46,8 @@ download_data(filename, verbose = TRUE)
         \item \code{'fukuda20.proteingroups.txt'}
     }
 }}
+
+\item{localdir}{local dir to save file to}
 
 \item{verbose}{TRUE / FALSE}
 }

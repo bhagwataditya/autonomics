@@ -20,7 +20,7 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 
 #' Download autonomics example data
 #' 
-#' @param filename file name
+#' @param filename  file name
 #' \itemize{
 #'     \item \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{
 #'                 Billing 2016: stemcell comparison:} E, EM, BM
@@ -55,6 +55,7 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #'         \item \code{'fukuda20.proteingroups.txt'}
 #'     }
 #' }
+#' @param localdir  local dir to save file to 
 #' @param verbose TRUE / FALSE
 #' @return local file path
 #' @examples
@@ -80,12 +81,14 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #'     download_data('halama18.metabolon.xlsx')          # metabolon intensities
 #' @export
 download_data <- function(
-    filename, 
-    verbose = TRUE
+    filename,
+    localdir = R_user_dir('autonomics', 'cache'),
+    verbose  = TRUE
 ){
     . <- NULL
     assert_is_subset(filename, AUTONOMICS_DATASETS)
-    bfc <- BiocFileCache(R_user_dir('autonomics', 'cache'))
+    dir.create(localdir, recursive = TRUE, showWarnings = FALSE)
+    bfc <- BiocFileCache(localdir)
     rid <- bfcquery(bfc, filename, "rname")$rid
     if (!length(rid)) {
         if(verbose) message( "Downloading ", filename)
