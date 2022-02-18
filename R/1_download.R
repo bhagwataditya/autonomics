@@ -109,29 +109,3 @@ download_data <- function(
     cache <- rappdirs::user_cache_dir(appname="autonomics")
     BiocFileCache::BiocFileCache(cache)
 }
-
-download_data_old <- function(
-    file, localdir = '~/autonomicscache/datasets', unzip = TRUE, ntries = 3
-){
-    assert_is_subset(file, AUTONOMICS_DATASETS)
-    . <- NULL
-    bitbucket <- 'https://bitbucket.org/graumannlabtools/autonomics/downloads'
-    localdir  %<>% paste(vapply(
-        stri_split_fixed(file, '.'), extract, character(1), 1), sep = '/')
-    dir.create(localdir, showWarnings = FALSE, recursive = TRUE)
-    localfile <- paste0(localdir,  '/', file)
-    if (!file.exists(localfile)){
-        bitbucketfile <- paste0(bitbucket, '/', file)
-        while (ntries > 0){  # bioconductor.org/developers/how-to/web-query
-            result <- tryCatch(
-                        download.file(bitbucketfile, localfile, mode = 'wb'), 
-                        error = identity)
-            if (!inherits(result, 'error'))  break
-            ntries %<>% magrittr::subtract(1) }
-        assertive::assert_all_are_not_equal_to(ntries, 0) }
-    if (file_ext(file) == 'zip'){
-        localdir <- file_path_sans_ext(localfile)
-        if (!dir.exists(localdir)) unzip(localfile, exdir = localdir)
-        localfile %<>% substr(1, nchar(.)-4) }
-    return(invisible(localfile))
-}

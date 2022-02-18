@@ -14,6 +14,8 @@ load_uniprot_fasta(
 \item{fastafile}{path to fasta file}
 
 \item{fastafields}{character vector}
+
+\item{verbose}{bool}
 }
 \value{
 data.table(uniprot, genename, proteinname, reviewed, existence)
