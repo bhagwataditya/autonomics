@@ -628,7 +628,7 @@ add_affy_fdata <- function(object){
 #' require(magrittr)
 #' url <- paste0('http://www.bioconductor.org/help/publications/2003/',
 #'                 'Chiaretti/chiaretti2/T33.tgz')
-#' localdir  <- file.path(rappdirs::user_cache_dir(appname = 'autonomics'), 'T33')
+#' localdir  <- file.path(tools::R_user_dir('autonomics', 'cache'), 'T33')
 #' dir.create(localdir, showWarnings=FALSE)
 #' localfile <- file.path(localdir, basename(url))
 #' if (!file.exists(localfile)){

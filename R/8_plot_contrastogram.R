@@ -107,7 +107,7 @@ plot_contrastogram <- function(
     nrow <- dt[, data.table::uniqueN(V2)]
     nperrow <- dt[, .N, by = 'V1'][, N]
     if (all(nperrow==1)) nperrow %<>% length()
-    # basedir <- file.path(rappdirs::user_cache_dir(appname = 'autonomics'), 'contrastogram')
+    # basedir <- file.path(tools::R_user_dir('autonomics', 'cache'), 'contrastogram')
     # dir.create(basedir)
     # pdf(file.path(basedir, 'directed_contrastogram.pdf'), 
     # width = 9, height = 9)

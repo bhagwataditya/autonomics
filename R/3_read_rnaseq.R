@@ -454,7 +454,7 @@ download_gtf <- function(
     organism,
     release = 100,
     gtffile = sprintf("%s/gtf/%s",
-        rappdirs::user_cache_dir(appname = 'autonomics'),
+        R_user_dir('autonomics', 'cache'),
         basename(make_gtf_url(organism, release) %>% substr(1, nchar(.)-3)))
 ){
     assert_is_subset(organism,

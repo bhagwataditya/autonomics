@@ -32,7 +32,8 @@
 #' @importFrom assertive   is_a_string  is_empty    is_empty_character  
 #' @importFrom assertive   is_existing_file
 #' @importFrom assertive   is_formula  is_scalar  is_subset
-#' @importFrom BiocGenerics cbind 
+#' @importFrom BiocFileCache  BiocFileCache   bfcquery   bfcadd   bfcrpath
+#' @importFrom BiocGenerics   cbind 
 #' @importFrom colorspace  sequential_hcl
 #' @importFrom data.table  as.data.table   copy  data.table  
 #' @importFrom data.table  dcast  dcast.data.table
@@ -73,7 +74,7 @@
 #' @importFrom stats         na.exclude   p.adjust qnorm   rnorm   sd
 #' @import     stringi
 #' @importFrom tidyr         separate_rows
-#' @importFrom tools         file_ext   file_path_sans_ext
+#' @importFrom tools         file_ext   file_path_sans_ext   R_user_dir
 #' @importFrom SummarizedExperiment  assays  assays<-  assayNames  assayNames<-
 #' @importFrom SummarizedExperiment  SummarizedExperiment
 #' @importFrom SummarizedExperiment  rowData   rowData<-   colData   colData<-

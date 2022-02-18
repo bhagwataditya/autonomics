@@ -60,14 +60,14 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' @return local file path
 #' @examples
 #' # atkin18 - hypoglycemia - pubmed 30525282
-#'     download_data('atkin18.somascan.adat')          # somascan  intensities
-#'     download_data('atkin18.metabolon.xlsx')         # metabolon intensities
+#'     download_data('atkin18.somascan.adat')            # somascan  intensities
+#'     download_data('atkin18.metabolon.xlsx')           # metabolon intensities
 #'
 #' # billing16 - stemcell characterization - pubmed 26857143
-#'     download_data('billing16.proteingroups.txt')  # proteingroup ratios
-#'     download_data('billing16.somascan.adat')      # somascan  intensities
-#'     download_data('billing16.rnacounts.txt')      # rnaseq    counts
-#'     download_data('billing16.bam.zip')            # rnaseq    alignments
+#'     download_data('billing16.proteingroups.txt')      # proteingroup ratios
+#'     download_data('billing16.somascan.adat')          # somascan  intensities
+#'     download_data('billing16.rnacounts.txt')          # rnaseq    counts
+#'     download_data('billing16.bam.zip')                # rnaseq    alignments
 #'
 #' # billing19 - stemcell differentiation - pubmed 31332097
 #'     # download_data('billing19.proteingroups.txt')    # proteingroup ratios
@@ -75,10 +75,10 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #'     # download_data('billing19.rnacounts.txt')        # rnaseq       counts
 #'
 #' # fukuda20 - heart regeneration - pubmed PXD016235
-#'     download_data('fukuda20.proteingroups.txt')     # proteingroup LFQ
+#'     download_data('fukuda20.proteingroups.txt')       # proteingroup LFQ
 #'
 #' # halama18 - glutaminase inhibition - pubmed 30525282
-#'     download_data('halama18.metabolon.xlsx')        # metabolon intensities
+#'     download_data('halama18.metabolon.xlsx')          # metabolon intensities
 #' @export
 download_data <- function(
     filename, 
@@ -88,24 +88,20 @@ download_data <- function(
 ){
     . <- NULL
     assert_is_subset(filename, AUTONOMICS_DATASETS)
-    bfc <- .get_cache()
-    rid <- BiocFileCache::bfcquery(bfc, filename, "rname")$rid
+    bfc <- BiocFileCache(R_user_dir('autonomics', 'cache'))
+    rid <- bfcquery(bfc, filename, "rname")$rid
     if (!length(rid)) {
         if(verbose) message( "Downloading ", filename)
-        rid <- names(BiocFileCache::bfcadd(bfc, filename, url ))
+        rid <- names(bfcadd(bfc, filename, url ))
     }
     #if (!isFALSE(bfcneedsupdate(bfc, rid)))
     #bfcdownload(bfc, rid)
-    filepath <- BiocFileCache::bfcrpath(bfc, rids = rid)
-    if (tools::file_ext(filename)=='zip'){
+    filepath <- bfcrpath(bfc, rids = rid)
+    if (file_ext(filename)=='zip'){
         if (verbose)  message('unzip')
-        utils::unzip(filepath, exdir = substr(filepath, 1, nchar(filepath)-4))
+        unzip(filepath, exdir = substr(filepath, 1, nchar(filepath)-4))
         filepath %<>% substr(1, nchar(.)-4)
     }
     filepath
 }
 
-.get_cache <- function(){
-    cache <- rappdirs::user_cache_dir(appname="autonomics")
-    BiocFileCache::BiocFileCache(cache)
-}
