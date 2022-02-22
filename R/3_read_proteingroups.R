@@ -309,47 +309,6 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 
 
 
-#' Demultiplex snames
-#'
-#' Demultiplex sample names
-#'
-#' @param x        character vector or SummarizedExperiment
-#' @param verbose  logical
-#' @param ...      allow for S3 dispatch
-#' @return character vector or SummarizedExperiment
-#' @examples
-#' # character vector
-#'    # Alternate multiplexing forms supported
-#'    demultiplex("STD(L)_E00(M)_E01(H)_R1{M/L}") # Label Ratio
-#'    demultiplex('A(0)_B(1)_C(2)_D(3)_R1{0}'     ) # Reporter intensity
-#'    demultiplex('STD(L)_E00(M)_E01(H)_R1{L}')   # Label Intensity
-#'
-#'    # Alternate separators supported
-#'    demultiplex('STD(L)_E00(M)_E01(H)_R1{L}')   # underscore
-#'    demultiplex('STD(L).E00(M).E01(H).R1{L}')   # dot
-#'    demultiplex('STD(L)E00(M)E01(H).R1{L}')     # no separator
-#'
-#'    # Composite snames supported
-#'    demultiplex("WT.t0(L)_WT.t1(M)_WT.t2(H)_R1{H/L}")
-#'
-#'    # Uniqueness ensured by appending labels when necessary
-#'    demultiplex(c("STD(L).M00(M).M00(H).R10{M/L}",
-#'                        "STD(L).M00(M).M00(H).R10{H/L}"))
-#'
-#'    # Uniplexed snames are returned unchanged
-#'    demultiplex(c('STD_R1', 'EM0_R1'))
-#'
-#' # SummarizedExperiment
-#'    require(magrittr)
-#'    file <- download_data('billing19.proteingroups.txt')
-#'    # x <- .read_proteingroups(file)
-#'    # x %<>% standardize_maxquant_snames()
-#'    # demultiplex(x, verbose = TRUE)
-#' @noRd
-demultiplex <- function (x, ...) {
-    UseMethod("demultiplex", x)
-}
-
 is_multiplexed <- function(x){
     pattern <- '(.+)\\{(.+)\\}'
     n_open   <- stri_count_fixed(x, '(')
@@ -511,8 +470,32 @@ uniquify_channelsamples <- function(channelsamples, channels, verbose){
     channelsamples
 }
 
-#' @noRd
-demultiplex.character <- function(x, verbose = FALSE, ...){
+
+#' Demultiplex snames
+#'
+#' Demultiplex sample names
+#'
+#' @param x        character vector
+#' @param verbose  logical
+#' @return character vector
+#' @examples
+#'                                                   # multiplex modality
+#' 'STD(L)_E00(M)_E01(H)_R1{M/L}'  %>% demultiplex() #   labeled ratios
+#' 'A(0)_B(1)_C(2)_D(3)_R1{0}'     %>% demultiplex() #   reporter intensities
+#' 'STD(L)_E00(M)_E01(H)_R1{L}'    %>% demultiplex() #   labeled intensities
+#'                                                   # sep
+#' 'STD(L)_E00(M)_E01(H)_R1{L}'    %>% demultiplex() #   underscore
+#' 'STD(L).E00(M).E01(H).R1{L}'    %>% demultiplex() #   dot
+#' 'STD(L)E00(M)E01(H).R1{L}'      %>% demultiplex() #   none
+#'
+#' 'WT.t0(L)_WT.t1(M)_WT.t2(H)_R1{H/L}' %>% demultiplex() # composite names
+#'
+#' c('STD(L).M00(M).M00(H).R10{M/L}',                     # append label for
+#'   'STD(L).M00(M).M00(H).R10{H/L}')   %>% demultiplex() # uniqueness
+#'
+#' c('STD_R1', 'EM0_R1')                %>% demultiplex() # uniplexed unchanged
+#' @export
+demultiplex <- function(x, verbose = FALSE){
 
     # Return unchanged if not multiplexed
     . <- NULL
@@ -543,13 +526,6 @@ demultiplex.character <- function(x, verbose = FALSE, ...){
 
 }
 
-
-#' @noRd
-demultiplex.SummarizedExperiment <- function(x,verbose  = FALSE, ...){
-    newsnames <- demultiplex(snames(x), verbose = verbose)
-    snames(x) <- sdata(x)$sample_id <- newsnames
-    x
-}
 
 #==============================================================================
 #
