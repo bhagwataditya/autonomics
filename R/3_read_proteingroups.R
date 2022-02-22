@@ -398,13 +398,17 @@ extract_labels <- function(multiplexes){
 }
 extract_biosamples <- function(multiplexes, labels){
     pattern <- '\\(.+?\\)'
-    stri_split_regex(multiplexes, pattern) %>%
-    lapply(function(y){
-            y[seq_len(length(labels[[1]]))] %<>%
-            stri_replace_first_regex('^[_. ]', ''); y})
+    biosamples <- stri_split_regex(multiplexes, pattern)
+    assertive::are_same_length(biosamples, labels)
+    for (i in seq_along(biosamples)) {
+      y <- biosamples[[i]]
+      y[seq_len(length(labels[[i]]))] %<>%
+        stri_replace_first_regex('^[_. ]', '')
+      biosamples[[i]] <- y
+    }
+    biosamples
     # rm sep from samples (but not from replicate - needed to glue back later!)
 }
-
 
 #' Are number of samples/labels equally multiplexed across mixes?
 #'
