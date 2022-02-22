@@ -33,4 +33,6 @@ Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 'LFQ intensity L STD(L)_E01(H)_R1'       \%>\% standardize_maxquant_snames()
 'Reporter intensity 0 A(0)_B(1)_C(2)_R1' \%>\% standardize_maxquant_snames()
 'Reporter intensity corrected 0 A(0)_B(1)_R1' \%>\% standardize_maxquant_snames()
+'Reporter intensity corrected 1 K3941(126).K3942(127).R1' \%>\% 
+                                             standardize_maxquant_snames()
 }

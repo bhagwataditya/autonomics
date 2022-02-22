@@ -238,6 +238,8 @@ guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
 #' 'LFQ intensity L STD(L)_E01(H)_R1'       %>% standardize_maxquant_snames()
 #' 'Reporter intensity 0 A(0)_B(1)_C(2)_R1' %>% standardize_maxquant_snames()
 #' 'Reporter intensity corrected 0 A(0)_B(1)_R1' %>% standardize_maxquant_snames()
+#' 'Reporter intensity corrected 1 K3941(126).K3942(127).R1' %>% 
+#'                                              standardize_maxquant_snames()
 #' @export
 standardize_maxquant_snames <- function(
     x,
@@ -313,7 +315,7 @@ extract_channels <- function(x){
 #' @examples
 #' x <- "STD(L)_E00(M)_E01(H)_R1"
 #' extract_labels(x)
-#' extract_samples(x)
+#' extract_biosamples(x)
 #' @noRd
 extract_labels <- function(multiplexes){
     pattern <- '\\(.+?\\)'
@@ -413,6 +415,12 @@ extract_channelsamples <- function(channels, biosamples, replicate){
         num_samples <- mapply(extract, biosamples, num_label)
         sprintf('%s_%s%s', num_samples, den_samples, replicate)
     } else {
+        # TMT reporter intensities use channel numbers (rather than names)
+        # Make them really numbers (not strings) for extract to work!
+        if (!channels %in% names(biosamples)){
+            assertive::assert_all_are_numeric_strings(channels)
+            channels %<>% as.numeric()
+        }
         biosamples %<>% mapply(extract, ., channels)
         sprintf('%s%s', biosamples, replicate)
     }
