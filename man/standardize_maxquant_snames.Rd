@@ -2,37 +2,23 @@
 % Please edit documentation in R/3_read_proteingroups.R
 \name{standardize_maxquant_snames}
 \alias{standardize_maxquant_snames}
-\alias{standardize_maxquant_snames.character}
-\alias{standardize_maxquant_snames.SummarizedExperiment}
 \title{Standardize maxquant snames}
 \usage{
-standardize_maxquant_snames(x, ...)
-
-\method{standardize_maxquant_snames}{character}(
+standardize_maxquant_snames(
   x,
   quantity = guess_maxquant_quantity(x),
-  verbose = FALSE,
-  ...
-)
-
-\method{standardize_maxquant_snames}{SummarizedExperiment}(
-  x,
-  quantity = guess_maxquant_quantity(x),
-  verbose = FALSE,
-  ...
+  verbose = FALSE
 )
 }
 \arguments{
-\item{x}{character vector or SummarizedExperiment}
-
-\item{...}{allow for proper S3 method dispatch}
+\item{x}{character vector}
 
 \item{quantity}{maxquant quantity}
 
 \item{verbose}{TRUE (default) or FALSE}
 }
 \value{
-character vector or SummarizedExperiment
+character vector
 }
 \description{
 Standardize maxquant sample names
@@ -41,22 +27,10 @@ Standardize maxquant sample names
 Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 }
 \examples{
-# character vector
-   x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
-   standardize_maxquant_snames(x)
-
-   x <- "Ratio M/L STD(L)_E00(M)_E01(H)_R1"
-   standardize_maxquant_snames(x)
-
-   x <-'LFQ intensity STD_R1'
-   standardize_maxquant_snames(x)
-
-   x <- 'LFQ intensity L STD(L)_E00(M)_E01(H)_R1'
-   standardize_maxquant_snames(x)
-
-   x <-'Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
-   standardize_maxquant_snames(x)
-
-   x <- 'Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
-   standardize_maxquant_snames(x)
+'Ratio M/L normalized STD(L)_E01(H)_R1'  \%>\% standardize_maxquant_snames()
+'Ratio M/L STD(L)_E01(H)_R1'             \%>\% standardize_maxquant_snames()
+'LFQ intensity STD_R1'                   \%>\% standardize_maxquant_snames()
+'LFQ intensity L STD(L)_E01(H)_R1'       \%>\% standardize_maxquant_snames()
+'Reporter intensity 0 A(0)_B(1)_C(2)_R1' \%>\% standardize_maxquant_snames()
+'Reporter intensity corrected 0 A(0)_B(1)_R1' \%>\% standardize_maxquant_snames()
 }

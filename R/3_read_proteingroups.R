@@ -227,43 +227,22 @@ guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
 #'
 #' Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
 #'
-#' @param x        character vector or SummarizedExperiment
+#' @param x        character vector
 #' @param quantity maxquant quantity
 #' @param verbose  TRUE (default) or FALSE
-#' @param ...      allow for proper S3 method dispatch
-#' @return character vector or SummarizedExperiment
+#' @return character vector
 #' @examples
-#' # character vector
-#'    x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <- "Ratio M/L STD(L)_E00(M)_E01(H)_R1"
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <-'LFQ intensity STD_R1'
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <- 'LFQ intensity L STD(L)_E00(M)_E01(H)_R1'
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <-'Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <- 'Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
-#'    standardize_maxquant_snames(x)
+#' 'Ratio M/L normalized STD(L)_E01(H)_R1'  %>% standardize_maxquant_snames()
+#' 'Ratio M/L STD(L)_E01(H)_R1'             %>% standardize_maxquant_snames()
+#' 'LFQ intensity STD_R1'                   %>% standardize_maxquant_snames()
+#' 'LFQ intensity L STD(L)_E01(H)_R1'       %>% standardize_maxquant_snames()
+#' 'Reporter intensity 0 A(0)_B(1)_C(2)_R1' %>% standardize_maxquant_snames()
+#' 'Reporter intensity corrected 0 A(0)_B(1)_R1' %>% standardize_maxquant_snames()
 #' @export
-standardize_maxquant_snames <- function (x, ...) {
-    UseMethod("standardize_maxquant_snames", x)
-}
-
-
-#' @export
-#' @rdname standardize_maxquant_snames
-standardize_maxquant_snames.character <- function(
+standardize_maxquant_snames <- function(
     x,
     quantity = guess_maxquant_quantity(x),
-    verbose  = FALSE,
-    ...
+    verbose  = FALSE
 ){
     # x = multiplexes + channels. Return multiplexes if single channel.
     pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
@@ -287,19 +266,6 @@ standardize_maxquant_snames.character <- function(
     return(cleanx)
 }
 
-#' @export
-#' @rdname standardize_maxquant_snames
-standardize_maxquant_snames.SummarizedExperiment <- function(
-    x,
-    quantity = guess_maxquant_quantity(x),
-    verbose  = FALSE,
-    ...
-){
-    newsnames <- standardize_maxquant_snames(
-                    snames(x), quantity = quantity, verbose=verbose)
-    snames(x) <- sdata(x)$sample_id <- newsnames
-    x
-}
 
 #==============================================================================
 #
