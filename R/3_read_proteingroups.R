@@ -356,32 +356,41 @@ stri_split_fixed_extract <- function(x, split, i){
     vapply(extract, character(1), i)
 }
 
-#' Forge channel samples
-#' @param channels    character vector
-#' @param biosamples    character vector
-#' @param replicate  character vector
-#' @return character vector
+#' Extract channel samples
+#' @param channels    character: c('M', 'H')
+#' @param biosamples  list: list(c(L='t0', M='t1', H='t2'), 
+#'                               c(L='t0', M='t1', H='t2'))
+#' @param replicate   character: c('_R1', '_R2')
+#' @return character
 #' @examples
-#' channels <- c('M/L', 'H/L')
-#' biosamples <- list(c(  L = 'STD', M = 'E00', H = 'E01'),
-#'                 c(  L = 'STD', M = 'E00', H = 'E01'))
-#' replicate <- c('_R1', '_R2')
-#' extract_channel_samples(channels, biosamples, replicate)
-#' @noRd
-extract_channelsamples <- function(channels, biosamples, replicate){
+#' # Intensity channels
+#'     extract_channel_samples(channels   = c('M', 'H'),
+#'                             biosamples = list(c(L='t0', M='t1', H='t2'), 
+#'                                               c(L='t0', M='t1', H='t2')), 
+#'                             replicate  = c('_R1', '_R2') )
+#' # Ratio channels
+#'     extract_channel_samples(channels   = c('M/L', 'H/L'),
+#'                             biosamples = list(c(L='t0', M='t1', H='t2'), 
+#'                                               c(L='t0', M='t1', H='t2')), 
+#'                             replicate  = c('_R1', '_R2') )
+#' @export
+extract_channel_samples <- function(channels, biosamples, replicate){
     . <- NULL
+    biosamplenames <- unique(unlist(lapply(biosamples, names)))
     is_ratio <- all(stri_detect_fixed(channels, '/'))
     if (is_ratio){
         num_label <- stri_split_fixed_extract(channels, '/', 1)
         den_label <- stri_split_fixed_extract(channels, '/', 2)
+        assert_is_subset(c(num_label, den_label), biosamplenames)
         den_samples <- mapply(extract, biosamples, den_label)
         num_samples <- mapply(extract, biosamples, num_label)
         sprintf('%s_%s%s', num_samples, den_samples, replicate)
     } else {
         # TMT reporter intensities use channel numbers (rather than names)
         # Make them really numbers (not strings) for extract to work!
-        if (!channels %in% names(biosamples)){
-            assertive::assert_all_are_numeric_strings(channels)
+        if (any(!channels %in% biosamplenames)){
+            assert_all_are_numeric_strings(channels)
+            assert_are_disjoint_sets(channels, biosamplenames) # none match
             channels %<>% as.numeric()
         }
         biosamples %<>% mapply(extract, ., channels)
@@ -454,7 +463,7 @@ demultiplex <- function(x, verbose = FALSE){
     biosamples %<>% drop_replicates(labels)
 
     # Extract channelsamples from multiplexes
-    channelsamples <- extract_channelsamples(channels, biosamples, replicates)
+    channelsamples <- extract_channel_samples(channels, biosamples, replicates)
     if (verbose) message(
         '\t\tDemultiplex snames: ', x[1], '  ->  ', channelsamples[1])
 
