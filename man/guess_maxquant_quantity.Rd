@@ -2,29 +2,18 @@
 % Please edit documentation in R/3_read_proteingroups.R
 \name{guess_maxquant_quantity}
 \alias{guess_maxquant_quantity}
-\alias{guess_maxquant_quantity.character}
-\alias{guess_maxquant_quantity.data.frame}
-\alias{guess_maxquant_quantity.SummarizedExperiment}
 \title{Guess maxquant quantity from snames}
 \usage{
-guess_maxquant_quantity(x, ...)
-
-\method{guess_maxquant_quantity}{character}(x, ...)
-
-\method{guess_maxquant_quantity}{data.frame}(x, ...)
-
-\method{guess_maxquant_quantity}{SummarizedExperiment}(x, ...)
+guess_maxquant_quantity(x)
 }
 \arguments{
-\item{x}{character vector, dataframe, or SummarizedExperiment}
-
-\item{...}{used for proper S3 method dispatch}
+\item{x}{character vector}
 }
 \value{
 string: value from names(MAXQUANT_PATTERNS_QUANTITY)
 }
 \description{
-character vector, dataframe, or SummarizedExperiment.
+Guess maxquant quantity from snames
 }
 \examples{
 # file
@@ -50,13 +39,4 @@ character vector, dataframe, or SummarizedExperiment.
     x <- "Intensity H STD(L)_E00(M)_E01(H)_R1"
     guess_maxquant_quantity(x)
 
-# dataframe
-    file <- download_data('fukuda20.proteingroups.txt')
-    x <- data.table::fread(file)
-    guess_maxquant_quantity(x)
-
-# SummarizedExperiment
-    file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, plot=FALSE)
-    guess_maxquant_quantity(file)
 }

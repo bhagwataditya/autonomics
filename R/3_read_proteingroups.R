@@ -130,10 +130,7 @@ MAXQUANT_PATTERNS_QUANTITY <- c(
 
 #' Guess maxquant quantity from snames
 #'
-#' character vector, dataframe, or SummarizedExperiment.
-#'
-#' @param x character vector, dataframe, or SummarizedExperiment
-#' @param ... used for proper S3 method dispatch
+#' @param x character vector
 #' @return  string: value from names(MAXQUANT_PATTERNS_QUANTITY)
 #' @examples
 #' # file
@@ -159,30 +156,19 @@ MAXQUANT_PATTERNS_QUANTITY <- c(
 #'     x <- "Intensity H STD(L)_E00(M)_E01(H)_R1"
 #'     guess_maxquant_quantity(x)
 #'
-#' # dataframe
-#'     file <- download_data('fukuda20.proteingroups.txt')
-#'     x <- data.table::fread(file)
-#'     guess_maxquant_quantity(x)
-#'
-#' # SummarizedExperiment
-#'     file <- download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, plot=FALSE)
-#'     guess_maxquant_quantity(file)
 #' @export
-guess_maxquant_quantity <- function(x, ...){
-    UseMethod("guess_maxquant_quantity", x)
-}
+guess_maxquant_quantity <- function(x){
+# Assert
+    assert_is_character(x)
 
-#' @rdname guess_maxquant_quantity
-#' @export
-guess_maxquant_quantity.character <- function(x, ...){
-
-    # read if x is filename
-    if (is_existing_file(x)){
-        x <- names(fread(x, header = TRUE, nrows = 1))
+# read if x is filename
+    if (is_scalar(x)){
+        if (is_existing_file(x)){  
+            x <- names(fread(x, header = TRUE, nrows = 1))
+        }
     }
 
-    # guess from character vector
+# guess from character vector
     for (quantity in names(MAXQUANT_PATTERNS_QUANTITY)){
         pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
         if (any(stri_detect_regex(x, pattern)))   return(quantity)
@@ -190,29 +176,6 @@ guess_maxquant_quantity.character <- function(x, ...){
     stop('quantity could not be infered')
 }
 
-
-#' @rdname guess_maxquant_quantity
-#' @export
-guess_maxquant_quantity.data.frame <- function(x, ...){
-    x <- names(x)
-    for (quantity in names(MAXQUANT_PATTERNS_QUANTITY)){
-        pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
-        if (any(stri_detect_regex(x, pattern)))   return(quantity)
-    }
-    stop('quantity could not be infered')
-}
-
-
-#' @rdname guess_maxquant_quantity
-#' @export
-guess_maxquant_quantity.SummarizedExperiment <- function(x, ...){
-    x <- snames(x)
-    for (quantity in names(MAXQUANT_PATTERNS_QUANTITY)){
-        pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
-        if (any(stri_detect_regex(x, pattern)))   return(quantity)
-    }
-    stop('quantity could not be infered')
-}
 
 #==============================================================================
 #
