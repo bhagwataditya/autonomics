@@ -404,13 +404,6 @@ extract_channel_samples <- function(channels, biosamples, replicate){
         num_samples <- mapply(extract, biosamples, num_label)
         sprintf('%s_%s%s', num_samples, den_samples, replicate)
     } else {
-        # TMT reporter intensities use channel numbers (rather than names)
-        # Make them really numbers (not strings) for extract to work!
-        if (any(!channels %in% biosamplenames)){
-            assert_all_are_numeric_strings(channels)
-            assert_are_disjoint_sets(channels, biosamplenames) # none match
-            channels %<>% as.numeric()
-        }
         biosamples %<>% mapply(extract, ., channels)
         sprintf('%s%s', biosamples, replicate)
     }
