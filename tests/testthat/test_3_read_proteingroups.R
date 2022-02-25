@@ -1,120 +1,220 @@
 #============================================================================
 #
-#      dequantify_maxquant_snames
+#      dequantify
 #
 #============================================================================
 
-context('dequantify_maxquant_snames')
+context('dequantify / demultiplex')
 
-test_that('Ratio', {                               # Ratios
-    expect_identical(dequantify_maxquant_snames(       # scalar
-          'Ratio H/L t0(L).t1(M).t2(H).R1' ), 
-                    't0(L).t1(M).t2(H).R1{H/L}' )
-    expect_identical(dequantify_maxquant_snames(       # vector
-        c('Ratio H/L t0(L).t1(M).t2(H).R1',
-          'Ratio M/L t0(L).t1(M).t2(H).R1')), 
-                  c('t0(L).t1(M).t2(H).R1{H/L}',
-                    't0(L).t1(M).t2(H).R1{M/L}') )
-})
+# Ratios
+    test_that('Ratio', {
+        
+        expect_identical( dequantify(                           # scalar
+              'Ratio H/L t0(L).t1(M).t2(H).R1' ),
+                        't0(L).t1(M).t2(H).R1{H/L}' )
+        
+        expect_identical( dequantify(                           # vector
+            c('Ratio H/L t0(L).t1(M).t2(H).R1',
+              'Ratio M/L t0(L).t1(M).t2(H).R1')), 
+                      c('t0(L).t1(M).t2(H).R1{H/L}',
+                        't0(L).t1(M).t2(H).R1{M/L}') )
+    })
 
-test_that('Normalized Ratio', {                     # Normalized Ratios
-    expect_identical(dequantify_maxquant_snames(       # scalar
-          'Ratio H/L normalized t0(L).t1(M).t2(H).R1' ), 
-                               't0(L).t1(M).t2(H).R1{H/L}' )
-    expect_identical(dequantify_maxquant_snames(       # vector
-        c('Ratio H/L normalized t0(L).t1(M).t2(H).R1',
-          'Ratio M/L normalized t0(L).t1(M).t2(H).R1')), 
-                             c('t0(L).t1(M).t2(H).R1{H/L}',
-                               't0(L).t1(M).t2(H).R1{M/L}') )
-})
+# Normalized Ratios
+    test_that('Ratio normalized', {
+        
+        expect_identical( dequantify(                           # scalar
+              'Ratio H/L normalized t0(L).t1(M).t2(H).R1' ),
+                                   't0(L).t1(M).t2(H).R1{H/L}' )
+        
+        expect_identical( dequantify(                           # vector
+            c('Ratio H/L normalized t0(L).t1(M).t2(H).R1',
+              'Ratio M/L normalized t0(L).t1(M).t2(H).R1')), 
+                           c('t0(L).t1(M).t2(H).R1{H/L}',
+                             't0(L).t1(M).t2(H).R1{M/L}') )
+    })
 
-test_that('LFQ intensity', {                      # LFQ intensities
-    expect_identical(dequantify_maxquant_snames(     # unlabeled
-        'LFQ intensity t0.R1'),                          # scalar
-                      't0.R1' )
-    expect_identical(dequantify_maxquant_snames(         # vector
-        c('LFQ intensity t0.R1',
-          'LFQ intensity t1.R1')), 
-                      c('t0.R1',
-                        't1.R1'))
-    expect_identical(dequantify_maxquant_snames(     # labeled
-        'LFQ intensity L t0(L).t1(H).R1'),                # scalar
-                        't0(L).t1(H).R1{L}' )
-    expect_identical(dequantify_maxquant_snames(          # vector
-        c('LFQ intensity L t0(L).t1(H).R1', 
-          'LFQ intensity H t0(L).t1(H).R1')), 
-                        c('t0(L).t1(H).R1{L}', 
-                          't0(L).t1(H).R1{H}'))
-})
-    
-test_that('Reporter intensity', {                   # Reporter intensities
-    expect_identical(dequantify_maxquant_snames(         # default labeled
-          'Reporter intensity 0 t0(0).t1(1).R1'),            # 0-based
-                               't0(0).t1(1).R1{0}' )             # scalar
-    expect_identical(dequantify_maxquant_snames(
-        c('Reporter intensity 0 t0(0).t1(1).R1',                 # vector
-          'Reporter intensity 1 t0(0).t1(1).R1')), 
-                             c('t0(0).t1(1).R1{0}', 
-                               't0(0).t1(1).R1{1}'))
-    expect_identical(dequantify_maxquant_snames(             # 1-based
-          'Reporter intensity 1 t0(1).t1(2).R1'),                # scalar
-                               't0(1).t1(2).R1{1}' )
-    expect_identical(dequantify_maxquant_snames(                 # vector
-        c('Reporter intensity 1 t0(1).t1(2).R1', 
-          'Reporter intensity 2 t0(1).t1(2).R1')), 
-                             c('t0(1).t1(2).R1{1}', 
-                               't0(1).t1(2).R1{2}'))
-    expect_identical(dequantify_maxquant_snames(          # custom labeled
-          'Reporter intensity 0 t0(126).t1(127).R1'),         # 0-based
-                               't0(126).t1(127).R1{126}' )       # scalar
-    expect_identical(dequantify_maxquant_snames(
-        c('Reporter intensity 0 t0(126).t1(127).R1',             # vector
-          'Reporter intensity 1 t0(126).t1(127).R1')), 
-                             c('t0(126).t1(127).R1{126}', 
-                               't0(126).t1(127).R1{127}'))
-    expect_identical(dequantify_maxquant_snames(              # 1-based
-          'Reporter intensity 1 t0(126).t1(127).R1'),            # scalar
-                               't0(126).t1(127).R1{126}' )
-    expect_identical(dequantify_maxquant_snames(                 # vector
-        c('Reporter intensity 1 t0(126).t1(127).R1', 
-          'Reporter intensity 2 t0(126).t1(127).R1')), 
-                             c('t0(126).t1(127).R1{126}', 
-                               't0(126).t1(127).R1{127}'))
-})
+# LFQ intensities
+    test_that('LFQ intensity', {
+        
+        expect_identical( dequantify(                           # scalar
+            'LFQ intensity t0.R1'),
+                          't0.R1' )
+        
+        expect_identical( dequantify(                           # vector
+            c('LFQ intensity t0.R1', 'LFQ intensity t1.R1')),
+                          c('t0.R1', 't1.R1'))
+    })
 
-test_that('Reporter intensity corrected', {     # Corrected reporter intensities
-    expect_identical(dequantify_maxquant_snames(              # default labeled
-          'Reporter intensity corrected 0 t0(0).t1(1).R1'),      # 0-based
-                                         't0(0).t1(1).R1{0}' )      # scalar
-    expect_identical(dequantify_maxquant_snames(
-        c('Reporter intensity corrected 0 t0(0).t1(1).R1',          # vector
-          'Reporter intensity corrected 1 t0(0).t1(1).R1')), 
-                                       c('t0(0).t1(1).R1{0}', 
-                                         't0(0).t1(1).R1{1}'))
-    expect_identical(dequantify_maxquant_snames(                # 1-based
-          'Reporter intensity corrected 1 t0(1).t1(2).R1'),         # scalar
-                                         't0(1).t1(2).R1{1}' )
-    expect_identical(dequantify_maxquant_snames(                    # vector
-        c('Reporter intensity corrected 1 t0(1).t1(2).R1', 
-          'Reporter intensity corrected 2 t0(1).t1(2).R1')), 
-                                       c('t0(1).t1(2).R1{1}', 
-                                         't0(1).t1(2).R1{2}'))
-    expect_identical(dequantify_maxquant_snames(                # custom labeled
-          'Reporter intensity corrected 0 t0(126).t1(127).R1'),    # 0-based
+# LFQ intensties labeled
+    test_that('LFQ intensity labeled', {
+        
+        expect_identical( dequantify(                           # scalar
+            'LFQ intensity L t0(L).t1(H).R1'),
+                            't0(L).t1(H).R1{L}' )
+        
+        expect_identical( dequantify(                           # vector
+            c('LFQ intensity L t0(L).t1(H).R1',
+              'LFQ intensity H t0(L).t1(H).R1')), 
+                            c('t0(L).t1(H).R1{L}', 
+                              't0(L).t1(H).R1{H}'))
+    })
+
+# Reporter intensities, default label, 0-based
+    test_that('Reporter intensity, default label, 0-based', {
+        
+        expect_identical( dequantify(                           # scalar
+              'Reporter intensity 0 t0(0).t1(1).R1'),
+                                   't0(0).t1(1).R1{0}' )
+        
+        expect_identical( dequantify(                           # vector
+            c('Reporter intensity 0 t0(0).t1(1).R1',
+              'Reporter intensity 1 t0(0).t1(1).R1')),
+                                 c('t0(0).t1(1).R1{0}', 
+                                   't0(0).t1(1).R1{1}'))
+    })
+
+# Reporter intensities, default label, 1-based
+    test_that('Reporter intensity, default label, 1-based', {
+        
+        expect_identical( dequantify(                            # scalar
+              'Reporter intensity 1 t0(1).t1(2).R1'),
+                                   't0(1).t1(2).R1{1}' )
+        
+        expect_identical( dequantify(                            # vector
+            c('Reporter intensity 1 t0(1).t1(2).R1',  
+              'Reporter intensity 2 t0(1).t1(2).R1')),
+                                 c('t0(1).t1(2).R1{1}', 
+                                   't0(1).t1(2).R1{2}'))
+    })
+
+# Reporter intensities, custom label, 0-based
+    test_that('Reporter intensity, custom label, 0-based', {
+        
+        expect_identical( dequantify(                              # scalar
+              'Reporter intensity 0 t0(126).t1(127).R1'),
+                                   't0(126).t1(127).R1{126}' )
+        
+        expect_identical( dequantify(                              # vector
+            c('Reporter intensity 0 t0(126).t1(127).R1',
+              'Reporter intensity 1 t0(126).t1(127).R1')),
+                                 c('t0(126).t1(127).R1{126}', 
+                                   't0(126).t1(127).R1{127}'))
+    })
+
+
+# Reporter intensities, custom label, 1-based
+    test_that('Reporter intensity, custom label, 1-based', {
+        
+        expect_identical( dequantify(                                # scalar
+              'Reporter intensity 1 t0(126).t1(127).R1'),
+                                   't0(126).t1(127).R1{126}' )
+        
+        expect_identical( dequantify(                                # vector
+            c('Reporter intensity 1 t0(126).t1(127).R1', 
+              'Reporter intensity 2 t0(126).t1(127).R1')),
+                                 c('t0(126).t1(127).R1{126}', 
+                                   't0(126).t1(127).R1{127}'))
+    })
+
+
+# Corrected reporter intensities, default label, 0-based
+    test_that('Reporter intensity corrected, default label, 0-based)', {
+        
+        expect_identical(dequantify(                                  # scalar
+              'Reporter intensity corrected 0 t0(0).t1(1).R1'),
+                                             't0(0).t1(1).R1{0}' )
+        
+        expect_identical(dequantify(                                  # vector
+            c('Reporter intensity corrected 0 t0(0).t1(1).R1',
+              'Reporter intensity corrected 1 t0(0).t1(1).R1')),
+           c('t0(0).t1(1).R1{0}', 
+             't0(0).t1(1).R1{1}'))
+    })
+
+# Corrected reporter intensities, default label, 1-based
+    test_that('Reporter intensity corrected, default label, 1-based)', {
+        
+        expect_identical( dequantify(                                 # scalar
+              'Reporter intensity corrected 1 t0(1).t1(2).R1'),
+                                             't0(1).t1(2).R1{1}' )
+        
+        expect_identical( dequantify(                                 # vector
+            c('Reporter intensity corrected 1 t0(1).t1(2).R1',
+              'Reporter intensity corrected 2 t0(1).t1(2).R1')), 
+                                           c('t0(1).t1(2).R1{1}', 
+                                             't0(1).t1(2).R1{2}'))
+    })
+
+# Corrected reporter intensities, custom label, 0-based
+test_that('Reporter intensity corrected, custom label, 0-based', {
+
+    expect_identical( dequantify(
+          'Reporter intensity corrected 0 t0(126).t1(127).R1'),
                                          't0(126).t1(127).R1{126}')    # scalar
-    expect_identical(dequantify_maxquant_snames(
+    
+    expect_identical( dequantify(
         c('Reporter intensity corrected 0 t0(126).t1(127).R1',         # vector
           'Reporter intensity corrected 1 t0(126).t1(127).R1')), 
                                        c('t0(126).t1(127).R1{126}', 
                                          't0(126).t1(127).R1{127}'))
-    expect_identical(dequantify_maxquant_snames(                   # 1-based
+})
+  
+# Corrected reporter intensities, custom label, 1-based
+test_that('Reporter intensity corrected, custom label, 1-based', {
+    
+    expect_identical( dequantify(
           'Reporter intensity corrected 1 t0(126).t1(127).R1'),       # scalar
                                          't0(126).t1(127).R1{126}' )
-    expect_identical(dequantify_maxquant_snames(                      # vector
+    
+    expect_identical( dequantify(                                      # vector
         c('Reporter intensity corrected 1 t0(126).t1(127).R1', 
           'Reporter intensity corrected 2 t0(126).t1(127).R1')), 
                                        c('t0(126).t1(127).R1{126}', 
                                          't0(126).t1(127).R1{127}'))
+})
+
+
+#============================================================================
+#
+#      demultiplex
+#
+#============================================================================
+
+context('demultiplex')
+
+
+test_that('Ratio', {
+    
+    expect_identical( demultiplex('t0(L).t1(M).t2(H).R1{H/L}' ), 't2_t0.R1' )
+    
+    expect_identical( demultiplex(
+        c('t0(L).t1(M).t2(H).R1{H/L}', 't0(L).t1(M).t2(H).R1{M/L}')), 
+        c('t2_t0.R1', 't1_t0.R1') )
+    
+})
+
+test_that('LFQ intensity', {
+    
+        expect_identical( demultiplex('t0.R1'),'t0.R1' )
+        
+        expect_identical( demultiplex(c('t0.R1', 't1.R1')), c('t0.R1', 't1.R1'))
+        
+        expect_identical( demultiplex('t0(L).t1(H).R1{L}'), 't0.R1' )
+    
+        expect_identical( demultiplex(
+            c('t0(L).t1(H).R1{L}', 't0(L).t1(H).R1{H}')), 
+            c('t0.R1',             't1.R1'))
+})
+
+
+test_that('Reporter intensity', {
+
+    expect_identical( demultiplex('t0(126).t1(127).R1{126}'), 't0.R1')
+    
+    expect_identical( demultiplex(
+        c('t0(126).t1(127).R1{126}', 't0(126).t1(127).R1{127}')), 
+        c('t0.R1', 't1.R1'))
 })
 
 
