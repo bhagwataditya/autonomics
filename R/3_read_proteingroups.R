@@ -179,46 +179,64 @@ guess_maxquant_quantity <- function(x){
 
 #==============================================================================
 #
-#                       standardize_maxquant_snames
+#                       dequantify_maxquant_snames
 #
 #==============================================================================
 
 
-#' Standardize maxquant snames
+#' Dequantify maxquant snames
 #'
-#' Standardize maxquant sample names
-#'
-#' Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
-#'
-#' @param x        character vector
-#' @param quantity maxquant quantity
-#' @param verbose  TRUE (default) or FALSE
-#' @return character vector
+#' @details 
+#' `               Ratio M/L t0(L).t1(H).R1  ->  t0(L)_t1(H).R1{M/L}`
+#' `    Ratio M/L normalized t0(L).t1(H).R1  ->  t0(L).t1(H).R1{M/L}`
+#' `                    LFQ intensity t1.R1  ->  t0.R1`
+#' `         LFQ intensity L t1(L).t1(H).R1  ->  t0(L).t1(H).R1{L}`
+#' `    Reporter intensity 0 t0(0).t1(1).R1  ->  t0(0).t1(1).R1{0}`
+#' `Reporter intensity 0 t0(126).t1(127).R1  ->  t0(126).t1(127).R1{126}`
+#' `Reporter intensity 1 t0(126).t1(127).R1  ->  t0(126).t1(127).R1{126}`
+#' @param x        `character`
+#' @param quantity `'Ratio',              'Ratio normalized'`,  \cr
+#'                 `'LFQ intensity'`, \cr
+#'                 `'Intensity',          'Intensity labeled'`
+#'                 `'Reporter intensity', 'Reporter intensity corrected'`
+#' @param verbose  `TRUE` or `FALSE`
+#' @return `character`
 #' @examples
-#' 'Ratio M/L normalized STD(L)_E01(H)_R1'  %>% standardize_maxquant_snames()
-#' 'Ratio M/L STD(L)_E01(H)_R1'             %>% standardize_maxquant_snames()
-#' 'LFQ intensity STD_R1'                   %>% standardize_maxquant_snames()
-#' 'LFQ intensity L STD(L)_E01(H)_R1'       %>% standardize_maxquant_snames()
-#' 'Reporter intensity 0 A(0)_B(1)_C(2)_R1' %>% standardize_maxquant_snames()
-#' 'Reporter intensity corrected 0 A(0)_B(1)_R1' %>% standardize_maxquant_snames()
-#' 'Reporter intensity corrected 1 K3941(126).K3942(127).R1' %>% 
-#'                                              standardize_maxquant_snames()
+#'    dequantify_maxquant_snames(c(                       # Ratios
+#'       'Ratio H/L t0(L).t1(M).t2(H).R1',
+#'       'Ratio M/L t0(L).t1(M).t2(H).R1'             ))
+#'    dequantify_maxquant_snames(c(                       # Normalized Ratios
+#'        'Ratio H/L normalized t0(L).t1(M).t2(H).R1',
+#'        'Ratio M/L normalized t0(L).t1(M).t2(H).R1' ))
+#'    dequantify_maxquant_snames(c(                       # LFQ intensities
+#'        'LFQ intensity t0.R1',
+#'        'LFQ intensity t1.R1'                       ))
+#'    dequantify_maxquant_snames(c(                       # Reporter intensities
+#'       'Reporter intensity 1 t0(126).t1(127).R1',
+#'       'Reporter intensity 2 t0(126).t1(127).R1'    ))
+#' @md
 #' @export
-standardize_maxquant_snames <- function(
-    x,
-    quantity = guess_maxquant_quantity(x),
-    verbose  = FALSE
+dequantify_maxquant_snames <- function(
+    x, quantity = guess_maxquant_quantity(x), verbose  = FALSE
 ){
     # x = multiplexes + channels. Return multiplexes if single channel.
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
 
     # Decompose multiplexes and channels
+    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
     if (quantity == 'Intensity'){
-        multiplexes     <- stri_replace_first_regex(x, pattern, '$1')
-        channel <- rep('', length(multiplexes))
+        multiplexes <- stri_replace_first_regex(x, pattern, '$1')
+        channel     <- rep('', length(multiplexes))
     } else {
-        multiplexes     <- stri_replace_first_regex(x, pattern, '$2')
-        channel <- stri_replace_first_regex(x, pattern, '$1')
+        multiplexes <- stri_replace_first_regex(x, pattern, '$2')
+        channel     <- stri_replace_first_regex(x, pattern, '$1')
+    }
+    
+    # Reporter intensity: convert index-based channels -> label-based
+    if (quantity %in% c('Reporter intensity', 'Reporter intensity corrected')){
+        channel %<>% as.numeric()
+        if (0 %in% channel)  channel %<>% add(1)   # older mq is 0-based
+        labels <- extract_labels(multiplexes)
+        channel %<>% mapply(extract, labels, .)
     }
 
     # Standardize
