@@ -243,7 +243,9 @@ dequantify <- function(
     if (quantity %in% c('Reporter intensity', 'Reporter intensity corrected')){
         channel %<>% as.numeric()
         if (0 %in% channel)  channel %<>% add(1)   # older mq is 0-based
-        labels <- extract_labels(multiplexes)
+        labels <- stri_extract_all_regex(multiplexes, '\\(.+?\\)')       %>%
+                  lapply(stri_replace_first_fixed, '(', '')  %>%
+                  lapply(stri_replace_first_fixed, ')', '')
         channel %<>% mapply(extract, labels, .)
     }
 
@@ -258,14 +260,6 @@ dequantify <- function(
 }
 
 
-#==============================================================================
-#
-#                               demultiplex
-#
-#==============================================================================
-
-
-
 is_multiplexed <- function(x){
     pattern <- '(.+)\\{(.+)\\}'
     n_open   <- stri_count_fixed(x, '(')
@@ -273,222 +267,53 @@ is_multiplexed <- function(x){
     all(stri_detect_regex(x, pattern) & (n_open==n_closed) & (n_open>0))
 }
 
-are_all_identical <- function(y){
-    if (length(y)==1) TRUE else all(y[-1] == y[1])
-}
 
-#' Separate multiplexes from channels
-#'
-#'     STD(L)_EM00(M)_EM01(H)_R1{M/L}
-#'     ------------------------- ...
-#'           multiplex         channel
-#'
-#'
-#' @param x character vector: e.g. "STD(L)_EM00(M)_EM01(H)_R1{M/L}"
-#' @examples
-#' x <- "STD(L)_E00(M)_E01(H)_R1{M/L}"
-#' extract_multiplexes(x)     # STD(L)_E00(M)_E01(H)_R1
-#' extract_channels(x) #                           M/L
-#' @noRd
-extract_multiplexes <- function(x){
-    pattern <- '(.+)\\{(.+)\\}'
-    stri_replace_first_regex(x, pattern, '$1')
-}
-extract_channels <- function(x){
-    pattern <- '(.+)\\{(.+)\\}'
-    stri_replace_first_regex(x, pattern, '$2')
-}
-
-#' Separate samples from labels
-#' @param multiplexes character vector: e.g. "STD(L)_E00(M)_E01(H)_R1"
-#' @examples
-#' x <- "STD(L)_E00(M)_E01(H)_R1"
-#' extract_labels(x)
-#' extract_biosamples(x)
-#' @noRd
-extract_labels <- function(multiplexes){
-    pattern <- '\\(.+?\\)'
-    stri_extract_all_regex(multiplexes, pattern)       %>%
-    lapply(stri_replace_first_fixed, '(', '')  %>%
-    lapply(stri_replace_first_fixed, ')', '')
-}
-extract_biosamples <- function(multiplexes, labels){
-    pattern <- '\\(.+?\\)'
-    stri_split_regex(multiplexes, pattern) %>%
-    lapply(function(y){
-            y[seq_len(length(labels[[1]]))] %<>%
-            stri_replace_first_regex('^[_. ]', ''); y})
-    # rm sep from samples (but not from replicate - needed to glue back later!)
-}
-
-#' Are number of samples/labels equally multiplexed across mixes?
-#'
-#' @param samples list of char vectors (see examples)
-#' @param labels  list of char vectors (see examples)
-#' @return TRUE or FALSE
-#' @examples
-#' samples <- list(c("STD", "E00", "E01", "_R1" ),
-#'                 c("STD", "E00", "E01", "_R2"))
-#' labels  <- list(c("L", "M", "H"),
-#'                 c("L", "M", "H"))
-#' are_equally_multiplexed(samples, labels)
-#' @noRd
-are_equally_multiplexed <- function(samples, labels){
-    n_samples <- vapply(samples,  length, integer(1))
-    n_labels  <- vapply(labels, length, integer(1))
-    are_all_identical(n_samples) & are_all_identical(n_labels)
-}
-
-
-#' Extract/Drop replicate
-#' @param samples list of char vectors: list(c("STD", "E00", "E01", "_R1" ))
-#' @param labels  list of char vectors: list(c("L", "M", "H"))
-#' @return character vector: "_R1"
-#' @examples
-#' samples <- list(c("STD", "E00", "E01", "_R1" ))
-#' labels  <- list(c("L", "M", "H"))
-#' extract_replicates(samples, labels) # "_R1"
-#' drop_replicates(samples, labels)
-#' @noRd
-extract_replicates <- function(multiplexes, biosamples, labels){
-
-    pattern <- '\\(.+?\\)'
-    n_biosamples <- unique(vapply(biosamples, length, integer(1)))
-    n_labels  <- unique(vapply(labels,  length, integer(1)))
-    if (n_biosamples > n_labels){
-        stri_split_regex(multiplexes, pattern) %>%
-        vapply((function(y) extract(y, length(y))), character(1))
-    } else {
-        rep('', length(biosamples))
-    }
-}
-drop_replicates <- function(biosamples, labels){
-    n_samples <- unique(vapply(biosamples, length, integer(1)))
-    n_labels  <- unique(vapply(labels,  length, integer(1)))
-    if (n_samples > n_labels){
-        biosamples %<>% lapply(extract, seq_len(n_samples-1))
-    }
-    biosamples
-}
-
-#' First stri_split_fixed. Then extract component i
-#' @param x character vector
-#' @param split   string character on which to split
-#' @param i number: which component to extract
-#' @return character vector
-#' @noRd
-stri_split_fixed_extract <- function(x, split, i){
-    stri_split_fixed(x, split) %>%
-    vapply(extract, character(1), i)
-}
-
-#' Extract channel samples
+#' Extract channel
+#' @details Operates on a scalar!
 #' @param channels    character: c('M', 'H')
 #' @param biosamples  list: list(c(L='t0', M='t1', H='t2'), 
 #'                               c(L='t0', M='t1', H='t2'))
 #' @param replicate   character: c('_R1', '_R2')
 #' @return character
 #' @examples
-#' # Intensity channels
-#'     extract_channel_samples(channels   = c('M', 'H'),
-#'                             biosamples = list(c(L='t0', M='t1', H='t2'), 
-#'                                               c(L='t0', M='t1', H='t2')), 
-#'                             replicate  = c('_R1', '_R2') )
-#' # Ratio channels
-#'     extract_channel_samples(channels   = c('M/L', 'H/L'),
-#'                             biosamples = list(c(L='t0', M='t1', H='t2'), 
-#'                                               c(L='t0', M='t1', H='t2')), 
-#'                             replicate  = c('_R1', '_R2') )
+#' extract_channel('K3941(126).K3942(127).K3943(128).R1{127/126}')
+#' extract_channel('K3941(126).K3942(127).K3943(128).R1{127}')
 #' @export
-extract_channel_samples <- function(channels, biosamples, replicate){
-    . <- NULL
-    biosamplenames <- unique(unlist(lapply(biosamples, names)))
-    is_ratio <- all(stri_detect_fixed(channels, '/'))
-    if (is_ratio){
-        num_label <- stri_split_fixed_extract(channels, '/', 1)
-        den_label <- stri_split_fixed_extract(channels, '/', 2)
-        assert_is_subset(c(num_label, den_label), biosamplenames)
-        den_samples <- mapply(extract, biosamples, den_label)
-        num_samples <- mapply(extract, biosamples, num_label)
-        sprintf('%s_%s%s', num_samples, den_samples, replicate)
-    } else {
-        biosamples %<>% mapply(extract, ., channels)
-        sprintf('%s%s', biosamples, replicate)
+extract_channel <- function(y){
+    channel <- split_extract(y, 2, '{') %>% substr(1, nchar(.)-1)
+    y %<>% stri_replace_last_fixed(paste0('{', channel, '}'), '')
+    y %<>% stri_split_fixed(guess_sep(.)) %>% unlist()
+    replicate <- y %>% extract2(length(y))
+    y %<>% extract(-length(.))
+    channel %<>% stri_split_fixed('/') %>% unlist()
+    result <- y %>% extract(stri_detect_fixed(., paste0('(', channel[[1]], ')')))
+    result %<>% split_extract(1, '(')
+    if (length(channel)==2){
+        result2 <- y %>% extract(stri_detect_fixed(., paste0('(', channel[[2]], ')')))
+        result2 %<>% split_extract(1, '(')
+        result %<>% paste0('_', result2)
     }
-}
-
-uniquify_channelsamples <- function(channelsamples, channels, verbose){
-    idx <- which(cduplicated(channelsamples))
-    if (length(idx)>0){
-        label_tags <- channels[idx] %>% stri_replace_first_fixed('/', '')
-        if (verbose)   message('\t\tUniquify snames: ',
-                                channelsamples[idx][1], ' -> ',
-                                channelsamples[idx][1],
-                                label_tags[1],
-                                ' (for ',
-                                length(idx),
-                                '/',
-                                length(channelsamples),
-                                ' snames)')
-        channelsamples[idx] %<>% paste0(label_tags)
-    }
-    channelsamples
+    result %<>% paste0('.', replicate)
+    result %<>% paste0('.', paste0(channel, collapse = '_'))
+    result
 }
 
 
-#' Demultiplex snames
-#'
-#' Demultiplex sample names
-#'
-#' @param x        character vector
-#' @param verbose  logical
-#' @return character vector
-#' @examples
-#'                                                   # multiplex modality
-#' 'STD(L)_E00(M)_E01(H)_R1{M/L}'  %>% demultiplex() #   labeled ratios
-#' 'A(0)_B(1)_C(2)_D(3)_R1{0}'     %>% demultiplex() #   reporter intensities
-#' 'STD(L)_E00(M)_E01(H)_R1{L}'    %>% demultiplex() #   labeled intensities
-#'                                                   # sep
-#' 'STD(L)_E00(M)_E01(H)_R1{L}'    %>% demultiplex() #   underscore
-#' 'STD(L).E00(M).E01(H).R1{L}'    %>% demultiplex() #   dot
-#' 'STD(L)E00(M)E01(H).R1{L}'      %>% demultiplex() #   none
-#'
-#' 'WT.t0(L)_WT.t1(M)_WT.t2(H)_R1{H/L}' %>% demultiplex() # composite names
-#'
-#' c('STD(L).M00(M).M00(H).R10{M/L}',                     # append label for
-#'   'STD(L).M00(M).M00(H).R10{H/L}')   %>% demultiplex() # uniqueness
-#'
-#' c('STD_R1', 'EM0_R1')                %>% demultiplex() # uniplexed unchanged
+#' @rdname dequantify
 #' @export
 demultiplex <- function(x, verbose = FALSE){
-
-    # Return unchanged if not multiplexed
+    assert_is_character(x)
+    assert_is_a_bool(verbose)
     . <- NULL
     if (!is_multiplexed(x)) return(x)
-
-    # Separate channels from multiplexes.
-    channels    <- extract_channels(x)
-    multiplexes <- extract_multiplexes(x)
-
-    # Separate labels from biosamples. Return if inconsistent no of components.
-    labels      <- extract_labels(multiplexes)
-    biosamples  <- extract_biosamples(multiplexes, labels)
-    if (!are_equally_multiplexed(biosamples, labels)){
-        message('\t\tDemultiplexing failed: no of biosamples or labels differs')
-        return(x)
+    demultiplexed <- unname(vapply(x, extract_channel, character(1)))
+    if (!anyDuplicated(split_extract(demultiplexed, 1, '.'))){
+        demultiplexed %<>% stri_split_fixed('.')
+        demultiplexed %<>% lapply(rev) %>% lapply(extract, -1)
+        demultiplexed %<>% lapply(rev)
+        demultiplexed %<>% vapply(paste0, character(1), collapse='.')
     }
-    biosamples %<>% mapply(set_names, ., labels, SIMPLIFY = FALSE)
-    replicates  <- extract_replicates(multiplexes, biosamples, labels)
-    biosamples %<>% drop_replicates(labels)
-
-    # Extract channelsamples from multiplexes
-    channelsamples <- extract_channel_samples(channels, biosamples, replicates)
-    if (verbose) message(
-        '\t\tDemultiplex snames: ', x[1], '  ->  ', channelsamples[1])
-
-    # Ensure uniqueness. Add labels if required.
-    uniquify_channelsamples(channelsamples, channels, verbose)
-
+    demultiplexed
 }
 
 
@@ -1164,7 +989,7 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
     if (!phospho)  object %<>% add_pepcounts(file, pepcountpattern, quantity)
 # Process
     if (phospho)  colnames(object) %<>% stri_replace_last_fixed('___1', '')
-    colnames(object) %<>% standardize_maxquant_snames(quantity)
+    colnames(object) %<>% dequantify(quantity)
     colnames(object) %<>% demultiplex()
     object$sample_id <- colnames(object)
     object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id', by.y = sfileby)
