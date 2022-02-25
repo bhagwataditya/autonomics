@@ -179,7 +179,8 @@ guess_maxquant_quantity <- function(x){
 
 #==============================================================================
 #
-#                       dequantify_maxquant_snames
+#                       dequantify
+#                       demultiplex
 #
 #==============================================================================
 
@@ -202,21 +203,28 @@ guess_maxquant_quantity <- function(x){
 #' @param verbose  `TRUE` or `FALSE`
 #' @return `character`
 #' @examples
-#'    dequantify_maxquant_snames(c(                       # Ratios
-#'       'Ratio H/L t0(L).t1(M).t2(H).R1',
-#'       'Ratio M/L t0(L).t1(M).t2(H).R1'             ))
-#'    dequantify_maxquant_snames(c(                       # Normalized Ratios
-#'        'Ratio H/L normalized t0(L).t1(M).t2(H).R1',
-#'        'Ratio M/L normalized t0(L).t1(M).t2(H).R1' ))
-#'    dequantify_maxquant_snames(c(                       # LFQ intensities
-#'        'LFQ intensity t0.R1',
-#'        'LFQ intensity t1.R1'                       ))
-#'    dequantify_maxquant_snames(c(                       # Reporter intensities
-#'       'Reporter intensity 1 t0(126).t1(127).R1',
-#'       'Reporter intensity 2 t0(126).t1(127).R1'    ))
+#' (x <- c('Ratio H/L t0(L).t1(M).t2(H).R1',              # Ratios
+#'         'Ratio M/L t0(L).t1(M).t2(H).R1'))
+#' (x %<>% dequantify())
+#' (x %<>% demultiplex())
+#' 
+#' (x <- c('Ratio H/L normalized t0(L).t1(M).t2(H).R1',   # Normalized Ratios
+#'         'Ratio M/L normalized t0(L).t1(M).t2(H).R1'))
+#' (x %<>% dequantify())
+#' (x %<>% demultiplex())
+#' 
+#' (x <- c('LFQ intensity t0.R1',                         # LFQ intensities
+#'         'LFQ intensity t1.R1'))
+#' (x %<>% dequantify())
+#' (x %<>% demultiplex())
+#' 
+#' (x <- c('Reporter intensity 1 t0(126).t1(127).R1',     # Reporter intensities
+#'         'Reporter intensity 2 t0(126).t1(127).R1'))
+#' (x %<>% dequantify())
+#' (x %<>% demultiplex())
 #' @md
 #' @export
-dequantify_maxquant_snames <- function(
+dequantify <- function(
     x, quantity = guess_maxquant_quantity(x), verbose  = FALSE
 ){
     # x = multiplexes + channels. Return multiplexes if single channel.
