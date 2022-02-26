@@ -2,12 +2,9 @@
 % Please edit documentation in R/3_read_proteingroups.R
 \name{dequantify}
 \alias{dequantify}
-\alias{demultiplex}
 \title{Dequantify maxquant snames}
 \usage{
 dequantify(x, quantity = guess_maxquant_quantity(x), verbose = FALSE)
-
-demultiplex(x, verbose = FALSE)
 }
 \arguments{
 \item{x}{\code{character}}
@@ -23,35 +20,24 @@ demultiplex(x, verbose = FALSE)
 \code{character}
 }
 \description{
-Dequantify maxquant snames
+Drop quantity ('Reporter intensity'). \cr
+Encode {channel} as suffix.
 }
 \details{
-\verb{               Ratio M/L t0(L).t1(H).R1  ->  t0(L)_t1(H).R1\{M/L\}}
-\verb{    Ratio M/L normalized t0(L).t1(H).R1  ->  t0(L).t1(H).R1\{M/L\}}
-\verb{                    LFQ intensity t1.R1  ->  t0.R1}
-\verb{         LFQ intensity L t1(L).t1(H).R1  ->  t0(L).t1(H).R1\{L\}}
-\verb{    Reporter intensity 0 t0(0).t1(1).R1  ->  t0(0).t1(1).R1\{0\}}
-\verb{Reporter intensity 0 t0(126).t1(127).R1  ->  t0(126).t1(127).R1\{126\}}
-\verb{Reporter intensity 1 t0(126).t1(127).R1  ->  t0(126).t1(127).R1\{126\}}
+\verb{               Ratio H/L WT(L).KD(H).R1  ->  WT(L).KD(H).R1\{H/L\}}
+\verb{                    LFQ intensity WT.R1  ->  WT.R1}
+\verb{Reporter intensity 0 WT(126).KD(127).R1  ->  WT(1).KD(2).R1\{1\}}
 }
 \examples{
-(x <- c('Ratio H/L t0(L).t1(M).t2(H).R1',              # Ratios
-        'Ratio M/L t0(L).t1(M).t2(H).R1'))
-(x \%<>\% dequantify())
-(x \%<>\% demultiplex())
+dequantify(c('Ratio H/L WT(L).KD(M).OE(H).R1',             # Ratios
+             'Ratio M/L WT(L).KD(M).OE(H).R1'))
 
-(x <- c('Ratio H/L normalized t0(L).t1(M).t2(H).R1',   # Normalized Ratios
-        'Ratio M/L normalized t0(L).t1(M).t2(H).R1'))
-(x \%<>\% dequantify())
-(x \%<>\% demultiplex())
+dequantify(c('Ratio H/L normalized WT(L).KD(M).OE(H).R1',  # Norm. Ratios
+             'Ratio M/L normalized WT(L).KD(M).OE(H).R1'))
 
-(x <- c('LFQ intensity t0.R1',                         # LFQ intensities
-        'LFQ intensity t1.R1'))
-(x \%<>\% dequantify())
-(x \%<>\% demultiplex())
+dequantify(c('LFQ intensity WT.R1',                        # LFQ intensity
+             'LFQ intensity KD.R1'))
 
-(x <- c('Reporter intensity 1 t0(126).t1(127).R1',     # Reporter intensities
-        'Reporter intensity 2 t0(126).t1(127).R1'))
-(x \%<>\% dequantify())
-(x \%<>\% demultiplex())
+dequantify(c('Reporter intensity 1 WT(126).KD(127).R1',    # Rep.intensities
+             'Reporter intensity 2 WT(126).KD(127).R1'))
 }

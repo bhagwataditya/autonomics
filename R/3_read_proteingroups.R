@@ -184,17 +184,37 @@ guess_maxquant_quantity <- function(x){
 #
 #==============================================================================
 
+#' Convert labels into indices
+#' @param x  `character`
+#' @examples
+#' label2index('Reporter intensity 0 WT(0).KD(1).OE(2).R1')
+#' label2index('Reporter intensity 1 WT(1).KD(2).OE(3).R1')
+#' label2index('Reporter intensity 0 WT(126).KD(127).OE(128).R1')
+#' label2index('Reporter intensity 1 WT(126).KD(127).OE(128).R1')
+#' label2index(x)
+#' @export
+label2index <- function(x){
+    labels <- unlist(stri_extract_all_regex(x, '\\(.+?\\)'))
+    for (i in rev(seq_along(labels))){ 
+        # important to do this in rev order!!! otherwise ...
+        #                 Reporter intensity 0 WT(0).KD(1).OE(2).R1
+        # i=1: (0) -> 1 : Reporter intensity 0 WT(1).KD(1).OE(2).R1
+        # i=2: (1) -> 2 : Reporter intensity 0 WT(2).KD(1).OE(2).R1
+        # not what we want!!!
+        x %<>% stri_replace_first_fixed(labels[[i]], paste0('(',i,')'))
+    }
+    x
+}
+
 
 #' Dequantify maxquant snames
-#'
-#' @details 
-#' `               Ratio M/L t0(L).t1(H).R1  ->  t0(L)_t1(H).R1{M/L}`
-#' `    Ratio M/L normalized t0(L).t1(H).R1  ->  t0(L).t1(H).R1{M/L}`
-#' `                    LFQ intensity t1.R1  ->  t0.R1`
-#' `         LFQ intensity L t1(L).t1(H).R1  ->  t0(L).t1(H).R1{L}`
-#' `    Reporter intensity 0 t0(0).t1(1).R1  ->  t0(0).t1(1).R1{0}`
-#' `Reporter intensity 0 t0(126).t1(127).R1  ->  t0(126).t1(127).R1{126}`
-#' `Reporter intensity 1 t0(126).t1(127).R1  ->  t0(126).t1(127).R1{126}`
+#' 
+#' Drop quantity ('Reporter intensity'). \cr
+#' Encode {channel} as suffix.
+#' 
+#' `               Ratio H/L WT(L).KD(H).R1  ->  WT(L).KD(H).R1{H/L}`
+#' `                    LFQ intensity WT.R1  ->  WT.R1`
+#' `Reporter intensity 0 WT(126).KD(127).R1  ->  WT(1).KD(2).R1{1}`
 #' @param x        `character`
 #' @param quantity `'Ratio',              'Ratio normalized'`,  \cr
 #'                 `'LFQ intensity'`, \cr
@@ -203,57 +223,48 @@ guess_maxquant_quantity <- function(x){
 #' @param verbose  `TRUE` or `FALSE`
 #' @return `character`
 #' @examples
-#' (x <- c('Ratio H/L t0(L).t1(M).t2(H).R1',              # Ratios
-#'         'Ratio M/L t0(L).t1(M).t2(H).R1'))
-#' (x %<>% dequantify())
-#' (x %<>% demultiplex())
+#' dequantify(c('Ratio H/L WT(L).KD(M).OE(H).R1',             # Ratios
+#'              'Ratio M/L WT(L).KD(M).OE(H).R1'))
 #' 
-#' (x <- c('Ratio H/L normalized t0(L).t1(M).t2(H).R1',   # Normalized Ratios
-#'         'Ratio M/L normalized t0(L).t1(M).t2(H).R1'))
-#' (x %<>% dequantify())
-#' (x %<>% demultiplex())
+#' dequantify(c('Ratio H/L normalized WT(L).KD(M).OE(H).R1',  # Norm. Ratios
+#'              'Ratio M/L normalized WT(L).KD(M).OE(H).R1'))
 #' 
-#' (x <- c('LFQ intensity t0.R1',                         # LFQ intensities
-#'         'LFQ intensity t1.R1'))
-#' (x %<>% dequantify())
-#' (x %<>% demultiplex())
+#' dequantify(c('LFQ intensity WT.R1',                        # LFQ intensity
+#'              'LFQ intensity KD.R1'))
 #' 
-#' (x <- c('Reporter intensity 1 t0(126).t1(127).R1',     # Reporter intensities
-#'         'Reporter intensity 2 t0(126).t1(127).R1'))
-#' (x %<>% dequantify())
-#' (x %<>% demultiplex())
+#' dequantify(c('Reporter intensity 1 WT(126).KD(127).R1',    # Rep.intensities
+#'              'Reporter intensity 2 WT(126).KD(127).R1'))
 #' @md
 #' @export
 dequantify <- function(
     x, quantity = guess_maxquant_quantity(x), verbose  = FALSE
 ){
-    # x = multiplexes + channels. Return multiplexes if single channel.
+    # x = multiplex + channel. Return multiplex if single channel.
 
-    # Decompose multiplexes and channels
+    # Decompose multiplex and channel
     pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
     if (quantity == 'Intensity'){
-        multiplexes <- stri_replace_first_regex(x, pattern, '$1')
-        channel     <- rep('', length(multiplexes))
+        multiplex <- stri_replace_first_regex(x, pattern, '$1')
+        channel   <- rep('', length(multiplex))
     } else {
-        multiplexes <- stri_replace_first_regex(x, pattern, '$2')
-        channel     <- stri_replace_first_regex(x, pattern, '$1')
+        multiplex <- stri_replace_first_regex(x, pattern, '$2')
+        channel   <- stri_replace_first_regex(x, pattern, '$1')
     }
     
-    # Reporter intensity: convert index-based channels -> label-based
+    # Reporter intensity
     if (quantity %in% c('Reporter intensity', 'Reporter intensity corrected')){
+        multiplex %<>% lapply(label2index)
         channel %<>% as.numeric()
-        if (0 %in% channel)  channel %<>% add(1)   # older mq is 0-based
-        labels <- stri_extract_all_regex(multiplexes, '\\(.+?\\)')       %>%
-                  lapply(stri_replace_first_fixed, '(', '')  %>%
-                  lapply(stri_replace_first_fixed, ')', '')
-        channel %<>% mapply(extract, labels, .)
+        if (0 %in% channel){                           # pre-2018 mq is 0-based
+            channel %<>% as.numeric() %>% add(1) %>% as.character()
+        }
     }
 
     # Standardize
     if (all(channel=='')){
-        cleanx <- multiplexes
+        cleanx <- multiplex
     } else {
-        cleanx <- sprintf('%s{%s}', multiplexes, channel)
+        cleanx <- sprintf('%s{%s}', multiplex, channel)
     }
     if (verbose) message('\t\tStandardize snames: ', x[1], '  ->  ', cleanx[1])
     return(cleanx)
@@ -267,53 +278,63 @@ is_multiplexed <- function(x){
     all(stri_detect_regex(x, pattern) & (n_open==n_closed) & (n_open>0))
 }
 
+.demultiplex <- function(y){
+    y0 <- y
+    channel <- split_extract(y, 2, '{') %>% substr(1, nchar(.)-1)
+    y %<>% stri_replace_last_fixed(paste0('{', channel, '}'), '')
+    
+    labels     <- y %>% stri_extract_all_regex('\\([^()]+\\)') %>% unlist() %>% substr(2, nchar(.)-1)
+    run        <- y %>% stri_split_regex('\\([^[()]]+\\)')     %>% unlist() %>% extract(length(.))
+    biosamples <- y %>% stri_split_regex('\\([^[()]]+\\)')     %>% unlist() %>% extract(-length(.))
+    biosamples %<>% stri_replace_first_regex('^[._ ]', '')
+    assertive::assert_are_same_length(biosamples, labels)
+    names(biosamples) <- labels
+    channel %<>% stri_split_fixed('/') %>% unlist()
+    
+    if (!all(channel %in% labels)) return(y0)
+    
+    result <- paste0(biosamples[channel], collapse = '_')
+    result %<>% paste0(run)
+    result
+}
 
-#' Extract channel
-#' @details Operates on a scalar!
+
+#' Demultiplex snames
+#' 
+#' Demultiplex maxquant samplenames
+#' 
+#' `WT(L).KD(H).R1{H/L}  -> KD_WT.R1`
+#' `WT(1).KD(2).R1{1}    -> WT.R1`
+#' `         WT.R1       -> WT.R1`
 #' @param channels    character: c('M', 'H')
 #' @param biosamples  list: list(c(L='t0', M='t1', H='t2'), 
 #'                               c(L='t0', M='t1', H='t2'))
 #' @param replicate   character: c('_R1', '_R2')
 #' @return character
 #' @examples
-#' extract_channel('K3941(126).K3942(127).K3943(128).R1{127/126}')
-#' extract_channel('K3941(126).K3942(127).K3943(128).R1{127}')
-#' @export
-extract_channel <- function(y){
-    channel <- split_extract(y, 2, '{') %>% substr(1, nchar(.)-1)
-    y %<>% stri_replace_last_fixed(paste0('{', channel, '}'), '')
-    y %<>% stri_split_fixed(guess_sep(.)) %>% unlist()
-    replicate <- y %>% extract2(length(y))
-    y %<>% extract(-length(.))
-    channel %<>% stri_split_fixed('/') %>% unlist()
-    result <- y %>% extract(stri_detect_fixed(., paste0('(', channel[[1]], ')')))
-    result %<>% split_extract(1, '(')
-    if (length(channel)==2){
-        result2 <- y %>% extract(stri_detect_fixed(., paste0('(', channel[[2]], ')')))
-        result2 %<>% split_extract(1, '(')
-        result %<>% paste0('_', result2)
-    }
-    result %<>% paste0('.', replicate)
-    result %<>% paste0('.', paste0(channel, collapse = '_'))
-    result
-}
-
-
-#' @rdname dequantify
+#' # uniplexed / intensity / ratio
+#'    demultiplex(c('KD.R1','OE.R1'))
+#'    demultiplex(c('WT(L).KD(M).OE(H).R1{M}',  'WT(L).KD(M).OE(H).R1{H}'))
+#'    demultiplex(c('WT(L).KD(M).OE(H).R1{M/L}','WT(L).KD(M).OE(H).R1{H/L}'))
+#'
+#' # run / replicate
+#'    demultiplex(c('WT(L).OE(H).R1{L}',    'WT(L).OE(H).R1{H}'))     # run
+#'    demultiplex(c('WT.R1(L).OE.R1(H){L}', 'WT.R1(L).OE.R1(H){H}'))  # repl
+#'
+#' # label / index
+#'    demultiplex(c('WT(L).OE(H).R1{L}',    'WT(L).OE(H).R1{H}'))     # label
+#'    demultiplex(c('WT(1).OE(2).R1{1}',    'WT(1).OE(2).R1{2}'))     # index
+#' 
+#' # with unused channels
+#'    demultiplex('WT(1).KD(2).OE(3).R1{6}')
+#' @md
 #' @export
 demultiplex <- function(x, verbose = FALSE){
     assert_is_character(x)
     assert_is_a_bool(verbose)
     . <- NULL
     if (!is_multiplexed(x)) return(x)
-    demultiplexed <- unname(vapply(x, extract_channel, character(1)))
-    if (!anyDuplicated(split_extract(demultiplexed, 1, '.'))){
-        demultiplexed %<>% stri_split_fixed('.')
-        demultiplexed %<>% lapply(rev) %>% lapply(extract, -1)
-        demultiplexed %<>% lapply(rev)
-        demultiplexed %<>% vapply(paste0, character(1), collapse='.')
-    }
-    demultiplexed
+    unname(vapply(x, .demultiplex, character(1)))
 }
 
 
