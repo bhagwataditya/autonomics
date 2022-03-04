@@ -275,7 +275,14 @@ is_multiplexed <- function(x){
     pattern <- '(.+)\\{(.+)\\}'
     n_open   <- stri_count_fixed(x, '(')
     n_closed <- stri_count_fixed(x, ')')
-    all(stri_detect_regex(x, pattern) & (n_open==n_closed) & (n_open>0))
+    channel <- as.numeric(gsub(pattern, '\\2', x))
+    
+    all(
+        stri_detect_regex(x, pattern) & 
+        n_open > 0 &            # multiplexing present
+        n_open == n_closed &    # multiplexing consistent
+        channel < n_open        # multiplex contains all channels
+    )
 }
 
 .demultiplex <- function(y){
