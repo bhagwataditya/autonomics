@@ -4,29 +4,12 @@
 \alias{matrix2sumexp}
 \title{Convert matrix into SummarizedExperiment}
 \usage{
-matrix2sumexp(
-  x,
-  sdt = NULL,
-  sdtby = if (is.null(sdt)) NULL else names(sdt)[1],
-  subgroupvar = NULL,
-  fdt = NULL,
-  fdtby = if (is.null(fdt)) NULL else names(fdt)[1],
-  fnamevar = NULL,
-  verbose = TRUE
-)
+matrix2sumexp(x, subgroupvar = NULL, fnamevar = NULL, verbose = TRUE)
 }
 \arguments{
 \item{x}{matrix}
 
-\item{sdt}{sample data.table / data.frame / DataFrame}
-
-\item{sdtby}{sample data mergeby column}
-
 \item{subgroupvar}{string / NULL}
-
-\item{fdt}{feature data.table / data.frame / DataFrame}
-
-\item{fdtby}{feature data mergeby column}
 
 \item{fnamevar}{string / NULL}
 

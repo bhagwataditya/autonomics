@@ -861,8 +861,8 @@ add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
                     } else {           paste0(subdirnames, '_', filenames)}
 
     colnames(fcounts$counts) <- sample_names
-    object <- matrix2sumexp(fcounts$counts,
-                            fdt = data.table(fcounts$annotation), fdtby = 'feature_id')
+    object <- matrix2sumexp(fcounts$counts)
+    object %<>% merge_fdata(data.table(fcounts$annotation), by.y = 'feature_id')
     assayNames(object)[1] <- 'counts'
 # Add sample/feature data
     object %<>% merge_sfile(
@@ -891,8 +891,8 @@ add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
     fdata1   <- dt[, !idx, with = FALSE]
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1[[fid_col]]
-    object <- matrix2sumexp(
-                counts1, fdt = fdata1, fdtby = fid_col, verbose = verbose)
+    object <- matrix2sumexp(counts1)
+    object %<>% merge_fdata(fdata1, by.y = fid_col, verbose = verbose)
     assayNames(object)[1] <- 'counts'
     metadata(object)$platform <- 'rnaseq'
 # sumexp
