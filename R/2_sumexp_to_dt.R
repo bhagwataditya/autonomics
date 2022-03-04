@@ -193,8 +193,6 @@ dt2sumexp  <- function(
 
 #' Convert matrix into SummarizedExperiment
 #' @param x             matrix
-#' @param subgroupvar   string / NULL
-#' @param fnamevar      string / NULL
 #' @param verbose       TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
@@ -207,15 +205,13 @@ dt2sumexp  <- function(
 #' @export
 matrix2sumexp <- function(
     x,
-    subgroupvar = NULL,
-    fnamevar    = NULL,
     verbose     = TRUE
 ){
     object <- SummarizedExperiment(list(exprs = x))
     fdata(object)$feature_id   <- rownames(object)
     fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
-    object %<>% add_subgroup(subgroupvar, verbose = verbose)
+    object %<>% add_subgroup(subgroupvar = NULL, verbose = verbose)
     object
 }
 

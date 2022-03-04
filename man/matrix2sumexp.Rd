@@ -4,14 +4,10 @@
 \alias{matrix2sumexp}
 \title{Convert matrix into SummarizedExperiment}
 \usage{
-matrix2sumexp(x, subgroupvar = NULL, fnamevar = NULL, verbose = TRUE)
+matrix2sumexp(x, verbose = TRUE)
 }
 \arguments{
 \item{x}{matrix}
-
-\item{subgroupvar}{string / NULL}
-
-\item{fnamevar}{string / NULL}
 
 \item{verbose}{TRUE/FALSE}
 }
