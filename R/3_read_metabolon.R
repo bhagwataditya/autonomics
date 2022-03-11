@@ -145,59 +145,6 @@ pubchem_to_smiles <- function(x){
 }
 
 
-#=============================================================================
-#
-#                           (r|c)stack
-#
-#=============================================================================
-
-rstack <- function(x, y){
-    ncolmax <- max(ncol(x), ncol(y))
-    if (ncol(x) < ncolmax)  x %<>% cbind(matrix(NA, nrow=nrow(x),
-                                                    ncol=ncolmax-ncol(x)))
-    if (ncol(y) < ncolmax)  y %<>% cbind(matrix(NA, nrow=nrow(y),
-                                                    ncol=ncolmax-ncol(y)))
-    stacked <- rbind(x, y)
-    rownames(stacked) <- sprintf('r%d', seq_len(nrow(stacked)))
-    colnames(stacked) <- sprintf('c%d', seq_len(ncol(stacked)))
-    stacked
-}
-
-
-cstack <- function(x, y){
-    nrowmax <- max(nrow(x), nrow(y))
-    if (nrow(x) < nrowmax)  x %<>% rbind(matrix(NA, ncol=ncol(x),
-                                                    nrow=nrowmax-nrow(x)))
-    if (nrow(y) < nrowmax)  y %<>% rbind(matrix(NA, ncol=ncol(y),
-                                                    nrow=nrowmax-nrow(y)))
-    stacked <- cbind(x, y)
-    rownames(stacked) <- sprintf('r%d', seq_len(nrow(stacked)))
-    colnames(stacked) <- sprintf('c%d', seq_len(ncol(stacked)))
-    stacked
-}
-
-
-#' stack matrices
-#'
-#' cbind/rbind matrices with incompatible dimensions
-#' @param x matrix
-#' @param y matrix
-#' @examples
-#' x <- matrix(c('a','b','c','d','e','f','g','h'), nrow=2, byrow=TRUE)
-#' y <- matrix(c('1','2','3','4','5','6','7','8'), nrow=4, byrow=TRUE)
-#' x
-#' y
-#' rstack(x,y)
-#' cstack(x,y)
-#'  stack(x,y)
-#' @noRd
-stack <- function(x, y){
-    rs <- rstack(x,y)
-    cs <- cstack(x,y)
-    if (sum(dim(rs)) <= sum(dim(cs)))  rs  else  cs
-
-}
-
 #==============================================================================
 #
 #                           .read_metabolon
@@ -208,8 +155,8 @@ stack <- function(x, y){
 #' @rdname read_metabolon
 #' @export
 .read_metabolon <- function(file, sheet = 'OrigScale',
-    fid_var = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'Group'
+    fidvar = '(COMP|COMP_ID)', sidvar = '(CLIENT_IDENTIFIER|Client ID)',
+    sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group'
 ){
 # Assert
     assert_all_are_existing_files(file)
