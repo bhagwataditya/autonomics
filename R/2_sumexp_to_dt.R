@@ -211,7 +211,7 @@ matrix2sumexp <- function(
     fdata(object)$feature_id   <- rownames(object)
     fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
-    object %<>% add_subgroup(subgroupvar = NULL, verbose = verbose)
+    object %<>% add_subgroup(verbose = verbose)
     object
 }
 
