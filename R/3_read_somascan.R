@@ -94,7 +94,7 @@ rm_single_value_columns <- function(df){
 #' @export
 .read_somascan <- function(
     file, fidvar = 'SeqId', sidvar = 'SampleId', 
-    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'SampleGroup'
+    sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup'
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -128,7 +128,7 @@ rm_single_value_columns <- function(df){
         transpose  = TRUE, verbose    = TRUE)
 # Add metadata/subgroup
     assayNames(object) <- 'somascan'
-    object %<>% merge_sfile(sfile = sfile, by.x = by, by.y = sfileby)
+    object %<>% merge_sfile(sfile = sfile, by.x = by.x, by.y = by.y)
     if (is.null(subgroupvar))  subgroupvar <- 'SampleGroup'
     object %<>% add_subgroup(subgroupvar)
     object
@@ -139,37 +139,35 @@ rm_single_value_columns <- function(df){
 #'
 #' Read data from somascan adat file
 #'
-#' @param file          *.adat file path (string)
-#' @param fidvar        featureid fvar (string)
-#' @param sidvar        sampleid svar (string)
-#' @param sfile         sample file
-#' @param sfileby       sample file mergeby column
-#' @param by            metabolon file mergeby column
-#' @param subgroupvar   subgroup svar (string)
-#' @param fname_var     featurename fvar (string)
+#' @param file          somascan (adat) file: string
+#' @param fidvar        featureid var: string
+#' @param sidvar        sampleid  var: string
+#' @param sfile         sample file: string
+#' @param by.x          `file`  column to merge sdata
+#' @param by.y          `sfile` column to merge sdata
+#' @param subgroupvar   subgroup var: string
+#' @param fname_var     featurename var: string
 #' @param sample_type   subset of c('Sample','QC','Buffer','Calibrator')
-#' @param feature_type  subset of c('Protein',
-#'                                   'Hybridization Control Elution',
-#'                                   'Rat Protein')
+#' @param feature_type  subset of c('Protein', 'Hybridization Control Elution','Rat Protein')
 #' @param sample_quality        subset of c('PASS', 'FLAG', 'FAIL')
 #' @param feature_quality       subset of c('PASS', 'FLAG', 'FAIL')
-#' @param rm_na_svars   whether to rm NA svars
-#' @param rm_single_value_svars whether to rm single value svars
-#' @param pca           whether to pca
-#' @param fit           fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'
-#' @param formula       design formula (using svars)
-#' @param block         block var
-#' @param coefs        NULL or character vector: model coefficients to test
-#' @param contrastdefs NULL or character vector: coefficient contrasts to test
-#' @param verbose       whether to msg
-#' @param plot          whether to plot
+#' @param rm_na_svars           bool: rm NA svars?
+#' @param rm_single_value_svars bool: rm single value svars?
+#' @param pca                   bool: run pca?
+#' @param fit           diffexp engine: 'limma', 'lm', 'lme', 'lmer','wilcoxon' or NULL (none)
+#' @param formula       diffexp model formula
+#' @param block         diffexp block var (string)
+#' @param coefs         diffexp coeffs to analyze (character vector or NULL)
+#' @param contrastdefs  diffexp contrasts to analyze (character vector or NULL)
+#' @param verbose       bool: msg?
+#' @param plot          bool: plot?
 #' @return Summarizedexperiment
 #' @examples
 #' file <- download_data('atkin18.somascan.adat')
 #' read_somascan(file, pca = TRUE, fit = 'limma', block = 'Subject_ID')
 #' @export
 read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
-    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'SampleGroup', 
+    sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup', 
     fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
@@ -180,7 +178,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 # Read
     object <- .read_somascan(
         file, fidvar = fidvar, sidvar = sidvar, 
-        sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = subgroupvar)
+        sfile = sfile, by.x = by.x, by.y = by.y, subgroupvar = subgroupvar)
     object$sample_id %<>% make.unique()
 # Prepare
     assert_is_subset(fname_var, fvars(object))

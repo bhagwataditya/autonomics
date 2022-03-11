@@ -170,12 +170,12 @@ pubchem_to_smiles <- function(x){
     svar_rows <- sdata_rows <- seq_len(fvar_rows)
     fvar_names <- extract_dt_row(d_f, fvar_rows) %>% extract(seq_len(svar_cols))
     svar_names <- extract_dt_col(d_f, svar_cols) %>%extract(seq_len(fvar_rows))
-    fid_var <- fvar_names %>% extract(stri_detect_regex(., fid_var))
-    sid_var <- svar_names %>% extract(stri_detect_regex(., sid_var))
+    fidvar <- fvar_names %>% extract(stri_detect_regex(., fidvar))
+    sidvar <- svar_names %>% extract(stri_detect_regex(., sidvar))
     fid_rows  <- fdata_rows <- expr_rows <- (fvar_rows+1):nrow(d_f)
     sid_cols  <- sdata_cols <- expr_cols <- (svar_cols+1):ncol(d_f)
-    fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
-    sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
+    fid_cols  <-  fvar_names %>% equals(fidvar) %>% which()
+    sid_rows  <-  svar_names %>% is_in(sidvar) %>% which() %>% extract(1)
 # Systematic read
     object <- read_rectangles(
                 file,                       sheet      = sheet,
@@ -193,61 +193,62 @@ pubchem_to_smiles <- function(x){
     nfv <- length(fvars((object)))
     svars(object)[nsv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$1')
     fvars(object)[nfv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$2')
-    object %<>% merge_sfile(sfile = sfile, by.x = by, by.y = sfileby)
+    object %<>% merge_sfile(sfile = sfile, by.x = by.x, by.y = by.y)
     if (is.null(subgroupvar)) subgroupvar <- 'Group'
     object %<>% add_subgroup(subgroupvar)
 # Return
     object
 }
 
+
 #' Read metabolon
-#' @param file            metabolon xlsx filepath
-#' @param sheet           xls sheet number or name
-#' @param fid_var         feature_id fvar
-#' @param sid_var         sampleid svar
-#' @param sfile           sample file
-#' @param sfileby         sample file mergeby column
-#' @param by              metabolon file mergeby column
-#' @param subgroupvar     subgroup svar
-#' @param fname_var       featurename fvar
-#' @param impute          whether to impute
-#' @param add_kegg_pathways  whether to add kegg pathways
-#' @param add_smiles      whether to add smiles
-#' @param pca             whether to pca
-#' @param fit       fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param formula         designmat formula
-#' @param block           block svar
-#' @param coefs           NULL or character vector: model coefficients to test
-#' @param contrastdefs    NULL or character vector: coefficient contrasts to test
-#' @param verbose         whether to msg
-#' @param plot            whether to plot
+#' @param file          metabolon (excel) file: string
+#' @param sheet         excel sheet: number or string
+#' @param fidvar        featureid var: string
+#' @param sidvar        samplid var: string
+#' @param sfile         sample file: string
+#' @param by.x          `file`  column to merge sdata: string
+#' @param by.y          `sfile` column to merge sdata: string
+#' @param subgroupvar   subgroup var: string
+#' @param fnamevar      featurename fvar: string
+#' @param impute        bool: impute?
+#' @param kegg_pathways bool: add kegg pathways?
+#' @param smiles        bool: add smiles?
+#' @param pca           bool: run pca?
+#' @param fit           diffexp engine: 'limma', 'lm', 'lme', 'lmer', 'wilcoxon' or NULL (none)
+#' @param formula       diffexp formula
+#' @param block         diffexp block var: string or NULL
+#' @param coefs         diffexp coefficients to analyze: NULL or character vector
+#' @param contrastdefs  diffexp contrasts to analyze: NULL or character vector
+#' @param verbose       bool: msg?
+#' @param plot          bool: plot?
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' read_metabolon(file, pca = TRUE, fit = 'limma', block='SUB')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
-    fid_var = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'Group',
-    fname_var = 'BIOCHEMICAL',
-    impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
+    fidvar = '(COMP|COMP_ID)', sidvar = '(CLIENT_IDENTIFIER|Client ID)',
+    sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group',
+    fnamevar = 'BIOCHEMICAL',
+    impute  = FALSE, kegg_pathways = FALSE, smiles = FALSE,
     pca = FALSE, fit = NULL, formula = NULL, block = NULL, 
     coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot = TRUE
 ){
 # Read
     subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
     object <- .read_metabolon(
-        file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var, 
-        sfile = sfile, sfileby = sfileby, by = by, subgroupvar = subgroupvar)
+        file = file, sheet = sheet, fidvar = fidvar, sidvar = sidvar, 
+        sfile = sfile, by.x = by.x, by.y = by.y, subgroupvar = subgroupvar)
 # Prepare
-    assert_is_subset(fname_var, fvars(object))
-    fdata(object)$feature_name <- fdata(object)[[fname_var]]
+    assert_is_subset(fnamevar, fvars(object))
+    fdata(object)$feature_name <- fdata(object)[[fnamevar]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     object %<>% log2transform(verbose = TRUE)
     if (impute)             object %<>% impute_systematic_nondetects(
                                             subgroup = !!subgroup, plot = FALSE)
-    if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
-    if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
+    if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
+    if (smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
 # Analyze
     object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar, 
                     formula = formula, block = block, 

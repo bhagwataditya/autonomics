@@ -10,7 +10,8 @@
   file,
   quantity = guess_maxquant_quantity(file),
   sfile = NULL,
-  sfileby = NULL,
+  by.x = "sample_id",
+  by.y = "sample_id",
   subgroupvar = "subgroup",
   select_subgroups = NULL,
   invert_subgroups = character(0),
@@ -22,7 +23,8 @@ read_proteingroups(
   file,
   quantity = guess_maxquant_quantity(file),
   sfile = NULL,
-  sfileby = NULL,
+  by.x = sample_id,
+  by.y = NULL,
   select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
@@ -46,7 +48,8 @@ read_phosphosites(
   proteinfile = paste0(dirname(file), "/proteinGroups.txt"),
   quantity = guess_maxquant_quantity(file),
   sfile = NULL,
-  sfileby = NULL,
+  by.x = "sample_id",
+  by.y = "sample_id",
   select_subgroups = NULL,
   contaminants = FALSE,
   reverse = FALSE,
@@ -77,7 +80,9 @@ read_phosphosites(
 
 \item{sfile}{sample file}
 
-\item{sfileby}{sample file mergeby column}
+\item{by.x}{`file`  column to merge sdata: string}
+
+\item{by.y}{`sfile` column to merge sdata: string}
 
 \item{subgroupvar}{subgroup svar}
 

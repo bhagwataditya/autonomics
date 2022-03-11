@@ -8,27 +8,27 @@
 .read_metabolon(
   file,
   sheet = "OrigScale",
-  fid_var = "(COMP|COMP_ID)",
-  sid_var = "(CLIENT_IDENTIFIER|Client ID)",
+  fidvar = "(COMP|COMP_ID)",
+  sidvar = "(CLIENT_IDENTIFIER|Client ID)",
   sfile = NULL,
-  sfileby = NULL,
-  by = NULL,
+  by.x = "sample_id",
+  by.y = NULL,
   subgroupvar = "Group"
 )
 
 read_metabolon(
   file,
   sheet = "OrigScale",
-  fid_var = "(COMP|COMP_ID)",
-  sid_var = "(CLIENT_IDENTIFIER|Client ID)",
+  fidvar = "(COMP|COMP_ID)",
+  sidvar = "(CLIENT_IDENTIFIER|Client ID)",
   sfile = NULL,
-  sfileby = NULL,
-  by = NULL,
+  by.x = "sample_id",
+  by.y = NULL,
   subgroupvar = "Group",
-  fname_var = "BIOCHEMICAL",
+  fnamevar = "BIOCHEMICAL",
   impute = FALSE,
-  add_kegg_pathways = FALSE,
-  add_smiles = FALSE,
+  kegg_pathways = FALSE,
+  smiles = FALSE,
   pca = FALSE,
   fit = NULL,
   formula = NULL,
@@ -40,45 +40,45 @@ read_metabolon(
 )
 }
 \arguments{
-\item{file}{metabolon xlsx filepath}
+\item{file}{metabolon (excel) file: string}
 
-\item{sheet}{xls sheet number or name}
+\item{sheet}{excel sheet: number or string}
 
-\item{fid_var}{feature_id fvar}
+\item{fidvar}{featureid var: string}
 
-\item{sid_var}{sampleid svar}
+\item{sidvar}{samplid var: string}
 
-\item{sfile}{sample file}
+\item{sfile}{sample file: string}
 
-\item{sfileby}{sample file mergeby column}
+\item{by.x}{`file`  column to merge sdata: string}
 
-\item{by}{metabolon file mergeby column}
+\item{by.y}{`sfile` column to merge sdata: string}
 
-\item{subgroupvar}{subgroup svar}
+\item{subgroupvar}{subgroup var: string}
 
-\item{fname_var}{featurename fvar}
+\item{fnamevar}{featurename fvar: string}
 
-\item{impute}{whether to impute}
+\item{impute}{bool: impute?}
 
-\item{add_kegg_pathways}{whether to add kegg pathways}
+\item{kegg_pathways}{bool: add kegg pathways?}
 
-\item{add_smiles}{whether to add smiles}
+\item{smiles}{bool: add smiles?}
 
-\item{pca}{whether to pca}
+\item{pca}{bool: run pca?}
 
-\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
+\item{fit}{diffexp engine: 'limma', 'lm', 'lme', 'lmer', 'wilcoxon' or NULL (none)}
 
-\item{formula}{designmat formula}
+\item{formula}{diffexp formula}
 
-\item{block}{block svar}
+\item{block}{diffexp block var: string or NULL}
 
-\item{coefs}{NULL or character vector: model coefficients to test}
+\item{coefs}{diffexp coefficients to analyze: NULL or character vector}
 
-\item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
+\item{contrastdefs}{diffexp contrasts to analyze: NULL or character vector}
 
-\item{verbose}{whether to msg}
+\item{verbose}{bool: msg?}
 
-\item{plot}{whether to plot}
+\item{plot}{bool: plot?}
 }
 \value{
 SummarizedExperiment

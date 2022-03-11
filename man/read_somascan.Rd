@@ -10,8 +10,8 @@
   fidvar = "SeqId",
   sidvar = "SampleId",
   sfile = NULL,
-  sfileby = NULL,
-  by = NULL,
+  by.x = NULL,
+  by.y = NULL,
   subgroupvar = "SampleGroup"
 )
 
@@ -20,8 +20,8 @@ read_somascan(
   fidvar = "SeqId",
   sidvar = "SampleId",
   sfile = NULL,
-  sfileby = NULL,
-  by = NULL,
+  by.x = NULL,
+  by.y = NULL,
   subgroupvar = "SampleGroup",
   fname_var = "EntrezGeneSymbol",
   sample_type = "Sample",
@@ -41,51 +41,49 @@ read_somascan(
 )
 }
 \arguments{
-\item{file}{*.adat file path (string)}
+\item{file}{somascan (adat) file: string}
 
-\item{fidvar}{featureid fvar (string)}
+\item{fidvar}{featureid var: string}
 
-\item{sidvar}{sampleid svar (string)}
+\item{sidvar}{sampleid  var: string}
 
-\item{sfile}{sample file}
+\item{sfile}{sample file: string}
 
-\item{sfileby}{sample file mergeby column}
+\item{by.x}{`file`  column to merge sdata}
 
-\item{by}{metabolon file mergeby column}
+\item{by.y}{`sfile` column to merge sdata}
 
-\item{subgroupvar}{subgroup svar (string)}
+\item{subgroupvar}{subgroup var: string}
 
-\item{fname_var}{featurename fvar (string)}
+\item{fname_var}{featurename var: string}
 
 \item{sample_type}{subset of c('Sample','QC','Buffer','Calibrator')}
 
-\item{feature_type}{subset of c('Protein',
-'Hybridization Control Elution',
-'Rat Protein')}
+\item{feature_type}{subset of c('Protein', 'Hybridization Control Elution','Rat Protein')}
 
 \item{sample_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
 \item{feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
-\item{rm_na_svars}{whether to rm NA svars}
+\item{rm_na_svars}{bool: rm NA svars?}
 
-\item{rm_single_value_svars}{whether to rm single value svars}
+\item{rm_single_value_svars}{bool: rm single value svars?}
 
-\item{pca}{whether to pca}
+\item{pca}{bool: run pca?}
 
-\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'}
+\item{fit}{diffexp engine: 'limma', 'lm', 'lme', 'lmer','wilcoxon' or NULL (none)}
 
-\item{formula}{design formula (using svars)}
+\item{formula}{diffexp model formula}
 
-\item{block}{block var}
+\item{block}{diffexp block var (string)}
 
-\item{coefs}{NULL or character vector: model coefficients to test}
+\item{coefs}{diffexp coeffs to analyze (character vector or NULL)}
 
-\item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
+\item{contrastdefs}{diffexp contrasts to analyze (character vector or NULL)}
 
-\item{verbose}{whether to msg}
+\item{verbose}{bool: msg?}
 
-\item{plot}{whether to plot}
+\item{plot}{bool: plot?}
 }
 \value{
 Summarizedexperiment

@@ -51,7 +51,6 @@ test_that("read_metabolon(file, subgroupvar='SET', fit='limma', block='SUB')", {
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(
         stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
-    expect_true('dupcor' %in% names(metadata(object)))
 })
 
 # test_that("read_metabolon(file, subgroupvar='SET', fit='lme', block='SUB')", {

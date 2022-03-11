@@ -983,8 +983,9 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
 #' @rdname read_proteingroups
 #' @export
 .read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
-    sfile = NULL, sfileby = NULL, subgroupvar = 'subgroup',
-    select_subgroups = NULL, invert_subgroups = character(0),
+    sfile = NULL, by.x = 'sample_id', by.y = 'sample_id', 
+    subgroupvar = 'subgroup', select_subgroups = NULL, 
+    invert_subgroups = character(0),
     pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], verbose = TRUE){
 # Read
     . <- NULL
@@ -1020,7 +1021,7 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
     colnames(object) %<>% dequantify(quantity)
     colnames(object) %<>% demultiplex()
     object$sample_id <- colnames(object)
-    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id', by.y = sfileby)
+    object %<>% merge_sfile(sfile = sfile, by.x = by.x, by.y = by.y)
     object %<>% add_subgroup(subgroupvar=subgroupvar, verbose=verbose)
     object %<>% filter_maxquant_samples(
                     select_subgroups = select_subgroups, verbose)
@@ -1053,7 +1054,8 @@ un_int64 <- function(x) {
 #'                             "Intensity labeled",
 #'                             "Intensity"
 #' @param sfile         sample file
-#' @param sfileby       sample file mergeby column
+#' @param by.x          `file`  column to merge sdata: string
+#' @param by.y          `sfile` column to merge sdata: string
 #' @param subgroupvar   subgroup svar
 #' @param select_subgroups  subgroups to be selected (character vector)
 #' @param invert_subgroups  subgroups to be inverted (character vector)
@@ -1077,7 +1079,8 @@ un_int64 <- function(x) {
 #' @export
 read_proteingroups <- function(
     file, quantity = guess_maxquant_quantity(file), sfile = NULL,
-    sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
+    by.x = 'sample_id', by.y = NULL, select_subgroups = NULL, 
+    contaminants = FALSE,
     reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], subgroupvar = NULL,
@@ -1090,7 +1093,8 @@ read_proteingroups <- function(
     if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
 # Read
     object <- .read_maxquant(file, quantity,
-        sfile = sfile, sfileby = sfileby, select_subgroups = select_subgroups,
+        sfile = sfile, by.x = by.x, by.y = by.y, 
+        select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups,
         pepcountpattern = pepcountpattern, verbose = verbose)
     assayNames(object)[1] %<>% gsub('maxquant', 'proteingroups', .)
@@ -1114,7 +1118,8 @@ read_proteingroups <- function(
 read_phosphosites <- function(
     file, proteinfile = paste0(dirname(file), '/proteinGroups.txt'),
     quantity = guess_maxquant_quantity(file),
-    sfile = NULL, sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
+    sfile = NULL, by.x = 'sample_id', by.y = 'sample_id', 
+    select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
     invert_subgroups = character(0), pca = FALSE,
     fit = NULL, subgroupvar = NULL, formula = NULL, block = NULL, 
@@ -1130,7 +1135,7 @@ read_phosphosites <- function(
         sfile = sfile, select_subgroups = select_subgroups,
         invert_subgroups = invert_subgroups, verbose=verbose)
     object  <- .read_maxquant(file = file, quantity = quantity,
-        sfile = sfile, sfileby = sfileby, select_subgroups = select_subgroups,
+        sfile = sfile, by.x = by.x, by.y = by.y,
         invert_subgroups = invert_subgroups, verbose = verbose)
     assayNames(prot)[1]   %<>% gsub('maxquant', 'proteingroups', ., fixed=TRUE)
     assayNames(object)[1] %<>% gsub('maxquant', 'phosphosites',  ., fixed=TRUE)
