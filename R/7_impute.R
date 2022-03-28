@@ -516,17 +516,31 @@ plot_summarized_detections <- function(
     dt %<>% merge(nsampledt, by = groupvar)
 # Plot
     colors <- make_colors(slevels(object, fillstr))
-    ggplot(dt) + geom_rect(aes( xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
-                                fill=!!fill, alpha=quantified)) +
-                geom_segment(aes(x=xmin, xend=xmax, y = ymax, yend=ymax)) +
-                geom_segment(aes(x=xmin, xend=xmax, y = ymin, yend=ymin)) +
-                geom_segment(aes(x=xmax, xend=xmax, y = ymin, yend=ymax)) +
-                geom_segment(aes(x=xmin, xend=xmin, y = ymin, yend=ymax)) +
-                theme_minimal() + xlab('Samples') + ylab('Features') +
-                theme(panel.grid = element_blank()) + guides(alpha = 'none') +
-                scale_fill_manual(values = colors) +
-                scale_alpha_manual(values=c(`0`=0, `1`=1)) +
-                ggtitle('detections')
+    npersubgroup <- table(object$subgroup)
+    xbreaks <- c(cumsum(npersubgroup)- npersubgroup/2)
+    ybreaks <- c(0.01*nrow(object), 0.99*nrow(object))
+    p <- 
+        ggplot(dt) + 
+        geom_rect(aes( xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
+                        fill = !!fill, alpha = quantified)) +
+        scale_y_continuous(expand = c(0, 0)) + #, limits = c(0, nrow(object)))  +
+        scale_x_continuous(breaks = xbreaks, position = 'top', expand = c(0,0)) + #, limits = c(0, ncol(object)))  + 
+        geom_segment(aes(x = xmin, xend = xmax, y = ymax, yend = ymax)) +
+        geom_segment(aes(x = xmin, xend = xmax, y = ymin, yend = ymin)) +
+        geom_segment(aes(x = xmax, xend = xmax, y = ymin, yend = ymax)) +
+        geom_segment(aes(x = xmin, xend = xmin, y = ymin, yend = ymax)) +
+        #theme_minimal() + 
+        xlab(paste0(formatC(ncol(object), format = 'd', big.mark = ' '), ' Samples')) + 
+        ylab(paste0(formatC(nrow(object), format = 'd', big.mark = ' '), ' Features')) +
+        theme(panel.grid = element_blank(), 
+              legend.position = 'top', 
+              legend.title = element_blank(), 
+              axis.text.y = element_blank()) + 
+        guides(alpha = 'none', fill = 'none') +
+        #guides(alpha = 'none', fill = guide_legend(label.position = 'top', nrow = 1, title.hjust = 0.5)) +
+        scale_fill_manual(values = colors) +
+        scale_alpha_manual(values=c(`0`=0, `1`=1))
+    p
 }
 
 
