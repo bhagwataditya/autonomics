@@ -45,6 +45,7 @@ plot_boxplots(object, ...)
   labeller = "label_value",
   highlight = NULL,
   jitter = FALSE,
+  palette = NULL,
   hlevels = NULL,
   ...
 )

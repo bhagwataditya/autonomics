@@ -581,7 +581,7 @@ plot_boxplots.SummarizedExperiment <- function(
     object, assay = assayNames(object)[1], x, fill, color = NULL, block = NULL,
     facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, 
     labeller = 'label_value', highlight = NULL, 
-    jitter = FALSE, hlevels = NULL, ...
+    jitter = FALSE, palette = NULL, hlevels = NULL, ...
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -615,7 +615,7 @@ plot_boxplots.SummarizedExperiment <- function(
         scales    = scales,        nrow      = nrow,          
         ncol      = ncol,          page      = page,          
         labeller  = labeller,      jitter    = jitter,
-        hlevels   = hlevels)
+        palette   = palette,       hlevels   = hlevels)
 }
 
 #============================================================================
