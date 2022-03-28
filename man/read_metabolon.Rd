@@ -29,14 +29,14 @@ read_metabolon(
   impute = FALSE,
   kegg_pathways = FALSE,
   smiles = FALSE,
-  pca = FALSE,
-  fit = NULL,
+  pca = TRUE,
+  fit = "limma",
   formula = NULL,
   block = NULL,
   coefs = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = pca & !is.null(fit)
 )
 }
 \arguments{

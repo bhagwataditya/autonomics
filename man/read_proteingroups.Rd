@@ -23,7 +23,7 @@ read_proteingroups(
   file,
   quantity = guess_maxquant_quantity(file),
   sfile = NULL,
-  by.x = sample_id,
+  by.x = "sample_id",
   by.y = NULL,
   select_subgroups = NULL,
   contaminants = FALSE,
@@ -37,10 +37,10 @@ read_proteingroups(
   block = NULL,
   coefs = NULL,
   contrastdefs = NULL,
-  pca = FALSE,
-  fit = NULL,
+  pca = TRUE,
+  fit = "limma",
   verbose = TRUE,
-  plot = TRUE
+  plot = pca & !is.null(fit)
 )
 
 read_phosphosites(
@@ -56,15 +56,15 @@ read_phosphosites(
   min_localization_prob = 0.75,
   fastafile = NULL,
   invert_subgroups = character(0),
-  pca = FALSE,
-  fit = NULL,
+  pca = TRUE,
+  fit = "limma",
   subgroupvar = NULL,
   formula = NULL,
   block = NULL,
   coefs = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = pca & !is.null(fit)
 )
 }
 \arguments{

@@ -232,8 +232,9 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group',
     fnamevar = 'BIOCHEMICAL',
     impute  = FALSE, kegg_pathways = FALSE, smiles = FALSE,
-    pca = FALSE, fit = NULL, formula = NULL, block = NULL, 
-    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot = TRUE
+    pca = TRUE, fit = 'limma', formula = NULL, block = NULL, 
+    coefs = NULL, contrastdefs = NULL, 
+    verbose = TRUE, plot = pca & !is.null(fit)
 ){
 # Read
     subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)

@@ -30,14 +30,14 @@ read_somascan(
   feature_quality = c("FLAG", "PASS"),
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
-  pca = FALSE,
-  fit = NULL,
+  pca = TRUE,
+  fit = "limma",
   formula = NULL,
   block = NULL,
   coefs = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = pca & !is.null(fit)
 )
 }
 \arguments{

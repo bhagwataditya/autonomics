@@ -1085,7 +1085,7 @@ read_proteingroups <- function(
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], subgroupvar = NULL,
     formula = NULL, block = NULL, coefs = NULL, contrastdefs = NULL,
-    pca = FALSE, fit = NULL, verbose = TRUE, plot = TRUE
+    pca = TRUE, fit = 'limma', verbose = TRUE, plot = pca & !is.null(fit)
 ){
 # Assert
     . <- NULL
@@ -1121,9 +1121,10 @@ read_phosphosites <- function(
     sfile = NULL, by.x = 'sample_id', by.y = 'sample_id', 
     select_subgroups = NULL, contaminants = FALSE,
     reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
-    invert_subgroups = character(0), pca = FALSE,
-    fit = NULL, subgroupvar = NULL, formula = NULL, block = NULL, 
-    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot = TRUE
+    invert_subgroups = character(0), pca = TRUE,
+    fit = 'limma', subgroupvar = NULL, formula = NULL, block = NULL, 
+    coefs = NULL, contrastdefs = NULL, 
+    verbose = TRUE, plot = pca & !is.null(fit)
 ){
 # Assert
     . <- NULL

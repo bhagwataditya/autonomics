@@ -13,11 +13,9 @@
   genome,
   nthreads = detectCores(),
   sfile = NULL,
-  sfileby = NULL,
-  subgroupvar = NULL,
-  ffile = NULL,
-  ffileby = NULL,
-  fnamevar = NULL,
+  by.y = NULL,
+  subgroupvar = "subgroup",
+  ensdb = NULL,
   verbose = TRUE
 )
 
@@ -25,10 +23,9 @@
   file,
   fid_col = 1,
   sfile = NULL,
-  sfileby = NULL,
-  ffile = NULL,
-  ffileby = NULL,
-  subgroupvar = NULL,
+  by.y = NULL,
+  subgroupvar = "subgroup",
+  ensdb = NULL,
   verbose = TRUE
 )
 
@@ -38,53 +35,47 @@ read_rnaseq_bams(
   genome,
   nthreads = detectCores(),
   sfile = NULL,
-  sfileby = NULL,
-  subgroupvar = NULL,
+  by.y = NULL,
+  subgroupvar = "subgroup",
   block = NULL,
-  ffile = NULL,
-  ffileby = NULL,
-  fnamevar = NULL,
   formula = NULL,
   min_count = 10,
   pseudo = 0.5,
-  tpm = FALSE,
-  genesizevar = NULL,
+  ensdb = NULL,
+  tpm = !is.null(ensdb),
   cpm = TRUE,
   tmm = cpm,
   log2 = TRUE,
-  pca = FALSE,
-  fit = NULL,
+  pca = TRUE,
+  fit = "limma",
   voom = !is.null(fit),
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = pca & !is.null(fit)
 )
 
 read_rnaseq_counts(
   file,
   fid_col = 1,
   sfile = NULL,
-  sfileby = NULL,
-  subgroupvar = NULL,
+  by.y = NULL,
+  subgroupvar = "subgroup",
   block = NULL,
-  ffile = NULL,
-  ffileby = NULL,
-  fnamevar = NULL,
   formula = NULL,
   min_count = 10,
   pseudo = 0.5,
-  tpm = FALSE,
-  genesizevar = NULL,
+  ensdb = NULL,
+  tpm = !is.null(ensdb),
   cpm = TRUE,
   tmm = cpm,
   log2 = TRUE,
-  pca = FALSE,
-  fit = NULL,
+  pca = TRUE,
+  fit = "limma",
   voom = !is.null(fit),
   coefs = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = TRUE
+  plot = pca & !is.null(fit)
 )
 }
 \arguments{
@@ -98,15 +89,11 @@ read_rnaseq_counts(
 
 \item{sfile}{sample file}
 
-\item{sfileby}{sample file mergeby column}
+\item{by.y}{sample file mergeby column}
 
 \item{subgroupvar}{subgroup svar}
 
-\item{ffile}{feature file}
-
-\item{ffileby}{feature file mergeby column}
-
-\item{fnamevar}{featurename fvar}
+\item{ensdb}{EnsDb e.g. AnnotationHub::AnnotationHub[['AH64923']]}
 
 \item{verbose}{whether to message}
 
@@ -121,8 +108,6 @@ read_rnaseq_counts(
 \item{min_count}{min feature count required in some samples}
 
 \item{pseudo}{added pseudocount to prevent -Inf log2 values}
-
-\item{genesizevar}{genesize fvar for tpm}
 
 \item{cpm}{whether to compute cpm}
 
@@ -149,15 +134,26 @@ SummarizedExperiment
 Read/analyze rnaseq counts / bamfiles
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, pca= TRUE, fit='limma')
-
-if (requireNamespace('Rsubread')){
-    dir <- download_data('billing16.bam.zip')
-    object <- read_rnaseq_bams(
-                dir, paired = TRUE, genome = 'hg38', pca = TRUE, 
-                fit = 'limma', plot = TRUE)
-}
+# bams
+    if (requireNamespace('Rsubread')){
+        dir <- download_data('billing16.bam.zip')
+        object <- read_rnaseq_bams(
+           dir, paired = TRUE, genome = 'hg38', pca = TRUE, 
+           fit = 'limma', plot = TRUE)
+    }
+# counts
+    file <- download_data('billing19.rnacounts.txt')
+    object <- read_rnaseq_counts(file, pca = TRUE, fit = 'limma')
+    
+# normalizations
+     \dontrun{
+         ah <- AnnotationHub::AnnotationHub()
+         ensdb <- ah[['AH64923']]
+         object <- read_rnaseq_counts(file, ensdb = ensdb,
+             tpm = F, tmm = F, cpm = F, log2 = F, plot = F)
+         plot_sample_densities(object)
+         plot_feature_densities(object)
+     }
 }
 \author{
 Aditya Bhagwat, Shahina Hayat
