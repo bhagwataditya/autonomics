@@ -7,7 +7,8 @@
 download_data(
   filename,
   localdir = R_user_dir("autonomics", "cache"),
-  verbose = TRUE
+  verbose = TRUE,
+  force = FALSE
 )
 }
 \arguments{
@@ -50,6 +51,8 @@ download_data(
 \item{localdir}{local dir to save file to}
 
 \item{verbose}{TRUE / FALSE}
+
+\item{force}{TRUE / FALSE}
 }
 \value{
 local file path

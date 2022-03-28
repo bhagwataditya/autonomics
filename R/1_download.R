@@ -55,8 +55,9 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #'         \item \code{'fukuda20.proteingroups.txt'}
 #'     }
 #' }
-#' @param localdir  local dir to save file to 
-#' @param verbose TRUE / FALSE
+#' @param localdir local dir to save file to 
+#' @param verbose  TRUE / FALSE
+#' @param force    TRUE / FALSE
 #' @return local file path
 #' @examples
 #' # atkin18 - hypoglycemia - pubmed 30525282
@@ -82,23 +83,20 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' @export
 download_data <- function(
     filename,
-    localdir = R_user_dir('autonomics', 'cache'),
-    verbose  = TRUE
+    localdir  = R_user_dir('autonomics', 'cache'),
+    verbose   = TRUE, 
+    force = FALSE
 ){
     . <- NULL
     assert_is_subset(filename, AUTONOMICS_DATASETS)
     dir.create(localdir, recursive = TRUE, showWarnings = FALSE)
-    bfc <- BiocFileCache(localdir)
-    rid <- bfcquery(bfc, filename, "rname")$rid
-    if (!length(rid)) {
+    filepath <- file.path(localdir, filename)
+    if (force | !file.exists(filepath)) {
         if(verbose) message( "Downloading ", filename)
         url <- "https://bitbucket.org/graumannlabtools/autonomics/downloads"
         url %<>% paste0('/', filename)
-        rid <- names(bfcadd(bfc, filename, url ))
+        download.file(url, filepath)
     }
-    #if (!isFALSE(bfcneedsupdate(bfc, rid)))
-    #bfcdownload(bfc, rid)
-    filepath <- bfcrpath(bfc, rids = rid)
     if (file_ext(filename)=='zip'){
         if (verbose)  message('unzip')
         unzip(filepath, exdir = substr(filepath, 1, nchar(filepath)-4))
