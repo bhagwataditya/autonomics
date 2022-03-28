@@ -24,6 +24,7 @@ plot_sample_violins(
   x = sample_id,
   fill = sample_id,
   color = NULL,
+  facet = NULL,
   highlight = NULL,
   fixed = list(na.rm = TRUE)
 )
@@ -33,6 +34,7 @@ plot_feature_violins(
   x = feature_id,
   fill = feature_name,
   color = NULL,
+  facet = NULL,
   highlight = NULL,
   fixed = list(na.rm = TRUE)
 )
@@ -44,7 +46,7 @@ plot_subgroup_violins(
   fill = !!enquo(subgroup),
   color = NULL,
   highlight = NULL,
-  facet = feature_id,
+  facet = vars(feature_id),
   fixed = list(na.rm = TRUE)
 )
 }

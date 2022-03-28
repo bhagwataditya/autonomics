@@ -250,12 +250,16 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' Plot sample/feature densities
 #'
 #' @param object      SummarizedExperiment
+#' @param group       svar mapped to group
 #' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param facet       svar mapped to facet
+#' @param nrow        number of facet rows
+#' @param ncol        number of facet cols
+#' @param dir         'h' (horizontal) or 'v' (vertical)
+#' @param labeller    e.g. ggplot2::label_value
 #' @param palette     named character vector
-#' @param group       svar mapped to group
 #' @param fixed       fixed aesthetics
-#' @param subsetter   subsetter for showing a subset of samples/features
 #' @seealso \code{\link{plot_sample_violins}},
 #'          \code{\link{plot_sample_boxplots}}
 #' @return  ggplot object
@@ -269,8 +273,10 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #'     plot_sample_densities(object, fill = Group)
 #'     plot_feature_densities(object)
 #' @export
-plot_densities <- function(object, group, fill, color = NULL, palette = NULL,
-    fixed = list(alpha = 0.5, na.rm = TRUE)
+plot_densities <- function(
+    object, group, fill, color = NULL, 
+    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
+    palette = NULL, fixed = list(alpha = 0.5, na.rm = TRUE)
 ){
 # Process
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -288,8 +294,11 @@ plot_densities <- function(object, group, fill, color = NULL, palette = NULL,
     assert_is_identical_to_true(is_uniquely_empty(plottedsvars, plottedfvars))
     dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
 # Plot
-    plot_data(dt, geom = geom_density, x = value, fill = !!fill,
-        color = !!color, group = !!group, palette = palette, fixed = fixed)
+    p <- plot_data(dt, geom = geom_density, x = value, fill = !!fill,
+            color = !!color, group = !!group, palette = palette, fixed = fixed)
+    p <- p + facet_wrap(
+            facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller, 
+            scales = "free_y")
 }
 
 is_uniquely_empty <- function(x, y){
@@ -301,18 +310,23 @@ is_uniquely_empty <- function(x, y){
 #' @export
 plot_sample_densities <- function(
     object,
-    fill  = sample_id,
-    color = NULL,
-    group = sample_id,
-    fixed = list(alpha=0.5, na.rm=TRUE),
-    subsetter = if (ncol(object)<100){  seq_len(ncol(object))
-                } else {                sample(ncol(object), 9)}
+    group   = sample_id,
+    fill    = sample_id,
+    color   = NULL,
+    facet   = NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
+    palette = NULL,
+    fixed   = list(alpha=0.5, na.rm=TRUE)
 ){
-    plot_densities( object[, subsetter],
-                    fill  = !!enquo(fill),
-                    color = !!enquo(color),
-                    group = !!enquo(group),
-                    fixed = fixed ) +
+    if (ncol(object)>100)  object %<>% 
+        extract(, round(seq(1, ncol(object), length.out = 9)))  # prevent crash
+    plot_densities(
+        object,
+        group   = !!enquo(group),
+        fill    = !!enquo(fill),
+        color   = !!enquo(color),
+        facet   = facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
+        palette = palette,
+        fixed   = fixed ) +
     ggtitle("samples")
 }
 
@@ -321,18 +335,23 @@ feature_id <- NULL
 #' @export
 plot_feature_densities <- function(
     object,
-    fill = feature_id,
-    color = NULL,
-    group = feature_id,
-    fixed = list(alpha=0.5, na.rm=TRUE),
-    subsetter = if (nrow(object)<100){  seq_len(nrow(object))
-                } else {                sample(nrow(object), 9)}
+    group   = feature_id,
+    fill    = feature_id,
+    color   = NULL,
+    facet   =  NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
+    palette = NULL,
+    fixed   = list(alpha=0.5, na.rm=TRUE)
 ){
-    plot_densities( object[subsetter, ],
-                    fill  = !!enquo(fill),
-                    color = !!enquo(color),
-                    group = !!enquo(group),
-                    fixed = fixed) +
+    if (nrow(object)>100)  object %<>% 
+        extract(round(seq(1, ncol(object), length.out = 9)), )   # prevent crash
+    plot_densities( 
+        object,
+        group   = !!enquo(group),
+        fill    = !!enquo(fill),
+        color   = !!enquo(color),
+        facet   = facet,  nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
+        palette = palette,
+        fixed   = fixed) +
     ggtitle("features")
 }
 
@@ -383,7 +402,6 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     color     <- enquo(color)
     group     <- enquo(group)
     highlight <- enquo(highlight)
-    facet     <- enquo(facet)
     sample_id <- value <- NULL
     xstr         <- as_name(x)
     fillstr      <- if (quo_is_null(fill))      character(0) else as_name(fill)
@@ -392,6 +410,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
                                                                     highlight)
 # Prepare
     plotvars <- unique(c('feature_name', fillstr, colorstr, highlightstr))
+    if (!is.null(facet))   plotvars %<>% c(vapply(facet, as_name, character(1)))
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
     dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
@@ -400,7 +419,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
                 fill = !!fill, color= !!color, group=!!group, 
                 palette = palette, fixed = fixed)
     p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point)
-    p <- p + facet_wrap(vars(!!facet), scales = "free_y")
+    p <- p + facet_wrap(facet, scales = "free")
     # Finish
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
@@ -414,22 +433,22 @@ sample_id <- NULL
 #' @rdname plot_violins
 #' @export
 plot_sample_violins <- function(
-    object, x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
-    fixed=list(na.rm=TRUE)
+    object, x = sample_id, fill = sample_id, color = NULL, facet = NULL, 
+    highlight = NULL, fixed=list(na.rm=TRUE)
 ) plot_violins(
-    object, x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color),
-    highlight=!!enquo(highlight), fixed = fixed
+    object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
+    facet = facet, highlight = !!enquo(highlight), fixed = fixed
 )
 
 feature_id <- feature_name <- NULL
 #' @rdname plot_violins
 #' @export
 plot_feature_violins <- function(
-    object, x = feature_id, fill = feature_name, color = NULL, highlight = NULL,
-    fixed = list(na.rm=TRUE)
+    object, x = feature_id, fill = feature_name, color = NULL, facet = NULL, 
+    highlight = NULL, fixed = list(na.rm=TRUE)
 ) plot_violins(
-    object, x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color),
-    highlight=!!enquo(highlight), fixed = fixed
+    object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
+    facet = facet, highlight = !!enquo(highlight), fixed = fixed
 )
 
 subgroup <- NULL
@@ -437,10 +456,11 @@ subgroup <- NULL
 #' @export
 plot_subgroup_violins <- function(
     object, subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
-    color = NULL, highlight = NULL, facet = feature_id, fixed = list(na.rm=TRUE)
+    color = NULL, highlight = NULL, facet = vars(feature_id), 
+    fixed = list(na.rm=TRUE)
 ) plot_violins(
-    object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
-    facet=!!enquo(facet), highlight=!!enquo(highlight), fixed=fixed
+    object, x = !!enquo(x), fill = !!enquo(fill), color = !!color,
+    facet = facet, highlight = !!enquo(highlight), fixed = fixed
 )
 
 

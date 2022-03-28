@@ -11,28 +11,41 @@ plot_densities(
   group,
   fill,
   color = NULL,
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  labeller = label_value,
   palette = NULL,
   fixed = list(alpha = 0.5, na.rm = TRUE)
 )
 
 plot_sample_densities(
   object,
+  group = sample_id,
   fill = sample_id,
   color = NULL,
-  group = sample_id,
-  fixed = list(alpha = 0.5, na.rm = TRUE),
-  subsetter = if (ncol(object) < 100) {     seq_len(ncol(object)) } else {    
-    sample(ncol(object), 9) }
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  labeller = label_value,
+  palette = NULL,
+  fixed = list(alpha = 0.5, na.rm = TRUE)
 )
 
 plot_feature_densities(
   object,
+  group = feature_id,
   fill = feature_id,
   color = NULL,
-  group = feature_id,
-  fixed = list(alpha = 0.5, na.rm = TRUE),
-  subsetter = if (nrow(object) < 100) {     seq_len(nrow(object)) } else {    
-    sample(nrow(object), 9) }
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  labeller = label_value,
+  palette = NULL,
+  fixed = list(alpha = 0.5, na.rm = TRUE)
 )
 }
 \arguments{
@@ -44,11 +57,19 @@ plot_feature_densities(
 
 \item{color}{svar mapped to color}
 
+\item{facet}{svar mapped to facet}
+
+\item{nrow}{number of facet rows}
+
+\item{ncol}{number of facet cols}
+
+\item{dir}{'h' (horizontal) or 'v' (vertical)}
+
+\item{labeller}{e.g. ggplot2::label_value}
+
 \item{palette}{named character vector}
 
 \item{fixed}{fixed aesthetics}
-
-\item{subsetter}{subsetter for showing a subset of samples/features}
 }
 \value{
 ggplot object
