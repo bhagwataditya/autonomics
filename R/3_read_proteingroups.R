@@ -1015,7 +1015,7 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
         storage.mode(exprs1) <- 'numeric'}
     assert_all_are_non_missing_nor_empty_character(fids1)
     rownames(exprs1) <- fids1
-    object <- SummarizedExperiment(exprs1, rowData=fdata1)
+    object <- SummarizedExperiment(list(exprs = exprs1), rowData=fdata1)
     if (!phospho)  object %<>% add_pepcounts(file, pepcountpattern, quantity)
 # Process
     if (phospho)  colnames(object) %<>% stri_replace_last_fixed('___1', '')
