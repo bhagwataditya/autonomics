@@ -282,6 +282,7 @@ log2transform <- function(
     verbose = FALSE
 ){
     assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_not_null(assayNames(object))
     assert_is_subset(assay, assayNames(object))
     . <- NULL
     for (ass in assay){
