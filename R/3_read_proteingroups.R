@@ -1075,8 +1075,18 @@ un_int64 <- function(x) {
 #' @param plot          whether to plot
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=TRUE, fit='limma')
+#' # Fukuda 2020
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     object <- read_proteingroups(file, pca=TRUE, fit='limma')
+#' # Billing 2019
+#'     profile <- download_data('billing19.proteingroups.txt')
+#'     subgroups <- c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00')
+#'     subgroups %<>% paste0('_STD')
+#'     palette <- make_colors(c(subgroups[1], 'E00.8_STD', subgroups[-1]))
+#'     pro <- read_proteingroups(
+#'         profile, select_subgroups = subgroups, palette = palette, 
+#'         coefs = 'subgroupE05_STD', sample_id = 'E05_STD.R2', 
+#'         feature_id = 'P51636-CAV2')
 #' @export
 read_proteingroups <- function(
     file, quantity = guess_maxquant_quantity(file), sfile = NULL,
@@ -1086,7 +1096,8 @@ read_proteingroups <- function(
     impute = stri_detect_regex(quantity, "[Ii]ntensity"),
     pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], subgroupvar = NULL,
     formula = NULL, block = NULL, coefs = NULL, contrastdefs = NULL,
-    pca = TRUE, fit = 'limma', verbose = TRUE, plot = pca & !is.null(fit)
+    pca = TRUE, fit = 'limma', verbose = TRUE, plot = pca & !is.null(fit), 
+    feature_id = NULL, sample_id = NULL, palette = NULL
 ){
 # Assert
     . <- NULL
@@ -1102,14 +1113,25 @@ read_proteingroups <- function(
 # Preprocess
     object %<>% filter_maxquant_features(reverse = reverse,
                     contaminants = contaminants, verbose = verbose)
+    
+    fids1 <- fdt(object)$`Majority protein IDs` %>% split_extract(1, ';')
+    idx <- fdt(object)$`feature_name` != ''
+    fids1[idx] %<>% paste(fdt(object)$`feature_name`[idx], sep = '-')
+    fnames(object) <- fids1
+    fdt(object)$id <- fdt(object)$feature_id
+    fdt(object)$feature_id <- fids1
+    fnames(object) <- fids1
+    
     object %<>% rename_proteingroup_fvars()
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
-                        formula = formula, block = block, 
-                        coefs = coefs, contrastdefs = contrastdefs, 
-                        verbose = verbose, plot = plot)
+    object %<>% analyze(
+        pca = pca, fit = fit, subgroupvar = subgroupvar, 
+        formula = formula, block = block, 
+        coefs = coefs, contrastdefs = contrastdefs, 
+        verbose = verbose, plot = plot, 
+        feature_id = feature_id, sample_id = sample_id, palette = palette)
 # Return
     object
 }
