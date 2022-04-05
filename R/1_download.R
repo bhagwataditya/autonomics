@@ -95,8 +95,8 @@ download_data <- function(
         if(verbose) message( "Downloading ", filename)
         url <- "https://bitbucket.org/graumannlabtools/autonomics/downloads"
         url %<>% paste0('/', filename)
-        download.file(url, filepath)
-    }
+        download.file(url, filepath, mode = 'wb')  # wb needed to avoid
+    }                                              # corrupt excel files !
     if (file_ext(filename)=='zip'){
         if (verbose)  message('unzip')
         unzip(filepath, exdir = substr(filepath, 1, nchar(filepath)-4))
