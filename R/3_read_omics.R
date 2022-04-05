@@ -570,6 +570,8 @@ add_subgroup <- function(
             if (verbose)  message('\t\tInfer subgroup from sample_ids')
             object[[subgroupvar]]  <- split_extract(x, seq_len(nfactor-1), sep)
             object[[replicatevar]] <- split_extract(x, nfactor, sep)
+        } else {
+            object[[subgroupvar]] <- 'group0'
         }
     }
     
