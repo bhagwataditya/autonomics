@@ -275,13 +275,13 @@ is_multiplexed <- function(x){
     pattern <- '(.+)\\{(.+)\\}'
     n_open   <- stri_count_fixed(x, '(')
     n_closed <- stri_count_fixed(x, ')')
-    channel <- as.numeric(gsub(pattern, '\\2', x))
+    #channel <- as.numeric(gsub(pattern, '\\2', x)) # doesnt work with non-numeric labels e.g. H/L
     
     all(
         stri_detect_regex(x, pattern) & 
         n_open > 0 &            # multiplexing present
-        n_open == n_closed &    # multiplexing consistent
-        channel < n_open        # multiplex contains all channels
+        n_open == n_closed #&    # multiplexing consistent
+        #channel < n_open        # multiplex contains all channels
     )
 }
 
@@ -341,7 +341,8 @@ demultiplex <- function(x, verbose = FALSE){
     assert_is_a_bool(verbose)
     . <- NULL
     if (!is_multiplexed(x)) return(x)
-    unname(vapply(x, .demultiplex, character(1)))
+    y <- unname(vapply(x, .demultiplex, character(1)))
+    make.unique(y, sep = '-')
 }
 
 
