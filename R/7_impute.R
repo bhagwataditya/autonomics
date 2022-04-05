@@ -479,7 +479,12 @@ plot_quantifications <- function(...){
 #' @rdname plot_detections
 #' @export
 plot_summarized_detections <- function(
-    object, subgroup = subgroup, fill = !!enquo(subgroup), na_imputes = TRUE){
+    object, 
+    subgroup   = subgroup, 
+    fill       = !!enquo(subgroup),
+    palette    = NULL,
+    na_imputes = TRUE
+){
 # Assert
     . <- value <- NULL
     assert_is_all_of(object, "SummarizedExperiment")
@@ -515,10 +520,10 @@ plot_summarized_detections <- function(
     nsampledt[, xmax := cumsum(xmax)]; nsampledt[, xmin := c(0, xmax[-.N])]
     dt %<>% merge(nsampledt, by = groupvar)
 # Plot
-    colors <- make_colors(slevels(object, fillstr))
     npersubgroup <- table(object$subgroup)
     xbreaks <- c(cumsum(npersubgroup)- npersubgroup/2)
     ybreaks <- c(0.01*nrow(object), 0.99*nrow(object))
+    if (is.null(palette))  palette <- make_colors(slevels(object, fillstr))
     p <- 
         ggplot(dt) + 
         geom_rect(aes( xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
@@ -532,13 +537,14 @@ plot_summarized_detections <- function(
         #theme_minimal() + 
         xlab(paste0(formatC(ncol(object), format = 'd', big.mark = ' '), ' Samples')) + 
         ylab(paste0(formatC(nrow(object), format = 'd', big.mark = ' '), ' Features')) +
-        theme(panel.grid = element_blank(), 
+        theme(panel.grid      = element_blank(), 
               legend.position = 'top', 
-              legend.title = element_blank(), 
-              axis.text.y = element_blank()) + 
+              legend.title    = element_blank(), 
+              axis.text.x     = element_text(angle = 90), 
+              axis.text.y     = element_blank()) + 
         guides(alpha = 'none', fill = 'none') +
         #guides(alpha = 'none', fill = guide_legend(label.position = 'top', nrow = 1, title.hjust = 0.5)) +
-        scale_fill_manual(values = colors) +
+        scale_fill_manual(values = palette) +
         scale_alpha_manual(values=c(`0`=0, `1`=1))
     p
 }
