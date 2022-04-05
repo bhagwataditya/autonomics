@@ -138,8 +138,6 @@ fit_lmx <- function(object, fit,
     fitres <- dt[, fitmethod(.SD, formula=formula, block=block, 
             weights = get(weightvar)), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
-    for (var in setdiff(all.vars(formula), 'value'))  names(fitres) %<>% 
-        stri_replace_first_fixed(paste0(FITSEP, var), FITSEP)
     fitres %<>% add_fdr()
     object %<>% reset_fitres(fit)
     object %<>% merge_fitres(fitres, fit=fit)
