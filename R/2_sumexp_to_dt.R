@@ -209,7 +209,6 @@ matrix2sumexp <- function(
 ){
     object <- SummarizedExperiment(list(exprs = x))
     fdata(object)$feature_id   <- rownames(object)
-    fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
     object %<>% add_subgroup(verbose = verbose)
     object
