@@ -719,7 +719,6 @@ explicitly_compute_voom_weights <- function(
 #' @param tpm          TRUE/FALSE : tpm normalize?
 #' @param genesizevar  string     : tpm normalization genesize fvar 
 #' @param cpm          TRUE/FALSE : cpm normalize? (counts per million (scaled) reads)
-#' @param tmm          TRUE/FALSE : tmm normalize? (library sizes -> effective library sizes)
 #' @param voom         TRUE/FALSE : voom weight?
 #' @param log2         TRUE/FALSE : log2 transform?
 #' @param verbose      TRUE/FALSE : msg?
@@ -735,8 +734,8 @@ explicitly_compute_voom_weights <- function(
 preprocess_rnaseq_counts <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
-    min_count = 10, pseudo = 0.5, tpm  = FALSE, genesizevar = 'genesize', 
-    cpm = TRUE, tmm = cpm, voom = TRUE, log2 = TRUE,
+    min_count = 10, pseudo = 0.5, tpm  = FALSE, 
+    cpm = TRUE, voom = TRUE, log2 = TRUE,
     verbose = TRUE, plot = TRUE
 ){
 # Initialize
@@ -746,9 +745,9 @@ preprocess_rnaseq_counts <- function(object,
                                             object, subgroupvar, fit='limma')
 # tpm
     if (verbose) message('\t\tPreprocess')
-    if (tpm){   assert_is_subset(  genesizevar, fvars(object))
+    if (tpm){   assert_is_subset('genesize', fvars(object))
                 if (verbose)  message('\t\t\ttpm')
-                tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesizevar]]) }
+                tpm(object) <- counts2tpm(counts(object), fdata(object)$genesize) }
 # Filter
     object$libsize <- matrixStats::colSums2(counts(object))
     if (min_count>0)  object %<>% filter_by_expr(
@@ -756,9 +755,9 @@ preprocess_rnaseq_counts <- function(object,
 # tmm/cpm/voom normalize
     if (pseudo>0){ if (verbose)  message('\t\t\tcounts: add ', pseudo)
                         counts(object) %<>% add(pseudo) }
-    if (tmm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
-                object$libsize <- scaledlibsizes(counts(object)) }
-    if (cpm){   if (verbose)  message('\t\t\t\tcpm')
+    if (cpm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
+                object$libsize <- scaledlibsizes(counts(object))
+                if (verbose)  message('\t\t\t\tcpm')
                 cpm(object) <- counts2cpm(counts(object), object$libsize)
                 other <- setdiff(assayNames(object), 'cpm')
                 assays(object) %<>% extract(c('cpm', other)) }
@@ -905,6 +904,7 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
     if (stri_startswith_fixed(fdata1[[fid_col]][1], 'ENS')){
         fdata1[[fid_col]] %<>% split_extract(1, '.')  # drop ensemblid version
     }
+    assertive::assert_has_no_duplicates(fdata1[[fid_col]])
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1[[fid_col]]
     object <- matrix2sumexp(counts1)
@@ -933,9 +933,10 @@ read_rnaseq_bams <- function(
     dir, paired, genome, nthreads = detectCores(),
     sfile = NULL, by.y = NULL, subgroupvar = 'subgroup', block = NULL,
     formula = NULL, min_count = 10, pseudo = 0.5, 
-    ensdb = NULL, tpm = !is.null(ensdb), cpm = TRUE, tmm = cpm, log2 = TRUE, 
-    pca = TRUE, fit = 'limma', voom = !is.null(fit), contrastdefs = NULL, 
-    verbose = TRUE, plot = pca & !is.null(fit)
+    ensdb = NULL, tpm = FALSE, cpm = TRUE, log2 = TRUE, 
+    pca = TRUE, fit = 'limma', voom = cpm, contrastdefs = NULL, 
+    verbose = TRUE, plot = pca & !is.null(fit), 
+    feature_id = NULL, sample_id = NULL
 ){
 # Read
     object <- .read_rnaseq_bams(
@@ -956,7 +957,6 @@ read_rnaseq_bams <- function(
                     pseudo       = pseudo,
                     tpm          = tpm,
                     cpm          = cpm,
-                    tmm          = tmm,
                     voom         = voom,
                     log2         = log2,
                     verbose      = verbose,
@@ -965,7 +965,8 @@ read_rnaseq_bams <- function(
     object %<>% analyze(pca = pca, fit=fit, subgroupvar = subgroupvar,
                         formula = formula, block = block, 
                         contrastdefs = contrastdefs, 
-                        verbose = verbose, plot = plot)
+                        verbose = verbose, plot = plot, 
+                        feature_id = feature_id, sample_id = sample_id)
 # Return
     object
 }
@@ -992,7 +993,6 @@ read_rnaseq_bams <- function(
 #' @param min_count    min feature count required in some samples
 #' @param pseudo       added pseudocount to prevent -Inf log2 values
 #' @param ensdb        EnsDb e.g. AnnotationHub::AnnotationHub[['AH64923']]
-#' @param tmm          whether to tmm-scale library sizes
 #' @param cpm          whether to compute cpm
 #' @param voom         whether to compute voom precision weights
 #' @param log2         whether to log2 transform
@@ -1000,6 +1000,8 @@ read_rnaseq_bams <- function(
 #' @param fit          fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
 #' @param verbose      whether to message
 #' @param plot         whether to plot
+#' @param feature_id   string: which feature to visualize
+#' @param sample_id    string: which sample to visualize
 #' @return SummarizedExperiment
 #' @examples
 #' # bams
@@ -1010,57 +1012,66 @@ read_rnaseq_bams <- function(
 #'            fit = 'limma', plot = TRUE)
 #'     }
 #' # counts
-#'     file <- download_data('billing19.rnacounts.txt')
-#'     object <- read_rnaseq_counts(file, pca = TRUE, fit = 'limma')
-#'     
-#' # normalizations
-#'      \dontrun{
-#'          ah <- AnnotationHub::AnnotationHub()
-#'          ensdb <- ah[['AH64923']]
-#'          object <- read_rnaseq_counts(file, ensdb = ensdb,
-#'              tpm = F, tmm = F, cpm = F, log2 = F, plot = F)
-#'          plot_sample_densities(object)
-#'          plot_feature_densities(object)
-#'      }
+#'     rnafile <- download_data('billing19.rnacounts.txt')
+#'     fid <- 'CAV2'
+#'     rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05')
+#'     rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F)
+#'     rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F, cpm = F)
+#'     rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F, cpm = F, log2 = F) 
+#' \dontrun{
+#'     ah <- AnnotationHub::AnnotationHub()
+#'     ensdb <- ah[['AH64923']]
+#'     object <- read_rnaseq_counts(file, feature_id = fid, coefs = 'subgroupE02', tpm = TRUE, ensdb = ensdb)
+#'  }
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_counts <- function(
     file, fid_col = 1,
     sfile = NULL, by.y = NULL, subgroupvar = 'subgroup', block = NULL,
     formula = NULL, min_count = 10, pseudo = 0.5,
-    ensdb = NULL, tpm = !is.null(ensdb), cpm = TRUE, tmm = cpm, log2 = TRUE,
-    pca = TRUE, fit = 'limma', voom = !is.null(fit), coefs = NULL,
-    contrastdefs = NULL, verbose = TRUE, plot = pca & !is.null(fit)
+    tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
+    pca = TRUE, fit = 'limma', voom = cpm, coefs = NULL,
+    contrastdefs = NULL, verbose = TRUE, 
+    plot = pca & !is.null(fit), feature_id = NULL, sample_id = NULL, 
+    palette = NULL
 ){
 # Read
     object <- .read_rnaseq_counts(
-                    file,
-                    fid_col     = fid_col,
-                    sfile       = sfile,
-                    by.y        = by.y,
-                    subgroupvar = subgroupvar,
-                    ensdb       = ensdb,
-                    verbose     = verbose)
+        file,
+        fid_col     = fid_col,
+        sfile       = sfile,
+        by.y        = by.y,
+        subgroupvar = subgroupvar,
+        ensdb       = ensdb,
+        verbose     = verbose)
 # Preprocess
     object %<>% preprocess_rnaseq_counts(
-                    subgroupvar= subgroupvar,
-                    formula     = formula,
-                    block       = block,
-                    min_count   = min_count,
-                    pseudo      = pseudo,
-                    tpm         = tpm,
-                    cpm         = cpm,
-                    tmm         = tmm,
-                    voom        = voom,
-                    log2        = log2,
-                    verbose     = verbose,
-                    plot        = plot)
+        subgroupvar= subgroupvar,
+        formula     = formula,
+        block       = block,
+        min_count   = min_count,
+        pseudo      = pseudo,
+        tpm         = tpm,
+        cpm         = cpm,
+        voom        = voom,
+        log2        = log2,
+        verbose     = verbose,
+        plot        = FALSE)
 # Analyze
-    object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar,
-                    formula = formula, block = block, 
-                    weightvar = if (voom) 'weights' else NULL,
-                    coefs = coefs, contrastdefs = contrastdefs, 
-                    verbose = verbose, plot = plot)
+    object %<>% analyze(
+        pca          = pca, 
+        fit          = fit, 
+        subgroupvar  = subgroupvar,
+        formula      = formula, 
+        block        = block, 
+        weightvar    = if (voom) 'weights' else NULL,
+        coefs        = coefs, 
+        contrastdefs = contrastdefs, 
+        verbose      = verbose, 
+        plot         = plot, 
+        feature_id   = feature_id, 
+        sample_id    = sample_id, 
+        palette      = palette)
 # Return
     object
 }
