@@ -488,7 +488,6 @@ plot_subgroup_violins <- function(
 #' @param highlight  fvar expressing which feature should be highlighted
 #' @param jitter     whether to add jittered data points
 #' @param hlevels    xlevels for which to plot horizontal lines
-#' @param ...        s3 dispatch
 #' @return  ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
@@ -499,7 +498,7 @@ plot_subgroup_violins <- function(
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     controlfeatures <- c('biotin','phosphate')
 #'     fdata(object) %<>% cbind(control=.$feature_name %in% controlfeatures)
-#' # SummarizedExperiment
+#' # Plot
 #'     vars <- ggplot2::vars
 #'     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
 #'     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
@@ -511,73 +510,8 @@ plot_subgroup_violins <- function(
 #'     plot_sample_boxplots(object[, 1:12], highlight = control)
 #'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
 #'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
-#' # data.table
-#'     object %<>% extract(1, )
-#'     object %<>% sumexp_to_long_dt(svars = c('SET', 'SUB'))
-#'     plot_boxplots(object, x = SET, fill = SET, jitter = TRUE)
-#'     plot_boxplots(object, x = SET, fill = SET, block = SUB, jitter = TRUE)
 #' @export
-plot_boxplots <- function(object, ...){
-    UseMethod("plot_boxplots", object)
-}
-
-#' @rdname plot_boxplots
-#' @export
-plot_boxplots.data.table <- function(
-    object, x, fill, color = NULL, block = NULL, facet = NULL, scales = 'free_y', 
-    nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value',
-    highlight = NULL, jitter = FALSE, palette = NULL, 
-    hlevels = NULL, ...
-){
-# Assert/Process
-    assert_is_data.table(object)
-    direction <- NULL
-    if (!is.null(facet)) assert_is_all_of(facet, 'quosures')  # vars(...)
-    medianvalue <- value <- present <- NULL
-    x <- enquo(x);  fill <- enquo(fill);  color <- enquo(color);  block <- enquo(block); 
-    highlight <- enquo(highlight); xstr <- as_name(x); fillstr <- as_name(fill);
-    facetstr <- if (is.null(facet))  character(0) else  vapply(facet, as_name, character(1))
-    blockstr <- if (quo_is_null(block))  character(0) else as_name(block)
-    dt <- object
-    dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
-# Plot
-    p <- ggplot(dt) + theme_bw() 
-    if (nrow(dt)==0) return(p)
-    p <- p + facet_wrap_paginate(facets = facet, scales = scales, 
-                nrow = nrow, ncol = ncol, page = page, labeller = labeller)
-    if (!quo_is_null(block)){
-        dt[, direction := get(fillstr)[which.max(value)], by = c(facetstr, blockstr)]
-        p <- p + geom_line(aes(x=!!x, y=value, color=direction, group=!!block), na.rm = TRUE)
-        p <- add_color_scale(p, direction, data=dt, palette=palette) }
-    outlier.shape <- if (jitter) NA else 19
-    p <- p + geom_boxplot(aes(x = !!x, y = value, fill = !!fill, color = !!color), outlier.shape = outlier.shape, na.rm = TRUE)
-    p <- add_color_scale(p, !!color, data=dt, palette=palette)
-    p <- add_fill_scale( p, !!fill,  data=dt, palette=palette)
-    p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point, fixed_color="darkred")
-# Add hline
-    if (!is.null(hlevels)){
-        mediandt <- unique(dt[, 
-          unique(c('feature_id', xstr, 'medianvalue', facetstr)), with=FALSE])
-        mediandt[, present := FALSE]
-        mediandt[get(xstr) %in% hlevels, present := TRUE]
-        p <- p + geom_hline(data=mediandt, 
-                    aes(yintercept = medianvalue, color=!!fill, alpha=present), 
-                    linetype='longdash') }
-# Add jitter
-    if (jitter) p <- p + geom_jitter(aes(x=!!x, y=value),
-                            position = position_jitter(width=.1, height=0), size=0.5, na.rm = TRUE)
-# Finish and Return
-    breaks <- unique(dt[[xstr]])
-    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
-    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
-        guides(color = 'none', alpha = 'none') +
-        theme(axis.text.x = element_text(angle=90, hjust=1))
-    p
-}
-
-#'@rdname plot_boxplots
-#'@export
-plot_boxplots.SummarizedExperiment <- function(
+plot_boxplots <- function(
     object, assay = assayNames(object)[1], x, fill, color = NULL, block = NULL,
     facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, 
     labeller = 'label_value', highlight = NULL, 
@@ -587,7 +521,7 @@ plot_boxplots.SummarizedExperiment <- function(
     assert_is_all_of(object, "SummarizedExperiment")
     if (nrow(object)==0)  return(ggplot2::ggplot())
     if (!is.null(facet)) assert_is_all_of(facet, 'quosures') # vars(feature_id)
-    sample_id <- value <- medianvalue <- present <- NULL
+    sample_id <- value <- medianvalue <- present <- direction <- NULL
     x         <- enquo(x)
     fill      <- enquo(fill)
     color     <- enquo(color)
@@ -608,14 +542,41 @@ plot_boxplots.SummarizedExperiment <- function(
     plottedfvars <- intersect(plotvars, fvars(object))
     dt <- sumexp_to_long_dt(
             object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
-    plot_boxplots.data.table(dt,  
-        x         = !!x,           fill      = !!fill, 
-        color     = !!color,       block     = !!block,  
-        highlight = !!highlight,   facet     = facet,
-        scales    = scales,        nrow      = nrow,          
-        ncol      = ncol,          page      = page,          
-        labeller  = labeller,      jitter    = jitter,
-        palette   = palette,       hlevels   = hlevels)
+    dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
+    
+# Plot
+    p <- ggplot(dt) + theme_bw() 
+    if (nrow(dt)==0) return(p)
+    p <- p + facet_wrap_paginate(facets = facet, scales = scales, 
+                                 nrow = nrow, ncol = ncol, page = page, labeller = labeller)
+    if (!quo_is_null(block)){
+        dt[, direction := get(fillstr)[which.max(value)], by = c(facetstr, blockstr)]
+        p <- p + geom_line(aes(x=!!x, y=value, color=direction, group=!!block), na.rm = TRUE)
+        p <- add_color_scale(p, direction, data=dt, palette=palette) }
+    outlier.shape <- if (jitter) NA else 19
+    p <- p + geom_boxplot(aes(x = !!x, y = value, fill = !!fill, color = !!color), outlier.shape = outlier.shape, na.rm = TRUE)
+    p <- add_color_scale(p, !!color, data=dt, palette=palette)
+    p <- add_fill_scale( p, !!fill,  data=dt, palette=palette)
+    p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point, fixed_color="darkred")
+    # Add hline
+    if (!is.null(hlevels)){
+        mediandt <- unique(dt[, 
+                              unique(c('feature_id', xstr, 'medianvalue', facetstr)), with=FALSE])
+        mediandt[, present := FALSE]
+        mediandt[get(xstr) %in% hlevels, present := TRUE]
+        p <- p + geom_hline(data=mediandt, 
+                            aes(yintercept = medianvalue, color=!!fill, alpha=present), 
+                            linetype='longdash') }
+    # Add jitter
+    if (jitter) p <- p + geom_jitter(aes(x=!!x, y=value),
+                                     position = position_jitter(width=.1, height=0), size=0.5, na.rm = TRUE)
+    # Finish and Return
+    breaks <- unique(dt[[xstr]])
+    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
+    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
+        guides(color = 'none', alpha = 'none') +
+        theme(axis.text.x = element_text(angle=90, hjust=1))
+    p
 }
 
 #============================================================================
@@ -724,16 +685,16 @@ plot_subgroup_boxplots <- function(
 #' object %<>% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
 #' object$SampleId   %<>% factor()
 #' object$Subject_ID %<>% factor()
-#' grid.draw(plot_contrast_boxplots(
+#' plot_contrast_boxplots(
 #'     object, subgroup = SampleGroup, block = Subject_ID, 
-#'     fit='limma', contrast='t1', downlevels = 't0', uplevels = 't1'))
-#' grid.draw(plot_contrast_boxplots(
+#'     fit='limma', contrast='SampleGroupt1')
+#' plot_contrast_boxplots(
 #'     object, subgroup=SampleGroup, block = Subject_ID, fit='limma', 
-#'     contrast='t1', downlevels = 't0', uplevels = 't1', fdrcutoff=0.05))
-#' grid.draw(plot_contrast_boxplots(
-#'     object, subgroup=SampleGroup, block = Subject_ID, 
-#'      fit=c('limma', 'lme'), contrast='t1', 
-#'     downlevels = 't0', uplevels = 't1', fdrcutoff=0.05))
+#'     contrast='SampleGroupt1', fdrcutoff=0.05)
+#' plot_contrast_boxplots(
+#'     object, subgroup = SampleGroup, block = Subject_ID, 
+#'      fit = c('limma', 'lme'), contrast = 'SampleGroupt1', 
+#'      fdrcutoff = 0.05)
 #' @export
 plot_contrast_boxplots <- function(object, ...){
     UseMethod('plot_contrast_boxplots')
@@ -903,6 +864,8 @@ expand_into_vector <- function(value, templatevector){
     fit = fits(object) [1],
     nfeature = 1
 ){
+    contr <- contrast
+    sumdt <- summarize_fit(object, fit = fit)[contrast==contr]
     pvar   <- paste('p',   contrast, fit, sep = FITSEP)
     fdrvar <- paste('fdr', contrast, fit, sep = FITSEP)
     topfid <- fnames(object)[order(fdata(object)[[pvar]])[nfeature]]
@@ -922,6 +885,8 @@ expand_into_vector <- function(value, templatevector){
 prep_subgroup_contrasts <- function(
     object, svar, contrasts, xvar, fillvar, blockvar, nfeature
 ){
+    contrastlevels <- summarize_fit(object)[rev(order(ndown+nup))]$contrast
+    contrastlevels %<>% as.character()
     . <- NULL
     plotdt <- mapply(
         .prep_subgroup_contrasts,
@@ -936,7 +901,7 @@ prep_subgroup_contrasts <- function(
     plotdt %<>% data.table::rbindlist()
     plotdt %<>% data.table::setorder(p)
     plotdt[, fdr := paste0('FDR ', formatC(fdr, format='e', digits=2))]
-    plotdt$facet %<>% factor(unique(.))
+    plotdt$facet %<>% factor(contrastlevels)
     plotdt
 }
 
@@ -1003,7 +968,7 @@ plot_subgroup_contrasts <- function(
         x       = !!x,
         fill    = !!fill,
         block   = !!block,
-        facet   = vars(feature_name, facet, fdr),
+        facet   = vars(facet, feature_name, fdr),
         jitter  = jitter,
         scales  = 'free',
         nrow    = nrow,
