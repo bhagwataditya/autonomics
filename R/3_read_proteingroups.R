@@ -1276,7 +1276,7 @@ annotate_uniprot_ws.SummarizedExperiment <- function(
         fdt <- data.table(fdata(x))
         fdt %<>% tidyr::separate_rows(uniprot, sep=collapse)
         fdt %<>% data.table::as.data.table()
-        fdt[, uniprot := split_extract(uniprot, 1,'-')]
+        fdt[, uniprot := split_extract_fixed(uniprot, '-', 1)]
     # Annotate
         uniprot <- NULL
         fdt %<>% extract(uniprot %in% UniProt.ws::keys(upws, keytype = 'UNIPROTKB'))
