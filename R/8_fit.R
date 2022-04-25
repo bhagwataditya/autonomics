@@ -139,7 +139,7 @@ guess_sep.SummarizedExperiment <- function(
 #=============================================================================
 
 #' @export
-#' @rdname split_extract
+#' @rdname split_extract_fixed
 nfactors <- function(x, sep = guess_sep(x)){
     length(unlist(stri_split_fixed(x[1], sep)))
 }
@@ -155,14 +155,43 @@ nfactors <- function(x, sep = guess_sep(x)){
 #' object <- read_metabolon(file, plot=FALSE)
 #' x <- object$sample_id[1:5]
 #' nfactors(x)
-#' split_extract(x, 1:2)
-#' split_extract(x, seq_len(nfactors(x)-1))
-#' split_extract(x, nfactors(x))
+#' split_extract_fixed(x, '_', 1:2)
+#' split_extract_fixed(x, '_', seq_len(nfactors(x)-1))
+#' split_extract_fixed(x, '_', nfactors(x))
 #' 
 #' # With NA values
-#' split_extract(fdata(object)$PUBCHEM, 1, ';')
+#' split_extract_fixed(fdt(object)$PUBCHEM, ';', 1)
 #' @export
+split_extract_fixed <- function(x, sep, i){
+    assert_is_character(x)
+    assert_is_a_string(sep)
+    assert_is_numeric(i)
+    factors <- stri_split_fixed(x, sep)
+    extracted <- rep(NA_character_, length(factors))
+    idx <- !is.na(factors)
+    extracted[idx] <- vapply(factors[idx], 
+                     function(y) paste0(y[i], collapse=sep), character(1))
+    extracted
+}
+
+#' @export
+#' @rdname split_extract_fixed
+split_extract_regex <- function(x, sep, i){
+    assert_is_character(x)
+    assert_is_a_string(sep)
+    assert_is_numeric(i)
+    factors <- stri_split_regex(x, sep)
+    extracted <- rep(NA_character_, length(factors))
+    idx <- !is.na(factors)
+    extracted[idx] <- vapply(factors[idx], 
+                             function(y) paste0(y[i], collapse=sep), character(1))
+    extracted
+}
+
+#' @export
+#' @rdname split_extract_fixed
 split_extract <- function(x, i, sep=guess_sep(x)){
+    .Deprecated('split_extract_fixed')
     factors <- stri_split_fixed(x, sep)
     extracted <- rep(NA_character_, length(factors))
     idx <- !is.na(factors)

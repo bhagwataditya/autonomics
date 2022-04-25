@@ -881,7 +881,7 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
 # Add sample/feature data
     object %<>% merge_sfile(
         sfile, by.x = 'sample_id',  by.y = by.y, verbose = verbose)
-    fdt(object)$feature_id %<>% split_extract(1, '.')  # drop ensemblid version
+    fdt(object)$feature_id %<>% split_extract_fixed('.', 1)  # drop ensemblid version
     object %<>% add_ensdb(ensdb)    
 # Return
     object
@@ -902,7 +902,7 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
     idx <- vapply(dt, is.integer, logical(1))
     fdata1   <- dt[, !idx, with = FALSE]
     if (stri_startswith_fixed(fdata1[[fid_col]][1], 'ENS')){
-        fdata1[[fid_col]] %<>% split_extract(1, '.')  # drop ensemblid version
+        fdata1[[fid_col]] %<>% split_extract_fixed('.', 1)  # drop ensemblid version
     }
     assertive::assert_has_no_duplicates(fdata1[[fid_col]])
     counts1  <- as.matrix(dt[,  idx, with = FALSE])

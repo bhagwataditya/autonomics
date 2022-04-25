@@ -74,8 +74,8 @@ make_colors <- function(
     makefun <- make_onefactor_colors
     if (!is.null(sep)){            # consistent separator
         if (length(varlevels)>2){  # 3+ samples
-            n1 <- length(unique(split_extract(varlevels, 1, sep)))
-            n2 <- length(unique(split_extract(varlevels, 2, sep)))
+            n1 <- length(unique(split_extract_fixed(varlevels, sep, 1)))
+            n2 <- length(unique(split_extract_fixed(varlevels, sep, 2)))
             if (n1>1 & n2>1){             # 2+ huevar levels
                 makefun <- make_twofactor_colors
             }

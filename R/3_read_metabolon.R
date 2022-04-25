@@ -100,7 +100,7 @@ add_smiles <- function(object){
 # Assert
     assert_is_subset('PUBCHEM', fvars(object))
 # Map to smiles
-    PUBCHEMIDS <- fdata(object)$PUBCHEM %>% split_extract(1,';')
+    PUBCHEMIDS <- fdata(object)$PUBCHEM %>% split_extract_fixed(';', 1)
     SMILES <- rep(NA_character_, length(PUBCHEMIDS))
     idx <- !is.na(PUBCHEMIDS)
     SMILES[idx] <- PUBCHEMIDS[idx] %>%

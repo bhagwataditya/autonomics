@@ -1139,7 +1139,7 @@ read_proteingroups <- function(
     object %<>% filter_maxquant_features(reverse = reverse,
                     contaminants = contaminants, verbose = verbose)
     
-    fids1 <- fdt(object)$`Majority protein IDs` %>% split_extract(1, ';')
+    fids1 <- fdt(object)$`Majority protein IDs` %>% split_extract_fixed(';', 1)
     idx <- fdt(object)$`feature_name` != ''
     fids1[idx] %<>% paste(fdt(object)$`feature_name`[idx], sep = '-')
     fnames(object) <- fids1

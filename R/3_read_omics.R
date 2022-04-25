@@ -568,8 +568,8 @@ add_subgroup <- function(
         if (sep!='NOSEP'){
             nfactor <- nfactors(x, sep)
             if (verbose)  message('\t\tInfer subgroup from sample_ids')
-            object[[subgroupvar]]  <- split_extract(x, seq_len(nfactor-1), sep)
-            object[[replicatevar]] <- split_extract(x, nfactor, sep)
+            object[[subgroupvar]]  <- split_extract_fixed(x, sep, seq_len(nfactor-1))
+            object[[replicatevar]] <- split_extract_fixed(x, sep, nfactor)
         } else {
             object[[subgroupvar]] <- 'group0'
         }
