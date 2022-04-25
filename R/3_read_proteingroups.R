@@ -354,14 +354,13 @@ demultiplex <- function(x, verbose = FALSE){
 
 #==============================================================================
 #
-#                            load_uniprot_fasta
+#                       simplify_proteingroups
+#                            read_uniprot_fasta
+#                                extract_from_name
+#                                extract_from_annot
+#                                rm_from_annot
 #
 #=============================================================================
-
-# DEFAULT_FASTAFIELDS <- c('GENES', 'PROTEIN-NAMES', 'REVIEWED',
-#                     'EXISTENCE', 'ENTRYNAME', 'ORGID', 'ORGNAME', 'VERSION')
-DEFAULT_FASTAFIELDS <- c('GENES', 'EXISTENCE', 'REVIEWED', 'PROTEIN-NAMES')
-
 
 #' Load uniprot annotations from protein sequence fastafile
 #'
@@ -370,14 +369,13 @@ DEFAULT_FASTAFIELDS <- c('GENES', 'EXISTENCE', 'REVIEWED', 'PROTEIN-NAMES')
 #' @param verbose      bool
 #' @examples
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#' load_uniprot_fasta(fastafile)
+#' read_uniprot_fasta(fastafile)
 #' @return data.table(uniprot, genename, proteinname, reviewed, existence)
 #' @note EXISTENCE values are always those of the canonical isoform
 #'       (no isoform-level resolution for this field)
 #' @export
-load_uniprot_fasta <- function(
-    fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE
-){
+read_uniprot_fasta <- function(fastafile, verbose = TRUE, use_cache = TRUE){
+    # Assert
     if (!requireNamespace('seqinr', quietly = TRUE)){
         stop("BiocManager::install('seqinr'). Then re-run.") }
     assert_all_are_existing_files(fastafile)
