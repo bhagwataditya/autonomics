@@ -272,22 +272,28 @@ dequantify <- function(
 
 
 is_multiplexed <- function(x){
+    # Components
     pattern <- '(.+)\\{(.+)\\}'
     n_open   <- stri_count_fixed(x, '(')
     n_closed <- stri_count_fixed(x, ')')
-    #channel <- as.numeric(gsub(pattern, '\\2', x)) # doesnt work with non-numeric labels e.g. H/L
+    channel <- gsub(pattern, '\\2', x)
     
-    all(
-        stri_detect_regex(x, pattern) & 
-        n_open > 0 &            # multiplexing present
-        n_open == n_closed #&    # multiplexing consistent
-        #channel < n_open        # multiplex contains all channels
-    )
+    # Multiplexed consistently ?
+    y <- all(stri_detect_regex(x, pattern) &
+                 n_open > 0                    &  
+                 n_open == n_closed)
+    
+    # All channels defined (TMT) ? 
+    if (all(assertive::is_numeric_string(channel))){
+        channel %<>% as.numeric()
+        y %<>% `&`(all(as.numeric(channel) < n_open))
+    }
+    y
 }
 
 .demultiplex <- function(y){
     y0 <- y
-    channel <- split_extract(y, 2, '{') %>% substr(1, nchar(.)-1)
+    channel <- split_extract_fixed(y, '{', 2) %>% substr(1, nchar(.)-1)
     y %<>% stri_replace_last_fixed(paste0('{', channel, '}'), '')
     
     labels     <- y %>% stri_extract_all_regex('\\([^()]+\\)') %>% unlist() %>% substr(2, nchar(.)-1)
