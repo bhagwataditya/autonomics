@@ -502,7 +502,7 @@ simplify_proteingroups <- function(
                     separate_rows('uniprot', sep=';') %>%
                     data.table()
 # Merge in fasta annotations
-    feature_dt %<>% merge(fastadt,  by.x = 'uniprot', by.y='Uniprot',
+    feature_dt %<>% merge(fasta_dt,  by.x = 'uniprot', by.y='Uniprot',
                         sort=FALSE, all.x=TRUE)
 # Simplify
     if (verbose) message('\t\tSimplify proteingroups')
@@ -566,9 +566,7 @@ collapse_isoforms_paralogs <- function(feature_dt, verbose=TRUE){
     feature_dt[,`Protein names` :=
                         commonify_strings(unique(`Protein names`)), by=groupby]          
     feature_dt %<>% unique()
-    setnames(feature_dt, 'GENES',     'feature_name')
-    setnames(feature_dt, 'CANONICAL', 'canonical')
-    setnames(feature_dt, 'PROTEIN-NAMES', 'Protein names')
+    setnames(feature_dt, 'Gene names',     'feature_name')
     if (verbose) message('\t\t\tCollapse isoforms and paralogs')
     feature_dt
 }
@@ -1110,8 +1108,7 @@ un_int64 <- function(x) {
 #'     palette <- make_colors(c(subgroups[1], 'E00.8_STD', subgroups[-1]))
 #'     pro <- read_proteingroups(
 #'         profile, select_subgroups = subgroups, palette = palette, 
-#'         coefs = 'subgroupE05_STD', sample_id = 'E05_STD.R2', 
-#'         feature_id = 'P51636-CAV2')
+#'         coefs = 'subgroupE05_STD', sample_id = 'E05_STD.R2')
 #' @export
 read_proteingroups <- function(
     file, quantity = guess_maxquant_quantity(file), sfile = NULL,
@@ -1138,15 +1135,6 @@ read_proteingroups <- function(
 # Preprocess
     object %<>% filter_maxquant_features(reverse = reverse,
                     contaminants = contaminants, verbose = verbose)
-    
-    fids1 <- fdt(object)$`Majority protein IDs` %>% split_extract_fixed(';', 1)
-    idx <- fdt(object)$`feature_name` != ''
-    fids1[idx] %<>% paste(fdt(object)$`feature_name`[idx], sep = '-')
-    fnames(object) <- fids1
-    fdt(object)$id <- fdt(object)$feature_id
-    fdt(object)$feature_id <- fids1
-    fnames(object) <- fids1
-    
     object %<>% rename_proteingroup_fvars()
     object %<>% simplify_proteingroups(fastafile)
     object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
