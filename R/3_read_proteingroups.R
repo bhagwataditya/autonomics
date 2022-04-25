@@ -371,56 +371,82 @@ demultiplex <- function(x, verbose = FALSE){
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' read_uniprot_fasta(fastafile)
 #' @return data.table(uniprot, genename, proteinname, reviewed, existence)
-#' @note EXISTENCE values are always those of the canonical isoform
+#' @note Existence values are always those of the canonical isoform
 #'       (no isoform-level resolution for this field)
 #' @export
 read_uniprot_fasta <- function(fastafile, verbose = TRUE, use_cache = TRUE){
-    # Assert
+# Assert
     if (!requireNamespace('seqinr', quietly = TRUE)){
         stop("BiocManager::install('seqinr'). Then re-run.") }
     assert_all_are_existing_files(fastafile)
-    CANONICAL <- REVIEWED <- ENTRYNAME <- VERSION <- EXISTENCE <- GENES <- NULL
-    ORGID <- ORGNAME <- `PROTEIN-NAMES` <- UNIPROTKB <- annotation <- NULL
-    if (verbose) message('\t\tLoad fasta file')
+    Canonical <- Reviewed <- `Entry names` <- Version <- Existence <- `Gene names` <- NULL
+    Orgid <- Orgname <- `Protein names` <- Uniprot <- Annotation <- NULL
+# Return fasta tsv if available
+    dir <- R_user_dir('autonomics', 'cache')
+    tsvfile <- basename(fastafile)
+    tsvfile %<>% stri_replace_first_fixed('.fasta', '.tsv')
+    tsvfile %<>% file.path(dir, .)
+    if (use_cache & file.exists(tsvfile)){
+        if (verbose) message('\t\tRead ', tsvfile)
+        return(fread(tsvfile))
+    }
+# Read fasta
+    if (verbose) message('\tRead ', fastafile)
     fasta <- seqinr::read.fasta(fastafile)
     all_accessions <- extract_from_name(names(fasta), 2)
-    dt <- data.table(UNIPROTKB = extract_from_name(names(fasta), 2),
-            annotation = unname(vapply(fasta, attr, character(1), 'Annot')))
-    dt[, CANONICAL := stri_replace_last_regex(UNIPROTKB, '[-][0-9]+','')]
-message('\t\t\tExtract REVIEWED: 0=trembl, 1=swissprot')
-    dt[, REVIEWED := as.numeric(extract_from_name(names(fasta),1)=='sp')]
-    message('\t\t\tExtract ENTRYNAME')
-    dt [, ENTRYNAME := extract_from_name(names(fasta), 3)]
-message('\t\t\tExtract (sequence) VERSION')
-    pattern <- ' SV=[0-9]'  # VERSION
-    dt [, VERSION := as.numeric(extract_from_annot(annotation, pattern,5))]
-    dt [, annotation   := rm_from_annot(annotation, pattern)]
-message('\t\t\tExtract EXISTENCE: 1=protein, 2=transcript, ',
-        '3=homology, 4=prediction, 5=uncertain, NA=isoform')
-    pattern <- ' PE=[0-9]'  # EXISTENCE
-    dt [, EXISTENCE  := as.numeric(extract_from_annot(annotation, pattern, 5))]
-    dt [, annotation := rm_from_annot(annotation, pattern) ]
-    dt [, EXISTENCE  := EXISTENCE[UNIPROTKB==CANONICAL], by = 'CANONICAL']
-    # only canonical have this
-message('\t\t\tExtract GENES')
-    pattern <- ' GN=.+$'    # GENES
-    dt [, GENES       := extract_from_annot(annotation, pattern, 5)]
-    dt [, annotation  := rm_from_annot(annotation, pattern)]
-message('\t\t\tExtract ORGID')
-    pattern <- ' OX=[0-9]+' # ORGID
-    dt [, ORGID        := extract_from_annot(annotation, pattern, 5)]
-    dt [, annotation   := rm_from_annot(annotation, pattern)]
-message('\t\t\tExtract ORGNAME')
-    pattern <- ' OS=.+$'    # ORGNAME
-    dt [, ORGNAME      := extract_from_annot(annotation, pattern, 5)]
-    dt [, annotation   := rm_from_annot(annotation, pattern)]
-message('\t\t\tExtract PROTEIN-NAMES')
-    pattern <- ' .+$'       # PROTEIN-NAMES
-    dt [, `PROTEIN-NAMES` := extract_from_annot(annotation, pattern, 2)]
-    dt [,  annotation     := rm_from_annot(annotation, pattern)]
-    dt [, `PROTEIN-NAMES` := `PROTEIN-NAMES`[UNIPROTKB==CANONICAL],
-        by = 'CANONICAL'] # only canonical have this
-    dt[, c('UNIPROTKB', 'CANONICAL', fastafields), with = FALSE]
+    fastadt <- data.table(Uniprot  = extract_from_name(names(fasta), 2),
+                          Annotation = unname(vapply(fasta, attr, character(1), 'Annot')))
+    fastadt[, Canonical := split_extract_fixed(Uniprot, '-', 1)]
+    idx <- which(stri_detect_fixed(fastadt$Uniprot, '-'))
+    fastadt[ idx, Isoform  := split_extract_fixed(Uniprot, '-', 2)]
+    fastadt[!idx, Isoform  := 1]
+# Extract components
+    # Reviewed: trembl/swissprot
+        message('\t\t\tExtract Reviewed: 0=trembl, 1=swissprot')
+        fastadt[, Reviewed := as.numeric(extract_from_name(names(fasta),1)=='sp')]
+    # `Entry names`
+        message('\t\t\tExtract `Entry names`')
+        fastadt [, `Entry names` := extract_from_name(names(fasta), 3)]
+        fastadt [, `Entry names` := split_extract_fixed(`Entry names`, '_', 1)]
+    # Sequence version
+        # message('\t\t\tExtract (sequence) Version')
+        pattern <- ' SV=[0-9]'
+        #fastadt[, Version    := as.numeric(extract_from_annot(Annotation, pattern,5))]
+        fastadt [, Annotation := rm_from_annot(Annotation, pattern)]
+    # Existence
+        message('\t\t\tExtract Existence: 1=protein, 2=transcript, ',
+                '3=homology, 4=prediction, 5=uncertain, NA=isoform')
+        pattern <- ' PE=[0-9]'
+        fastadt [, Existence  := as.numeric(extract_from_annot(Annotation, pattern, 5))]
+        fastadt [, Annotation := rm_from_annot(Annotation, pattern) ]
+        fastadt [, Existence  := Existence[Uniprot == Canonical], by = 'Canonical']
+    # Genes names (canonical only)
+        message('\t\t\tExtract `Gene names`')
+        pattern <- ' GN=.+$'
+        fastadt [,`Gene names` := extract_from_annot(Annotation, pattern, 5)]
+        fastadt [, Annotation   := rm_from_annot(Annotation, pattern)]
+    # Orgid (canonical only)
+        # message('\t\t\tExtract Orgid')
+        pattern <- ' OX=[0-9]+'
+        #fastadt[, Orgid        := extract_from_annot(Annotation, pattern, 5)]
+        fastadt [, Annotation   := rm_from_annot(Annotation, pattern)]
+    # Orgname (canonical only)
+        # message('\t\t\tExtract Orgname')
+        pattern <- ' OS=.+$'
+        #fastadt[, Orgname      := extract_from_annot(Annotation, pattern, 5)]
+        fastadt [, Annotation   := rm_from_annot(Annotation, pattern)]
+    # Protein names (canonical only)
+        message('\t\t\tExtract `Protein names`')
+        pattern <- ' .+$'
+        fastadt [,`Protein names` := extract_from_annot(Annotation, pattern, 2)]
+        fastadt [, Annotation     := rm_from_annot(Annotation, pattern)]
+        fastadt [,`Protein names` := `Protein names`[Uniprot == Canonical], by = 'Canonical']
+        fastadt[, c('Annotation', 'Canonical') := NULL]
+# Write / Return
+    message('\t\t', tsvfile)
+    fwrite(fastadt, tsvfile, sep = '\t')
+    return(fastadt)
+    
 }
 
 
@@ -454,7 +480,6 @@ rm_from_annot <- function(annotation, pattern){
 #'
 #' @param object SummarizedExperiment
 #' @param fastafile string
-#' @param fastafields character vector
 #' @param verbose TRUE (default) or FALSE
 #' @return data.table
 #' @examples
@@ -467,17 +492,17 @@ rm_from_annot <- function(annotation, pattern){
 #' fdata(object)[1:5, ]
 #' @noRd
 simplify_proteingroups <- function(
-    object, fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE
+    object, fastafile, verbose = TRUE
 ){
 # Return if NULL
     if (is.null(fastafile)) return(object)
 # Uncollapse fdata annotations
-    fasta_dt <- load_uniprot_fasta(fastafile, fastafields)
+    fasta_dt <- read_uniprot_fasta(fastafile)
     feature_dt  <-  fdata(object)[, c('feature_id', 'uniprot')] %>%
                     separate_rows('uniprot', sep=';') %>%
                     data.table()
 # Merge in fasta annotations
-    feature_dt %<>% merge(fasta_dt, by.x = 'uniprot', by.y='UNIPROTKB',
+    feature_dt %<>% merge(fastadt,  by.x = 'uniprot', by.y='Uniprot',
                         sort=FALSE, all.x=TRUE)
 # Simplify
     if (verbose) message('\t\tSimplify proteingroups')
@@ -497,53 +522,49 @@ simplify_proteingroups <- function(
 
 
 prefer_best_existence <- function(feature_dt, verbose=TRUE){
-    EXISTENCE <- NULL
-    feature_dt[is.na(EXISTENCE), EXISTENCE:=5]
-    feature_dt %<>% extract(, .SD[EXISTENCE == min(EXISTENCE)],
+    Existence <- NULL
+    feature_dt[is.na(Existence), Existence:=5]
+    feature_dt %<>% extract(, .SD[Existence == min(Existence)], 
                             by = 'feature_id')
-    feature_dt[, EXISTENCE := NULL]
+    feature_dt[, Existence := NULL]
     if (verbose) message('\t\t\tDrop inferior existences')
     feature_dt
 }
 
-
 prefer_swissprot_over_trembl <- function(feature_dt, verbose=TRUE){
-    REVIEWED <- NULL
-    feature_dt[is.na(REVIEWED), REVIEWED:=0]
-    feature_dt %<>% extract(, .SD[REVIEWED == max(REVIEWED)], by = 'feature_id')
+    Reviewed <- NULL
+    feature_dt[is.na(Reviewed), Reviewed:=0]
+    feature_dt %<>% extract(, .SD[Reviewed == max(Reviewed)], by = 'feature_id')
     if (verbose) message(
                 '\t\t\tDrop trembl when swissprot available')
-    feature_dt[, REVIEWED := NULL]
+    feature_dt[, Reviewed := NULL]
     feature_dt
 }
 
-
 drop_fragments <- function(feature_dt, verbose=TRUE){
-    `PROTEIN-NAMES` <- IS.FRAGMENT <- NULL
-    feature_dt[is.na(`PROTEIN-NAMES`), `PROTEIN-NAMES`:='']
-    feature_dt[, IS.FRAGMENT :=
-                as.numeric(stri_detect_fixed( `PROTEIN-NAMES`, '(Fragment)'))]
-    feature_dt %<>% extract(, .SD[IS.FRAGMENT == min(IS.FRAGMENT)],
-                            by = c('feature_id', 'GENES'))
+    `Protein names` <- IS.FRAGMENT <- NULL
+    feature_dt[is.na(`Protein names`), `Protein names`:='']
+    feature_dt[, IS.FRAGMENT := 
+                as.numeric(stri_detect_fixed( `Protein names`, '(Fragment)'))]
+    feature_dt %<>% extract(, .SD[IS.FRAGMENT == min(IS.FRAGMENT)], 
+                            by = c('feature_id', 'Gene names'))
     feature_dt[, IS.FRAGMENT     := NULL]
     if (verbose) message(
             '\t\t\tDrop fragments when full seqs available')
     feature_dt
 }
 
-
-
 collapse_isoforms_paralogs <- function(feature_dt, verbose=TRUE){
     if (nrow(feature_dt)==0) return(feature_dt)
-    GENES <- uniprot <- CANONICAL <- GENES <- `PROTEIN-NAMES` <- NULL
-
-    groupby <- c('feature_id')
-    feature_dt[is.na(GENES), GENES := '']
+    `Gene names` <- uniprot <- Canonical <- `Protein names`   <- NULL
+    
+    groupby <- 'feature_id'
+    feature_dt[is.na(`Gene names`), `Gene names` := '']
     feature_dt[, uniprot  := paste0(unique(uniprot),  collapse=';'), by=groupby]
-    feature_dt[, CANONICAL:= paste0(unique(CANONICAL),collapse=';'), by=groupby]
-    feature_dt[, GENES    := paste0(unique(GENES),    collapse=';'), by=groupby]
-    feature_dt[,`PROTEIN-NAMES` :=
-                        commonify_strings(unique(`PROTEIN-NAMES`)), by=groupby]
+    feature_dt[, Canonical:= paste0(unique(Canonical),collapse=';'), by=groupby]
+    feature_dt[, `Gene names`   := paste0(unique(`Gene names`),    collapse=';'), by=groupby]
+    feature_dt[,`Protein names` :=
+                        commonify_strings(unique(`Protein names`)), by=groupby]          
     feature_dt %<>% unique()
     setnames(feature_dt, 'GENES',     'feature_name')
     setnames(feature_dt, 'CANONICAL', 'canonical')
