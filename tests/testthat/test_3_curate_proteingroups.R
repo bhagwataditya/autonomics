@@ -1,14 +1,14 @@
-context('curate_proteingroups')
+context('curate_uniprots')
 
 profile   <- download_data('billing19.proteingroups.txt')
 fosfile   <- download_data('billing19.phosphosites.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
-pro0 <- .read_pro(profile)
-fos0 <- .read_fos(fosfile)
-pro1 <- curate_proteingroups(pro0)
-fos1 <- curate_proteingroups(fos0)
-pro2 <- curate_proteingroups(pro0, fastafile = fastafile)
-fos2 <- curate_proteingroups(fos0, fastafile = fastafile)
+pro0 <- read_pro(profile, curate = FALSE)
+fos0 <- read_fos(fosfile, curate = FALSE)
+pro1 <- curate_uniprots(pro0)
+fos1 <- curate_uniprots(fos0)
+pro2 <- curate_uniprots(pro0, fastafile = fastafile)
+fos2 <- curate_uniprots(fos0, fastafile = fastafile)
 
 test_equivalence <- function(dt0, dt1){
     # nrows
