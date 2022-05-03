@@ -4,6 +4,7 @@
 #
 #---------------------------------------------------------------------------
 
+
 #' maxquant quantity patterns
 #' @examples
 #' MAXQUANT_PATTERNS_QUANTITY
@@ -23,6 +24,7 @@ MAXQUANT_PATTERNS_QUANTITY <- c(
     '^Intensity ([HML]) (.+)$',
 `Intensity`                    =
     '^Intensity (.+)$')
+
 
 #' Guess maxquant quantity from snames
 #'
@@ -198,7 +200,8 @@ add_feature_id <- function(dt){
 
 #-----------------------------------------------------------------------------
 #
-#                       curate_uniprots
+#                       read_fastahdrs
+#                           parse_fastahdrs
 #
 #-----------------------------------------------------------------------------
 
@@ -317,6 +320,13 @@ read_fastahdrs <- function(fastafile, verbose = TRUE){
 # Parse
     parse_fastahdrs(fasta)
 }
+
+
+#-----------------------------------------------------------------------------
+#
+#                       curate_uniprots
+#
+#-----------------------------------------------------------------------------
 
 
 # tests/testthat/test_3_curate_uniprots.R
@@ -791,21 +801,19 @@ demultiplex <- function(x, verbose = FALSE){
 
 
 .is_multiplexed <- function(x){
-    # Components
+# Components
     pattern <- '(.+)\\{(.+)\\}'
     n_open   <- stri_count_fixed(x, '(')
     n_closed <- stri_count_fixed(x, ')')
     channel <- gsub(pattern, '\\2', x)
-    
-    # Multiplexed consistently ?
+# Multiplexed consistently ?
     y <- all(stri_detect_regex(x, pattern) &
                  n_open > 0                    &  
                  n_open == n_closed)
-    
-    # All channels defined (TMT) ? 
+# All channels defined (TMT) ? 
     if (all(assertive::is_numeric_string(channel))){
         channel %<>% as.numeric()
-        y %<>% `&`(all(as.numeric(channel) < n_open))
+        y %<>% `&`(all(as.numeric(channel) <= n_open))
     }
     y
 }
