@@ -377,82 +377,126 @@ fdf2fdt <- function(fdf){
     setnames(dt, 'rn', 'feature_id')
     dt
 }
-    
-#' @rdname pvars
-#' @export
-p <- function(object){
-    df <- fdata(object)[, pvars(object), drop=FALSE]
-    names(df) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
-    df
-}  
 
-#' @rdname pvars
-#' @export
-effect <- function(object){
-    df <- fdata(object)[, effectvars(object), drop=FALSE]
-    names(df) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
-    df
-}
-
-#' @rdname pvars
-#' @export
-fdr <- function(object){
-    df <- fdata(object)[, fdrvars(object),    drop=FALSE]
-    names(df) %<>% stri_replace_first_regex(paste0('fdr', FITSEP), '')
-    df
-}
-
-effectsign <- function(object){
-    df <- base::sign(effect(object))
-    df
-}
-
-#' Is down/up regulated?
-#' 
-#' Is down/up and quantity < cutoff ?
-#' 
+#' Get p/fdr/effect/down/up/sign matrix
 #' @param object    SummarizedExperiment
-#' @param quantity  string: 'p', 'fdr'
-#' @param cutoff    number
-#' @param coef      character vector: coefs
-#' @param fit       character vector: fitted models
-#' @return  character vector
+#' @param fit       string
+#' @param coef      string
+#' @return matrix (feature x coef)
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit='limma', plot=FALSE)
-#'    down(object)[7:10, ]
-#'      up(object)[7:10, ]
-#' testmat(object)[7:10, ]
+#' # Read
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file, impute = TRUE, plot = FALSE)
+#'     object %<>% fit_limma(subgroupvar = 'SET')
+#'     object %<>% fit_lm(   subgroupvar = 'SET')
+#' # Values
+#'     effect(object)[1:3, ]
+#'          p(object)[1:3, ]
+#'        fdr(object)[1:3, ]
+#'       down(object)[1:3, ]
+#'         up(object)[1:3, ]
+#'       sign(object)[1:3, ]
+#' # Variables
+#'     effectvar(object)
+#'          pvar(object)
+#'        fdrvar(object)
 #' @export
-down <- function(object, quantity='fdr', cutoff = 0.05){
-    df <- (get(quantity)(object) < cutoff) &
-        (effect(object) < 0)
-    mode(df) <- 'numeric'
-    df[is.na(df)] <- FALSE
-    df
+p <- function(object, coef = coefs(object), fit = fits(object)){
+    var <- pvar(object, coef = coef, fit = fit)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
+    as.matrix(dt, rownames = rownames(object))
 }
 
-#' @rdname down
+
+#' @rdname p
 #' @export
-up <- function(object, quantity='fdr', cutoff = 0.05){
-    df <- (get(quantity)(object) < cutoff) &
-        (effect(object) > 0)
-    mode(df) <- 'numeric'
-    df[is.na(df)] <- FALSE
-    df
+pvar <- function(object, coef = coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 'p', fit = fit, coef = coef)
+    paste(x$var, x$coef, x$fit, sep = FITSEP)
 }
 
-#' @rdname down
+
+#' @rdname p
 #' @export
-testmat <- function(
-    object, quantity='fdr', cutoff=0.05, coef=coefs(object), fit=fits(object)
+effect <- function(object, coef = coefs(object), fit = fits(object)){
+    var <- effectvar(object, coef = coef, fit = fit)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
+    as.matrix(dt, rownames = rownames(object))
+}
+
+
+#' @rdname p
+#' @export
+effectvar <- function(object, coef = coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 'effect', fit = fit, coef = coef)
+    paste(x$var, x$coef, x$fit, sep = FITSEP)
+}
+
+
+#' @rdname p
+#' @export
+fdr <- function(object, coef = coefs(object), fit = fits(object)){
+    var <- fdrvar(object, coef = coef, fit = fit)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
+    as.matrix(dt, rownames = rownames(object))
+}
+
+#' @rdname p
+#' @export
+fdrvar <- function(object, coef = coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 'fdr', fit = fit, coef = coef)
+    paste(x$var, x$coef, x$fit, sep = FITSEP)
+}
+
+
+#' @rdname p
+#' @export
+up <- function(
+    object, 
+    coef   = coefs(object),
+    fit    = fits(object),
+    var    = 'fdr', 
+    cutoff = 0.05
 ){
-    df <- get(quantity)(object) < cutoff
-    mode(df) <- 'numeric'
-    testmat0 <- data.matrix(df * effectsign(object))
-    idx <- split_extract(colnames(testmat0), 1, FITSEP) %in% coef &
-           split_extract(colnames(testmat0), 2, FITSEP) %in% fit
-    testmat0[, idx, drop=FALSE]
+    fdrmat  <- get(var)(object, coef = coef, fit = fit)
+    effectmat <- effect(object, coef = coef, fit = fit)
+    y <- fdrmat < cutoff  &  effectmat > 0
+    y[is.na(y)] <- FALSE
+    mode(y) <- 'numeric'
+    y
+}
+
+#' @rdname p
+#' @export
+down <- function(
+    object, 
+    coef    = coefs(object), 
+    fit     = fits(object), 
+    var     = 'fdr', 
+    cutoff  = 0.05
+){
+    fdrmat  <- get(var)(object, coef = coef, fit = fit)
+    effectmat <- effect(object, coef = coef, fit = fit)
+    y <- fdrmat < cutoff  &  effectmat < 0
+    y[is.na(y)] <- FALSE
+    mode(y) <- 'numeric'
+    y
+}
+
+#' @rdname p
+#' @export
+sign <- function(
+    object, 
+    coef   = coefs(object),
+    fit    = fits(object),
+    var    = 'fdr',
+    cutoff = 0.05
+){
+    up(   object, coef = coef, fit = fit, var = var, cutoff = cutoff)  -
+    down( object, coef = coef, fit = fit, var = var, cutoff = cutoff)
 }
 
 #' Get fit models
@@ -467,7 +511,7 @@ testmat <- function(
 #' @export
 fits <- function(object){
     pvars(object)          %>% 
-    split_extract(3, FITSEP)  %>% 
+    split_extract_fixed(FITSEP, 3)  %>% 
     unique()
 }
 
@@ -485,8 +529,8 @@ fits <- function(object){
 #' @export
 coefs <- function(object, fit = fits(object), svars = NULL){
     . <- NULL
-    coefs0 <- split_extract(pvars(object), 2, FITSEP)
-    fits0  <- split_extract(pvars(object), 3, FITSEP)
+    coefs0 <- split_extract_fixed(pvars(object), FITSEP, 2)
+    fits0  <- split_extract_fixed(pvars(object), FITSEP, 3)
     coefs0 %<>% extract(fits0 %in% fit)
     coefs0 %<>% unique()
     if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))
@@ -513,7 +557,7 @@ coefs <- function(object, fit = fits(object), svars = NULL){
 #' @export
 summarize_fit <- function(object, fit = fits(object)){
     . <- NULL
-    downdt <- colSums(down(object)) %>% data.table(coef = names(.), ndown = .)
+    downdt <- colSums(down(object, fit = fit)) %>% data.table(coef = names(.), ndown = .)
     downdt %<>% tidyr::separate(
                     col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
     
