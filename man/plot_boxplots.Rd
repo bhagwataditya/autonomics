@@ -2,35 +2,12 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_boxplots}
 \alias{plot_boxplots}
-\alias{plot_boxplots.data.table}
-\alias{plot_boxplots.SummarizedExperiment}
 \alias{plot_sample_boxplots}
 \alias{plot_feature_boxplots}
 \alias{plot_subgroup_boxplots}
 \title{Plot boxplots}
 \usage{
-plot_boxplots(object, ...)
-
-\method{plot_boxplots}{data.table}(
-  object,
-  x,
-  fill,
-  color = NULL,
-  block = NULL,
-  facet = NULL,
-  scales = "free_y",
-  nrow = NULL,
-  ncol = NULL,
-  page = 1,
-  labeller = "label_value",
-  highlight = NULL,
-  jitter = FALSE,
-  palette = NULL,
-  hlevels = NULL,
-  ...
-)
-
-\method{plot_boxplots}{SummarizedExperiment}(
+plot_boxplots(
   object,
   assay = assayNames(object)[1],
   x,
@@ -103,7 +80,7 @@ plot_subgroup_boxplots(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{...}{s3 dispatch}
+\item{assay}{string}
 
 \item{x}{svar mapped to x}
 
@@ -129,8 +106,6 @@ plot_subgroup_boxplots(
 
 \item{hlevels}{xlevels for which to plot horizontal lines}
 
-\item{assay}{string}
-
 \item{subgroup}{subgroup svar symbol}
 }
 \value{
@@ -146,7 +121,7 @@ Plot boxplots
     object <- read_metabolon(file, plot = FALSE)
     controlfeatures <- c('biotin','phosphate')
     fdata(object) \%<>\% cbind(control=.$feature_name \%in\% controlfeatures)
-# SummarizedExperiment
+# Plot
     vars <- ggplot2::vars
     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
@@ -158,11 +133,6 @@ Plot boxplots
     plot_sample_boxplots(object[, 1:12], highlight = control)
     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
     plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
-# data.table
-    object \%<>\% extract(1, )
-    object \%<>\% sumexp_to_long_dt(svars = c('SET', 'SUB'))
-    plot_boxplots(object, x = SET, fill = SET, jitter = TRUE)
-    plot_boxplots(object, x = SET, fill = SET, block = SUB, jitter = TRUE)
 }
 \seealso{
 \code{\link{plot_sample_densities}},

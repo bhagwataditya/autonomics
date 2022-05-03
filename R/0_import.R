@@ -5,6 +5,7 @@
 #' @importFrom assertive   assert_all_are_in_closed_range
 #' @importFrom assertive   assert_all_are_in_range
 #' @importFrom assertive   assert_all_are_less_than_or_equal_to
+#' @importFrom assertive   assert_all_are_matching_fixed
 #' @importFrom assertive   assert_all_are_non_missing_nor_empty_character
 #' @importFrom assertive   assert_all_are_not_matching_fixed
 #' @importFrom assertive   assert_all_are_numeric_strings

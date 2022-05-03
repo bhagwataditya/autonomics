@@ -15,7 +15,10 @@ analyze(
   coefs = colnames(create_design(object, formula = formula)),
   contrastdefs = contrast_coefs(object, formula),
   verbose = TRUE,
-  plot = pca & !is.null(fit)
+  plot = pca & !is.null(fit),
+  feature_id = NULL,
+  sample_id = NULL,
+  palette = NULL
 )
 }
 \arguments{
@@ -40,6 +43,12 @@ analyze(
 \item{verbose}{whether to msg}
 
 \item{plot}{whether to plot}
+
+\item{feature_id}{string: which feature to visualize}
+
+\item{sample_id}{string: which sample to visualize}
+
+\item{palette}{color vector: values = colors, names = slevels}
 }
 \value{
 SummarizedExperiment

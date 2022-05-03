@@ -17,6 +17,7 @@ plot_summarized_detections(
   object,
   subgroup = subgroup,
   fill = !!enquo(subgroup),
+  palette = NULL,
   na_imputes = TRUE
 )
 }

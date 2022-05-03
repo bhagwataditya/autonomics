@@ -5,9 +5,6 @@
 \alias{tvars}
 \alias{effectvars}
 \alias{fdrvars}
-\alias{p}
-\alias{effect}
-\alias{fdr}
 \title{Get p vars/values}
 \usage{
 pvars(object)
@@ -17,12 +14,6 @@ tvars(object)
 effectvars(object)
 
 fdrvars(object)
-
-p(object)
-
-effect(object)
-
-fdr(object)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

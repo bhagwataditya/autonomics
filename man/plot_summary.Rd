@@ -4,10 +4,30 @@
 \alias{plot_summary}
 \title{Plot summary}
 \usage{
-plot_summary(object, subgroupvar, fit)
+plot_summary(
+  object,
+  subgroupvar = "subgroup",
+  fit = fits(object)[1],
+  coef = c(setdiff(coefs(object), "Intercept"), "Intercept")[1],
+  feature_id = NULL,
+  sample_id = NULL,
+  palette = NULL
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{subgroupvar}{string}
+
+\item{fit}{string}
+
+\item{coef}{string}
+
+\item{feature_id}{NULL or string}
+
+\item{sample_id}{NULL or string}
+
+\item{palette}{NULL or color vector}
 }
 \description{
 Plot summary

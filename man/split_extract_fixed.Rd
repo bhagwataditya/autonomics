@@ -2,10 +2,16 @@
 % Please edit documentation in R/8_fit.R
 \name{nfactors}
 \alias{nfactors}
+\alias{split_extract_fixed}
+\alias{split_extract_regex}
 \alias{split_extract}
 \title{stri_split and extract}
 \usage{
 nfactors(x, sep = guess_sep(x))
+
+split_extract_fixed(x, sep, i)
+
+split_extract_regex(x, sep, i)
 
 split_extract(x, i, sep = guess_sep(x))
 }
@@ -28,10 +34,10 @@ file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, plot=FALSE)
 x <- object$sample_id[1:5]
 nfactors(x)
-split_extract(x, 1:2)
-split_extract(x, seq_len(nfactors(x)-1))
-split_extract(x, nfactors(x))
+split_extract_fixed(x, '_', 1:2)
+split_extract_fixed(x, '_', seq_len(nfactors(x)-1))
+split_extract_fixed(x, '_', nfactors(x))
 
 # With NA values
-split_extract(fdata(object)$PUBCHEM, 1, ';')
+split_extract_fixed(fdt(object)$PUBCHEM, ';', 1)
 }

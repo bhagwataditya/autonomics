@@ -12,9 +12,7 @@ preprocess_rnaseq_counts(
   min_count = 10,
   pseudo = 0.5,
   tpm = FALSE,
-  genesizevar = "genesize",
   cpm = TRUE,
-  tmm = cpm,
   voom = TRUE,
   log2 = TRUE,
   verbose = TRUE,
@@ -36,11 +34,7 @@ preprocess_rnaseq_counts(
 
 \item{tpm}{TRUE/FALSE : tpm normalize?}
 
-\item{genesizevar}{string     : tpm normalization genesize fvar}
-
 \item{cpm}{TRUE/FALSE : cpm normalize? (counts per million (scaled) reads)}
-
-\item{tmm}{TRUE/FALSE : tmm normalize? (library sizes -> effective library sizes)}
 
 \item{voom}{TRUE/FALSE : voom weight?}
 
@@ -49,6 +43,8 @@ preprocess_rnaseq_counts(
 \item{verbose}{TRUE/FALSE : msg?}
 
 \item{plot}{TRUE/FALSE : plot?}
+
+\item{genesizevar}{string     : tpm normalization genesize fvar}
 }
 \value{
 SummarizedExperiment

@@ -42,16 +42,17 @@ read_rnaseq_bams(
   min_count = 10,
   pseudo = 0.5,
   ensdb = NULL,
-  tpm = !is.null(ensdb),
+  tpm = FALSE,
   cpm = TRUE,
-  tmm = cpm,
   log2 = TRUE,
   pca = TRUE,
   fit = "limma",
-  voom = !is.null(fit),
+  voom = cpm,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = pca & !is.null(fit)
+  plot = pca & !is.null(fit),
+  feature_id = NULL,
+  sample_id = NULL
 )
 
 read_rnaseq_counts(
@@ -64,18 +65,20 @@ read_rnaseq_counts(
   formula = NULL,
   min_count = 10,
   pseudo = 0.5,
+  tpm = FALSE,
   ensdb = NULL,
-  tpm = !is.null(ensdb),
-  cpm = TRUE,
-  tmm = cpm,
+  cpm = !tpm,
   log2 = TRUE,
   pca = TRUE,
   fit = "limma",
-  voom = !is.null(fit),
+  voom = cpm,
   coefs = NULL,
   contrastdefs = NULL,
   verbose = TRUE,
-  plot = pca & !is.null(fit)
+  plot = pca & !is.null(fit),
+  feature_id = NULL,
+  sample_id = NULL,
+  palette = NULL
 )
 }
 \arguments{
@@ -111,8 +114,6 @@ read_rnaseq_counts(
 
 \item{cpm}{whether to compute cpm}
 
-\item{tmm}{whether to tmm-scale library sizes}
-
 \item{log2}{whether to log2 transform}
 
 \item{pca}{whether to pca}
@@ -124,6 +125,10 @@ read_rnaseq_counts(
 \item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
 
 \item{plot}{whether to plot}
+
+\item{feature_id}{string: which feature to visualize}
+
+\item{sample_id}{string: which sample to visualize}
 
 \item{coefs}{NULL or character vector: model coefficients to test}
 }
@@ -142,18 +147,17 @@ Read/analyze rnaseq counts / bamfiles
            fit = 'limma', plot = TRUE)
     }
 # counts
-    file <- download_data('billing19.rnacounts.txt')
-    object <- read_rnaseq_counts(file, pca = TRUE, fit = 'limma')
-    
-# normalizations
-     \dontrun{
-         ah <- AnnotationHub::AnnotationHub()
-         ensdb <- ah[['AH64923']]
-         object <- read_rnaseq_counts(file, ensdb = ensdb,
-             tpm = F, tmm = F, cpm = F, log2 = F, plot = F)
-         plot_sample_densities(object)
-         plot_feature_densities(object)
-     }
+    rnafile <- download_data('billing19.rnacounts.txt')
+    fid <- 'CAV2'
+    rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05')
+    rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F)
+    rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F, cpm = F)
+    rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F, cpm = F, log2 = F) 
+\dontrun{
+    ah <- AnnotationHub::AnnotationHub()
+    ensdb <- ah[['AH64923']]
+    object <- read_rnaseq_counts(file, feature_id = fid, coefs = 'subgroupE02', tpm = TRUE, ensdb = ensdb)
+ }
 }
 \author{
 Aditya Bhagwat, Shahina Hayat

@@ -16,8 +16,7 @@ plot_subgroup_points(
   ...,
   palette = NULL,
   fixed = list(na.rm = TRUE),
-  theme = list(axis.text.x = element_blank(), axis.title.x = element_blank(),
-    axis.ticks.x = element_blank())
+  theme = list(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 )
 }
 \arguments{
