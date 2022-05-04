@@ -318,7 +318,7 @@ read_fastahdrs <- function(fastafile, verbose = TRUE){
     fastahdrs <- seqinr::read.fasta(fastafile)
     fastahdrs %<>% vapply(attr, character(1), 'Annot') %>% unname()
 # Parse
-    parse_fastahdrs(fasta)
+    parse_fastahdrs(fastahdrs)
 }
 
 
@@ -345,13 +345,13 @@ read_fastahdrs <- function(fastafile, verbose = TRUE){
 #' curate_uniprots(fosdt, fastafile = fastafile)[, 1:8]
 #' @export
 curate_uniprots <- function(dt, fastafile = NULL, verbose = TRUE){
-    # Split
+# Split
     if (verbose)  message('\tCurate uniprots')
     if (verbose)  message('\t\tRm Contaminants/Reverse')
     idx <- dt$Reverse == '+' | dt$`Potential contaminant` == '+' 
     conrevdt <- dt[idx]
     dt %<>% extract(!idx)
-    # Curate using MaxQuant
+# Curate using MaxQuant
     if (verbose)  message('\t\tMaxQuant Fastahdrs')
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     anndt <- dt[, c(idcol, 'Fasta headers'), with = FALSE]
@@ -364,14 +364,14 @@ curate_uniprots <- function(dt, fastafile = NULL, verbose = TRUE){
     
     if (verbose)  message('\t\t\tCollapse')
     anndt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idcol)
-    # Curate using fastafile
+# Curate using fastafile
     if (!is.null(fastafile)){
         if (verbose)  message('\t\tFastafile Fastahdrs')
         if (verbose)  message('\t\t\tUncollapse Uniprot accessions')
         anndt2 <- dt[, c(idcol, 'Uniprot'), with = FALSE]
         anndt2 %<>% uncollapse(`Uniprot`, sep = ';')
         if (verbose)  message('\t\t\tRead/Parse Fastafile ', fastafile)
-        fastahdrs <- read_fastahdrs(fastafile)
+        fastadt <- read_fastahdrs(fastafile)
         anndt2 %<>% merge(fastadt, by = 'Uniprot', sort = FALSE)
         anndt2 %<>% drop_inferior()
         if (verbose)  message('\t\t\tCollapse')
@@ -383,7 +383,7 @@ curate_uniprots <- function(dt, fastafile = NULL, verbose = TRUE){
         anndt %<>% rbind(anndt2)
         anndt %<>% extract(order(as.integer(get(idcol))))
     }
-    # Merge back annotations
+# Merge back annotations
     if (verbose)  message('\t\tBring back Contaminants/Reverse')
     setnames(anndt, 'Uniprot', 'Curated')
     dt %<>% merge(anndt, by = idcol, sort = FALSE)
@@ -569,7 +569,8 @@ label2index <- function(x){
 #' fos <- read_phosphosites( phosphofile, proteinfile, fastafile = fastafile, subgroups = subgroups)
 #' @export
 read_proteingroups <- function(
-    proteinfile, fastafile = NULL, curate = TRUE, 
+    proteinfile, fastafile = NULL, 
+    quantity = guess_maxquant_quantity(proteinfile), curate = TRUE, 
     subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = TRUE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,
@@ -617,7 +618,8 @@ read_proteingroups <- function(
 #' @rdname read_proteingroups
 #' @export
 read_phosphosites <- function(
-    phosphofile, proteinfile, fastafile = NULL, curate = TRUE, 
+    phosphofile, proteinfile, fastafile = NULL, 
+    quantity = guess_maxquant_quantity(proteinfile), curate = TRUE, 
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,  
@@ -858,7 +860,7 @@ process_maxquant <- function(
     sdt(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate', 'mqcol'))
 # Samples
     object %<>% filter_samples_available_for_some_feature(verbose = verbose)
-    object %<>% filter_samples(subgroup %in% subgroups, verbose = verbose)
+    if (!is.null(subgroups))  object %<>% filter_samples(subgroup %in% subgroups, verbose = verbose)
     object %<>% invert_subgroups(invert)
 # Features
     if (verbose) message('\tFilter features')
@@ -866,7 +868,7 @@ process_maxquant <- function(
     if (!contaminants) object %<>% filter_features(`Potential contaminant`== '', verbose = verbose)
     object %<>% rm_missing_in_all_samples(verbose = verbose)
     object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
-    if (!'Localization prob' %in% fvars(object)){
+    if ('Localization prob' %in% fvars(object)){
         object %<>% filter_features(
             `Localization prob` >= localization, verbose = verbose)  }
 # Impute

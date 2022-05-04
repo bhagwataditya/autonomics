@@ -31,6 +31,7 @@ old_read_phosphosites(
 read_proteingroups(
   proteinfile,
   fastafile = NULL,
+  quantity = guess_maxquant_quantity(proteinfile),
   curate = TRUE,
   subgroups = NULL,
   invert = character(0),
@@ -54,6 +55,7 @@ read_phosphosites(
   phosphofile,
   proteinfile,
   fastafile = NULL,
+  quantity = guess_maxquant_quantity(proteinfile),
   curate = TRUE,
   subgroups = NULL,
   invert = character(0),
