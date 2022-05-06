@@ -4,7 +4,7 @@
 \alias{curate_uniprots}
 \title{Curate annotations}
 \usage{
-curate_uniprots(dt, fastafile = NULL, verbose = TRUE)
+curate_uniprots(dt, fastadt = NULL, verbose = TRUE)
 }
 \arguments{
 \item{dt}{data.table}
@@ -19,10 +19,11 @@ Curate annotations
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
-prodt <- .read_pro(proteinfile)
-fosdt <- .read_fos(phosphofile)
+fastadt <- read_fastahdrs(fastafile)
+prodt <- .read_proteingroups(proteinfile, verbose = TRUE)
+fosdt <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
 curate_uniprots(prodt)[, 1:8]
 curate_uniprots(fosdt)[, 1:8]
-curate_uniprots(prodt, fastafile = fastafile)[, 1:8]
-curate_uniprots(fosdt, fastafile = fastafile)[, 1:8]
+curate_uniprots(prodt, fastadt = fastadt)[, 1:8]
+curate_uniprots(fosdt, fastadt = fastadt)[, 1:8]
 }

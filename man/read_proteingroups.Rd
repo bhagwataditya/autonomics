@@ -30,7 +30,7 @@ old_read_phosphosites(
 
 read_proteingroups(
   proteinfile,
-  fastafile = NULL,
+  fastadt = NULL,
   quantity = guess_maxquant_quantity(proteinfile),
   curate = TRUE,
   subgroups = NULL,
@@ -54,7 +54,7 @@ read_proteingroups(
 read_phosphosites(
   phosphofile,
   proteinfile,
-  fastafile = NULL,
+  fastadt = NULL,
   quantity = guess_maxquant_quantity(proteinfile),
   curate = TRUE,
   subgroups = NULL,
@@ -62,6 +62,7 @@ read_phosphosites(
   contaminants = FALSE,
   reverse = FALSE,
   localization = 0.75,
+  impute = TRUE,
   plot = FALSE,
   pca = plot,
   fit = if (plot) "limma" else NULL,
@@ -86,8 +87,6 @@ read_phosphosites(
 
 \item{localization}{min site localization probability}
 
-\item{fastafile}{fastafile or NULL}
-
 \item{pca}{whether to pca}
 
 \item{fit}{model fit engine: 'limma', 'lm', 'lmer', 'lme'}
@@ -103,6 +102,8 @@ read_phosphosites(
 \item{verbose}{whether to msg}
 
 \item{plot}{whether to plot}
+
+\item{fastadt}{fasta data.table or NULL}
 
 \item{curate}{whether to curate uniprots}
 
@@ -125,11 +126,17 @@ SummarizedExperiment
 Read proteingroups / phosphosites
 }
 \examples{
-proteinfile <- download_data('billing19.proteingroups.txt')
-phosphofile <- download_data('billing19.phosphosites.txt')
-  fastafile <- download_data('uniprot_hsa_20140515.fasta')
-subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-pro <- read_proteingroups(proteinfile,              subgroups = subgroups)
-fos <- read_phosphosites( phosphofile, proteinfile, subgroups = subgroups)
-fos <- read_phosphosites( phosphofile, proteinfile, fastafile = fastafile, subgroups = subgroups)
+# fukuda20
+    proteinfile <- download_data('fukuda20.proteingroups.txt')
+    pro <- read_proteingroups(proteinfile, plot = TRUE)
+# billing19
+    proteinfile <- download_data('billing19.proteingroups.txt')
+    phosphofile <- download_data('billing19.phosphosites.txt')
+    fastafile <- download_data('uniprot_hsa_20140515.fasta')
+    fastadt <- read_fastahdrs(fastafile)
+    subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
+    pro <- read_proteingroups(proteinfile, subgroups = subgroups, plot = TRUE)
+    pro <- read_proteingroups(proteinfile, subgroups = subgroups)
+    fos <- read_phosphosites( phosphofile, proteinfile, subgroups = subgroups)
+    fos <- read_phosphosites( phosphofile, proteinfile, fastadt = fastadt, subgroups = subgroups)
 }
