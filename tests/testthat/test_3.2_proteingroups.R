@@ -1,56 +1,279 @@
 #============================================================================
 #
-#      curate_uniprots
+#      .read_proteingroups
+#      .read_phosphosites
 #
 #============================================================================
 
-context('curate_uniprots')
-
+context('.read_proteingroups/.read_phosphosites')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
-fastafile <- download_data('uniprot_hsa_20140515.fasta')
-pro0 <- .read_proteingroups(proteinfile, verbose = TRUE)
-fos0 <- .read_phosphosites( phosphofile, proteinfile, verbose = TRUE)
-pro1 <- curate_uniprots(pro0)
-fos1 <- curate_uniprots(fos0)
-pro2 <- curate_uniprots(pro0, fastafile = fastafile)
-fos2 <- curate_uniprots(fos0, fastafile = fastafile)
+prodt <- fread(proteinfile, colClasses = c(id='character'))
+fosdt <- fread(phosphofile, colClasses = c(id='character'), integer64='numeric')
+fosdt %<>% extract(obj$fosId, on = 'id')
+pro <- .read_proteingroups(proteinfile, verbose = TRUE)
+fos <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
 
-test_equivalence <- function(dt0, dt1){
-    # nrows
-        dt0 <- copy(dt0)
-    # proId/fosIds
-        idcol <- if ('fosId' %in% names(dt0))  'fosId' else 'proId' 
-        expect_identical(dt0[[idcol]], dt1[[idcol]])
-    # snames identical
-        quantity <- guess_maxquant_quantity(names(dt0))
-        pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
-        expect_identical(grep(pattern, names(dt0), value = TRUE),
-                         grep(pattern, names(dt1), value = TRUE))
-    # values identical
-        expect_identical(dt0[, .SD, .SDcols = patterns(pattern)],
-                         dt1[, .SD, .SDcols = patterns(pattern)])
-    # Uniprots identical
-        expect_identical(dt0[, Uniprot], dt1[, Uniprot])
-    #`Potential contaminant` identical
-        expect_identical(dt0[, `Potential contaminant`], 
-                         dt1[, `Potential contaminant`])
-    # Reverse identical
-        expect_identical(dt0[, Reverse], dt1[, Reverse])
-    # Curated is subset of Uniprot
-        dt01 <- merge(dt0[, c(idcol, 'Uniprot', 'Reverse', 'Potential contaminant'), with = FALSE], 
-                      dt1[, c(idcol, 'Curated'), with = FALSE], by = idcol, sort = FALSE)
-        dt01 %<>% uncollapse(Curated, sep = ';')
-        dt01 %<>% uncollapse(Uniprot, sep = ';')
-        dt01 %<>% extract(Reverse=='' & `Potential contaminant`=='')
-        expect_true(all(dt01[, is_subset(Curated, Uniprot), by = idcol][[2]]))
+test_that('id values match', {
+    expect_identical(pro$proId, prodt$id)
+    expect_identical(fos$fosId, fosdt$id)
+})
+
+test_that('Uniprot values match', {
+    expect_identical(pro$Uniprot, prodt$`Majority protein IDs`)
+    expect_identical(fos$Uniprot, fosdt$Proteins)
+})
+
+test_that('peptide counts match', {
+    expect_identical(   pro$`Razor + unique peptides STD(L).E00(M).E01(H).R1`, 
+                      prodt$`Razor + unique peptides STD(L).E00(M).E01(H).R1`)
+    expect_identical(   fos$`Razor + unique peptides STD(L).E00(M).E01(H).R1`, 
+                      fosdt$`Razor + unique peptides STD(L).E00(M).E01(H).R1`)
+})
+
+test_that('normalized ratios match', {
+    expect_identical(pro$`Ratio H/M normalized STD(L).E02(M).E05(H).R8`, 
+                   prodt$`Ratio H/M normalized STD(L).E02(M).E05(H).R8`   )
+    expect_identical(fos$`Ratio H/M normalized STD(L).E02(M).E05(H).R8`, 
+                   fosdt$`Ratio H/M normalized STD(L).E02(M).E05(H).R8___1`)
+})
+
+
+#============================================================================
+#
+#      drop_differing_uniprots
+#
+#============================================================================
+
+context('`drop_differing_uniprots`')
+proteinfile <- download_data('billing19.proteingroups.txt')
+phosphofile <- download_data('billing19.phosphosites.txt')
+prodt <- .read_proteingroups(proteinfile,              verbose = TRUE)
+fosdt <- .read_phosphosites( phosphofile, proteinfile, verbose = TRUE)
+fosdt1 <- drop_differing_uniprots(fosdt, prodt,        verbose = TRUE)
+
+test_that('`drop_differing_uniprots` preserves colnames', {
+    expect_setequal(names(fosdt), names(fosdt1))
+})
+
+test_that('`drop_differing_uniprots` preserves contents', {
+    fosdt1 %<>% extract(, names(fosdt), with = FALSE)
+    cols <- setdiff(names(fosdt), c('Uniprot', 'Positions within proteins'))
+    expect_identical(fosdt[ , cols, with = FALSE], 
+                     fosdt1[, cols, with = FALSE] )
+})
+
+test_that('`drop_differing_uniprots` uniprots are subset of original', {
+    usplit <- function(x)  unlist(stri_split_fixed(x, ';'))
+    is_string_subset <- function(x, y)  is_subset(usplit(x), usplit(y))
+    expect_true(is_string_subset(fosdt1$Uniprot[   1], fosdt$Uniprot[   1]))
+    expect_true(is_string_subset(fosdt1$Uniprot[  10], fosdt$Uniprot[  10]))
+    expect_true(is_string_subset(fosdt1$Uniprot[ 100], fosdt$Uniprot[ 100]))
+})
+
+test_that('`drop_differing_uniprots` maintains integrity between `Positions within proteins` and `Uniprot`', {
+    fosdt  %<>% extract( , c('fosId', 'Uniprot', 'Positions within proteins'), with = FALSE)
+    fosdt1 %<>% extract( , c('fosId', 'Uniprot', 'Positions within proteins'), with = FALSE)
+    fosdt  %<>% uncollapse(Uniprot, `Positions within proteins`)
+    fosdt1 %<>% uncollapse(Uniprot, `Positions within proteins`)
+    fosdt  %<>% merge(fosdt1, by = c('fosId', 'Uniprot'))
+    expect_identical(fosdt$`Positions within proteins.x`, 
+                     fosdt$`Positions within proteins.y`)
+})
+
+
+#============================================================================
+#
+#                     read_fastahdrs
+#                    parse_fastahdrs
+#
+#============================================================================
+
+context('`read_fastahdrs/parse_fastahdrs`')
+fastafile <- download_data('uniprot_hsa_20140515.fasta')
+fastadt <- read_fastahdrs(fastafile)
+
+test_that('`read_fastahdrs` reads all lines', {
+    nrow(fastadt)             # 88 698
+    x <- readChar(fastafile, file.info(fastafile)$size)
+    x %<>% substr(2, nchar(.))
+    x %<>% stri_split_regex('(\r)?(\n)[>]') %>% unlist()
+    expect_identical(length(x), nrow(fastadt))
+})
+
+test_that('`read_fastahdrs` reads first protein',
+    expect_equal(
+        fastadt['P31946', on = 'Uniprot'],
+        data.table(
+            Reviewed  = 1,
+            Entry     = '1433B', 
+            Gene      = 'YWHAB',
+            Uniprot   = 'P31946', 
+            Canonical = 'P31946', 
+            Isoform   = 1,
+            Protein   = '14-3-3 protein beta/alpha',
+            Fragment  = 0,
+            Existence = 1)))
+
+test_that('`read_fastahdrs` reads intermediate swissprot protein',
+    expect_equal(
+        fastadt['Q9BUJ2-4', on = 'Uniprot'],
+        data.table(
+            Reviewed  = 1,
+            Entry     = 'HNRL1', 
+            Gene      = 'HNRNPUL1',
+            Uniprot   = 'Q9BUJ2-4', 
+            Canonical = 'Q9BUJ2', 
+            Isoform   = 4,
+            Protein   = 'Isoform 4 of Heterogeneous nuclear ribonucleoprotein U-like protein 1', 
+            Fragment  = 0,
+            Existence = 1)))
+
+test_that('`read_fastahdrs` reads intermediate trembl protein',
+    expect_equal(
+        fastadt['G5E9N3', on = 'Uniprot'],
+        data.table(
+            Reviewed  = 0,
+            Entry     = 'G5E9N3', 
+            Gene      = 'RETSAT',
+            Uniprot   = 'G5E9N3', 
+            Canonical = 'G5E9N3', 
+            Isoform   = 1,
+            Protein   = 'All-trans-13,14-dihydroretinol saturase, isoform CRA_c', 
+            Fragment  = 0,
+            Existence = 4)))
+
+test_that('`read_fastahdrs` reads last trembl protein',
+    expect_equal(
+        fastadt['R4GMM2', on = 'Uniprot'],
+        data.table(
+            Reviewed  = 0,
+            Entry     = 'R4GMM2', 
+            Gene      = 'PARD6A',
+            Uniprot   = 'R4GMM2', 
+            Canonical = 'R4GMM2', 
+            Isoform   = 1,
+            Protein   = 'Partitioning defective 6 homolog alpha',
+            Fragment  = 0,
+            Existence = 4)))
+
+
+#============================================================================
+#
+#       maxquant_curate
+#          fasta_curate
+#
+#============================================================================
+
+context('`maxquant_curate/fasta_curate`')
+fastafile   <- download_data('uniprot_hsa_20140515.fasta')
+proteinfile <- download_data('billing19.proteingroups.txt')
+phosphofile <- download_data('billing19.phosphosites.txt')
+pro <- .read_proteingroups(proteinfile, verbose = TRUE)
+fos <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
+pro1 <- maxquant_curate(prodt)
+fos1 <- maxquant_curate(fosdt)
+pro2 <- fasta_curate(prodt, fastadt)
+fos2 <- fasta_curate(fosdt, fastadt)
+anncols <- c("Entry", "Gene","Curated", "Canonical", "Isoform", "Protein")
+
+test_that('`curate` preserves rows',     {
+    expect_equal( nrow(pro1), nrow(pro))  # pro maxquant
+    expect_equal( nrow(pro2), nrow(pro))  #     fasta
+    expect_equal( nrow(fos1), nrow(fos))  # fos maxquant
+    expect_equal( nrow(fos2), nrow(fos))  #     fasta
+})
+
+test_that('`curate` preserves cols',     { 
+    expect_equal( setdiff(names(pro),  names(pro1)), character(0))  # pro maxquant
+    expect_equal( setdiff(names(pro),  names(pro2)), character(0))  #     fasta
+    expect_equal( setdiff(names(fos),  names(fos1)), character(0))  # fos maxquant
+    expect_equal( setdiff(names(fos),  names(fos2)), character(0))  #     fasta
+})
+
+test_that('`curate` adds anncols',       { 
+    expect_setequal( setdiff(names(pro1), names(pro)), anncols)     # pro maxquant
+    expect_setequal( setdiff(names(pro2), names(pro)), anncols)     #     fasta
+    expect_setequal( setdiff(names(fos1), names(fos)), anncols)     # fos maxquant
+    expect_setequal( setdiff(names(fos2), names(fos)), anncols)     #     fasta
+})
+
+test_that('`curate` preserves contents', {
+    procols <- intersect(names(pro), names(pro1)) %>% setdiff('Fasta headers')
+    foscols <- intersect(names(fos), names(fos1)) %>% setdiff('Fasta headers')
+    expect_equal(pro1[, procols, with = FALSE],  pro[, procols, with = FALSE])   # pro maxquant
+    expect_equal(pro2[, procols, with = FALSE],  pro[, procols, with = FALSE])   #     fastafile
+    expect_equal(fos1[, foscols, with = FALSE],  fos[, foscols, with = FALSE])   # fos maxquant
+    expect_equal(fos2[, foscols, with = FALSE],  fos[, foscols, with = FALSE])   #     fasta
+})
+
+is_collapsed_subset <- function(x, y){
+    is_subset(unlist(stri_split_fixed(x, ';')), 
+              unlist(stri_split_fixed(y, ';')))
 }
 
-test_equivalence(pro0, pro1)
-test_equivalence(pro0, pro2)
-test_equivalence(fos0, fos1)
-test_equivalence(fos0, fos2)
+test_that('Curated uniprots are a subset', {
+    prosub1 <- pro1[Reverse=='' & `Potential contaminant` == '']
+    prosub2 <- pro2[Reverse=='' & `Potential contaminant` == '' & !is.na(Entry)]
+    fossub1 <- fos1[Reverse=='' & `Potential contaminant` == '']
+    fossub2 <- fos2[Reverse=='' & `Potential contaminant` == '' & !is.na(Entry)]
+    
+    expect_true(all(prosub1[, is_collapsed_subset(Curated, Uniprot), by = 'proId'][[2]]))
+    expect_true(all(prosub2[, is_collapsed_subset(Curated, Uniprot), by = 'proId'][[2]]))
+    expect_true(all(fossub1[, is_collapsed_subset(Curated, Uniprot), by = 'fosId'][[2]]))
+    expect_true(all(fossub2[, is_collapsed_subset(Curated, Uniprot), by = 'fosId'][[2]]))
+})
 
+
+#============================================================================
+#
+#      add_feature_id
+#
+#============================================================================
+
+context('`add_feature_id`')
+fastafile   <- download_data('uniprot_hsa_20140515.fasta')
+proteinfile <- download_data('billing19.proteingroups.txt')
+phosphofile <- download_data('billing19.phosphosites.txt')
+pro1 <- .read_proteingroups(proteinfile, verbose = TRUE) %>% maxquant_curate()
+pro2 <- .read_proteingroups(proteinfile, verbose = TRUE) %>% fasta_curate(fastadt) %>% maxquant_curate() # some missing in fasta
+fos1 <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE) %>% maxquant_curate()
+fos2 <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE) %>% fasta_curate(fastadt) %>% maxquant_curate()
+
+pro1b <- add_feature_id(pro1)
+pro2b <- add_feature_id(pro2)
+fos1b <- add_feature_id(fos1)
+fos2b <- add_feature_id(fos2)
+
+test_that('`add_feature_id` preserves rows',     {
+    expect_equal( nrow(pro1b), nrow(pro1))  # pro maxquant
+    expect_equal( nrow(pro2b), nrow(pro2))  #     fasta
+    expect_equal( nrow(fos1b), nrow(fos1))  # fos maxquant
+    expect_equal( nrow(fos2b), nrow(fos2))  #     fasta
+})
+
+test_that('`add_feature_id` preserves cols',     { 
+    expect_equal( setdiff(names(pro1),  names(pro1b)), character(0))    # pro maxquant
+    expect_equal( setdiff(names(pro2),  names(pro2b)), character(0))    #     fasta
+    expect_equal( setdiff(names(fos1),  names(fos1b)), character(0))    # fos maxquant
+    expect_equal( setdiff(names(fos2),  names(fos2b)), character(0))    #     fasta
+})
+
+test_that('`add_feature_id` adds `feature_id`',       { 
+    expect_setequal( setdiff(names(pro1b), names(pro1)), 'feature_id')  # pro maxquant
+    expect_setequal( setdiff(names(pro2b), names(pro2)), 'feature_id')  #     fasta
+    expect_setequal( setdiff(names(fos1b), names(fos1)), 'feature_id')  # fos maxquant
+    expect_setequal( setdiff(names(fos2b), names(fos2)), 'feature_id')  #     fasta
+})
+
+test_that('feature_ids are unique',       {
+    expect_true(has_no_duplicates(pro1b$feature_id))
+    expect_true(has_no_duplicates(pro2b$feature_id))
+    expect_true(has_no_duplicates(pro1b$feature_id))
+    expect_true(has_no_duplicates(pro2b$feature_id))
+})
+
+pro1b[1, c(1:2, 4:5)]
 
 #============================================================================
 #
@@ -62,23 +285,19 @@ context('dequantify')
 
 # Ratios
     test_that('`dequantify` works for (normalized) ratios', {
-        
         expect_identical( dequantify(                       # scalar
               'Ratio H/L WT(L).KD(M).OE(H).R1' ),
                         'WT(L).KD(M).OE(H).R1{H/L}' )
-        
         expect_identical( dequantify(                       # vector
             c('Ratio H/L WT(L).KD(M).OE(H).R1',
               'Ratio M/L WT(L).KD(M).OE(H).R1')), 
             c('WT(L).KD(M).OE(H).R1{H/L}',
               'WT(L).KD(M).OE(H).R1{M/L}') )
-        
         expect_identical( dequantify(                       # replicate (not run)
             c('Ratio H/L WT.R1(L).KD.R1(M).OE.R1(H)',
               'Ratio M/L WT.R1(L).KD.R1(M).OE.R1(H)')), 
                       c('WT.R1(L).KD.R1(M).OE.R1(H){H/L}',
                         'WT.R1(L).KD.R1(M).OE.R1(H){M/L}') )
-        
         expect_identical( dequantify(                       # normalized ratios
             c('Ratio H/L normalized WT(L).KD(M).OE(H).R1',
               'Ratio M/L normalized WT(L).KD(M).OE(H).R1')), 
@@ -88,15 +307,12 @@ context('dequantify')
 
 # LFQ intensities
     test_that('`dequantify` works for (labeled) LFQ intensities', {
-        
         expect_identical( dequantify(                           # vector
             c('LFQ intensity WT.R1', 'LFQ intensity KD.R1')),
                           c('WT.R1', 'KD.R1'))
-
         expect_identical( dequantify(                           # scalar
             'LFQ intensity WT.R1'),
                           'WT.R1' )
-        
         expect_identical( dequantify(                           # labeled LFQs
             c('LFQ intensity L WT(L).KD(H).R1',
               'LFQ intensity H WT(L).KD(H).R1')), 
@@ -106,29 +322,24 @@ context('dequantify')
 
 # Reporter intensities
     test_that('`dequantify` works for reporter intensities', {
-        
         expect_identical( dequantify(                             # scalar
               'Reporter intensity 0 WT(0).KD(1).R1'),
                                    'WT(1).KD(2).R1{1}' )
-        
         expect_identical( dequantify(                             # vector
             c('Reporter intensity 0 WT(0).KD(1).R1',
               'Reporter intensity 1 WT(0).KD(1).R1')),
                                  c('WT(1).KD(2).R1{1}', 
                                    'WT(1).KD(2).R1{2}'))
-        
         expect_identical( dequantify(                             # 1-based
             c('Reporter intensity 1 WT(1).KD(2).R1',  
               'Reporter intensity 2 WT(1).KD(2).R1')),
                                  c('WT(1).KD(2).R1{1}', 
                                    'WT(1).KD(2).R1{2}'))
-        
         expect_identical( dequantify(                             # label-based
             c('Reporter intensity 1 WT(126).KD(127).R1',
               'Reporter intensity 2 WT(126).KD(127).R1')),
                                  c('WT(1).KD(2).R1{1}', 
                                    'WT(1).KD(2).R1{2}'))
-
         expect_identical(dequantify(                              # corrected
             c('Reporter intensity corrected 1 WT(1).KD(2).R1',
               'Reporter intensity corrected 2 WT(1).KD(2).R1')),
@@ -147,31 +358,24 @@ context('demultiplex')
 
 
 test_that('`demultiplex` works', {
-
     expect_identical( demultiplex(                                # scalar
         'WT(1).KD(2).R1{1}'), 
         'WT.R1')
-    
     expect_identical( demultiplex(                                # uniplexed
         c('WT.R1', 'KD.R1')), 
         c('WT.R1', 'KD.R1'))
-        
     expect_identical( demultiplex(
         c('WT(1).KD(2).R1{1}', 'WT(1).KD(2).R1{2}')),             # multiplexed
         c('WT.R1', 'KD.R1'))
-    
     expect_identical( demultiplex(
         c('WT(L).KD(H).R1{L}', 'WT(L).KD(H).R1{H}')),             # labels
         c('WT.R1', 'KD.R1'))
-    
     expect_identical( demultiplex(
         c('WT.R1(L).KD.R1(H){L}', 'WT.R1(L).KD.R1(H){H}')),       # replicates
         c('WT.R1', 'KD.R1'))
-    
     expect_identical( demultiplex(
         c('WT(L).KD(M).OE(H).R1{H/L}', 'WT(L).KD(M).OE(H).R1{M/L}')), # ratios
         c('OE_WT.R1', 'KD_WT.R1') )
-    
 })
 
 

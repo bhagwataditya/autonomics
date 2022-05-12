@@ -137,20 +137,21 @@ guess_maxquant_quantity <- function(x){
 # Rename 
     names(fosdt) %<>% stri_replace_first_fixed('___1', '')
     setnames(fosdt, c('id',    'Protein group IDs', 'Proteins'), 
-                 c('fosId', 'proId',             'Uniprot'))
+                    c('fosId', 'proId',             'Uniprot'))
 }
 
 
 #---------------------------------------------------------------------------
 # 
 #                      drop_differing_uniprots
-#                      add_feature_id
-#                      process_maxquant
 #
 #---------------------------------------------------------------------------
 
 
 drop_differing_uniprots <- function(fosdt, prodt, verbose){
+# Avoid changing the global env
+    prodt %<>% copy()
+    fosdt %<>% copy()
 # Extract annotation cols
     if (verbose)  message('\t\t\tKeep proteingroup Uniprots')
     proanncols <- c('proId', 'Uniprot', 'Reverse', 'Potential contaminant')
@@ -181,22 +182,6 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 }
 
 
-add_feature_id <- function(dt){
-    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
-    dt[, feature_id := `Entry names`]
-    dt[Isoform!=1, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(Isoform, ';', ''), ')')]
-    if (idcol=='fosId'){
-        dt$feature_id %<>% paste0('-',dt$`Amino acid`)
-        dt$feature_id %<>% paste0(split_extract_fixed(dt$`Positions within proteins`, ';', 1))
-    }
-    dt[                Reverse == '+', feature_id := paste0('REV_', idcol)]
-    dt[`Potential contaminant` == '+', feature_id := paste0('CON_', idcol)]
-        # Contaminants and actual proteins get mixed up. For naming: make sure to use contaminant.
-    dt %<>% pull_columns(c(idcol, 'feature_id'))
-    dt[]
-}
-
-
 #-----------------------------------------------------------------------------
 #
 #                       read_fastahdrs
@@ -221,14 +206,14 @@ extract_reviewed <- function(`Fasta headers`){
     as.integer()
 }
 
-extract_entryname <- function(`Fasta headers`){
+extract_entry <- function(`Fasta headers`){
     `Fasta headers` %>% 
     split_extract_fixed(' ', 1) %>% 
     split_extract_fixed('|', 3) %>% 
     split_extract_fixed('_', 1)
 }
 
-extract_genename <- function(`Fasta headers`){
+extract_gene <- function(`Fasta headers`){
     `Fasta headers` %>% 
     split_extract_fixed('GN=', 2)      %>% 
     split_extract_fixed(' ', 1)}
@@ -253,16 +238,15 @@ extract_isoform <- function(`Fasta headers`){
     as.integer()
 }
 
-extract_proteinname <- function(`Fasta headers`){
+extract_protein <- function(`Fasta headers`){
     `Fasta headers` %>%
         split_extract_regex('_[A-Z]+ ', 2) %>% 
         split_extract_regex(' OS=', 1)
 }
 
-
 extract_fragment <- function(`Fasta headers`){
     `Fasta headers`                %>%
-        extract_proteinname()          %>%
+        extract_protein()          %>%
         stri_detect_fixed(  'ragment') %>%
         as.integer()
 }
@@ -276,16 +260,16 @@ extract_existence <- function(`Fasta headers`){
 }
 
 parse_fastahdrs <- function(`Fasta headers`){
-    dt <- data.table(                                           # Reviewed
-        Reviewed        = extract_reviewed(   `Fasta headers`), #   0 tr
-        `Entry names`   = extract_entryname(  `Fasta headers`), #   1 sp
-        `Gene names`    = extract_genename(   `Fasta headers`),
-        Uniprot         = extract_uniprot(    `Fasta headers`), # Existence 
-        Canonical       = extract_canonical(  `Fasta headers`), #   1 protein 
-        Isoform         = extract_isoform(    `Fasta headers`), #   1 transcript
-        `Protein names` = extract_proteinname(`Fasta headers`), #   2 homolog
-        Fragment        = extract_fragment(   `Fasta headers`), #   3 prediction
-        Existence       = extract_existence(  `Fasta headers`)) #   4 uncertain
+    dt <- data.table(                                   # Reviewed
+        Reviewed  = extract_reviewed( `Fasta headers`), #   0 tr
+        Entry     = extract_entry(    `Fasta headers`), #   1 sp
+        Gene      = extract_gene(     `Fasta headers`),
+        Uniprot   = extract_uniprot(  `Fasta headers`), # Existence 
+        Canonical = extract_canonical(`Fasta headers`), #   1 protein 
+        Isoform   = extract_isoform(  `Fasta headers`), #   1 transcript
+        Protein   = extract_protein(  `Fasta headers`), #   2 homolog
+        Fragment  = extract_fragment( `Fasta headers`), #   3 prediction
+        Existence = extract_existence(`Fasta headers`)) #   4 uncertain
     dt[, Existence := unique(.SD)[, Existence[!is.na(Existence)]], by = 'Canonical']
     # `unique`: for phosphosites the Fasta headers are sometimes
     #  replicated (when protein has multiple phosphosites)
@@ -302,7 +286,7 @@ parse_fastahdrs <- function(`Fasta headers`){
 #' @examples
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' read_fastafile_headers(fastafile)
-#' @return data.table(uniprot, genename, proteinname, reviewed, existence)
+#' @return data.table(uniprot, entry, gene, protein, reviewed, existence)
 #' @note Existence values are always those of the canonical isoform
 #'       (no isoform-level resolution for this field)
 #' @export
@@ -323,83 +307,19 @@ read_fastahdrs <- function(fastafile, verbose = TRUE){
 
 #-----------------------------------------------------------------------------
 #
-#                       curate_uniprots
+#                   maxquant_curate
+#                   fasta_curate
+#                       .drop_inferior
 #
 #-----------------------------------------------------------------------------
 
-
-# tests/testthat/test_3_curate_uniprots.R
-#' Curate annotations
-#' @param dt data.table
-#' @return data.table
-#' @examples
-#' proteinfile <- download_data('billing19.proteingroups.txt')
-#' phosphofile <- download_data('billing19.phosphosites.txt')
-#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#' fastadt <- read_fastahdrs(fastafile)
-#' prodt <- .read_proteingroups(proteinfile, verbose = TRUE)
-#' fosdt <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
-#' curate_uniprots(prodt)[, 1:8]
-#' curate_uniprots(fosdt)[, 1:8]
-#' curate_uniprots(prodt, fastadt = fastadt)[, 1:8]
-#' curate_uniprots(fosdt, fastadt = fastadt)[, 1:8]
-#' @export
-curate_uniprots <- function(dt, fastadt = NULL, verbose = TRUE){
-# Split
-    if (verbose)  message('\tCurate uniprots')
-    if (verbose)  message('\t\tRm Contaminants/Reverse')
-    idx <- dt$Reverse == '+' | dt$`Potential contaminant` == '+' 
-    conrevdt <- dt[idx]
-    dt %<>% extract(!idx)
-# Curate using MaxQuant
-    if (verbose)  message('\t\tMaxQuant Fastahdrs')
-    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
-    anndt <- dt[, c(idcol, 'Fasta headers'), with = FALSE]
-    if (verbose)  message('\t\t\tUncollapse, Drop truncated, Parse')
-    anndt %<>% uncollapse(`Fasta headers`, sep = ';')
-    anndt %<>% extract( stri_count_fixed(`Fasta headers`, '|') == 2)
-    anndt %<>% cbind(parse_fastahdrs(anndt$`Fasta headers`))
-    anndt$`Fasta headers` <- NULL
-    anndt %<>% drop_inferior()
-    
-    if (verbose)  message('\t\t\tCollapse')
-    anndt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idcol)
-# Curate using fastadt
-    if (!is.null(fastadt)){
-        if (verbose)  message('\t\tFasta data.table')
-        if (verbose)  message('\t\t\tUncollapse Uniprot accessions')
-        anndt2 <- dt[, c(idcol, 'Uniprot'), with = FALSE]
-        anndt2 %<>% uncollapse(`Uniprot`, sep = ';')
-        anndt2 %<>% merge(fastadt, by = 'Uniprot', sort = FALSE)
-        anndt2 %<>% drop_inferior()
-        if (verbose)  message('\t\t\tCollapse')
-        anndt2 %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idcol)
-        missingInFasta  <- setdiff(  dt[[idcol]], anndt2[[idcol]])
-        if (verbose)  message('\t\t\t', length(missingInFasta), 
-                              ' proteins missing in fastafile - revert to MaxQuant headers for these')
-        anndt %<>% extract(missingInFasta,  on = idcol)
-        anndt %<>% rbind(anndt2)
-        anndt %<>% extract(order(as.integer(get(idcol))))
-    }
-# Merge back annotations
-    if (verbose)  message('\t\tBring back Contaminants/Reverse')
-    setnames(anndt, 'Uniprot', 'Curated')
-    dt %<>% merge(anndt, by = idcol, sort = FALSE)
-    newcols <- setdiff(names(dt), names(conrevdt))   
-    conrevdt[, (newcols) := '']
-    dt %<>% rbind(conrevdt)
-    dt %<>% pull_columns(names(anndt))
-    dt$`Fasta headers` <- NULL
-    dt[order(as.integer(get(idcol)))]
-}
-
-
 drop_inferior <- function(anndt, verbose = TRUE){
+    anndt %<>% copy()
     idcol <- if ('fosId' %in% names(anndt)) 'fosId' else 'proId'
     
-    if (verbose)  message('\t\t\tDrop proteins with NA `Entry names` / `Protein names`')
-    anndt <- anndt[`Entry names` != 'NA']
-    anndt <- anndt[`Protein names` != 'NA']
+    if (verbose)  message('\t\t\tDrop proteins with NA Entry/Protein names')
+    anndt <- anndt[Entry   != 'NA']
+    anndt <- anndt[Protein != 'NA']
     
     if (verbose)  message('\t\t\tWithin ', idcol, ': drop trembl    in favour of swissprot')
     anndt <- anndt[, .SD[ Reviewed == max(Reviewed) ], by = idcol]
@@ -413,13 +333,149 @@ drop_inferior <- function(anndt, verbose = TRUE){
         anndt <- anndt[, .SD[Existence == min(Existence)], by = idcol] }
     anndt[, c('Reviewed', 'Fragment', 'Existence') := NULL]
     
-    if (verbose)  message("\t\t\tDrop 'Isoform x of ' in `Protein names`")
-    anndt$`Protein names` %<>% stri_replace_first_regex('Isoform [0-9A-Z]+ of ', '')
+    if (verbose)  message("\t\t\tDrop 'Isoform x of ' in Protein names")
+    anndt$Protein %<>% stri_replace_first_regex('Isoform [0-9A-Z]+ of ', '')
     
-    if (verbose)  message("\t\t\tDrop '(Fragment)'    in `Protein names`")
-    anndt$`Protein names` %<>% stri_replace_first_fixed(' (Fragment)', '')
+    if (verbose)  message("\t\t\tDrop '(Fragment)'    in Protein names")
+    anndt$Protein %<>% stri_replace_first_fixed(' (Fragment)', '')
     anndt[order(as.integer(get(idcol)), Canonical, Isoform)]
 }
+
+
+.merge <- function(dt1, dt2, by){
+    dt1 %<>% copy()
+    dt2 %<>% copy()
+    commoncols <- intersect(names(dt1), names(dt2))
+    commoncols %<>% setdiff(by)
+    if (length(commoncols) > 0)  dt1[, (commoncols) := NULL]
+    dt1 %<>% merge(dt2, by = by, sort = FALSE, all.x = TRUE)
+    dt1 %<>% pull_columns(names(dt2))
+    dt1[]
+}
+
+.rbind <- function(dt1, dt2, sortby, as.integer = FALSE){
+    dt1only <- setdiff(names(dt1), names(dt2))
+    dt2only <- setdiff(names(dt2), names(dt1))
+    if (length(dt1only)>0)  dt2[, (dt1only) := '']
+    if (length(dt2only)>0)  dt1[, (dt2only) := '']
+    dt <- rbind(dt1, dt2)
+    sorter <- dt[[sortby]]
+    if ({{as.integer}})  sorter %<>% as.integer()
+    sorter %<>% order()
+    dt[sorter]
+}
+
+
+#' Curate annotations
+#' @details
+#' Within proteingroup
+#'   1. Uncollapse
+#'   2. Drop lower-quality uniprots
+#'         * `sp > tr`
+#'         * `fullseqs > fragments`
+#'         * `pro > rna > hom > pred`
+#'   3. Annotate: Entry, Isoform, Gene, Protein
+#'         * `maxquant_curate :  MaxQuant `
+#'         * `   fasta_curate :  Fastafile`
+#'   4. Recollapse into `Curated`
+#' @param dt      `data.table`
+#' @param fastadt `data.table`
+#' @param verbose `TRUE / FALSE`
+#' @return data.table
+#' @examples
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' fastafile   <- download_data('uniprot_hsa_20140515.fasta')
+#' fastadt <-  read_fastahdrs(fastafile)
+#' prodt   <- .read_proteingroups(proteinfile, verbose = TRUE)
+#' fosdt   <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
+#' prodt %>% extract(, 1:4)
+#' prodt %>% fasta_curate(fastadt) %>% extract(, 1:8)
+#' prodt %>% fasta_curate(fastadt) %>% maxquant_curate() %>% extract(, c(1, 3:9))
+#' prodt %>% maxquant_curate() %>% extract(, c(1, 3:9))
+#' @md
+#' @export
+fasta_curate <- function(dt, fastadt, verbose = TRUE){
+# Drop Curated / Contaminants / Reverse
+    if (is.null(fastadt))  return(dt)
+    dt %<>% copy()
+    idxdrop <- if ('Curated' %in% names(dt))  !is.na(Curated)  else  rep(FALSE, nrow(dt))
+    idxdrop %<>% `|`(dt$`Potential contaminant`=='+')
+    idxdrop %<>% `|`(dt$Reverse=='+')
+    if (sum(idxdrop)==length(idxdrop))  return(dt)
+    dropdt <- dt[ idxdrop]
+    dt     <- dt[!idxdrop]
+# Curate
+    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
+    if (verbose)  message('\t\tFasta data.table')
+    if (verbose)  message('\t\t\tUncollapse Uniprot accessions')
+    anndt <- dt[, c(idcol, 'Uniprot'), with = FALSE]
+    anndt %<>% extract(, c(idcol, 'Uniprot'), with = FALSE)
+    anndt %<>% uncollapse(`Uniprot`, sep = ';')
+    anndt %<>% merge(fastadt, by = 'Uniprot', sort = FALSE)
+    anndt %<>% drop_inferior()
+    setnames(anndt, 'Uniprot', 'Curated')
+    if (verbose)  message('\t\t\tCollapse')
+    anndt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idcol)
+    dt %<>% .merge(anndt, by = idcol)
+# Pickup
+    dt %<>% .rbind(dropdt, sortby = idcol, as.integer = TRUE)
+}
+
+
+#' @rdname fasta_curate
+#' @export
+maxquant_curate <- function(dt, verbose = TRUE){
+# Drop Curated / Contaminants / Reverse
+    dt %<>% copy()
+    idxdrop <- if ('Curated' %in% names(dt))  !is.na(dt$Curated)  else  rep(FALSE, nrow(dt))
+    idxdrop %<>% `|`(dt$`Potential contaminant`=='+')
+    idxdrop %<>% `|`(dt$Reverse=='+')
+    if (sum(idxdrop)==length(idxdrop))  return(dt)
+    dropdt <- dt[ idxdrop]
+    dt     <- dt[!idxdrop]
+# Curate
+    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
+    if (verbose)  message('\t\tMaxQuant Fastahdrs')
+    if (verbose)  message('\t\t\tUncollapse, Drop truncated, Parse')
+    anndt <- dt[, c(idcol, 'Fasta headers'), with = FALSE]
+    anndt %<>% uncollapse(`Fasta headers`, sep = ';')
+    anndt %<>% extract( stri_count_fixed(`Fasta headers`, '|') == 2)
+    anndt %<>% cbind(parse_fastahdrs(anndt$`Fasta headers`))
+    anndt %<>% drop_inferior()
+    setnames(anndt, 'Uniprot', 'Curated')
+    if (verbose)  message('\t\t\tCollapse')
+    anndt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idcol)
+    dt %<>% .merge(anndt, by = idcol)
+    dt %<>% .rbind(dropdt, sortby = idcol, as.integer = TRUE)
+    dt
+}
+
+
+
+#--------------------------------------------------------------------------
+#
+#                      add_feature_id
+#                      process_maxquant
+#
+#---------------------------------------------------------------------------
+
+add_feature_id <- function(dt){
+    dt %<>% copy()
+    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
+    dt[, feature_id := Entry]
+    dt[Isoform!=1, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(Isoform, ';', ''), ')')]
+    if (idcol=='fosId'){
+        dt$feature_id %<>% paste0('-',dt$`Amino acid`)
+        dt$feature_id %<>% paste0(split_extract_fixed(dt$`Positions within proteins`, ';', 1))
+    }
+    dt[                Reverse == '+', feature_id := paste0('REV_', get(idcol))]
+    dt[`Potential contaminant` == '+', feature_id := paste0('CON_', get(idcol))]
+        # Contaminants and actual proteins get mixed up. For naming: make sure to use contaminant.
+    dt %<>% pull_columns(c(idcol, 'feature_id'))
+    dt[]
+}
+
 
 
 #---------------------------------------------------------------------------
@@ -586,9 +642,11 @@ read_proteingroups <- function(
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
-# Read
+# Read/Curate
     prodt <- .read_proteingroups(proteinfile = proteinfile, verbose = verbose)
-    if (curate)  prodt %<>% curate_uniprots(fastadt = fastadt)
+    if (curate)  prodt %<>% fasta_curate_uniprots(fastadt = fastadt, verbose = verbose)
+    if (curate)  prodt %<>% maxquant_curate_uniprots(verbose = verbose)
+    prodt$`Fasta headers` <- NULL
     prodt %<>% add_feature_id()
 # SumExp
     if (verbose)  message('\tCreate SummarizedExperiment')
@@ -639,7 +697,9 @@ read_phosphosites <- function(
     prodt <- .read_proteingroups(proteinfile = proteinfile, verbose = verbose)
     fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
-    if (curate)  fosdt %<>% curate_uniprots(fastadt = fastadt)
+    if (curate)  fosdt %<>% fasta_curate_uniprots(fastadt = fastadt, verbose = verbose)
+    if (curate)  fosdt %<>% maxquant_curate_uniprots(verbose = verbose)
+    fosdt$`Fasta headers` <- NULL
     fosdt %<>% add_feature_id()
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp

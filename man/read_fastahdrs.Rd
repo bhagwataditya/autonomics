@@ -14,7 +14,7 @@ read_fastahdrs(fastafile, verbose = TRUE)
 \item{fastafields}{character vector}
 }
 \value{
-data.table(uniprot, genename, proteinname, reviewed, existence)
+data.table(uniprot, entry, gene, protein, reviewed, existence)
 }
 \description{
 Read headers from uniprot fastafile
