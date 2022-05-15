@@ -273,7 +273,31 @@ test_that('feature_ids are unique',       {
     expect_true(has_no_duplicates(pro2b$feature_id))
 })
 
-pro1b[1, c(1:2, 4:5)]
+
+#============================================================================
+#
+#     mqdt_to_mat
+#
+#============================================================================
+
+context('mqdt_to_mat')
+
+proteinfile <- download_data('billing19.proteingroups.txt')
+phosphofile <- download_data('billing19.phosphosites.txt')
+prodt <- .read_proteingroups(proteinfile = proteinfile)
+prodt %<>% maxquant_curate()
+prodt %<>% add_feature_id()
+quantity <- guess_maxquant_quantity(proteinfile)
+pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+mat <- mqdt_to_mat(prodt, pattern = pattern)
+
+dt <- fread(proteinfile, integer64 = 'numeric', colClasses = c(id = 'character'))
+dt %<>% extract(, colnames(mat), with = FALSE)
+dt %<>% data.matrix()
+mat <- 2^mat - 1
+rownames(mat) <- NULL
+test_that('`mqdt_to_mat` preserves contents', expect_equal(dt, mat))
+
 
 #============================================================================
 #
@@ -381,9 +405,69 @@ test_that('`demultiplex` works', {
 
 #============================================================================
 #
+#      read_phosphosites
+#
+#============================================================================
+
+proteinfile <- download_data('billing19.proteingroups.txt')
+phosphofile <- download_data('billing19.phosphosites.txt')
+quantity <- guess_maxquant_quantity(proteinfile)
+pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+fos <- read_phosphosites(phosphofile, proteinfile, plot = FALSE, impute = FALSE)
+
+str(log2sites(fos))
+dt <- fread(phosphofile, integer64 = 'numeric', colClasses = c(id = 'character'))
+dt %<>% extract(fdt(fos)$fosId, on = 'id')
+dt <- dt[, .SD, .SDcols = patterns(pattern, '___1')]
+colnames(dt) %<>% stri_replace_first_fixed('___1', '')
+colnames(dt) %<>% dequantify()
+colnames(dt) %<>% demultiplex()
+
+test_that('`read_phosphosites` preserves samples', 
+    expect_equal(snames(fos), colnames(dt))
+)
+
+test_that('`read_phosphosites` preserves phosphosite values', {
+    
+    str(data.matrix(dt))
+    str(log2sites(fos))
+          
+    expect_equal(snames(fos), colnames(dt))
+})
+
+
+#============================================================================
+#
 #      read_proteingroups
 #
 #============================================================================
+
+proteinfile <- download_data('billing19.proteingroups.txt')
+quantity <- guess_maxquant_quantity(proteinfile)
+pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+pro <- read_proteingroups(proteinfile, plot = FALSE, impute = FALSE)
+mat <- log2proteins(pro)
+rownames(mat) <- fdt(pro)$proId
+
+test_that('`read_proteingroups(billing19)` returns SummarizedExperiment', {
+    expect_s4_class(pro, 'SummarizedExperiment')
+})
+
+test_that('`read_proteingroups(billing19)` reads abundances', {
+    mat0 <- fread(proteinfile) %>% mqdt_to_mat(pattern)
+    rownames(mat0) <- dt$id
+    colnames(mat0) %<>% dequantify()
+    colnames(mat0) %<>% demultiplex()
+    mat0 %<>% extract(rownames(mat), )
+    expect_equal(mat, mat0)
+})
+
+test_that('`read_proteingroups(billing19)` reads uniprots', {
+    fdt0 <- fread(proteinfile, select = c('id', 'Majority protein IDs'), colClasses = c(id = 'character'))
+    fdt0 %<>% extract(fdt(pro)$proId, on = 'id')
+    expect_equal(fdt(pro)$Uniprot, fdt0$`Majority protein IDs`)
+})
+
 
 context('read_proteingroups: fukuda20')
 metadata <- S4Vectors::metadata

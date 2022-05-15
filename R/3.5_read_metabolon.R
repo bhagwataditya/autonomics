@@ -249,7 +249,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (impute)             object %<>% impute_systematic_nondetects(
                                             subgroup = !!subgroup, plot = FALSE)
     if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
-    if (smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
+    if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze
     object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar, 
                     formula = formula, block = block, 

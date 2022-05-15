@@ -204,6 +204,19 @@ split_by_svar <- function(object, svar = subgroup){
     Map(extract_samples, slevels(object, svarstr))
 }
 
+#' @rdname split_by_svar
+#' @export
+split_by_fvar <- function(object, fvar){
+    fvar <- enquo(fvar)
+    fvarstr <- as_name(fvar)
+
+    if (is.null(fvar)) return(list(object))
+    extract_features  <- function(sg){
+                            idx <- fdt(object)[[fvarstr]] == sg
+                            object[idx, ]
+                        }
+    Map(extract_features, flevels(object, fvarstr))
+}
 
 
 #=============================================================================

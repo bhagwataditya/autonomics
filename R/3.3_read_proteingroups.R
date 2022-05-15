@@ -80,7 +80,18 @@ guess_maxquant_quantity <- function(x){
 #
 #---------------------------------------------------------------------------
 
-.read_proteingroups <- function(proteinfile, verbose){
+#' Read proteingroups/phosphosites as-is
+#' @param proteinfile  file
+#' @param phosphofile  file
+#' @param verbose  TRUE / FALSE
+#' @return data.table
+#' @examples 
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' prodt <- .read_proteingroups(proteinfile = proteinfile)
+#' fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
+#' @export
+.read_proteingroups <- function(proteinfile, verbose = TRUE){
 # Assert
     assert_all_are_existing_files(proteinfile)
     assert_all_are_matching_fixed(proteinfile, 'roups.txt')
@@ -105,7 +116,7 @@ guess_maxquant_quantity <- function(x){
 }
 
 
-.read_phosphosites <- function(phosphofile, proteinfile, verbose){
+.read_phosphosites <- function(phosphofile, proteinfile, verbose = TRUE){
 # Assert
     assert_all_are_existing_files(c(proteinfile, phosphofile))
     assert_all_are_matching_fixed(proteinfile, 'roups.txt')
@@ -487,7 +498,24 @@ add_feature_id <- function(dt){
 #---------------------------------------------------------------------------
 
 
-mqdt_to_mat <- function(dt, pattern, verbose){
+#' Convert maxquant data.table to matrix
+#' @param dt       data.table
+#' @param pattern  string
+#' @param verbose  TRUE / FALSE
+#' @return matrix
+#' @examples 
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' prodt <- .read_proteingroups(proteinfile = proteinfile)
+#' fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
+#' prodt %<>% maxquant_curate()
+#' prodt %<>% add_feature_id()
+#' quantity <- guess_maxquant_quantity(proteinfile)
+#' pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+#' mqdt_to_mat(prodt, pattern = pattern)[1:2, 1:2]
+#' @export
+mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
     mat <- dt[, .SD, .SDcols = patterns(pattern)]
     mat %<>% data.matrix()
     rownames(mat) <- dt$feature_id
@@ -644,8 +672,8 @@ read_proteingroups <- function(
     assert_is_a_bool(verbose)
 # Read/Curate
     prodt <- .read_proteingroups(proteinfile = proteinfile, verbose = verbose)
-    if (curate)  prodt %<>% fasta_curate_uniprots(fastadt = fastadt, verbose = verbose)
-    if (curate)  prodt %<>% maxquant_curate_uniprots(verbose = verbose)
+    if (curate)  prodt %<>% fasta_curate(fastadt = fastadt, verbose = verbose)
+    if (curate)  prodt %<>% maxquant_curate(verbose = verbose)
     prodt$`Fasta headers` <- NULL
     prodt %<>% add_feature_id()
 # SumExp
@@ -656,7 +684,7 @@ read_proteingroups <- function(
     pepdt <- prodt[, pepcols, with = FALSE]
     prodt %<>% extract(, names(prodt) %>% setdiff(colnames(promat)) %>% setdiff(names(pepdt)), with = FALSE)
     object <- SummarizedExperiment::SummarizedExperiment(
-        assays  = list(log2pro = promat), 
+        assays  = list(log2proteins = promat), 
         rowData = prodt)
 # Dequantify. Add pepcounts
     object$mqcol <- colnames(object)
@@ -697,8 +725,8 @@ read_phosphosites <- function(
     prodt <- .read_proteingroups(proteinfile = proteinfile, verbose = verbose)
     fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
-    if (curate)  fosdt %<>% fasta_curate_uniprots(fastadt = fastadt, verbose = verbose)
-    if (curate)  fosdt %<>% maxquant_curate_uniprots(verbose = verbose)
+    if (curate)  fosdt %<>% fasta_curate(fastadt = fastadt, verbose = verbose)
+    if (curate)  fosdt %<>% maxquant_curate(verbose = verbose)
     fosdt$`Fasta headers` <- NULL
     fosdt %<>% add_feature_id()
     prodt %<>% extract(fosdt$proId, on = 'proId')
@@ -712,9 +740,9 @@ read_phosphosites <- function(
     fosmat <- mqdt_to_mat(fosdt, pattern, verbose = verbose)
     fosdt <- fosdt %>% extract(, setdiff(names(.), colnames(fosmat)), with = FALSE)
     object <- SummarizedExperiment::SummarizedExperiment(
-        assays  = list(log2fos = fosmat,
-                       log2pro = promat,
-                       log2dif = fosmat - promat),
+        assays  = list(log2sites    = fosmat,
+                       log2proteins = promat,
+                       log2diffs = fosmat - promat),
         rowData = fosdt)
 # Dequantify. Add pepcounts
     object$mqcol <- colnames(object)
@@ -834,10 +862,7 @@ arrange_samples_ <- function(object, svars){
 #' `WT(L).KD(H).R1{H/L}  -> KD_WT.R1`
 #' `WT(1).KD(2).R1{1}    -> WT.R1`
 #' `         WT.R1       -> WT.R1`
-#' @param channels    character: c('M', 'H')
-#' @param biosamples  list: list(c(L='t0', M='t1', H='t2'), 
-#'                               c(L='t0', M='t1', H='t2'))
-#' @param replicate   character: c('_R1', '_R2')
+#' @param x character vector
 #' @return character
 #' @examples
 #' # uniplexed / intensity / ratio
@@ -1055,125 +1080,125 @@ annotate_uniprot_ws.SummarizedExperiment <- function(
 
 #---------------------------------------------------------------------------
 #
-#                       log2pro
+#                       log2proteins
 #
 #---------------------------------------------------------------------------
 
 
-#' Get/Set log2pro
+#' Get/Set log2proteins
 #' @param object SummarizedExperiment
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, plot=FALSE)
-#' log2pro(object)[1:3, 1:3]
-#' @rdname log2pro
+#' log2proteins(object)[1:3, 1:3]
+#' @rdname log2proteins
 #' @export
-setGeneric('log2pro', function(object)   standardGeneric("log2pro"))
+setGeneric('log2proteins', function(object)   standardGeneric("log2proteins"))
 
-#' @rdname log2pro
-setMethod("log2pro", signature("SummarizedExperiment"),
-function(object)   assays(object)$log2pro)
+#' @rdname log2proteins
+setMethod("log2proteins", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2proteins)
 
 
-#' @rdname log2pro
+#' @rdname log2proteins
 #' @export
-setGeneric('log2pro<-',
-function(object, value) standardGeneric("log2pro<-"))
+setGeneric('log2proteins<-',
+function(object, value) standardGeneric("log2proteins<-"))
 
-#' @rdname log2pro
-setReplaceMethod("log2pro", signature("SummarizedExperiment", "matrix"),
+#' @rdname log2proteins
+setReplaceMethod("log2proteins", signature("SummarizedExperiment", "matrix"),
 function(object, value){
-    assays(object)$log2pro <- value
+    assays(object)$log2proteins <- value
     object })
 
-#' @rdname log2pro
-setReplaceMethod("log2pro", signature("SummarizedExperiment", "numeric"),
+#' @rdname log2proteins
+setReplaceMethod("log2proteins", signature("SummarizedExperiment", "numeric"),
 function(object, value){
-    assays(object)$log2pro[] <- value
+    assays(object)$log2proteins[] <- value
     object })
 
 
 #---------------------------------------------------------------------------
 #
-#                       log2fos
+#                       log2sites
 #
 #---------------------------------------------------------------------------
 
 
-#' Get/Set log2fos
+#' Get/Set log2sites
 #' @param object SummarizedExperiment
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, plot=FALSE)
-#' log2fos(object)[1:3, 1:3]
-#' @rdname log2fos
+#' log2sites(object)[1:3, 1:3]
+#' @rdname log2sites
 #' @export
-setGeneric('log2fos', function(object)   standardGeneric("log2fos"))
+setGeneric('log2sites', function(object)   standardGeneric("log2sites"))
 
-#' @rdname log2fos
-setMethod("log2fos", signature("SummarizedExperiment"),
-function(object)   assays(object)$log2fos)
+#' @rdname log2sites
+setMethod("log2sites", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2sites)
 
 
-#' @rdname log2fos
+#' @rdname log2sites
 #' @export
-setGeneric('log2fos<-',
-function(object, value) standardGeneric("log2fos<-"))
+setGeneric('log2sites<-',
+function(object, value) standardGeneric("log2sites<-"))
 
-#' @rdname log2fos
-setReplaceMethod("log2fos", signature("SummarizedExperiment", "matrix"),
+#' @rdname log2sites
+setReplaceMethod("log2sites", signature("SummarizedExperiment", "matrix"),
 function(object, value){
-    assays(object)$log2fos <- value
+    assays(object)$log2sites <- value
     object })
 
-#' @rdname log2fos
-setReplaceMethod("log2fos", signature("SummarizedExperiment", "numeric"),
+#' @rdname log2sites
+setReplaceMethod("log2sites", signature("SummarizedExperiment", "numeric"),
 function(object, value){
-    assays(object)$log2fos[] <- value
+    assays(object)$log2sites[] <- value
     object })
 
 
 #---------------------------------------------------------------------------
 #
-#                       log2dif
+#                       log2diffs
 #
 #---------------------------------------------------------------------------
 
 
-#' Get/Set log2dif
+#' Get/Set log2diffs
 #' @param object SummarizedExperiment
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, plot=FALSE)
-#' log2dif(object)[1:3, 1:3]
-#' @rdname log2dif
+#' log2diffs(object)[1:3, 1:3]
+#' @rdname log2diffs
 #' @export
-setGeneric('log2dif', function(object)   standardGeneric("log2dif"))
+setGeneric('log2diffs', function(object)   standardGeneric("log2diffs"))
 
-#' @rdname log2dif
-setMethod("log2dif", signature("SummarizedExperiment"),
-function(object)   assays(object)$log2dif)
+#' @rdname log2diffs
+setMethod("log2diffs", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2diffs)
 
 
-#' @rdname log2dif
+#' @rdname log2diffs
 #' @export
-setGeneric('log2dif<-',
-function(object, value) standardGeneric("log2dif<-"))
+setGeneric('log2diffs<-',
+function(object, value) standardGeneric("log2diffs<-"))
 
-#' @rdname log2dif
-setReplaceMethod("log2dif", signature("SummarizedExperiment", "matrix"),
+#' @rdname log2diffs
+setReplaceMethod("log2diffs", signature("SummarizedExperiment", "matrix"),
 function(object, value){
-    assays(object)$log2dif <- value
+    assays(object)$log2diffs <- value
     object })
 
-#' @rdname log2dif
-setReplaceMethod("log2dif", signature("SummarizedExperiment", "numeric"),
+#' @rdname log2diffs
+setReplaceMethod("log2diffs", signature("SummarizedExperiment", "numeric"),
 function(object, value){
-    assays(object)$log2dif[] <- value
+    assays(object)$log2diffs[] <- value
     object })

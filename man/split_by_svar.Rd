@@ -2,9 +2,12 @@
 % Please edit documentation in R/7_impute.R
 \name{split_by_svar}
 \alias{split_by_svar}
+\alias{split_by_fvar}
 \title{Split by svar}
 \usage{
 split_by_svar(object, svar = subgroup)
+
+split_by_fvar(object, fvar)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

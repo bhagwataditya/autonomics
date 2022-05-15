@@ -548,7 +548,7 @@ old_read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
     object %<>% merge_sfile(sfile = sfile, by.x = by.x, by.y = by.y)
     object %<>% add_subgroup(subgroupvar=subgroupvar, verbose=verbose)
     object %<>% filter_maxquant_samples(
-                    select_subgroups = select_subgroups, verbose)
+                    subgroups = select_subgroups, verbose)
     values(object) %<>% zero_to_na(verbose = verbose)
     values(object) %<>% nan_to_na( verbose = verbose)
     object %<>% log2transform(verbose=verbose)

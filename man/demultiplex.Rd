@@ -7,12 +7,7 @@
 demultiplex(x, verbose = FALSE)
 }
 \arguments{
-\item{channels}{character: c('M', 'H')}
-
-\item{biosamples}{list: list(c(L='t0', M='t1', H='t2'),
-c(L='t0', M='t1', H='t2'))}
-
-\item{replicate}{character: c('_R1', '_R2')}
+\item{x}{character vector}
 }
 \value{
 character
