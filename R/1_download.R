@@ -83,7 +83,7 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' @export
 download_data <- function(
     filename,
-    localdir  = R_user_dir('autonomics', 'cache'),
+    localdir  = file.path(R_user_dir('autonomics', 'cache'), 'datasets'),
     verbose   = TRUE, 
     force = FALSE
 ){

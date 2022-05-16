@@ -970,6 +970,71 @@ process_maxquant <- function(
 }
 
 
+#---------------------------------------------------------------------------
+#
+#                      add_psp
+#
+#---------------------------------------------------------------------------
+
+#' Add psp
+#' 
+#' Add PhosphoSitePlus literature counts
+#' 
+#' Go to www.phosphosite.org                   \cr
+#' Register and Login.                         \cr
+#' Download Phosphorylation_site_dataset.gz'.  \cr
+#' Save into: file.path(R_user_dir('autonomics','cache'),'phosphositeplus')
+#' @param object     SummarizedExperiment
+#' @param pspfile    phosphositeplus file
+#' @param organism  'human', 'mouse', etc.
+#' @return  SummarizedExperiment
+#' @examples 
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' object <- read_phosphosites(phosphofile, proteinfile)
+#' fdt(object)
+#' object %<>% add_psp(organism = 'human')
+#' fdt(object)
+#' @export
+add_psp <- function(
+    object, 
+    pspfile = file.path(R_user_dir('autonomics', 'cache'), 
+            'phosphositeplus', 'Phosphorylation_site_dataset.gz'), 
+    organism
+){
+# Read
+    assert_is_all_of(object, 'SummarizedExperiment')
+    if (!file.exists(pspfile))  return(object)
+    dt <- data.table::fread(pspfile)
+    assert_is_subset(organism, unique(dt$ORGANISM))
+    dt %<>% extract(organism, on = 'ORGANISM')
+    dt[is.na(LT_LIT), LT_LIT := 0]
+    dt[is.na(MS_LIT), MS_LIT := 0]
+    dt[is.na(MS_CST), MS_CST := 0]
+    dt[, psp := LT_LIT + MS_LIT + MS_CST]
+    dt$AA <- dt$MOD_RSD %>% substr(1, 1)
+    dt$MOD_RSD %<>% substr(2, nchar(.)-2)
+# Rm duplicates
+    idx <- cduplicated(dt[, .(ACC_ID, MOD_RSD)])
+    # dt[idx]  # Seems like a (single) psiteplus bug: two different rows for the same site
+    #          # On the website it says 'under review' for this particular site
+    #          # Rm these
+    dt %<>% extract(!idx)
+    dt %<>% extract(, .(ACC_ID, MOD_RSD, psp, AA))
+    # Look at example
+    # dt %<>% extract('ZZZ3',   on = 'PROTEIN')
+    # dt %<>% extract(c('S606-p', 'S613-p'), on = 'MOD_RSD')
+# Merge
+    fdt(object)$Uniprot1  <- split_extract_fixed(fdt(object)$Curated, ';', 1)
+    fdt(object)$Position1 <- split_extract_fixed(fdt(object)$`Positions within proteins`, ';', 1)
+    object %<>% merge_fdata(dt, by.x = c('Uniprot1', 'Position1'), 
+                                by.y = c('ACC_ID', 'MOD_RSD'))
+    idx <- fdt(object)[, !is.na(psp) &  AA != `Amino acid`]
+    fdt(object)$psp[idx] <- NA
+    fdt(object)$AA <- NULL
+    object
+}
+
 
 #---------------------------------------------------------------------------
 #

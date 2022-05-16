@@ -474,6 +474,8 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
     if (is.null(dt))  return(objectdt)
     assert_is_data.table(objectdt)
     assert_is_data.table(dt)
+    assert_is_subset(by.x, names(objectdt))
+    assert_is_subset(by.y, names(dt))
 # Prepare
     # Rm duplicate keys
         dt %<>% unique() # drop duplicate rows with identical info 
@@ -485,8 +487,8 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
         duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
         for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
     # Ensure character class for merge column
-        objectdt[[by.x]] %<>% as.character()  # having one of these as a factor
-        dt[[by.y]]       %<>% as.character()  # leads to a horrible bug!
+        for (byx in by.x)  objectdt[[byx]] %<>% as.character()  # having one of these as a factor
+        for (byy in by.y)        dt[[byy]] %<>% as.character()  # leads to a horrible bug!
 # Merge
     objectdt %<>% merge.data.table(
                    dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)

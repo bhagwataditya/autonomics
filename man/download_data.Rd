@@ -6,7 +6,7 @@
 \usage{
 download_data(
   filename,
-  localdir = R_user_dir("autonomics", "cache"),
+  localdir = file.path(R_user_dir("autonomics", "cache"), "datasets"),
   verbose = TRUE,
   force = FALSE
 )
