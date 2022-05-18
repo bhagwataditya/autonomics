@@ -7,28 +7,31 @@
 add_psp(
   object,
   pspfile = file.path(R_user_dir("autonomics", "cache"), "phosphositeplus",
-    "2022.05.05.Phosphorylation_site_dataset.gz"),
-  organism
+    "Phosphorylation_site_dataset.gz")
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
 \item{pspfile}{phosphositeplus file}
-
-\item{organism}{'human', 'mouse', etc.}
+}
+\value{
+SummarizedExperiment
 }
 \description{
-Add phosphositeplus counts
+Add PhosphoSitePlus literature counts
 }
 \details{
-Adds number of literature references
+Go to www.phosphosite.org                   \cr
+Register and Login.                         \cr
+Download Phosphorylation_site_dataset.gz'.  \cr
+Save into: file.path(R_user_dir('autonomics','cache'),'phosphositeplus')
 }
 \examples{
 phosphofile <- download_data('billing19.phosphosites.txt')
 proteinfile <- download_data('billing19.proteingroups.txt')
 object <- read_phosphosites(phosphofile, proteinfile)
 fdt(object)
-object \%<>\% add_psp(organism = 'human')
+object \%<>\% add_psp()
 fdt(object)
 }
