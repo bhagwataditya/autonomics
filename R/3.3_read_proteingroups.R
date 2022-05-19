@@ -713,7 +713,6 @@ read_proteingroups <- function(
 # Read/Curate
     prodt <- .read_proteingroups(proteinfile = proteinfile, verbose = verbose)
     if (curate)  prodt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
-    prodt$`Fasta headers` <- NULL
     prodt %<>% add_feature_id()
 # SumExp
     if (verbose)  message('\tCreate SummarizedExperiment')
@@ -765,7 +764,6 @@ read_phosphosites <- function(
     fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
     if (curate)  fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
-    fosdt$`Fasta headers` <- NULL
     fosdt %<>% add_feature_id()
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp

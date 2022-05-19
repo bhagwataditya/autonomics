@@ -8,11 +8,11 @@
 context('.read_proteingroups/.read_phosphosites')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
-prodt <- fread(proteinfile, colClasses = c(id='character'))
-fosdt <- fread(phosphofile, colClasses = c(id='character'), integer64='numeric')
-fosdt %<>% extract(obj$fosId, on = 'id')
 pro <- .read_proteingroups(proteinfile, verbose = TRUE)
 fos <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
+prodt <- fread(proteinfile, colClasses = c(id='character'))
+fosdt <- fread(phosphofile, colClasses = c(id='character'), integer64='numeric')
+fosdt %<>% extract(fos$fosId, on = 'id')
 
 test_that('id values match', {
     expect_identical(pro$proId, prodt$id)
@@ -166,16 +166,15 @@ test_that('`read_fastahdrs` reads last trembl protein',
 #============================================================================
 
 context('`maxquant_curate/fasta_curate`')
-fastafile   <- download_data('uniprot_hsa_20140515.fasta')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 pro <- .read_proteingroups(proteinfile, verbose = TRUE)
 fos <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
-pro1 <- maxquant_curate(prodt)
-fos1 <- maxquant_curate(fosdt)
-pro2 <- fasta_curate(prodt, fastadt)
-fos2 <- fasta_curate(fosdt, fastadt)
-anncols <- c("Entry", "Gene","Curated", "Canonical", "Isoform", "Protein")
+pro1 <- curate_annotate_maxquant(prodt)
+fos1 <- curate_annotate_maxquant(fosdt)
+pro2 <- curate_annotate_fastafile(prodt, fastadt)
+fos2 <- curate_annotate_fastafile(fosdt, fastadt)
+anncols <- c("Entry", "Gene","Canonical", "Isoform", "Protein")
 
 test_that('`curate` preserves rows',     {
     expect_equal( nrow(pro1), nrow(pro))  # pro maxquant
@@ -199,29 +198,23 @@ test_that('`curate` adds anncols',       {
 })
 
 test_that('`curate` preserves contents', {
-    procols <- intersect(names(pro), names(pro1)) %>% setdiff('Fasta headers')
-    foscols <- intersect(names(fos), names(fos1)) %>% setdiff('Fasta headers')
+    procols <- intersect(names(pro), names(pro1)) %>% setdiff(c('Uniprot', 'Fasta headers'))
+    foscols <- intersect(names(fos), names(fos1)) %>% setdiff(c('Uniprot', 'Fasta headers'))
     expect_equal(pro1[, procols, with = FALSE],  pro[, procols, with = FALSE])   # pro maxquant
     expect_equal(pro2[, procols, with = FALSE],  pro[, procols, with = FALSE])   #     fastafile
     expect_equal(fos1[, foscols, with = FALSE],  fos[, foscols, with = FALSE])   # fos maxquant
     expect_equal(fos2[, foscols, with = FALSE],  fos[, foscols, with = FALSE])   #     fasta
 })
 
-is_collapsed_subset <- function(x, y){
-    is_subset(unlist(stri_split_fixed(x, ';')), 
-              unlist(stri_split_fixed(y, ';')))
-}
-
 test_that('Curated uniprots are a subset', {
-    prosub1 <- pro1[Reverse=='' & `Potential contaminant` == '']
-    prosub2 <- pro2[Reverse=='' & `Potential contaminant` == '' & !is.na(Entry)]
-    fossub1 <- fos1[Reverse=='' & `Potential contaminant` == '']
-    fossub2 <- fos2[Reverse=='' & `Potential contaminant` == '' & !is.na(Entry)]
-    
-    expect_true(all(prosub1[, is_collapsed_subset(Curated, Uniprot), by = 'proId'][[2]]))
-    expect_true(all(prosub2[, is_collapsed_subset(Curated, Uniprot), by = 'proId'][[2]]))
-    expect_true(all(fossub1[, is_collapsed_subset(Curated, Uniprot), by = 'fosId'][[2]]))
-    expect_true(all(fossub2[, is_collapsed_subset(Curated, Uniprot), by = 'fosId'][[2]]))
+    assert_all_are_true(
+        is_collapsed_subset, 
+                  pro1[Reverse=='' & `Potential contaminant` == '']$Uniprot, 
+                  pro[ Reverse=='' & `Potential contaminant` == '']$Uniprot)
+    assert_all_are_true(
+        is_collapsed_subset, 
+                  fos1[Reverse=='' & `Potential contaminant` == '']$Uniprot, 
+                  fos[ Reverse=='' & `Potential contaminant` == '']$Uniprot)
 })
 
 
@@ -235,10 +228,11 @@ context('`add_feature_id`')
 fastafile   <- download_data('uniprot_hsa_20140515.fasta')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
-pro1 <- .read_proteingroups(proteinfile, verbose = TRUE) %>% maxquant_curate()
-pro2 <- .read_proteingroups(proteinfile, verbose = TRUE) %>% fasta_curate(fastadt) %>% maxquant_curate() # some missing in fasta
-fos1 <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE) %>% maxquant_curate()
-fos2 <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE) %>% fasta_curate(fastadt) %>% maxquant_curate()
+fastadt <- read_fastahdrs(fastafile)
+pro1 <- .read_proteingroups(proteinfile) %>% curate_annotate()
+pro2 <- .read_proteingroups(proteinfile) %>% curate_annotate(fastadt)
+fos1 <- .read_phosphosites(phosphofile, proteinfile) %>% curate_annotate()
+fos2 <- .read_phosphosites(phosphofile, proteinfile) %>% curate_annotate(fastadt)
 
 pro1b <- add_feature_id(pro1)
 pro2b <- add_feature_id(pro2)
@@ -285,7 +279,7 @@ context('mqdt_to_mat')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 prodt <- .read_proteingroups(proteinfile = proteinfile)
-prodt %<>% maxquant_curate()
+prodt %<>% curate_annotate()
 prodt %<>% add_feature_id()
 quantity <- guess_maxquant_quantity(proteinfile)
 pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
@@ -428,10 +422,8 @@ test_that('`read_phosphosites` preserves samples',
 )
 
 test_that('`read_phosphosites` preserves phosphosite values', {
-    
     str(data.matrix(dt))
     str(log2sites(fos))
-          
     expect_equal(snames(fos), colnames(dt))
 })
 
@@ -454,7 +446,8 @@ test_that('`read_proteingroups(billing19)` returns SummarizedExperiment', {
 })
 
 test_that('`read_proteingroups(billing19)` reads abundances', {
-    mat0 <- fread(proteinfile) %>% mqdt_to_mat(pattern)
+    dt <- fread(proteinfile)
+    mat0 <- mqdt_to_mat(dt, pattern)
     rownames(mat0) <- dt$id
     colnames(mat0) %<>% dequantify()
     colnames(mat0) %<>% demultiplex()
@@ -465,7 +458,7 @@ test_that('`read_proteingroups(billing19)` reads abundances', {
 test_that('`read_proteingroups(billing19)` reads uniprots', {
     fdt0 <- fread(proteinfile, select = c('id', 'Majority protein IDs'), colClasses = c(id = 'character'))
     fdt0 %<>% extract(fdt(pro)$proId, on = 'id')
-    expect_equal(fdt(pro)$Uniprot, fdt0$`Majority protein IDs`)
+    assert_all_are_true(is_collapsed_subset(fdt(pro)$Uniprot, fdt0$`Majority protein IDs`))
 })
 
 

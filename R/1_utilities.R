@@ -87,3 +87,23 @@ factorify <- function(avector, reverse = FALSE){
     if(reverse){myLevels <- rev(myLevels)}
     factor(avector, myLevels)
 }
+
+
+.is_collapsed_subset <- function(x, y, sep){
+    is_subset(unlist(stri_split_fixed(x, sep)), 
+              unlist(stri_split_fixed(y, sep)))
+}
+
+#' Is collapsed subset
+#' @param x character vector
+#' @param y character vector
+#' @return  character vector
+#' @examples
+#' x <- c(              'H3BNX8;H3BRM5', 'G5E9Y3')
+#' y <- c('P20674;H3BNX8;H3BV69;H3BRM5', 'G5E9Y3;Q8WWN8;B4DIT1')
+#' is_collapsed_subset(x, y)
+is_collapsed_subset <- function(x, y, sep = ';'){
+    mapply(.is_collapsed_subset, x, y, MoreArgs = list(sep = sep))
+}
+
+
