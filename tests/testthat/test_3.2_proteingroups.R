@@ -488,12 +488,12 @@ test_that(  "read_proteingroups(file, fit='limma')", {
     expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })
 
-# test_that(  "read_proteingroups(file, fit='lm')", {
-#     file <- download_data('fukuda20.proteingroups.txt')
-#     object <- read_proteingroups(file, fit = 'lm', plot = FALSE)
-#     expect_s4_class(object, 'SummarizedExperiment')
-#     expect_true('lm' %in% names(metadata(object)))
-# })
+test_that(  "read_proteingroups(file, fit='lm')", {
+    file <- download_data('fukuda20.proteingroups.txt')
+    object <- read_proteingroups(file, fit = 'lm', plot = FALSE)
+    expect_s4_class(object, 'SummarizedExperiment')
+    expect_true('lm' %in% names(metadata(object)))
+})
 
 test_that(  "read_proteingroups(file, fit='wilcoxon')", {
     file <- download_data('fukuda20.proteingroups.txt')
