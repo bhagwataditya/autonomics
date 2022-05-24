@@ -560,10 +560,6 @@ old_read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
     object
 }
 
-utils::globalVariables('where')
-un_int64 <- function(x) {
-    dplyr::mutate(x, dplyr::across(where(bit64::is.integer64), as.numeric))
-}
 
 #' Read/Analyze proteingroups/phosphosites
 #'

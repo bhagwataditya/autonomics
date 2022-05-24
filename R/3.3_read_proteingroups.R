@@ -80,6 +80,11 @@ guess_maxquant_quantity <- function(x){
 #
 #---------------------------------------------------------------------------
 
+utils::globalVariables('where')
+un_int64 <- function(x) {
+    dplyr::mutate(x, dplyr::across(where(bit64::is.integer64), as.numeric))
+}
+
 #' Read proteingroups/phosphosites as-is
 #' @param proteinfile  file
 #' @param phosphofile  file
@@ -98,6 +103,7 @@ guess_maxquant_quantity <- function(x){
 # Read
     if (verbose)  message('\tRead ', proteinfile)
     prodt <- fread(proteinfile, colClasses = c(id = 'character'), integer64 = 'numeric')
+    prodt %<>% un_int64()
     n0 <- nrow(prodt)
     pattern <- MAXQUANT_PATTERNS_QUANTITY[[guess_maxquant_quantity(proteinfile)]]
     anncols <- c('id', 'Majority protein IDs', 'Reverse', 
@@ -124,6 +130,7 @@ guess_maxquant_quantity <- function(x){
 # Read    
     if (verbose)  message('\tRead ', phosphofile)
     fosdt <- fread(phosphofile, colClasses = c(id = 'character'), integer64 = 'numeric')
+    fosdt %<>% un_int64()
     pattern <- MAXQUANT_PATTERNS_QUANTITY[[guess_maxquant_quantity(phosphofile)]]
     anncols <- c('id', 'Protein group IDs', 'Proteins', 
                  'Positions within proteins', 'Amino acid', 
