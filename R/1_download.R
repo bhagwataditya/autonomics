@@ -15,7 +15,8 @@ CORE_DATASETS  <- c('atkin18.somascan.adat',
 #' @examples 
 #' AUTONOMICS_DATASETS
 #' @export
-AUTONOMICS_DATASETS <- c(CORE_DATASETS, 
+AUTONOMICS_DATASETS <- c(CORE_DATASETS,
+                        'integer64.proteinGroups.txt',
                         'uniprot_hsa_20140515.fasta')
 
 #' Download autonomics example data

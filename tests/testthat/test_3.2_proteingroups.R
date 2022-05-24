@@ -470,6 +470,11 @@ test_that("read_proteingroups(file)", {
     object <- read_proteingroups(file, plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true( 'subgroup'    %in% svars(object))
+
+test_that(".read_proteingroups(file) with `data.table` integer64 issue", {
+  file <- download_data('integer64.proteinGroups.txt')
+  object <- .read_proteingroups(file)
+  expect_false( 'integer64' %in% sapply(object, class))
 })
 
 test_that(  "read_proteingroups(file, pca=TRUE)", {
