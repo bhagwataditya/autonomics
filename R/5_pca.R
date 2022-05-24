@@ -420,7 +420,7 @@ add_scores <- function(
         mapping  = aes(x = !!x, y = !!y, color = !!color, group = !!group),
         stat     = "identity",
         data    = sdata(object),
-        params   = list(size=0.1, linetype='dotted', na.rm = TRUE),
+        params   = list(size=0.1, linetype='solid', na.rm = TRUE),
         position = 'identity')
     p
 }

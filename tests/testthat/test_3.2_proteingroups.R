@@ -165,15 +165,15 @@ test_that('`read_fastahdrs` reads last trembl protein',
 #
 #============================================================================
 
-context('`maxquant_curate/fasta_curate`')
+context('`curate_annotate_maxquant/curate_annotate_fastafile`')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 pro <- .read_proteingroups(proteinfile, verbose = TRUE)
 fos <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
-pro1 <- curate_annotate_maxquant(prodt)
-fos1 <- curate_annotate_maxquant(fosdt)
-pro2 <- curate_annotate_fastafile(prodt, fastadt)
-fos2 <- curate_annotate_fastafile(fosdt, fastadt)
+pro1 <- curate_annotate_maxquant(pro)
+fos1 <- curate_annotate_maxquant(fos)
+pro2 <- curate_annotate_fastafile(pro, fastadt)
+fos2 <- curate_annotate_fastafile(fos, fastadt)
 anncols <- c("Entry", "Gene","Canonical", "Isoform", "Protein")
 
 test_that('`curate` preserves rows',     {
@@ -208,13 +208,13 @@ test_that('`curate` preserves contents', {
 
 test_that('Curated uniprots are a subset', {
     assert_all_are_true(
-        is_collapsed_subset, 
+        is_collapsed_subset(
                   pro1[Reverse=='' & `Potential contaminant` == '']$Uniprot, 
-                  pro[ Reverse=='' & `Potential contaminant` == '']$Uniprot)
+                  pro[ Reverse=='' & `Potential contaminant` == '']$Uniprot))
     assert_all_are_true(
-        is_collapsed_subset, 
+        is_collapsed_subset( 
                   fos1[Reverse=='' & `Potential contaminant` == '']$Uniprot, 
-                  fos[ Reverse=='' & `Potential contaminant` == '']$Uniprot)
+                  fos[ Reverse=='' & `Potential contaminant` == '']$Uniprot))
 })
 
 

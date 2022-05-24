@@ -426,8 +426,9 @@ curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
     dt %<>% copy()
     dt[, Entry := NA_character_]
     dt %<>% curate_annotate_fastafile(fastadt, verbose = verbose)
-    dt1 <- dt[ is.na(dt$Entry)] %>% curate_annotate_maxquant(verbose = verbose)
-    dt  <- dt[!is.na(dt$Entry)]
+    idx <- dt$Reverse == '' & dt$`Potential contaminant` == '' & is.na(dt$Entry)
+    dt1 <- dt[idx] %>% curate_annotate_maxquant(verbose = verbose)
+    dt  <- dt[!idx]
     dt %<>% rbind(dt1)
     dt %<>% extract(order(as.integer(get(idcol))))
     dt[, `Fasta headers` := NULL]

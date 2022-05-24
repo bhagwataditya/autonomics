@@ -421,8 +421,8 @@ plot_detections <- function(
     subgroup <- enquo(subgroup);         fill     <- enquo(fill)
     groupvar <- as_name(subgroup);    fillstr  <- as_name(fill)
 # Reorder samples
-    sdata(object)[[groupvar]] %<>% factor()
-    object %<>% extract(, order(sdata(.)[[groupvar]]))
+    object[[groupvar]] %<>% factor()
+    object %<>% extract(, order(.[[groupvar]]))
 # Reorder/block features
     object %<>% detect_order_features(!!subgroup)
     y <- object; values(y)[is_imputed(y)] <- NA
@@ -439,7 +439,7 @@ plot_detections <- function(
     plotdt[, detection := factor(detection, c('nondetect', 'impute', 'detect'))]
     plotdt[, sample_id  := factor( sample_id, unique(snames(object)))]
     plotdt[, feature_id := factor(feature_id, rev(unique(fnames(object))))]
-    colors <- make_colors(unique(sdata(object)[[fillstr]]))
+    colors <- make_colors(slevels(object, fillstr))
     colors %<>% c(nondetect = "#FFFFFF")
 # Plot
     ggplot(plotdt) +
