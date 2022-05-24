@@ -1087,4 +1087,30 @@ plot_contrast_venn <- function(issig, colors = NULL){
     vennDiagram(issig, include='down', mar = rep(0,4), show.include=TRUE, circle.col = colors)
 }
 
-
+#' Plot binary matrix
+#' @param mat 
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
+#' mat <- sdt(object)[, .(replicate, Group)]
+#' mat$present <- 1
+#' mat %<>% data.table::dcast(replicate ~ Group, value.var  = 'present', fill = 0)
+#' mat %<>% dt2mat()
+#' plot_matrix(mat)
+#' @return
+#' @export
+plot_matrix <- function(mat){
+    nr <- nrow(mat)
+    nc <- ncol(mat)
+    values <- unique(c(mat)) %>% setdiff(0) %>% as.character()
+    colors <- make_colors(values)
+    colors %<>% unname()
+    colors %<>% c('white', .)
+    
+    image(t(mat %>% extract(seq(nrow(.), 1), )), col = colors,  axes = FALSE)
+    axis(side = 1, labels =     colnames(mat),  at = seq(0, by = 1, length.out = nc)/(nc-1), las = 1, tick = FALSE)
+    axis(side = 2, labels = rev(rownames(mat)), at = seq(0, by = 1, length.out = nr)/(nr-1), las = 1, tick = FALSE)
+    box()
+    par(mar = c(5,5,4,2))
+    abline(h = (0.5:(nr-0.5))/(nr-1), v = (0.5:(nc-0.5))/(nc-1), col = 'gray30')
+}
