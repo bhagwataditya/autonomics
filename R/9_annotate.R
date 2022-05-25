@@ -41,11 +41,11 @@ extract_functiondescriptions <- function(x){
     lines <- readLines(file.path(OPENTARGETSDIR, 'targets', file))
     lines %<>% lapply(jsonlite::fromJSON)
     lines %<>% lapply( function(x){ data.table(
-                                        Ensembl    = x$id,
-                                        GeneSymbol = x$approvedSymbol,
-                                        GeneName   = x$approvedName,
-                                        Uniprot    = extract_proteinids(x),
-                                        Function   = extract_functiondescriptions(x))})
+                                        ensembl    = x$id,
+                                        genesymbol = x$approvedSymbol,
+                                        genename   = x$approvedName,
+                                        uniprot    = extract_proteinids(x),
+                                       `function`  = extract_functiondescriptions(x))})
    lines %<>% rbindlist()
    lines
 }
@@ -58,24 +58,34 @@ save_opentargets_targets <- function(){
     fwrite(dt, file.path(OPENTARGETSDIR, 'targets.tsv'), sep = '\t')
 }
 
-#' Add opentargets targets
+#' Add opentargets annotations
 #' @param object SummarizedExperiment
 #' @return  SummarizedExperiment
 #' @examples 
 #' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_proteingroups(file)
-#' object %<>% add_opentargets_targets()
+#' object %<>% add_opentargets_by_uniprot()
 #' @export
-add_opentargets <- function(object){
-    file <- file.path(OPENTARGETSDIR, 'targets.tsv')
-    targetsdt <- fread(file)
-    targetsdt %<>% separate_rows(Uniprot)
-    targetsdt %<>% data.table()
-    fdt0 <- fdt(object)
-    fdt0 %<>% separate_rows(Canonical)
-    fdt0 %<>% data.table()
+add_opentargets_by_uniprot <- function(object){
     
-    object %<>% merge_fdata(targetsdt, by.x = 'Canonical', by.y = 'Uniprot')
+    file <- file.path(OPENTARGETSDIR, 'targets.tsv')
+    targetsdt <- fread(file, select = c('uniprot', 'genesymbol', 'genename', 'function'))
+    targetsdt %<>% unique()
+    targetsdt %<>% separate_rows(uniprot)
+    targetsdt %<>% data.table()
+    targetsdt %<>% extract(uniprot != '')
+    targetsdt %<>% unique()
+    targetsdt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = 'uniprot')
+
+    idvar <- if ('fosId' %in% fvars(object)) 'fosId' else 'proId'
+    fdt0 <- fdt(object)[, c(idvar, 'canonical'), with = FALSE]
+    fdt0 %<>% separate_rows(canonical)
+    fdt0 %<>% data.table()
+    fdt0 %<>% merge(targetsdt, by.x = 'canonical', by.y = 'uniprot', all.x = TRUE, sort = FALSE)
+    fdt0[, canonical := NULL]
+    fdt0 %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idvar)
+    object %<>% merge_fdata(fdt0, by.x = idvar, by.y = idvar)
+    object    
 }
 
 
