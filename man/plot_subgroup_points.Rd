@@ -13,6 +13,7 @@ plot_subgroup_points(
   group = !!enquo(block),
   facet = vars(feature_id),
   nrow = NULL,
+  scales = "free_y",
   ...,
   palette = NULL,
   fixed = list(na.rm = TRUE),
@@ -36,6 +37,8 @@ plot_subgroup_points(
 
 \item{nrow}{number of rows}
 
+\item{scales}{'free_y' etc.}
+
 \item{...}{mapped aesthetics}
 
 \item{palette}{color palette (named character vector)}
@@ -56,9 +59,9 @@ file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, fit='limma', plot = FALSE)
 idx <- order(fdata(object)$F.p.limma)[1:9]
 object \%<>\% extract(idx, )
-plot_sample_boxplots( object)
-plot_feature_boxplots(object)
-plot_subgroup_boxplots(object,subgroup=SET)
-plot_subgroup_points( object, subgroup=SET)
-plot_subgroup_points( object, subgroup=SET, block=SUB)
+plot_sample_boxplots(  object)
+plot_feature_boxplots( object)
+plot_subgroup_boxplots(object, subgroup = SET)
+plot_subgroup_points(  object, subgroup = SET)
+plot_subgroup_points(  object, subgroup = SET, block = SUB)
 }

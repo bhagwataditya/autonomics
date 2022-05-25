@@ -963,6 +963,7 @@ plot_subgroup_contrasts <- function(
 #' @param group       svar mapped to group
 #' @param facet       svar mapped to facets
 #' @param nrow        number of rows
+#' @param scales      'free_y' etc. 
 #' @param ...         mapped aesthetics
 #' @param palette     color palette (named character vector)
 #' @param fixed       fixed aesthetics
@@ -974,16 +975,16 @@ plot_subgroup_contrasts <- function(
 #' object <- read_metabolon(file, fit='limma', plot = FALSE)
 #' idx <- order(fdata(object)$F.p.limma)[1:9]
 #' object %<>% extract(idx, )
-#' plot_sample_boxplots( object)
-#' plot_feature_boxplots(object)
-#' plot_subgroup_boxplots(object,subgroup=SET)
-#' plot_subgroup_points( object, subgroup=SET)
-#' plot_subgroup_points( object, subgroup=SET, block=SUB)
+#' plot_sample_boxplots(  object)
+#' plot_feature_boxplots( object)
+#' plot_subgroup_boxplots(object, subgroup = SET)
+#' plot_subgroup_points(  object, subgroup = SET)
+#' plot_subgroup_points(  object, subgroup = SET, block = SUB)
 #' @export
 plot_subgroup_points <- function(
     object, subgroup, block = NULL, x = !!enquo(subgroup), 
     color = !!enquo(subgroup), group = !!enquo(block), 
-    facet = vars(feature_id), nrow = NULL, ...,
+    facet = vars(feature_id), nrow = NULL, scales = 'free_y', ...,
     palette = NULL,
     fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
     theme = list(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
@@ -998,7 +999,7 @@ plot_subgroup_points <- function(
     p <- plot_data(dt, geom = geom_point, x = !!x, y = value, color = !!color, 
                     group = !!group, ..., palette = palette, fixed = fixed)
     if (!quo_is_null(enquo(block)))  p <- p + geom_line()
-    p <- p + facet_wrap(facets = facet, scales = 'free_y', nrow = nrow)
+    p <- p + facet_wrap(facets = facet, scales = scales, nrow = nrow)
     p <- p + do.call(ggplot2::theme, theme)
     p
 }

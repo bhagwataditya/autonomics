@@ -218,77 +218,77 @@ nastring_to_nachar <- function(x){ x[x=='NA'] <- NA_character_;  x }
 nastring_to_1 <- function(x){ x[x=='NA'] <- 1; x}
 
 extract_reviewed <- function(`Fasta headers`){
-    `Fasta headers` %>% 
-    substr(2, 3)    %>%
-    equals('sp')    %>%
+    `Fasta headers`                    %>% 
+    substr(2, 3)                       %>%
+    equals('sp')                       %>%
     as.integer()
 }
 
 extract_entry <- function(`Fasta headers`){
     `Fasta headers` %>% 
-    split_extract_fixed(' ', 1) %>% 
-    split_extract_fixed('|', 3) %>% 
+    split_extract_fixed(' ', 1)        %>% 
+    split_extract_fixed('|', 3)        %>% 
     split_extract_fixed('_', 1)
 }
 
-extract_gene <- function(`Fasta headers`){
+extract_genesymbol <- function(`Fasta headers`){
     `Fasta headers` %>% 
     split_extract_fixed('GN=', 2)      %>% 
     split_extract_fixed(' ', 1)}
 
 extract_uniprot <- function(`Fasta headers`){
-    `Fasta headers` %>%
-    split_extract_fixed(' ', 1) %>% 
+    `Fasta headers`                    %>%
+    split_extract_fixed(' ', 1)        %>% 
     split_extract_fixed('|', 2) 
 }
 
 extract_canonical <- function(`Fasta headers`){
-    `Fasta headers`   %>%
-    extract_uniprot() %>%
+    `Fasta headers`                    %>%
+    extract_uniprot()                  %>%
     split_extract_fixed('-', 1) 
 }
 
 extract_isoform <- function(`Fasta headers`){
-    `Fasta headers`   %>%
-    extract_uniprot() %>%
-    split_extract_fixed('-', 2) %>%
-    nastring_to_1() %>%
+    `Fasta headers`                    %>%
+    extract_uniprot()                  %>%
+    split_extract_fixed('-', 2)        %>%
+    nastring_to_1()                    %>%
     as.integer()
 }
 
-extract_protein <- function(`Fasta headers`){
-    `Fasta headers` %>%
-        split_extract_regex('_[A-Z]+ ', 2) %>% 
-        split_extract_regex(' OS=', 1)
+extract_proteinname <- function(`Fasta headers`){
+    `Fasta headers`                    %>%
+    split_extract_regex('_[A-Z]+ ', 2) %>% 
+    split_extract_regex(' OS=', 1)
 }
 
 extract_fragment <- function(`Fasta headers`){
-    `Fasta headers`                %>%
-        extract_protein()          %>%
-        stri_detect_fixed(  'ragment') %>%
-        as.integer()
+    `Fasta headers`                    %>%
+    extract_protein()                  %>%
+    stri_detect_fixed(  'ragment')     %>%
+    as.integer()
 }
 
 extract_existence <- function(`Fasta headers`){
-    `Fasta headers`      %>%
-    split_extract_fixed('PE=', 2) %>%
-    split_extract_fixed(' ', 1) %>%
-    nastring_to_nachar() %>%
+    `Fasta headers`                   %>%
+    split_extract_fixed('PE=', 2)     %>%
+    split_extract_fixed(' ', 1)       %>%
+    nastring_to_nachar()              %>%
     as.integer()
 }
 
 parse_fastahdrs <- function(`Fasta headers`){
-    dt <- data.table(                                   # Reviewed
-        Reviewed  = extract_reviewed( `Fasta headers`), #   0 tr
-        Entry     = extract_entry(    `Fasta headers`), #   1 sp
-        Gene      = extract_gene(     `Fasta headers`),
-        Uniprot   = extract_uniprot(  `Fasta headers`), # Existence 
-        Canonical = extract_canonical(`Fasta headers`), #   1 protein 
-        Isoform   = extract_isoform(  `Fasta headers`), #   1 transcript
-        Protein   = extract_protein(  `Fasta headers`), #   2 homolog
-        Fragment  = extract_fragment( `Fasta headers`), #   3 prediction
-        Existence = extract_existence(`Fasta headers`)) #   4 uncertain
-    dt[, Existence := unique(.SD)[, Existence[!is.na(Existence)]], by = 'Canonical']
+    dt <- data.table(                                       # Reviewed
+        reviewed    = extract_reviewed(   `Fasta headers`), #   0 tr
+        entry       = extract_entry(      `Fasta headers`), #   1 sp
+        genesymbol  = extract_genesymbol( `Fasta headers`),
+        uniprot     = extract_uniprot(    `Fasta headers`), # Existence 
+        canonical   = extract_canonical(  `Fasta headers`), #   1 protein 
+        isoform     = extract_isoform(    `Fasta headers`), #   1 transcript
+        proteinname = extract_proteinname(`Fasta headers`), #   2 homolog
+        fragment    = extract_fragment(   `Fasta headers`), #   3 prediction
+        existence   = extract_existence(  `Fasta headers`)) #   4 uncertain
+    dt[, existence := unique(.SD)[, existence[!is.na(existence)]], by = 'canonical']
     # `unique`: for phosphosites the Fasta headers are sometimes
     #  replicated (when protein has multiple phosphosites)
     #  This duplication needs to be eliminated before proceeding.
@@ -336,27 +336,27 @@ drop_inferior <- function(anndt, verbose = TRUE){
     idcol <- if ('fosId' %in% names(anndt)) 'fosId' else 'proId'
     
     if (verbose)  message('\t\t\tDrop proteins with NA Entry/Protein names')
-    anndt <- anndt[Entry   != 'NA']
-    anndt <- anndt[Protein != 'NA']
+    anndt <- anndt[    entry   != 'NA']
+    anndt <- anndt[proteinname != 'NA']
     
     if (verbose)  message('\t\t\tWithin ', idcol, ': drop trembl    in favour of swissprot')
-    anndt <- anndt[, .SD[ Reviewed == max(Reviewed) ], by = idcol]
+    anndt <- anndt[, .SD[ reviewed == max(reviewed) ], by = idcol]
     
     if (verbose)  message('\t\t\t       ','     ','  drop fragments in favour of full proteins')
-    anndt <- anndt[, .SD[ Fragment == min(Fragment) ], by = idcol]
+    anndt <- anndt[, .SD[ fragment == min(fragment) ], by = idcol]
     
     if (verbose)  message('\t\t\t       ','     ','  drop worse existences', 
                           ' (1=protein, 2=transcript, 3=homolog, 4=prediction, 5=uncertain)')
-    if (!any(is.na(anndt$Existence))){
-        anndt <- anndt[, .SD[Existence == min(Existence)], by = idcol] }
+    if (!any(is.na(anndt$existence))){
+        anndt <- anndt[, .SD[existence == min(existence)], by = idcol] }
     anndt[, c('Reviewed', 'Fragment', 'Existence') := NULL]
     
     if (verbose)  message("\t\t\tDrop 'Isoform x of ' in Protein names")
-    anndt$Protein %<>% stri_replace_first_regex('Isoform [0-9A-Z]+ of ', '')
+    anndt$proteinname %<>% stri_replace_first_regex('Isoform [0-9A-Z]+ of ', '')
     
     if (verbose)  message("\t\t\tDrop '(Fragment)'    in Protein names")
-    anndt$Protein %<>% stri_replace_first_fixed(' (Fragment)', '')
-    anndt[order(as.integer(get(idcol)), Canonical, Isoform)]
+    anndt$proteinname %<>% stri_replace_first_fixed(' (Fragment)', '')
+    anndt[order(as.integer(get(idcol)), canonical, isoform)]
 }
 
 
@@ -383,7 +383,7 @@ drop_inferior <- function(anndt, verbose = TRUE){
     dt[sorter]
 }
 
-CURATEDCOLS <- c('Entry', 'Isoform', 'Uniprot', 'Canonical', 'Protein', 'Gene')
+CURATEDCOLS <- c('entry', 'isoform', 'uniprot', 'canonical', 'protein', 'gene')
 
 #' Curate and Annotate.
 #'
@@ -431,7 +431,7 @@ CURATEDCOLS <- c('Entry', 'Isoform', 'Uniprot', 'Canonical', 'Protein', 'Gene')
 curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     dt %<>% copy()
-    dt[, Entry := NA_character_]
+    dt[, entry := NA_character_]
     dt %<>% curate_annotate_fastafile(fastadt, verbose = verbose)
     idx <- dt$Reverse == '' & dt$`Potential contaminant` == '' & is.na(dt$Entry)
     dt1 <- dt[idx] %>% curate_annotate_maxquant(verbose = verbose)
@@ -523,7 +523,7 @@ add_feature_id <- function(dt){
     dt %<>% copy()
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     dt[, feature_id := Entry]
-    dt[Isoform!=1, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(Isoform, ';', ''), ')')]
+    dt[Isoform!=1, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(isoform, ';', ''), ')')]
     if (idcol=='fosId'){
         dt$feature_id %<>% paste0('-',dt$`Amino acid`)
         dt$feature_id %<>% paste0(split_extract_fixed(dt$`Positions within proteins`, ';', 1))
