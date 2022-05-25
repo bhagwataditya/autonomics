@@ -39,7 +39,7 @@ Within proteingroup
 \item \code{fullseqs > fragments}
 \item \verb{pro > rna > hom > pred}
 }
-\item Annotate: Entry, Isoform, Gene, Protein
+\item Annotate: entry, isoform, genesymbol, proteinname
 \itemize{
 \item \code{maxquant_curate :  MaxQuant }
 \item \code{   fasta_curate :  Fastafile}

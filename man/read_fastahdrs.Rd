@@ -20,7 +20,7 @@ data.table(uniprot, entry, gene, protein, reviewed, existence)
 Read headers from uniprot fastafile
 }
 \note{
-Existence values are always those of the canonical isoform
+existence values are always those of the canonical isoform
       (no isoform-level resolution for this field)
 }
 \examples{
