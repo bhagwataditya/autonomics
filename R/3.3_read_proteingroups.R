@@ -709,7 +709,7 @@ read_proteingroups <- function(
     proteinfile, fastadt = NULL, 
     quantity = guess_maxquant_quantity(proteinfile), curate = TRUE,
     subgroups = NULL, invert = character(0),
-    contaminants = FALSE, reverse = FALSE, impute = TRUE,
+    contaminants = FALSE, reverse = FALSE, impute = FALSE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,
     formula = NULL, block = NULL, coefs = NULL, contrastdefs = NULL,
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
@@ -759,7 +759,7 @@ read_phosphosites <- function(
     quantity = guess_maxquant_quantity(proteinfile), curate = TRUE, 
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
-    impute = TRUE, plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,  
+    impute = FALSE, plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,  
     formula = NULL, block = NULL, coefs = NULL, contrastdefs = NULL, 
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
