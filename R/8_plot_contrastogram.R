@@ -23,8 +23,8 @@ compute_connections <- function(
 # subgroup matrix, difference contrasts, limma
     fdrvalues <- fdr(object)
     effects <- effect(object)
-    names(fdrvalues) %<>% split_extract_fixed(FITSEP, 1)
-    names(effects) %<>% split_extract_fixed(FITSEP, 1)
+    colnames(fdrvalues) %<>% split_extract_fixed(FITSEP, 1)
+    colnames(effects) %<>% split_extract_fixed(FITSEP, 1)
     nsignif <- apply(fdrvalues < 0.05, 2, sum, na.rm=TRUE)
                 #colSums( fdrvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
     nup     <- apply(fdrvalues < 0.05 & effects>0, 2, sum, na.rm=TRUE)
