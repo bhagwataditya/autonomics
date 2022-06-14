@@ -2,15 +2,15 @@ Package: autonomics
 Type: Package
 Title: Generifying and intuifying cross-platform omics analysis
 Version: 1.3.0
-Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@mpi-bn.mpg.de",    role = c("aut", "cre")), 
-             person("Shahina",  "Hayat",     email = "shh2026@qatar-med.cornell.edu",   role = "aut"), 
-             person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",   role = "ctb"), 
-             person("Richard",  "Cotton",    email = "richierocks@gmail.com",           role = "ctb"),
-             person("Laure",    "Cougnaud",  email = "laure.cougnaud@openanalytics.eu", role = "ctb"),
-             person("Rudolf",   "Engelke",   email = "rue2006@qatar-med.cornell.edu",   role = "ctb"),
-             person("Hinrich",  "Goehlmann", email = "hinrich@goehlmann.info",          role = "sad"),
-             person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",   role = "sad"),
-             person("Johannes", "Graumann",  email = "johannes.graumann@mpi-bn.mpg.de", role = c('aut', 'sad', 'rth')))
+Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
+             person("Shahina",  "Hayat",     email = "shh2026@qatar-med.cornell.edu",    role = "aut"), 
+             person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",    role = "ctb"), 
+             person("Richard",  "Cotton",    email = "richierocks@gmail.com",            role = "ctb"),
+             person("Laure",    "Cougnaud",  email = "laure.cougnaud@openanalytics.eu",  role = "ctb"),
+             person("Rudolf",   "Engelke",   email = "rue2006@qatar-med.cornell.edu",    role = "ctb"),
+             person("Hinrich",  "Goehlmann", email = "hinrich@goehlmann.info",           role = "sad"),
+             person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",    role = "sad"),
+             person("Johannes", "Graumann",  email = "johannes.graumann@uni-marburg.de", role = c('aut', 'sad', 'rth')))
 Description:
   This package offers a generic and intuitive solution for cross-platform omics data analysis.
   It has functions for import, preprocessing, exploration, contrast analysis and visualization of omics data.
