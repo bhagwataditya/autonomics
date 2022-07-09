@@ -9,7 +9,8 @@ CORE_DATASETS  <- c('atkin18.somascan.adat',
                     'billing19.proteingroups.txt',
                     'billing19.phosphosites.txt',
                     'fukuda20.proteingroups.txt',
-                    'halama18.metabolon.xlsx')
+                    'halama18.metabolon.xlsx', 
+                    'szymanski22.report.tsv')
 
 #' Data used in examples/vignette/tests/longtests
 #' @examples 
