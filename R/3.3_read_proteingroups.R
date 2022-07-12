@@ -215,7 +215,7 @@ uncollapse <- function(dt, ..., sep = ';'){
 
 nastring_to_nachar <- function(x){ x[x=='NA'] <- NA_character_;  x }
 
-nastring_to_1 <- function(x){ x[x=='NA'] <- 1; x}
+nastring_to_0 <- function(x){ x[x=='NA'] <- 0; x}
 
 extract_reviewed <- function(`Fasta headers`){
     `Fasta headers`                    %>% 
@@ -252,7 +252,7 @@ extract_isoform <- function(`Fasta headers`){
     `Fasta headers`                    %>%
     extract_uniprot()                  %>%
     split_extract_fixed('-', 2)        %>%
-    nastring_to_1()                    %>%
+    nastring_to_0()                    %>%
     as.integer()
 }
 
@@ -527,7 +527,7 @@ add_feature_id <- function(dt){
     dt %<>% copy()
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     dt[, feature_id := entry]
-    dt[isoform!=1, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(isoform, ';', ''), ')')]
+    dt[isoform!=0, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(isoform, ';', ''), ')')]
     if (idcol=='fosId'){
         dt$feature_id %<>% paste0('-',dt$`Amino acid`)
         dt$feature_id %<>% paste0(split_extract_fixed(dt$`Positions within proteins`, ';', 1))
