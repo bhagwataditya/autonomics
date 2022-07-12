@@ -356,7 +356,11 @@ drop_inferior <- function(anndt, verbose = TRUE){
     
     if (verbose)  message("\t\t\tDrop '(Fragment)'    in Protein names")
     anndt$proteinname %<>% stri_replace_first_fixed(' (Fragment)', '')
-    anndt[order(as.integer(get(idcol)), canonical, isoform)]
+    if (assertive::is_numeric_string(anndt[[idcol]][1])){
+        anndt[order(as.integer(get(idcol)), canonical, isoform)]
+    } else {
+        anndt[order(get(idcol), canonical, isoform)]
+    }
 }
 
 

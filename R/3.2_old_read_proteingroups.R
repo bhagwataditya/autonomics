@@ -164,49 +164,7 @@ old_collapse_isoforms_paralogs <- function(feature_dt, verbose=TRUE){
 }
 
 
-#' Commonify strings
-#' @param x character vector
-#' @examples
-#' # NO DIFFERENCES
-#'    x <- c( 'Retrotransposon Gag-like protein 8B',
-#'            'Retrotransposon Gag-like protein 8B')
-#'    commonify_strings(x)
-#' # TAILS DIFFER
-#'    x <- c( 'Histone H2B type 1-K',
-#'            'Histone H2B type 1-C/E/F/G/I')
-#'    commonify_strings(x)
-#'    x <- c("Small nuclear ribonucleoprotein-associated proteins B and B'",
-#'           "Small nuclear ribonucleoprotein-associated protein N")
-#'    commonify_strings(x)
-#' # MORE COMPLEX DIFFERENCES
-#'    x <- c( 'Fatty acid binding protein, isoform 3',
-#'            'Fatty acid binding protein',
-#'            'heart-specific Fatty acid binding protein',
-#'            'heart-specific Fatty acid binding protein, isoform 3')
-#'    commonify_strings(x)
-#' # NOTHING IN COMMON
-#'    x <- c('ABC1', 'DEF2')
-#'    commonify_strings(x)
-#' @noRd
-commonify_strings <- function(x){
-    . <- NULL
-    common <- Reduce(extract_common_substr, x)
-    alternate  <- if (common==''){  x
-                } else {            stri_replace_first_fixed(x, common, '') %>%
-                                    stri_replace_first_fixed(', ', '')      %>%
-                                    trimws()
-                }
-    if (all(alternate == '')) return(common)
 
-    alternate                          %>%
-    unique()                           %>%
-    (function(s){s[s==''] <- '.'; s})  %>%
-    sort()                             %>%
-    #magrittr::extract(.!='')          %>%
-    paste0(collapse=' | ')             %>%
-    paste0('( ', ., ' )')              %>%
-    paste0(common, ' ', .)
-}
 
 
 #' Extract common substring
