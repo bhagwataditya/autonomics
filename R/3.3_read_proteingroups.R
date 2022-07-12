@@ -215,7 +215,11 @@ uncollapse <- function(dt, ..., sep = ';'){
 
 nastring_to_nachar <- function(x){ x[x=='NA'] <- NA_character_;  x }
 
-nastring_to_0 <- function(x){ x[x=='NA'] <- 0; x}
+nastring_to_0 <- function(x){ 
+    x[x=='NA'] <- 0; x
+        # Sometimes the canonical isoform is NOT isoform-1 !
+        # https://www.uniprot.org/uniprotkb/Q9H0P0/entry#sequences
+}
 
 extract_reviewed <- function(`Fasta headers`){
     `Fasta headers`                    %>% 

@@ -33,7 +33,9 @@ pg_to_isoforms <- function(x, unique = TRUE){
 .pg_to_isoforms <- function(x, unique = TRUE){
     z <- unlist(stri_split_fixed(x, ';'))
     z %<>% split_extract_fixed('-', 2)
-    z[z=='NA'] <- '1'
+    z[z=='NA'] <- '0'
+        # Sometimes the canonical isoform is NOT isoform-1 !
+        # https://www.uniprot.org/uniprotkb/Q9H0P0/entry#sequences
     if ({{unique}}) z %<>% unique()
     paste0(z, collapse = ',')
 }
@@ -86,7 +88,7 @@ commonify_collapsed_strings <- function(x, sep = ';'){
     commonify_strings(unlist(stri_split_fixed(x, sep)))
 }
 
-#' Forge feature ids 
+#' Forge PG descriptions
 #' @param Protein.Group string vector (without duplicates)
 #' @param Protein.Names NULL or string vector (with same length as Protein.Group)
 #' @param fastadt data.table
@@ -95,13 +97,13 @@ commonify_collapsed_strings <- function(x, sep = ';'){
 #' # Without fastafile 
 #'     Protein.Group <- c('Q96JP5;Q96JP5-2', 'O75822', 'Q96AC1;Q96AC1-3;Q9BQL6')
 #'     Protein.Names <- c('ZFP91', 'EIF3J', 'FERM2;FERM1')
-#'     forge_featureids(Protein.Group, Protein.Names)
+#'     forge_pg_descriptions(Protein.Group, Protein.Names)
 #' # With fastafile
 #'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #'     fastadt <- read_fastahdrs(fastafile)
-#'     forge_featureids(Protein.Group, fastadt = fastadt)
+#'     forge_pg_descriptions(Protein.Group, fastadt = fastadt)
 #' @export
-forge_featureids <- function(
+forge_pg_descriptions <- function(
     Protein.Group, Protein.Name = NULL, fastadt = NULL
 ){
     assert_is_character(Protein.Group)
@@ -111,58 +113,63 @@ forge_featureids <- function(
         assert_is_character(Protein.Name)
         pgdt <- data.table(Protein.Group = Protein.Group, Protein.Name = Protein.Name)
         pgdt$Protein.Name %<>% stri_replace_all_regex('_[A-Z]+', '')
-        # canonical <- pg_to_canonical(uniprots)
         pgdt[, isoform := pg_to_isoforms(Protein.Group) ]
         pgdt[, feature_id := Protein.Name]
         #pgdt[stri_detect_fixed(Protein.Name, ';'), feature_id := commonify_collapsed_strings(feature_id, ';'), by = 'feature_id']
-        pgdt$feature_id %<>% substr(1, 30)
-        #pgdt[stri_detect_fixed(Protein.Name, ';'), feature_id := paste0('(', feature_id, ')')]
-        pgdt[isoform!='1', feature_id := paste0(feature_id, '(', isoform, ')') ]
+        pgdt[isoform!='0', feature_id := paste0(feature_id, '(', isoform, ')') ]
         PG0 <- Protein.Group
         pgdt %<>% extract(PG0, on = 'Protein.Group')
         pgdt$feature_id
     } else {
         pgdt <- data.table(proId = Protein.Group, uniprot = Protein.Group)
         pgdt %<>% separate_rows(uniprot, sep = ';') %>% data.table()
+        fastadt %<>% extract(, c('uniprot', 'entry', 'canonical', 'isoform'))
         pgdt %<>% merge(fastadt, by = 'uniprot', sort = FALSE)
-        pgdt %<>% drop_inferior(verbose = FALSE)
+        # pgdt %<>% drop_inferior(verbose = FALSE)
+            # DIA-NN has a non-razor approach
+            # P63151, Q66LE6, P63151;Q66LE6 are three different proteingroups !
+            # curation is incompatible with this setup
         pgdt %<>% extract(order(proId, entry, isoform))
-        pgdt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = c('proId', 'canonical')) # Collapse proteingroup isoforms
+        pgdt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = c('proId', 'canonical')) # Collapse PG isoforms
         pgdt[, feature_id := entry]
         pgdt[, isoform := stri_replace_all_fixed(isoform, ';', ',')]
-        pgdt[isoform!='1', feature_id := paste0(feature_id, '(', isoform, ')')]
+        pgdt[isoform!='0', feature_id := paste0(feature_id, '(', isoform, ')')]
         pgdt[, isoform := NULL]
-        pgdt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = c('proId'))              # Collapse proteingroup paralogs
-        pgdt[Protein.Group, on = 'proId']$feature_id
+        pgdt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = c('proId'))              # Collapse PG paralogs
+        pgdt %<>% extract(Protein.Group, on = 'proId')
+        pgdt$feature_id
     }
 }
 
-#' Read DIA-NN data.table
-#'
-#' Read DIA-NN precursors/proteingroups
+#' Read diann
 #' 
 #' @param file     'report.tsv' file
 #' @param fastadt   fasta data.table
 #' @param quantity 'MaxLFQ' or 'Quantity'
-#' @return data.table (.read_diann_precursors) or SummarizedExperiment (read_diann_precursors)
+#' @return  data.table / SummarizedExperiment
 #' @examples 
-#' file <- download_data('szymanski22.report.tsv')
-#' (precursors    <- .read_diann_precursors(file))     # Precursor x Run
-#' (proteingroups <- .read_diann_proteingroups(file))
-#' 
-#' proteingroups[PG.Quantity==PG.Top1] # matches      : 26063 proteingroups
-#' proteingroups[PG.Quantity!=PG.Top1] # doesnt match :  4534 proteingroups
-#' 
-#' run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
-#' precursors[Protein.Group=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
-#' precursors[Protein.Group=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
-#' precursors[PG.Quantity != PG.Top1][proteingroup_id == unique(proteingroup_id)[1]][Run == unique(Run)[1]][1:2, 1:6]
-#' precursors[PG.Quantity != PG.Top1][proteingroup_id == unique(proteingroup_id)[2]][Run == unique(Run)[1]][1:2, 1:6]
-#' precursors[PG.Quantity != PG.Top1][proteingroup_id == unique(proteingroup_id)[3]][Run == unique(Run)[1]][1:3, 1:6]
+#' # Functions
+#'     file <- download_data('szymanski22.report.tsv')
+#'     (PR   <- ..read_diann(file))   # precursors    dt
+#'     (PG   <-  .read_diann(file))   # proteingroups dt
+#'     (object <- read_diann(file))   # proteingroups sumexp
+#'      values(object)[1:5, 1:3]
+#'      fdt(object)[1:5]
+#' # Quantities
+#'      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
+#'      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
+#'      run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
+#'      PR[Protein.Group=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
+#'      PR[Protein.Group=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
+#'      PR[PG.Quantity != PG.Top1][PG.Description == unique(PG.Description)[1]][Run == unique(Run)[1]][1:2, 1:6]
+#'      PR[PG.Quantity != PG.Top1][PG.Description == unique(PG.Description)[2]][Run == unique(Run)[1]][1:2, 1:6]
+#'      PR[PG.Quantity != PG.Top1][PG.Description == unique(PG.Description)[3]][Run == unique(Run)[1]][1:3, 1:6]
+#' @rdname read_diann
 #' @export
-.read_diann_precursors <- function(file, fastadt = NULL){
+..read_diann <- function(file, fastadt = NULL){
 # Read
-    anncols <- c('Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id', 'Run')
+    anncols <- c('Genes', 'Protein.Names', 'Protein.Group', 
+                 'First.Protein.Description', 'Precursor.Id', 'Run')
     numcols <- c('PG.MaxLFQ', 'Precursor.Quantity', 'PG.Quantity')
     cols <- c(anncols, numcols)
     dt <- fread(file, select = cols)
@@ -174,39 +181,53 @@ forge_featureids <- function(
     # dt %<>% extract(Lib.Q.Value <= 0.05)
     # dt %<>% extract(Lib.PG.Q.Value <= 0.01)
     pgdt <- unique(dt[, .(Protein.Group, Protein.Names)])
-    pgdt[, proteingroup_id := forge_featureids(Protein.Group, Protein.Names, fastadt)]
+    pgdt[, PG.Description := forge_pg_descriptions(Protein.Group, Protein.Names, fastadt)]
     pgdt[, Protein.Names := NULL]
     dt %<>% .merge(pgdt, by = 'Protein.Group')
-    dt %<>% extract(order(proteingroup_id, Run, -Precursor.Quantity))
+    dt %<>% extract(order(PG.Description, Run, -Precursor.Quantity))
 # Summarize/Return
     dt[, Precursor.No := seq_len(.N), by = c('Protein.Group', 'Run')]
     dt[, PG.Top1 :=     rev(sort(Precursor.Quantity))[1],                  by = c('Protein.Group', 'Run')]
     dt[, PG.Top3 := sum(rev(sort(Precursor.Quantity))[1:3], na.rm = TRUE), by = c('Protein.Group', 'Run')]
     dt[, PG.Sum  := sum(         Precursor.Quantity,        na.rm = TRUE), by = c('Protein.Group', 'Run')]
-    cols <- c('proteingroup_id', 'Protein.Group', 'Run', 'Precursor.No', 'Precursor.Id',  'Precursor.Quantity', 
+    cols <- c('Protein.Group', 'PG.Description', 'First.Protein.Description', 
+              'Genes', 'Run', 'Precursor.No', 'Precursor.Id',  'Precursor.Quantity', 
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum' , 'PG.MaxLFQ')
     dt %<>% extract(, cols, with = FALSE)
     dt
 }
 
-#' @rdname dot-read_diann_precursors
+#' @rdname read_diann
 #' @export
-.read_diann_proteingroups <- function(file, fastadt = NULL){
-    dt <- .read_diann_precursors(file, fastadt = fastadt)
-    cols <- c('Protein.Group', 'Run', 'PG.Quantity', 
+.read_diann <- function(file, fastadt = NULL){
+    dt <- ..read_diann(file, fastadt = fastadt)
+    cols <- c('Protein.Group', 'PG.Description', 'First.Protein.Description', 
+              'Genes', 'Run', 'PG.Quantity', 
               'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ')
     unique(dt[, cols, with = FALSE ])
 }
 
-read_diann_precursors <- function(file, fastadt = NULL){
-    dt <- .read_diann_precursors(file, fastadt = fastadt)
-    mat <- data.table::dcast(dt, feature_id ~ Run, value.var = 'Precursor.Quantity')
+#' @rdname read_diann
+#' @export
+read_diann <- function(
+    file, fastadt = NULL, quantity = 'PG.MaxLFQ'
+){
+# exprs
+    dt <- .read_diann(file, fastadt = fastadt)
+    mat <- data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
     mat %<>% dt2mat()
-    object <- SummarizedExperiment::SummarizedExperiment(list(Precursor.Quantity = mat))
-    fdt0 <- dt[, .(Protein.Group, feature_id, Genes, Protein.Names, Precursor.Id)]
-    fdt0 %<>% unique()
+    l <- set_names(list(exprs = mat), quantity)
+    object <- SummarizedExperiment::SummarizedExperiment(l)
+    idx <- rowSums(!is.na(values(object))) > 1
+    if (verbose)  message('\tRetain ', sum(idx), '/', length(idx), 
+                          ' proteingroups replicated in at least two samples')
+    object %<>% extract(idx, )
+    object %<>% extract(order(matrixStats::rowVars(values(.), na.rm = TRUE)), )
+ # fdata
     fdt(object)$feature_id <- rownames(object)
-    object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
+    fdt0 <- dt[, .(Protein.Group, PG.Description, Genes, First.Protein.Description)]
+    fdt0 %<>% unique()
+    object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'Protein.Group')
     object
 }
 
