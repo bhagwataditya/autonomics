@@ -57,7 +57,7 @@ add_fill_scale <- function(p, fill, data, palette=NULL){
         assert_is_subset(fillstr, names(data))
         values0 <- data[[fillstr]]
         if (!is.numeric(values0)){
-            levels0 <- unique(values0)
+            levels0 <- as.character(unique(values0))
             if (is.null(palette)) palette <- make_colors(levels0, sep = guess_sep(levels0))
             p <- p + scale_fill_manual(values = palette, na.value = 'gray80')
         }
