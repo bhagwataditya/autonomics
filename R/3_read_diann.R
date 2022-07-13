@@ -141,32 +141,36 @@ forge_pg_descriptions <- function(
     }
 }
 
+
 #' Read diann
-#' 
+#'
 #' @param file     'report.tsv' file
-#' @param fastadt   fasta data.table
-#' @param quantity 'MaxLFQ' or 'Quantity'
+#' @param fastadt   NULL or data.table
+#' @param quantity 'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
 #' @return  data.table / SummarizedExperiment
 #' @examples 
-#' # Functions
+#' # Read
 #'     file <- download_data('szymanski22.report.tsv')
-#'     (PR   <- ..read_diann(file))   # precursors    dt
-#'     (PG   <-  .read_diann(file))   # proteingroups dt
-#'     (object <- read_diann(file))   # proteingroups sumexp
-#'      values(object)[1:5, 1:3]
-#'      fdt(object)[1:5]
-#' # Quantities
+#'    (PR   <- .read_diann_precursors(file))       # precursor    dt
+#'    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
+#'    (object <- read_diann(file))                 # proteingroup sumexp
+#'     values(object)[1:5, 1:2]
+#'     fdt(object)[1:5]
+#'     sdt(object)
+#'     object$dilution <- split_extract_fixed(object$sample_id, '_', 3)
+#'     biplot(pca(object), color = dilution) + ggtitle('IPT Hela')
+#' # Compare Summarizations
 #'      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
 #'      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
 #'      run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
 #'      PR[Protein.Group=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
 #'      PR[Protein.Group=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
-#'      PR[PG.Quantity != PG.Top1][PG.Description == unique(PG.Description)[1]][Run == unique(Run)[1]][1:2, 1:6]
-#'      PR[PG.Quantity != PG.Top1][PG.Description == unique(PG.Description)[2]][Run == unique(Run)[1]][1:2, 1:6]
-#'      PR[PG.Quantity != PG.Top1][PG.Description == unique(PG.Description)[3]][Run == unique(Run)[1]][1:3, 1:6]
+#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
+#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
+#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
 #' @rdname read_diann
 #' @export
-..read_diann <- function(file, fastadt = NULL){
+.read_diann_precursors <- function(file, fastadt = NULL){
 # Read
     anncols <- c('Genes', 'Protein.Names', 'Protein.Group', 
                  'First.Protein.Description', 'Precursor.Id', 'Run')
@@ -181,16 +185,16 @@ forge_pg_descriptions <- function(
     # dt %<>% extract(Lib.Q.Value <= 0.05)
     # dt %<>% extract(Lib.PG.Q.Value <= 0.01)
     pgdt <- unique(dt[, .(Protein.Group, Protein.Names)])
-    pgdt[, PG.Description := forge_pg_descriptions(Protein.Group, Protein.Names, fastadt)]
+    pgdt[, feature_name := forge_pg_descriptions(Protein.Group, Protein.Names, fastadt)]
     pgdt[, Protein.Names := NULL]
     dt %<>% .merge(pgdt, by = 'Protein.Group')
-    dt %<>% extract(order(PG.Description, Run, -Precursor.Quantity))
+    dt %<>% extract(order(feature_name, Run, -Precursor.Quantity))
 # Summarize/Return
     dt[, Precursor.No := seq_len(.N), by = c('Protein.Group', 'Run')]
     dt[, PG.Top1 :=     rev(sort(Precursor.Quantity))[1],                  by = c('Protein.Group', 'Run')]
     dt[, PG.Top3 := sum(rev(sort(Precursor.Quantity))[1:3], na.rm = TRUE), by = c('Protein.Group', 'Run')]
     dt[, PG.Sum  := sum(         Precursor.Quantity,        na.rm = TRUE), by = c('Protein.Group', 'Run')]
-    cols <- c('Protein.Group', 'PG.Description', 'First.Protein.Description', 
+    cols <- c('Protein.Group', 'feature_name', 'First.Protein.Description', 
               'Genes', 'Run', 'Precursor.No', 'Precursor.Id',  'Precursor.Quantity', 
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum' , 'PG.MaxLFQ')
     dt %<>% extract(, cols, with = FALSE)
@@ -199,9 +203,9 @@ forge_pg_descriptions <- function(
 
 #' @rdname read_diann
 #' @export
-.read_diann <- function(file, fastadt = NULL){
-    dt <- ..read_diann(file, fastadt = fastadt)
-    cols <- c('Protein.Group', 'PG.Description', 'First.Protein.Description', 
+.read_diann_proteingroups <- function(file, fastadt = NULL){
+    dt <- .read_diann_precursors(file, fastadt = fastadt)
+    cols <- c('Protein.Group', 'feature_name', 'First.Protein.Description', 
               'Genes', 'Run', 'PG.Quantity', 
               'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ')
     unique(dt[, cols, with = FALSE ])
@@ -212,10 +216,17 @@ forge_pg_descriptions <- function(
 read_diann <- function(
     file, fastadt = NULL, quantity = 'PG.MaxLFQ'
 ){
+# Assert
+    assert_all_are_existing_files(file)
+    if (!is.null(fastadt))  assert_is_data.table(fastadt)
+    assert_is_a_string(quantity)
+    assert_is_subset(quantity, 
+         c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum'))
 # exprs
-    dt <- .read_diann(file, fastadt = fastadt)
+    dt <- .read_diann_proteingroups(file, fastadt = fastadt)
     mat <- data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
     mat %<>% dt2mat()
+    mat %<>% log2()
     l <- set_names(list(exprs = mat), quantity)
     object <- SummarizedExperiment::SummarizedExperiment(l)
     idx <- rowSums(!is.na(values(object))) > 1
@@ -223,11 +234,14 @@ read_diann <- function(
                           ' proteingroups replicated in at least two samples')
     object %<>% extract(idx, )
     object %<>% extract(order(matrixStats::rowVars(values(.), na.rm = TRUE)), )
- # fdata
+ # fdt
     fdt(object)$feature_id <- rownames(object)
-    fdt0 <- dt[, .(Protein.Group, PG.Description, Genes, First.Protein.Description)]
+    fdt0 <- dt[, .(Protein.Group, feature_name, Genes, First.Protein.Description)]
     fdt0 %<>% unique()
     object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'Protein.Group')
+# sdt
+    object$sample_id <- colnames(object)
+    object$subgroup <- 'group0'
     object
 }
 
