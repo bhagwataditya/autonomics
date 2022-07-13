@@ -230,8 +230,8 @@ read_diann <- function(
     l <- set_names(list(exprs = mat), quantity)
     object <- SummarizedExperiment::SummarizedExperiment(l)
     idx <- rowSums(!is.na(values(object))) > 1
-    if (verbose)  message('\tRetain ', sum(idx), '/', length(idx), 
-                          ' proteingroups replicated in at least two samples')
+    message('\tRetain ', sum(idx), '/', length(idx), 
+            ' proteingroups replicated in at least two samples')
     object %<>% extract(idx, )
     object %<>% extract(order(matrixStats::rowVars(values(.), na.rm = TRUE)), )
  # fdt
