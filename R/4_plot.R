@@ -1098,7 +1098,7 @@ plot_contrast_venn <- function(issig, colors = NULL){
 #' mat %<>% data.table::dcast(replicate ~ Group, value.var  = 'present', fill = 0)
 #' mat %<>% dt2mat()
 #' plot_matrix(mat)
-#' @return
+#' @return no return (base R plot)
 #' @export
 plot_matrix <- function(mat){
     nr <- nrow(mat)

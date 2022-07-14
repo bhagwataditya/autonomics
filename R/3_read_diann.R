@@ -92,7 +92,7 @@ commonify_collapsed_strings <- function(x, sep = ';'){
 #' @param Protein.Group string vector (without duplicates)
 #' @param Protein.Names NULL or string vector (with same length as Protein.Group)
 #' @param fastadt data.table
-#' @return 
+#' @return string vector
 #' @examples
 #' # Without fastafile 
 #'     Protein.Group <- c('Q96JP5;Q96JP5-2', 'O75822', 'Q96AC1;Q96AC1-3;Q9BQL6')

@@ -14,7 +14,7 @@ forge_pg_descriptions(Protein.Group, Protein.Name = NULL, fastadt = NULL)
 \item{Protein.Names}{NULL or string vector (with same length as Protein.Group)}
 }
 \value{
-
+string vector
 }
 \description{
 Forge PG descriptions

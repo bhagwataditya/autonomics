@@ -10,7 +10,7 @@ plot_matrix(mat)
 \item{mat}{}
 }
 \value{
-
+no return (base R plot)
 }
 \description{
 Plot binary matrix
