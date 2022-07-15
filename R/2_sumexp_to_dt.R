@@ -147,16 +147,17 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
 #' Write sumexp to tsv
 #' @param object SummarizedExperiment
 #' @param file filename
+#' @return NULL
 #' @examples 
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
 #' file <- tempdir()
-#' file %<>% file.path('fukuda20.proteingrups.tsv')
+#' file %<>% file.path('fukuda20.proteingroups.tsv')
 #' sumexp_to_tsv(object, file)
-#' 
 #' @export
 sumexp_to_tsv <- function(object, file){
     widedt <- sumexp_to_widedt(object)
+    fwrite(widedt, file, sep = '\t')
 }
 
 
