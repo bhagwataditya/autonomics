@@ -221,7 +221,7 @@ split_by_fvar <- function(object, fvar){
 
 #=============================================================================
 #
-#                     is_systematic_detect
+#                     is_consistent_detect
 #                     is_random_detect
 #                     is_full_detect
 #
@@ -236,7 +236,7 @@ has_consistent_nondetects <- function(object, ssym){
 }
 
 
-is_systematic_detect <- function(object, subgroup = subgroup){
+is_consistent_detect <- function(object, subgroup = subgroup){
     . <- NULL
     subgroup <- enquo(subgroup)
     split_by_svar(object, !!subgroup) %>%
@@ -246,7 +246,7 @@ is_systematic_detect <- function(object, subgroup = subgroup){
 
 is_random_detect <- function(object, subgroup = subgroup){
     subgroup <- enquo(subgroup)
-    rowAnys(is.na(values(object))) & !is_systematic_detect(object, !!subgroup)
+    rowAnys(is.na(values(object))) & !is_consistent_detect(object, !!subgroup)
 }
 
 
@@ -264,7 +264,7 @@ is_full_detect <- function(object){
 
 #' Venn detects
 #'
-#' Venn diagram full/systematic/random detects
+#' Venn diagram full/consistent/random detects
 #'
 #' @param object SummarizedExperiment
 #' @param subgroup subgroup symbol
@@ -277,17 +277,25 @@ is_full_detect <- function(object){
 venn_detects <- function(object, subgroup){
     subgroup <- enquo(subgroup)
     limma::vennDiagram(as.matrix(cbind(
-        systematic = is_systematic_detect(object, !!subgroup),
+        consistent = is_consistent_detect(object, !!subgroup),
         random     = is_random_detect(    object, !!subgroup),
         full       = is_full_detect(      object))))
 }
 
 #=============================================================================
 #
-#                     impute_systematic_nondetects
+#                     impute_consistent_nas
 #
 #==============================================================================
-#' Impute systematic nondetects
+
+#' @rdname impute_consistent_nas
+#' @export
+impute_systematic_nondetects <- function(...){
+    .Deprecated('impute_consistent_nondetects')
+    impute_consistent_nas(...)
+}
+
+#' Impute consistent nas
 #' @param object    SummarizedExperiment
 #' @param subgroup     subgroup svar
 #' @param fun       imputation function
@@ -298,24 +306,21 @@ venn_detects <- function(object, subgroup){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
-#' impute_systematic_nondetects(object)
+#' impute_consistent_nas(object)
 #' @export
-impute_systematic_nondetects <- function(object, subgroup = subgroup,
+impute_consistent_nas <- function(object, subgroup = subgroup,
     fun = halfnormimpute, plot = TRUE, verbose = TRUE, ...
 ){
 # Process
-    absent <- replicated <- systematic <- value <- NULL
+    absent <- replicated <- consistent <- value <- NULL
     subgroup <- enquo(subgroup)
     groupvar <- as_name(subgroup)
-# Filter
-    object %<>% filter_exprs_replicated_in_some_subgroup(
-                    subgroupvar = groupvar, verbose = verbose)
 # Impute
     dt  <-  sumexp_to_long_dt(object, svars = groupvar)
     dt[, absent     := all(is.na(value)),    by = c('feature_id', groupvar)]
-    dt[, replicated := sum(!is.na(value))>1, by = c('feature_id', groupvar)]
-    dt[, systematic := any(absent) & any(replicated), by = 'feature_id']
-    dt[, is_imputed := systematic & absent]
+    dt[, replicated := sum(!is.na(value)) >= max(2, .N/2), by = c('feature_id', groupvar)]
+    dt[, consistent := any(absent) & any(replicated), by = 'feature_id']
+    dt[, is_imputed := consistent & absent]
     dt[, value := fun(value, is_imputed, ...), by='feature_id']
 # Update object
     ff <- fnames(object)
@@ -327,7 +332,7 @@ impute_systematic_nondetects <- function(object, subgroup = subgroup,
 # Plot
     nrowimputed <- sum(rowAnys(is_imputed(object)))
     ncolimputed <- sum(colAnys(is_imputed(object)))
-    if (verbose & nrowimputed>0)  message('\t\tImpute systematic nondetects ', 
+    if (verbose & nrowimputed>0)  message('\t\tImpute consistent nondetects ', 
         'for ', nrowimputed, '/', nrow(object), ' features ', 
         'in ',  ncolimputed, '/', ncol(object), ' samples')
     if (plot)    print(plot_detections(object, subgroup = !!subgroup))
@@ -358,7 +363,7 @@ detect_order_features <- function(object, subgroup){
     x <- object
     values(x)[is_imputed(x)] <- NA
     idx1 <- fnames(cluster_order_features(
-                        x[is_systematic_detect(x, !!subgroup),]))
+                        x[is_consistent_detect(x, !!subgroup),]))
     idx2 <- fnames(cluster_order_features(
                         x[is_random_detect(x, !!subgroup), ]))
     idx3 <- fnames(cluster_order_features(
@@ -406,7 +411,7 @@ plot_detects <- function(...){
 #' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 #' plot_summarized_detections(object)
 #' plot_detections(object)
-#' plot_detections(impute_systematic_nondetects(object, plot=FALSE))
+#' plot_detections(impute_consistent_nas(object, plot=FALSE))
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
@@ -427,7 +432,7 @@ plot_detections <- function(
     object %<>% detect_order_features(!!subgroup)
     y <- object; values(y)[is_imputed(y)] <- NA
     nfull       <- sum(is_full_detect(y))
-    nsystematic <- sum(is_systematic_detect(y, subgroup=!!subgroup))
+    nconsistent <- sum(is_consistent_detect(y, subgroup=!!subgroup))
     nrandom     <- sum(is_random_detect(y, subgroup=!!subgroup))
 # Melt
     plotdt  <-  sumexp_to_long_dt(object, svars = c(groupvar, fillstr))
@@ -448,14 +453,14 @@ plot_detections <- function(
     scale_alpha_manual(values = c(nondetect=0, impute=0.3, detect = 1)) +
     ylab('Features') +
     xlab('Samples') +
-    ggtitle(sprintf('detects: %d full, %d random, %d systematic',
-                    nfull, nrandom, nsystematic)) +
+    ggtitle(sprintf('detects: %d full, %d random, %d consistent',
+                    nfull, nrandom, nconsistent)) +
     theme_bw() +
     theme(  axis.text.y  = element_blank(), axis.ticks.y = element_blank(),
             axis.text.x  = element_text(angle = 90, vjust = 0.5),
             legend.title = element_blank(),
             panel.grid   = element_blank()) +
-    geom_hline(yintercept = cumsum(c(nfull, nrandom, nsystematic))) +
+    geom_hline(yintercept = cumsum(c(nfull, nrandom, nconsistent))) +
     guides(alpha = 'none')
 
 }
@@ -587,8 +592,8 @@ explore_imputations <- function(
     object, subgroup, xbiplot = pca1, ybiplot = pca2, ...
 ){
     subgroup <- enquo(subgroup)
-    imputed  <- impute_systematic_nondetects(object, plot=FALSE)
-    zeroed <- impute_systematic_nondetects(
+    imputed  <- impute_consistent_nas(object, plot=FALSE)
+    zeroed <- impute_consistent_nas(
                 object, subgroup = !!subgroup, fun = zeroimpute, plot = FALSE)
     legend <- gglegend(biplot(object))
 

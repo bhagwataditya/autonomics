@@ -63,7 +63,7 @@ sumexp_to_wide_dt <- function(
 #'    file <- download_data('fukuda20.proteingroups.txt')
 #'    object <- read_proteingroups(file, impute=FALSE, plot=FALSE)
 #'    sumexp_to_long_dt(object)
-#'    object %<>% impute_systematic_nondetects(plot=FALSE)
+#'    object %<>% impute_consistent_nas(plot=FALSE)
 #'    sumexp_to_long_dt(object)
 #' @export
 sumexp_to_long_dt <- function(

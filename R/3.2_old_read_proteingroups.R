@@ -345,7 +345,7 @@ filter_maxquant_samples <- function(object, subgroups, verbose){
 transform_maxquant <- function(object, impute, verbose, plot){
     if (verbose && impute) message('\tTransform exprs')
 # Impute
-    if (impute) object %<>% impute_systematic_nondetects(plot = FALSE)
+    if (impute) object %<>% impute_consistent_nas(plot = FALSE)
     object
 }
 

@@ -15,7 +15,7 @@ venn_detects(object, subgroup)
 \code{NULL}
 }
 \description{
-Venn diagram full/systematic/random detects
+Venn diagram full/consistent/random detects
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')

@@ -1017,7 +1017,7 @@ process_maxquant <- function(
         object %<>% filter_features(
             `Localization prob` >= localization, verbose = verbose)  }
 # Impute
-    if (impute)  object %<>% impute_systematic_nondetects(plot = FALSE)
+    if (impute)  object %<>% impute_consistent_nas(plot = FALSE)
     object
 }
 

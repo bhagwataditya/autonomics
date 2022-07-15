@@ -167,7 +167,7 @@ context('fit: GSE161731')
     test_that(  "fit: halama18.metabolon", {
         file <- download_data('halama18.metabolon.xlsx')
         object <- read_metabolon(file, plot = FALSE)
-        object %<>% impute_systematic_nondetects(subgroup = Group, plot=FALSE)
+        object %<>% impute_consistent_nas(subgroup = Group, plot=FALSE)
         #object %<>% fit_wilcoxon(subgroupvar = 'Group')
         #expect_true(sumexp_contains_fit(object, 'wilcoxon'))
         #object %<>% fit_lm(subgroupvar = 'Group')

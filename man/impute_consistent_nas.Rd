@@ -2,9 +2,12 @@
 % Please edit documentation in R/7_impute.R
 \name{impute_systematic_nondetects}
 \alias{impute_systematic_nondetects}
-\title{Impute systematic nondetects}
+\alias{impute_consistent_nas}
+\title{Impute consistent nas}
 \usage{
-impute_systematic_nondetects(
+impute_systematic_nondetects(...)
+
+impute_consistent_nas(
   object,
   subgroup = subgroup,
   fun = halfnormimpute,
@@ -14,6 +17,8 @@ impute_systematic_nondetects(
 )
 }
 \arguments{
+\item{...}{passed to `fun`}
+
 \item{object}{SummarizedExperiment}
 
 \item{subgroup}{subgroup svar}
@@ -23,17 +28,15 @@ impute_systematic_nondetects(
 \item{plot}{TRUE or FALSE}
 
 \item{verbose}{TRUE or FALSE}
-
-\item{...}{passed to `fun`}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Impute systematic nondetects
+Impute consistent nas
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
-impute_systematic_nondetects(object)
+impute_consistent_nasobject)
 }
