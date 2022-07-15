@@ -222,7 +222,7 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
         message("\t\t\tfor assays: ", assayNames(object)[1])
     }
     fvars0 <- intersect(c('feature_id', 'feature_name'), fvars(object))
-    dt <- sumexp_to_long_dt(object, fvars=fvars0, svars=c(subgroupvar, block))
+    dt <- sumexp_to_longdt(object, fvars=fvars0, svars=c(subgroupvar, block))
     subgroups <- slevels(object, subgroupvar)
     n <- length(subgroups)
     formula <- paste0(c(fvars0, block), collapse = ' + ')
@@ -442,10 +442,10 @@ plot_transformation_densities <- function(
     value <- sample_id <- NULL
     subgroup <- enquo(subgroup); subgroupvar <- as_name(subgroup)
     assert_is_subset(subgroupvar, svars(object))
-    dt <- sumexp_to_long_dt(object, svars = c(subgroupvar))
+    dt <- sumexp_to_longdt(object, svars = c(subgroupvar))
     dt$transfo <- 'input'
     for (transfo in transformations){
-        dt1 <- sumexp_to_long_dt(
+        dt1 <- sumexp_to_longdt(
                 get(transfo)(object), svars = c(subgroupvar))
         dt1$transfo <- transfo
         dt %<>% rbind(dt1)
@@ -467,10 +467,10 @@ plot_transformation_violins <- function(
     value <- sample_id <- NULL
     subgroupvar <- as_name(subgroup); subgroup <- enquo(subgroup)
     assert_is_subset(subgroupvar, svars(object))
-    dt <- sumexp_to_long_dt(object, svars = subgroupvar)
+    dt <- sumexp_to_longdt(object, svars = subgroupvar)
     dt$transfo <- 'input'
     for (transfo in transformations){
-        dt1 <- sumexp_to_long_dt(
+        dt1 <- sumexp_to_longdt(
                 get(transfo)(object), svars = subgroupvar)
         dt1$transfo <- transfo
         dt %<>% rbind(dt1)

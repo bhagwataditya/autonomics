@@ -316,7 +316,7 @@ impute_consistent_nas <- function(object, subgroup = subgroup,
     subgroup <- enquo(subgroup)
     groupvar <- as_name(subgroup)
 # Impute
-    dt  <-  sumexp_to_long_dt(object, svars = groupvar)
+    dt  <-  sumexp_to_longdt(object, svars = groupvar)
     dt[, absent     := all(is.na(value)),    by = c('feature_id', groupvar)]
     dt[, replicated := sum(!is.na(value)) >= max(2, .N/2), by = c('feature_id', groupvar)]
     dt[, consistent := any(absent) & any(replicated), by = 'feature_id']
@@ -435,7 +435,7 @@ plot_detections <- function(
     nconsistent <- sum(is_consistent_detect(y, subgroup=!!subgroup))
     nrandom     <- sum(is_random_detect(y, subgroup=!!subgroup))
 # Melt
-    plotdt  <-  sumexp_to_long_dt(object, svars = c(groupvar, fillstr))
+    plotdt  <-  sumexp_to_longdt(object, svars = c(groupvar, fillstr))
     alpha <- NULL
     plotdt[,             detection := 'detect']
     plotdt[is.na(value), detection := 'nondetect']
@@ -517,7 +517,7 @@ plot_summarized_detections <- function(
     object %<>% filter_samples(!is.na(!!subgroup), verbose=TRUE)
     values(object) %<>% zero_to_na()  #### TODO fine-tune
     featuretypes <- get_subgroup_combinations(object, groupvar)
-    dt <- sumexp_to_long_dt(object, svars = groupvar)
+    dt <- sumexp_to_longdt(object, svars = groupvar)
     if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,
                                                         value := NA]
     dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),

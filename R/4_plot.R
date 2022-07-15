@@ -292,7 +292,7 @@ plot_densities <- function(
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
     assert_is_identical_to_true(is_uniquely_empty(plottedsvars, plottedfvars))
-    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+    dt <- sumexp_to_longdt(object, svars = plottedsvars, fvars = plottedfvars)
 # Plot
     p <- plot_data(dt, geom = geom_density, x = value, fill = !!fill,
             color = !!color, group = !!group, palette = palette, fixed = fixed)
@@ -413,7 +413,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     if (!is.null(facet))   plotvars %<>% c(vapply(facet, as_name, character(1)))
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
-    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+    dt <- sumexp_to_longdt(object, svars = plottedsvars, fvars = plottedfvars)
 # Plot
     p <- plot_data(dt, geom = geom_violin, x = !!x, y = value,
                 fill = !!fill, color= !!color, group=!!group, 
@@ -540,7 +540,7 @@ plot_boxplots <- function(
                         highlightstr, facetstr))
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
-    dt <- sumexp_to_long_dt(
+    dt <- sumexp_to_longdt(
             object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
     dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
     
@@ -750,7 +750,7 @@ plot_coef_boxplots <- function(
     object %<>% extract_coef_features(coef = coef, fit = fit, fdrcutoff = fdrcutoff, ntop = ntop)
     object %<>% format_coef_vars(     coef = coef, fit = fit)
 # Plot
-    dt <- sumexp_to_long_dt(object, assay = assay, svars = svars0, fvars = fvars0)
+    dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
     mediandt <- summarize_median(dt, subgroupvar)
     contrastsubgroup <- NULL
     #mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, downlevels)]
@@ -842,7 +842,7 @@ expand_into_vector <- function(value, templatevector){
     topfname <- as.character(fdata(object)[topfid, ]$feature_name)
     subject <- object[topfid, ]
     subject$xinteraction <- interaction(subject[[xvar]], subject[[svar]])
-    plotdt <- sumexp_to_long_dt(subject,
+    plotdt <- sumexp_to_longdt(subject,
                                 svars = c('xinteraction', fillvar, blockvar),
                                 fvars = c('feature_name', pvar, fdrvar))
     setnames(plotdt, pvar,   'p')
@@ -993,7 +993,7 @@ plot_subgroup_points <- function(
     color <- enquo(color)
     group <- enquo(group)
     
-    dt <- sumexp_to_long_dt(
+    dt <- sumexp_to_longdt(
             object, svars = svars(object), fvars = fvars(object))
     value <- NULL
     p <- plot_data(dt, geom = geom_point, x = !!x, y = value, color = !!color, 

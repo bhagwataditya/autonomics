@@ -729,7 +729,7 @@ sumexplist_to_long_dt <- function(
     assert_are_disjoint_sets(c(setvarname, 'xxxxx'), svars)
     assert_are_disjoint_sets(c(setvarname, 'xxxxx'), fvars)
     .sumexp_to_dt <- function(sumexp, set){
-        dt <- sumexp_to_long_dt(sumexp, svars={{svars}}, fvars={{fvars}})
+        dt <- sumexp_to_longdt(sumexp, svars={{svars}}, fvars={{fvars}})
         dt %<>% cbind(xxxxx = set)
         setnames(dt, 'xxxxx', setvarname)
     }

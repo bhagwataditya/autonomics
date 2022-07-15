@@ -127,7 +127,7 @@ fit_lmx <- function(object, fit,
                                 assert_is_subset(weightvar, assayNames(object)) 
                                 assnames %<>% c(weightvar)
         message('\t\t\tweights = assays(object)$', weightvar) }
-    dt <- sumexp_to_long_dt(object, svars = allx, assay = assnames)
+    dt <- sumexp_to_longdt(object, svars = allx, assay = assnames)
     fixedx <- setdiff(allx, all.vars(block))
     #for (x in fixedx){          dt[[x]] %<>% factor()
     #                            n <- length(levels(dt[[x]]))

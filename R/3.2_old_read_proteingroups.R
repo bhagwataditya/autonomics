@@ -378,14 +378,14 @@ old_subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
         '\tAdd occupancies(phospho) = values(phospho) - values(proteins)')
 # phospho datatable
     cols <- c('feature_id', 'Protein group IDs')
-    fosdt <- sumexp_to_wide_dt(phosphosites, fvars = 'Protein group IDs')
+    fosdt <- sumexp_to_widedt(phosphosites, fvars = 'Protein group IDs')
     fosdt %<>% uncollapse(`Protein group IDs`, sep = ';' )
     fosdt %<>% melt.data.table(id.vars = c('feature_id', 'Protein group IDs'))
     setnames(fosdt,
         c('feature_id', 'Protein group IDs', 'variable',  'value'),
         c('phospho_id', 'protein_id',        'sample_id', 'phospho'))
 # proteingroups datatable
-    protein_dt <- sumexp_to_long_dt(proteingroups)
+    protein_dt <- sumexp_to_longdt(proteingroups)
     setnames(
         protein_dt,c('feature_id', 'value'), c('protein_id', 'protein'))
 # merge

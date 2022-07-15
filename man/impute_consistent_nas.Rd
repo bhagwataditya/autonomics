@@ -38,5 +38,5 @@ Impute consistent nas
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
-impute_consistent_nasobject)
+impute_consistent_nas(object)
 }

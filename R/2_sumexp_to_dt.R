@@ -1,9 +1,9 @@
-#' @rdname sumexp_to_long_dt
+#' @rdname sumexp_to_longdt
 #' @export
-sumexp_to_wide_dt <- function(
+sumexp_to_widedt <- function(
     object,
     fid   = 'feature_id',
-    fvars = intersect('feature_name', autonomics::fvars(object)),
+    fvars = autonomics::fvars(object), # intersect('feature_name', autonomics::fvars(object)),
     assay = assayNames(object)[1]
 ){
 
@@ -28,9 +28,9 @@ sumexp_to_wide_dt <- function(
 #'
 #' @details
 #' \itemize{
-#'    \item \code{sumexp_to_wide_dt}:   feature          x sample
+#'    \item \code{sumexp_to_widedt}:   feature          x sample
 #'    \item \code{sumexp_to_subrep_dt}: feature.subgroup x replicate
-#'    \item \code{sumexp_to_long_dt}:   feature.sample
+#'    \item \code{sumexp_to_longdt}:   feature.sample
 #' }
 #' @param object sumexp
 #' @param subgroup subgroup (sym)
@@ -44,29 +44,29 @@ sumexp_to_wide_dt <- function(
 #' # Stem cell comparison
 #'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-#'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups,
-#'                   plot=FALSE)
-#'     sumexp_to_wide_dt(object)
-#'     sumexp_to_long_dt(object)
+#'     object <- read_proteingroups(file, invert = invert_subgroups, plot = FALSE)
+#'     sumexp_to_widedt(object)
+#'     sumexp_to_longdt(object)
 #'     sumexp_to_subrep_dt(object)
 #'
 #' # Glutaminase
 #'    require(magrittr)
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    object <- read_metabolon(file, plot=FALSE)
-#'    sumexp_to_wide_dt(object)
-#'    sumexp_to_long_dt(object)
+#'    sumexp_to_widedt(object)
+#'    sumexp_to_longdt(object)
 #'    sumexp_to_subrep_dt(object, Group)
 #'
 #' # Fukuda
 #'    require(magrittr)
 #'    file <- download_data('fukuda20.proteingroups.txt')
 #'    object <- read_proteingroups(file, impute=FALSE, plot=FALSE)
-#'    sumexp_to_long_dt(object)
+#'    sumexp_to_longdt(object)
 #'    object %<>% impute_consistent_nas(plot=FALSE)
-#'    sumexp_to_long_dt(object)
+#'    sumexp_to_widedt(object)
+#'    sumexp_to_longdt(object)
 #' @export
-sumexp_to_long_dt <- function(
+sumexp_to_longdt <- function(
     object,
     fid   = 'feature_id',
     fvars = intersect('feature_name', autonomics::fvars(object)),
@@ -90,13 +90,13 @@ sumexp_to_long_dt <- function(
     }
     # Melt
     melt <- data.table::melt.data.table
-    dt <- sumexp_to_wide_dt(object, fid, fvars, assay = assay[1])
+    dt <- sumexp_to_widedt(object, fid, fvars, assay = assay[1])
     dt %<>% melt(id.vars = unique(c(fid, fvars)), variable.name = sid,
                 value.name = 'value')
     # Merge
     if (length(assay)>1){
         for (ass in assay[-1]){
-            assdt <- sumexp_to_wide_dt(
+            assdt <- sumexp_to_widedt(
                         object, fid=fid, fvars = character(0), assay = ass)
             assdt %<>% melt(id.vars = fid, variable.name = sid, value.name=ass)
             dt %<>% merge(assdt, by = c(fid, sid))
@@ -117,7 +117,7 @@ sumexp_to_long_dt <- function(
 
 
 #' @export
-#' @rdname sumexp_to_long_dt
+#' @rdname sumexp_to_longdt
 sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
     subgroup <- enquo(subgroup)
     subgroupvar <- as_name(subgroup)
@@ -128,7 +128,7 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
     sample_id <- subgroup <- . <- NULL
 
     # Melt
-    dt <- sumexp_to_long_dt(object, svars = subgroupvar)
+    dt <- sumexp_to_longdt(object, svars = subgroupvar)
     sep <- guess_sep(object)
     dt[, replicate := stri_replace_first_fixed(
                         sample_id, dt[[subgroupvar]], '') %>%
@@ -142,6 +142,21 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
 
     # Return
     subrepdt
+}
+
+#' Write sumexp to tsv
+#' @param object SummarizedExperiment
+#' @param file filename
+#' @examples 
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, fit = 'limma')
+#' file <- tempdir()
+#' file %<>% file.path('fukuda20.proteingrups.tsv')
+#' sumexp_to_tsv(object, file)
+#' 
+#' @export
+sumexp_to_tsv <- function(object, file){
+    widedt <- sumexp_to_widedt(object)
 }
 
 

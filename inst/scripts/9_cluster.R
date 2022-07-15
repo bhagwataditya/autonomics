@@ -78,7 +78,7 @@ cluster <- function(object, formula=~SUB+SET){
     
 # t
     mat <- metadata(object)[[fit]][rownames(object), , quantity]
-    #dt <- sumexp_to_long_dt(object, fvars='feature_id', svars = c('sample_id', subgroupvar))
+    #dt <- sumexp_to_longdt(object, fvars='feature_id', svars = c('sample_id', subgroupvar))
     #dt %<>% extract(, .(value = median(value, na.rm = TRUE)), by=c('feature_id', subgroupvar))
     #dt %<>% dcast.data.table(formula=as.formula(sprintf('feature_id ~ %s', subgroupvar)))
     #mat <- dt2mat(dt)
@@ -105,7 +105,7 @@ cluster <- function(object, formula=~SUB+SET){
     setnames(blockeffects, 'rn', 'feature_id')
     blockeffects %<>% melt.data.table(id.vars = 'feature_id', variable.name = block, value.name = 'blockeffect')
     
-    valuedt <- sumexp_to_long_dt(object, svars = c('SUB', 'SET'), fvars = c('feature_id'))
+    valuedt <- sumexp_to_longdt(object, svars = c('SUB', 'SET'), fvars = c('feature_id'))
     valuedt %<>% merge(blockeffects, by = c('feature_id', 'SUB'), all.x = TRUE)
     valuedt[is.na(blockeffect), blockeffect := 0]
     valuedt[, correctedvalue := value - blockeffect]

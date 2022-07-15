@@ -171,7 +171,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
     assert_is_subset(subgroupvar, svars(object))
 # Datatablify
     replicated_in_its_subgroup <- replicated_in_any_subgroup <- value <- NULL
-    dt <- sumexp_to_long_dt(object, svars = subgroupvar)
+    dt <- sumexp_to_longdt(object, svars = subgroupvar)
 # Find replicated features
     exceeds_lod <- if (comparator == '>'){ function(value, lod) value >  lod
             } else if (comparator == '!=') function(value, lod) value != lod

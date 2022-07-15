@@ -93,7 +93,7 @@ fit_wilcoxon <- function(
                                     contrast_coefs(object, formula=formula)
 # fit
     . <- NULL
-    dt <- sumexp_to_long_dt(object, svars = c(subgroupvar, block))
+    dt <- sumexp_to_longdt(object, svars = c(subgroupvar, block))
     if (verbose)  message('\t\tWilcoxon')
     fitres <- lapply(vectorize_contrastdefs(contrastdefs), .wilcoxon, 
                     dt, subgroupvar, block, verbose)
