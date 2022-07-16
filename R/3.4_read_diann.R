@@ -147,18 +147,37 @@ forge_pg_descriptions <- function(
 #' @param file     'report.tsv' file
 #' @param fastadt   NULL or data.table
 #' @param quantity 'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
+#' @param plot          whether to plot
+#' @param pca           whether to pca
+#' @param fit           model fit engine: 'limma', 'lm', 'lmer', 'lme'
+#' @param formula       model formula
+#' @param block         block var (sdt)
+#' @param coefs         character: coefficients to test
+#' @param contrastdefs  character: coefficient contrasts to test
+#' @param feature_id    string: summary plot feature
+#' @param sample_id     string: summary plot sample
+#' @param palette       character: color palette
+#' @param verbose       whether to msg
 #' @return  data.table / SummarizedExperiment
 #' @examples 
 #' # Read
 #'     file <- download_data('szymanski22.report.tsv')
+#'    (object <- read_diann(file))
+#' # Samples
+#'    sdt(object)
+#'    snames(object) %<>% split_extract_fixed('_', 3)
+#'    object$subgroup <- as.numeric(object$sample_id)
+#'    sdt(object)
+#'    fdt(object)[1:3]
+#'    values(object)[1:3, 1:2]
+#' # Analyze
+#'    analyze(object)
+#'    biplot(pca(object), color = dilution) + ggtitle('IPT Hela')
+#'     
+#' # Read data.table (lower-level)
+#'     file <- download_data('szymanski22.report.tsv')
 #'    (PR   <- .read_diann_precursors(file))       # precursor    dt
 #'    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
-#'    (object <- read_diann(file))                 # proteingroup sumexp
-#'     values(object)[1:5, 1:2]
-#'     fdt(object)[1:5]
-#'     sdt(object)
-#'     object$dilution <- split_extract_fixed(object$sample_id, '_', 3)
-#'     biplot(pca(object), color = dilution) + ggtitle('IPT Hela')
 #' # Compare Summarizations
 #'      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
 #'      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
@@ -214,7 +233,13 @@ forge_pg_descriptions <- function(
 #' @rdname read_diann
 #' @export
 read_diann <- function(
-    file, fastadt = NULL, quantity = 'PG.MaxLFQ'
+    file, fastadt = NULL, quantity = 'PG.MaxLFQ', 
+    impute = FALSE, plot = FALSE, pca = plot, 
+    fit = if (plot) 'limma' else NULL, formula = NULL,
+    block = NULL, coefs = NULL, contrastdefs = NULL,
+    feature_id = NULL, sample_id = NULL, 
+    palette = make_palette(object), 
+    verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -222,27 +247,32 @@ read_diann <- function(
     assert_is_a_string(quantity)
     assert_is_subset(quantity, 
          c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum'))
-# exprs
-    dt <- .read_diann_proteingroups(file, fastadt = fastadt)
-    mat <- data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
-    mat %<>% dt2mat()
-    mat %<>% log2()
-    l <- set_names(list(exprs = mat), quantity)
-    object <- SummarizedExperiment::SummarizedExperiment(l)
-    idx <- rowSums(!is.na(values(object))) > 1
-    message('\tRetain ', sum(idx), '/', length(idx), 
-            ' proteingroups replicated in at least two samples')
-    object %<>% extract(idx, )
-    object %<>% extract(order(matrixStats::rowVars(values(.), na.rm = TRUE)), )
- # fdt
-    fdt(object)$feature_id <- rownames(object)
-    fdt0 <- dt[, .(Protein.Group, feature_name, Genes, First.Protein.Description)]
-    fdt0 %<>% unique()
-    object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'Protein.Group')
-# sdt
-    object$sample_id <- colnames(object)
-    object$subgroup <- 'group0'
-    object
+# SumExp
+    # values
+        dt <- .read_diann_proteingroups(file, fastadt = fastadt)
+        mat <- data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
+        mat %<>% dt2mat()
+        mat %<>% log2()
+        l <- set_names(list(exprs = mat), quantity)
+        object <- SummarizedExperiment(l)
+        idx <- rowSums(!is.na(values(object))) > 1
+        message('\tRetain ', sum(idx), '/', length(idx), 
+                ' proteingroups replicated in at least two samples')
+        object %<>% extract(idx, )
+        object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
+    # fdt
+        fdt(object)$feature_id <- rownames(object)
+        fdt0 <- dt[, .(Protein.Group, feature_name, Genes, First.Protein.Description)]
+        fdt0 %<>% unique()
+        object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'Protein.Group')
+    # sdt
+        object$sample_id <- colnames(object)
+        object$subgroup <- 'group0'
+# Analyze 
+    object %<>% analyze(
+          pca = pca,            fit = fit,         formula = formula, 
+        block = block,        coefs = coefs,  contrastdefs = contrastdefs,
+      verbose = verbose,      plot  = plot,     feature_id = feature_id,
+    sample_id = sample_id,  palette = palette )
 }
-
 
