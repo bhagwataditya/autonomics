@@ -85,6 +85,11 @@ guess_sep <- function (x, ...)  UseMethod("guess_sep", x)
 
 #' @rdname guess_sep
 #' @export
+guess_sep.numeric <- function(x) NULL
+
+
+#' @rdname guess_sep
+#' @export
 guess_sep.character <- function(
     x, separators = c('.', '_'), verbose = FALSE, ...
 ){
@@ -129,6 +134,7 @@ guess_sep.SummarizedExperiment <- function(
     (if (var %in% svars(x)) slevels(x, var) else flevels(x, var)) %>%
     guess_sep(separators = separators, verbose = verbose)
 }
+
 
 
 #=============================================================================
