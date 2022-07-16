@@ -10,9 +10,9 @@
 plot_boxplots(
   object,
   assay = assayNames(object)[1],
-  x,
-  fill,
-  color = NULL,
+  x = sym("subgroup"),
+  fill = sym("subgroup"),
+  color = sym("subgroup"),
   block = NULL,
   facet = NULL,
   scales = "free_y",
@@ -22,7 +22,7 @@ plot_boxplots(
   labeller = "label_value",
   highlight = NULL,
   jitter = FALSE,
-  palette = NULL,
+  palette = make_palette(object),
   hlevels = NULL,
   ...
 )
@@ -59,9 +59,9 @@ plot_feature_boxplots(
 plot_subgroup_boxplots(
   object,
   assay = assayNames(object)[1],
-  subgroup,
-  x = !!enquo(subgroup),
-  fill = !!enquo(subgroup),
+  subgroup = sym("subgroup"),
+  x = sym("subgroup"),
+  fill = sym("subgroup"),
   color = NULL,
   block = NULL,
   highlight = NULL,

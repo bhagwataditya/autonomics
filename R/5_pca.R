@@ -400,7 +400,11 @@ opls <- function(
 #
 #==============================================================================
 
-num2char <- function(x) if (is.numeric(x)) as.character(x) else x
+num2char <- function(x){
+    if (is.null(x))     return(x)
+    if (is.numeric(x))  return(as.character(x))
+    return(x)
+}
 
 pca1 <- pca2 <- subgroup <- NULL
 add_scores <- function(

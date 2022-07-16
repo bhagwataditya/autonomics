@@ -160,19 +160,12 @@ forge_pg_descriptions <- function(
 #' @param verbose       whether to msg
 #' @return  data.table / SummarizedExperiment
 #' @examples 
-#' # Read
-#'     file <- download_data('szymanski22.report.tsv')
-#'    (object <- read_diann(file))
-#' # Samples
-#'    sdt(object)
+#' # Read & Analyze
+#'    file <- download_data('szymanski22.report.tsv')
+#'    object <- read_diann(file)
 #'    snames(object) %<>% split_extract_fixed('_', 3)
 #'    object$subgroup <- as.numeric(object$sample_id)
-#'    sdt(object)
-#'    fdt(object)[1:3]
-#'    values(object)[1:3, 1:2]
-#' # Analyze
 #'    analyze(object)
-#'    biplot(pca(object), color = dilution) + ggtitle('IPT Hela')
 #'     
 #' # Read data.table (lower-level)
 #'     file <- download_data('szymanski22.report.tsv')

@@ -303,6 +303,7 @@ plot_densities <- function(
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
     assert_is_identical_to_true(is_uniquely_empty(plottedsvars, plottedfvars))
+    object[[fillstr]] %<>% num2char()
     dt <- sumexp_to_longdt(object, svars = plottedsvars, fvars = plottedfvars)
 # Plot
     p <- plot_data(dt, geom = geom_density, x = value, fill = !!fill,
@@ -523,10 +524,11 @@ plot_subgroup_violins <- function(
 #'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
 #' @export
 plot_boxplots <- function(
-    object, assay = assayNames(object)[1], x, fill, color = NULL, block = NULL,
-    facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, 
-    labeller = 'label_value', highlight = NULL, 
-    jitter = FALSE, palette = NULL, hlevels = NULL, ...
+    object, assay = assayNames(object)[1], 
+    x = sym('subgroup'),  fill = sym('subgroup'), color = sym('subgroup'), 
+    block = NULL, facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, 
+    page = 1, labeller = 'label_value', highlight = NULL, 
+    jitter = FALSE, palette = make_palette(object), hlevels = NULL, ...
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -551,6 +553,7 @@ plot_boxplots <- function(
                         highlightstr, facetstr))
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
+    object[[xstr]] %<>% num2char()
     dt <- sumexp_to_longdt(
             object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
     dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
@@ -643,11 +646,11 @@ plot_feature_boxplots <- function(
 #' @export
 plot_subgroup_boxplots <- function(
     object, assay = assayNames(object)[1],
-    subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
+    subgroup = subgroup, x = subgroup, fill = subgroup, 
     color = NULL, block = NULL, highlight = NULL, jitter = TRUE, 
     facet = vars(feature_id), scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value',
-    palette = NULL, fixed = list(na.rm=TRUE), hlevels = NULL
+    palette = make_palette(object), fixed = list(na.rm=TRUE), hlevels = NULL
 ){
     x         <- enquo(x)
     fill      <- enquo(fill)

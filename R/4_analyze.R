@@ -95,68 +95,50 @@ plot_summary <- function(
         feature_id <- fnames(object)[idx]
     }
 # Create plots
-    detections   <- plot_top_detections(object, subgroupvar = subgroupvar, palette = palette)
-    sampledistr  <- plot_top_sample(object[, sample_id], 
-                                subgroupvar = subgroupvar, palette = palette) + 
-                    ggtitle(assayNames(object)[1]) + 
-                    theme(plot.title = element_text(hjust = 0.5))
-    featuredistr <- plot_top_feature(object[feature_id,])
-    boxplot <- plot_top_boxplot(object[feature_id,], subgroupvar = subgroupvar, 
-                    palette = palette)
-    volcano <- plot_top_volcano(object, fit = fit, coef = coef)
-    # Layout
-    layout_matrix <- matrix(c(1,2,5,3,4,5), nrow = 2, byrow = 2)
-    grid.draw(grid.arrange(
-        detections, sampledistr, featuredistr,  boxplot, volcano, 
-        layout_matrix = layout_matrix))
-}
-
-plot_top_detections <- function(
-    object, subgroupvar, palette = make_palette(object)
-){
+    # detections   <- plot_top_detections(object, subgroupvar = subgroupvar, palette = palette)
     detections <- plot_summarized_detections(
-                    object, 
-                    subgroup = !!sym(subgroupvar), 
-                    fill     = !!sym(subgroupvar), 
-                    palette  = palette)
-        # numeric colorscale cant be overridden
-    pcaplot <-
-        biplot(object, color = !!sym(subgroupvar), x = pca1, y = pca2, palette = palette) + 
+        object, 
+        subgroup = !!sym(subgroupvar), 
+        fill     = !!sym(subgroupvar), 
+        palette  = palette) + ggtitle('Detections') + xlab(subgroupvar) + 
+        theme(plot.title = element_text(hjust = 0.5))
+
+    pcaplot <- biplot(
+        object, color = !!sym(subgroupvar), x = pca1, y = pca2, palette = palette) + 
         guides(color = 'none') + ggtitle(NULL) +
         theme(axis.text.x  = element_blank(), 
               axis.text.y  = element_blank(), 
               axis.ticks.x = element_blank(), 
               axis.ticks.y = element_blank()) +
-        scale_x_continuous(expand = c(0.2, 0.2))
-    
-    detections + 
-        annotation_custom(ggplotGrob(pcaplot), 
-                          xmin = 0.2*max(detections$data$xmax), 
-                          xmax = 0.8*max(detections$data$xmax), 
-                          ymin = 0.1*max(detections$data$ymax), 
-                          ymax = 0.7*max(detections$data$ymax))
+        scale_x_continuous(expand = c(0.2, 0.2)) + 
+        ggtitle('Pca') +
+        theme(plot.title = element_text(hjust = 0.5))
+
+    sample  <- plot_top_sample(object[, sample_id], 
+                subgroupvar = subgroupvar, palette = palette)
+    feature <- plot_top_feature(
+                object[feature_id,], subgroupvar = subgroupvar, palette = palette)
+    volcano <- plot_top_volcano(object, fit = fit, coef = coef)
+    # Layout
+    layout_matrix <- matrix(c(1,2,3,4,5,3), nrow = 2, byrow = TRUE)
+    grid.arrange(pcaplot, detections, volcano, 
+                 sample, feature, layout_matrix = layout_matrix)
 }
+
 
 plot_top_sample <- function(object, subgroupvar, palette = make_palette(object)){
     plot_sample_densities(
         object, 
         fill = !!sym(subgroupvar), facet = vars(sample_id), palette = palette,
-        fixed = list(alpha=1)) + 
-        guides(fill = 'none') + ggtitle(NULL) +
-        xlab(NULL) + ylab(NULL) + 
-        theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+        fixed = list(alpha=1, na.rm = TRUE), labeller = label_value) + 
+        guides(fill = 'none') + ggtitle('Sample') +
+        xlab(assayNames(object)[1]) + ylab(NULL) + 
+        theme(axis.text.y  = element_blank(), 
+              axis.ticks.y = element_blank(), 
+              plot.title = element_text(hjust = 0.5))
 }
 
-plot_top_feature <- function(object){
-    plot_feature_densities(
-        object,
-        facet = vars(feature_id), fixed = list(fill = 'grey80')) + 
-        ggtitle(NULL) + xlab(NULL) + ylab(NULL) + 
-        theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
-        coord_flip()
-}
-
-plot_top_boxplot <- function(
+plot_top_feature <- function(
     object, subgroupvar, palette = make_palette(object)
 ){
     plot_subgroup_boxplots(
@@ -164,8 +146,11 @@ plot_top_boxplot <- function(
         subgroup = !!sym(subgroupvar), 
         fill     = !!sym(subgroupvar), 
         facet    = vars(feature_id),
-        palette  = palette) + 
-        ggtitle(NULL) + guides(fill = 'none') + ylab(NULL)
+        palette  = palette, 
+        labeller = label_value) + 
+    ggtitle('Feature') + guides(fill = 'none') + 
+    ylab(assayNames(object)[1]) +
+    theme(plot.title = element_text(hjust = 0.5))
 }
 
 top_coef <- function(object, fit){
@@ -180,6 +165,7 @@ plot_top_volcano <- function(object, fit, coef){
     
     plot_volcano(object, coefs = coef) + 
     guides(color = 'none') + 
-    ggtitle(sprintf('%d down | %d up', summarydt$ndown, summarydt$nup)) +
+    ggtitle('Volcano') + 
+    #ggtitle(sprintf('%d down | %d up', summarydt$ndown, summarydt$nup)) +
     theme(plot.title = element_text(hjust = 0.5))
 }

@@ -71,7 +71,7 @@ Read diann
    sdt(object)
    snames(object) \%<>\% split_extract_fixed('_', 3)
    object$subgroup <- as.numeric(object$sample_id)
-   sdt(object)
+   sdt(object)[1:3]
    fdt(object)[1:3]
    values(object)[1:3, 1:2]
 # Analyze
