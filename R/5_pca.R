@@ -400,20 +400,23 @@ opls <- function(
 #
 #==============================================================================
 
+num2char <- function(x) if (is.numeric(x)) as.character(x) else x
+
 pca1 <- pca2 <- subgroup <- NULL
 add_scores <- function(
-    p, object, x = pca1, y = pca2, color = subgroup, group = NULL, ...,
-    fixed = list(shape=15, size=3, na.rm=TRUE)
+    p, object, x = sym('pca1'), y = sym('pca2'), color = sym('subgroup'),
+    group = NULL, ..., fixed = list(shape=15, size=3, na.rm=TRUE)
 ){
     x     <- enquo(x)
     y     <- enquo(y)
-    color <- enquo(color)
+    color <- enquo(color); colorstr <- as_name(color)
     group <- enquo(group)
-
+    
+    object[[colorstr]] %<>% num2char() # manual colors require non-numerics
     p <- p + layer(  geom = 'point',
                 mapping = aes(x = !!x, y = !!y, color = !!color, ...),
                 stat    = "identity",
-                data    = sdata(object),
+                data    = sdt(object),
                 params  = fixed,
                 position= 'identity')
     if (!quo_is_null(group)) p <- p + layer(geom = 'path',
@@ -432,7 +435,8 @@ headtail <- function(x, n){
 
 pca1 <- pca2 <- NULL
 add_loadings <- function(
-    p, object, x = pca1, y = pca2, label = feature_name, nloadings = 1
+    p, object, x = sym('pca1'), y = sym('pca2'), label = sym('feature_name'), 
+    nloadings = 1
 ){
 # Process args
     if (nloadings==0) return(p)
@@ -455,7 +459,7 @@ add_loadings <- function(
                     abs(max(c(xscores, yscores, na.rm=TRUE))), na.rm=TRUE)
     scorefactor <- maxscore/max(abs(c(xloadings, yloadings)),  na.rm=TRUE)
 
-    plotdt <- fdata(object)
+    plotdt <- fdt(object)
     plotdt[[xstr]] %<>% multiply_by(scorefactor)
     plotdt[[ystr]] %<>% multiply_by(scorefactor)
     plotdt %<>% extract(idx, )
@@ -502,20 +506,19 @@ pca1 <- pca2 <- feature_name <- NULL
 #' biplot(object, color=SUB, nloadings=1)
 #' biplot(object, pca3, pca4, color=SUB, nloadings=1)
 #' @export
-biplot <- function(object, x = pca1, y = pca2, color = NULL, group = NULL,
+biplot <- function(
+    object, x = sym('pca1'), y = sym('pca2'), color = NULL, group = NULL,
     label = NULL, feature_label = feature_name, ...,
-    fixed = list(shape=15, size=3), nloadings = 0
+    fixed = list(shape=15, size=3), nloadings = 0,
+    palette = make_palette(object)
 ){
-    x     <- enquo(x)
-    y     <- enquo(y)
+    x     <- enquo(x);   xstr <- as_name(x)
+    y     <- enquo(y);   ystr <- as_name(y)
     label <- enquo(label)
-    xstr <- as_name(x)
-    ystr <- as_name(y)
     methodx <- gsub('[0-9]+', '', xstr)
     methody <- gsub('[0-9]+', '', ystr)
-    assert_is_subset(xstr, names(colData(object)))
-    assert_is_subset(ystr, names(colData(object)))
-
+    assert_is_subset(xstr, svars(object))
+    assert_is_subset(ystr, svars(object))
     #object %<>% get(methodx)(ndim=xdim, verbose = FALSE)
     #object %<>% get(methody)(ndim=ydim, verbose = FALSE)
     color <- enquo(color)
@@ -523,7 +526,6 @@ biplot <- function(object, x = pca1, y = pca2, color = NULL, group = NULL,
     feature_label <- enquo(feature_label)
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
-
     xvar <- round(metadata(object)[[methodx]][[xstr]], 1)
     yvar <- round(metadata(object)[[methody]][[ystr]], 1)
     xlab  <- paste0(xstr, ' : ', xvar,'% ')
@@ -535,7 +537,7 @@ biplot <- function(object, x = pca1, y = pca2, color = NULL, group = NULL,
             object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
     p %<>% add_scores(object, !!x, !!y, color = !!color, group = !!group,
                     !!!dots, fixed = fixed)
-    p %<>% add_color_scale(!!color, data = sdata(object))
+    p <- p + scale_color_manual(values = palette, na.value = 'gray80')
 
     if (!quo_is_null(label)){
         p <- p + geom_text_repel(aes(x=!!x, y=!!y, label=!!label), 

@@ -11,7 +11,7 @@ plot_summary(
   coef = c(setdiff(coefs(object), "Intercept"), "Intercept")[1],
   feature_id = NULL,
   sample_id = NULL,
-  palette = NULL
+  palette = make_palette(object)
 )
 }
 \arguments{

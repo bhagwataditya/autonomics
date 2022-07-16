@@ -362,6 +362,7 @@ setGeneric("snames<-", function(object, value)  standardGeneric("snames<-"))
 setReplaceMethod("snames", signature("SummarizedExperiment", "character"),
 function(object, value){
     colnames(object)  <- value
+    object$sample_id <- value
     object })
 
 

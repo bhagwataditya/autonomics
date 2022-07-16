@@ -30,12 +30,12 @@ analyze <- function(
         block        = NULL,
         weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
         coefs        = colnames(create_design(object, formula = formula)),
-        contrastdefs = contrast_coefs(object, formula),
+        contrastdefs = NULL,
         verbose      = TRUE,
         plot         = pca & !is.null(fit),
         feature_id   = NULL,
-        sample_id    = NULL, 
-        palette      = NULL
+        sample_id    = NULL,
+        palette      = make_palette(object)
 ){
     # Analyze
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
@@ -44,8 +44,7 @@ analyze <- function(
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
         if (is.null(formula)) formula <- default_formula(object,subgroupvar,fit)
-        if (is.null(coefs)) coefs <- colnames(create_design(
-            object, formula = formula))
+        if (is.null(coefs)) coefs <- colnames(create_design(object, formula = formula))
         object %<>% fitfun( subgroupvar  = subgroupvar,
                             formula      = formula,
                             coefs        = coefs,
@@ -83,7 +82,7 @@ plot_summary <- function(
     coef        = c(setdiff(coefs(object), 'Intercept'), 'Intercept')[1],
     feature_id  = NULL, 
     sample_id   = NULL, 
-    palette     = NULL
+    palette     = make_palette(object)
 ){
 # Initialize
     if (is.null(sample_id)){  # most avg sample
@@ -96,7 +95,6 @@ plot_summary <- function(
         feature_id <- fnames(object)[idx]
     }
 # Create plots
-    if (is.null(palette))  palette <- make_colors(slevels(object, subgroupvar))
     detections   <- plot_top_detections(object, subgroupvar = subgroupvar, palette = palette)
     sampledistr  <- plot_top_sample(object[, sample_id], 
                                 subgroupvar = subgroupvar, palette = palette) + 
@@ -113,13 +111,17 @@ plot_summary <- function(
         layout_matrix = layout_matrix))
 }
 
-plot_top_detections <- function(object, subgroupvar, palette = NULL){
+plot_top_detections <- function(
+    object, subgroupvar, palette = make_palette(object)
+){
     detections <- plot_summarized_detections(
                     object, 
                     subgroup = !!sym(subgroupvar), 
                     fill     = !!sym(subgroupvar), 
                     palette  = palette)
-    pcaplot <- biplot(object, color = !!sym(subgroupvar), x = pca1, y = pca2) + 
+        # numeric colorscale cant be overridden
+    pcaplot <-
+        biplot(object, color = !!sym(subgroupvar), x = pca1, y = pca2, palette = palette) + 
         guides(color = 'none') + ggtitle(NULL) +
         theme(axis.text.x  = element_blank(), 
               axis.text.y  = element_blank(), 
@@ -135,7 +137,7 @@ plot_top_detections <- function(object, subgroupvar, palette = NULL){
                           ymax = 0.7*max(detections$data$ymax))
 }
 
-plot_top_sample <- function(object, subgroupvar, palette){
+plot_top_sample <- function(object, subgroupvar, palette = make_palette(object)){
     plot_sample_densities(
         object, 
         fill = !!sym(subgroupvar), facet = vars(sample_id), palette = palette,
@@ -154,7 +156,9 @@ plot_top_feature <- function(object){
         coord_flip()
 }
 
-plot_top_boxplot <- function(object, subgroupvar, palette){
+plot_top_boxplot <- function(
+    object, subgroupvar, palette = make_palette(object)
+){
     plot_subgroup_boxplots(
         object, 
         subgroup = !!sym(subgroupvar), 

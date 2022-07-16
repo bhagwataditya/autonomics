@@ -498,7 +498,7 @@ plot_quantifications <- function(...){
 #' @export
 plot_summarized_detections <- function(
     object, 
-    subgroup   = subgroup, 
+    subgroup   = quo('subgroup'),
     fill       = !!enquo(subgroup),
     palette    = NULL,
     na_imputes = TRUE
@@ -508,35 +508,36 @@ plot_summarized_detections <- function(
     assert_is_all_of(object, "SummarizedExperiment")
     subgroup <- enquo(subgroup)
     if (quo_is_null(subgroup))  return(ggplot() + geom_blank())
-    groupvar <- as_name(subgroup)
+    subgroupstr <- as_name(subgroup)
     fill <- enquo(fill);     fillstr <- as_name(fill)
-    assert_is_subset(groupvar, svars(object))
+    assert_is_subset(subgroupstr, svars(object))
     assert_is_subset(fillstr,  svars(object))
     xmin <- xmax <- ymin <- ymax <- nfeature <- quantified <- NULL
 # Prepare
+    object[[subgroupstr]] %<>% num2char()
     object %<>% filter_samples(!is.na(!!subgroup), verbose=TRUE)
     values(object) %<>% zero_to_na()  #### TODO fine-tune
-    featuretypes <- get_subgroup_combinations(object, groupvar)
-    dt <- sumexp_to_longdt(object, svars = groupvar)
+    featuretypes <- get_subgroup_combinations(object, subgroupstr)
+    dt <- sumexp_to_longdt(object, svars = subgroupstr)
     if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,
                                                         value := NA]
     dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
-                    by = c(groupvar, 'feature_id'))
+                    by = c(subgroupstr, 'feature_id'))
     dt %<>% dcast.data.table(
-        as.formula(paste0('feature_id ~ ', groupvar)),value.var='quantified')
+        as.formula(paste0('feature_id ~ ', subgroupstr)),value.var='quantified')
     dt %<>% merge(featuretypes, by = setdiff(names(featuretypes), 'type'))
     dt %<>% extract(,.(nfeature=.N),by='type')
     dt %<>% merge(featuretypes,by='type')
     dt[, ymax := cumsum(nfeature)]
     dt[, ymin := c(0,ymax[-.N])]
     dt %<>% melt.data.table(id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
-                            variable.name = groupvar, value.name='quantified')
+                            variable.name = subgroupstr, value.name='quantified')
     dt$quantified %<>% as.factor()
-    nsampledt <- sdt(object)[, .N, by=groupvar] %>% # preserves
-                set_names(c(groupvar, 'xmax'))                # factor order!
-    setorderv(nsampledt, groupvar)
+    nsampledt <- sdt(object)[, .N, by=subgroupstr] %>% # preserves
+                set_names(c(subgroupstr, 'xmax'))      # factor order!
+    setorderv(nsampledt, subgroupstr)
     nsampledt[, xmax := cumsum(xmax)]; nsampledt[, xmin := c(0, xmax[-.N])]
-    dt %<>% merge(nsampledt, by = groupvar)
+    dt %<>% merge(nsampledt, by = subgroupstr)
 # Plot
     npersubgroup <- table(object$subgroup)
     xbreaks <- c(cumsum(npersubgroup)- npersubgroup/2)

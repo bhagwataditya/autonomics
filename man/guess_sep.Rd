@@ -2,12 +2,15 @@
 % Please edit documentation in R/8_fit.R
 \name{guess_sep}
 \alias{guess_sep}
+\alias{guess_sep.numeric}
 \alias{guess_sep.character}
 \alias{guess_sep.factor}
 \alias{guess_sep.SummarizedExperiment}
 \title{Guess separator}
 \usage{
 guess_sep(x, ...)
+
+\method{guess_sep}{numeric}(x)
 
 \method{guess_sep}{character}(x, separators = c(".", "_"), verbose = FALSE, ...)
 

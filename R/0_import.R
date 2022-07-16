@@ -60,12 +60,13 @@
 #' @importFrom magrittr    multiply_by   subtract
 #' @importFrom magrittr    set_colnames   set_names   set_rownames
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans
-#' @importFrom matrixStats   rowAlls   rowSds
+#' @importFrom matrixStats   rowAlls   rowSds   rowVars
 #' @importFrom methods       as    is
 #' @importFrom MultiAssayExperiment  colData       colData<-
 #' @importFrom MultiAssayExperiment  experiments   experiments<-
 #' @importFrom MultiAssayExperiment  MultiAssayExperiment
 #' @importFrom parallel      detectCores
+#' @importFrom RColorBrewer  brewer.pal
 #' @importFrom readxl        read_excel   excel_sheets
 #' @importFrom rlang         as_string   enquo   eval_tidy   enexpr
 #' @importFrom rlang         expr_text   quo_name   as_name   quo_is_null

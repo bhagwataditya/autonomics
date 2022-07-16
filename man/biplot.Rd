@@ -7,15 +7,16 @@
 \usage{
 biplot(
   object,
-  x = pca1,
-  y = pca2,
+  x = sym("pca1"),
+  y = sym("pca2"),
   color = NULL,
   group = NULL,
   label = NULL,
   feature_label = feature_name,
   ...,
   fixed = list(shape = 15, size = 3),
-  nloadings = 0
+  nloadings = 0,
+  palette = make_palette(object)
 )
 
 plot_biplot(...)

@@ -66,22 +66,33 @@ add_fill_scale <- function(p, fill, data, palette=NULL){
     return(p)
 }
 
+make_palette <- function(object)  make_colors(object$subgroup)
 
 make_colors <- function(
-    varlevels, sep = guess_sep(varlevels), show=FALSE,
+    varlevels, sep = guess_sep(varlevels), show = FALSE,
     verbose = FALSE
 ){
-    makefun <- make_onefactor_colors
+# Numeric colors
+    if (is.numeric(varlevels)){
+        colors <- brewer.pal(length(varlevels), 'YlOrRd')
+        names(colors) <- varlevels
+        if (show) pie(rep(1, length(colors)), names(colors), col = colors)
+        return(colors)
+    }
+# Twofactor colors
     if (!is.null(sep)){            # consistent separator
         if (length(varlevels)>2){  # 3+ samples
             n1 <- length(unique(split_extract_fixed(varlevels, sep, 1)))
             n2 <- length(unique(split_extract_fixed(varlevels, sep, 2)))
             if (n1>1 & n2>1){             # 2+ huevar levels
-                makefun <- make_twofactor_colors
+                return(make_twofactor_colors(
+                    varlevels, sep = sep, show = show, verbose = verbose))
             }
         }
     }
-    makefun(varlevels, sep = sep, show = show, verbose = verbose)
+# Onefactor colors
+    return(make_onefactor_colors(
+        varlevels, sep = sep, show = show, verbose = verbose))
 }
 
 #' Create default ggplot colors for factor levels

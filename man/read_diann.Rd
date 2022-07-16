@@ -10,7 +10,23 @@
 
 .read_diann_proteingroups(file, fastadt = NULL)
 
-read_diann(file, fastadt = NULL, quantity = "PG.MaxLFQ")
+read_diann(
+  file,
+  fastadt = NULL,
+  quantity = "PG.MaxLFQ",
+  impute = FALSE,
+  plot = FALSE,
+  pca = plot,
+  fit = if (plot) "limma" else NULL,
+  formula = NULL,
+  block = NULL,
+  coefs = NULL,
+  contrastdefs = NULL,
+  feature_id = NULL,
+  sample_id = NULL,
+  palette = make_palette(object),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{file}{'report.tsv' file}
@@ -18,6 +34,28 @@ read_diann(file, fastadt = NULL, quantity = "PG.MaxLFQ")
 \item{fastadt}{NULL or data.table}
 
 \item{quantity}{'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'}
+
+\item{plot}{whether to plot}
+
+\item{pca}{whether to pca}
+
+\item{fit}{model fit engine: 'limma', 'lm', 'lmer', 'lme'}
+
+\item{formula}{model formula}
+
+\item{block}{block var (sdt)}
+
+\item{coefs}{character: coefficients to test}
+
+\item{contrastdefs}{character: coefficient contrasts to test}
+
+\item{feature_id}{string: summary plot feature}
+
+\item{sample_id}{string: summary plot sample}
+
+\item{palette}{character: color palette}
+
+\item{verbose}{whether to msg}
 }
 \value{
 data.table / SummarizedExperiment
@@ -28,14 +66,22 @@ Read diann
 \examples{
 # Read
     file <- download_data('szymanski22.report.tsv')
+   (object <- read_diann(file))
+# Samples
+   sdt(object)
+   snames(object) \%<>\% split_extract_fixed('_', 3)
+   object$subgroup <- as.numeric(object$sample_id)
+   sdt(object)
+   fdt(object)[1:3]
+   values(object)[1:3, 1:2]
+# Analyze
+   analyze(object)
+   biplot(pca(object), color = dilution) + ggtitle('IPT Hela')
+    
+# Read data.table (lower-level)
+    file <- download_data('szymanski22.report.tsv')
    (PR   <- .read_diann_precursors(file))       # precursor    dt
    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
-   (object <- read_diann(file))                 # proteingroup sumexp
-    values(object)[1:5, 1:2]
-    fdt(object)[1:5]
-    sdt(object)
-    object$dilution <- split_extract_fixed(object$sample_id, '_', 3)
-    biplot(pca(object), color = dilution) + ggtitle('IPT Hela')
 # Compare Summarizations
      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85\%) proteingroups
      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15\%) proteingroups

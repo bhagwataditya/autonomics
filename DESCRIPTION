@@ -48,6 +48,7 @@ Imports:
   MultiAssayExperiment,
   parallel,
   pcaMethods,
+  RColorBrewer,
   rlang,
   R.utils,
   readxl,

@@ -13,12 +13,12 @@ analyze(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = colnames(create_design(object, formula = formula)),
-  contrastdefs = contrast_coefs(object, formula),
+  contrastdefs = NULL,
   verbose = TRUE,
   plot = pca & !is.null(fit),
   feature_id = NULL,
   sample_id = NULL,
-  palette = NULL
+  palette = make_palette(object)
 )
 }
 \arguments{

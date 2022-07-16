@@ -15,7 +15,7 @@ plot_quantifications(...)
 
 plot_summarized_detections(
   object,
-  subgroup = subgroup,
+  subgroup = quo("subgroup"),
   fill = !!enquo(subgroup),
   palette = NULL,
   na_imputes = TRUE
