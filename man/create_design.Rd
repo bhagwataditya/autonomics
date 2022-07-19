@@ -13,6 +13,7 @@ create_design(object, ...)
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "limma"),
+  drop = FALSE,
   verbose = FALSE,
   ...
 )
@@ -21,6 +22,7 @@ create_design(object, ...)
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "limma"),
+  drop = FALSE,
   verbose = FALSE,
   ...
 )
@@ -29,6 +31,7 @@ create_design(object, ...)
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, fit = "limma"),
+  drop = FALSE,
   verbose = FALSE,
   ...
 )
@@ -41,6 +44,8 @@ create_design(object, ...)
 \item{subgroupvar}{subgroup svar}
 
 \item{formula}{formula with svars}
+
+\item{drop}{whether to drop predictor names}
 
 \item{verbose}{whether to message}
 }

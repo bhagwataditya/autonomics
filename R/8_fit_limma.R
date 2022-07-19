@@ -143,16 +143,17 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' @param object       SummarizedExperiment or sample dataframe
 #' @param subgroupvar  subgroup svar
 #' @param formula      formula with svars
+#' @param drop         whether to drop predictor names
 #' @param verbose      whether to message
 #' @param ...          required to s3ify
 #' @return design matrix
 #' @examples
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
+#' object <- read_rnaseq_counts(file, plot = FALSE)
 #' unique(create_design(object))
 #'
 #' object$subgroup <- 'billing19'
-#' unique(create_design(object))
+#' unique(create_design(object, drop = TRUE))
 #'
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file, plot=FALSE)
@@ -170,11 +171,12 @@ create_design.MultiAssayExperiment <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit = 'limma'),
-    verbose = FALSE, ...
+    drop = FALSE, verbose = FALSE, ...
 ){
     create_design.data.frame(sdata(object), 
                             subgroupvar = subgroupvar, 
                             formula     = formula, 
+                            drop        = drop,
                             verbose     = verbose)
 }
 
@@ -184,11 +186,12 @@ create_design.SummarizedExperiment <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula = default_formula(object, subgroupvar, fit = 'limma'),
-    verbose = FALSE, ...
+    drop = FALSE, verbose = FALSE, ...
 ){
     create_design.data.frame(sdata(object), 
                             subgroupvar = subgroupvar, 
-                            formula     = formula, 
+                            formula     = formula,
+                            drop        = drop,
                             verbose     = verbose)
 }
 
@@ -198,7 +201,7 @@ create_design.data.frame <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula = default_formula(object, subgroupvar, fit = 'limma'),
-    verbose = FALSE, ...
+    drop = FALSE, verbose = FALSE, ...
 ){
 # Assert
     assert_is_subset(all.vars(formula), names(object))
@@ -211,14 +214,16 @@ create_design.data.frame <- function(
     myDesign <- model.matrix(formula, data=object)
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     is_factor_var <- function(x, object) is.factor(object[[x]])
-    #for (predictor in all.vars(formula)){
-        #if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
-        #            stri_replace_first_fixed(predictor, '') }
-        # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
-        # For other cases it works wonderfully, so I keep it for now.
-        # If it gives too many issues, roll back to doing the dropping only
-        # for "subgroup" levels:
-        #colnames(myDesign) %<>% gsub('subgroup', '', ., fixed=TRUE)
+    if (drop){
+        for (predictor in all.vars(formula)){
+            if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
+                        stri_replace_first_fixed(predictor, '') }
+            # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
+            # For other cases it works wonderfully, so I keep it for now.
+            # If it gives too many issues, roll back to doing the dropping only
+            # for "subgroup" levels:
+            #colnames(myDesign) %<>% gsub('subgroup', '', ., fixed=TRUE)
+    }
 # Return
     return(myDesign)
 }
