@@ -57,11 +57,11 @@ Create design matrix  for statistical analysis
 }
 \examples{
 file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot=FALSE)
+object <- read_rnaseq_counts(file, plot = FALSE)
 unique(create_design(object))
 
 object$subgroup <- 'billing19'
-unique(create_design(object))
+unique(create_design(object, drop = TRUE))
 
 file <- download_data('atkin18.somascan.adat')
 object <- read_somascan(file, plot=FALSE)

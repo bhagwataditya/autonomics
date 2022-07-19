@@ -64,19 +64,12 @@ data.table / SummarizedExperiment
 Read diann
 }
 \examples{
-# Read
-    file <- download_data('szymanski22.report.tsv')
-   (object <- read_diann(file))
-# Samples
-   sdt(object)
+# Read & Analyze
+   file <- download_data('szymanski22.report.tsv')
+   object <- read_diann(file)
    snames(object) \%<>\% split_extract_fixed('_', 3)
    object$subgroup <- as.numeric(object$sample_id)
-   sdt(object)[1:3]
-   fdt(object)[1:3]
-   values(object)[1:3, 1:2]
-# Analyze
    analyze(object)
-   biplot(pca(object), color = dilution) + ggtitle('IPT Hela')
     
 # Read data.table (lower-level)
     file <- download_data('szymanski22.report.tsv')
