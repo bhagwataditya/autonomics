@@ -10,9 +10,9 @@
 plot_boxplots(
   object,
   assay = assayNames(object)[1],
-  x = sym("subgroup"),
-  fill = sym("subgroup"),
-  color = sym("subgroup"),
+  x = subgroup,
+  fill = subgroup,
+  color = subgroup,
   block = NULL,
   facet = NULL,
   scales = "free_y",
@@ -59,9 +59,9 @@ plot_feature_boxplots(
 plot_subgroup_boxplots(
   object,
   assay = assayNames(object)[1],
-  subgroup = sym("subgroup"),
-  x = sym("subgroup"),
-  fill = sym("subgroup"),
+  subgroup = subgroup,
+  x = subgroup,
+  fill = subgroup,
   color = NULL,
   block = NULL,
   highlight = NULL,
@@ -72,7 +72,7 @@ plot_subgroup_boxplots(
   ncol = NULL,
   page = 1,
   labeller = "label_value",
-  palette = NULL,
+  palette = make_palette(object),
   fixed = list(na.rm = TRUE),
   hlevels = NULL
 )

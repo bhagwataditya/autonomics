@@ -22,8 +22,8 @@ plot_densities(
 
 plot_sample_densities(
   object,
-  group = sym("sample_id"),
-  fill = sym("sample_id"),
+  group = sample_id,
+  fill = sample_id,
   color = NULL,
   facet = NULL,
   nrow = NULL,

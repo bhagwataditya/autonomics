@@ -434,7 +434,7 @@ gglegend<-function(p){
 
 plot_transformation_densities <- function(
     object,
-    subgroup = sym('subgroup'),
+    subgroup = subgroup,
     transformations = c('quantnorm', 'vns' , 'zscore', 'invnorm'),
     ...,
     fixed = list(na.rm=TRUE, alpha=0.3)
@@ -459,7 +459,7 @@ plot_transformation_densities <- function(
 
 plot_transformation_violins <- function(
     object,
-    subgroup = sym('subgroup'),
+    subgroup = subgroup,
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
     ...,
     fixed = list(na.rm=TRUE)
@@ -485,7 +485,7 @@ plot_transformation_violins <- function(
 
 plot_transformation_biplots <- function(
     object,
-    subgroup = sym('subgroup'),
+    subgroup = subgroup,
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
     method = 'pca', xdim = 1, ydim = 2, color = !!enquo(subgroup), ...,
     fixed = list(shape=15, size=3)

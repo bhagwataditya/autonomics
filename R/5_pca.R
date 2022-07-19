@@ -408,15 +408,16 @@ num2char <- function(x){
 
 pca1 <- pca2 <- subgroup <- NULL
 add_scores <- function(
-    p, object, x = sym('pca1'), y = sym('pca2'), color = sym('subgroup'),
+    p, object, x = pca1, y = pca2, color = subgroup,
     group = NULL, ..., fixed = list(shape=15, size=3, na.rm=TRUE)
 ){
     x     <- enquo(x)
     y     <- enquo(y)
-    color <- enquo(color); colorstr <- as_name(color)
+    color <- enquo(color)
     group <- enquo(group)
-    
-    object[[colorstr]] %<>% num2char() # manual colors require non-numerics
+
+    # manual colors require non-numerics
+    if (!quo_is_null(color))    object[[as_name(color)]] %<>% num2char() 
     p <- p + layer(  geom = 'point',
                 mapping = aes(x = !!x, y = !!y, color = !!color, ...),
                 stat    = "identity",
@@ -439,7 +440,7 @@ headtail <- function(x, n){
 
 pca1 <- pca2 <- NULL
 add_loadings <- function(
-    p, object, x = sym('pca1'), y = sym('pca2'), label = sym('feature_name'), 
+    p, object, x = pca1, y = pca2, label = feature_name, 
     nloadings = 1
 ){
 # Process args
@@ -511,7 +512,7 @@ pca1 <- pca2 <- feature_name <- NULL
 #' biplot(object, pca3, pca4, color=SUB, nloadings=1)
 #' @export
 biplot <- function(
-    object, x = sym('pca1'), y = sym('pca2'), color = NULL, group = NULL,
+    object, x = pca1, y = pca2, color = subgroup, group = NULL,
     label = NULL, feature_label = feature_name, ...,
     fixed = list(shape=15, size=3), nloadings = 0,
     palette = make_palette(object)

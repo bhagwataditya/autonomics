@@ -7,9 +7,9 @@
 \usage{
 biplot(
   object,
-  x = sym("pca1"),
-  y = sym("pca2"),
-  color = NULL,
+  x = pca1,
+  y = pca2,
+  color = subgroup,
   group = NULL,
   label = NULL,
   feature_label = feature_name,

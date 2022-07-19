@@ -66,7 +66,7 @@ add_fill_scale <- function(p, fill, data, palette=NULL){
     return(p)
 }
 
-make_palette <- function(object)  make_colors(object$subgroup)
+make_palette <- function(object)  make_colors(subgroup_levels(object))
 
 make_colors <- function(
     varlevels, sep = guess_sep(varlevels), show = FALSE,
@@ -525,7 +525,7 @@ plot_subgroup_violins <- function(
 #' @export
 plot_boxplots <- function(
     object, assay = assayNames(object)[1], 
-    x = sym('subgroup'),  fill = sym('subgroup'), color = sym('subgroup'), 
+    x = subgroup,  fill = subgroup, color = subgroup, 
     block = NULL, facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value', highlight = NULL, 
     jitter = FALSE, palette = make_palette(object), hlevels = NULL, ...
