@@ -433,7 +433,6 @@ add_scores <- function(
     p
 }
 
-
 headtail <- function(x, n){
     c(x[seq(1, n)], x[seq(length(x)+1-n, length(x))])
 }
