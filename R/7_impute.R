@@ -406,57 +406,57 @@ venn_detects <- function(object, subgroup){
 #
 #==============================================================================
 
-#' @rdname impute_consistent_nas
-#' @export
-impute_systematic_nondetects <- function(...){
-    .Deprecated('impute_consistent_nondetects')
-    impute_consistent_nas(...)
-}
+# @rdname impute_consistent_nas
+# @export
+#impute_systematic_nondetects <- function(...){
+#    .Deprecated('impute_consistent_nondetects')
+#    impute_consistent_nas(...)
+#}
 
-#' Impute consistent nas
-#' @param object    SummarizedExperiment
-#' @param subgroup     subgroup svar
-#' @param fun       imputation function
-#' @param plot      TRUE or FALSE
-#' @param verbose   TRUE or FALSE
-#' @param ...       passed to `fun`
-#' @return SummarizedExperiment
-#' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
-#' impute_consistent_nas(object)
-#' @export
-impute_consistent_nas <- function(object, subgroup = subgroup,
-    fun = halfnormimpute, plot = TRUE, verbose = TRUE, ...
-){
+# Impute consistent nas
+# @param object    SummarizedExperiment
+# @param subgroup     subgroup svar
+# @param fun       imputation function
+# @param plot      TRUE or FALSE
+# @param verbose   TRUE or FALSE
+# @param ...       passed to `fun`
+# @return SummarizedExperiment
+# @examples
+# file <- download_data('fukuda20.proteingroups.txt')
+# object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
+# impute_consistent_nas(object)
+# @export
+#impute_consistent_nas <- function(object, subgroup = subgroup,
+#    fun = halfnormimpute, plot = TRUE, verbose = TRUE, ...
+#){
 # Process
-    absent <- replicated <- consistent <- value <- NULL
-    subgroup <- enquo(subgroup)
-    groupvar <- as_name(subgroup)
+#    absent <- replicated <- consistent <- value <- NULL
+#    subgroup <- enquo(subgroup)
+#    groupvar <- as_name(subgroup)
 # Impute
-    dt  <-  sumexp_to_longdt(object, svars = groupvar)
-    dt[, absent     := all(is.na(value)),    by = c('feature_id', groupvar)]
-    dt[, replicated := sum(!is.na(value)) >= max(2, .N/2), by = c('feature_id', groupvar)]
-    dt[, consistent := any(absent) & any(replicated), by = 'feature_id']
-    dt[, is_imputed := consistent & absent]
-    dt[, value := fun(value, is_imputed, ...), by='feature_id']
+#    dt  <-  sumexp_to_longdt(object, svars = groupvar)
+#    dt[, absent     := all(is.na(value)),    by = c('feature_id', groupvar)]
+#    dt[, replicated := sum(!is.na(value)) >= max(2, .N/2), by = c('feature_id', groupvar)]
+#    dt[, consistent := any(absent) & any(replicated), by = 'feature_id']
+#    dt[, is_imputed := consistent & absent]
+#    dt[, value := fun(value, is_imputed, ...), by='feature_id']
 # Update object
-    ff <- fnames(object)
-    ss <- snames(object)
-    values(object) <- dt2exprs(dt)[ff, ss]
-    assays(object)$is_imputed <- dt2mat(data.table::dcast(
-                    dt, feature_id ~ sample_id, value.var = 'is_imputed'))
-    fdata(object)$imputed <- rowAnys(assays(object)$is_imputed)
+#    ff <- fnames(object)
+#    ss <- snames(object)
+#    values(object) <- dt2exprs(dt)[ff, ss]
+#    assays(object)$is_imputed <- dt2mat(data.table::dcast(
+#                    dt, feature_id ~ sample_id, value.var = 'is_imputed'))
+#    fdata(object)$imputed <- rowAnys(assays(object)$is_imputed)
 # Plot
-    nrowimputed <- sum(rowAnys(is_imputed(object)))
-    ncolimputed <- sum(colAnys(is_imputed(object)))
-    if (verbose & nrowimputed>0)  message('\t\tImpute consistent nondetects ', 
-        'for ', nrowimputed, '/', nrow(object), ' features ', 
-        'in ',  ncolimputed, '/', ncol(object), ' samples')
-    if (plot)    print(plot_detections(object, subgroup = !!subgroup))
+#    nrowimputed <- sum(rowAnys(is_imputed(object)))
+#    ncolimputed <- sum(colAnys(is_imputed(object)))
+#    if (verbose & nrowimputed>0)  message('\t\tImpute consistent nondetects ', 
+#        'for ', nrowimputed, '/', nrow(object), ' features ', 
+#        'in ',  ncolimputed, '/', ncol(object), ' samples')
+#    if (plot)    print(plot_detections(object, subgroup = !!subgroup))
 # Return
-    object
-}
+#    object
+#}
 
 
 #==============================================================================
@@ -497,12 +497,12 @@ detect_order_features <- function(object, subgroup){
 #==============================================================================
 
 
-#' @rdname plot_detections
-#' @export
-plot_detects <- function(...){
-    .Deprecated('plot_detections')
-    plot_detections(...)
-}
+# @rdname plot_detections
+# @export
+#plot_detects <- function(...){
+#    .Deprecated('plot_detections')
+#    plot_detections(...)
+#}
 
 
 #' Plot detections
@@ -604,12 +604,12 @@ get_subgroup_combinations <- function(object, subgroupvar){
 }
 
 
-#' @rdname plot_detections
-#' @export
-plot_quantifications <- function(...){
-    .Deprecated('plot_summarized_detections')
-    plot_summarized_detections(...)
-}
+# @rdname plot_detections
+# @export
+#plot_quantifications <- function(...){
+#    .Deprecated('plot_summarized_detections')
+#    plot_summarized_detections(...)
+#}
 
 
 #' @rdname plot_detections
