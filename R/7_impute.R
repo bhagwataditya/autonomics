@@ -121,7 +121,7 @@ na_to_string <- function(x){
 #' Impute NA values
 #'
 #' Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
-#' @param x        numeric vector, matrix, SumExp
+#' @param object   numeric vector, SumExp
 #' @param shift    number: sd units
 #' @param width    number: sd units
 #' @param verbose  TRUE or FALSE
@@ -132,57 +132,55 @@ na_to_string <- function(x){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file)
-#' values(object)[1:10, ]
-#'
-#' y <- impute(values(object)[, 1], plot = TRUE)  # vector
-#' y <- impute(values(object), plot = TRUE)       # matrix
-#' y <- impute(object, plot = TRUE)               # sumexp
+#' impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
+#' impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
+#' impute(object, plot = TRUE)                         # sumexp
 #' @export
-impute <- function(x, ...) UseMethod('impute')
+impute <- function(object, ...) UseMethod('impute')
 
 #' @rdname impute
 #' @export
 impute.numeric <- function(
-    x, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE
+    object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE
 ){
 # Original
-    sd1    <- sd(x, na.rm = TRUE)
-    mean1  <- mean(x, na.rm = TRUE)
+    sd1    <- sd(object, na.rm = TRUE)
+    mean1  <- mean(object, na.rm = TRUE)
 # Imputed
     mean0 <- mean1 - shift*sd1
     sd0 <- width*sd1
-    idx    <- is.na(x)
+    idx    <- is.na(object)
     if (verbose)  message('\tImpute ', sum(idx), ' / ', length(idx), ' values')
-    n <- length(x[idx])
-    x[idx] <- rnorm(n, mean = mean0, sd = sd0)
+    n <- length(object[idx])
+    object[idx] <- rnorm(n, mean = mean0, sd = sd0)
 # Plot and Return
     if (plot){
-        dt <- data.table(x = x, imputed = idx)
+        dt <- data.table(x = object, imputed = idx)
         p <- ggplot(dt) + 
              geom_density(aes(x = x, y = stat(count), fill = imputed))
         print(p)
     }
-    x
+    object
 }
 
 #' @rdname impute
 #' @export
 impute.matrix <- function(
-    x, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, 
-    n = min(9, ncol(x)), palette = make_colors(colnames(x))
+    object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, 
+    n = min(9, ncol(object)), palette = make_colors(colnames(object))
 ){
-    idx <- is.na(x)
+    idx <- is.na(object)
     if (verbose){
-        message(sprintf('\tImputed (out of %d) features per sample: ', nrow(x)))
+        message(sprintf('\tImputed (out of %d) features per sample: ', nrow(object)))
         message_df('\t\t%s', colSums(idx[, 1:n]))
     }
-    x %<>% apply(2, impute.numeric,
+    object %<>% apply(2, impute.numeric,
                  shift = shift, width = width, verbose = FALSE, plot = FALSE)
     if (plot){
-        dt1 <- mat2dt(x[,  1:n], 'feature_id')
+        dt1 <- mat2dt(object[,  1:n], 'feature_id')
         dt2 <- mat2dt(idx[,1:n], 'feature_id')
-        dt1 %<>% melt(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'value')
-        dt2 %<>% melt(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
+        dt1 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'value')
+        dt2 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
         dt <- merge(dt1, dt2, by = c('feature_id', 'sample_id'))
         p <- ggplot(dt) + 
              geom_density(aes(x = value, y = stat(count), fill = sample_id, 
@@ -190,19 +188,49 @@ impute.matrix <- function(
             scale_fill_manual(values = palette)
         print(p)
     }
-    x
+    object
 }
 
 #' @rdname impute
 #' @export 
 impute.SummarizedExperiment <- function(
-    x, shift = 2.5, widt = 0.3, verbose = TRUE, plot = FALSE, 
-    palette = make_colors(colnames(x))
+    object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, 
+    palette = make_colors(colnames(object)), n = min(9, ncol(object))
 ){
-    idx <- is.na(values(object))
-    values(object) %<>% impute.matrix(
-        shift = shift, width = width, verbose = verbose, plot = plot, 
-        palette = palette)
+# Impute systematic nondetects
+    dt <- sumexp_to_longdt(object)
+    dt[, imputed := impute(value, shift = shift, width = width, 
+                           verbose = FALSE, plot = FALSE), by = 'sample_id']
+    dt[,         isNa    :=  is.na(value)]
+    dt[,         isValue := !is.na(value)]
+    dt[, na.subgroup    := sum(isNa)   == .N,   by = c('feature_id', 'subgroup')]
+    dt[, value.subgroup := sum(isValue) > .N/2, by = c('feature_id', 'subgroup')]
+    dt[, consistent.na := any(na.subgroup) & any(value.subgroup), by = 'feature_id']
+    dt[consistent.na==TRUE, value := imputed]
+# Update object
+    mat <- dcast(dt, feature_id ~ sample_id, value.var = 'value')
+    mat %<>% dt2mat()
+    mat %<>% extract(rownames(object), )
+    mat %<>% extract(, colnames(object))
+    is_imputed(object) <- is.na(values(object))  &  !is.na(mat)
+    values(object) <- mat
+    if (verbose){  message(sprintf('\tImputed (of %d)', nrow(object)))
+                   message_df('\t%s', colSums(is_imputed(object))[1:n])  }
+# Plot and Return
+    if (plot){
+        dt1 <- mat2dt(    values(object)[, 1:n], 'feature_id')
+        dt2 <- mat2dt(is_imputed(object)[, 1:n], 'feature_id')
+        dt1 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'value')
+        dt2 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
+        dt <- merge(dt1, dt2, by = c('feature_id', 'sample_id'))
+        p1 <- ggplot(dt) + 
+              geom_density(aes(x = value, y = stat(count), fill = sample_id, 
+                           group = interaction(sample_id, imputed)), na.rm = TRUE) +
+              scale_fill_manual(values = palette)
+        p2 <- if (ncol(object)<=9){ plot_detections(object, subgroup = subgroup)
+              } else {   plot_summarized_detections(object, subgroup = subgroup) }
+        gridExtra::grid.arrange(p1, p2, nrow = 1)
+    }
     object
 }
 

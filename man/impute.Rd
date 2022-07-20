@@ -7,31 +7,32 @@
 \alias{impute.SummarizedExperiment}
 \title{Impute}
 \usage{
-impute(x, ...)
+impute(object, ...)
 
-\method{impute}{numeric}(x, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE)
+\method{impute}{numeric}(object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE)
 
 \method{impute}{matrix}(
-  x,
+  object,
   shift = 2.5,
   width = 0.3,
   verbose = TRUE,
   plot = FALSE,
-  n = min(9, ncol(x)),
-  palette = make_colors(colnames(x))
+  n = min(9, ncol(object)),
+  palette = make_colors(colnames(object))
 )
 
 \method{impute}{SummarizedExperiment}(
-  x,
+  object,
   shift = 2.5,
-  widt = 0.3,
+  width = 0.3,
   verbose = TRUE,
   plot = FALSE,
-  palette = make_colors(colnames(x))
+  palette = make_colors(colnames(object)),
+  n = min(9, ncol(object))
 )
 }
 \arguments{
-\item{x}{numeric vector, matrix, SumExp}
+\item{object}{numeric vector, SumExp}
 
 \item{shift}{number: sd units}
 
@@ -57,9 +58,7 @@ Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file)
-values(object)[1:10, ]
-
-y <- impute(values(object)[, 1], plot = TRUE)  # vector
-y <- impute(values(object), plot = TRUE)       # matrix
-y <- impute(object, plot = TRUE)               # sumexp
+impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
+impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
+impute(object, plot = TRUE)                         # sumexp
 }
