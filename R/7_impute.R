@@ -197,7 +197,15 @@ impute.SummarizedExperiment <- function(
     object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, 
     palette = make_colors(colnames(object)), n = min(9, ncol(object))
 ){
-# Impute systematic nondetects
+# Assert
+    assert_is_a_number(shift)
+    assert_is_a_number(width)
+    assert_is_a_bool(verbose)
+    assert_is_a_bool(plot)
+    assert_is_character(palette)
+    assert_has_names(palette)
+    assert_is_a_number(n)
+# Impute systematic NAs
     dt <- sumexp_to_longdt(object)
     dt[, imputed := impute(value, shift = shift, width = width, 
                            verbose = FALSE, plot = FALSE), by = 'sample_id']
@@ -216,7 +224,7 @@ impute.SummarizedExperiment <- function(
     values(object) <- mat
     if (verbose){  message(sprintf('\tImputed (of %d)', nrow(object)))
                    message_df('\t%s', colSums(is_imputed(object))[1:n])  }
-# Plot and Return
+# Plot/Return
     if (plot){
         dt1 <- mat2dt(    values(object)[, 1:n], 'feature_id')
         dt2 <- mat2dt(is_imputed(object)[, 1:n], 'feature_id')
@@ -235,57 +243,57 @@ impute.SummarizedExperiment <- function(
 }
 
 
-#' @rdname halfnormimpute
-#' @export
-normimpute <- function(x, selector = is.na(x), mean = 0){
-    x[selector] <- rnorm(
-        length(x[selector]), mean = mean, sd = sd(x[!selector]))
-    x
-}
+# @rdname halfnormimpute
+# @export
+# normimpute <- function(x, selector = is.na(x), mean = 0){
+#    x[selector] <- rnorm(
+#        length(x[selector]), mean = mean, sd = sd(x[!selector]))
+#    x
+#}
 
 
-#' Impute from half-normal distribution around 0
-#' 
-#' @param x          NA-containing numeric vector
-#' @param selector   which values to impute
-#' @param mean       which mean to impute around
-#' @param ref        reference (\code{translate})
-#' @param pos        position (\code{translate})
-#' @return numeric vector of same length
-#' @examples
-#' x <- rnorm(1e5, mean = 5)
-#' idx <- runif(length(x))>0.9
-#' x[idx] <- NA
-#' dt0 <- data.table(x = x, method = '0.original')
-#' dt1 <- data.table(x =     zeroimpute(x)[idx], method = '1.zeroimpute')
-#' dt2 <- data.table(x =     normimpute(x)[idx], method = '2.normimpute')
-#' dt3 <- data.table(x = halfnormimpute(x)[idx], method = '3.halfnormimpute')
-#' dt <- rbindlist(list(dt0, dt1, dt2, dt3, dt4))
-#' ggplot(dt) + geom_density(aes(x = x, y = stat(count), group = method, fill = method), alpha = 0.5)
-#' @export
-halfnormimpute <- function(x, selector = is.na(x)){
-    x[selector] <- abs(
-        rnorm(length(x[selector]), sd = 2*sd(x[!selector], na.rm = TRUE)))
-    x
-}
+# Impute from half-normal distribution around 0
+# 
+# @param x          NA-containing numeric vector
+# @param selector   which values to impute
+# @param mean       which mean to impute around
+# @param ref        reference (\code{translate})
+# @param pos        position (\code{translate})
+# @return numeric vector of same length
+# @examples
+# x <- rnorm(1e5, mean = 5)
+# idx <- runif(length(x))>0.9
+# x[idx] <- NA
+# dt0 <- data.table(x = x, method = '0.original')
+# dt1 <- data.table(x =     zeroimpute(x)[idx], method = '1.zeroimpute')
+# dt2 <- data.table(x =     normimpute(x)[idx], method = '2.normimpute')
+# dt3 <- data.table(x = halfnormimpute(x)[idx], method = '3.halfnormimpute')
+# dt <- rbindlist(list(dt0, dt1, dt2, dt3, dt4))
+# ggplot(dt) + geom_density(aes(x = x, y = stat(count), group = method, fill = method), alpha = 0.5)
+# @export
+#halfnormimpute <- function(x, selector = is.na(x)){
+#    x[selector] <- abs(
+#        rnorm(length(x[selector]), sd = 2*sd(x[!selector], na.rm = TRUE)))
+#    x
+#}
 
 
-#' @rdname halfnormimpute
-#' @export
-zeroimpute <- function(x, selector = is.na(x)){
-    x[selector] <- 0
-    x
-}
+# @rdname halfnormimpute
+# @export
+#zeroimpute <- function(x, selector = is.na(x)){
+#    x[selector] <- 0
+#    x
+#}
 
-#' @rdname halfnormimpute
-#' @export
-translate <- function(
-    x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x, na.rm = TRUE)
-){
-    assert_any_are_true(sapply(c(min, mean, median, max), identical, ref))
-    shift <- ref(x, na.rm = TRUE) - pos
-    x - shift
-}
+# @rdname halfnormimpute
+# @export
+#translate <- function(
+#    x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x, na.rm = TRUE)
+#){
+#    assert_any_are_true(sapply(c(min, mean, median, max), identical, ref))
+#    shift <- ref(x, na.rm = TRUE) - pos
+#    x - shift
+#}
 
 #=============================================================================
 #
