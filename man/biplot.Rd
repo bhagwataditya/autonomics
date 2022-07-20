@@ -16,7 +16,7 @@ biplot(
   ...,
   fixed = list(shape = 15, size = 3),
   nloadings = 0,
-  palette = make_palette(object)
+  palette = make_subgroup_palette(object)
 )
 
 plot_biplot(...)

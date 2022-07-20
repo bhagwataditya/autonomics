@@ -116,6 +116,97 @@ na_to_string <- function(x){
 #
 #=============================================================================
 
+#' Impute
+#' 
+#' Impute NA values
+#'
+#' Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
+#' @param x        numeric vector, matrix, SumExp
+#' @param shift    number: sd units
+#' @param width    number: sd units
+#' @param verbose  TRUE or FALSE
+#' @param plot     TRUE or FALSE
+#' @param n        number of samples to plot
+#' @param palette  color vector
+#' @return numeric vector, matrix or SumExp
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file)
+#' values(object)[1:10, ]
+#'
+#' y <- impute(values(object)[, 1], plot = TRUE)  # vector
+#' y <- impute(values(object), plot = TRUE)       # matrix
+#' y <- impute(object, plot = TRUE)               # sumexp
+#' @export
+impute <- function(x, ...) UseMethod('impute')
+
+#' @rdname impute
+#' @export
+impute.numeric <- function(
+    x, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE
+){
+# Original
+    sd1    <- sd(x, na.rm = TRUE)
+    mean1  <- mean(x, na.rm = TRUE)
+# Imputed
+    mean0 <- mean1 - shift*sd1
+    sd0 <- width*sd1
+    idx    <- is.na(x)
+    if (verbose)  message('\tImpute ', sum(idx), ' / ', length(idx), ' values')
+    n <- length(x[idx])
+    x[idx] <- rnorm(n, mean = mean0, sd = sd0)
+# Plot and Return
+    if (plot){
+        dt <- data.table(x = x, imputed = idx)
+        p <- ggplot(dt) + 
+             geom_density(aes(x = x, y = stat(count), fill = imputed))
+        print(p)
+    }
+    x
+}
+
+#' @rdname impute
+#' @export
+impute.matrix <- function(
+    x, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, 
+    n = min(9, ncol(x)), palette = make_colors(colnames(x))
+){
+    idx <- is.na(x)
+    if (verbose){
+        message(sprintf('\tImputed (out of %d) features per sample: ', nrow(x)))
+        message_df('\t\t%s', colSums(idx[, 1:n]))
+    }
+    x %<>% apply(2, impute.numeric,
+                 shift = shift, width = width, verbose = FALSE, plot = FALSE)
+    if (plot){
+        dt1 <- mat2dt(x[,  1:n], 'feature_id')
+        dt2 <- mat2dt(idx[,1:n], 'feature_id')
+        dt1 %<>% melt(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'value')
+        dt2 %<>% melt(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
+        dt <- merge(dt1, dt2, by = c('feature_id', 'sample_id'))
+        p <- ggplot(dt) + 
+             geom_density(aes(x = value, y = stat(count), fill = sample_id, 
+                              group = interaction(sample_id, imputed))) +
+            scale_fill_manual(values = palette)
+        print(p)
+    }
+    x
+}
+
+#' @rdname impute
+#' @export 
+impute.SummarizedExperiment <- function(
+    x, shift = 2.5, widt = 0.3, verbose = TRUE, plot = FALSE, 
+    palette = make_colors(colnames(x))
+){
+    idx <- is.na(values(object))
+    values(object) %<>% impute.matrix(
+        shift = shift, width = width, verbose = verbose, plot = plot, 
+        palette = palette)
+    object
+}
+
+
 #' @rdname halfnormimpute
 #' @export
 normimpute <- function(x, selector = is.na(x), mean = 0){
@@ -134,24 +225,15 @@ normimpute <- function(x, selector = is.na(x), mean = 0){
 #' @param pos        position (\code{translate})
 #' @return numeric vector of same length
 #' @examples
-#' require(data.table)
-#' x <- rnorm(1e5)
+#' x <- rnorm(1e5, mean = 5)
 #' idx <- runif(length(x))>0.9
 #' x[idx] <- NA
-#' dt1 <- data.table(value = normimpute(x), distr = 'norm')
-#'
-#' x <- abs(rnorm(1e5)); x[idx] <- NA
-#' dt2 <- data.table(value = halfnormimpute(x), distr = 'halfnorm')
-#'
-#' x <- abs(rnorm(1e5)); x[idx] <- NA
-#' dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
-#'
-#' x <- abs(rnorm(1e5)); x[idx] <- NA
-#' dt4 <- data.table(value = translate(x), distr = 'translate')
-#'
-#' require(ggplot2)
-#' ggplot(rbind(dt1,dt2,dt3, dt4), aes(x=value, fill=distr)) +
-#' geom_density(alpha=0.5)
+#' dt0 <- data.table(x = x, method = '0.original')
+#' dt1 <- data.table(x =     zeroimpute(x)[idx], method = '1.zeroimpute')
+#' dt2 <- data.table(x =     normimpute(x)[idx], method = '2.normimpute')
+#' dt3 <- data.table(x = halfnormimpute(x)[idx], method = '3.halfnormimpute')
+#' dt <- rbindlist(list(dt0, dt1, dt2, dt3, dt4))
+#' ggplot(dt) + geom_density(aes(x = x, y = stat(count), group = method, fill = method), alpha = 0.5)
 #' @export
 halfnormimpute <- function(x, selector = is.na(x)){
     x[selector] <- abs(

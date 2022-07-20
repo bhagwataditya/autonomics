@@ -18,7 +18,7 @@ analyze(
   plot = pca & !is.null(fit),
   feature_id = NULL,
   sample_id = NULL,
-  palette = make_palette(object)
+  palette = make_subgroup_palette(object)
 )
 }
 \arguments{

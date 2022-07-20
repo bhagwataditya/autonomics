@@ -22,7 +22,7 @@ plot_boxplots(
   labeller = "label_value",
   highlight = NULL,
   jitter = FALSE,
-  palette = make_palette(object),
+  palette = make_subgroup_palette(object),
   hlevels = NULL,
   ...
 )
@@ -72,7 +72,7 @@ plot_subgroup_boxplots(
   ncol = NULL,
   page = 1,
   labeller = "label_value",
-  palette = make_palette(object),
+  palette = make_subgroup_palette(object),
   fixed = list(na.rm = TRUE),
   hlevels = NULL
 )

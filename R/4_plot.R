@@ -66,7 +66,17 @@ add_fill_scale <- function(p, fill, data, palette=NULL){
     return(p)
 }
 
-make_palette <- function(object)  make_colors(subgroup_levels(object))
+make_sample_palette <- function(object){
+    dt <- sdt(object)[, c('sample_id', 'subgroup'), with = FALSE]
+    palette <- make_colors(levels(dt$subgroup))
+    palette <- data.table(subgroup = names(palette), color = palette)
+    dt %<>% merge(palette, by = 'subgroup')
+    palette <- dt$color
+    names(palette) <- dt$sample_id
+    palette
+}
+
+make_subgroup_palette <- function(object)  make_colors(subgroup_levels(object))
 
 make_colors <- function(
     varlevels, sep = guess_sep(varlevels), show = FALSE,
@@ -528,7 +538,7 @@ plot_boxplots <- function(
     x = subgroup,  fill = subgroup, color = subgroup, 
     block = NULL, facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value', highlight = NULL, 
-    jitter = FALSE, palette = make_palette(object), hlevels = NULL, ...
+    jitter = FALSE, palette = make_subgroup_palette(object), hlevels = NULL, ...
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
@@ -650,7 +660,7 @@ plot_subgroup_boxplots <- function(
     color = NULL, block = NULL, highlight = NULL, jitter = TRUE, 
     facet = vars(feature_id), scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value',
-    palette = make_palette(object), fixed = list(na.rm=TRUE), hlevels = NULL
+    palette = make_subgroup_palette(object), fixed = list(na.rm=TRUE), hlevels = NULL
 ){
     x         <- enquo(x)
     fill      <- enquo(fill)

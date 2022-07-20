@@ -37,22 +37,13 @@ numeric vector of same length
 Impute from half-normal distribution around 0
 }
 \examples{
-require(data.table)
-x <- rnorm(1e5)
+x <- rnorm(1e5, mean = 5)
 idx <- runif(length(x))>0.9
 x[idx] <- NA
-dt1 <- data.table(value = normimpute(x), distr = 'norm')
-
-x <- abs(rnorm(1e5)); x[idx] <- NA
-dt2 <- data.table(value = halfnormimpute(x), distr = 'halfnorm')
-
-x <- abs(rnorm(1e5)); x[idx] <- NA
-dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
-
-x <- abs(rnorm(1e5)); x[idx] <- NA
-dt4 <- data.table(value = translate(x), distr = 'translate')
-
-require(ggplot2)
-ggplot(rbind(dt1,dt2,dt3, dt4), aes(x=value, fill=distr)) +
-geom_density(alpha=0.5)
+dt0 <- data.table(x = x, method = '0.original')
+dt1 <- data.table(x =     zeroimpute(x)[idx], method = '1.zeroimpute')
+dt2 <- data.table(x =     normimpute(x)[idx], method = '2.normimpute')
+dt3 <- data.table(x = halfnormimpute(x)[idx], method = '3.halfnormimpute')
+dt <- rbindlist(list(dt0, dt1, dt2, dt3, dt4))
+ggplot(dt) + geom_density(aes(x = x, y = stat(count), group = method, fill = method), alpha = 0.5)
 }

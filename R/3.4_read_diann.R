@@ -231,7 +231,7 @@ read_diann <- function(
     fit = if (plot) 'limma' else NULL, formula = NULL,
     block = NULL, coefs = NULL, contrastdefs = NULL,
     feature_id = NULL, sample_id = NULL, 
-    palette = make_palette(object), 
+    palette = make_subgroup_palette(object), 
     verbose = TRUE
 ){
 # Assert

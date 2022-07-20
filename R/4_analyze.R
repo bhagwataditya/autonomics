@@ -35,7 +35,7 @@ analyze <- function(
         plot         = pca & !is.null(fit),
         feature_id   = NULL,
         sample_id    = NULL,
-        palette      = make_palette(object)
+        palette      = make_subgroup_palette(object)
 ){
     # Analyze
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
@@ -82,7 +82,7 @@ plot_summary <- function(
     coef        = c(setdiff(coefs(object), 'Intercept'), 'Intercept')[1],
     feature_id  = NULL, 
     sample_id   = NULL, 
-    palette     = make_palette(object)
+    palette     = make_subgroup_palette(object)
 ){
 # Initialize
     if (is.null(sample_id)){  # most avg sample
@@ -126,7 +126,7 @@ plot_summary <- function(
 }
 
 
-plot_top_sample <- function(object, subgroupvar, palette = make_palette(object)){
+plot_top_sample <- function(object, subgroupvar, palette = make_subgroup_palette(object)){
     plot_sample_densities(
         object, 
         fill = !!sym(subgroupvar), facet = vars(sample_id), palette = palette,
@@ -139,7 +139,7 @@ plot_top_sample <- function(object, subgroupvar, palette = make_palette(object))
 }
 
 plot_top_feature <- function(
-    object, subgroupvar, palette = make_palette(object)
+    object, subgroupvar, palette = make_subgroup_palette(object)
 ){
     plot_subgroup_boxplots(
         object, 
