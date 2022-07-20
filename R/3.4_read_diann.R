@@ -226,13 +226,10 @@ forge_pg_descriptions <- function(
 #' @rdname read_diann
 #' @export
 read_diann <- function(
-    file, fastadt = NULL, quantity = 'PG.MaxLFQ', 
-    impute = FALSE, plot = FALSE, pca = plot, 
-    fit = if (plot) 'limma' else NULL, formula = NULL,
-    block = NULL, coefs = NULL, contrastdefs = NULL,
-    feature_id = NULL, sample_id = NULL, 
-    palette = make_subgroup_palette(object), 
-    verbose = TRUE
+    file, fastadt = NULL, quantity = 'PG.MaxLFQ', impute = FALSE, plot = FALSE, 
+    pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
+    coefs = NULL, contrastdefs = NULL, feature_id = NULL, sample_id = NULL, 
+    palette = make_subgroup_palette(object), verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -261,7 +258,8 @@ read_diann <- function(
     # sdt
         object$sample_id <- colnames(object)
         object$subgroup <- 'group0'
-# Analyze 
+# Analyze
+    if ({{impute}})   object %<>% impute()
     object %<>% analyze(
           pca = pca,            fit = fit,         formula = formula, 
         block = block,        coefs = coefs,  contrastdefs = contrastdefs,

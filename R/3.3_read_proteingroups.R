@@ -737,9 +737,8 @@ read_proteingroups <- function(
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
     pepdt <- prodt[, pepcols, with = FALSE]
     prodt %<>% extract(, names(prodt) %>% setdiff(colnames(promat)) %>% setdiff(names(pepdt)), with = FALSE)
-    object <- SummarizedExperiment::SummarizedExperiment(
-        assays  = list(log2proteins = promat), 
-        rowData = prodt)
+    object <- SummarizedExperiment(assays  = list(log2proteins = promat), 
+                                   rowData = prodt)
 # Dequantify. Add pepcounts
     object$mqcol <- colnames(object)
     colnames(object) %<>% dequantify()
@@ -1017,7 +1016,7 @@ process_maxquant <- function(
         object %<>% filter_features(
             `Localization prob` >= localization, verbose = verbose)  }
 # Impute
-    if (impute)  object %<>% impute_consistent_nas(plot = FALSE)
+    if ({{impute}})  object %<>% impute(plot = FALSE)
     object
 }
 
