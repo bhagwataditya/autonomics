@@ -19,9 +19,9 @@ test_that('id values match', {
     expect_identical(fos$fosId, fosdt$id)
 })
 
-test_that('Uniprot values match', {
-    expect_identical(pro$Uniprot, prodt$`Majority protein IDs`)
-    expect_identical(fos$Uniprot, fosdt$Proteins)
+test_that('uniprot values match', {
+    expect_identical(pro$uniprot, prodt$`Majority protein IDs`)
+    expect_identical(fos$uniprot, fosdt$Proteins)
 })
 
 test_that('peptide counts match', {
@@ -58,7 +58,7 @@ test_that('`drop_differing_uniprots` preserves colnames', {
 
 test_that('`drop_differing_uniprots` preserves contents', {
     fosdt1 %<>% extract(, names(fosdt), with = FALSE)
-    cols <- setdiff(names(fosdt), c('Uniprot', 'Positions within proteins'))
+    cols <- setdiff(names(fosdt), c('uniprot', 'Positions within proteins'))
     expect_identical(fosdt[ , cols, with = FALSE], 
                      fosdt1[, cols, with = FALSE] )
 })
@@ -66,17 +66,17 @@ test_that('`drop_differing_uniprots` preserves contents', {
 test_that('`drop_differing_uniprots` uniprots are subset of original', {
     usplit <- function(x)  unlist(stri_split_fixed(x, ';'))
     is_string_subset <- function(x, y)  is_subset(usplit(x), usplit(y))
-    expect_true(is_string_subset(fosdt1$Uniprot[   1], fosdt$Uniprot[   1]))
-    expect_true(is_string_subset(fosdt1$Uniprot[  10], fosdt$Uniprot[  10]))
-    expect_true(is_string_subset(fosdt1$Uniprot[ 100], fosdt$Uniprot[ 100]))
+    expect_true(is_string_subset(fosdt1$uniprot[   1], fosdt$uniprot[   1]))
+    expect_true(is_string_subset(fosdt1$uniprot[  10], fosdt$uniprot[  10]))
+    expect_true(is_string_subset(fosdt1$uniprot[ 100], fosdt$uniprot[ 100]))
 })
 
-test_that('`drop_differing_uniprots` maintains integrity between `Positions within proteins` and `Uniprot`', {
-    fosdt  %<>% extract( , c('fosId', 'Uniprot', 'Positions within proteins'), with = FALSE)
-    fosdt1 %<>% extract( , c('fosId', 'Uniprot', 'Positions within proteins'), with = FALSE)
-    fosdt  %<>% uncollapse(Uniprot, `Positions within proteins`)
-    fosdt1 %<>% uncollapse(Uniprot, `Positions within proteins`)
-    fosdt  %<>% merge(fosdt1, by = c('fosId', 'Uniprot'))
+test_that('`drop_differing_uniprots` maintains integrity between `Positions within proteins` and `uniprot`', {
+    fosdt  %<>% extract( , c('fosId', 'uniprot', 'Positions within proteins'), with = FALSE)
+    fosdt1 %<>% extract( , c('fosId', 'uniprot', 'Positions within proteins'), with = FALSE)
+    fosdt  %<>% uncollapse(uniprot, `Positions within proteins`)
+    fosdt1 %<>% uncollapse(uniprot, `Positions within proteins`)
+    fosdt  %<>% merge(fosdt1, by = c('fosId', 'uniprot'))
     expect_identical(fosdt$`Positions within proteins.x`, 
                      fosdt$`Positions within proteins.y`)
 })
@@ -110,7 +110,7 @@ test_that('`read_fastahdrs` reads first protein',
             genesymbol  = 'YWHAB',
             uniprot     = 'P31946', 
             canonical   = 'P31946', 
-            isoform     = 1,
+            isoform     = 0,
             proteinname = '14-3-3 protein beta/alpha',
             fragment    = 0,
             existence   = 1)))
@@ -138,7 +138,7 @@ test_that('`read_fastahdrs` reads intermediate trembl protein',
             genesymbol  = 'RETSAT',
             uniprot     = 'G5E9N3', 
             canonical   = 'G5E9N3', 
-            isoform     = 1,
+            isoform     = 0,
             proteinname = 'All-trans-13,14-dihydroretinol saturase, isoform CRA_c', 
             fragment    = 0,
             existence   = 4)))
@@ -152,7 +152,7 @@ test_that('`read_fastahdrs` reads last trembl protein',
             genesymbol  = 'PARD6A',
             uniprot     = 'R4GMM2', 
             canonical   = 'R4GMM2', 
-            isoform     = 1,
+            isoform     = 0,
             proteinname = 'Partitioning defective 6 homolog alpha',
             fragment    = 0,
             existence   = 4)))
@@ -456,7 +456,7 @@ test_that('`read_proteingroups(billing19)` reads abundances', {
 test_that('`read_proteingroups(billing19)` reads uniprots', {
     fdt0 <- fread(proteinfile, select = c('id', 'Majority protein IDs'), colClasses = c(id = 'character'))
     fdt0 %<>% extract(fdt(pro)$proId, on = 'id')
-    assert_all_are_true(is_collapsed_subset(fdt(pro)$Uniprot, fdt0$`Majority protein IDs`))
+    expect_true(all(is_collapsed_subset(fdt(pro)$uniprot, fdt0$`Majority protein IDs`)))
 })
 
 
@@ -488,20 +488,24 @@ test_that(  "read_proteingroups(file, fit='limma')", {
     file <- download_data('fukuda20.proteingroups.txt')
     object <- read_proteingroups(file, fit = 'limma', plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
+    expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
     expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })
 
 test_that(  "read_proteingroups(file, fit='lm')", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, fit = 'lm', plot = FALSE)
+    object <- read_proteingroups(file, impute = TRUE, fit = 'lm', plot = FALSE)
+        # systematic nondetects not allowed for lm!
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true('lm' %in% names(metadata(object)))
+    expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP,  'lm'))))
+    expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })
 
 test_that(  "read_proteingroups(file, fit='wilcoxon')", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, fit = 'wilcoxon', plot = FALSE)
+    object <- read_proteingroups(file, impute = TRUE, fit = 'wilcoxon', plot = FALSE)
+        # systematic nondetects no allowed for wilcoxon!
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true(any(stri_detect_fixed(fvars(object), '~wilcoxon')))
-    expect_true('wilcoxon' %in% names(metadata(object)))
+    expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'wilcoxon'))))
+    expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })

@@ -171,7 +171,7 @@ impute.matrix <- function(
 ){
     idx <- is.na(object)
     if (verbose){
-        message(sprintf('\tImputed (out of %d) features per sample: ', nrow(object)))
+        message(sprintf('\tImpute (out of %d) features per sample: ', nrow(object)))
         message_df('\t\t%s', colSums(idx[, 1:n]))
     }
     object %<>% apply(2, impute.numeric,

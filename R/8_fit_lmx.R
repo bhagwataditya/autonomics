@@ -117,7 +117,8 @@ fit_lmx <- function(object, fit,
     formula = default_formula(object, subgroupvar, fit), 
     block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE){
+    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
     formula %<>% addlhs()
@@ -142,22 +143,17 @@ fit_lmx <- function(object, fit,
     object %<>% reset_fitres(fit)
     object %<>% merge_fitres(fitres, fit=fit)
 # extract
-    #quantities <- c('p', 't', 'effect', 'se')
     quantities <- c('effect', 'fdr', 'p', 't')
     fitres <- mapply(.extractstat, quantity=quantities, 
                             MoreArgs = list(fitres=fitres), SIMPLIFY = FALSE)
-    fitarray <- do.call(abind::abind, c(fitres, along=3))
     formula %<>% droplhs() %<>% formula2str()
-    if (!is.null(weights))  formula %<>% 
-                                paste0(', weights = assays(object)$', weightvar)
-    # names(dimnames(fitarray)) <- c('feature', formula,'quantity')
-    names(dimnames(fitarray)) <- c('feature', 'contrast','quantity')
-    metadata(object)[[fit]] <- fitarray
+    if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
-    if (is.null(coefs)) coefs <- colnames(metadata(object)[[fit]])
+    if (is.null(coefs)) coefs <- coefs(object, fit = fit)
     if (length(coefs) > 1) coefs %<>% setdiff('Intercept')
-    if (plot)  print(plot_volcano(object, fit=fit, coefs = coefs))
-    object }
+    if (plot)  print(plot_volcano(object, fit = fit, coefs = coefs))
+    object 
+}
 
 
 #' @rdname fit_limma
@@ -177,7 +173,6 @@ fit_lm <- function(
         # integrated in formula and also gets checked for (unnecessarily!)
 # Fit    
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
-    metadata(object)$lm <- NULL
     fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
             formula = formula, block = block, 
             weightvar = weightvar, coefs = coefs, 
@@ -213,7 +208,6 @@ fit_lme <- function(
 # Fit
     if (verbose)  message('\t\tlme(', formula2str(formula), ', ', 
                         'random = ',  formula2str(block),')')
-    metadata(object)$lme <- NULL
     fit_lmx(object, fit = 'lme', subgroupvar = subgroupvar, 
             formula = formula, block = block, 
             weightvar = weightvar, coefs = coefs, 

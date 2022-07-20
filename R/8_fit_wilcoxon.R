@@ -89,8 +89,7 @@ fit_wilcoxon <- function(
 # assert
     for (var in all.vars(formula))  assert_is_identical_to_false(
                                 has_consistent_nondetects(object, !!sym(var)))
-    if (is.null(contrastdefs))  contrastdefs <- 
-                                    contrast_coefs(object, formula=formula)
+    if (is.null(contrastdefs))  contrastdefs <- contrast_coefs(object, formula=formula)
 # fit
     . <- NULL
     dt <- sumexp_to_longdt(object, svars = c(subgroupvar, block))
@@ -112,14 +111,6 @@ fit_wilcoxon <- function(
         rownames(quantitymat) <- fitres$feature_id
         colnames(quantitymat) %<>% stri_replace_first_fixed(quantitydot, '')
         quantitymat }
-    
-    fitres <- mapply(extract_quantity, c('effect', 'fdr', 'p', 't'), 
-                    MoreArgs=list(fitres=fitres), SIMPLIFY=FALSE)
-# wrap
-    metadata(object)$wilcoxon <- do.call(abind::abind, c(fitres, along = 3))
-    names(dimnames(metadata(object)$wilcoxon)) <-
-                                        c('feature', 'contrast', 'quantity')
-                                      #  c('feature', subgroupvar, 'quantity')
 # Return
     if (plot)  print(plot_volcano(object, fit='wilcoxon')) 
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object,'wilcoxon'))
