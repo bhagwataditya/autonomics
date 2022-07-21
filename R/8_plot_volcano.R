@@ -178,19 +178,13 @@ plot_volcano <- function(object,
     imputed <- NULL # fallback when plotdt misses "imputed"
     significance <- NULL
     p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow) +
-    geom_point(
-        aes(
-            x = effect,y = mlp,color = significance, shape = imputed),
-        na.rm = TRUE)
-    if (!quo_is_null(label)) p <- p + geom_text_repel(
-                        data = txtdt,
-                        aes(
-                            x = effect, y = mlp, label = !!label,
-                            color = significance),
-                        #hjust = 'outward',
-                        na.rm = TRUE,
-                        show.legend = FALSE)#,
-                        #direction = 'x'
+    geom_point(aes(x = effect,y = mlp,color = significance, shape = imputed),
+               na.rm = TRUE)
+    if (!quo_is_null(label)){
+        p <- p + geom_text_repel(data = txtdt, 
+             aes(x = effect, y = mlp, label = !!label, color = significance), 
+             na.rm = TRUE, show.legend = FALSE)
+    }
     p + theme_bw() +
         scale_color_manual(values = colorvalues, name = NULL) +
         xlab('log2(FC)') +

@@ -236,8 +236,8 @@ impute.SummarizedExperiment <- function(
               geom_density(aes(x = value, y = stat(count), fill = sample_id, 
                            group = interaction(sample_id, imputed)), na.rm = TRUE) +
               scale_fill_manual(values = palette)
-        p2 <- if (ncol(object)<=9){ plot_detections(object, subgroup = subgroup)
-              } else {   plot_summarized_detections(object, subgroup = subgroup) }
+        p2 <- if (ncol(object)<=9){ plot_detections(object)
+              } else {   plot_summarized_detections(object) }
         gridExtra::grid.arrange(p1, p2, nrow = 1)
     }
     object
@@ -355,17 +355,15 @@ has_consistent_nondetects <- function(object, ssym){
 }
 
 
-is_consistent_detect <- function(object, subgroup = subgroup){
+is_consistent_detect <- function(object){
     . <- NULL
-    subgroup <- enquo(subgroup)
-    split_by_svar(object, !!subgroup) %>%
+    split_by_svar(object, subgroup) %>%
     lapply(function(x) rowAlls(is.na(values(x)))) %>%
     Reduce("|", .)
 }
 
-is_random_detect <- function(object, subgroup = subgroup){
-    subgroup <- enquo(subgroup)
-    rowAnys(is.na(values(object))) & !is_consistent_detect(object, !!subgroup)
+is_random_detect <- function(object){
+    rowAnys(is.na(values(object))) & !is_consistent_detect(object)
 }
 
 
@@ -537,22 +535,20 @@ detect_order_features <- function(object, subgroup){
 #' plot_summarized_detections(object, Group)
 #' plot_detections(object, Group)
 #' @export
-plot_detections <- function(
-    object, subgroup = subgroup, fill = !!enquo(subgroup)
-){
+plot_detections <- function(object, fill = subgroup){
 # Process
     . <- detection <- feature_id <- sample_id <- value <- NULL
-    subgroup <- enquo(subgroup);         fill     <- enquo(fill)
-    groupvar <- as_name(subgroup);    fillstr  <- as_name(fill)
+    fill     <- enquo(fill)
+    fillstr  <- as_name(fill)
 # Reorder samples
     object[[groupvar]] %<>% factor()
     object %<>% extract(, order(.[[groupvar]]))
 # Reorder/block features
-    object %<>% detect_order_features(!!subgroup)
+    object %<>% detect_order_features(subgroup)
     y <- object; values(y)[is_imputed(y)] <- NA
     nfull       <- sum(is_full_detect(y))
-    nconsistent <- sum(is_consistent_detect(y, subgroup=!!subgroup))
-    nrandom     <- sum(is_random_detect(y, subgroup=!!subgroup))
+    nconsistent <- sum(is_consistent_detect(y))
+    nrandom     <- sum(is_random_detect(y))
 # Melt
     plotdt  <-  sumexp_to_longdt(object, svars = c(groupvar, fillstr))
     alpha <- NULL

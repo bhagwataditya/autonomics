@@ -5,7 +5,7 @@
 \alias{plot_summarized_detections}
 \title{Plot detections}
 \usage{
-plot_detections(object, subgroup = subgroup, fill = !!enquo(subgroup))
+plot_detections(object, fill = subgroup)
 
 plot_summarized_detections(
   object,
@@ -17,11 +17,11 @@ plot_summarized_detections(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroup}{subgroup var (sym)}
-
 \item{fill}{fill var (sym)}
 
 \item{na_imputes}{whether to NA imputes prior to plottin (TRUE/FALSE)g}
+
+\item{subgroup}{subgroup var (sym)}
 
 \item{...}{for backward compatibilty}
 }
