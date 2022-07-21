@@ -37,7 +37,7 @@ Plot volcano
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, fit='limma', plot=FALSE)
+object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
 plot_volcano(object)
 object \%<>\% fit_lm()
 plot_volcano(object)
@@ -48,5 +48,4 @@ plot_volcano(object, coefs = c('t1', 't2', 't3'))
 object \%<>\% fit_lm(subgroupvar = 'SET')
 plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
 plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
-
 }

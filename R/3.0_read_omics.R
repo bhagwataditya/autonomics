@@ -561,25 +561,29 @@ merge_ffile <- function(
 }
 
 add_subgroup <- function(
-    object, subgroupvar = 'subgroup', replicatevar = 'replicate', verbose = TRUE
+    object, subgroupvar = 'subgroup', verbose = TRUE
 ){
+    # Rename
+    object$subgroup <- object[[subgroupvar]]
+    object[[subgroupvar]] <- NULL
+
     # Infer from sampleid if no subgroups defined yet
-    if (!has_some_svalues(object, subgroupvar)){
+    if (!has_some_svalues(object, 'subgroup')){
         x <- object$sample_id
         sep <- guess_sep(x)
         if (sep!='NOSEP'){
             nfactor <- nfactors(x, sep)
             if (verbose)  message('\t\tInfer subgroup from sample_ids')
-            object[[subgroupvar]]  <- split_extract_fixed(x, sep, seq_len(nfactor-1))
-            object[[replicatevar]] <- split_extract_fixed(x, sep, nfactor)
+            object$subgroup  <- split_extract_fixed(x, sep, seq_len(nfactor-1))
+            object$replicate <- split_extract_fixed(x, sep, nfactor)
         } else {
-            object[[subgroupvar]] <- 'group0'
+            object$subgroup <- 'group0'
         }
     }
     
     # factorify/validify
-    object[[subgroupvar]] %<>% factor()
-    levels(object[[subgroupvar]]) %<>% make.names()  # otherwise limma issue!
+    object$subgroup %<>% factor()
+    levels(object$subgroup) %<>% make.names()  # otherwise limma issue!
     object
 }
 

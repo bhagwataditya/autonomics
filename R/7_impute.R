@@ -221,6 +221,7 @@ impute.SummarizedExperiment <- function(
     mat %<>% extract(rownames(object), )
     mat %<>% extract(, colnames(object))
     is_imputed(object) <- is.na(values(object))  &  !is.na(mat)
+    fdt(object)$imputed <- rowAnys(is_imputed(object))
     values(object) <- mat
     if (verbose){  message(sprintf('\tImputed (of %d)', nrow(object)))
                    message_df('\t%s', colSums(is_imputed(object))[1:n])  }
@@ -529,7 +530,7 @@ detect_order_features <- function(object, subgroup){
 #' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 #' plot_summarized_detections(object)
 #' plot_detections(object)
-#' plot_detections(impute_consistent_nas(object, plot=FALSE))
+#' plot_detections(impute(object, plot=FALSE))
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
@@ -616,46 +617,41 @@ get_subgroup_combinations <- function(object, subgroupvar){
 #' @export
 plot_summarized_detections <- function(
     object, 
-    subgroup   = quo('subgroup'),
-    fill       = !!enquo(subgroup),
+    fill       = subgroup,
     palette    = NULL,
     na_imputes = TRUE
 ){
 # Assert
     . <- value <- NULL
     assert_is_all_of(object, "SummarizedExperiment")
-    subgroup <- enquo(subgroup)
-    if (quo_is_null(subgroup))  return(ggplot() + geom_blank())
-    subgroupstr <- as_name(subgroup)
     fill <- enquo(fill);     fillstr <- as_name(fill)
-    assert_is_subset(subgroupstr, svars(object))
     assert_is_subset(fillstr,  svars(object))
     xmin <- xmax <- ymin <- ymax <- nfeature <- quantified <- NULL
 # Prepare
-    object[[subgroupstr]] %<>% num2char()
-    object %<>% filter_samples(!is.na(!!subgroup), verbose=TRUE)
+    object$subgroup %<>% num2char()
+    object %<>% filter_samples(!is.na(subgroup), verbose=TRUE)
     values(object) %<>% zero_to_na()  #### TODO fine-tune
-    featuretypes <- get_subgroup_combinations(object, subgroupstr)
-    dt <- sumexp_to_longdt(object, svars = subgroupstr)
+    featuretypes <- get_subgroup_combinations(object, 'subgroup')
+    dt <- sumexp_to_longdt(object, svars = 'subgroup')
     if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,
                                                         value := NA]
     dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
-                    by = c(subgroupstr, 'feature_id'))
+                    by = c('subgroup', 'feature_id'))
     dt %<>% dcast.data.table(
-        as.formula(paste0('feature_id ~ ', subgroupstr)),value.var='quantified')
+        as.formula(paste0('feature_id ~ ', 'subgroup')),value.var='quantified')
     dt %<>% merge(featuretypes, by = setdiff(names(featuretypes), 'type'))
     dt %<>% extract(,.(nfeature=.N),by='type')
     dt %<>% merge(featuretypes,by='type')
     dt[, ymax := cumsum(nfeature)]
     dt[, ymin := c(0,ymax[-.N])]
     dt %<>% melt.data.table(id.vars = c('type', 'nfeature', 'ymin', 'ymax'),
-                            variable.name = subgroupstr, value.name='quantified')
+                            variable.name = 'subgroup', value.name='quantified')
     dt$quantified %<>% as.factor()
-    nsampledt <- sdt(object)[, .N, by=subgroupstr] %>% # preserves
-                set_names(c(subgroupstr, 'xmax'))      # factor order!
-    setorderv(nsampledt, subgroupstr)
+    nsampledt <- sdt(object)[, .N, by='subgroup'] %>% # preserves
+                set_names(c('subgroup', 'xmax'))      # factor order!
+    setorderv(nsampledt, 'subgroup')
     nsampledt[, xmax := cumsum(xmax)]; nsampledt[, xmin := c(0, xmax[-.N])]
-    dt %<>% merge(nsampledt, by = subgroupstr)
+    dt %<>% merge(nsampledt, by = 'subgroup')
 # Plot
     npersubgroup <- table(object$subgroup)
     xbreaks <- c(cumsum(npersubgroup)- npersubgroup/2)

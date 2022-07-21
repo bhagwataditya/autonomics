@@ -84,8 +84,8 @@ melt_contrastdefs <- function(contrastdefmat){
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, fit='limma', impute=TRUE, plot=FALSE)
-#' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
+#' object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
+#' make_volcano_dt(object, fit = 'limma', coefs = 'subgroupAdult')
 #' @export
 make_volcano_dt <- function(
     object, fit = fits(object)[1], coefs = autonomics::coefs(object)[1],
@@ -143,7 +143,7 @@ make_volcano_dt <- function(
 #' @return ggplot object
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, fit='limma', plot=FALSE)
+#' object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
 #' plot_volcano(object)
 #' object %<>% fit_lm()
 #' plot_volcano(object)
@@ -154,7 +154,6 @@ make_volcano_dt <- function(
 #' object %<>% fit_lm(subgroupvar = 'SET')
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
-#'
 #' @export
 plot_volcano <- function(object,
     fit = fits(object), coefs = autonomics::coefs(object, fit[1]),

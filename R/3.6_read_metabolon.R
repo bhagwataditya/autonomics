@@ -194,7 +194,6 @@ pubchem_to_smiles <- function(x){
     svars(object)[nsv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$1')
     fvars(object)[nfv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$2')
     object %<>% merge_sfile(sfile = sfile, by.x = by.x, by.y = by.y)
-    if (is.null(subgroupvar)) subgroupvar <- 'Group'
     object %<>% add_subgroup(subgroupvar)
 # Return
     object
@@ -246,7 +245,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fdata(object)$feature_name <- fdata(object)[[fnamevar]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     object %<>% log2transform(verbose = TRUE)
-    if ({{impute}})   object %<>% impute(subgroup = !!subgroup, plot = FALSE)
+    if ({{impute}})     object %<>% impute(plot = FALSE)
     if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze

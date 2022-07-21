@@ -9,8 +9,7 @@ plot_detections(object, subgroup = subgroup, fill = !!enquo(subgroup))
 
 plot_summarized_detections(
   object,
-  subgroup = quo("subgroup"),
-  fill = !!enquo(subgroup),
+  fill = subgroup,
   palette = NULL,
   na_imputes = TRUE
 )
@@ -48,7 +47,7 @@ file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
 plot_summarized_detections(object)
 plot_detections(object)
-plot_detections(impute_consistent_nas(object, plot=FALSE))
+plot_detections(impute(object, plot=FALSE))
 
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, impute = FALSE, plot = FALSE)

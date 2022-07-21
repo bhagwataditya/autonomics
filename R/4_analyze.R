@@ -55,16 +55,14 @@ analyze <- function(
                             plot         = FALSE) 
     }
     # Plot/Return
-    if (plot)  plot_summary(
-        object, subgroupvar = subgroupvar, fit = fit, 
-        feature_id = feature_id, sample_id = sample_id, palette = palette)
+    if (plot)  plot_summary(object, fit = fit, feature_id = feature_id, 
+                            sample_id = sample_id, palette = palette)
     object
 }
 
 
 #' Plot summary
 #' @param object       SummarizedExperiment
-#' @param subgroupvar  string
 #' @param fit          string
 #' @param coef         string
 #' @param feature_id   NULL or string
@@ -73,11 +71,10 @@ analyze <- function(
 #' @examples 
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot = FALSE)
-#' plot_summary(object, subgroupvar = 'subgroup', fit = 'limma')
+#' plot_summary(object, fit = 'limma')
 #' @export
 plot_summary <- function(
     object, 
-    subgroupvar = 'subgroup',
     fit         = fits(object)[1], 
     coef        = c(setdiff(coefs(object), 'Intercept'), 'Intercept')[1],
     feature_id  = NULL, 
@@ -95,16 +92,13 @@ plot_summary <- function(
         feature_id <- fnames(object)[idx]
     }
 # Create plots
-    # detections   <- plot_top_detections(object, subgroupvar = subgroupvar, palette = palette)
     detections <- plot_summarized_detections(
         object, 
-        subgroup = !!sym(subgroupvar), 
-        fill     = !!sym(subgroupvar), 
-        palette  = palette) + ggtitle('Detections') + xlab(subgroupvar) + 
+        palette  = palette) + ggtitle('Detections') + xlab('subgroup') + 
         theme(plot.title = element_text(hjust = 0.5))
 
     pcaplot <- biplot(
-        object, color = !!sym(subgroupvar), x = pca1, y = pca2, palette = palette) + 
+        object, color = subgroup, x = pca1, y = pca2, palette = palette) + 
         guides(color = 'none') + ggtitle(NULL) +
         theme(axis.text.x  = element_blank(), 
               axis.text.y  = element_blank(), 
@@ -114,10 +108,8 @@ plot_summary <- function(
         ggtitle('Pca') +
         theme(plot.title = element_text(hjust = 0.5))
 
-    sample  <- plot_top_sample(object[, sample_id], 
-                subgroupvar = subgroupvar, palette = palette)
-    feature <- plot_top_feature(
-                object[feature_id,], subgroupvar = subgroupvar, palette = palette)
+    sample  <- plot_top_sample(object[, sample_id],  palette = palette)
+    feature <- plot_top_feature(object[feature_id,], palette = palette)
     volcano <- plot_top_volcano(object, fit = fit, coef = coef)
     # Layout
     layout_matrix <- matrix(c(1,2,3,4,5,3), nrow = 2, byrow = TRUE)
@@ -126,10 +118,10 @@ plot_summary <- function(
 }
 
 
-plot_top_sample <- function(object, subgroupvar, palette = make_subgroup_palette(object)){
+plot_top_sample <- function(object, palette = make_subgroup_palette(object)){
     plot_sample_densities(
         object, 
-        fill = !!sym(subgroupvar), facet = vars(sample_id), palette = palette,
+        fill = subgroup, facet = vars(sample_id), palette = palette,
         fixed = list(alpha=1, na.rm = TRUE), labeller = label_value) + 
         guides(fill = 'none') + ggtitle('Sample') +
         xlab(assayNames(object)[1]) + ylab(NULL) + 
@@ -139,12 +131,12 @@ plot_top_sample <- function(object, subgroupvar, palette = make_subgroup_palette
 }
 
 plot_top_feature <- function(
-    object, subgroupvar, palette = make_subgroup_palette(object)
+    object, palette = make_subgroup_palette(object)
 ){
     plot_subgroup_boxplots(
         object, 
-        subgroup = !!sym(subgroupvar), 
-        fill     = !!sym(subgroupvar), 
+        subgroup = subgroup, 
+        fill     = subgroup, 
         facet    = vars(feature_id),
         palette  = palette, 
         labeller = label_value) + 

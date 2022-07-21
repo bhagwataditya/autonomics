@@ -29,6 +29,6 @@ Create volcano datatable
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, fit='limma', impute=TRUE, plot=FALSE)
-make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
+object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
+make_volcano_dt(object, fit = 'limma', coefs = 'subgroupAdult')
 }

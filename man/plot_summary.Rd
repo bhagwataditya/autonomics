@@ -6,7 +6,6 @@
 \usage{
 plot_summary(
   object,
-  subgroupvar = "subgroup",
   fit = fits(object)[1],
   coef = c(setdiff(coefs(object), "Intercept"), "Intercept")[1],
   feature_id = NULL,
@@ -16,8 +15,6 @@ plot_summary(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{subgroupvar}{string}
 
 \item{fit}{string}
 
@@ -35,5 +32,5 @@ Plot summary
 \examples{
 file <- download_data('billing19.rnacounts.txt')
 object <- read_rnaseq_counts(file, plot = FALSE)
-plot_summary(object, subgroupvar = 'subgroup', fit = 'limma')
+plot_summary(object, fit = 'limma')
 }
