@@ -76,7 +76,8 @@ make_sample_palette <- function(object){
     palette
 }
 
-make_subgroup_palette <- function(object)  make_colors(subgroup_levels(object))
+make_subgroup_palette <- function(object)   make_colors(subgroup_levels(object))
+make_svar_palette <- function(object, svar) make_colors(slevels(object, svar))
 
 make_colors <- function(
     varlevels, sep = guess_sep(varlevels), show = FALSE,

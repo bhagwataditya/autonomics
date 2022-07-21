@@ -514,7 +514,7 @@ biplot <- function(
     object, x = pca1, y = pca2, color = subgroup, group = NULL,
     label = NULL, feature_label = feature_name, ...,
     fixed = list(shape=15, size=3), nloadings = 0,
-    palette = make_subgroup_palette(object)
+    palette = make_svar_palette(object, as_name(color))
 ){
     x     <- enquo(x);   xstr <- as_name(x)
     y     <- enquo(y);   ystr <- as_name(y)
