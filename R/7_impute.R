@@ -213,7 +213,7 @@ impute.SummarizedExperiment <- function(
     dt[,         isValue := !is.na(value)]
     dt[, na.subgroup    := sum(isNa)   == .N,   by = c('feature_id', 'subgroup')]
     dt[, value.subgroup := sum(isValue) > .N/2, by = c('feature_id', 'subgroup')]
-    dt[, consistent.na := any(na.subgroup) & any(value.subgroup), by = 'feature_id']
+    dt[, consistent.na := na.subgroup & any(value.subgroup), by = 'feature_id']
     dt[consistent.na==TRUE, value := imputed]
 # Update object
     mat <- dcast(dt, feature_id ~ sample_id, value.var = 'value')

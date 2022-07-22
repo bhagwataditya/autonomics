@@ -7,21 +7,16 @@
 \usage{
 plot_detections(object)
 
-plot_summarized_detections(
-  object,
-  fill = subgroup,
-  palette = NULL,
-  na_imputes = TRUE
-)
+plot_summarized_detections(object, palette = NULL, na_imputes = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{fill}{fill var (sym)}
-
 \item{na_imputes}{whether to NA imputes prior to plottin (TRUE/FALSE)g}
 
 \item{subgroup}{subgroup var (sym)}
+
+\item{fill}{fill var (sym)}
 
 \item{...}{for backward compatibilty}
 }
