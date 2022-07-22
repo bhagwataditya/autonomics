@@ -50,7 +50,6 @@ sumexp_to_widedt <- function(
 #'     sumexp_to_subrep_dt(object)
 #'
 #' # Glutaminase
-#'    require(magrittr)
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    sumexp_to_widedt(object)
@@ -58,14 +57,12 @@ sumexp_to_widedt <- function(
 #'    sumexp_to_subrep_dt(object)
 #'
 #' # Fukuda
-#'    require(magrittr)
 #'    file <- download_data('fukuda20.proteingroups.txt')
 #'    object <- read_proteingroups(file, impute = FALSE)
 #'    sumexp_to_longdt(object)
 #'    object %<>% impute(plot = FALSE)
 #'    sumexp_to_widedt(object)
 #'    sumexp_to_longdt(object)
-#'    sumexp_to_subrep_dt(object)
 #' @export
 sumexp_to_longdt <- function(
     object,
