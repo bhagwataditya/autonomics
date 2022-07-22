@@ -1,53 +1,4 @@
 
-#===================================================
-# EXTRACT FEATURES
-#===================================================
-
-#' Extract features
-#' @param   object SummarizedExperiment
-#' @param   extractor logical/numeric vector
-#' @return  SummarizedExperiment
-#' @examples
-#' require(magrittr)
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' (object %<>% extract_features(c(5,4)))
-#' @export
-extract_features <- function(object, extractor){
-    object %<>% extract(extractor, )
-    if (!is.null(limma(object))){
-        limma(object) %<>% extract(fnames(object), , , drop = FALSE)
-    }
-    object
-}
-
-#' Extract first from collapsed values
-#' @param x charactervector or factorvector
-#' @param sep collapsed string separator, e.g. ';'
-#' @param ... to allow for S3 method dispatch
-#' @return Updated x
-#' @examples
-#' x <- c('a;b;c', '1;2;3', 'alpha;beta;gamma')
-#' extract_first_from_collapsed(x, sep = ';')
-#' @noRd
-extract_first_from_collapsed <- function (x, ...) {
-    UseMethod("extract_first_from_collapsed", x)
-}
-
-extract_first_from_collapsed.character <- function(x, sep = guess_sep(x), ...){
-    if (is.null(sep)) return(x)
-
-    stringi::stri_split_fixed(x, sep) %>%
-    vapply(extract, character(1), 1)
-}
-
-extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
-    levels(x) %<>% extract_first_from_collapsed.character(sep=sep)
-    x
-}
-
-
-
 #=================
 # FILTER FEATURES
 #=================
@@ -60,8 +11,8 @@ extract_first_from_collapsed.factor <- function(x, sep = guess_sep(x), ...){
 #' @return filtered eSet
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
+#' object <- read_metabolon(file)
+#' filter_features(object, SUPER_PATHWAY == 'Lipid')
 #' @export
 setGeneric('filter_features', function(object, ...)  standardGeneric('filter_features'))
 
@@ -125,7 +76,7 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(values(object)))
 #' @return updated object
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file)
 #' rm_missing_in_some_samples(object)
 #' @noRd
 rm_missing_in_some_samples <- function(object, verbose = TRUE){
@@ -157,8 +108,8 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' object %<>% filter_exprs_replicated_in_some_subgroup(subgroupvar = 'Group')
+#' object <- read_metabolon(file, plot = FALSE)
+#' object %<>% filter_exprs_replicated_in_some_subgroup()
 #' filter_exprs_replicated_in_some_subgroup(object, character(0))
 #' filter_exprs_replicated_in_some_subgroup(object, NULL)
 #' @export
@@ -184,7 +135,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
     if (verbose)  if (any(!idx))  message('\t\tFilter ', sum(idx), '/', 
             length(idx), ' features: expr ', comparator, ' ', as.character(lod),
             ' for at least two samples in some ', subgroupvar)
-    object %<>% extract_features(idx) # also handles limma in metadata
+    object %<>% extract(idx, )
 # Update analysis log
     if (!is.null(analysis(object))) {
         analysis(object)$nfeatures %<>% c(structure(
@@ -206,7 +157,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_proteingroups(file, plot = FALSE)
 #' object %<>% filter_replicated()
 #' @export
 filter_replicated  <- function(
@@ -241,8 +192,8 @@ filter_replicated  <- function(
 #' @return filtered SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' filter_samples(object, Group != 't0', verbose = TRUE)
+#' object <- read_metabolon(file)
+#' filter_samples(object, subgroup != 't0', verbose = TRUE)
 #' @export
 filter_samples <- function(object, condition, verbose = TRUE, record = TRUE){
     . <- NULL

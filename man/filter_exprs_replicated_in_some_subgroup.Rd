@@ -32,8 +32,8 @@ Filter features with replicated expression in some subgroup
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
-object \%<>\% filter_exprs_replicated_in_some_subgroup(subgroupvar = 'Group')
+object <- read_metabolon(file, plot = FALSE)
+object \%<>\% filter_exprs_replicated_in_some_subgroup()
 filter_exprs_replicated_in_some_subgroup(object, character(0))
 filter_exprs_replicated_in_some_subgroup(object, NULL)
 }

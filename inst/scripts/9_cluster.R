@@ -74,7 +74,7 @@ cluster <- function(object, formula=~SUB+SET){
 # Filter
     idx <- rowAnys(metadata(object )[[fit]][,,'p'] < filter_p, na.rm=TRUE)
     idx[is.na(idx)] <- FALSE
-    object %<>% extract_features(idx)
+    object %<>% extract(idx, )
     
 # t
     mat <- metadata(object)[[fit]][rownames(object), , quantity]

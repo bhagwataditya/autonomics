@@ -26,6 +26,6 @@ Filter for replicated features
 \examples{
 require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, plot=FALSE)
+object <- read_proteingroups(file, plot = FALSE)
 object \%<>\% filter_replicated()
 }

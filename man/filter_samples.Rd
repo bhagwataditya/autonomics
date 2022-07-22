@@ -23,6 +23,6 @@ Filter samples on condition
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
-filter_samples(object, Group != 't0', verbose = TRUE)
+object <- read_metabolon(file, plot = FALSE)
+filter_samples(object, subgroup != 't0', verbose = TRUE)
 }

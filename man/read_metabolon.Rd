@@ -26,17 +26,20 @@ read_metabolon(
   by.y = NULL,
   subgroupvar = "Group",
   fnamevar = "BIOCHEMICAL",
-  impute = FALSE,
   kegg_pathways = FALSE,
   smiles = FALSE,
-  pca = TRUE,
-  fit = "limma",
+  impute = TRUE,
+  plot = FALSE,
+  pca = plot,
+  fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
   coefs = NULL,
   contrastdefs = NULL,
-  verbose = TRUE,
-  plot = pca & !is.null(fit)
+  feature_id = NULL,
+  sample_id = NULL,
+  palette = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -58,11 +61,13 @@ read_metabolon(
 
 \item{fnamevar}{featurename fvar: string}
 
-\item{impute}{bool: impute?}
-
 \item{kegg_pathways}{bool: add kegg pathways?}
 
 \item{smiles}{bool: add smiles?}
+
+\item{impute}{bool: impute?}
+
+\item{plot}{bool: plot?}
 
 \item{pca}{bool: run pca?}
 
@@ -77,8 +82,6 @@ read_metabolon(
 \item{contrastdefs}{diffexp contrasts to analyze: NULL or character vector}
 
 \item{verbose}{bool: msg?}
-
-\item{plot}{bool: plot?}
 }
 \value{
 SummarizedExperiment

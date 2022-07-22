@@ -23,7 +23,7 @@ add_kegg_pathways <- function(
 ){
 # Add KEGG Pathways
     fdata(object)[[pathway_var]] <- fdata(object)[[entry_var]]     %>%
-                                    extract_first_from_collapsed() %>%
+                                    split_extract_fixed(';', 1) %>%
                                     kegg_entry_to_pathways()
 # Report
     nkeggid  <- sum(!is.na(fdata(object)[[entry_var]]))
@@ -229,11 +229,11 @@ pubchem_to_smiles <- function(x){
 read_metabolon <- function(file, sheet = 'OrigScale',
     fidvar = '(COMP|COMP_ID)', sidvar = '(CLIENT_IDENTIFIER|Client ID)',
     sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group',
-    fnamevar = 'BIOCHEMICAL',
-    impute  = FALSE, kegg_pathways = FALSE, smiles = FALSE,
-    pca = TRUE, fit = 'limma', formula = NULL, block = NULL, 
-    coefs = NULL, contrastdefs = NULL, 
-    verbose = TRUE, plot = pca & !is.null(fit)
+    fnamevar = 'BIOCHEMICAL', kegg_pathways = FALSE, smiles = FALSE,
+    impute  = TRUE, plot = FALSE, pca = plot, 
+    fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL, 
+    coefs = NULL, contrastdefs = NULL, feature_id = NULL, sample_id = NULL,
+    palette = NULL, verbose = TRUE
 ){
 # Read
     subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)

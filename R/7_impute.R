@@ -223,8 +223,10 @@ impute.SummarizedExperiment <- function(
     is_imputed(object) <- is.na(values(object))  &  !is.na(mat)
     fdt(object)$imputed <- rowAnys(is_imputed(object))
     values(object) <- mat
-    if (verbose){  message(sprintf('\tImputed (of %d)', nrow(object)))
-                   message_df('\t%s', colSums(is_imputed(object))[1:n])  }
+    if (verbose & any(is_imputed(object))){
+        message(sprintf('\tImputed (of %d)', nrow(object)))
+        message_df('\t%s', colSums(is_imputed(object))[1:n])  
+    }
 # Plot/Return
     if (plot){
         dt1 <- mat2dt(    values(object)[, 1:n], 'feature_id')
