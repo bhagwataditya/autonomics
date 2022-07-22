@@ -84,15 +84,19 @@ Get/Set sample/feature data
 # Read data
     require(magrittr)
     file <- download_data('billing16.proteingroups.txt')
-    object <- read_proteingroups(file, plot=FALSE)
+    object <- read_proteingroups(file)
 # sdata/fdata
     sdata(object)[1:3, ]
     fdata(object)[1:3, ]
-   (sdata(object)[1:3, ] \%<>\% cbind(z=1))
-   (fdata(object)[1:3, ] \%<>\% cbind(z=1))
+    sdata(object) \%<>\% cbind(a=1)
+    fdata(object) \%<>\% cbind(a=1)
+    sdata(object)[1:3, ]
+    fdata(object)[1:3, ]
 # sdt/fdt
     sdt(object)[1:3, ]
     fdt(object)[1:3, ]
-   (sdt(object)[1:3, ] \%<>\% cbind(z=1))
-   (fdt(object)[1:3, ] \%<>\% cbind(z=1))
+    sdt(object) \%<>\% cbind(b=1)
+    fdt(object) \%<>\% cbind(b=1)
+    sdt(object)
+    fdt(object)
 }
