@@ -224,7 +224,7 @@ plot_data <- function(
     p <- ggplot(data    = data,  # https://stackoverflow.com/a/55816211
                 mapping = eval(expr(aes(color=!!color, fill=!!fill, !!!dots))))
     p <- p + do.call(geom, fixed)
-    p <- p + theme_bw()
+    #p <- p + theme_bw()
     p <- add_color_scale(p, !!color, data, palette=palette)
     p <- add_fill_scale( p, !!fill,  data, palette=palette)
     p <- p + do.call(ggplot2::theme, theme)
@@ -298,7 +298,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 plot_densities <- function(
     object, group, fill, color = NULL, 
     facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
-    palette = NULL, fixed = list(alpha = 0.5, na.rm = TRUE)
+    palette = NULL, fixed = list(alpha = 0.8, na.rm = TRUE)
 ){
 # Process
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -319,9 +319,10 @@ plot_densities <- function(
 # Plot
     p <- plot_data(dt, geom = geom_density, x = value, fill = !!fill,
             color = !!color, group = !!group, palette = palette, fixed = fixed)
-    p <- p + facet_wrap(
+    if (!is.null(facet))  p <- p + facet_wrap(
             facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller, 
             scales = "free_y")
+    p
 }
 
 is_uniquely_empty <- function(x, y){
@@ -338,7 +339,7 @@ plot_sample_densities <- function(
     color   = NULL,
     facet   = NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
     palette = NULL,
-    fixed   = list(alpha=0.5, na.rm=TRUE)
+    fixed   = list(alpha=0.8, na.rm=TRUE)
 ){
     if (ncol(object)>100)  object %<>% 
         extract(, round(seq(1, ncol(object), length.out = 9)))  # prevent crash
@@ -350,7 +351,8 @@ plot_sample_densities <- function(
         facet   = facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
         palette = palette,
         fixed   = fixed ) +
-    ggtitle("samples")
+    ggtitle("Samples") + 
+    theme(plot.title = element_text(hjust = 0.5))
 }
 
 feature_id <- NULL
@@ -363,7 +365,7 @@ plot_feature_densities <- function(
     color   = NULL,
     facet   =  NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
     palette = NULL,
-    fixed   = list(alpha=0.5, na.rm=TRUE)
+    fixed   = list(alpha=0.8, na.rm=TRUE)
 ){
     if (nrow(object)>100)  object %<>% 
         extract(round(seq(1, ncol(object), length.out = 9)), )   # prevent crash
@@ -375,7 +377,8 @@ plot_feature_densities <- function(
         facet   = facet,  nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
         palette = palette,
         fixed   = fixed) +
-    ggtitle("features")
+    ggtitle("Features") +
+    theme(plot.title = element_text(hjust = 0.5))
 }
 
 #==============================================================================

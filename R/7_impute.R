@@ -229,21 +229,39 @@ impute.SummarizedExperiment <- function(
     }
 # Plot/Return
     if (plot){
-        dt1 <- mat2dt(    values(object)[, 1:n], 'feature_id')
-        dt2 <- mat2dt(is_imputed(object)[, 1:n], 'feature_id')
-        dt1 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'value')
-        dt2 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
-        dt <- merge(dt1, dt2, by = c('feature_id', 'sample_id'))
-        p1 <- ggplot(dt) + 
-              geom_density(aes(x = value, y = stat(count), fill = sample_id, 
-                           group = interaction(sample_id, imputed)), na.rm = TRUE) +
-              scale_fill_manual(values = palette)
+        p1 <- plot_sample_densities(object)
         p2 <- if (ncol(object)<=9){ plot_detections(object)
               } else {   plot_summarized_detections(object) }
         gridExtra::grid.arrange(p1, p2, nrow = 1)
     }
     object
 }
+
+# Plot imputation densities
+# @param object SummarizedExperiment
+# @return 
+# @examples 
+# @export
+#plot_imputation_densities <- function(object, n = min(9, ncol(object))){
+# Prepare
+#    dt1 <- mat2dt(    values(object)[, 1:n], 'feature_id')
+#    dt2 <- mat2dt(is_imputed(object)[, 1:n], 'feature_id')
+#    dt1 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'value')
+#    dt2 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
+#    dt <- merge(dt1, dt2, by = c('feature_id', 'sample_id'))
+# Measured
+#    p <- ggplot(dt[imputed==FALSE])
+#    p <- p + geom_density(aes(x = value, y = stat(count), fill = sample_id), na.rm = TRUE)
+# Imputed
+#    dt %<>% extract(imputed==TRUE)
+#    dt %<>% extract(, .SD[.N>2], by = c('sample_id'))
+#    if (nrow(dt)>0){
+#        p <- p + geom_density(aes(x = value, y = stat(count), fill = sample_id), data = dt, na.rm = TRUE) 
+#    }
+# Return
+#    p <- p + scale_fill_manual(values = palette)
+#    p
+#}
 
 
 # @rdname halfnormimpute
@@ -477,14 +495,13 @@ cluster_order_features <- function(object){
     object
 }
 
-detect_order_features <- function(object, subgroup){
-    subgroup <- enquo(subgroup)
+detect_order_features <- function(object){
     x <- object
     values(x)[is_imputed(x)] <- NA
     idx1 <- fnames(cluster_order_features(
-                        x[is_consistent_detect(x, !!subgroup),]))
+                        x[is_consistent_detect(x),]))
     idx2 <- fnames(cluster_order_features(
-                        x[is_random_detect(x, !!subgroup), ]))
+                        x[is_random_detect(x), ]))
     idx3 <- fnames(cluster_order_features(
                         x[is_full_detect(x),]))
     SummarizedExperiment::rbind(object[idx1,], object[idx2,], object[idx3,])
@@ -527,7 +544,7 @@ detect_order_features <- function(object, subgroup){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
+#' object <- read_proteingroups(file, impute = FALSE)
 #' plot_summarized_detections(object)
 #' plot_detections(object)
 #' plot_detections(impute(object, plot=FALSE))
@@ -537,22 +554,20 @@ detect_order_features <- function(object, subgroup){
 #' plot_summarized_detections(object, Group)
 #' plot_detections(object, Group)
 #' @export
-plot_detections <- function(object, fill = subgroup){
+plot_detections <- function(object){
 # Process
     . <- detection <- feature_id <- sample_id <- value <- NULL
-    fill     <- enquo(fill)
-    fillstr  <- as_name(fill)
 # Reorder samples
-    object[[groupvar]] %<>% factor()
-    object %<>% extract(, order(.[[groupvar]]))
+    object$subgroup %<>% factor()
+    object %<>% extract(, order(.$subgroup))
 # Reorder/block features
-    object %<>% detect_order_features(subgroup)
+    object %<>% detect_order_features()
     y <- object; values(y)[is_imputed(y)] <- NA
     nfull       <- sum(is_full_detect(y))
     nconsistent <- sum(is_consistent_detect(y))
     nrandom     <- sum(is_random_detect(y))
 # Melt
-    plotdt  <-  sumexp_to_longdt(object, svars = c(groupvar, fillstr))
+    plotdt  <-  sumexp_to_longdt(object, svars = 'subgroup')
     alpha <- NULL
     plotdt[,             detection := 'detect']
     plotdt[is.na(value), detection := 'nondetect']
@@ -561,11 +576,11 @@ plot_detections <- function(object, fill = subgroup){
     plotdt[, detection := factor(detection, c('nondetect', 'impute', 'detect'))]
     plotdt[, sample_id  := factor( sample_id, unique(snames(object)))]
     plotdt[, feature_id := factor(feature_id, rev(unique(fnames(object))))]
-    colors <- make_colors(slevels(object, fillstr))
+    colors <- make_colors(subgroup_levels(object))
     colors %<>% c(nondetect = "#FFFFFF")
 # Plot
     ggplot(plotdt) +
-    geom_tile(aes(x=sample_id, y=feature_id, fill=!!fill, alpha=detection)) +
+    geom_tile(aes(x = sample_id, y = feature_id, fill = subgroup, alpha = detection)) +
     scale_fill_manual(values = colors) +
     scale_alpha_manual(values = c(nondetect=0, impute=0.3, detect = 1)) +
     ylab('Features') +
@@ -614,16 +629,11 @@ get_subgroup_combinations <- function(object, subgroupvar){
 #' @rdname plot_detections
 #' @export
 plot_summarized_detections <- function(
-    object, 
-    fill       = subgroup,
-    palette    = NULL,
-    na_imputes = TRUE
+    object, palette = NULL, na_imputes = TRUE
 ){
 # Assert
     . <- value <- NULL
     assert_is_all_of(object, "SummarizedExperiment")
-    fill <- enquo(fill);     fillstr <- as_name(fill)
-    assert_is_subset(fillstr,  svars(object))
     xmin <- xmax <- ymin <- ymax <- nfeature <- quantified <- NULL
 # Prepare
     object$subgroup %<>% num2char()
@@ -654,11 +664,11 @@ plot_summarized_detections <- function(
     npersubgroup <- table(object$subgroup)
     xbreaks <- c(cumsum(npersubgroup)- npersubgroup/2)
     ybreaks <- c(0.01*nrow(object), 0.99*nrow(object))
-    if (is.null(palette))  palette <- make_colors(slevels(object, fillstr))
+    if (is.null(palette))  palette <- make_colors(subgroup_levels(object))
     p <- 
         ggplot(dt) + 
         geom_rect(aes( xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                        fill = !!fill, alpha = quantified)) +
+                        fill = subgroup, alpha = quantified)) +
         scale_y_continuous(expand = c(0, 0)) + #, limits = c(0, nrow(object)))  +
         scale_x_continuous(breaks = xbreaks, position = 'top', expand = c(0,0)) + #, limits = c(0, ncol(object)))  + 
         geom_segment(aes(x = xmin, xend = xmax, y = ymax, yend = ymax)) +

@@ -17,7 +17,7 @@ plot_densities(
   dir = "h",
   labeller = label_value,
   palette = NULL,
-  fixed = list(alpha = 0.5, na.rm = TRUE)
+  fixed = list(alpha = 0.8, na.rm = TRUE)
 )
 
 plot_sample_densities(
@@ -31,7 +31,7 @@ plot_sample_densities(
   dir = "h",
   labeller = label_value,
   palette = NULL,
-  fixed = list(alpha = 0.5, na.rm = TRUE)
+  fixed = list(alpha = 0.8, na.rm = TRUE)
 )
 
 plot_feature_densities(
@@ -45,7 +45,7 @@ plot_feature_densities(
   dir = "h",
   labeller = label_value,
   palette = NULL,
-  fixed = list(alpha = 0.5, na.rm = TRUE)
+  fixed = list(alpha = 0.8, na.rm = TRUE)
 )
 }
 \arguments{

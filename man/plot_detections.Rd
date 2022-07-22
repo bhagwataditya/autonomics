@@ -5,7 +5,7 @@
 \alias{plot_summarized_detections}
 \title{Plot detections}
 \usage{
-plot_detections(object, fill = subgroup)
+plot_detections(object)
 
 plot_summarized_detections(
   object,
@@ -44,7 +44,7 @@ different cell types)
 \examples{
 require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
+object <- read_proteingroups(file, impute = FALSE)
 plot_summarized_detections(object)
 plot_detections(object)
 plot_detections(impute(object, plot=FALSE))
