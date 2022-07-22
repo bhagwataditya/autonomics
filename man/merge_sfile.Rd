@@ -53,13 +53,14 @@ SummarizedExperiment
 Merge sample / feature file
 }
 \examples{
-require(magrittr)
 file <- download_data('billing19.proteingroups.txt')
-select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-select \%<>\% paste0('_STD')
-object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
+subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+subgroups \%<>\% paste0('_STD')
+object <- read_proteingroups(file, subgroups = subgroups)
 sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
 sfile \%<>\% paste0('.samples.txt')
-invisible(create_sfile(object, sfile))
+dt <- data.table(sample_id = object$sample_id, 
+                 day = split_extract_fixed(object$subgroup, '_', 1))
+fwrite(dt, sfile)                 
 merge_sfile(object, sfile)
 }

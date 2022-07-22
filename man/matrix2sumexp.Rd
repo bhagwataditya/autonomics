@@ -20,8 +20,8 @@ Convert matrix into SummarizedExperiment
 \examples{
 require(magrittr) 
 file <- download_data('atkin18.metabolon.xlsx')
-x <- values(read_metabolon(file, plot=FALSE))
+x <- values(read_metabolon(file))
 object <- matrix2sumexp(x)
 object \%<>\% pca()
-biplot(object, nloadings=0, color=subgroup)
+biplot(object, color = subgroup)
 }

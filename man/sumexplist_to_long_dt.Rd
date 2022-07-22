@@ -30,16 +30,16 @@ RNA
     rnafile <- download_data('billing19.rnacounts.txt')
     rna <- read_rnaseq_counts(rnafile, plot=FALSE)
 PRO/FOS
-    fdata(rna)$feature_name <- fdata(rna)$gene_name
+    fdt(rna)$feature_name <- fdt(rna)$gene_name
     profile <- download_data('billing19.proteingroups.txt')
     fosfile <- download_data('billing19.phosphosites.txt')
-    select <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-    pro <- read_proteingroups(profile, plot=FALSE, select_subgroups = select)
-    fos <- read_phosphosites(fosfile, profile, select_subgroups = select, plot=FALSE)
+    subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
+    pro <- read_proteingroups(profile, plot = FALSE, subgroups = subgroups)
+    fos <- read_phosphosites(fosfile, profile, subgroups = subgroups, plot = FALSE)
     pro$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
     fos$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
 sumexplist to longdt
-    sumexplist <- list(rna=rna, pro=pro, fos=fos)
+    sumexplist <- list(rna = rna, pro = pro, fos = fos)
     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
     dt \%<>\% extract(feature_name \%in\% c('TNMD', 'TSPAN6'))
     plot_boxplots(dt, x=subgroup, fill=subgroup)

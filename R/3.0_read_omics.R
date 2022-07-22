@@ -38,15 +38,12 @@ ncols <- function(x, sheet=1){
 #' @return TRUE or FALSE
 #' @examples
 #' # SOMASCAN
-#' #---------
-#' file <- paste0('../../wcmq/atkin.hypo/atkin.hypoglycemia/extdata/soma/',
-#'     'WCQ-18-007.hybNorm.plateScale.medNorm.calibrate.20181004.original.adat')
-#' is_fixed_col_file(file)
+#'     file <- download_data('atkin18.somascan.adat')
+#'     is_fixed_col_file(file)
 #'
 #' # METABOLON
-#' #----------
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' is_fixed_col_file(file)
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     is_fixed_col_file(file)
 #' @noRd
 is_fixed_col_file <- function(file){
     if (is_excel_file(file)){ TRUE
@@ -442,12 +439,11 @@ split_values <- function(x){
 #' @param verbose         TRUE / FALSE : whether to msg
 #' @return                SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
+#' object <- read_metabolon(file)
+#' object %<>% merge_sdata( data.table(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
-#' head(sdata(object))
+#' sdt(object)
 #'@export
 merge_sdata <- function(
     object, dt, by.x = 'sample_id',  by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
@@ -495,15 +491,6 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
     objectdt
 }
 
-# Abbreviate file path
-# @param file file path
-# @export
-#abbrev_path <- function(file){
-#    fileparts <- fs::path_split(file)[[1]]
-#    fileparts <- fs::path_join(c(fileparts[1:3], '...', rev(fileparts)[1]))
-#    fileparts
-#}
-
 
 #' Merge sample / feature file
 #'
@@ -518,14 +505,15 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 #' @param verbose           TRUE / FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing19.proteingroups.txt')
-#' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-#' select %<>% paste0('_STD')
-#' object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
+#' subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+#' subgroups %<>% paste0('_STD')
+#' object <- read_proteingroups(file, subgroups = subgroups)
 #' sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
 #' sfile %<>% paste0('.samples.txt')
-#' invisible(create_sfile(object, sfile))
+#' dt <- data.table(sample_id = object$sample_id, 
+#'                  day = split_extract_fixed(object$subgroup, '_', 1))
+#' fwrite(dt, sfile)                 
 #' merge_sfile(object, sfile)
 #'@export
 merge_sfile <- function(
@@ -645,8 +633,7 @@ add_affy_fdata <- function(object){
 #'                                                             'BiocManager')
 #' if (!requireNamespace("hgu95av2.db", quietly = TRUE))  BiocManager::install(
 #'                                                             'hgu95av2.db')
-#' # read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
-#' # currently openblas issue: https://stackoverflow.com/questions/61629861/
+#' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 #' @export
 read_affymetrix <- function(celfiles){
 # Assert
@@ -709,16 +696,16 @@ read_genex <- function(file){
 #'     rnafile <- download_data('billing19.rnacounts.txt')
 #'     rna <- read_rnaseq_counts(rnafile, plot=FALSE)
 #' PRO/FOS
-#'     fdata(rna)$feature_name <- fdata(rna)$gene_name
+#'     fdt(rna)$feature_name <- fdt(rna)$gene_name
 #'     profile <- download_data('billing19.proteingroups.txt')
 #'     fosfile <- download_data('billing19.phosphosites.txt')
-#'     select <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-#'     pro <- read_proteingroups(profile, plot=FALSE, select_subgroups = select)
-#'     fos <- read_phosphosites(fosfile, profile, select_subgroups = select, plot=FALSE)
+#'     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
+#'     pro <- read_proteingroups(profile, plot = FALSE, subgroups = subgroups)
+#'     fos <- read_phosphosites(fosfile, profile, subgroups = subgroups, plot = FALSE)
 #'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #' sumexplist to longdt
-#'     sumexplist <- list(rna=rna, pro=pro, fos=fos)
+#'     sumexplist <- list(rna = rna, pro = pro, fos = fos)
 #'     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
 #'     dt %<>% extract(feature_name %in% c('TNMD', 'TSPAN6'))
 #'     plot_boxplots(dt, x=subgroup, fill=subgroup)

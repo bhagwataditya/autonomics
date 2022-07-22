@@ -169,7 +169,7 @@ nfactors <- function(x, sep = guess_sep(x)){
 #' split_extract_fixed(fdt(object)$PUBCHEM, ';', 1)
 #' @export
 split_extract_fixed <- function(x, sep, i){
-    assert_is_character(x)
+    if (is.factor(x))  x %<>% as.character()
     assert_is_a_string(sep)
     assert_is_numeric(i)
     factors <- stri_split_fixed(x, sep)
@@ -183,7 +183,7 @@ split_extract_fixed <- function(x, sep, i){
 #' @export
 #' @rdname split_extract_fixed
 split_extract_regex <- function(x, sep, i){
-    assert_is_character(x)
+    if (is.factor(x))  x %<>% as.character()
     assert_is_a_string(sep)
     assert_is_numeric(i)
     factors <- stri_split_regex(x, sep)

@@ -31,6 +31,5 @@ if (!requireNamespace("BiocManager", quietly = TRUE))  install.packages(
                                                             'BiocManager')
 if (!requireNamespace("hgu95av2.db", quietly = TRUE))  BiocManager::install(
                                                             'hgu95av2.db')
-# read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
-# currently openblas issue: https://stackoverflow.com/questions/61629861/
+read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 }
