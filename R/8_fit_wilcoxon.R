@@ -87,8 +87,8 @@ fit_wilcoxon <- function(
     block = NULL, weightvar = NULL, verbose = TRUE, plot = FALSE
 ){
 # assert
-    for (var in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, !!sym(var)))
+    for (by in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, by))
     if (is.null(contrastdefs))  contrastdefs <- contrast_coefs(object, formula=formula)
 # fit
     . <- NULL

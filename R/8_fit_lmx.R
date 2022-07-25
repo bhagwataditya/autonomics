@@ -167,8 +167,8 @@ fit_lm <- function(
     coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
 ){                # note: contrastdefs not actually used!
 # Assert
-    for (var in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, !!sym(var)))
+    for (by in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, by))
         # cannot be generified into fit_lmx because for lme/lmer block is 
         # integrated in formula and also gets checked for (unnecessarily!)
 # Fit    
@@ -196,8 +196,8 @@ fit_lme <- function(
         message("BiocManager::install('nlme'). Then re-run.")
         return(object) 
     }
-    for (var in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, !!sym(var)))
+    for (by in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, by))
         # cannot be generified into fit_lmx because for lme/lmer block is 
         # integrated in formula and also gets checked for (unnecessarily!)
     assert_is_not_null(block)
@@ -233,8 +233,8 @@ fit_lmer <- function(
     if (!requireNamespace('lmerTest', quietly = TRUE)){
         message("`BiocManager::install('lmerTest')`. Then re-run.")
         return(object) }
-    for (var in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, !!sym(var)))
+    for (by in all.vars(formula))  assert_is_identical_to_false(
+                                has_consistent_nondetects(object, by))
         # cannot be generified into fit_lmx because for lme/lmer block is 
         # integrated in formula and also gets checked for (unnecessarily!)
 # Prepare

@@ -58,21 +58,20 @@ again within block
 }
 \examples{
 # read 
-    require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx') 
-    object0 <- read_metabolon(file, plot=FALSE)
-    pca(object0, plot=TRUE, color=SET)
+    object0 <- read_metabolon(file, plot = FALSE)
+    pca(object0, plot = TRUE, color = SET)
 
 # subtract_baseline: takes medoid of baseline samples if multiple
-    object <- subtract_baseline(object0, block='SUB', subgroupvar='SET')
-    pca(object, plot=TRUE, color=SET)
+    object <- subtract_baseline(object0, block = 'SUB', subgroupvar = 'SET')
+    pca(object, plot = TRUE, color = SET)
 
 # subtract_pairs: optimized for many blocks
-    object <- subtract_pairs(   object0, block='SUB', subgroupvar='SET')
-    pca(object, plot=TRUE, color=SET)
+    object <- subtract_pairs(   object0, block = 'SUB', subgroupvar = 'SET')
+    pca(object, plot = TRUE, color = SET)
 
 # subtract differences
-    object <- subtract_differences(object0, block='SUB', subgroupvar='SET')
+    object <- subtract_differences(object0, block = 'SUB', subgroupvar = 'SET')
     values(object) \%<>\% na_to_zero()
-    pca(object, plot=TRUE, color=SET)
+    pca(object, plot = TRUE, color = SET)
 }

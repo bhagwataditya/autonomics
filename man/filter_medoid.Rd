@@ -22,6 +22,6 @@ Filter medoid sample
 \examples{
 require(magrittr)
 file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot=FALSE)
-object \%<>\% filter_medoid(by = 'subgroup', verbose=TRUE)
+object <- read_rnaseq_counts(file, plot = FALSE)
+object \%<>\% filter_medoid(by = 'subgroup', verbose = TRUE)
 }

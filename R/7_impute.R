@@ -318,34 +318,33 @@ impute.SummarizedExperiment <- function(
 
 #=============================================================================
 #
-#                        split_by_svar
+#                        split_samples
 #
 #==============================================================================
 
-#' Split by svar
+#' Split samples
+#'
+#' Split samples by svar
 #' @param object SummarizedExperiment
-#' @param svar   svar to split on
-#' @return list of SummarizedExperiment
+#' @param by     svar to split by (string)
+#' @return  SummarizedExperiment list
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
-#' split_by_svar(object)
+#' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
+#' split_samples(object, by = 'subgroup')  # 
+#' split_samples(object, by = 'age')       # not in svars! 
 #' @export
-split_by_svar <- function(object, svar = subgroup){
-    svar <- enquo(svar)
-    svarstr <- as_name(svar)
-
-    if (is.null(svar)) return(list(object))
-    extract_samples  <- function(sg){
-                            idx <- sdata(object)[[svarstr]] == sg
-                            object[, idx]
-                        }
-    Map(extract_samples, slevels(object, svarstr))
+split_samples <- function(object, by = 'subgroup'){
+    if (!by %in% svars(object))  return(list(object))
+    extract_samples  <- function(slevel){
+        object %>% extract(, .[[by]] == slevel)
+    }
+    Map(extract_samples, slevels(object, by))
 }
 
-#' @rdname split_by_svar
+#' @rdname split_samples
 #' @export
-split_by_fvar <- function(object, fvar){
+split_features <- function(object, fvar){
     fvar <- enquo(fvar)
     fvarstr <- as_name(fvar)
 
@@ -355,6 +354,18 @@ split_by_fvar <- function(object, fvar){
                             object[idx, ]
                         }
     Map(extract_features, flevels(object, fvarstr))
+}
+
+#' @rdname split_samples
+#' @export
+split_by_svar <- function(object , svar = subgroup){
+    split_samples(object, by = as_name(enquo(svar)))
+}
+
+#' @rdname split_samples
+#' @export
+split_by_fvar <- function(object, fvar){
+    split_features(object, by = as_name(enquo(fvar)))
 }
 
 
@@ -368,22 +379,23 @@ split_by_fvar <- function(object, fvar){
 
 has_complete_nondetects <- function(object) any(rowAlls(is.na(values(object))))
 
-has_consistent_nondetects <- function(object, ssym){
-    any( vapply(split_by_svar(object, !!enquo(ssym)), 
-                has_complete_nondetects, 
-                logical(1)))
+has_consistent_nondetects <- function(object, by = 'subgroup'){
+    y <- split_samples(object, by)
+    any(vapply(y, has_complete_nondetects, logical(1)))
 }
 
 
-is_consistent_detect <- function(object){
+is_consistent_detect <- function(object, by = 'subgroup'){
     . <- NULL
-    split_by_svar(object, subgroup) %>%
-    lapply(function(x) rowAlls(is.na(values(x)))) %>%
-    Reduce("|", .)
+    y <- split_samples(object, by)
+    y %<>% lapply(function(x) rowAlls(is.na(values(x))))
+    y %<>% Reduce("|", .)
+    y
 }
 
-is_random_detect <- function(object){
-    rowAnys(is.na(values(object))) & !is_consistent_detect(object)
+is_random_detect <- function(object, by = 'subgroup'){
+    rowAnys(is.na(values(object))) & 
+    !is_consistent_detect(object, by)
 }
 
 
@@ -403,19 +415,18 @@ is_full_detect <- function(object){
 #'
 #' Venn diagram full/consistent/random detects
 #'
-#' @param object SummarizedExperiment
-#' @param subgroup subgroup symbol
+#' @param object  SummarizedExperiment
+#' @param by      svar (string)
 #' @return  \code{NULL}
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
+#' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
 #' venn_detects(object, subgroup)
 #' @export
-venn_detects <- function(object, subgroup){
-    subgroup <- enquo(subgroup)
+venn_detects <- function(object, by = 'subgroup'){
     limma::vennDiagram(as.matrix(cbind(
-        consistent = is_consistent_detect(object, !!subgroup),
-        random     = is_random_detect(    object, !!subgroup),
+        consistent = is_consistent_detect(object, by),
+        random     = is_random_detect(    object, by),
         full       = is_full_detect(      object))))
 }
 
@@ -495,15 +506,12 @@ cluster_order_features <- function(object){
     object
 }
 
-detect_order_features <- function(object){
+detect_order_features <- function(object, by = 'subgroup'){
     x <- object
     values(x)[is_imputed(x)] <- NA
-    idx1 <- fnames(cluster_order_features(
-                        x[is_consistent_detect(x),]))
-    idx2 <- fnames(cluster_order_features(
-                        x[is_random_detect(x), ]))
-    idx3 <- fnames(cluster_order_features(
-                        x[is_full_detect(x),]))
+    idx1 <- fnames(cluster_order_features(x[is_consistent_detect(x, by = by),]))
+    idx2 <- fnames(cluster_order_features(x[is_random_detect(    x, by = by),]))
+    idx3 <- fnames(cluster_order_features(x[is_full_detect(      x         ),]))
     SummarizedExperiment::rbind(object[idx1,], object[idx2,], object[idx3,])
 }
 

@@ -82,15 +82,15 @@ which.medoid <- function(mat){
 #' @examples 
 #' require(magrittr)
 #' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' object %<>% filter_medoid(by = 'subgroup', verbose=TRUE)
+#' object <- read_rnaseq_counts(file, plot = FALSE)
+#' object %<>% filter_medoid(by = 'subgroup', verbose = TRUE)
 #' @export
 filter_medoid <- function(object, by = NULL, verbose = FALSE){
     if (!requireNamespace('ICSNP', quietly = TRUE)){
         message("`BiocManager::install('ICSNP')`. Then re-run.")
         return(object) }
-    if (is.null(by))  return(.filter_medoid(object, verbose=verbose))
-    object %<>% split_by_svar(!!sym(by))
+    if (is.null(by))  return(.filter_medoid(object, verbose = verbose))
+    object %<>% split_samples(by)
     if (verbose)  message('\t\t\tRetain medoid sample')
     object %<>% lapply(.filter_medoid, verbose=verbose)
     do.call(BiocGenerics::cbind, object)
@@ -130,23 +130,22 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #' @return SummarizedExperiment
 #' @examples
 #' # read 
-#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx') 
-#'     object0 <- read_metabolon(file, plot=FALSE)
-#'     pca(object0, plot=TRUE, color=SET)
+#'     object0 <- read_metabolon(file, plot = FALSE)
+#'     pca(object0, plot = TRUE, color = SET)
 #' 
 #' # subtract_baseline: takes medoid of baseline samples if multiple
-#'     object <- subtract_baseline(object0, block='SUB', subgroupvar='SET')
-#'     pca(object, plot=TRUE, color=SET)
+#'     object <- subtract_baseline(object0, block = 'SUB', subgroupvar = 'SET')
+#'     pca(object, plot = TRUE, color = SET)
 #' 
 #' # subtract_pairs: optimized for many blocks
-#'     object <- subtract_pairs(   object0, block='SUB', subgroupvar='SET')
-#'     pca(object, plot=TRUE, color=SET)
+#'     object <- subtract_pairs(   object0, block = 'SUB', subgroupvar = 'SET')
+#'     pca(object, plot = TRUE, color = SET)
 #' 
 #' # subtract differences
-#'     object <- subtract_differences(object0, block='SUB', subgroupvar='SET')
+#'     object <- subtract_differences(object0, block = 'SUB', subgroupvar = 'SET')
 #'     values(object) %<>% na_to_zero()
-#'     pca(object, plot=TRUE, color=SET)
+#'     pca(object, plot = TRUE, color = SET)
 #' @export 
 subtract_baseline <- function(
     object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], 
@@ -159,8 +158,7 @@ subtract_baseline <- function(
         if (!is.null(block))  message("\t\t\tin block  : ", block)
         message("\t\t\tfor assays: ", paste0(assaynames, collapse = ', '))
     }
-    objlist <- if (is.null(block)) list(object) else split_by_svar(
-                                                        object, !!sym(block)) 
+    objlist <- if (is.null(block)) list(object) else split_samples(object, block)
     objlist %<>% lapply(.subtract_baseline, 
                         subgroupvar = subgroupvar, subgroupctr = subgroupctr, 
                         assaynames = assaynames)
@@ -189,7 +187,7 @@ subtract_pairs <- function(
     singlerefperblock <- sdt1[, sum(get(subgroupvar)==subgroupctr)==1, by=block]$V1
     assert_is_identical_to_true(all(singlerefperblock))
 # Subtract ref
-    splitobjects <- split_by_svar(object, !!sym(subgroupvar))
+    splitobjects <- split_samples(object, subgroupvar)
     refobj <- splitobjects[[subgroupctr]]
     splitobjects %<>% extract(setdiff(names(splitobjects), subgroupctr))
     splitobjects %<>% lapply(function(obj){
