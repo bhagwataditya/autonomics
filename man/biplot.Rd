@@ -7,16 +7,15 @@
 \usage{
 biplot(
   object,
-  x = pca1,
-  y = pca2,
-  color = subgroup,
+  x = "pca1",
+  y = "pca2",
+  color = "subgroup",
   group = NULL,
   label = NULL,
-  feature_label = feature_name,
-  ...,
+  feature_label = "feature_name",
   fixed = list(shape = 15, size = 3),
   nloadings = 0,
-  palette = make_svar_palette(object, as_name(color))
+  palette = make_svar_palette(object, color)
 )
 
 plot_biplot(...)
@@ -24,19 +23,17 @@ plot_biplot(...)
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{x}{pca1, etc.}
+\item{x}{svar (string)}
 
-\item{y}{pca2, etc.}
+\item{y}{svar (string)}
 
-\item{color}{svar mapped to color (symbol)}
+\item{color}{svar (string)}
 
-\item{group}{svar mapped to group}
+\item{group}{svar (string)}
 
-\item{label}{svar mapped to label (symbol)}
+\item{label}{svar (string)}
 
-\item{feature_label}{fvar mapped to (loadings) label}
-
-\item{...}{additional svars mapped to aesthetics}
+\item{feature_label}{fvar (string)}
 
 \item{fixed}{fixed plot aesthetics}
 
@@ -52,9 +49,9 @@ Biplot
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-object \%<>\% pca(ndim=4)
+object \%<>\% pca(ndim = 4)
 biplot(object)
-biplot(object, color=SUB, group=SUB)
-biplot(object, color=SUB, nloadings=1)
-biplot(object, pca3, pca4, color=SUB, nloadings=1)
+biplot(object, color = 'SUB', group = 'SUB')
+biplot(object, color = 'SUB', nloadings = 1)
+biplot(object, x = 'pca3', y = 'pca4', color = 'SUB', nloadings = 1)
 }
