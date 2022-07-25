@@ -692,66 +692,6 @@ plot_summarized_detections <- function(
 
 
 #==============================================================================
-#
-#                           explore_imputations
-#
-#==============================================================================
-
-
-#' Explore imputations
-#' @param object SummarizedExperiment
-#' @param subgroup subgroup (sym)
-#' @param xbiplot biplot x axis. Default pca1 (symbol)
-#' @param ybiplot biplot y axis. Default pca2 (symbol)
-#' @param ... aesthetic mappings
-#' @return ggplot object
-#' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = FALSE, pca = TRUE, plot = FALSE)
-#' explore_imputations(object, subgroup=subgroup)
-#' explore_transformations(object, subgroup=subgroup)
-#' @export
-explore_imputations <- function(
-    object, subgroup, xbiplot = pca1, ybiplot = pca2, ...
-){
-    subgroup <- enquo(subgroup)
-    imputed  <- impute_consistent_nas(object, plot=FALSE)
-    zeroed <- impute_consistent_nas(
-                object, subgroup = !!subgroup, fun = zeroimpute, plot = FALSE)
-    legend <- gglegend(biplot(object))
-
-    do_plot_sample_detections <- function(obj, ...){
-        plot_detections(obj, ...) + guides(color = 'none', fill = 'none')
-    }
-
-    do_biplot <- function(obj, ...){
-        biplot(obj, x = !!enquo(xbiplot), y = !!enquo(ybiplot), 
-                color = !!subgroup,  nloadings = 0,...) +
-        guides(color = 'none', fill = 'none') +
-        ggtitle(NULL)
-    }
-
-    do_plot_sample_densities <- function(obj, ...){
-        plot_sample_densities(obj, ...) +
-        guides(color = 'none', fill = 'none') +
-        ggtitle(NULL)
-    }
-
-    p1 <- do_plot_sample_detections(object, ...)  + ggtitle('Original')
-    p2 <- do_plot_sample_detections(imputed, ...) + ggtitle('Halfnorm imputed')
-    p3 <- do_plot_sample_detections(zeroed, ...)  + ggtitle('Zero imputed')
-    p4 <- do_plot_sample_densities(object,  ...)
-    p5 <- do_plot_sample_densities(imputed, ...)
-    p6 <- do_plot_sample_densities(zeroed,  ...)
-    p7 <- do_biplot(object, ...)
-    p8 <- do_biplot(imputed, ...)
-    p9 <- do_biplot(zeroed, ...)
-    grid.arrange(arrangeGrob(p1,p2,p3,p4,p5,p6,p7,p8,p9, nrow=3),
-                            legend, ncol=2, widths = c(8, 1))
-}
-
-
-#==============================================================================
 
 #'@title Get/set is_imputed
 #'@description Get/Set is_imputed
