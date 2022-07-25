@@ -5,20 +5,24 @@
 \alias{plot_summarized_detections}
 \title{Plot detections}
 \usage{
-plot_detections(object)
+plot_detections(object, by = "subgroup", fill = by)
 
-plot_summarized_detections(object, palette = NULL, na_imputes = TRUE)
+plot_summarized_detections(
+  object,
+  by = "subgroup",
+  fill = by,
+  palette = NULL,
+  na_imputes = TRUE
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{na_imputes}{whether to NA imputes prior to plottin (TRUE/FALSE)g}
+\item{by}{svar (string)}
 
-\item{subgroup}{subgroup var (sym)}
+\item{fill}{svar (string)}
 
-\item{fill}{fill var (sym)}
-
-\item{...}{for backward compatibilty}
+\item{na_imputes}{whether to NA imputes prior to plotting (TRUE / FALSE)}
 }
 \value{
 ggplot object
@@ -42,10 +46,12 @@ file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = FALSE)
 plot_summarized_detections(object)
 plot_detections(object)
-plot_detections(impute(object, plot=FALSE))
+plot_detections(impute(object, plot = FALSE))
 
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, impute = FALSE, plot = FALSE)
-plot_summarized_detections(object, Group)
-plot_detections(object, Group)
+plot_summarized_detections(object, 'subgroup')
+plot_summarized_detections(object, 'TIME_POINT')
+plot_detections(object, 'subgroup')
+plot_detections(object, 'TIME_POINT')
 }
