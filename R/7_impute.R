@@ -371,7 +371,7 @@ split_by_fvar <- function(object, fvar){
 
 #=============================================================================
 #
-#                     is_consistent_detect
+#                     is_systematic_detect
 #                     is_random_detect
 #                     is_full_detect
 #
@@ -384,8 +384,17 @@ has_consistent_nondetects <- function(object, by = 'subgroup'){
     any(vapply(y, has_complete_nondetects, logical(1)))
 }
 
-
-is_consistent_detect <- function(object, by = 'subgroup'){
+#' Is systematic/random/full detect
+#' @param object SummarizedExperiment
+#' @param by svar (string)
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file)
+#' head(is_systematic_detect(object))     # detected in some subgroups, not in others
+#' head(    is_random_detect(object))     # detected in some samples, across subgroups
+#' head(         is_full_detect(object))  # detected in all samples
+#' @export
+is_systematic_detect <- function(object, by = 'subgroup'){
     . <- NULL
     y <- split_samples(object, by)
     y %<>% lapply(function(x) rowAlls(is.na(values(x))))
@@ -393,12 +402,15 @@ is_consistent_detect <- function(object, by = 'subgroup'){
     y
 }
 
+#' @rdname is_systematic_detect
+#' @export
 is_random_detect <- function(object, by = 'subgroup'){
     rowAnys(is.na(values(object))) & 
-    !is_consistent_detect(object, by)
+    !is_systematic_detect(object, by)
 }
 
-
+#' @rdname is_systematic_detect
+#' @export
 is_full_detect <- function(object){
     rowAlls(!is.na(values(object)))
 }
@@ -425,7 +437,7 @@ is_full_detect <- function(object){
 #' @export
 venn_detects <- function(object, by = 'subgroup'){
     limma::vennDiagram(as.matrix(cbind(
-        consistent = is_consistent_detect(object, by),
+        consistent = is_systematic_detect(object, by),
         random     = is_random_detect(    object, by),
         full       = is_full_detect(      object))))
 }
@@ -509,7 +521,7 @@ cluster_order_features <- function(object){
 detect_order_features <- function(object, by = 'subgroup'){
     x <- object
     values(x)[is_imputed(x)] <- NA
-    idx1 <- fnames(cluster_order_features(x[is_consistent_detect(x, by = by),]))
+    idx1 <- fnames(cluster_order_features(x[is_systematic_detect(x, by = by),]))
     idx2 <- fnames(cluster_order_features(x[is_random_detect(    x, by = by),]))
     idx3 <- fnames(cluster_order_features(x[is_full_detect(      x         ),]))
     SummarizedExperiment::rbind(object[idx1,], object[idx2,], object[idx3,])
@@ -565,7 +577,7 @@ plot_detections <- function(object, by = 'subgroup', fill = by){
     object %<>% detect_order_features()
     y <- object; values(y)[is_imputed(y)] <- NA
     nfull       <- sum(is_full_detect(y))
-    nconsistent <- sum(is_consistent_detect(y, by = by))
+    nconsistent <- sum(is_systematic_detect(y, by = by))
     nrandom     <- sum(is_random_detect(    y, by = by))
 # Melt
     plotdt  <-  sumexp_to_longdt(object, svars = by)

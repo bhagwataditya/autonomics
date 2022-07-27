@@ -34,9 +34,12 @@ n <- analysis(object)$nfeature
 
 MaxQuant identified `r n[[1]]` proteingroups. After dropping `r n[[1]]- n[[2]]` reverse hits, `r n[[2]] - n[[3]]` potential contaminants, `r n[[3]]-n[[4]]` without  quantitative value (for any sample) and `r n[[4]]-n[[5]]` without replication (within subgroup), **`r n[[5]]` proteingroups** were retained for further analysis.
 
-
 ## Nondetects
 
+```{r}
+nsyst <- sum(is_systematic_nondetect(object))
+nrndm <- sum(is_random_nondetect(object))
+```
 
 ```{r, echo = FALSE, results = 'hide', message = FALSE, fig.width = 6, fig.height = 5, out.width = '50%', out.height = '50%'}
 require(ggplot2)
