@@ -131,12 +131,13 @@ make_volcano_dt <- function(
 }
 
 #' Plot volcano
-#' @param object  SummarizedExperiment
-#' @param fit     'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coefs   character vector
-#' @param label   fvar for labeling top features (string)
-#' @param ntop    number: n top features to be annotated
-#' @param nrow    number: no of rows in plot
+#' @param object    SummarizedExperiment
+#' @param fit      'limma', 'lme', 'lm', 'wilcoxon'
+#' @param coefs     character vector
+#' @param label     fvar for labeling top features (string)
+#' @param features  character vector: features to plot 
+#' @param ntop      number: n top features to be annotated
+#' @param nrow      number: no of rows in plot
 #' @param intercept TRUE/FALSE: plot also intercept?
 #' @return ggplot object
 #' @examples
@@ -144,6 +145,7 @@ make_volcano_dt <- function(
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
 #' plot_volcano(object)
+#' plot_volcano(object, features = c('A2VCZ6', 'A0A2R8Q7V9', 'Q503D2'))
 #' object %<>% fit_lm()
 #' plot_volcano(object)
 #'
@@ -158,6 +160,7 @@ plot_volcano <- function(object,
     fit       = fits(object), 
     coefs     = autonomics::coefs(object, fit[1]),
     label     = 'feature_id', 
+    features  = character(0),
     ntop      = 1, 
     nrow      = length(fit),
     intercept = identical("Intercept", coefs)
@@ -177,7 +180,16 @@ plot_volcano <- function(object,
     topup <- topdown <- effect <- mlp <- facetrow <- facetcol <- NULL
 # Prepare
     plotdt <- make_volcano_dt(object, fit, coefs, ntop = ntop, label = label)
-    txtdt  <- copy(plotdt)[topup == TRUE | topdown == TRUE]
+    txtdt  <- copy(plotdt)
+    txtdt[, select := topup == TRUE | topdown == TRUE]
+    if (length(features) > 0){
+        txtdt[, singlefeature := feature_id]
+        txtdt %<>% separate_rows(singlefeature) %>% data.table()
+        txtdt[, select := select | singlefeature %in% features ]
+        txtdt[, singlefeature := NULL]
+        txtdt %<>% unique()
+    }
+    txtdt %<>% extract(select==TRUE)
     colorvalues <- c(hcl(h =   0, l = c(20, 70, 100), c = 100), # 20 70 100
                      hcl(h = 120, l = c(100, 70, 20), c = 100)) # 100 70 20
     names(colorvalues) <- levels(plotdt$significance)
