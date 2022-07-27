@@ -18,7 +18,7 @@ analyze(
   plot = pca & !is.null(fit),
   feature_id = NULL,
   sample_id = NULL,
-  palette = make_subgroup_palette(object)
+  palette = NULL
 )
 }
 \arguments{
@@ -60,5 +60,5 @@ Analyze
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, plot=FALSE)
-object \%<>\% analyze(pca=TRUE, subgroupvar = 'Group', fit='limma')
+object \%<>\% analyze(pca = TRUE, subgroupvar = 'Group', fit = 'limma')
 }

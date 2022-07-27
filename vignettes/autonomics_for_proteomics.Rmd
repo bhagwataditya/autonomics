@@ -1,0 +1,57 @@
+---
+title: "autonomics for proteomics"
+author: "Aditya M Bhagwat"
+date: "`r Sys.Date()`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{autonomics_for_proteomics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold', fig.align = 'center')
+```
+
+# Background
+
+This vignette demonstrates the use of `autonomics` to create an analysis report.
+Example dataset used is Fukuda et al. (2020), who studied the embryonic development of zebrafish, and compared the proteome of embryos (30 **d**ays **p**ost fertiliza**t**ion) to adults.
+
+# Quantifications
+
+## Proteingroups
+
+```{r, echo = FALSE, message = FALSE}
+require(data.table)
+require(autonomics)
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file, plot = FALSE)
+detectionsdt <- data.table(Filter = names(analysis(object)$nfeature), 
+                    Proteingroups =       analysis(object)$nfeature)
+n <- analysis(object)$nfeature
+```
+
+MaxQuant identified `r n[[1]]` proteingroups. After dropping `r n[[1]]- n[[2]]` reverse hits, `r n[[2]] - n[[3]]` potential contaminants, `r n[[3]]-n[[4]]` without  quantitative value (for any sample and) `r n[[4]]-n[[5]]` without replication (within subgroup), **`r n[[5]]` proteingroups** were retained for further analysis.
+
+
+
+
+## Nondetects
+
+
+
+```{r, echo = FALSE, results = 'hide', message = FALSE, fig.width = 6, fig.height = 5, out.width = '50%', out.height = '50%'}
+require(ggplot2)
+require(gridExtra)
+p1 <- plot_summarized_detections(object) + ggtitle('plot_summarized_detections')
+p2 <- plot_detections(object) + guides(fill = 'none') + ggtitle('plot_detections') + 
+    theme(plot.title = element_text(hjust = 0.5))
+grid.arrange(p1, p2, nrow = 1)
+```
+
+# Principal Component Analysis 
+
+```{r, echo = FALSE, results = 'hide', message = FALSE, out.width = '50%', out.height = '50%', fig.width = 5, fig.height = 4}
+biplot(pca(object))
+```

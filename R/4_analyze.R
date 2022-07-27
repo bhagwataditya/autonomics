@@ -19,7 +19,7 @@
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' object %<>% analyze(pca=TRUE, subgroupvar = 'Group', fit='limma')
+#' object %<>% analyze(pca = TRUE, subgroupvar = 'Group', fit = 'limma')
 #' @export
 analyze <- function(
         object,
@@ -35,10 +35,11 @@ analyze <- function(
         plot         = pca & !is.null(fit),
         feature_id   = NULL,
         sample_id    = NULL,
-        palette      = make_subgroup_palette(object)
+        palette      = NULL
 ){
     # Analyze
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
+    if (is.null(palette))      palette <- make_subgroup_palette(object)
     subgroup <- if (is.null(subgroupvar))  quo(NULL) else sym(subgroupvar)
     if (pca)  object %<>% pca(verbose = verbose, plot = FALSE)
     for (curfit in fit){
@@ -98,7 +99,7 @@ plot_summary <- function(
         theme(plot.title = element_text(hjust = 0.5))
 
     pcaplot <- biplot(
-        object, color = subgroup, x = pca1, y = pca2, palette = palette) + 
+        object, color = 'subgroup', x = 'pca1', y = 'pca2', palette = palette) + 
         guides(color = 'none') + ggtitle(NULL) +
         theme(axis.text.x  = element_blank(), 
               axis.text.y  = element_blank(), 

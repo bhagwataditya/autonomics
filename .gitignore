@@ -4,3 +4,4 @@
 .Ruserdata
 autonomics.Rproj
 .Rhistory
+vignettes/*_cache

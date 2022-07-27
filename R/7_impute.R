@@ -584,10 +584,11 @@ plot_detections <- function(object, by = 'subgroup', fill = by){
     geom_tile(aes(x = sample_id, y = feature_id, fill = !!sym(fill), alpha = detection)) +
     scale_fill_manual( values = colors) +
     scale_alpha_manual(values = c(nondetect = 0, impute = 0.3, detect = 1)) +
-    ylab('Features') +
-    xlab('Samples') +
-    ggtitle(sprintf('detects: %d full, %d random, %d consistent',
-                    nfull, nrandom, nconsistent)) +
+    scale_x_discrete(position = 'top') +
+    ylab(paste0(nrow(object), ' Features')) +
+    xlab(paste0(ncol(object), ' Samples')) +
+    #ggtitle(sprintf('detects: %d full, %d random, %d consistent',
+    #                nfull, nrandom, nconsistent)) +
     theme_bw() +
     theme(   axis.text.y  = element_blank(), 
              axis.ticks.y = element_blank(),
@@ -598,6 +599,7 @@ plot_detections <- function(object, by = 'subgroup', fill = by){
     guides(alpha = 'none')
 
 }
+
 
 #==============================================================================
 #

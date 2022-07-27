@@ -989,7 +989,6 @@ demultiplex <- function(x, verbose = FALSE){
 #
 #----------------------------------------------------------------------------
 
-
 process_maxquant <- function(
     object, subgroups, invert, contaminants, reverse, localization = 0.75, 
     impute, verbose
@@ -1008,8 +1007,9 @@ process_maxquant <- function(
     object %<>% invert_subgroups(invert)
 # Features
     if (verbose) message('\tFilter features')
-    if (!reverse)      object %<>% filter_features(               Reverse == '', verbose = verbose)
-    if (!contaminants) object %<>% filter_features(`Potential contaminant`== '', verbose = verbose)
+    analysis(object)$nfeatures <- c(nrow(object))
+    if (!reverse)       object %<>% filter_features(Reverse == '', verbose = verbose)
+    if (!contaminants)  object %<>% filter_features(`Potential contaminant`== '', verbose = verbose)
     object %<>% rm_missing_in_all_samples(verbose = verbose)
     object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
     if ('Localization prob' %in% fvars(object)){
