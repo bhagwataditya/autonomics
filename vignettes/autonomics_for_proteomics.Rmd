@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'ho
 # Background
 
 This vignette demonstrates the use of `autonomics` to create an analysis report.
-Example dataset used is Fukuda et al. (2020), who studied the embryonic development of zebrafish, and compared the proteome of embryos (30 **d**ays **p**ost fertiliza**t**ion) to adults.
+Example dataset used is Fukuda et al. (2020), who studied the embryonic development of zebrafish, comparing the proteome of embryos (30 **d**ays **p**ost fertiliza**t**ion) to adults.
 
 # Quantifications
 
@@ -32,7 +32,7 @@ detectionsdt <- data.table(Filter = names(analysis(object)$nfeature),
 n <- analysis(object)$nfeature
 ```
 
-MaxQuant identified `r n[[1]]` proteingroups. After dropping `r n[[1]]- n[[2]]` reverse hits, `r n[[2]] - n[[3]]` potential contaminants, `r n[[3]]-n[[4]]` without  quantitative value (for any sample and) `r n[[4]]-n[[5]]` without replication (within subgroup), **`r n[[5]]` proteingroups** were retained for further analysis.
+MaxQuant identified `r n[[1]]` proteingroups. After dropping `r n[[1]]- n[[2]]` reverse hits, `r n[[2]] - n[[3]]` potential contaminants, `r n[[3]]-n[[4]]` without  quantitative value (for any sample) and `r n[[4]]-n[[5]]` without replication (within subgroup), **`r n[[5]]` proteingroups** were retained for further analysis.
 
 
 ## Nondetects
