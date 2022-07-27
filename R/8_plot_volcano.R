@@ -89,12 +89,10 @@ melt_contrastdefs <- function(contrastdefmat){
 #' @export
 make_volcano_dt <- function(
     object, fit = fits(object)[1], coefs = autonomics::coefs(object)[1],
-    label = feature_id, ntop = 3
+    label = 'feature_id', ntop = 3
 ){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
-    label <- enquo(label)
-    labelstr <- as_name(label)
-    id.vars <- c('feature_id', labelstr, 'imputed', 'control')
+    id.vars <- c('feature_id', label, 'imputed', 'control')
     id.vars %<>% intersect(fvars(object))
     fvars0 <- c(id.vars, effectvars(object), pvars(object), fdrvars(object))
     dt <- data.table(fdata(object)[, fvars0, drop = FALSE])
@@ -136,14 +134,15 @@ make_volcano_dt <- function(
 #' @param object  SummarizedExperiment
 #' @param fit     'limma', 'lme', 'lm', 'wilcoxon'
 #' @param coefs   character vector
-#' @param label   fvar for labeling top features
+#' @param label   fvar for labeling top features (string)
 #' @param ntop    number: n top features to be annotated
 #' @param nrow    number: no of rows in plot
 #' @param intercept TRUE/FALSE: plot also intercept?
 #' @return ggplot object
 #' @examples
+#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
+#' object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
 #' plot_volcano(object)
 #' object %<>% fit_lm()
 #' plot_volcano(object)
@@ -156,20 +155,28 @@ make_volcano_dt <- function(
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
 #' @export
 plot_volcano <- function(object,
-    fit = fits(object), coefs = autonomics::coefs(object, fit[1]),
-    label = feature_id, ntop = 1, nrow = length(fit),
+    fit       = fits(object), 
+    coefs     = autonomics::coefs(object, fit[1]),
+    label     = 'feature_id', 
+    ntop      = 1, 
+    nrow      = length(fit),
     intercept = identical("Intercept", coefs)
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
     assert_is_subset(fit, fits(object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit))
+    if (!is.null(label)){
+        assert_is_a_string(label)
+        assert_is_subset(label, fvars(object))
+    }
+    assert_is_a_number(ntop)
+    assert_is_a_number(nrow)
+    assert_is_a_bool(intercept)
     if (!intercept) coefs %<>% setdiff('Intercept')
     topup <- topdown <- effect <- mlp <- facetrow <- facetcol <- NULL
-    label <- enquo(label)
-    labelstr <- rlang::as_name(label)
-    assert_is_subset(labelstr, fvars(object))
 # Prepare
-    plotdt <- make_volcano_dt(object, fit, coefs, ntop = ntop, label = !!label)
+    plotdt <- make_volcano_dt(object, fit, coefs, ntop = ntop, label = label)
     txtdt  <- copy(plotdt)[topup == TRUE | topdown == TRUE]
     colorvalues <- c(hcl(h =   0, l = c(20, 70, 100), c = 100), # 20 70 100
                      hcl(h = 120, l = c(100, 70, 20), c = 100)) # 100 70 20
@@ -180,9 +187,9 @@ plot_volcano <- function(object,
     p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow) +
     geom_point(aes(x = effect,y = mlp,color = significance, shape = imputed),
                na.rm = TRUE)
-    if (!quo_is_null(label)){
+    if (!is.null(label)){
         p <- p + geom_text_repel(data = txtdt, 
-             aes(x = effect, y = mlp, label = !!label, color = significance), 
+             aes(x = effect, y = mlp, label = !!sym(label), color = significance), 
              na.rm = TRUE, show.legend = FALSE)
     }
     p + theme_bw() +

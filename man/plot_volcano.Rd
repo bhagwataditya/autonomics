@@ -8,7 +8,7 @@ plot_volcano(
   object,
   fit = fits(object),
   coefs = autonomics::coefs(object, fit[1]),
-  label = feature_id,
+  label = "feature_id",
   ntop = 1,
   nrow = length(fit),
   intercept = identical("Intercept", coefs)
@@ -21,7 +21,7 @@ plot_volcano(
 
 \item{coefs}{character vector}
 
-\item{label}{fvar for labeling top features}
+\item{label}{fvar for labeling top features (string)}
 
 \item{ntop}{number: n top features to be annotated}
 
@@ -36,8 +36,9 @@ ggplot object
 Plot volcano
 }
 \examples{
+require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
+object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
 plot_volcano(object)
 object \%<>\% fit_lm()
 plot_volcano(object)

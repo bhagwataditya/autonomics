@@ -8,7 +8,7 @@ make_volcano_dt(
   object,
   fit = fits(object)[1],
   coefs = autonomics::coefs(object)[1],
-  label = feature_id,
+  label = "feature_id",
   ntop = 3
 )
 }
