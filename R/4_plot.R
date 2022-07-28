@@ -409,14 +409,14 @@ plot_feature_densities <- function(
 #'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$Group))
+#'     object %<>% extract(, order(.$subgroup))
 #'     control_features <- c('biotin','phosphate')
 #'     fdata(object) %<>% cbind(control=.$feature_name %in% control_features)
 #' # plot
-#'     plot_violins(object[1:12, ], x=feature_id, fill=feature_id)
+#'     plot_violins(object[1:12, ], x = feature_id, fill = feature_id)
 #'     plot_feature_violins(object[1:12, ])
 #'     plot_sample_violins(object[, 1:12],  highlight = control)
-#'     plot_subgroup_violins(object[1:4, ], subgroup = Group)
+#'     plot_subgroup_violins(object[1:4, ], subgroup = subgroup)
 #' @export
 plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     facet = NULL, highlight = NULL, palette = NULL, fixed = list(na.rm=TRUE)
@@ -440,10 +440,16 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
     dt <- sumexp_to_longdt(object, svars = plottedsvars, fvars = plottedfvars)
+    dtsum <- dt[, .(median = median(value, na.rm = TRUE), 
+                       iqr =    IQR(value, na.rm = TRUE) ), by = xstr]
 # Plot
     p <- plot_data(dt, geom = geom_violin, x = !!x, y = value,
                 fill = !!fill, color= !!color, group=!!group, 
                 palette = palette, fixed = fixed)
+    p <- p + geom_point(data = dtsum, aes(x = !!x, y = median))
+    p <- p + geom_errorbar(data = dtsum, 
+                           mapping = aes(x = !!x, ymin = median-iqr, ymax = median+iqr, y = median), 
+                           width = 0)
     p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point)
     if (!is.null(facet))  p <- p + facet_wrap(facet, scales = "free")
     # Finish
