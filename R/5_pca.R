@@ -411,31 +411,37 @@ add_scores <- function(
     shape = if ('replicate' %in% svars(object)) 'replicate' else NULL,
     size = NULL, group = NULL, fixed = list(shape = 15, size = 3, na.rm = TRUE)
 ){
-    # manual colors require non-numerics
+# manual colors require non-numerics
     if (!is.null(color))    object[[color]] %<>% num2char() 
+    x <- sym(x)
+    y <- sym(y)
+    color <- if (is.null(color)) quo(NULL) else sym(color)
+    shape <- if (is.null(shape)) quo(NULL) else sym(shape)
+    size  <- if (is.null(size))  quo(NULL) else sym(size )
+    
+# Points    
     p <- p + layer(  
                 geom     = 'point',
-                mapping  = aes(x = !!sym(x), 
-                               y = !!sym(y), 
-                           color = !!sym(color), 
-                           shape = !!sym(shape), 
-                           size =  !!sym(size)),
+                mapping  = aes(x = !!x, 
+                               y = !!y, 
+                           color = !!color, 
+                           shape = !!shape, 
+                           size =  !!size),
                 stat     = "identity", 
                 data     = sdt(object), 
                 params   = fixed,
                 position = 'identity')
-    if (!is.null(group)){
-        p <- p + layer(
+# Paths
+    if (!is.null(group))  p <- p + layer(
                 geom     = 'path',
-                mapping  = aes(x = !!sym(x), 
-                               y = !!sym(y), 
-                           color = !!sym(color), 
-                           group = !!sym(group)),
+                mapping  = aes(x = !!x, 
+                               y = !!y, 
+                           color = !!color, 
+                           group = !!group),
                 stat     = "identity",
                 data     = sdt(object),
                 params   = list(size = 0.1, linetype = 'solid', na.rm = TRUE),
                 position = 'identity')
-    }
     p
 }
 
