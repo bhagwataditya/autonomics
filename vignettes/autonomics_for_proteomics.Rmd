@@ -15,10 +15,11 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'ho
 
 This vignette demonstrates how to use `autonomics` for proteomics data analysis.
 
+# MaxQuant ProteinGroups
 
-# Samples
+## Samples
 
-## Design
+### Design
 
 Fukuda et al. (2020) studied the embryonic development of zebrafish.  
 They compared the proteome of 30-days-post-fertilization embryos to adults.
@@ -31,7 +32,7 @@ object <- read_proteingroups(file, plot = FALSE)
 sdt(object)[, 1:3]
 ```
 
-## Principle Component Analysis
+### Principle Component Analysis
 
 In an experiment with p quantified proteingroups, each sample can be thought of as a data point in a p-dimensional space. **Principal Component Analysis** projects these sample points onto that lower (e.g. 2) dimensional space which maximizes the variance between samples. This two-dimensional biplot greatly aids in comprehending the overall sample similarity structure, as shown below for the dataset under consideration, where subgroup is reassuringly observed to be the major source of variation.
 
@@ -40,7 +41,7 @@ In an experiment with p quantified proteingroups, each sample can be thought of 
 biplot(pca(object))
 ```
 
-## Sample distributions
+### Sample distributions
 
 ```{r, message = FALSE, fig.width = 3.5, fig.height = 2.5, out.width = '35%', out.height = '35%'}
 plot_sample_densities(object)
@@ -49,7 +50,7 @@ plot_sample_violins(object)
 ```
 
 
-# Features
+## Features
 
 ```{r}
 n <- analysis(object)$nfeature   # Filtering details
@@ -58,9 +59,9 @@ n <- analysis(object)$nfeature   # Filtering details
 MaxQuant identified `r n[[1]]` proteingroups.  Filtered out were `r n[[1]]- n[[2]]` reverse hits, `r n[[2]] - n[[3]]` potential contaminants, `r n[[3]]-n[[4]]` proteingroups without quantitative value (for any sample) and `r n[[4]]-n[[5]]` without replication (within subgroup). This retained **`r n[[5]]` proteingroups** for further analysis.  
 
 
-# Missing values
+## Missing values
 
-## Systematic versus Random
+### Systematic versus Random
 
 ```{r}
 systematic <- sum(systematic_nas(object))
@@ -75,7 +76,7 @@ no         <-         sum(no_nas(object))
 
 **`r no`** proteingroups have **no** NAs. They are present in all samples.  
 
-## Plotting NA structure
+### Plotting NA structure
   
 The NA structure can also be summarized graphically with either of the two functions below.  
 
@@ -88,7 +89,7 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 `plot_sample_nas` shows NA structure at **sample** resolution, plotting systematic and random NAs (white) as well as full detections (bright color).  
 `plot_subgroup_nas` summarizes NA structure at the **subgroup** level, differentiating systematic NA values (white) from random NA values and full detections (color).
 
-## Imputing systematic NAs
+### Imputing systematic NAs
 
 Proteingroups with systematic misses require prior imputation for statistical analysis to return pvalues (rather than missing values). 
 

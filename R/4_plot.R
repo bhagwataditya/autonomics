@@ -573,7 +573,7 @@ plot_boxplots <- function(
     dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
     
 # Plot
-    p <- ggplot(dt) + theme_bw() 
+    p <- ggplot(dt)
     if (nrow(dt)==0) return(p)
     if (!is.null(facet)) p <- p + facet_wrap_paginate(
         facets = facet, scales = scales, nrow = nrow, ncol = ncol, 
