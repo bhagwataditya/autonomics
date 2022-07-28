@@ -409,7 +409,7 @@ num2char <- function(x){
 add_scores <- function(
     p, object, x = 'pca1', y = 'pca2', color = 'subgroup', 
     shape = if ('replicate' %in% svars(object)) 'replicate' else NULL,
-    group = NULL, fixed = list(shape = 15, size = 3, na.rm = TRUE)
+    size = NULL, group = NULL, fixed = list(shape = 15, size = 3, na.rm = TRUE)
 ){
     # manual colors require non-numerics
     if (!is.null(color))    object[[color]] %<>% num2char() 
@@ -418,7 +418,8 @@ add_scores <- function(
                 mapping  = aes(x = !!sym(x), 
                                y = !!sym(y), 
                            color = !!sym(color), 
-                           shape = !!sym(shape)),
+                           shape = !!sym(shape), 
+                           size =  !!sym(size)),
                 stat     = "identity", 
                 data     = sdt(object), 
                 params   = fixed,
@@ -511,36 +512,45 @@ pca1 <- pca2 <- feature_name <- NULL
 biplot <- function(
     object, x = 'pca1', y = 'pca2', color = 'subgroup', 
     shape = if ('replicate' %in% svars(object)) 'replicate' else NULL, 
-    group = NULL, label = NULL, feature_label = 'feature_name', 
-    fixed = list(shape = 15, size = 3), nloadings = 0,
+    size = NULL, group = NULL, label = NULL, feature_label = 'feature_name', 
+    fixed = list(shape = 15, size = 3), 
+    nloadings = 0,
     palette = make_svar_palette(object, color)
 ){
+# Assert / Process
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_a_string(x);  assert_is_subset(x,     svars(object))
-    assert_is_a_string(y);  assert_is_subset(y,     svars(object))
-    if (!is.null(color)) assert_is_a_string(color);  assert_is_subset(color, svars(object))
-    if (!is.null(group)) assert_is_a_string(group);  assert_is_subset(group, svars(object))
+    assert_is_a_string(x)
+    assert_is_subset(x, svars(object))
+    assert_is_a_string(y)
+    assert_is_subset(y, svars(object))
+    if (!is.null(color)){ assert_is_a_string(color)
+                          assert_is_subset(color, svars(object)) }
+    if (!is.null(group)){ assert_is_a_string(group)
+                          assert_is_subset(group, svars(object)) }
+    if (!is.null(shape)){ assert_is_a_string(shape)
+                          assert_is_subset(shape, svars(object)) 
+                          fixed %<>% extract(names(.) %>% setdiff('shape'))}
+    if (!is.null(size)){  assert_is_a_string(size)
+                          assert_is_subset(size,  svars(object)) 
+                          fixed %<>% extract(names(.) %>% setdiff('size'))}
     methodx <- gsub('[0-9]+', '', x)
     methody <- gsub('[0-9]+', '', y)
-    #object %<>% get(methodx)(ndim=xdim, verbose = FALSE)
-    #object %<>% get(methody)(ndim=ydim, verbose = FALSE)
     xvar <- round(metadata(object)[[methodx]][[x]], 1)
     yvar <- round(metadata(object)[[methody]][[y]], 1)
     xlab  <- paste0(x, ' : ', xvar,'% ')
     ylab  <- paste0(y, ' : ', yvar,'% ')
-
+    
+# Plot
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p <- p + ggtitle(paste0(x, ':', y))
     p %<>% add_loadings(object, x = x, y = y, label = feature_label, nloadings = nloadings)
     p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
-                      group = group, fixed = fixed)
+                      size = size, group = group, fixed = fixed)
     p <- p + scale_color_manual(values = palette, na.value = 'gray80')
-
-    if (!is.null(label)){
-        p <- p + geom_text_repel(
+    if (!is.null(label))  p <- p + geom_text_repel(
                     aes(x = !!sym(x), y = !!sym(y), label = !!sym(label)), 
                     data = sdt(object), na.rm = TRUE)
-    }
+# Return
     p
 }
 

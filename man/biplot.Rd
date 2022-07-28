@@ -11,6 +11,7 @@ biplot(
   y = "pca2",
   color = "subgroup",
   shape = if ("replicate" \%in\% svars(object)) "replicate" else NULL,
+  size = NULL,
   group = NULL,
   label = NULL,
   feature_label = "feature_name",
