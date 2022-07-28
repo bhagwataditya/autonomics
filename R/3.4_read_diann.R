@@ -245,10 +245,8 @@ read_diann <- function(
         mat %<>% log2()
         l <- set_names(list(exprs = mat), quantity)
         object <- SummarizedExperiment(l)
-        idx <- rowSums(!is.na(values(object))) > 1
-        message('\tRetain ', sum(idx), '/', length(idx), 
-                ' proteingroups replicated in at least two samples')
-        object %<>% extract(idx, )
+        analysis(object)$nfeatures <- nrow(object)
+        object %<>% rm_missing_in_all_samples(verbose = verbose)
         object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
     # fdt
         fdt(object)$feature_id <- rownames(object)
@@ -258,7 +256,8 @@ read_diann <- function(
     # sdt
         object$sample_id <- colnames(object)
         object$subgroup <- 'group0'
-# Analyze
+# Filter. Impute. Analyze
+    object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
     if ({{impute}})   object %<>% impute()
     object %<>% analyze(
           pca = pca,            fit = fit,         formula = formula, 

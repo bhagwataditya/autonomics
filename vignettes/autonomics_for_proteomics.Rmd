@@ -41,7 +41,7 @@ In an experiment with p quantified proteingroups, each sample can be thought of 
 biplot(pca(object))
 ```
 
-### Sample distributions
+### Sample Distributions
 
 ```{r, message = FALSE}
 p <- plot_sample_boxplots(object)  + guides(fill = 'none')

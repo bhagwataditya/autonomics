@@ -56,13 +56,14 @@ rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # . != 0 needed due to stupid behaviour of rowAnys
     # https://github.com/HenrikBengtsson/matrixStats/issues/89
     selector <- rowAnys(values(object) != 0, na.rm = TRUE)
-    if (verbose && sum(selector)<length(selector))  message(
-                    '\t\tRetain ', sum(selector), '/', length(selector),
-                    ' features: non-zero, non-NA, and non-NaN for some sample')
-    object %<>% extract(selector, )
-    if (!is.null(analysis(object))) {
-        analysis(object)$nfeatures %<>% c(structure(sum(selector),
-            names = "non-zero, non-NA, and non-NaN for some sample"))
+    if (verbose && sum(selector)<length(selector)){
+        message('\t\tRetain ', sum(selector), '/', length(selector),
+                ' features: non-zero, non-NA, and non-NaN for some sample')
+        object %<>% extract(selector, )
+        if (!is.null(analysis(object))) {
+            analysis(object)$nfeatures %<>% c(structure(sum(selector),
+                names = "non-zero, non-NA, and non-NaN for some sample"))
+        }
     }
     object
 }
