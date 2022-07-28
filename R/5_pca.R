@@ -407,7 +407,8 @@ num2char <- function(x){
 }
 
 add_scores <- function(
-    p, object, x = 'pca1', y = 'pca2', color = 'subgroup',
+    p, object, x = 'pca1', y = 'pca2', color = 'subgroup', 
+    shape = if ('replicate' %in% svars(object)) 'replicate' else NULL,
     group = NULL, fixed = list(shape = 15, size = 3, na.rm = TRUE)
 ){
     # manual colors require non-numerics
@@ -416,7 +417,8 @@ add_scores <- function(
                 geom     = 'point',
                 mapping  = aes(x = !!sym(x), 
                                y = !!sym(y), 
-                           color = !!sym(color)),
+                           color = !!sym(color), 
+                           shape = !!sym(shape)),
                 stat     = "identity", 
                 data     = sdt(object), 
                 params   = fixed,
@@ -489,6 +491,7 @@ pca1 <- pca2 <- feature_name <- NULL
 #' @param x              svar (string)
 #' @param y              svar (string)
 #' @param color          svar (string)
+#' @param shape          svar (string)
 #' @param label          svar (string)
 #' @param group          svar (string)
 #' @param feature_label  fvar (string)
@@ -506,8 +509,9 @@ pca1 <- pca2 <- feature_name <- NULL
 #' biplot(object, x = 'pca3', y = 'pca4', color = 'SUB', nloadings = 1)
 #' @export
 biplot <- function(
-    object, x = 'pca1', y = 'pca2', color = 'subgroup', group = NULL,
-    label = NULL, feature_label = 'feature_name', 
+    object, x = 'pca1', y = 'pca2', color = 'subgroup', 
+    shape = if ('replicate' %in% svars(object)) 'replicate' else NULL, 
+    group = NULL, label = NULL, feature_label = 'feature_name', 
     fixed = list(shape = 15, size = 3), nloadings = 0,
     palette = make_svar_palette(object, color)
 ){
@@ -528,7 +532,8 @@ biplot <- function(
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p <- p + ggtitle(paste0(x, ':', y))
     p %<>% add_loadings(object, x = x, y = y, label = feature_label, nloadings = nloadings)
-    p %<>% add_scores(  object, x = x, y = y, color = color, group = group, fixed = fixed)
+    p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
+                      group = group, fixed = fixed)
     p <- p + scale_color_manual(values = palette, na.value = 'gray80')
 
     if (!is.null(label)){

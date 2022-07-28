@@ -10,6 +10,7 @@ biplot(
   x = "pca1",
   y = "pca2",
   color = "subgroup",
+  shape = if ("replicate" \%in\% svars(object)) "replicate" else NULL,
   group = NULL,
   label = NULL,
   feature_label = "feature_name",
@@ -28,6 +29,8 @@ plot_biplot(...)
 \item{y}{svar (string)}
 
 \item{color}{svar (string)}
+
+\item{shape}{svar (string)}
 
 \item{group}{svar (string)}
 
