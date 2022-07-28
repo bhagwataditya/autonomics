@@ -445,7 +445,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
                 fill = !!fill, color= !!color, group=!!group, 
                 palette = palette, fixed = fixed)
     p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point)
-    p <- p + facet_wrap(facet, scales = "free")
+    if (!is.null(facet))  p <- p + facet_wrap(facet, scales = "free")
     # Finish
     breaks <- unique(dt[[xstr]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
@@ -461,7 +461,7 @@ sample_id <- NULL
 plot_sample_violins <- function(
     object, x = sample_id, fill = sample_id, color = NULL, facet = NULL, 
     highlight = NULL, fixed=list(na.rm=TRUE)
-) plot_violins(
+)  plot_violins(
     object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
     facet = facet, highlight = !!enquo(highlight), fixed = fixed
 )
@@ -575,8 +575,9 @@ plot_boxplots <- function(
 # Plot
     p <- ggplot(dt) + theme_bw() 
     if (nrow(dt)==0) return(p)
-    p <- p + facet_wrap_paginate(facets = facet, scales = scales, 
-                                 nrow = nrow, ncol = ncol, page = page, labeller = labeller)
+    if (!is.null(facet)) p <- p + facet_wrap_paginate(
+        facets = facet, scales = scales, nrow = nrow, ncol = ncol, 
+        page = page, labeller = labeller)
     if (!quo_is_null(block)){
         dt[, direction := get(fillstr)[which.max(value)], by = c(facetstr, blockstr)]
         p <- p + geom_line(aes(x=!!x, y=value, color=direction, group=!!block), na.rm = TRUE)
@@ -621,7 +622,7 @@ plot_boxplots <- function(
 plot_sample_boxplots <- function(
     object, assay = assayNames(object)[1], 
     x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
-    palette = NULL, nrow=NULL, ncol=NULL, page=1, labeller = 'label_value'
+    palette = NULL, nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value'
 ){
     x         <- enquo(x)
     fill      <- enquo(fill)
