@@ -38,7 +38,9 @@ n <- analysis(object)$nfeature   # Filtering details
 MaxQuant identified `r n[[1]]` proteingroups.  Filtered out were `r n[[1]]- n[[2]]` reverse hits, `r n[[2]] - n[[3]]` potential contaminants, `r n[[3]]-n[[4]]` proteingroups without quantitative value (for any sample) and `r n[[4]]-n[[5]]` without replication (within subgroup). This retained **`r n[[5]]` proteingroups** for further analysis.  
 
 
-# NMissingness: systematic versus random
+# Missing values
+
+## Systematic versus Random
 
 ```{r}
 systematic <- sum(systematic_nas(object))
@@ -47,29 +49,25 @@ no         <-         sum(no_nas(object))
 ```
 
 
-**`r systematic`** proteingroups have **systematic** NA values: missing completely in some subgroups but detected in others (for at least half of the samples). These represent potential switch-like responses. They require prior imputation for statistical analysis to return p (rather than NA) values. Note that the apparent systematic nature of these NAs can arise due to chance. Increasing sample size gives greater  confidence into the systematic nature of these NA values.
+**`r systematic`** proteingroups have **systematic** NAs: missing completely in some subgroups but detected in others (for at least half of the samples). These represent potential switch-like responses. They require prior imputation for statistical analysis to return p (rather than NA) values. Note that the apparent systematic nature of these NAs can arise due to chance. Increasing sample size gives greater  confidence into the systematic nature of these NA values.
 
-**`r random`** proteingroups have **random** NA values. They are missing in some samples, but the missingness is unrelated to subgroup. These samples do not require require imputation for statistical analyis to return pvalues.  
+**`r random`** proteingroups have **random** NAs. They are missing in some samples, but the missingness is unrelated to subgroup. These samples do not require require imputation for statistical analyis to return pvalues.  
 
-**`r no`** proteingroups have **no** NA values. They are present in all samples.
+**`r no`** proteingroups have **no** NAs. They are present in all samples.  
 
-The NA structure can also be summarized graphically:
+## Plotting the missingness structure
+  
+The NA structure can also be summarized graphically with either of the two functions below.  
+The first function shows NA structure at **sample** resolution, plotting systematic and random NAs (white) as well as full detections (bright color).  
+The second function summarizes NA structure at the **subgroup** level, differentiating systematic NA values (white) from random NA values and full detections (color).
 
-```{r, echo = TRUE, results = 'hide', message = FALSE, fig.width = 6, fig.height = 3, out.width = '100%', out.height = '100%', fig.cap = 'Left: plot_missingness_per_sample, Right: plot_misingness_per_subgroup'}
+```{r, echo = TRUE, results = 'hide', message = FALSE, fig.width = 6, fig.height = 3, out.width = '100%', out.height = '100%'}
 p1 <- plot_sample_nas(object) + ggplot2::guides(fill = 'none')
 p2 <- plot_subgroup_nas(object)
 gridExtra::grid.arrange(p1, p2, nrow = 1)
 ```
 
-`plot_missingness_per_sample` (left) shows systematic and random missingness 
-(white), and full detection (bright color) at sample resolution.
-Imputations are also shown (light color).
-
-`plot_missingness_per_subgroup` (right) shows systematic missingness at subgroup resolution.
-Random missingness and full detection are grouped together (bright color).
-Imputations are also shown (light color).
-
-# Imputation
+## Imputating systematic NAs
 
 Proteingroups with systematic misses require prior imputation for statistical analysis to return pvalues (rather than missing values). 
 
