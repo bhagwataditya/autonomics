@@ -43,10 +43,11 @@ biplot(pca(object))
 
 ### Sample distributions
 
-```{r, message = FALSE, fig.width = 3.5, fig.height = 2.5, out.width = '35%', out.height = '35%'}
-plot_sample_densities(object)
-plot_sample_boxplots(object)
-plot_sample_violins(object)
+```{r, message = FALSE}
+p <- plot_sample_boxplots(object)  + guides(fill = 'none')
+q <- plot_sample_violins(object)   + guides(fill = 'none')
+r <- plot_sample_densities(object) + guides(fill = 'none')
+gridExtra::grid.arrange(p, q, r, nrow = 1)
 ```
 
 

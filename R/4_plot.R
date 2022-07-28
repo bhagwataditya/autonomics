@@ -351,7 +351,7 @@ plot_sample_densities <- function(
         facet   = facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
         palette = palette,
         fixed   = fixed ) +
-    ggtitle("Samples") + 
+    ggtitle("Sample Densities") + 
     theme(plot.title = element_text(hjust = 0.5))
 }
 
@@ -377,7 +377,7 @@ plot_feature_densities <- function(
         facet   = facet,  nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
         palette = palette,
         fixed   = fixed) +
-    ggtitle("Features") +
+    ggtitle("Feature Densities") +
     theme(plot.title = element_text(hjust = 0.5))
 }
 
@@ -463,8 +463,8 @@ plot_sample_violins <- function(
     highlight = NULL, fixed=list(na.rm=TRUE)
 )  plot_violins(
     object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
-    facet = facet, highlight = !!enquo(highlight), fixed = fixed
-)
+    facet = facet, highlight = !!enquo(highlight), fixed = fixed) + 
+    ggtitle('Sample Violins')
 
 feature_id <- feature_name <- NULL
 #' @rdname plot_violins
@@ -474,8 +474,9 @@ plot_feature_violins <- function(
     highlight = NULL, fixed = list(na.rm=TRUE)
 ) plot_violins(
     object, x = !!enquo(x), fill = !!enquo(fill), color = !!enquo(color),
-    facet = facet, highlight = !!enquo(highlight), fixed = fixed
-)
+    facet = facet, highlight = !!enquo(highlight), fixed = fixed) + 
+    ggtitle('Feature Violins')
+
 
 subgroup <- NULL
 #' @rdname plot_violins
@@ -486,8 +487,8 @@ plot_subgroup_violins <- function(
     fixed = list(na.rm=TRUE)
 ) plot_violins(
     object, x = !!enquo(x), fill = !!enquo(fill), color = !!color,
-    facet = facet, highlight = !!enquo(highlight), fixed = fixed
-)
+    facet = facet, highlight = !!enquo(highlight), fixed = fixed) + 
+    ggtitle('Subgroup violins')
 
 
 #==============================================================================
@@ -632,7 +633,8 @@ plot_sample_boxplots <- function(
         object, assay = assay, 
         x = !!x, fill = !!fill, color = !!color,
         highlight = !!highlight, palette = palette,  
-        nrow = nrow, ncol = ncol, page = page, labeller = labeller)
+        nrow = nrow, ncol = ncol, page = page, labeller = labeller) + 
+    ggtitle('Sample Boxplots')
 }
 
 
@@ -653,7 +655,8 @@ plot_feature_boxplots <- function(
         object, assay = assay,
         x = !!x, fill = !!fill, color = !!color,
         highlight = !!highlight, palette = palette,  
-        nrow = nrow, ncol = ncol, page = page, labeller = labeller)
+        nrow = nrow, ncol = ncol, page = page, labeller = labeller) + 
+    ggtitle('Feature Boxplots')
 }
 
 
@@ -672,16 +675,16 @@ plot_subgroup_boxplots <- function(
     color     <- enquo(color)
     block     <- enquo(block)
     highlight <- enquo(highlight)
-    p <- plot_boxplots(
-            object, assay = assay,
-            x = !!x, fill = !!fill, color = !!color,
-            block = !!block, highlight = !!highlight, 
-            facet = facet, scales = scales, nrow = nrow,
-            ncol = ncol, page = page,  labeller = labeller, 
-            jitter = jitter, palette = palette, 
-            fixed = fixed, hlevels = hlevels)
+    plot_boxplots(
+        object, assay = assay,
+        x = !!x, fill = !!fill, color = !!color,
+        block = !!block, highlight = !!highlight, 
+        facet = facet, scales = scales, nrow = nrow,
+        ncol = ncol, page = page,  labeller = labeller, 
+        jitter = jitter, palette = palette, 
+        fixed = fixed, hlevels = hlevels) + 
+    ggtitle(('Subgroup Boxplots'))
     #p <- p + stat_summary(fun='mean', geom='line', aes(group=1), color='black', size=0.7, na.rm = TRUE)
-    p
 }
 
 
