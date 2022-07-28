@@ -14,6 +14,7 @@ read_diann(
   file,
   fastadt = NULL,
   quantity = "PG.MaxLFQ",
+  contaminants = FALSE,
   impute = FALSE,
   plot = FALSE,
   pca = plot,

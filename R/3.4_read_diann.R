@@ -223,10 +223,51 @@ forge_pg_descriptions <- function(
     unique(dt[, cols, with = FALSE ])
 }
 
+#' Download contaminants.fasta 
+#'
+#' Download MaxQuant contaminants.fasta
+#' @return filepath
+#' @export
+download_contaminants <-  function(){
+    url <- 'http://lotus1.gwdg.de/mpg/mmbc/maxquant_input.nsf'
+    url %<>% paste0('/7994124a4298328fc125748d0048fee2/$FILE/')
+    url %<>% paste0('contaminants.fasta')
+    destdir <- file.path(R_user_dir("autonomics", "cache"), "maxquant")
+    dir.create(destdir, showWarnings = FALSE, recursive = TRUE)
+    destfile <- paste0(destdir, '/contaminants.fasta')
+    if (!file.exists(destfile)) download.file(url, destfile, mode = 'wb')
+    destfile
+}
+
+#' Read contaminants.fasta
+#' @return character vector
+#' @export
+read_contaminants <-  function(file = download_contaminants()){
+    fastahdrs <- seqinr::read.fasta(file)
+    fastahdrs %<>% vapply(attr, character(1), 'Annot') %>% unname()
+    fastahdrs %<>% split_extract_fixed(' ', 1)
+    fastahdrs %<>% substr(2, nchar(.))
+    fastahdrs
+}
+
+rm_diann_contaminants <- function(object, verbose = TRUE){
+    contaminants <- read_contaminants()
+    fdt0 <- fdt(object)
+    fdt0[, uniprot := feature_id ]
+    fdt0 %<>% separate_rows(uniprot, sep = ';') %>% data.table()
+    fdt0[, `Potential contaminant`:= FALSE]
+    fdt0[uniprot %in% contaminants, `Potential contaminant` := TRUE]
+    fdt0[, uniprot := NULL]
+    fdt0 %<>% extract(, .(`Potential contaminant` = any(`Potential contaminant`)), by = 'feature_id')
+    object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
+    object %<>% filter_features(!`Potential contaminant`, verbose = verbose)
+}
+
 #' @rdname read_diann
 #' @export
 read_diann <- function(
-    file, fastadt = NULL, quantity = 'PG.MaxLFQ', impute = FALSE, plot = FALSE, 
+    file, fastadt = NULL, quantity = 'PG.MaxLFQ', contaminants = FALSE, 
+    impute = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
     coefs = NULL, contrastdefs = NULL, feature_id = NULL, sample_id = NULL, 
     palette = make_subgroup_palette(object), verbose = TRUE
@@ -246,8 +287,6 @@ read_diann <- function(
         l <- set_names(list(exprs = mat), quantity)
         object <- SummarizedExperiment(l)
         analysis(object)$nfeatures <- nrow(object)
-        object %<>% rm_missing_in_all_samples(verbose = verbose)
-        object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
     # fdt
         fdt(object)$feature_id <- rownames(object)
         fdt0 <- dt[, .(Protein.Group, feature_name, Genes, First.Protein.Description)]
@@ -257,6 +296,9 @@ read_diann <- function(
         object$sample_id <- colnames(object)
         object$subgroup <- 'group0'
 # Filter. Impute. Analyze
+    if (!contaminants)  object %<>% rm_diann_contaminants(verbose = verbose)
+    object %<>% rm_missing_in_all_samples(verbose = verbose)
+    object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
     object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
     if ({{impute}})   object %<>% impute()
     object %<>% analyze(
