@@ -230,8 +230,8 @@ impute.SummarizedExperiment <- function(
 # Plot/Return
     if (plot){
         p1 <- plot_sample_densities(object)
-        p2 <- if (ncol(object)<=9){ plot_missingness_per_sample(object)
-              } else {   plot_missingness_per_subgroup(object) }
+        p2 <- if (ncol(object)<=9){ plot_sample_nas(object)
+              } else {   plot_subgroup_nas(object) }
         gridExtra::grid.arrange(p1, p2, nrow = 1)
     }
     object
@@ -371,9 +371,9 @@ split_by_fvar <- function(object, fvar){
 
 #=============================================================================
 #
-#                     is_missing_systematically
-#                     is_missing_randomly
-#                     is_not_missing
+#                     systematic_nas
+#                     random_nas
+#                     no_nas
 #
 #=============================================================================
 
@@ -390,11 +390,11 @@ has_consistent_nondetects <- function(object, by = 'subgroup'){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file)
-#' head(is_missing_systematically(object))  # missing in some subgroups, present in others
-#' head(is_missing_randomly(object))        # missing in some samples, independent of subgroup
-#' head(is_not_missing(object))             # missing in no samples
+#' head(systematic_nas(object))  # missing in some subgroups, present in others
+#' head(random_nas(object))        # missing in some samples, independent of subgroup
+#' head(no_nas(object))             # missing in no samples
 #' @export
-is_missing_systematically <- function(object, by = 'subgroup'){
+systematic_nas <- function(object, by = 'subgroup'){
     . <- NULL
     y <- split_samples(object, by)
     y %<>% lapply(function(x) rowAlls(is.na(values(x))))
@@ -402,16 +402,16 @@ is_missing_systematically <- function(object, by = 'subgroup'){
     y
 }
 
-#' @rdname is_missing_systematically
+#' @rdname systematic_nas
 #' @export
-is_missing_randomly <- function(object, by = 'subgroup'){
+random_nas <- function(object, by = 'subgroup'){
     rowAnys(is.na(values(object))) & 
-    !is_missing_systematically(object, by)
+    !systematic_nas(object, by)
 }
 
-#' @rdname is_missing_systematically
+#' @rdname systematic_nas
 #' @export
-is_not_missing <- function(object){
+no_nas <- function(object){
     rowAlls(!is.na(values(object)))
 }
 
@@ -437,9 +437,9 @@ is_not_missing <- function(object){
 #' @export
 venn_detects <- function(object, by = 'subgroup'){
     limma::vennDiagram(as.matrix(cbind(
-        consistent = is_missing_systematically(object, by),
-        random     = is_missing_randomly(    object, by),
-        full       = is_not_missing(      object))))
+        consistent = systematic_nas(object, by),
+        random     = random_nas(    object, by),
+        full       = no_nas(      object))))
 }
 
 #=============================================================================
@@ -495,7 +495,7 @@ venn_detects <- function(object, by = 'subgroup'){
 #    if (verbose & nrowimputed>0)  message('\t\tImpute consistent nondetects ', 
 #        'for ', nrowimputed, '/', nrow(object), ' features ', 
 #        'in ',  ncolimputed, '/', ncol(object), ' samples')
-#    if (plot)    print(plot_missingness_per_sample(object, subgroup = !!subgroup))
+#    if (plot)    print(plot_sample_nas(object, subgroup = !!subgroup))
 # Return
 #    object
 #}
@@ -521,39 +521,39 @@ cluster_order_features <- function(object){
 detect_order_features <- function(object, by = 'subgroup'){
     x <- object
     values(x)[is_imputed(x)] <- NA
-    idx1 <- fnames(cluster_order_features(x[is_missing_systematically(x, by = by),]))
-    idx2 <- fnames(cluster_order_features(x[is_missing_randomly(    x, by = by),]))
-    idx3 <- fnames(cluster_order_features(x[is_not_missing(      x         ),]))
+    idx1 <- fnames(cluster_order_features(x[systematic_nas(x, by = by),]))
+    idx2 <- fnames(cluster_order_features(x[random_nas(    x, by = by),]))
+    idx3 <- fnames(cluster_order_features(x[no_nas(      x         ),]))
     SummarizedExperiment::rbind(object[idx1,], object[idx2,], object[idx3,])
 }
 
 
 #==============================================================================
 #
-#                           plot_missingness_per_sample
+#                           plot_sample_nas
 #
 #==============================================================================
 
-#' @rdname plot_missingness_per_sample
+#' @rdname plot_sample_nas
 #' @export
 plot_detections <- function(...){
-    plot_missingness_per_sample(...)
+    plot_sample_nas(...)
 }
 
-#' @rdname plot_missingness_per_sample
+#' @rdname plot_sample_nas
 #' @export
 plot_summarized_detections <- function(...){
-    plot_missingness_per_subgroup(...)
+    plot_subgroup_nas(...)
 }
 
 
 #' Plot missingness per sample / subgroup
 #'
-#' \code{plot_missingness_per_sample} shows systematic and random missingness 
+#' \code{plot_sample_nas} shows systematic and random missingness 
 #' (white), and full detection (bright color) at sample resolution.
 #' Imputations are also shown (light color).
 #'
-#' \code{plot_missingness_per_subgroup} shows systematic missingness at subgroup resolution.
+#' \code{plot_subgroup_nas} shows systematic missingness at subgroup resolution.
 #' Random missingness and full detection are shown together (bright color).
 #' Imputations are also shown (light color).
 #' @param object     SummarizedExperiment
@@ -565,18 +565,18 @@ plot_summarized_detections <- function(...){
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = FALSE)
-#' plot_missingness_per_subgroup(object)
-#' plot_missingness_per_sample(object)
-#' plot_missingness_per_sample(impute(object, plot = FALSE))
+#' plot_subgroup_nas(object)
+#' plot_sample_nas(object)
+#' plot_sample_nas(impute(object, plot = FALSE))
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute = FALSE, plot = FALSE)
-#' plot_missingness_per_subgroup(object, 'subgroup')
-#' plot_missingness_per_subgroup(object, 'TIME_POINT')
-#' plot_missingness_per_sample(object, 'subgroup')
-#' plot_missingness_per_sample(object, 'TIME_POINT')
+#' plot_subgroup_nas(object, 'subgroup')
+#' plot_subgroup_nas(object, 'TIME_POINT')
+#' plot_sample_nas(object, 'subgroup')
+#' plot_sample_nas(object, 'TIME_POINT')
 #' @export
-plot_missingness_per_sample <- function(object, by = 'subgroup', fill = by){
+plot_sample_nas <- function(object, by = 'subgroup', fill = by){
 # Process
     . <- detection <- feature_id <- sample_id <- value <- NULL
 # Reorder samples
@@ -585,9 +585,9 @@ plot_missingness_per_sample <- function(object, by = 'subgroup', fill = by){
 # Reorder/block features
     object %<>% detect_order_features()
     y <- object; values(y)[is_imputed(y)] <- NA
-    nfull       <- sum(is_not_missing(y))
-    nconsistent <- sum(is_missing_systematically(y, by = by))
-    nrandom     <- sum(is_missing_randomly(    y, by = by))
+    nfull       <- sum(no_nas(y))
+    nconsistent <- sum(systematic_nas(y, by = by))
+    nrandom     <- sum(random_nas(    y, by = by))
 # Melt
     plotdt  <-  sumexp_to_longdt(object, svars = by)
     alpha <- NULL
@@ -624,7 +624,7 @@ plot_missingness_per_sample <- function(object, by = 'subgroup', fill = by){
 
 #==============================================================================
 #
-#                           plot_missingness_per_subgroup
+#                           plot_subgroup_nas
 #
 #==============================================================================
 
@@ -643,9 +643,9 @@ get_subgroup_combinations <- function(object, by = 'subgroup'){
 }
 
 
-#' @rdname plot_missingness_per_sample
+#' @rdname plot_sample_nas
 #' @export
-plot_missingness_per_subgroup <- function(
+plot_subgroup_nas <- function(
     object, by = 'subgroup', fill = by, palette = NULL, na_imputes = TRUE
 ){
 # Assert

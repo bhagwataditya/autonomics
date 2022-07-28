@@ -3,17 +3,17 @@
 \name{plot_detections}
 \alias{plot_detections}
 \alias{plot_summarized_detections}
-\alias{plot_missingness_per_sample}
-\alias{plot_missingness_per_subgroup}
+\alias{plot_sample_nas}
+\alias{plot_subgroup_nas}
 \title{Plot missingness per sample / subgroup}
 \usage{
 plot_detections(...)
 
 plot_summarized_detections(...)
 
-plot_missingness_per_sample(object, by = "subgroup", fill = by)
+plot_sample_nas(object, by = "subgroup", fill = by)
 
-plot_missingness_per_subgroup(
+plot_subgroup_nas(
   object,
   by = "subgroup",
   fill = by,
@@ -34,12 +34,12 @@ plot_missingness_per_subgroup(
 ggplot object
 }
 \description{
-\code{plot_missingness_per_sample} shows systematic and random missingness 
+\code{plot_sample_nas} shows systematic and random missingness 
 (white), and full detection (bright color) at sample resolution.
 Imputations are also shown (light color).
 }
 \details{
-\code{plot_missingness_per_subgroup} shows systematic missingness at subgroup resolution.
+\code{plot_subgroup_nas} shows systematic missingness at subgroup resolution.
 Random missingness and full detection are shown together (bright color).
 Imputations are also shown (light color).
 }
@@ -47,14 +47,14 @@ Imputations are also shown (light color).
 require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = FALSE)
-plot_missingness_per_subgroup(object)
-plot_missingness_per_sample(object)
-plot_missingness_per_sample(impute(object, plot = FALSE))
+plot_subgroup_nas(object)
+plot_sample_nas(object)
+plot_sample_nas(impute(object, plot = FALSE))
 
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file, impute = FALSE, plot = FALSE)
-plot_missingness_per_subgroup(object, 'subgroup')
-plot_missingness_per_subgroup(object, 'TIME_POINT')
-plot_missingness_per_sample(object, 'subgroup')
-plot_missingness_per_sample(object, 'TIME_POINT')
+plot_subgroup_nas(object, 'subgroup')
+plot_subgroup_nas(object, 'TIME_POINT')
+plot_sample_nas(object, 'subgroup')
+plot_sample_nas(object, 'TIME_POINT')
 }
