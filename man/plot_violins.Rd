@@ -21,8 +21,8 @@ plot_violins(
 
 plot_sample_violins(
   object,
-  x = sample_id,
-  fill = sample_id,
+  x = "sample_id",
+  fill = "sample_id",
   color = NULL,
   facet = NULL,
   highlight = NULL,
@@ -31,8 +31,8 @@ plot_sample_violins(
 
 plot_feature_violins(
   object,
-  x = feature_id,
-  fill = feature_name,
+  x = "feature_id",
+  fill = "feature_name",
   color = NULL,
   facet = NULL,
   highlight = NULL,
@@ -42,30 +42,30 @@ plot_feature_violins(
 plot_subgroup_violins(
   object,
   subgroup,
-  x = !!enquo(subgroup),
-  fill = !!enquo(subgroup),
+  x = "subgroup",
+  fill = "subgroup",
   color = NULL,
   highlight = NULL,
-  facet = vars(feature_id),
+  facet = "feature_id",
   fixed = list(na.rm = TRUE)
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{x}{svar mapped to x}
+\item{x}{svar (string)}
 
-\item{fill}{svar mapped to fill}
+\item{fill}{svar (string)}
 
-\item{color}{svar mapped to color}
+\item{color}{svar (string)}
 
-\item{group}{svar mapped to group}
+\item{group}{svar (string)}
 
-\item{facet}{svar mapped to facets}
+\item{facet}{svar (character vector)}
 
-\item{highlight}{fvar expressing which feature should be highlighted}
+\item{highlight}{fvar expressing which feature should be highlighted (string)}
 
-\item{palette}{named character vector with colors}
+\item{palette}{named color vector (character vector)}
 
 \item{fixed}{fixed aesthetics}
 
@@ -84,12 +84,12 @@ Plot sample/feature violins
     object <- read_metabolon(file, plot = FALSE)
     object \%<>\% extract(, order(.$subgroup))
     control_features <- c('biotin','phosphate')
-    fdata(object) \%<>\% cbind(control=.$feature_name \%in\% control_features)
+    fdata(object) \%<>\% cbind(control = .$feature_name \%in\% control_features)
 # plot
-    plot_violins(object[1:12, ], x = feature_id, fill = feature_id)
+    plot_violins(object[1:12, ], x = 'feature_id', fill = 'feature_id')
     plot_feature_violins(object[1:12, ])
-    plot_sample_violins(object[, 1:12],  highlight = control)
-    plot_subgroup_violins(object[1:4, ], subgroup = subgroup)
+    plot_sample_violins(object[, 1:12],  highlight = 'control')
+    plot_subgroup_violins(object[1:4, ], subgroup = 'subgroup')
 }
 \seealso{
 \code{\link{plot_sample_densities}},

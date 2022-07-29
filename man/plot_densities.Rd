@@ -57,7 +57,7 @@ plot_feature_densities(
 
 \item{color}{svar (string)}
 
-\item{facet}{svar (string)}
+\item{facet}{svar (character vector)}
 
 \item{nrow}{number of facet rows}
 
@@ -82,9 +82,9 @@ Plot sample/feature densities
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
-    object \%<>\% extract(, order(.$Group))
+    object \%<>\% extract(, order(.$subgroup))
 # Plot distributions
-    plot_sample_densities(object, fill = Group)
+    plot_sample_densities(object, fill = 'subgroup')
     plot_feature_densities(object)
 }
 \seealso{
