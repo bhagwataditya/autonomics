@@ -22,8 +22,8 @@ plot_densities(
 
 plot_sample_densities(
   object,
-  group = sample_id,
-  fill = sample_id,
+  group = "sample_id",
+  fill = "sample_id",
   color = NULL,
   facet = NULL,
   nrow = NULL,
@@ -36,8 +36,8 @@ plot_sample_densities(
 
 plot_feature_densities(
   object,
-  group = feature_id,
-  fill = feature_id,
+  group = "feature_id",
+  fill = "feature_id",
   color = NULL,
   facet = NULL,
   nrow = NULL,
@@ -51,13 +51,13 @@ plot_feature_densities(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{group}{svar mapped to group}
+\item{group}{svar (string)}
 
-\item{fill}{svar mapped to fill}
+\item{fill}{svar (string)}
 
-\item{color}{svar mapped to color}
+\item{color}{svar (string)}
 
-\item{facet}{svar mapped to facet}
+\item{facet}{svar (string)}
 
 \item{nrow}{number of facet rows}
 
