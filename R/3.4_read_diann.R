@@ -94,13 +94,13 @@ commonify_collapsed_strings <- function(x, sep = ';'){
 #' @param fastadt data.table
 #' @return string vector
 #' @examples
-#' # Without fastafile 
+#' # Without file 
 #'     Protein.Group <- c('Q96JP5;Q96JP5-2', 'O75822', 'Q96AC1;Q96AC1-3;Q9BQL6')
 #'     Protein.Names <- c('ZFP91', 'EIF3J', 'FERM2;FERM1')
 #'     forge_pg_descriptions(Protein.Group, Protein.Names)
-#' # With fastafile
-#'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#'     fastadt <- read_fastahdrs(fastafile)
+#' # With file
+#'     file <- download_data('uniprot_hsa_20140515.fasta')
+#'     fastadt <- read_fastahdrs(file)
 #'     forge_pg_descriptions(Protein.Group, fastadt = fastadt)
 #' @export
 forge_pg_descriptions <- function(
@@ -142,44 +142,6 @@ forge_pg_descriptions <- function(
 }
 
 
-#' Read diann
-#'
-#' @param file     'report.tsv' file
-#' @param fastadt   NULL or data.table
-#' @param quantity 'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
-#' @param plot          whether to plot
-#' @param pca           whether to pca
-#' @param fit           model fit engine: 'limma', 'lm', 'lmer', 'lme'
-#' @param formula       model formula
-#' @param block         block var (sdt)
-#' @param coefs         character: coefficients to test
-#' @param contrastdefs  character: coefficient contrasts to test
-#' @param feature_id    string: summary plot feature
-#' @param sample_id     string: summary plot sample
-#' @param palette       character: color palette
-#' @param verbose       whether to msg
-#' @return  data.table / SummarizedExperiment
-#' @examples 
-#' # Read & Analyze
-#'    file <- download_data('szymanski22.report.tsv')
-#'    object <- read_diann(file)
-#'    snames(object) %<>% split_extract_fixed('_', 3)
-#'    object$subgroup <- as.numeric(object$sample_id)
-#'    analyze(object)
-#'     
-#' # Read data.table (lower-level)
-#'     file <- download_data('szymanski22.report.tsv')
-#'    (PR   <- .read_diann_precursors(file))       # precursor    dt
-#'    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
-#' # Compare Summarizations
-#'      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
-#'      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
-#'      run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
-#'      PR[Protein.Group=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
-#'      PR[Protein.Group=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
-#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
-#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
-#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
 #' @rdname read_diann
 #' @export
 .read_diann_precursors <- function(file, fastadt = NULL){
@@ -223,35 +185,76 @@ forge_pg_descriptions <- function(
     unique(dt[, cols, with = FALSE ])
 }
 
-#' Download contaminants.fasta 
-#'
-#' Download MaxQuant contaminants.fasta
-#' @return filepath
+
+#' Contaminants URL
+#' @examples 
+#' CONTAMINANTSURL
 #' @export
-download_contaminants <-  function(){
-    url <- 'http://lotus1.gwdg.de/mpg/mmbc/maxquant_input.nsf'
-    url %<>% paste0('/7994124a4298328fc125748d0048fee2/$FILE/')
-    url %<>% paste0('contaminants.fasta')
+CONTAMINANTSURL <- paste0(
+    'http://lotus1.gwdg.de/mpg/mmbc/maxquant_input.nsf', 
+    '/7994124a4298328fc125748d0048fee2/$FILE/',
+    'contaminants.fasta')
+
+
+#' Downloads contaminants
+#' @param url contaminants file url (string)
+#' @param overwrite TRUE or FALSE: overwrite existiung download?
+#' @return filename (string)
+#' @examples
+#' download_contaminants('www.doesntexist.de', overwrite = TRUE) # msg
+#' # download_contaminants()                  # download first time
+#' # download_contaminants(overwrite = TRUE)  # download each  time
+#' @export
+download_contaminants <-  function(url = CONTAMINANTSURL, overwrite = FALSE){
     destdir <- file.path(R_user_dir("autonomics", "cache"), "maxquant")
     dir.create(destdir, showWarnings = FALSE, recursive = TRUE)
     destfile <- paste0(destdir, '/contaminants.fasta')
-    if (!file.exists(destfile)) download.file(url, destfile, mode = 'wb')
-    destfile
+    if (overwrite | !file.exists(destfile)){
+        tryCatch(
+            download.file(url, destfile, mode = 'wb'),
+            error = function(e){
+                 message('Automatic download failed: ', url, 
+                         '\nDownload manually into\n', 
+                         destfile)
+                 destfile <<- NULL
+            }
+        )
+    }
+    return(destfile)
 }
 
-#' Read contaminants.fasta
-#' @return character vector
+#' Read contaminants
+#' @param file contaminant file
+#' @return data.table
+#' @examples
+#' file <- download_contaminants()
+#' dt <- read_contaminants(file)
 #' @export
 read_contaminants <-  function(file = download_contaminants()){
-    fastahdrs <- seqinr::read.fasta(file)
-    fastahdrs %<>% vapply(attr, character(1), 'Annot') %>% unname()
-    fastahdrs %<>% split_extract_fixed(' ', 1)
-    fastahdrs %<>% substr(2, nchar(.))
-    fastahdrs
+    assert_all_are_existing_files(file)
+    assert_is_identical_to_true(substr(file, nchar(file)-4, nchar(file)) == 'fasta')
+    dt <- seqinr::read.fasta(file)
+    dt %<>% vapply(attr, character(1), 'Annot') %>% unname()
+    dt %<>% split_extract_fixed(' ', 1)
+    dt %<>% substr(2, nchar(.))
+    dt
 }
 
-rm_diann_contaminants <- function(object, verbose = TRUE){
-    contaminants <- read_contaminants()
+#' Rm contaminants
+#'
+#' Rm contaminants from DIA-NN SumExp
+#' @param object         SummarizedExperiment
+#' @param contaminants   uniprots (character vector)
+#' @param verbose        TRUE or FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' file <- download_data('szymanski22.report.tsv')
+#' object <- read_diann(file)
+#' # object %<>% rm_diann_contaminants()
+#' @export
+rm_diann_contaminants <- function(
+    object, contaminants = read_contaminants(), verbose = TRUE
+){
     fdt0 <- fdt(object)
     fdt0[, uniprot := feature_id ]
     fdt0 %<>% separate_rows(uniprot, sep = ';') %>% data.table()
@@ -263,10 +266,48 @@ rm_diann_contaminants <- function(object, verbose = TRUE){
     object %<>% filter_features(!`Potential contaminant`, verbose = verbose)
 }
 
-#' @rdname read_diann
+#' Read diann
+#'
+#' @param file         'report.tsv' file
+#' @param fastadt       NULL or data.table
+#' @param quantity     'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
+#' @param contaminants  character vector with uniprot ids
+#' @param plot          whether to plot
+#' @param pca           whether to pca
+#' @param fit           model fit engine: 'limma', 'lm', 'lmer', 'lme'
+#' @param formula       model formula
+#' @param block         block var (sdt)
+#' @param coefs         character: coefficients to test
+#' @param contrastdefs  character: coefficient contrasts to test
+#' @param feature_id    string: summary plot feature
+#' @param sample_id     string: summary plot sample
+#' @param palette       character: color palette
+#' @param verbose       whether to msg
+#' @return  data.table / SummarizedExperiment
+#' @examples 
+#' # Read & Analyze
+#'    file <- download_data('szymanski22.report.tsv')
+#'    object <- read_diann(file)
+#'    snames(object) %<>% split_extract_fixed('_', 3)
+#'    object$subgroup <- as.numeric(object$sample_id)
+#'    analyze(object)
+#'     
+#' # Read data.table (lower-level)
+#'     file <- download_data('szymanski22.report.tsv')
+#'    (PR   <- .read_diann_precursors(file))       # precursor    dt
+#'    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
+#' # Compare Summarizations
+#'      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
+#'      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
+#'      run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
+#'      PR[Protein.Group=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
+#'      PR[Protein.Group=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
+#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
+#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
+#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
 #' @export
 read_diann <- function(
-    file, fastadt = NULL, quantity = 'PG.MaxLFQ', contaminants = FALSE, 
+    file, fastadt = NULL, quantity = 'PG.MaxLFQ', contaminants = character(0), 
     impute = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
     coefs = NULL, contrastdefs = NULL, feature_id = NULL, sample_id = NULL, 
@@ -278,6 +319,7 @@ read_diann <- function(
     assert_is_a_string(quantity)
     assert_is_subset(quantity, 
          c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum'))
+    if (!is.null(contaminants))  assert_is_character(contaminants)
 # SumExp
     # values
         dt <- .read_diann_proteingroups(file, fastadt = fastadt)
@@ -296,7 +338,9 @@ read_diann <- function(
         object$sample_id <- colnames(object)
         object$subgroup <- 'group0'
 # Filter. Impute. Analyze
-    if (!contaminants)  object %<>% rm_diann_contaminants(verbose = verbose)
+    if (length(contaminants)>0){
+        object %<>% rm_diann_contaminants(contaminants, verbose = verbose)
+    }
     object %<>% rm_missing_in_all_samples(verbose = verbose)
     object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
     object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)

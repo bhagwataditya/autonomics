@@ -14,7 +14,7 @@ read_diann(
   file,
   fastadt = NULL,
   quantity = "PG.MaxLFQ",
-  contaminants = FALSE,
+  contaminants = character(0),
   impute = FALSE,
   plot = FALSE,
   pca = plot,
@@ -35,6 +35,8 @@ read_diann(
 \item{fastadt}{NULL or data.table}
 
 \item{quantity}{'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'}
+
+\item{contaminants}{character vector with uniprot ids}
 
 \item{plot}{whether to plot}
 

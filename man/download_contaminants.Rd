@@ -2,13 +2,23 @@
 % Please edit documentation in R/3.4_read_diann.R
 \name{download_contaminants}
 \alias{download_contaminants}
-\title{Download contaminants.fasta}
+\title{Downloads contaminants}
 \usage{
-download_contaminants()
+download_contaminants(url = CONTAMINANTSURL, overwrite = FALSE)
+}
+\arguments{
+\item{url}{contaminants file url (string)}
+
+\item{overwrite}{TRUE or FALSE: overwrite existiung download?}
 }
 \value{
-filepath
+filename (string)
 }
 \description{
-Download MaxQuant contaminants.fasta
+Downloads contaminants
+}
+\examples{
+download_contaminants('www.doesntexist.de', overwrite = TRUE) # msg
+# download_contaminants()                  # download first time
+# download_contaminants(overwrite = TRUE)  # download each  time
 }

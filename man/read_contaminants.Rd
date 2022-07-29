@@ -2,13 +2,20 @@
 % Please edit documentation in R/3.4_read_diann.R
 \name{read_contaminants}
 \alias{read_contaminants}
-\title{Read contaminants.fasta}
+\title{Read contaminants}
 \usage{
 read_contaminants(file = download_contaminants())
 }
+\arguments{
+\item{file}{contaminant file}
+}
 \value{
-character vector
+data.table
 }
 \description{
-Read contaminants.fasta
+Read contaminants
+}
+\examples{
+file <- download_contaminants()
+dt <- read_contaminants(file)
 }

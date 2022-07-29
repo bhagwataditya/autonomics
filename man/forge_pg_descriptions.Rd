@@ -20,12 +20,12 @@ string vector
 Forge PG descriptions
 }
 \examples{
-# Without fastafile 
+# Without file 
     Protein.Group <- c('Q96JP5;Q96JP5-2', 'O75822', 'Q96AC1;Q96AC1-3;Q9BQL6')
     Protein.Names <- c('ZFP91', 'EIF3J', 'FERM2;FERM1')
     forge_pg_descriptions(Protein.Group, Protein.Names)
-# With fastafile
-    fastafile <- download_data('uniprot_hsa_20140515.fasta')
-    fastadt <- read_fastahdrs(fastafile)
+# With file
+    file <- download_data('uniprot_hsa_20140515.fasta')
+    fastadt <- read_fastahdrs(file)
     forge_pg_descriptions(Protein.Group, fastadt = fastadt)
 }
