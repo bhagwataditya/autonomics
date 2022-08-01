@@ -413,20 +413,21 @@ add_scores <- function(
 ){
 # manual colors require non-numerics
     if (!is.null(color))    object[[color]] %<>% num2char() 
-    x <- sym(x)
-    y <- sym(y)
-    color <- if (is.null(color)) quo(NULL) else sym(color)
-    shape <- if (is.null(shape)) quo(NULL) else sym(shape)
-    size  <- if (is.null(size))  quo(NULL) else sym(size )
+    xsym <- sym(x)
+    ysym <- sym(y)
+    colorsym <- if (is.null(color)) quo(NULL) else sym(color)
+    shapesym <- if (is.null(shape)) quo(NULL) else sym(shape)
+    sizesym  <- if (is.null(size))  quo(NULL) else sym(size )
+    groupsym <- if (is.null(group)) quo(NULL) else sym(group)
     
 # Points    
     p <- p + layer(  
                 geom     = 'point',
-                mapping  = aes(x = !!x, 
-                               y = !!y, 
-                           color = !!color, 
-                           shape = !!shape, 
-                           size =  !!size),
+                mapping  = aes(x = !!xsym, 
+                               y = !!ysym, 
+                           color = !!colorsym, 
+                           shape = !!shapesym, 
+                           size =  !!sizesym),
                 stat     = "identity", 
                 data     = sdt(object), 
                 params   = fixed,
@@ -434,10 +435,10 @@ add_scores <- function(
 # Paths
     if (!is.null(group))  p <- p + layer(
                 geom     = 'path',
-                mapping  = aes(x = !!x, 
-                               y = !!y, 
-                           color = !!color, 
-                           group = !!group),
+                mapping  = aes(x = !!xsym, 
+                               y = !!ysym, 
+                           color = !!colorsym, 
+                           group = !!groupsym),
                 stat     = "identity",
                 data     = sdt(object),
                 params   = list(size = 0.1, linetype = 'solid', na.rm = TRUE),
