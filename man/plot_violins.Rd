@@ -2,8 +2,8 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_violins}
 \alias{plot_violins}
-\alias{plot_sample_violins}
 \alias{plot_feature_violins}
+\alias{plot_sample_violins}
 \alias{plot_subgroup_violins}
 \title{Plot sample/feature violins}
 \usage{
@@ -14,8 +14,29 @@ plot_violins(
   color = NULL,
   group = NULL,
   facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free",
+  labeller = label_value,
   highlight = NULL,
   palette = NULL,
+  fixed = list(na.rm = TRUE)
+)
+
+plot_feature_violins(
+  object,
+  x = "feature_id",
+  fill = "feature_id",
+  color = NULL,
+  n = 9,
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free",
+  labeller = label_value,
+  highlight = NULL,
   fixed = list(na.rm = TRUE)
 )
 
@@ -24,17 +45,13 @@ plot_sample_violins(
   x = "sample_id",
   fill = "sample_id",
   color = NULL,
+  n = 100,
   facet = NULL,
-  highlight = NULL,
-  fixed = list(na.rm = TRUE)
-)
-
-plot_feature_violins(
-  object,
-  x = "feature_id",
-  fill = "feature_name",
-  color = NULL,
-  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free",
+  labeller = label_value,
   highlight = NULL,
   fixed = list(na.rm = TRUE)
 )

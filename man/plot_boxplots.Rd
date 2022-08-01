@@ -21,8 +21,8 @@ plot_boxplots(
   page = 1,
   labeller = "label_value",
   highlight = NULL,
-  add_points = TRUE,
-  jitter_width = if (is.null(block)) 0.1 else 0,
+  points = if (is.null(block)) FALSE else TRUE,
+  jitter = if (is.null(block)) 0.1 else 0,
   fillpalette = make_var_palette(object, fill),
   colorpalette = make_var_palette(object, color),
   hlevels = NULL,
@@ -36,7 +36,12 @@ plot_sample_boxplots(
   fill = "sample_id",
   color = NULL,
   highlight = NULL,
+  points = FALSE,
+  jitter = 0.1,
   palette = NULL,
+  n = 100,
+  facet = NULL,
+  scales = "free_x",
   nrow = NULL,
   ncol = NULL,
   page = 1,
@@ -50,8 +55,12 @@ plot_feature_boxplots(
   fill = "feature_id",
   color = NULL,
   highlight = NULL,
+  points = FALSE,
+  jitter = 0.1,
   palette = NULL,
-  fixed = list(na.rm = TRUE),
+  n = 9,
+  facet = NULL,
+  scales = "free_y",
   nrow = NULL,
   ncol = NULL,
   page = 1,
@@ -68,6 +77,7 @@ plot_subgroup_boxplots(
   block = NULL,
   highlight = NULL,
   jitter = TRUE,
+  n = 9,
   facet = vars(feature_id),
   scales = "free_y",
   nrow = NULL,
@@ -104,9 +114,9 @@ plot_subgroup_boxplots(
 
 \item{highlight}{fvar expressing which feature should be highlighted (string)}
 
-\item{add_points}{TRUE or FALSE}
+\item{points}{TRUE or FALSE}
 
-\item{jitter_width}{number}
+\item{jitter}{jitter width (number)}
 
 \item{hlevels}{xlevels for which to plot horizontal lines}
 

@@ -4,7 +4,7 @@
 \alias{plot_densities}
 \alias{plot_sample_densities}
 \alias{plot_feature_densities}
-\title{Plot sample/feature densities}
+\title{Plot sample/feature distributions}
 \usage{
 plot_densities(
   object,
@@ -15,6 +15,7 @@ plot_densities(
   nrow = NULL,
   ncol = NULL,
   dir = "h",
+  scales = "free_y",
   labeller = label_value,
   palette = NULL,
   fixed = list(alpha = 0.8, na.rm = TRUE)
@@ -25,10 +26,12 @@ plot_sample_densities(
   group = "sample_id",
   fill = "sample_id",
   color = NULL,
+  n = 100,
   facet = NULL,
   nrow = NULL,
   ncol = NULL,
   dir = "h",
+  scales = "free_y",
   labeller = label_value,
   palette = NULL,
   fixed = list(alpha = 0.8, na.rm = TRUE)
@@ -39,10 +42,12 @@ plot_feature_densities(
   group = "feature_id",
   fill = "feature_id",
   color = NULL,
+  n = 9,
   facet = NULL,
   nrow = NULL,
   ncol = NULL,
   dir = "h",
+  scales = "free",
   labeller = label_value,
   palette = NULL,
   fixed = list(alpha = 0.8, na.rm = TRUE)
@@ -75,17 +80,24 @@ plot_feature_densities(
 ggplot object
 }
 \description{
-Plot sample/feature densities
+Plot sample/feature distributions
 }
 \examples{
-# Read data
+# Data
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
     object \%<>\% extract(, order(.$subgroup))
-# Plot distributions
-    plot_sample_densities(object, fill = 'subgroup')
+    
+# Sample distributions
+    plot_sample_densities(object)
+    plot_sample_violins(  object, facet = 'SET')
+    plot_sample_boxplots( object, facet = 'SET')
+    
+# Feature distributions
     plot_feature_densities(object)
+    plot_feature_violins(  object)
+    plot_feature_boxplots( object)
 }
 \seealso{
 \code{\link{plot_sample_violins}},

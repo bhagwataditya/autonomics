@@ -234,7 +234,7 @@ plot_data <- function(
                                         fill  = !!fill, 
                                         !!!dots))))
     p <- p + do.call(geom, fixed)
-    p <- p + theme_classic()
+    p <- p + theme_bw()
     colorstr <- if (quo_is_null(color)) NULL else as_name(color)
     fillstr  <- if (quo_is_null(fill))  NULL else as_name(fill)
     p <- add_color_scale(p, colorstr, data, palette = palette)
@@ -277,7 +277,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #=============================================================================
 
 
-#' Plot sample/feature densities
+#' Plot sample/feature distributions
 #'
 #' @param object      SummarizedExperiment
 #' @param group       svar (string)
@@ -294,18 +294,26 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #'          \code{\link{plot_sample_boxplots}}
 #' @return  ggplot object
 #' @examples
-#' # Read data
+#' # Data
 #'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
-#' # Plot distributions
-#'     plot_sample_densities(object, fill = 'subgroup')
+#'     
+#' # Sample distributions
+#'     plot_sample_densities(object)
+#'     plot_sample_violins(  object, facet = 'SET')
+#'     plot_sample_boxplots( object, facet = 'SET')
+#'     
+#' # Feature distributions
 #'     plot_feature_densities(object)
+#'     plot_feature_violins(  object)
+#'     plot_feature_boxplots( object)
 #' @export
 plot_densities <- function(
     object, group, fill, color = NULL, 
-    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
+    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free_y', 
+    labeller = label_value, 
     palette = NULL, fixed = list(alpha = 0.8, na.rm = TRUE)
 ){
 # Assert / Process
@@ -341,7 +349,7 @@ plot_densities <- function(
             color = !!colorsym, group = !!groupsym, palette = palette, fixed = fixed)
     if (!is.null(facet))  p <- p + facet_wrap(
             facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller, 
-            scales = "free_y")
+            scales = scales)
     p
 }
 
@@ -354,23 +362,25 @@ is_uniquely_empty <- function(x, y){
 #' @export
 plot_sample_densities <- function(
     object,
-    group   = 'sample_id',
-    fill    = 'sample_id',
-    color   = NULL,
-    facet   = NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
-    palette = NULL,
-    fixed   = list(alpha = 0.8, na.rm = TRUE)
+    group    = 'sample_id',
+    fill     = 'sample_id',
+    color    = NULL, 
+    n        = 100,
+    facet    = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free_y',
+    labeller = label_value,
+    palette  = NULL,
+    fixed    = list(alpha = 0.8, na.rm = TRUE)
 ){
-    if (ncol(object)>100)  object %<>% 
-        extract(, round(seq(1, ncol(object), length.out = 9)))  # prevent crash
+    object %<>% extract_samples_evenly(n)
     plot_densities(
         object,
-        group   = group,
-        fill    = fill,
-        color   = color,
-        facet   = facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
-        palette = palette,
-        fixed   = fixed ) +
+        group    = group,
+        fill     = fill,
+        color    = color,
+        facet    = facet, nrow = nrow, ncol = ncol, dir = dir, scales = scales,
+        labeller = labeller, 
+        palette  = palette, 
+        fixed    = fixed ) +
     ggtitle("Sample Densities")
 }
 
@@ -382,20 +392,21 @@ plot_feature_densities <- function(
     group   = 'feature_id',
     fill    = 'feature_id',
     color   = NULL,
-    facet   = NULL, nrow = NULL, ncol = NULL, dir = 'h', labeller = label_value,
-    palette = NULL,
-    fixed   = list(alpha = 0.8, na.rm = TRUE)
+    n       = 9,
+    facet   = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free', 
+    labeller = label_value, palette = NULL, 
+    fixed = list(alpha = 0.8, na.rm = TRUE)
 ){
-    if (nrow(object)>100)  object %<>% 
-        extract(round(seq(1, ncol(object), length.out = 9)), )   # prevent crash
+    object %<>% extract_features_evenly(n)
     plot_densities( 
         object,
-        group   = group,
-        fill    = fill,
-        color   = color,
-        facet   = facet,  nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
-        palette = palette,
-        fixed   = fixed) +
+        group    = group,
+        fill     = fill,
+        color    = color,
+        facet    = facet,  nrow = nrow, ncol = ncol, dir = dir, scales = scales, 
+        labeller = labeller, 
+        palette  = palette, 
+        fixed    = fixed) +
     ggtitle("Feature Densities")
 }
 
@@ -436,8 +447,10 @@ plot_feature_densities <- function(
 #'     plot_sample_violins(object[, 1:12],  highlight = 'control')
 #'     plot_subgroup_violins(object[1:4, ], subgroup = 'subgroup')
 #' @export
-plot_violins <- function(object, x, fill, color = NULL, group = NULL,
-    facet = NULL, highlight = NULL, palette = NULL, fixed = list(na.rm = TRUE)
+plot_violins <- function(object, x, fill, color = NULL, group = NULL, 
+    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = "free", 
+    labeller = label_value, highlight = NULL, palette = NULL, 
+    fixed = list(na.rm = TRUE)
 ){
 # Process
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -473,14 +486,15 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     p <- plot_data(dt, geom = geom_violin, x = !!xsym, y = value,
                 fill = !!fillsym, color = !!colorsym, group = !!groupsym, 
                 palette = palette, fixed = fixed)
-    p <- p + geom_point(data = dtsum, aes(x = !!xsym, y = median))
-    p <- p + geom_errorbar(
-        data    = dtsum, 
-        mapping = aes(x = !!xsym, ymin = median-iqr, ymax = median+iqr, y = median), 
-        width   = 0)
-    
+    #p <- p + geom_point(data = dtsum, aes(x = !!xsym, y = median))
+    p <- p + geom_boxplot(width = 0.1, na.rm = TRUE)
+    #p <- p + geom_errorbar(
+    #    data    = dtsum, 
+    #    mapping = aes(x = !!xsym, ymin = median-iqr, ymax = median+iqr, y = median), 
+    #    width   = 0)
     p %<>% add_highlights(x = x, hl = highlight, geom = geom_point)
-    if (!is.null(facet))  p <- p + facet_wrap(facet, scales = "free")
+    if (!is.null(facet))  p <- p + facet_wrap(facet, nrow = nrow, ncol = ncol, 
+                              dir = dir, scales = scales, labeller = labeller)
     # Finish
     breaks <- unique(dt[[x]])
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fill][[x]]
@@ -490,27 +504,55 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     p
 }
 
-sample_id <- NULL
-#' @rdname plot_violins
-#' @export
-plot_sample_violins <- function(
-    object, x = 'sample_id', fill = 'sample_id', color = NULL, facet = NULL, 
-    highlight = NULL, fixed = list(na.rm = TRUE)
-)  plot_violins(
-    object, x = x, fill = fill, color = color,
-    facet = facet, highlight = highlight, fixed = fixed) + 
-    ggtitle('Sample Violins')
 
-feature_id <- feature_name <- NULL
 #' @rdname plot_violins
 #' @export
 plot_feature_violins <- function(
-    object, x = 'feature_id', fill = 'feature_name', color = NULL, facet = NULL, 
-    highlight = NULL, fixed = list(na.rm=TRUE)
-) plot_violins(
-    object, x = x, fill = fill, color = color, 
-    facet = facet, highlight = highlight, fixed = fixed) + 
-    ggtitle('Feature Violins')
+    object, x = 'feature_id', fill = 'feature_id', color = NULL, n = 9,
+    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free',
+    labeller = label_value, highlight = NULL, fixed = list(na.rm = TRUE)
+){
+    object %<>% extract_features_evenly(n)
+    plot_violins(
+        object, x = x, fill = fill, color = color, facet = facet, 
+        nrow = nrow, ncol = ncol, dir  = dir, labeller = labeller,
+        highlight = highlight, fixed = fixed) + 
+        ggtitle('Feature Violins')
+}
+
+
+#' @rdname plot_violins
+#' @export
+plot_sample_violins <- function(
+    object, x = 'sample_id', fill = 'sample_id', color = NULL, n = 100,
+    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free',
+    labeller = label_value, highlight = NULL, fixed = list(na.rm = TRUE)
+){
+    object %<>% extract_samples_evenly(n)
+    plot_violins(
+        object, x = x, fill = fill, color = color, facet = facet, 
+        nrow = nrow, ncol = ncol, dir = dir, scales = scales, 
+        labeller = labeller, highlight = highlight, fixed = fixed) + 
+    ggtitle('Sample Violins')
+}
+
+
+extract_evenly <- function(l, p){
+    round(seq(1, l, length.out = p))
+}
+
+extract_samples_evenly <- function(object, n){
+    if (n < ncol(object)){
+        object %<>% extract(, extract_evenly(ncol(object), n))}
+    object
+}
+
+extract_features_evenly <- function(object, n){
+    if (n < nrow(object)){
+        object %<>% extract(extract_evenly(nrow(object), n), )
+    }
+    object
+}
 
 
 subgroup <- NULL
@@ -520,10 +562,12 @@ plot_subgroup_violins <- function(
     object, subgroup, x = 'subgroup', fill = 'subgroup', 
     color = NULL, highlight = NULL, facet = 'feature_id', 
     fixed = list(na.rm = TRUE)
-) plot_violins(
-    object, x = x, fill = fill, color = color,
-    facet = facet, highlight = highlight, fixed = fixed) + 
+){
+    plot_violins(
+       object, x = x, fill = fill, color = color,
+        facet = facet, highlight = highlight, fixed = fixed) + 
     ggtitle('Subgroup violins')
+}
 
 
 #==============================================================================
@@ -548,8 +592,8 @@ plot_subgroup_violins <- function(
 #' @param ncol          number of facet columns 
 #' @param page          number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}
 #' @param highlight     fvar expressing which feature should be highlighted (string)
-#' @param add_points    TRUE or FALSE
-#' @param jitter_width  number
+#' @param points        TRUE or FALSE
+#' @param jitter        jitter width (number)
 #' @param hlevels    xlevels for which to plot horizontal lines
 #' @return  ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
@@ -579,7 +623,8 @@ plot_boxplots <- function(
     x = 'subgroup',  fill = 'subgroup', color = NULL, 
     block = NULL, facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value', highlight = NULL, 
-    add_points = TRUE, jitter_width = if (is.null(block)) 0.1 else 0,
+    points = if (is.null(block)) FALSE else TRUE, 
+    jitter = if (is.null(block)) 0.1 else 0,
     fillpalette  = make_var_palette(object, fill), 
     colorpalette = make_var_palette(object, color),
     hlevels = NULL, ...
@@ -625,7 +670,7 @@ plot_boxplots <- function(
     if (!is.null(facet)) p <- p + facet_wrap_paginate(
         facets = facet, scales = scales, nrow = nrow, ncol = ncol, 
         page = page, labeller = labeller)
-    outlier.shape <- if (add_points) NA else 19
+    outlier.shape <- if (points) NA else 19
     p <- p + geom_boxplot(aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym), 
                           outlier.shape = outlier.shape, na.rm = TRUE)
     p <- add_color_scale(p, color, data = dt, palette = colorpalette)
@@ -639,9 +684,9 @@ plot_boxplots <- function(
         p <- add_color_scale(p, x, data = dt, palette = fillpalette)    # 'direction'
     }
     # Points
-    if (add_points){
+    if (points){
         p <- p + geom_jitter(aes(x = !!xsym, y = value),
-                position = position_jitter(width = jitter_width, height = 0), size = 0.5, na.rm = TRUE)
+                position = position_jitter(width = jitter, height = 0), size = 0.5, na.rm = TRUE)
     }
     p %<>% add_highlights(x = x, hl = highlight, geom = geom_point, fixed_color = "darkred")
     # Add hline
@@ -657,8 +702,9 @@ plot_boxplots <- function(
     if (length(breaks)>50) breaks <- dt[, .SD[1], by = fill][[x]]
     p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
         guides(color = 'none', alpha = 'none') +
-        theme(axis.text.x = element_text(angle=90, hjust=1))
-    p + theme_classic()
+        theme_bw() + 
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    p
 }
 
 #============================================================================
@@ -675,13 +721,18 @@ plot_boxplots <- function(
 plot_sample_boxplots <- function(
     object, assay = assayNames(object)[1], 
     x = 'sample_id', fill = 'sample_id', color = NULL, highlight = NULL,
-    palette = NULL, nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value'
+    points = FALSE, jitter = 0.1, palette = NULL, n = 100,
+    facet = NULL, scales = 'free_x', nrow = NULL, ncol = NULL, page = 1, 
+    labeller = 'label_value'
 ){
+    object %<>% extract_samples_evenly(n)
     plot_boxplots(
         object, assay = assay, 
         x = x, fill = fill, color = color,
-        highlight = highlight, palette = palette,  
-        nrow = nrow, ncol = ncol, page = page, labeller = labeller) + 
+        highlight = highlight, points = points, 
+        jitter = jitter, palette = palette,  
+        facet = facet, scales = scales, nrow = nrow, ncol = ncol, page = page, 
+        labeller = labeller) + 
     ggtitle('Sample Boxplots')
 }
 
@@ -691,14 +742,18 @@ plot_sample_boxplots <- function(
 plot_feature_boxplots <- function(
     object, assay = assayNames(object)[1],
     x = 'feature_id', fill = 'feature_id', color = NULL, highlight = NULL,
-    palette = NULL, fixed = list(na.rm=TRUE), 
-    nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value'
+    points = FALSE, jitter = 0.1, palette = NULL, n = 9,
+    facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, 
+    labeller = 'label_value'
 ){
+    object %<>% extract_features_evenly(n)
     plot_boxplots(
         object, assay = assay,
         x = x, fill = fill, color = color,
-        highlight = highlight, palette = palette,  
-        nrow = nrow, ncol = ncol, page = page, labeller = labeller) + 
+        highlight = highlight, points = points, 
+        jitter = jitter, palette = palette,  
+        facet = facet, scales = scales, nrow = nrow, ncol = ncol, page = page, 
+        labeller = labeller) + 
     ggtitle('Feature Boxplots')
 }
 
@@ -708,7 +763,7 @@ plot_feature_boxplots <- function(
 plot_subgroup_boxplots <- function(
     object, assay = assayNames(object)[1],
     subgroup = subgroup, x = subgroup, fill = subgroup, 
-    color = NULL, block = NULL, highlight = NULL, jitter = TRUE, 
+    color = NULL, block = NULL, highlight = NULL, jitter = TRUE, n = 9,
     facet = vars(feature_id), scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value',
     palette = make_subgroup_palette(object), fixed = list(na.rm=TRUE), hlevels = NULL
