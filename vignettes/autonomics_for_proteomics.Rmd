@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold', fig.align = 'center')
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
 ```
 
 This vignette demonstrates how to use `autonomics` for proteomics data analysis.
@@ -43,12 +43,16 @@ biplot(pca(object))
 
 ### Sample Distributions
 
+A sample distribution shows how the values of a **single sample** are distributed **across all features** (proteins).
+Sample distributions can be visualized with density, violin, or box plots, as shown below.
+
+
 ```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
 require(ggplot2)
-b <- plot_sample_boxplots(object)  + guides(fill = 'none')
-v <- plot_sample_violins(object)   + guides(fill = 'none')
 d <- plot_sample_densities(object) + guides(fill = 'none')
-gridExtra::grid.arrange(b, v, d, nrow = 1)
+v <- plot_sample_violins(object)   + guides(fill = 'none')
+b <- plot_sample_boxplots(object)  + guides(fill = 'none')
+gridExtra::grid.arrange(d, v, b, nrow = 1)
 ```
 
 
@@ -70,12 +74,16 @@ data.table(Filter = names(n), n = n)   # Filtering details
 
 ### Feature Distributions
 
+A feature (protein) distribution shows how the values of a **single feature** are distributed **across all samples**.
+Feature distributions can be visualized with density, violin, or box plots, as shown below.
+
+
 ```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
 require(ggplot2)
-b <- plot_feature_boxplots(object)  + guides(fill = 'none')
-v <- plot_feature_violins(  object) + guides(fill = 'none')
-d <- plot_feature_densities(object) + guides(fill = 'none')
-gridExtra::grid.arrange(b, v, d, nrow = 1)
+d <- plot_feature_densities(object, n = 4) + guides(fill = 'none')
+v <- plot_feature_violins(  object, n = 4) + guides(fill = 'none')
+b <- plot_feature_boxplots( object, n = 4) + guides(fill = 'none')
+gridExtra::grid.arrange(d, v, b, nrow = 1)
 ```
 
 ## Values
