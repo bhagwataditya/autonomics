@@ -10,9 +10,9 @@
 plot_boxplots(
   object,
   assay = assayNames(object)[1],
-  x = subgroup,
-  fill = subgroup,
-  color = subgroup,
+  x = "subgroup",
+  fill = "subgroup",
+  color = NULL,
   block = NULL,
   facet = NULL,
   scales = "free_y",
@@ -21,8 +21,10 @@ plot_boxplots(
   page = 1,
   labeller = "label_value",
   highlight = NULL,
-  jitter = FALSE,
-  palette = make_subgroup_palette(object),
+  add_points = TRUE,
+  jitter_width = if (is.null(block)) 0.1 else 0,
+  fillpalette = make_var_palette(object, fill),
+  colorpalette = make_var_palette(object, color),
   hlevels = NULL,
   ...
 )
@@ -30,8 +32,8 @@ plot_boxplots(
 plot_sample_boxplots(
   object,
   assay = assayNames(object)[1],
-  x = sample_id,
-  fill = sample_id,
+  x = "sample_id",
+  fill = "sample_id",
   color = NULL,
   highlight = NULL,
   palette = NULL,
@@ -44,8 +46,8 @@ plot_sample_boxplots(
 plot_feature_boxplots(
   object,
   assay = assayNames(object)[1],
-  x = feature_id,
-  fill = feature_id,
+  x = "feature_id",
+  fill = "feature_id",
   color = NULL,
   highlight = NULL,
   palette = NULL,
@@ -82,15 +84,15 @@ plot_subgroup_boxplots(
 
 \item{assay}{string}
 
-\item{x}{svar mapped to x}
+\item{x}{svar (string)}
 
-\item{fill}{svar mapped to fill}
+\item{fill}{svar (string)}
 
-\item{color}{svar mapped to color}
+\item{color}{svar (string)}
 
-\item{block}{svar used to connect points}
+\item{block}{svar used to connect points (string)}
 
-\item{facet}{svar mapped to facet}
+\item{facet}{svar (string)}
 
 \item{scales}{'free', 'fixed', 'free_x', 'free_y'}
 
@@ -100,13 +102,15 @@ plot_subgroup_boxplots(
 
 \item{page}{number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}}
 
-\item{highlight}{fvar expressing which feature should be highlighted}
+\item{highlight}{fvar expressing which feature should be highlighted (string)}
 
-\item{jitter}{whether to add jittered data points}
+\item{add_points}{TRUE or FALSE}
+
+\item{jitter_width}{number}
 
 \item{hlevels}{xlevels for which to plot horizontal lines}
 
-\item{subgroup}{subgroup svar symbol}
+\item{subgroup}{svar (string)}
 }
 \value{
 ggplot object
@@ -120,19 +124,19 @@ Plot boxplots
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
     controlfeatures <- c('biotin','phosphate')
-    fdata(object) \%<>\% cbind(control=.$feature_name \%in\% controlfeatures)
+    fdata(object) \%<>\% cbind(control = .$feature_name \%in\% controlfeatures)
 # Plot
     vars <- ggplot2::vars
-    plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
-    plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
-    plot_boxplots(object[1:9, ], x = SET, fill = SET, facet = vars(feature_id))
-    plot_boxplots(object[1, ], x = SET, fill = SET, jitter=TRUE)
-    plot_boxplots(object[1, ], x = SET, fill = SET, jitter=TRUE, block = SUB)
+    plot_boxplots(object[,1:9],  x = 'sample_id',  fill = 'sample_id' )
+    plot_boxplots(object[1:9,],  x = 'feature_id', fill = 'feature_id')
+    plot_boxplots(object[1:9, ], x = 'SET', fill = 'SET', facet = 'feature_id')
+    plot_boxplots(object[1, ],   x = 'SET', fill = 'SET', jitter = TRUE)
+    plot_boxplots(object[1, ],   x = 'SET', fill = 'SET', block = 'SUB')
     plot_feature_boxplots(object[1:9, ])
     plot_sample_boxplots(object[, 1:12])
-    plot_sample_boxplots(object[, 1:12], highlight = control)
-    plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
-    plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
+    plot_sample_boxplots(object[, 1:12], highlight = 'control')
+    plot_subgroup_boxplots(object[1:2, ], subgroup = 'SET')
+    plot_subgroup_boxplots(object[1:2, ], subgroup = 'SET', block = 'SUB')
 }
 \seealso{
 \code{\link{plot_sample_densities}},

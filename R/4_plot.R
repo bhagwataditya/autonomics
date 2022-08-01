@@ -15,26 +15,22 @@
 #' # STEMCELL RATIOS
 #'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
-#'     object <- read_proteingroups(
-#'                file, invert_subgroups = invert_subgroups, plot=FALSE)
+#'     object <- read_proteingroups(file, invert_subgroups = invert_subgroups, plot = FALSE)
 #'     p <- plot_sample_densities(object)
-#'     add_color_scale(p, color=subgroup, data=sdata(object))
+#'     add_color_scale(p, color = 'subgroup', data = sdt(object))
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('billing16.proteingroups.txt')
-#'    object <- read_proteingroups(
-#'               file, quantity = 'Intensity labeled', plot=FALSE)
+#'    object <- read_proteingroups(file, quantity = 'Intensity labeled', plot = FALSE)
 #'     p <- plot_sample_densities(object)
-#'    add_color_scale(p, color=subgroup, data = sdata(object))
+#'    add_color_scale(p, color = 'subgroup', data = sdt(object))
 #' @noRd
 add_color_scale <- function(p, color, data, palette = NULL){
 # Assert
     assert_is_data.frame(data)
-    color <- enquo(color)
+    assert_is_subset(color, names(data))
 # Colors
-    if (!rlang::quo_is_null(color)){
-        color_var <- as_name(color)
-        assert_is_subset(color_var, names(data))
-        values0 <- data[[color_var]]
+    if (!is.null(color)){
+        values0 <- data[[color]]
         if (!is.numeric(values0)){
             if (is.character(values0)) values0 %<>% factor()
             levels0 <- levels(values0)
@@ -47,15 +43,13 @@ add_color_scale <- function(p, color, data, palette = NULL){
 }
 
 
-add_fill_scale <- function(p, fill, data, palette=NULL){
+add_fill_scale <- function(p, fill, data, palette = NULL){
 # Assert
     assert_is_data.frame(data)
-    fill <- enquo(fill)
 # Colors
-    if (!rlang::quo_is_null(fill)){
-        fillstr <- as_name(fill)
-        assert_is_subset(fillstr, names(data))
-        values0 <- data[[fillstr]]
+    if (!is.null(fill)){
+        assert_is_subset(fill, names(data))
+        values0 <- data[[fill]]
         if (!is.numeric(values0)){
             levels0 <- as.character(unique(values0))
             if (is.null(palette)) palette <- make_colors(levels0, sep = guess_sep(levels0))
@@ -76,8 +70,22 @@ make_sample_palette <- function(object){
     palette
 }
 
-make_subgroup_palette <- function(object)   make_colors(subgroup_levels(object))
-make_svar_palette <- function(object, svar) make_colors(slevels(object, svar))
+make_subgroup_palette <- function(object){
+    make_colors(subgroup_levels(object))
+}
+make_svar_palette <- function(object, svar){ 
+    if (is.null(svar)) return(NULL)
+    make_colors(slevels(object, svar))
+}
+make_fvar_palette <- function(object, fvar){
+    if (is.null(fvar)) return(NULL)
+    make_colors(flevels(object, fvar))
+}
+make_var_palette <- function(object, var){
+    if (is.null(var)) return(NULL)
+    if (var %in% svars(object)){        make_svar_palette(object, var)
+    } else if (var %in% fvars(object)){ make_fvar_palette(object, var) }
+}
 
 make_colors <- function(
     varlevels, sep = guess_sep(varlevels), show = FALSE,
@@ -298,22 +306,22 @@ plot_densities <- function(
 ){
 # Assert / Process
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_a_string(group)
-    assert_is_subset(group, c(svars(object), fvars(object)))
-    if (!is.null(fill))  assert_is_a_string(fill)
-    if (!is.null(color)) assert_is_a_string(color)
-    if (!is.null(facet)) assert_is_a_string(facet)
-    if (!is.null(nrow))  assert_is_a_number(nrow)
-    if (!is.null(ncol))  assert_is_a_number(ncol)
-    assert_is_subset(dir, c('h', 'v'))
+                            assert_is_a_string(group)
+    if (!is.null(fill))     assert_is_a_string(fill)
+    if (!is.null(color))    assert_is_a_string(color)
+    if (!is.null(facet))    assert_is_a_string(facet)
+    if (!is.null(nrow))     assert_is_a_number(nrow)
+    if (!is.null(ncol))     assert_is_a_number(ncol)
     if (!is.null(palette))  assert_is_character(palette)
-    assert_is_list(fixed)
-    if (!is.null(fill))  assert_is_subset(fill,  c(svars(object), fvars(object))) 
-    if (!is.null(color)) assert_is_subset(color, c(svars(object), fvars(object)))
-    if (!is.null(facet)) assert_is_subset(facet, c(svars(object), fvars(object)))
+                            assert_is_list(fixed)
+                            assert_is_subset(group, c(svars(object), fvars(object)))
+    if (!is.null(fill))     assert_is_subset(fill,  c(svars(object), fvars(object))) 
+    if (!is.null(color))    assert_is_subset(color, c(svars(object), fvars(object)))
+    if (!is.null(facet))    assert_is_subset(facet, c(svars(object), fvars(object)))
+                            assert_is_subset(dir, c('h', 'v'))
 # Prepare
     plotvars <- group
-    if (!is.null(fill))   plotvars %<>% c(fill)  %>% unique(8)
+    if (!is.null(fill))   plotvars %<>% c(fill)  %>% unique()
     if (!is.null(color))  plotvars %<>% c(color) %>% unique()
     if (!is.null(facet))  plotvars %<>% c(facet) %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
@@ -431,14 +439,14 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
 ){
 # Process
     assert_is_all_of(object, 'SummarizedExperiment')
-    if (!is.null(x))          assert_is_a_string(x)
-    if (!is.null(fill))       assert_is_a_string(fill)
+                              assert_is_a_string(x)
+                              assert_is_a_string(fill)
     if (!is.null(color))      assert_is_a_string(color)
     if (!is.null(group))      assert_is_a_string(group)
     if (!is.null(facet))      assert_is_a_string(facet)
     if (!is.null(highlight))  assert_is_a_string(highlight)
-    if (!is.null(x))          assert_is_subset(x,         c(svars(object), fvars(object)))
-    if (!is.null(fill))       assert_is_subset(fill,      c(svars(object), fvars(object)))
+                              assert_is_subset(x,         c(svars(object), fvars(object)))
+                              assert_is_subset(fill,      c(svars(object), fvars(object)))
     if (!is.null(color))      assert_is_subset(color,     c(svars(object), fvars(object)))
     if (!is.null(group))      assert_is_subset(group,     c(svars(object), fvars(object)))
     if (!is.null(facet))      assert_is_subset(facet,     c(svars(object), fvars(object)))
@@ -446,7 +454,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     assert_is_list(fixed)
 # Prepare
     plotvars <- c('feature_name')
-    if (!is.null(fill))       plotvars %<>% c(fill)      %>% unique()
+                              plotvars %<>% c(fill)      %>% unique()
     if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
     if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
     if (!is.null(facet))      plotvars %<>% c(facet)     %>% unique()
@@ -456,8 +464,8 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     dtsum <- dt[, .(median = median(value, na.rm = TRUE), 
                        iqr =    IQR(value, na.rm = TRUE) ), by = x]
 # Plot
-    xsym         <- if (is.null(x))      quo(NULL)  else  sym(x)
-    fillsym      <- if (is.null(fill))   quo(NULL)  else  sym(fill)
+    xsym         <- sym(x)
+    fillsym      <- sym(fill)
     groupsym     <- if (is.null(group))  quo(NULL)  else  sym(group)
     colorsym     <- if (is.null(color))  quo(NULL)  else  sym(highlight)
     p <- plot_data(dt, geom = geom_violin, x = !!xsym, y = value,
@@ -525,20 +533,21 @@ plot_subgroup_violins <- function(
 
 #' Plot boxplots
 #'
-#' @param object     SummarizedExperiment
-#' @param assay      string
-#' @param subgroup   subgroup svar symbol
-#' @param x          svar mapped to x
-#' @param fill       svar mapped to fill
-#' @param color      svar mapped to color
-#' @param block      svar used to connect points
-#' @param facet      svar mapped to facet
-#' @param scales     'free', 'fixed', 'free_x', 'free_y'
-#' @param nrow       number of facet rows
-#' @param ncol       number of facet columns 
-#' @param page       number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}
-#' @param highlight  fvar expressing which feature should be highlighted
-#' @param jitter     whether to add jittered data points
+#' @param object        SummarizedExperiment
+#' @param assay         string
+#' @param subgroup      svar (string)
+#' @param x             svar (string)
+#' @param fill          svar (string)
+#' @param color         svar (string)
+#' @param block         svar used to connect points (string)
+#' @param facet         svar (string)
+#' @param scales       'free', 'fixed', 'free_x', 'free_y'
+#' @param nrow          number of facet rows
+#' @param ncol          number of facet columns 
+#' @param page          number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}
+#' @param highlight     fvar expressing which feature should be highlighted (string)
+#' @param add_points    TRUE or FALSE
+#' @param jitter_width  number
 #' @param hlevels    xlevels for which to plot horizontal lines
 #' @return  ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
@@ -549,89 +558,105 @@ plot_subgroup_violins <- function(
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     controlfeatures <- c('biotin','phosphate')
-#'     fdata(object) %<>% cbind(control=.$feature_name %in% controlfeatures)
+#'     fdata(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
 #' # Plot
 #'     vars <- ggplot2::vars
-#'     plot_boxplots(object[,1:9],  x = sample_id,  fill = sample_id )
-#'     plot_boxplots(object[1:9,],  x = feature_id, fill = feature_id)
-#'     plot_boxplots(object[1:9, ], x = SET, fill = SET, facet = vars(feature_id))
-#'     plot_boxplots(object[1, ], x = SET, fill = SET, jitter=TRUE)
-#'     plot_boxplots(object[1, ], x = SET, fill = SET, jitter=TRUE, block = SUB)
+#'     plot_boxplots(object[,1:9],  x = 'sample_id',  fill = 'sample_id' )
+#'     plot_boxplots(object[1:9,],  x = 'feature_id', fill = 'feature_id')
+#'     plot_boxplots(object[1:9, ], x = 'SET', fill = 'SET', facet = 'feature_id')
+#'     plot_boxplots(object[1, ],   x = 'SET', fill = 'SET', jitter = TRUE)
+#'     plot_boxplots(object[1, ],   x = 'SET', fill = 'SET', block = 'SUB')
 #'     plot_feature_boxplots(object[1:9, ])
 #'     plot_sample_boxplots(object[, 1:12])
-#'     plot_sample_boxplots(object[, 1:12], highlight = control)
-#'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET)
-#'     plot_subgroup_boxplots(object[1:2, ], subgroup = SET, block = SUB)
+#'     plot_sample_boxplots(object[, 1:12], highlight = 'control')
+#'     plot_subgroup_boxplots(object[1:2, ], subgroup = 'SET')
+#'     plot_subgroup_boxplots(object[1:2, ], subgroup = 'SET', block = 'SUB')
 #' @export
 plot_boxplots <- function(
     object, assay = assayNames(object)[1], 
-    x = subgroup,  fill = subgroup, color = subgroup, 
+    x = 'subgroup',  fill = 'subgroup', color = NULL, 
     block = NULL, facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value', highlight = NULL, 
-    jitter = FALSE, palette = make_subgroup_palette(object), hlevels = NULL, ...
+    add_points = TRUE, jitter_width = if (is.null(block)) 0.1 else 0,
+    fillpalette  = make_var_palette(object, fill), 
+    colorpalette = make_var_palette(object, color),
+    hlevels = NULL, ...
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
     if (nrow(object)==0)  return(ggplot2::ggplot())
-    if (!is.null(facet)) assert_is_all_of(facet, 'quosures') # vars(feature_id)
-    sample_id <- value <- medianvalue <- present <- direction <- NULL
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    block     <- enquo(block)
-    highlight <- enquo(highlight)
-    xstr      <- as_name(x)
-    fillstr  <- if (quo_is_null(fill))   character(0) else  as_name(fill)
-    colorstr <- if (quo_is_null(color))  character(0) else  as_name(color)
-    blockstr <- if (quo_is_null(block))  character(0) else  as_name(block)
-    facetstr <- if (is.null(facet))      character(0) else  vapply(
-                                                facet, as_name, character(1))
-    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
-                                                highlight)
+    if (!is.null(x))          assert_is_a_string(x)
+    if (!is.null(fill))       assert_is_a_string(fill)
+    if (!is.null(color))      assert_is_a_string(color)
+    if (!is.null(block))      assert_is_a_string(block)
+    if (!is.null(facet))      assert_is_character(facet)
+    if (!is.null(nrow))       assert_is_a_number(nrow)
+    if (!is.null(ncol))       assert_is_a_number(ncol)
+    if (!is.null(highlight))  assert_is_a_string(highlight)
+    if (!is.null(x))          assert_is_subset(x,          c(svars(object), fvars(object)))
+    if (!is.null(fill))       assert_is_subset(fill,       c(svars(object), fvars(object)))
+    if (!is.null(color))      assert_is_subset(color,      c(svars(object), fvars(object)))
+    if (!is.null(block))      assert_is_subset(block,      c(svars(object), fvars(object)))
+    if (!is.null(facet))      assert_is_subset(facet,      c(svars(object), fvars(object)))
+    if (!is.null(highlight))  assert_is_subset(highlight, c(svars(object), fvars(object)))
+                              assert_is_subset(scales, c('fixed', 'free', 'free_x', 'free_y'))
 # Prepare
-    plotvars <- unique(c('feature_name', xstr, fillstr, colorstr, blockstr, 
-                        highlightstr, facetstr))
+    xsym     <- sym(x)
+    fillsym  <- if (is.null(fill))   quo(NULL) else  sym(fill)
+    colorsym <- if (is.null(color))  quo(NULL) else  sym(color)
+    blocksym <- if (is.null(block))  quo(NULL) else  sym(block)
+    plotvars <- 'feature_name'
+    if (!is.null(x))          plotvars %<>% c(x)         %>% unique()
+    if (!is.null(fill))       plotvars %<>% c(fill)      %>% unique()
+    if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
+    if (!is.null(block))      plotvars %<>% c(block)     %>% unique()
+    if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
+    if (!is.null(facet))      plotvars %<>% c(facet) %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
-    object[[xstr]] %<>% num2char()
-    dt <- sumexp_to_longdt(
-            object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
-    dt[, medianvalue := median(value, na.rm=TRUE), by = c('feature_id', xstr)]
+    if (!is.null(x))   object[[x]] %<>% num2char()
+    dt <- sumexp_to_longdt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
+    dt[, medianvalue := median(value, na.rm = TRUE), by = c('feature_id', x)]
     
 # Plot
     p <- ggplot(dt)
-    if (nrow(dt)==0) return(p)
     if (!is.null(facet)) p <- p + facet_wrap_paginate(
         facets = facet, scales = scales, nrow = nrow, ncol = ncol, 
         page = page, labeller = labeller)
-    if (!quo_is_null(block)){
-        dt[, direction := get(fillstr)[which.max(value)], by = c(facetstr, blockstr)]
-        p <- p + geom_line(aes(x=!!x, y=value, color=direction, group=!!block), na.rm = TRUE)
-        p <- add_color_scale(p, direction, data=dt, palette=palette) }
-    outlier.shape <- if (jitter) NA else 19
-    p <- p + geom_boxplot(aes(x = !!x, y = value, fill = !!fill, color = !!color), outlier.shape = outlier.shape, na.rm = TRUE)
-    p <- add_color_scale(p, !!color, data=dt, palette=palette)
-    p <- add_fill_scale( p, !!fill,  data=dt, palette=palette)
-    p %<>% add_highlights(x=!!x, hl=!!highlight, geom = geom_point, fixed_color="darkred")
+    outlier.shape <- if (add_points) NA else 19
+    p <- p + geom_boxplot(aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym), 
+                          outlier.shape = outlier.shape, na.rm = TRUE)
+    p <- add_color_scale(p, color, data = dt, palette = colorpalette)
+    p <- add_fill_scale( p, fill,  data = dt, palette = fillpalette)
+    # Connect blocks
+    if (!is.null(block)){
+        byvar <- block
+        if (!is.null(facet)) byvar %<>% c(facet)
+        #dt[, direction := get(fill)[which.max(value)], by = byvar]
+        p <- p + geom_line(aes(x = !!xsym, y = value, color = !!xsym, group = !!blocksym), na.rm = TRUE) # color = direction
+        p <- add_color_scale(p, x, data = dt, palette = fillpalette)    # 'direction'
+    }
+    # Points
+    if (add_points){
+        p <- p + geom_jitter(aes(x = !!xsym, y = value),
+                position = position_jitter(width = jitter_width, height = 0), size = 0.5, na.rm = TRUE)
+    }
+    p %<>% add_highlights(x = x, hl = highlight, geom = geom_point, fixed_color = "darkred")
     # Add hline
     if (!is.null(hlevels)){
-        mediandt <- unique(dt[, 
-                              unique(c('feature_id', xstr, 'medianvalue', facetstr)), with=FALSE])
+        mediandt <- unique(dt[, unique(c('feature_id', x, 'medianvalue', facet)), with = FALSE])
         mediandt[, present := FALSE]
-        mediandt[get(xstr) %in% hlevels, present := TRUE]
-        p <- p + geom_hline(data=mediandt, 
-                            aes(yintercept = medianvalue, color=!!fill, alpha=present), 
-                            linetype='longdash') }
-    # Add jitter
-    if (jitter) p <- p + geom_jitter(aes(x=!!x, y=value),
-                                     position = position_jitter(width=.1, height=0), size=0.5, na.rm = TRUE)
+        mediandt[get(x) %in% hlevels, present := TRUE]
+        p <- p + geom_hline(data = mediandt, 
+                            aes(yintercept = medianvalue, color = !!fill, alpha = present), 
+                            linetype = 'longdash') }
     # Finish and Return
-    breaks <- unique(dt[[xstr]])
-    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
+    breaks <- unique(dt[[x]])
+    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fill][[x]]
     p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
         guides(color = 'none', alpha = 'none') +
         theme(axis.text.x = element_text(angle=90, hjust=1))
-    p
+    p + theme_classic()
 }
 
 #============================================================================
@@ -647,39 +672,30 @@ plot_boxplots <- function(
 #' @export
 plot_sample_boxplots <- function(
     object, assay = assayNames(object)[1], 
-    x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
+    x = 'sample_id', fill = 'sample_id', color = NULL, highlight = NULL,
     palette = NULL, nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value'
 ){
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    highlight <- enquo(highlight)
     plot_boxplots(
         object, assay = assay, 
-        x = !!x, fill = !!fill, color = !!color,
-        highlight = !!highlight, palette = palette,  
+        x = x, fill = fill, color = color,
+        highlight = highlight, palette = palette,  
         nrow = nrow, ncol = ncol, page = page, labeller = labeller) + 
     ggtitle('Sample Boxplots')
 }
 
 
-feature_id <- NULL
 #' @rdname plot_boxplots
 #' @export
 plot_feature_boxplots <- function(
     object, assay = assayNames(object)[1],
-    x = feature_id, fill = feature_id, color = NULL, highlight = NULL,
+    x = 'feature_id', fill = 'feature_id', color = NULL, highlight = NULL,
     palette = NULL, fixed = list(na.rm=TRUE), 
     nrow = NULL, ncol = NULL, page = 1, labeller = 'label_value'
 ){
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    highlight <- enquo(highlight)
     plot_boxplots(
         object, assay = assay,
-        x = !!x, fill = !!fill, color = !!color,
-        highlight = !!highlight, palette = palette,  
+        x = x, fill = fill, color = color,
+        highlight = highlight, palette = palette,  
         nrow = nrow, ncol = ncol, page = page, labeller = labeller) + 
     ggtitle('Feature Boxplots')
 }
