@@ -230,11 +230,15 @@ plot_data <- function(
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
 
     p <- ggplot(data    = data,  # https://stackoverflow.com/a/55816211
-                mapping = eval(expr(aes(color=!!color, fill=!!fill, !!!dots))))
+                mapping = eval(expr(aes(color = !!color, 
+                                        fill  = !!fill, 
+                                        !!!dots))))
     p <- p + do.call(geom, fixed)
-    #p <- p + theme_bw()
-    p <- add_color_scale(p, !!color, data, palette=palette)
-    p <- add_fill_scale( p, !!fill,  data, palette=palette)
+    p <- p + theme_classic()
+    colorstr <- if (quo_is_null(color)) NULL else as_name(color)
+    fillstr  <- if (quo_is_null(fill))  NULL else as_name(fill)
+    p <- add_color_scale(p, colorstr, data, palette = palette)
+    p <- add_fill_scale( p, fillstr,  data, palette = palette)
     p <- p + do.call(ggplot2::theme, theme)
 
     p
@@ -367,8 +371,7 @@ plot_sample_densities <- function(
         facet   = facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
         palette = palette,
         fixed   = fixed ) +
-    ggtitle("Sample Densities") + 
-    theme(plot.title = element_text(hjust = 0.5))
+    ggtitle("Sample Densities")
 }
 
 feature_id <- NULL
@@ -393,8 +396,7 @@ plot_feature_densities <- function(
         facet   = facet,  nrow = nrow, ncol = ncol, dir = dir, labeller = labeller,
         palette = palette,
         fixed   = fixed) +
-    ggtitle("Feature Densities") +
-    theme(plot.title = element_text(hjust = 0.5))
+    ggtitle("Feature Densities")
 }
 
 #==============================================================================
