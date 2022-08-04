@@ -1263,13 +1263,13 @@ plot_design <- function(object){
     designmat %<>% unique()
     designmat %<>% extract(order(rownames(.)), )
     
+    subgroups <- rownames(designmat)
+    coefs <- colnames(designmat)
     ymat <- matrix(seq_along(subgroups), nrow = ncol(designmat), ncol = 1)
     betamat <- solve(designmat) %*% ymat
     betamat[1,1] <- 1 # not strictly required, but plot is nicer if Intercept 
                       # is 1 unit long (in MASS:contr.sdif it gets much longer, 
                       # I think to maintain orthogonality of design)
-    subgroups <- rownames(designmat)
-    coefs <- colnames(designmat)
     plotdt <- data.table(subgroup = subgroups, 
                          coef     = coefs, 
                          x        = seq_along(subgroups),
