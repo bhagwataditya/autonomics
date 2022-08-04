@@ -87,8 +87,7 @@ default_subgroupvar <- function(object){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <-.read_metabolon(file)
 #' default_subgroupvar(object)
-#' default_formula(object, fit = 'limma')
-#' default_formula(object, fit = 'lm')
+#' default_formula(object)
 #' @export 
 default_formula <- function(
     object, subgroupvar = default_subgroupvar(object), contrasts = NULL
@@ -138,7 +137,7 @@ create_design <- function(object, ...) UseMethod('create_design')
 create_design.MultiAssayExperiment <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula     = default_formula(object, subgroupvar, fit = 'limma'),
+    formula     = default_formula(object, subgroupvar),
     drop        = FALSE, 
     verbose     = FALSE, 
     ...
@@ -155,7 +154,7 @@ create_design.MultiAssayExperiment <- function(
 create_design.SummarizedExperiment <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula     = default_formula(object, subgroupvar, fit = 'limma'),
+    formula     = default_formula(object, subgroupvar),
     drop        = FALSE, 
     verbose     = FALSE, 
     ...
@@ -172,7 +171,7 @@ create_design.SummarizedExperiment <- function(
 create_design.data.frame <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    formula     = default_formula(object, subgroupvar, fit = 'limma'),
+    formula     = default_formula(object, subgroupvar),
     drop        = FALSE, 
     verbose     = FALSE, 
     ...

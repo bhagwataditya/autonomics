@@ -12,7 +12,7 @@ create_design(object, ...)
 \method{create_design}{MultiAssayExperiment}(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "limma"),
+  formula = default_formula(object, subgroupvar),
   drop = FALSE,
   verbose = FALSE,
   ...
@@ -21,7 +21,7 @@ create_design(object, ...)
 \method{create_design}{SummarizedExperiment}(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "limma"),
+  formula = default_formula(object, subgroupvar),
   drop = FALSE,
   verbose = FALSE,
   ...
@@ -30,7 +30,7 @@ create_design(object, ...)
 \method{create_design}{data.frame}(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "limma"),
+  formula = default_formula(object, subgroupvar),
   drop = FALSE,
   verbose = FALSE,
   ...

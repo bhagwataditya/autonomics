@@ -30,6 +30,5 @@ Create default formula
 file <- download_data('atkin18.metabolon.xlsx')
 object <-.read_metabolon(file)
 default_subgroupvar(object)
-default_formula(object, fit = 'limma')
-default_formula(object, fit = 'lm')
+default_formula(object)
 }

@@ -26,11 +26,11 @@ analyze <- function(
         pca          = TRUE,
         fit          = 'limma',
         subgroupvar  = default_subgroupvar(object),
-        formula      = default_formula(object, subgroupvar, fit),
+        contrasts    = NULL,
+        formula      = default_formula(object, subgroupvar, contrasts),
         block        = NULL,
         weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
         coefs        = colnames(create_design(object, formula = formula)),
-        contrasts = NULL,
         verbose      = TRUE,
         plot         = pca & !is.null(fit),
         feature_id   = NULL,
@@ -44,12 +44,12 @@ analyze <- function(
     if (pca)  object %<>% pca(verbose = verbose, plot = FALSE)
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
-        if (is.null(formula)) formula <- default_formula(object,subgroupvar,fit)
+        if (is.null(formula)) formula <- default_formula(object, subgroupvar, contrasts)
         if (is.null(coefs)) coefs <- colnames(create_design(object, formula = formula))
         object %<>% fitfun( subgroupvar  = subgroupvar,
                             formula      = formula,
                             coefs        = coefs,
-                            contrasts = contrasts,
+                            contrasts    = contrasts,
                             block        = block,
                             weightvar    = weightvar,
                             verbose      = verbose,

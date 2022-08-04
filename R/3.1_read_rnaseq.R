@@ -733,7 +733,7 @@ explicitly_compute_voom_weights <- function(
 #' @export
 preprocess_rnaseq_counts <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
+    formula = default_formula(object, subgroupvar), block = NULL,
     min_count = 10, pseudo = 0.5, tpm  = FALSE, 
     cpm = TRUE, voom = TRUE, log2 = TRUE,
     verbose = TRUE, plot = TRUE

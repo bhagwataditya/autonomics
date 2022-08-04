@@ -154,7 +154,7 @@ The General Linear Model generalizes the (two-subgroup) t-test to multiple subgr
 ```
 
 ```{r, echo = FALSE, message = FALSE}
-  summary <- summarize_fit(object, 'lm')[contrast=='subgroupAdult']
+  summary <- summarize_fit(object, 'lm')[contrast=='Adult']
   systime <- system.time(object %<>% fit_lm())
 ```
 
@@ -217,7 +217,7 @@ This moderated t statistic was then extended into a General Linear Model. Very i
 ```{r}
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file)
-object %<>% fit_limma(formula = ~ 0 + subgroup, contrastdefs = c('Adult - X30dpt'))  # rely on defaults
+object %<>% fit_limma(formula = ~ 0 + subgroup, contrasts = c('Adult - X30dpt'))  # rely on defaults
 ```
 
 Another advantage of limma is its performance: 
