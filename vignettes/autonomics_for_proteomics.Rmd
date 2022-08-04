@@ -15,11 +15,9 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'ho
 
 This vignette demonstrates how to use `autonomics` for proteomics data analysis.
 
-# MaxQuant ProteinGroups
+# Samples
 
-## Samples
-
-### Design {-}
+## Design
 
 Fukuda et al. (2020) studied the embryonic development of zebrafish.  
 They compared the proteome of 30-days-post-fertilization embryos to adults.
@@ -32,7 +30,7 @@ object <- read_proteingroups(file, plot = FALSE)
 sdt(object)[, 1:3]
 ```
 
-### Principle Component Analysis {-}
+## Principle Component Analysis
 
 In an experiment with p quantified proteingroups, each sample can be thought of as a data point in a p-dimensional space. **Principal Component Analysis** projects these sample points onto that lower (e.g. 2) dimensional space which maximizes the variance between samples. This two-dimensional biplot greatly aids in comprehending the overall sample similarity structure, as shown below for the dataset under consideration, where subgroup is reassuringly observed to be the major source of variation.
 
@@ -41,7 +39,7 @@ In an experiment with p quantified proteingroups, each sample can be thought of 
 biplot(pca(object))
 ```
 
-### Sample Distributions {-}
+## Sample Distributions
 
 A sample distribution shows how the values of a **single sample** are distributed **across all features** (proteins).
 Sample distributions can be visualized with density, violin, or box plots, as shown below.
@@ -56,9 +54,9 @@ gridExtra::grid.arrange(d, v, b, nrow = 1)
 ```
 
 
-## Features
+# Features
 
-### Filtering {-}
+## Filtering
 
 ```{r}
 n <- analysis(object)$nfeature
@@ -72,7 +70,7 @@ require(data.table)
 data.table(Filter = names(n), n = n)   # Filtering details
 ```
 
-### Feature Distributions {-}
+## Feature Distributions
 
 A feature (protein) distribution shows how the values of a **single feature** are distributed **across all samples**.
 Feature distributions can be visualized with density, violin, or box plots, as shown below.
@@ -86,9 +84,9 @@ b <- plot_feature_boxplots( object, n = 4) + guides(fill = 'none')
 gridExtra::grid.arrange(d, v, b, nrow = 1)
 ```
 
-## Missing values
+# Missing values
 
-### Systematic versus Random {-}
+## Systematic versus Random
 
 ```{r}
 systematic <- sum(systematic_nas(object))
@@ -103,7 +101,7 @@ no         <-         sum(no_nas(object))
 
 **`r no`** proteingroups have **no** NAs. They are present in all samples.  
 
-### Plotting NA structure {-}
+## Plotting NA structure
   
 The NA structure can also be summarized graphically with either of the two functions below.  
 
@@ -116,7 +114,7 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 `plot_sample_nas` shows NA structure at **sample** resolution, plotting systematic and random NAs (white) as well as full detections (bright color).  
 `plot_subgroup_nas` summarizes NA structure at the **subgroup** level, differentiating systematic NA values (white) from random NA values and full detections (color).
 
-### Imputing systematic NAs {-}
+## Imputing systematic NAs
 
 Proteingroups with systematic misses require prior imputation for statistical analysis to return pvalues (rather than missing values). 
 
@@ -128,9 +126,11 @@ The sample distributions (left) show how imputed values are drawn from a normal 
 
 The detection plot (right) shows imputed values with a lighter color.
 
-## Differential Expression
+# Differential Expression
 
-### Subgroups {-}
+## `fit_lm`: General Linear Model
+
+### $t$ statistic and $p$ value {-}
 
 Diffferential Expression Analysis quantifies whether subgroup differences are significant. The current example dataset has two subgroups (X30dpt and Adults), each with three replicates.
 
@@ -138,25 +138,68 @@ Diffferential Expression Analysis quantifies whether subgroup differences are si
 table(object$subgroup)
 ```
 
-### Statistics: $t$ and $p$ {-}
-
-The t-statistic expresses the **diff**erence between two subgroups in terms of **SE** units (standard error = standard devation, normalized for sample size):
+The t-statistic expresses the **difference** between two subgroups in terms of **standard error (SE)** units (i.e. standard devation, normalized for sample size):
 
 $$t = \frac{\textrm{difference}}{\frac{\textrm{sd}}{\sqrt n}}$$
-When samples from two subgroups are many SE units away from each other, the $t$ value will be large, and the difference likely raose due to true subgroup differences.  
+When samples from two subgroups are many SE units away from each other, the $t$ value will be large, and the difference likely arose due to true subgroup differences.  
 When samples from two different subgroups are close to each other, on the other hand, the $t$ value will be small, and the probability that the difference arose due to random sampling is high. This probability (that the difference arose due to random sampling) is known as the **p value**. The p value expresses a signal (difference) to noise (standard error) ratio, and is very useful for feature (protein) prioritization. A general convention is to call $p$ < 0.05 differences significant.
 
-### General Linear Model (GLM): `lm` {-}
+### General Linear Model and `lm` {-}
 
-The General Linear Model generalizes the (two-subgroup) t-test to multiple subgroups ($t_0$,  $t_1$, $t_2$), multiple factors (time and concentration), as well as numerical covariates (age, bmi) in a unified modeling interface. In R its classical implementation is the `lm` modeling engine, to which autonomics offers performant and easy access (`lm` calls are embedded into a data.table environment for performance). In the example dataset `lm` finds 713 age-associated upregulations and 1277 downregulations: 
-
+The General Linear Model generalizes the (two-subgroup) t-test to multiple subgroups (e.g. $t_0$,  $t_1$, $t_2$), multiple factors (e.g. time and concentration), as well as numerical covariates (e.g. age and  bmi) in a unified modeling framework. In R its classical implementation is the `lm` modeling engine, to which autonomics offers direct access:
 
 ```{r}
   require(magrittr)
   object %<>% fit_lm()
 ```
 
-### GLM + Moderated Testing + Generalized Contrasts: `limma` {-}
+```{r, echo = FALSE, message = FALSE}
+  summary <- summarize_fit(object, 'lm')[contrast=='subgroupAdult']
+  systime <- system.time(object %<>% fit_lm())
+```
+
+In the example dataset `lm` found `r summary$ndown` age-associated downregulations and `r summary$nup` upregulations. Running `lm` on `r nrow(object)` proteins took no more that `r systime[[3]]` seconds, a feat achieved through a performant backend that integrates `lm` into a `data.table` environment.
+
+### Flexibile Model Definitions {-}
+
+Autonomics provides different ways to specify the model, aimed at serving the tastes of laymen as well as experts, and all levels between.
+
+The simplest approach is to rely on the  automated **defaults**, which build a model (with intercept) using the sample variable 'subgroup'. A more flexible option is to specify **subgroupvar**, allowing  this variable to be used in model building. Yet more flexibility is provided through the **formula** interface, allowing to drop intercept, include multiple factors, or numeric covariates. Full flexibility (e.g. the ability to customize coefficient names) is achieved through the **design** matrix interface. These different options are illustrated below, all are equivalent, serving different tastes.
+
+
+```{r, eval = FALSE}
+object %<>% fit_lm()
+object %<>% fit_lm(subgroupvar = 'subgroup')
+object %<>% fit_lm(formula = ~ subgroup)
+# object %<>% fit_lm(design = create_design(object, ~ subgroup)) # works only for limma currently
+```
+
+
+### Changing the coefficient meanings {-}
+
+By default the $\beta_{\textrm{Intercept}}$ coefficient represents the level of the first subgroup, and subsequent coefficients (e.g. $\beta_{\textrm{Adult}}$) differences to that first subgroup.
+
+```{r}
+object %<>% fit_lm()
+```
+
+```{r, echo = FALSE, fig.width = 5, fig.height = 3, out.width='30%', out.height='30%'}
+plot_treatment_coefs(object)
+```
+
+Ths can be changed. 
+A more advanced approach is to use other coefficient coding systems. By default R uses treatment contrast coding, in which each coefficient represents difference to the first subgroup. 
+
+```{r}
+contrasts(object$subgroup)
+
+contrasts(object$subgroup) %<>% contr.sum() # Use sum rather than treatment contrasts
+object %<>% fit_lm()
+```
+
+
+ 
+## `fit_limma`: Moderated GLM and Generalized Contrasts
 
 ```{r}
   object %<>% fit_limma()                          # rely on defaults
