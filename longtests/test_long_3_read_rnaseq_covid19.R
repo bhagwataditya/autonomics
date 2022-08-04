@@ -32,7 +32,7 @@ test_that('read_rnaseq_counts(file, pca=TRUE)', {
 test_that("read_rnaseq_counts(file, fit='limma')", {
     object <- read_rnaseq_counts(file, sfile = sfile, sfileby = 'rna_id',
                 subgroupvar='cohort', fit = 'limma',
-                contrastdefs = c('COVID.19-Bacterial'), plot = FALSE)
+                contrasts = c('COVID.19-Bacterial'), plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('limma' %in% names(S4Vectors::metadata(object)))
 })

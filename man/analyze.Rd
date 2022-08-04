@@ -13,7 +13,7 @@ analyze(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = colnames(create_design(object, formula = formula)),
-  contrastdefs = NULL,
+  contrasts = NULL,
   verbose = TRUE,
   plot = pca & !is.null(fit),
   feature_id = NULL,
@@ -38,7 +38,7 @@ analyze(
 
 \item{coefs}{NULL or character vector: model coefficients to test}
 
-\item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
+\item{contrasts}{NULL or character vector: coefficient contrasts to test}
 
 \item{verbose}{whether to msg}
 

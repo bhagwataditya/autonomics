@@ -48,7 +48,7 @@ read_rnaseq_bams(
   pca = TRUE,
   fit = "limma",
   voom = cpm,
-  contrastdefs = NULL,
+  contrasts = NULL,
   verbose = TRUE,
   plot = pca & !is.null(fit),
   feature_id = NULL,
@@ -73,7 +73,7 @@ read_rnaseq_counts(
   fit = "limma",
   voom = cpm,
   coefs = NULL,
-  contrastdefs = NULL,
+  contrasts = NULL,
   verbose = TRUE,
   plot = pca & !is.null(fit),
   feature_id = NULL,
@@ -122,7 +122,7 @@ read_rnaseq_counts(
 
 \item{voom}{whether to compute voom precision weights}
 
-\item{contrastdefs}{NULL or character vector: coefficient contrasts to test}
+\item{contrasts}{NULL or character vector: coefficient contrasts to test}
 
 \item{plot}{whether to plot}
 

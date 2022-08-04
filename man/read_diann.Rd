@@ -22,7 +22,7 @@ read_diann(
   formula = NULL,
   block = NULL,
   coefs = NULL,
-  contrastdefs = NULL,
+  contrasts = NULL,
   feature_id = NULL,
   sample_id = NULL,
   palette = make_subgroup_palette(object),
@@ -50,7 +50,7 @@ read_diann(
 
 \item{coefs}{character: coefficients to test}
 
-\item{contrastdefs}{character: coefficient contrasts to test}
+\item{contrasts}{character: coefficient contrasts to test}
 
 \item{feature_id}{string: summary plot feature}
 

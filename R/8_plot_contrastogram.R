@@ -11,8 +11,8 @@ true_names <- function(x) names(x[x])
 fit_limma_contrastogram <- function(object, subgroupvar, design){
     colcontrasts <- contrast_subgroup_cols(object, subgroupvar)
     rowcontrasts <- contrast_subgroup_rows(object, subgroupvar)
-    contrastdefs <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
-    object %<>% fit_limma(design = design, contrastdefs = contrastdefs)
+    contrasts <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
+    object %<>% fit_limma(design = design, contrasts = contrasts)
     object
 }
 

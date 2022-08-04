@@ -8,7 +8,7 @@
 #' @param block        block svar
 #' @param weightvar    NULL or name of weight matrix in assays(object)
 #' @param coefs        NULL or character vector: model coefficients to test
-#' @param contrastdefs NULL or character vector: coefficient contrasts to test
+#' @param contrasts NULL or character vector: coefficient contrasts to test
 #' @param verbose      whether to msg
 #' @param plot         whether to plot
 #' @param feature_id   string: which feature to visualize
@@ -30,7 +30,7 @@ analyze <- function(
         block        = NULL,
         weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
         coefs        = colnames(create_design(object, formula = formula)),
-        contrastdefs = NULL,
+        contrasts = NULL,
         verbose      = TRUE,
         plot         = pca & !is.null(fit),
         feature_id   = NULL,
@@ -49,7 +49,7 @@ analyze <- function(
         object %<>% fitfun( subgroupvar  = subgroupvar,
                             formula      = formula,
                             coefs        = coefs,
-                            contrastdefs = contrastdefs,
+                            contrasts = contrasts,
                             block        = block,
                             weightvar    = weightvar,
                             verbose      = verbose,

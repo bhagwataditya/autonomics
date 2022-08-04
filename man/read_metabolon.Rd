@@ -35,7 +35,7 @@ read_metabolon(
   formula = NULL,
   block = NULL,
   coefs = NULL,
-  contrastdefs = NULL,
+  contrasts = NULL,
   feature_id = NULL,
   sample_id = NULL,
   palette = NULL,
@@ -79,7 +79,7 @@ read_metabolon(
 
 \item{coefs}{diffexp coefficients to analyze: NULL or character vector}
 
-\item{contrastdefs}{diffexp contrasts to analyze: NULL or character vector}
+\item{contrasts}{diffexp contrasts to analyze: NULL or character vector}
 
 \item{verbose}{bool: msg?}
 }

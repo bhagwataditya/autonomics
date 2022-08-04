@@ -83,7 +83,7 @@ test_that(  "read_proteingroups(file, fit='limma')", {
     formula <- ~0+subgroup
     object <- read_proteingroups(file, invert_subgroups = invert_subgroups, 
                     fit = 'limma', formula = formula, 
-                    contrastdefs = c('BM_EM', 'E_EM', 'E_BM'), plot = FALSE)
+                    contrasts = c('BM_EM', 'E_EM', 'E_BM'), plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('limma' %in% names(metadata(object)))
 })

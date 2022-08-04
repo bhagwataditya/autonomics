@@ -934,7 +934,7 @@ read_rnaseq_bams <- function(
     sfile = NULL, by.y = NULL, subgroupvar = 'subgroup', block = NULL,
     formula = NULL, min_count = 10, pseudo = 0.5, 
     ensdb = NULL, tpm = FALSE, cpm = TRUE, log2 = TRUE, 
-    pca = TRUE, fit = 'limma', voom = cpm, contrastdefs = NULL, 
+    pca = TRUE, fit = 'limma', voom = cpm, contrasts = NULL, 
     verbose = TRUE, plot = pca & !is.null(fit), 
     feature_id = NULL, sample_id = NULL
 ){
@@ -964,7 +964,7 @@ read_rnaseq_bams <- function(
 # Analyze
     object %<>% analyze(pca = pca, fit=fit, subgroupvar = subgroupvar,
                         formula = formula, block = block, 
-                        contrastdefs = contrastdefs, 
+                        contrasts = contrasts, 
                         verbose = verbose, plot = plot, 
                         feature_id = feature_id, sample_id = sample_id)
 # Return
@@ -989,7 +989,7 @@ read_rnaseq_bams <- function(
 #' @param block        block svar
 #' @param formula      designmat formula
 #' @param coefs        NULL or character vector: model coefficients to test
-#' @param contrastdefs NULL or character vector: coefficient contrasts to test
+#' @param contrasts NULL or character vector: coefficient contrasts to test
 #' @param min_count    min feature count required in some samples
 #' @param pseudo       added pseudocount to prevent -Inf log2 values
 #' @param ensdb        EnsDb e.g. AnnotationHub::AnnotationHub[['AH64923']]
@@ -1031,7 +1031,7 @@ read_rnaseq_counts <- function(
     formula = NULL, min_count = 10, pseudo = 0.5,
     tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
     pca = TRUE, fit = 'limma', voom = cpm, coefs = NULL,
-    contrastdefs = NULL, verbose = TRUE, 
+    contrasts = NULL, verbose = TRUE, 
     plot = pca & !is.null(fit), feature_id = NULL, sample_id = NULL, 
     palette = NULL
 ){
@@ -1066,7 +1066,7 @@ read_rnaseq_counts <- function(
         block        = block, 
         weightvar    = if (voom) 'weights' else NULL,
         coefs        = coefs, 
-        contrastdefs = contrastdefs, 
+        contrasts = contrasts, 
         verbose      = verbose, 
         plot         = plot, 
         feature_id   = feature_id, 

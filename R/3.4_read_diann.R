@@ -278,7 +278,7 @@ rm_diann_contaminants <- function(
 #' @param formula       model formula
 #' @param block         block var (sdt)
 #' @param coefs         character: coefficients to test
-#' @param contrastdefs  character: coefficient contrasts to test
+#' @param contrasts  character: coefficient contrasts to test
 #' @param feature_id    string: summary plot feature
 #' @param sample_id     string: summary plot sample
 #' @param palette       character: color palette
@@ -310,7 +310,7 @@ read_diann <- function(
     file, fastadt = NULL, quantity = 'PG.MaxLFQ', contaminants = character(0), 
     impute = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
-    coefs = NULL, contrastdefs = NULL, feature_id = NULL, sample_id = NULL, 
+    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
     palette = make_subgroup_palette(object), verbose = TRUE
 ){
 # Assert
@@ -347,7 +347,7 @@ read_diann <- function(
     if ({{impute}})   object %<>% impute()
     object %<>% analyze(
           pca = pca,            fit = fit,         formula = formula, 
-        block = block,        coefs = coefs,  contrastdefs = contrastdefs,
+        block = block,        coefs = coefs,  contrasts = contrasts,
       verbose = verbose,      plot  = plot,     feature_id = feature_id,
     sample_id = sample_id,  palette = palette )
 }

@@ -158,7 +158,7 @@ rm_single_value_columns <- function(df){
 #' @param formula       diffexp model formula
 #' @param block         diffexp block var (string)
 #' @param coefs         diffexp coeffs to analyze (character vector or NULL)
-#' @param contrastdefs  diffexp contrasts to analyze (character vector or NULL)
+#' @param contrasts  diffexp contrasts to analyze (character vector or NULL)
 #' @param verbose       bool: msg?
 #' @param plot          bool: plot?
 #' @return Summarizedexperiment
@@ -173,7 +173,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, pca = TRUE, 
     fit = 'limma', formula = NULL, block = NULL, 
-    coefs = NULL, contrastdefs = NULL, 
+    coefs = NULL, contrasts = NULL, 
     verbose = TRUE, plot = pca & !is.null(fit)
 ){
 # Read
@@ -200,9 +200,9 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     object %<>% log2transform(verbose = TRUE)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
+    object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar, 
                     formula = formula, block = block, 
-                    coefs = coefs, contrastdefs = contrastdefs, 
+                    coefs = coefs, contrasts = contrasts, 
                     verbose = verbose, plot=plot)
 # Return
     object

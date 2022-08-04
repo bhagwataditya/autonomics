@@ -58,7 +58,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         expect_true(sumexp_contains_fit(object, 'lm'))
         
         object %<>% fit_limma(formula = ~ 0 + SampleGroup,
-                            contrastdefs = c('t1_t0', 't2_t1', 't3_t2'))
+                            contrasts = c('t1_t0', 't2_t1', 't3_t2'))
         expect_true(sumexp_contains_fit(object, 'limma'))
     })
     

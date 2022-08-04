@@ -63,7 +63,7 @@ context('fit: GSE161731')
     test_that("fit_limma: ~ subject_id + time_since_onset", { # 10 down, 54 up
         # ~ subject_id + time_since_onset
         object %<>% fit_limma(formula = ~ subject_id + time_since_onset, 
-                              contrastdefs = 'late')
+                              contrasts = 'late')
         expect_true(sumexp_contains_fit(object))
         ndown <- summarize_fit(object, 'limma')$ndown==10
         nup   <- summarize_fit(object, 'limma')$nup  ==54
@@ -74,7 +74,7 @@ context('fit: GSE161731')
         expect_true(summarize_fit(object, 'limma')$nup  ==nup)
         # ~ 0 + subject_id + time_since_onset
         object %<>% fit_limma(formula = ~ 0 + subject_id + time_since_onset, 
-                              contrastdefs = 'late')
+                              contrasts = 'late')
         expect_true(sumexp_contains_fit(object))
         expect_true(summarize_fit(object, 'limma')$ndown==ndown)
         expect_true(summarize_fit(object, 'limma')$nup  ==nup)

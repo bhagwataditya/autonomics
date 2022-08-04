@@ -35,7 +35,7 @@ read_somascan(
   formula = NULL,
   block = NULL,
   coefs = NULL,
-  contrastdefs = NULL,
+  contrasts = NULL,
   verbose = TRUE,
   plot = pca & !is.null(fit)
 )
@@ -79,7 +79,7 @@ read_somascan(
 
 \item{coefs}{diffexp coeffs to analyze (character vector or NULL)}
 
-\item{contrastdefs}{diffexp contrasts to analyze (character vector or NULL)}
+\item{contrasts}{diffexp contrasts to analyze (character vector or NULL)}
 
 \item{verbose}{bool: msg?}
 
