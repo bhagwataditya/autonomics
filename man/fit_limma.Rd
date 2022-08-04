@@ -13,10 +13,16 @@
 fit_limma(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, "limma"),
-  design = create_design(object, formula = formula),
-  coefs = colnames(design),
-  contrastdefs = NULL,
+  contrasts = NULL,
+  formula = if (is.null(contrasts)) {
+     as.formula(paste0("~ ", subgroupvar))
+ } else
+    {
+     as.formula(paste0("~ 0 + ", subgroupvar))
+ },
+  drop = if (slevels_overlap(object, all.vars(formula))) FALSE else TRUE,
+  design = create_design(object, formula = formula, drop = drop),
+  coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
@@ -29,10 +35,16 @@ fit_limma(
 .fit_limma(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, "limma"),
-  design = create_design(object, formula = formula),
-  coefs = colnames(design),
-  contrastdefs = NULL,
+  contrasts = NULL,
+  formula = if (is.null(contrasts)) {
+     as.formula(paste0("~ ", subgroupvar))
+ } else
+    {
+     as.formula(paste0("~ 0 + ", subgroupvar))
+ },
+  drop = if (slevels_overlap(object, all.vars(formula))) FALSE else TRUE,
+  design = create_design(object, formula = formula, drop = drop),
+  coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
@@ -95,13 +107,7 @@ fit_wilcoxon(
 
 \item{subgroupvar}{subgroup variable}
 
-\item{formula}{modeling formula}
-
-\item{design}{design matrix}
-
-\item{coefs}{NULL or character vector: model coefficients to test}
-
-\item{contrastdefs}{NULL or character vector: coefficient contrasts to test
+\item{contrasts}{NULL or character vector: coefficient contrasts to test
 \itemize{
 \item{c("t1-t0", "t2-t1", "t3-t2")}
 \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -110,6 +116,12 @@ fit_wilcoxon(
      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
      nrow=1, byrow=TRUE))}}}
+
+\item{formula}{modeling formula}
+
+\item{design}{design matrix}
+
+\item{coefs}{NULL or character vector: model coefficients to test}
 
 \item{block}{block svar (or NULL)}
 
@@ -147,9 +159,9 @@ Fit model and test for differential expression
     # object \%<>\% fit_lme(subgroupvar = 'SET', block = 'SUB') # slow
     plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
     
-# flexible: limma contrastdefs
+# flexible: limma contrasts
     object \%<>\% fit_limma(formula=~SET,   coef='t3',            block='SUB')
-    object \%<>\% fit_limma(formula=~0+SET, contrastdefs='t3-t0', block='SUB')
+    object \%<>\% fit_limma(formula=~0+SET, contrasts='t3-t0', block='SUB')
         # flexible, but only approximate
         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
 
@@ -162,5 +174,5 @@ Fit model and test for differential expression
 # non-parametric: wilcoxon
     object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB')
     object \%<>\% fit_wilcoxon(subgroupvar='SET', block='SUB', 
-                   contrastdefs=c('t1-t0', 't2-t0', 't3-t0'))
+                   contrasts=c('t1-t0', 't2-t0', 't3-t0'))
 }

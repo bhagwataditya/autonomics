@@ -205,12 +205,22 @@ plot_design(object)
 ```
 
  
-## `fit_limma`: Generalized Contrasts Moderated GLM
+## `fit_limma`: Generalized Contrasts and Moderated GLM
+
+Using alternative coding schemes is a bit of an advanced topic. And though several such alternative coding are available in R (`contr.sum` compares each subgroup to the global mean, `contr.helmert` compares each subgroup level to the average of the previous levels, etc.) it is not always straightforward to find the coding scheme that is appropriate for the scientific question under focus. The coding is also a bit verbose. All of that was made much easier with the arrival of `limma`, to which autonomics offers direct access through `fit_limma`. The development of limma was motivated by the shifting nature of data in Bioinformatics Studies: a sample was no longer associated with a single value but rather with thousands of values for many different features being measured in parallel (genes, transcripts, proteins, ...). This brought challenges, such as false discoveries became much more likely. It also brought wonderful opportunities: since most of the features are typically not differential expressed between two samples (and only a minority are), this background can be used to estimate a residual standard deviation, which is then used to 'moderate' the t-statistic: adding this residual standard devation $sd0$ creates a moderated $t$ statistic  less subject to inflation due to small standard deviation (rather than decent effect sizes). 
+
+$$t = \frac{\textrm{difference}}{\frac{\textrm{sd + sd0}}{\sqrt n}}$$
+
+This moderated t statistic was then extended into a General Linear Model. Very interestingly this moderated General Linear Model was formulated in terms of generalized contrasts rather than original coefficients, and an interface was offered to express any scientific question as a custom contrasts of model coefficients. Returning to the simpler zebrafish dataset (Fukuda 2020), `limma` offers an very intuitive way to formulate custom contrasts, in combination with a model with no intercept:
+
 
 ```{r}
-  object %<>% fit_limma()                          # rely on defaults
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file)
+object %<>% fit_limma(formula = ~ 0 + subgroup, contrastdefs = c('Adult - X30dpt'))  # rely on defaults
 ```
 
+Another advantage of limma is its performance: 
 
 ```{r}
 # object %<>% fit_limma(subgroupvar = 'subgroup')  # specify subgroup variable

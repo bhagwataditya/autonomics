@@ -45,37 +45,6 @@ setReplaceMethod("limma", signature("SummarizedExperiment", "NULL"),
 function(object, value) object)
 
 
-#' @title Get/set contrastdefs
-#' @param object SummarizedExperiment
-#' @param value list
-#' @return contrastdefs (get) or SummarizedExperiment (set)
-#' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(
-#'             file, invert_subgroups=inv, fit='limma', plot=FALSE)
-#' contrastdefs(object)
-#' @export
-setGeneric("contrastdefs", function(object)   standardGeneric("contrastdefs") )
-
-
-#' @rdname contrastdefs
-setMethod("contrastdefs", signature("SummarizedExperiment"),
-function(object) metadata(object)$contrastdefs)
-
-
-#' @rdname contrastdefs
-#' @export
-setGeneric("contrastdefs<-",
-function(object, value)  standardGeneric("contrastdefs<-") )
-
-
-#' @rdname contrastdefs
-setReplaceMethod("contrastdefs", signature("SummarizedExperiment", "list"),
-function(object, value){
-    metadata(object)$contrastdefs <- value
-    object  })
-
 #==============================================================================
 #
 #                       create_design
@@ -318,13 +287,13 @@ contrast_coefs <- function(object, formula){
 #
 #==============================================================================
 
-contrvec2mat  <- function(contrastdefs)  matrix(
-                    contrastdefs, nrow=1, dimnames=list("", contrastdefs))
+contrvec2mat  <- function(contrasts)  matrix(
+                    contrasts, nrow=1, dimnames=list("", contrasts))
 
-contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
+contrmat2list <- function(contrasts)  list(colcontrasts = contrasts)
 
-vectorize_contrastdefs <- function(contrastdefs){
-    unname(unlist(lapply(contrastdefs, function(x) na.exclude(c(t(x))))))
+vectorize_contrastdefs <- function(contrasts){
+    unname(unlist(lapply(contrasts, function(x) na.exclude(c(t(x))))))
 }
 
 add_fdr <- function(fitres){
@@ -380,7 +349,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param formula      modeling formula
 #' @param design       design matrix
 #' @param coefs        NULL or character vector: model coefficients to test
-#' @param contrastdefs NULL or character vector: coefficient contrasts to test
+#' @param contrasts NULL or character vector: coefficient contrasts to test
 #' \itemize{
 #' \item{c("t1-t0", "t2-t1", "t3-t2")}
 #' \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -413,9 +382,9 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     # object %<>% fit_lme(subgroupvar = 'SET', block = 'SUB') # slow
 #'     plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
 #'     
-#' # flexible: limma contrastdefs
+#' # flexible: limma contrasts
 #'     object %<>% fit_limma(formula=~SET,   coef='t3',            block='SUB')
-#'     object %<>% fit_limma(formula=~0+SET, contrastdefs='t3-t0', block='SUB')
+#'     object %<>% fit_limma(formula=~0+SET, contrasts='t3-t0', block='SUB')
 #'         # flexible, but only approximate
 #'         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
 #' 
@@ -428,15 +397,17 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' # non-parametric: wilcoxon
 #'     object %<>% fit_limma(subgroupvar = 'SET', block = 'SUB')
 #'     object %<>% fit_wilcoxon(subgroupvar='SET', block='SUB', 
-#'                    contrastdefs=c('t1-t0', 't2-t0', 't3-t0'))
+#'                    contrasts=c('t1-t0', 't2-t0', 't3-t0'))
 #' @export
 fit_limma <- function(
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object))  'subgroup' else NULL,
-    formula      = default_formula(object, subgroupvar, 'limma'), 
-    design       = create_design(object, formula = formula),
-    coefs        = colnames(design),
-    contrastdefs = NULL,
+    contrasts    = NULL,
+    formula      = if (is.null(contrasts)){ as.formula(paste0('~ ',     subgroupvar))    # with intercept
+                   } else {                 as.formula(paste0('~ 0 + ', subgroupvar)) }, # without
+    drop         = if (slevels_overlap(object, all.vars(formula)))  FALSE else TRUE,
+    design       = create_design(object, formula = formula, drop = drop),
+    coefs        = if (is.null(contrasts))  colnames(design)     else NULL,
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
     statvars     = c('effect', 'p', 'fdr'),
@@ -447,11 +418,12 @@ fit_limma <- function(
 ){
     limmadt <- .fit_limma(
                     object       = object, 
-                    subgroupvar  = subgroupvar, 
+                    subgroupvar  = subgroupvar,
+                    contrasts    = contrasts,
                     formula      = formula, 
+                    drop         = drop,
                     design       = design, 
                     coefs        = coefs,
-                    contrastdefs = contrastdefs,
                     block        = block,
                     weightvar    = weightvar,
                     statvars     = statvars,
@@ -468,15 +440,24 @@ fit_limma <- function(
 }
 
 
+slevels_overlap <- function(object, svars){
+    slevels <- mapply(slevels, svar = svars, MoreArgs = list(object = object))
+    slevels %<>% unlist()
+    any(duplicated(slevels))
+}
+
+
 #' @rdname fit_limma
 #' @export
 .fit_limma <- function(
     object, 
-    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    formula      = default_formula(object, subgroupvar, 'limma'), 
-    design       = create_design(object, formula = formula),
-    coefs        = colnames(design),
-    contrastdefs = NULL,
+    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup'  else  NULL,
+    contrasts    = NULL,
+    formula      = if (is.null(contrasts)){ as.formula(paste0('~ ',     subgroupvar))    # with intercept
+                   } else {                 as.formula(paste0('~ 0 + ', subgroupvar)) }, # without
+    drop         = if (slevels_overlap(object, all.vars(formula)))  FALSE else TRUE,
+    design       = create_design(object, formula = formula, drop = drop),
+    coefs        = if (is.null(contrasts))  colnames(design) else NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars     = c('effect', 'p', 'fdr'),
@@ -516,9 +497,9 @@ fit_limma <- function(
                 block = block, correlation = metadata(object)$dupcor,
                 weights = weightmat))
 # Effect
-    if (is.null(contrastdefs)){  limmafit %<>% contrasts.fit(coefficients = coefs) 
-    } else {                     limmafit %<>% contrasts.fit(contrasts = makeContrasts(
-                                                  contrasts = contrastdefs, levels = design)) }
+    if (is.null(contrasts)){  limmafit %<>% contrasts.fit(coefficients = coefs) 
+    } else {                  limmafit %<>% contrasts.fit(contrasts = makeContrasts(
+                                                  contrasts = contrasts, levels = design)) }
     limmadt <- data.table(feature_id = rownames(limmafit))
     if ('effect' %in% statvars){
         dt0 <- data.table(limmafit$coefficients)
