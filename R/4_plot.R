@@ -1255,9 +1255,9 @@ plot_matrix <- function(mat){
 #' subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
 #' object <- read_proteingroups(file, subgroups = subgroups)
 #' object$subgroup %<>% substr(1,3)
-#' table(object$subgroup)
+#' plot_design(object)
 #' @export
-plot_model <- function(object){
+plot_design <- function(object){
     designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE)
     rownames(designmat) <- object$subgroup
     designmat %<>% unique()
@@ -1283,8 +1283,9 @@ plot_model <- function(object){
     geom_segment(aes(x = x, xend = x, y = y, yend = yend), arrow = arrow) + 
     geom_label(  aes(x = x, y = y + (yend-y)/2, label = coef), parse = TRUE) +
     xlab(NULL) + ylab(NULL) + 
-    theme(axis.text = element_blank(), 
-          panel.grid.major.x = element_blank(), 
-          panel.grid.minor.x = element_blank())
+    theme_void()
+    # theme(axis.text = element_blank(), 
+    #       panel.grid.major.x = element_blank(), 
+    #       panel.grid.minor.x = element_blank())
 }
 

@@ -175,28 +175,33 @@ object %<>% fit_lm(formula = ~ subgroup)
 ```
 
 
-### Changing the coefficient meanings {-}
+### Alternative coding systems {-}
 
-By default the $\beta_{\textrm{Intercept}}$ coefficient represents the level of the first subgroup, and subsequent coefficients (e.g. $\beta_{\textrm{Adult}}$) differences to that first subgroup.
+By default R uses treatment coding, which means the $\beta_{\textrm{Intercept}}$ represents the level of the first subgroup, and subsequent coefficients (e.g. $\beta_{\textrm{Adult}}$) differences to that first subgroup:
 
-```{r}
-object %<>% fit_lm()
+```{r, fig.width = 5, fig.height = 3, out.width='30%', out.height='30%'}
+plot_design(object)
 ```
 
-```{r, echo = FALSE, fig.width = 5, fig.height = 3, out.width='30%', out.height='30%'}
-plot_treatment_coefs(object)
+This can be changed, and to understand why this can be useful let's use Billing et al. (2019)'s stem cell differentiation, in which Embryonic Stem cells (subgroup E00) are differentiated into Mesenchymal Stem Cells (M00), over a period of multiple days (E01, E02, E05, E15, E30). Default treatment coding fits a model like discussed above: 
+
+```{r, fig.width = 5, fig.height = 3, out.width='30%', out.height='30%', message = FALSE}
+file <- download_data('billing19.proteingroups.txt')
+subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30'), '_STD')
+object <- read_proteingroups(file, subgroups = subgroups)
+object$subgroup %<>% substr(1,3)
+plot_design(object)
+
 ```
 
-Ths can be changed. 
-A more advanced approach is to use other coefficient coding systems. By default R uses treatment contrast coding, in which each coefficient represents difference to the first subgroup. 
+In default treatment coding, the coefficients express differences to the reference subgroup.
+It might, however, be more interesting to quantify successive subgroup differences.
+This can be done using the `MASS::contr.sdif` (successive differences) coding scheme:
 
-```{r}
-contrasts(object$subgroup)
-
-contrasts(object$subgroup) %<>% contr.sum() # Use sum rather than treatment contrasts
-object %<>% fit_lm()
+```{r, fig.width = 5, fig.height = 3, out.width='30%', out.height='30%'}
+contrasts(object$subgroup) <- MASS::contr.sdif(levels(object$subgroup))
+plot_design(object)
 ```
-
 
  
 ## `fit_limma`: Moderated GLM and Generalized Contrasts
