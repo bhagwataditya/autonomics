@@ -138,10 +138,10 @@ Diffferential Expression Analysis quantifies whether subgroup differences are si
 table(object$subgroup)
 ```
 
-The t-statistic expresses the **difference** between two subgroups in terms of **standard error (SE)** units (i.e. standard devation, normalized for sample size):
+The t-statistic expresses the **difference** between two subgroups in **standard errors (SE)** (i.e. standard devation, normalized for sample size):
 
 $$t = \frac{\textrm{difference}}{\frac{\textrm{sd}}{\sqrt n}}$$
-When samples from two subgroups are many SE units away from each other, the $t$ value will be large, and the difference likely arose due to true subgroup differences.  
+When samples from two subgroups are many standard errors away from each other, the $t$ value will be large, and the difference likely arose due to true subgroup differences.  
 When samples from two different subgroups are close to each other, on the other hand, the $t$ value will be small, and the probability that the difference arose due to random sampling is high. This probability (that the difference arose due to random sampling) is known as the **p value**. The p value expresses a signal (difference) to noise (standard error) ratio, and is very useful for feature (protein) prioritization. A general convention is to call $p$ < 0.05 differences significant.
 
 ### General Linear Model and `lm` {-}
@@ -162,16 +162,15 @@ In the example dataset `lm` found `r summary$ndown` age-associated downregulatio
 
 ### Defining the model: from simple to advanced {-}
 
-Autonomics provides different ways to specify the model, aimed at serving the tastes of laymen as well as experts, and all levels between.
+Autonomics provides three ways to specify the model, aimed at serving the tastes of laymen as well as experts, as well as the level between.
 
-The simplest approach is to rely on the  automated **defaults**, which build a model (with intercept) using the sample variable 'subgroup'. A more flexible option is to specify **subgroupvar**, allowing  this variable to be used in model building. Yet more flexibility is provided through the **formula** interface, allowing to drop intercept, include multiple factors, or numeric covariates. Full flexibility (e.g. the ability to customize coefficient names) is achieved through the **design** matrix interface. These different options are illustrated below, all are equivalent, serving different tastes.
+The simplest approach is to rely on the  automated **defaults**, which build a model (with intercept) using the sample variable 'subgroup'. A more flexible option is to specify **subgroupvar**, allowing  this variable to be used in model building. Full flexibility is provided through the **formula** interface, allowing to drop intercept, include multiple factors, or numeric covariates. These different options are illustrated below, all are equivalent, serving different tastes.
 
 
 ```{r, eval = FALSE}
 object %<>% fit_lm()
 object %<>% fit_lm(subgroupvar = 'subgroup')
 object %<>% fit_lm(formula = ~ subgroup)
-# object %<>% fit_lm(design = create_design(object, ~ subgroup)) # works only for limma currently
 ```
 
 
@@ -179,13 +178,13 @@ object %<>% fit_lm(formula = ~ subgroup)
 
 By default R uses treatment coding, which means the Intercept represents the level of the first subgroup, and subsequent coefficients differences to that first subgroup:
 
-```{r, fig.width = 5, fig.height = 3, out.width='50%', out.height='50%'}
+```{r, fig.width = 5, fig.height = 3, out.width='70%', out.height='70%'}
 plot_design(object)
 ```
 
-This can be changed, and to understand why this can be useful let's use Billing et al. (2019)'s stem cell differentiation, in which Embryonic Stem cells (subgroup E00) are differentiated into Mesenchymal Stem Cells (M00), over a period of multiple days (E01, E02, E05, E15, E30). Default treatment coding fits a model like discussed above: 
+This can be changed, and to understand why this can be useful let's use Billing et al. (2019)'s stem cell differentiation, in which Embryonic Stem cells (E00) are differentiated into Mesenchymal Stem Cells (M00), over a period of multiple days (E01, E02, E05, E15, E30). Default treatment coding fits a model like discussed above: 
 
-```{r, fig.width = 5, fig.height = 3, out.width='50%', out.height='50%', message = FALSE}
+```{r, fig.width = 5, fig.height = 3, out.width='70%', out.height='70%', message = FALSE}
 file <- download_data('billing19.proteingroups.txt')
 subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30'), '_STD')
 object <- read_proteingroups(file, subgroups = subgroups)
@@ -198,7 +197,7 @@ In default treatment coding, the coefficients express baseline differences.
 It might, however, be interesting to quantify successive rather than baseline differences.
 This can be done using the `MASS::contr.sdif` (successive differences) coding scheme:
 
-```{r, fig.width = 5, fig.height = 3, out.width='50%', out.height='50%'}
+```{r, fig.width = 5, fig.height = 3, out.width='70%', out.height='70%'}
 object$subgroup %<>% factor()
 contrasts(object$subgroup) <- MASS::contr.sdif(levels(object$subgroup))
 plot_design(object)
@@ -207,23 +206,19 @@ plot_design(object)
  
 ## `fit_limma`: Generalized Contrasts and Moderated GLM
 
-Using alternative coding schemes is a bit of an advanced topic. And though several such alternative coding are available in R (`contr.sum` compares each subgroup to the global mean, `contr.helmert` compares each subgroup level to the average of the previous levels, etc.) it is not always straightforward to find the coding scheme that is appropriate for the scientific question under focus. The coding is also a bit verbose. All of that was made much easier with the arrival of `limma`, to which autonomics offers direct access through `fit_limma`. The development of limma was motivated by the shifting nature of data in Bioinformatics Studies: a sample was no longer associated with a single value but rather with thousands of values for many different features being measured in parallel (genes, transcripts, proteins, ...). This brought challenges, such as false discoveries became much more likely. It also brought wonderful opportunities: since most of the features are typically not differential expressed between two samples (and only a minority are), this background can be used to estimate a residual standard deviation, which is then used to 'moderate' the t-statistic: adding this residual standard devation $sd0$ creates a moderated $t$ statistic  less subject to inflation due to small standard deviation (rather than decent effect sizes). 
+Using alternative coding schemes is a bit of an advanced topic. And though several such alternative coding are available in R (`contr.sum` compares each subgroup to the global mean, `contr.helmert` compares each subgroup level to the average of the previous levels, etc.) it is not always straightforward to find the coding scheme that is appropriate for the scientific question under focus. The coding is also a bit verbose. All of that was made much easier with the arrival of `limma`, to which autonomics offers direct access through `fit_limma`. The development of limma was motivated by the shifting nature of data in Bioinformatics Studies: a sample was no longer associated with a single value but rather with thousands of values for many different features being measured in parallel (genes, transcripts, proteins, ...). This brought challenges, such as false discoveries became much more likely. It also brought wonderful opportunities: since most of the features are typically not differential expressed between two samples (and only a minority are), this background can be used to estimate a residual standard deviation, which is then used to 'moderate' the t-statistic: adding this residual standard devation sd0 creates a moderated $t$ statistic  less subject to inflation due to small standard deviation (rather than decent effect sizes). 
 
 $$t = \frac{\textrm{difference}}{\frac{\textrm{sd + sd0}}{\sqrt n}}$$
 
 This moderated t statistic was then extended into a General Linear Model. Very interestingly this moderated General Linear Model was formulated in terms of generalized contrasts rather than original coefficients, and an interface was offered to express any scientific question as a custom contrasts of model coefficients. Returning to the simpler zebrafish dataset (Fukuda 2020), `limma` offers an very intuitive way to formulate custom contrasts, in combination with a model with no intercept:
 
 
-```{r}
+```{r, message = FALSE}
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file)
-object %<>% fit_limma(formula = ~ 0 + subgroup, contrasts = c('Adult - X30dpt'))  # rely on defaults
+object %<>% fit_limma(formula   = ~ 0 + subgroup, 
+                      contrasts = c('Adult - X30dpt'))
 ```
 
 Another advantage of limma is its performance: 
 
-```{r}
-# object %<>% fit_limma(subgroupvar = 'subgroup')  # specify subgroup variable
-# object %<>% fit_limma(formula = ~ subgroup)    # specify model formula
-# object %<>% fit_limma(design = create_design(formula = ~ subgroup)) # design matrix
-```
