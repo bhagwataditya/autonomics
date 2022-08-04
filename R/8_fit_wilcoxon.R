@@ -81,38 +81,41 @@
 fit_wilcoxon <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    formula = default_formula(object, subgroupvar, fit = 'wilcoxon'),
-    coefs = NULL, 
-    contrastdefs = contrast_coefs(object, formula=formula),
-    block = NULL, weightvar = NULL, verbose = TRUE, plot = FALSE
+    contrasts   = sprintf('%s-%s', slevels(object, subgroupvar)[-1], 
+                                   slevels(object, subgroupvar)[ 1]),
+    formula     = NULL,
+    coefs       = NULL, 
+    block       = NULL, 
+    weightvar   = NULL, 
+    verbose     = TRUE, 
+    plot        = FALSE
 ){
 # assert
-    for (by in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, by))
-    if (is.null(contrastdefs))  contrastdefs <- contrast_coefs(object, formula=formula)
+    assert_is_identical_to_false(
+        has_consistent_nondetects(object, subgroupvar))
 # fit
     . <- NULL
     dt <- sumexp_to_longdt(object, svars = c(subgroupvar, block))
     if (verbose)  message('\t\tWilcoxon')
-    fitres <- lapply(vectorize_contrastdefs(contrastdefs), .wilcoxon, 
+    fitres <- lapply(vectorize_contrasts(contrasts), .wilcoxon, 
                     dt, subgroupvar, block, verbose)
-    fitres %<>% Reduce(function(x,y) merge(x,y, by='feature_id', all=TRUE), .)
+    fitres %<>% Reduce(function(x,y)  merge(x,y, by = 'feature_id', all = TRUE), .)
     fitres %<>% merge(data.table(fdata(object))[, 'feature_id', drop = FALSE], 
                         ., by = 'feature_id', all.x = TRUE)
     fitres %<>% add_fdr()
     object %<>% reset_fitres('wilcoxon')
-    object %<>% merge_fitres(fitres, fit='wilcoxon')
+    object %<>% merge_fitres(fitres, fit = 'wilcoxon')
 # extract
     extract_quantity <- function(quantity, fitres){
         quantitydot <- paste0(quantity, FITSEP)
         quantitymat <- fitres[, stri_startswith_fixed(
-                        names(fitres), quantitydot), with=FALSE]
+                        names(fitres), quantitydot), with = FALSE]
         quantitymat %<>% as.matrix()
         rownames(quantitymat) <- fitres$feature_id
         colnames(quantitymat) %<>% stri_replace_first_fixed(quantitydot, '')
         quantitymat }
 # Return
-    if (plot)  print(plot_volcano(object, fit='wilcoxon')) 
+    if (plot)  print(plot_volcano(object, fit = 'wilcoxon')) 
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object,'wilcoxon'))
     object
 }

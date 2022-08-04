@@ -91,14 +91,13 @@ default_subgroupvar <- function(object){
 #' default_formula(object, fit = 'lm')
 #' @export 
 default_formula <- function(
-    object, subgroupvar = default_subgroupvar(object), fit
+    object, subgroupvar = default_subgroupvar(object), contrasts = NULL
 ){
-    formula <- if (is.null(subgroupvar))        '~1'
-    else if (!subgroupvar %in% svars(object))   '~1'
-    else if (singlelevel(object, subgroupvar))  '~1'
-    #else if (fit %in% c('limma', 'wilcoxon'))   sprintf('~0 + %s', subgroupvar)
-    else if (fit %in% c('wilcoxon'))            sprintf('~0 + %s', subgroupvar)
-    else                                        sprintf('~ %s', subgroupvar)
+    formula <- if (is.null(subgroupvar))               '~1'
+          else if (!subgroupvar %in% svars(object))    '~1'
+          else if (singlelevel(object, subgroupvar))   '~1'
+          else if (!is.null(contrasts))                sprintf('~0 + %s', subgroupvar)
+          else                                         sprintf(   '~ %s', subgroupvar)
     formula %<>% as.formula()
     formula
 }
@@ -139,8 +138,10 @@ create_design <- function(object, ...) UseMethod('create_design')
 create_design.MultiAssayExperiment <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit = 'limma'),
-    drop = FALSE, verbose = FALSE, ...
+    formula     = default_formula(object, subgroupvar, fit = 'limma'),
+    drop        = FALSE, 
+    verbose     = FALSE, 
+    ...
 ){
     create_design.data.frame(sdata(object), 
                             subgroupvar = subgroupvar, 
@@ -154,8 +155,10 @@ create_design.MultiAssayExperiment <- function(
 create_design.SummarizedExperiment <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit = 'limma'),
-    drop = FALSE, verbose = FALSE, ...
+    formula     = default_formula(object, subgroupvar, fit = 'limma'),
+    drop        = FALSE, 
+    verbose     = FALSE, 
+    ...
 ){
     create_design.data.frame(sdata(object), 
                             subgroupvar = subgroupvar, 
@@ -169,8 +172,10 @@ create_design.SummarizedExperiment <- function(
 create_design.data.frame <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    formula = default_formula(object, subgroupvar, fit = 'limma'),
-    drop = FALSE, verbose = FALSE, ...
+    formula     = default_formula(object, subgroupvar, fit = 'limma'),
+    drop        = FALSE, 
+    verbose     = FALSE, 
+    ...
 ){
 # Assert
     assert_is_subset(all.vars(formula), names(object))
@@ -292,7 +297,7 @@ contrvec2mat  <- function(contrasts)  matrix(
 
 contrmat2list <- function(contrasts)  list(colcontrasts = contrasts)
 
-vectorize_contrastdefs <- function(contrasts){
+vectorize_contrasts <- function(contrasts){
     unname(unlist(lapply(contrasts, function(x) na.exclude(c(t(x))))))
 }
 
@@ -369,43 +374,40 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @examples
 #' # classical: lm & limma
 #'     require(magrittr)
-#'     file <- download_data('atkin18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot=FALSE, impute=TRUE)
-#'     object$SET %<>% factor(); object$SUB %<>% factor()
-#'     object %<>% fit_limma(subgroupvar = 'SET')
-#'     object %<>% fit_lm(subgroupvar = 'SET')
-#'     plot_contrast_venn(testmat(object, coef = 't3'))
+#'     file <- download_data('atkin18.somascan.adat')
+#'     object <- read_somascan(file, plot = FALSE, fit = NULL)
+#'     object %<>% fit_limma()
+#'     object %<>% fit_lm()
+#'    #plot_contrast_venn(testmat(object, coef = 't2'))
 #'     
 #' # blocked: limma, lme, lmer
-#'     object %<>% fit_limma(subgroupvar = 'SET', block = 'SUB')
-#'     object %<>% fit_lme(subgroupvar = 'SET', block = 'SUB')
-#'     # object %<>% fit_lme(subgroupvar = 'SET', block = 'SUB') # slow
-#'     plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID')
+#'     object %<>% fit_lme(  subgroupvar = 'subgroup', block = 'Subject_ID')
+#'    #object %<>% fit_lmer( subgroupvar = 'subgroup', block = 'Subject_ID') # slow
+#'    #plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
 #'     
 #' # flexible: limma contrasts
-#'     object %<>% fit_limma(formula=~SET,   coef='t3',            block='SUB')
-#'     object %<>% fit_limma(formula=~0+SET, contrasts='t3-t0', block='SUB')
+#'     object %<>% fit_limma(formula = ~subgroup,   block = 'Subject_ID', coefs = 't1') 
+#'     object %<>% fit_limma(formula = ~0+subgroup, block = 'Subject_ID', contrasts = 't1-t0')
 #'         # flexible, but only approximate
 #'         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
 #' 
 #' # alternative coding: 
-#'     stats::contrasts(object$SET) <- MASS::contr.sdif(levels(object$SET))
-#'     object %<>% fit_limma(subgroupvar = 'SET', block = 'SUB') # backward difs
-#'     stats::contrasts(object$SET) <-stats::contr.treatment(levels(object$SET))
-#'     object %<>% fit_limma(subgroupvar = 'SET', block = 'SUB') # baseline difs
+#'     stats::contrasts(object$subgroup) <- MASS::contr.sdif(levels(object$subgroup))
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID') # backward difs
+#'     stats::contrasts(object$subgroup) <-stats::contr.treatment(levels(object$subgroup))
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID') # baseline difs
 #'     
 #' # non-parametric: wilcoxon
-#'     object %<>% fit_limma(subgroupvar = 'SET', block = 'SUB')
-#'     object %<>% fit_wilcoxon(subgroupvar='SET', block='SUB', 
-#'                    contrasts=c('t1-t0', 't2-t0', 't3-t0'))
+#'     object %<>% fit_limma(   subgroupvar = 'subgroup', block = 'Subject_ID')
+#'     object %<>% fit_wilcoxon(subgroupvar = 'subgroup', block = 'Subject_ID')
 #' @export
 fit_limma <- function(
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object))  'subgroup' else NULL,
     contrasts    = NULL,
-    formula      = if (is.null(contrasts)){ as.formula(paste0('~ ',     subgroupvar))    # with intercept
-                   } else {                 as.formula(paste0('~ 0 + ', subgroupvar)) }, # without
-    drop         = if (slevels_overlap(object, all.vars(formula)))  FALSE else TRUE,
+    formula      = default_formula(object, subgroupvar, contrasts),
+    drop         = !slevels_clash(object, all.vars(formula)),
     design       = create_design(object, formula = formula, drop = drop),
     coefs        = if (is.null(contrasts))  colnames(design)     else NULL,
     block        = NULL,
@@ -440,7 +442,7 @@ fit_limma <- function(
 }
 
 
-slevels_overlap <- function(object, svars){
+slevels_clash <- function(object, svars){
     slevels <- mapply(slevels, svar = svars, MoreArgs = list(object = object))
     slevels %<>% unlist()
     any(duplicated(slevels))
@@ -453,9 +455,8 @@ slevels_overlap <- function(object, svars){
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup'  else  NULL,
     contrasts    = NULL,
-    formula      = if (is.null(contrasts)){ as.formula(paste0('~ ',     subgroupvar))    # with intercept
-                   } else {                 as.formula(paste0('~ 0 + ', subgroupvar)) }, # without
-    drop         = if (slevels_overlap(object, all.vars(formula)))  FALSE else TRUE,
+    formula      = default_formula(object, subgroupvar, contrasts),
+    drop         = if (slevels_clash(object, all.vars(formula)))  FALSE else TRUE,
     design       = create_design(object, formula = formula, drop = drop),
     coefs        = if (is.null(contrasts))  colnames(design) else NULL,
     block        = NULL, 

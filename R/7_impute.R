@@ -124,6 +124,8 @@ na_to_string <- function(x){
 #' @param object   numeric vector, SumExp
 #' @param shift    number: sd units
 #' @param width    number: sd units
+#' @param frac     fraction: fraction of available samples should be greater 
+#'                           than this value for a subgroup to be called available
 #' @param verbose  TRUE or FALSE
 #' @param plot     TRUE or FALSE
 #' @param n        number of samples to plot
@@ -141,7 +143,11 @@ impute <- function(object, ...) UseMethod('impute')
 #' @rdname impute
 #' @export
 impute.numeric <- function(
-    object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE
+    object, 
+    shift   = 2.5, 
+    width   = 0.3, 
+    verbose = TRUE, 
+    plot    = FALSE
 ){
 # Original
     sd1    <- sd(object, na.rm = TRUE)
@@ -166,8 +172,13 @@ impute.numeric <- function(
 #' @rdname impute
 #' @export
 impute.matrix <- function(
-    object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, 
-    n = min(9, ncol(object)), palette = make_colors(colnames(object))
+    object, 
+    shift   = 2.5, 
+    width   = 0.3, 
+    verbose = TRUE, 
+    plot    = FALSE, 
+    n       = min(9, ncol(object)), 
+    palette = make_colors(colnames(object))
 ){
     idx <- is.na(object)
     if (verbose){
@@ -194,8 +205,14 @@ impute.matrix <- function(
 #' @rdname impute
 #' @export 
 impute.SummarizedExperiment <- function(
-    object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, 
-    palette = make_colors(colnames(object)), n = min(9, ncol(object))
+    object, 
+    shift    = 2.5, 
+    width    = 0.3, 
+    frac     = 0.5,
+    verbose  = TRUE, 
+    plot     = FALSE, 
+    palette  = make_colors(colnames(object)), 
+    n        = min(9, ncol(object))
 ){
 # Assert
     assert_is_a_number(shift)
@@ -212,7 +229,7 @@ impute.SummarizedExperiment <- function(
     dt[,         isNa    :=  is.na(value)]
     dt[,         isValue := !is.na(value)]
     dt[, na.subgroup    := sum(isNa)   == .N,   by = c('feature_id', 'subgroup')]
-    dt[, value.subgroup := sum(isValue) > .N/2, by = c('feature_id', 'subgroup')]
+    dt[, value.subgroup := sum(isValue) > frac*.N, by = c('feature_id', 'subgroup')]
     dt[, consistent.na := na.subgroup & any(value.subgroup), by = 'feature_id']
     dt[consistent.na==TRUE, value := imputed]
 # Update object
@@ -224,8 +241,9 @@ impute.SummarizedExperiment <- function(
     fdt(object)$imputed <- rowAnys(is_imputed(object))
     values(object) <- mat
     if (verbose & any(is_imputed(object))){
-        message(sprintf('\tImputed (of %d)', nrow(object)))
-        message_df('\t%s', colSums(is_imputed(object))[1:n])  
+        message(sprintf('\tImputed %d/%d features in the following subgroups:', 
+                        sum(is_imputed_feature(object)), nrow(object)))
+        message_df('\t\t%s', n_imputed_features_per_subgroup(object))
     }
 # Plot/Return
     if (plot){
@@ -236,6 +254,15 @@ impute.SummarizedExperiment <- function(
     }
     object
 }
+n_imputed_features_per_subgroup <- function(object){ 
+    objlist <- split_by_svar(object, 'subgroup')
+    n <- vapply(objlist, n_imputed_features, integer(1))
+    n[n!=0]
+}
+n_imputed_features  <- function(object) sum(is_imputed_feature(object))
+n_imputed_samples   <- function(object) sum(is_imputed_sample( object))
+is_imputed_feature  <- function(object)     rowAnys(is_imputed(object))
+is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 
 # Plot imputation densities
 # @param object SummarizedExperiment

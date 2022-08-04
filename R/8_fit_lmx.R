@@ -112,12 +112,17 @@ addlhs  <- function(formula)  as.formula(paste0('value ', formula2str(formula)))
 droplhs <- function(formula)  as.formula(stri_replace_first_regex(
     formula2str(formula), '^value[ ]*', ''))
 
-fit_lmx <- function(object, fit, 
+fit_lmx <- function(
+    object, 
+    fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit), 
-    block = NULL, 
-    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
+    formula     = default_formula(object, subgroupvar, contrasts = NULL), 
+    drop        = !slevels_clash(object, all.vars(formula)),
+    block       = NULL, 
+    weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    coefs       = NULL, 
+    verbose     = TRUE, 
+    plot        = FALSE
 ){
 # Initialize
     assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
@@ -136,12 +141,14 @@ fit_lmx <- function(object, fit,
 # fit
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
-    fitres <- dt[, fitmethod(.SD, formula=formula, block=block, 
+    fitres <- dt[, fitmethod(.SD, formula = formula, block = block, 
             weights = get(weightvar)), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
+    if (drop)  for (var in all.vars(formula)){               # drop varnames
+        names(fitres) %<>% stri_replace_first_fixed(var, '')  }
     fitres %<>% add_fdr()
     object %<>% reset_fitres(fit)
-    object %<>% merge_fitres(fitres, fit=fit)
+    object %<>% merge_fitres(fitres, fit = fit)
 # extract
     quantities <- c('effect', 'fdr', 'p', 't')
     fitres <- mapply(.extractstat, quantity=quantities, 
@@ -161,11 +168,15 @@ fit_lmx <- function(object, fit,
 fit_lm <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lm'), 
-    block = NULL, 
-    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
-){                # note: contrastdefs not actually used!
+    contrasts   = NULL,  # for interface equivalence only
+    formula     = default_formula(object, subgroupvar, contrasts = NULL), 
+    drop         = !slevels_clash(object, all.vars(formula)),
+    block       = NULL, 
+    weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    coefs       = NULL, 
+    verbose     = TRUE, 
+    plot        = FALSE
+){
 # Assert
     for (by in all.vars(formula))  assert_is_identical_to_false(
                                 has_consistent_nondetects(object, by))
@@ -173,10 +184,16 @@ fit_lm <- function(
         # integrated in formula and also gets checked for (unnecessarily!)
 # Fit    
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
-    fit_lmx(object, fit = 'lm', subgroupvar = subgroupvar, 
-            formula = formula, block = block, 
-            weightvar = weightvar, coefs = coefs, 
-            verbose = verbose, plot = plot)
+    fit_lmx(object, 
+            fit         = 'lm', 
+            subgroupvar = subgroupvar, 
+            formula     = formula, 
+            drop        = drop,
+            block       = block, 
+            weightvar   = weightvar, 
+            coefs       = coefs, 
+            verbose     = verbose, 
+            plot        = plot)
 }
 
 
@@ -184,12 +201,16 @@ fit_lm <- function(
 #' @export
 fit_lme <- function(
     object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lme'), 
-    block = NULL, 
-    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
-){                  # note: contrastdefs not actually used!
+    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    contrasts    = NULL,  # for interface equivalence only
+    formula      = default_formula(object, subgroupvar, contrasts = NULL), 
+    drop         = !slevels_clash(object, all.vars(formula)),
+    block        = NULL, 
+    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    coefs        = NULL, 
+    verbose      = TRUE, 
+    plot         = FALSE
+){
 # Assert
     . <- NULL
     if (!requireNamespace('nlme', quietly = TRUE)){
@@ -208,10 +229,16 @@ fit_lme <- function(
 # Fit
     if (verbose)  message('\t\tlme(', formula2str(formula), ', ', 
                         'random = ',  formula2str(block),')')
-    fit_lmx(object, fit = 'lme', subgroupvar = subgroupvar, 
-            formula = formula, block = block, 
-            weightvar = weightvar, coefs = coefs, 
-            verbose = verbose, plot = plot)
+    fit_lmx(object, 
+            fit         = 'lme', 
+            subgroupvar = subgroupvar, 
+            formula     = formula, 
+            drop        = drop,
+            block       = block, 
+            weightvar   = weightvar, 
+            coefs       = coefs, 
+            verbose     = verbose, 
+            plot        = plot)
 }
 
 
@@ -220,11 +247,15 @@ fit_lme <- function(
 fit_lmer <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit='lmer'), 
-    block = NULL, 
-    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs = NULL, contrastdefs = NULL, verbose = TRUE, plot =  FALSE
-){                # note: contrastdefs not actually used!
+    contrasts   = NULL,  # for function equivalence only
+    formula     = default_formula(object, subgroupvar, contrasts = NULL), 
+    drop         = !slevels_clash(object, all.vars(formula)),
+    block       = NULL, 
+    weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    coefs       = NULL, 
+    verbose     = TRUE, 
+    plot        = FALSE
+){
 # Assert
     . <- NULL
     if (!requireNamespace('lme4', quietly = TRUE)){
@@ -248,8 +279,14 @@ fit_lmer <- function(
 # Fit
     if (verbose)  message('\t\tlmer(', formula2str(formula), ')')
     metadata(object)$lmer <- NULL
-    fit_lmx(object, fit = 'lmer', subgroupvar = subgroupvar, 
-            formula = formula, block = NULL, 
-            weightvar = weightvar, coefs = coefs, 
-            verbose = verbose, plot = plot)
+    fit_lmx(object, 
+            fit         = 'lmer', 
+            subgroupvar = subgroupvar, 
+            formula     = formula, 
+            drop        = drop,
+            block       = NULL, 
+            weightvar   = weightvar, 
+            coefs       = coefs, 
+            verbose     = verbose, 
+            plot        = plot)
 }

@@ -7,7 +7,11 @@
 \usage{
 default_subgroupvar(object)
 
-default_formula(object, subgroupvar = default_subgroupvar(object), fit)
+default_formula(
+  object,
+  subgroupvar = default_subgroupvar(object),
+  contrasts = NULL
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

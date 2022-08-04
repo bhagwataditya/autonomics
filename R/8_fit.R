@@ -419,7 +419,9 @@ p <- function(object, coef = coefs(object), fit = fits(object)){
 #' @export
 pvar <- function(object, coef = coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'p', fit = fit, coef = coef)
-    paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))
+    x
 }
 
 
@@ -437,7 +439,9 @@ effect <- function(object, coef = coefs(object), fit = fits(object)){
 #' @export
 effectvar <- function(object, coef = coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'effect', fit = fit, coef = coef)
-    paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))
+    x
 }
 
 
@@ -454,9 +458,10 @@ fdr <- function(object, coef = coefs(object), fit = fits(object)){
 #' @export
 fdrvar <- function(object, coef = coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'fdr', fit = fit, coef = coef)
-    paste(x$var, x$coef, x$fit, sep = FITSEP)
-}
-
+    x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))  # all fits not necessarily all coefs, e.g:
+    x               # limma(contrasts = .) generally run without intercept
+}                   # lm(coefs = .)        typically run with intercept
 
 #' @rdname p
 #' @export

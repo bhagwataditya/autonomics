@@ -14,13 +14,8 @@ fit_limma(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   contrasts = NULL,
-  formula = if (is.null(contrasts)) {
-     as.formula(paste0("~ ", subgroupvar))
- } else
-    {
-     as.formula(paste0("~ 0 + ", subgroupvar))
- },
-  drop = if (slevels_overlap(object, all.vars(formula))) FALSE else TRUE,
+  formula = default_formula(object, subgroupvar, contrasts),
+  drop = !slevels_clash(object, all.vars(formula)),
   design = create_design(object, formula = formula, drop = drop),
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
@@ -36,13 +31,8 @@ fit_limma(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   contrasts = NULL,
-  formula = if (is.null(contrasts)) {
-     as.formula(paste0("~ ", subgroupvar))
- } else
-    {
-     as.formula(paste0("~ 0 + ", subgroupvar))
- },
-  drop = if (slevels_overlap(object, all.vars(formula))) FALSE else TRUE,
+  formula = default_formula(object, subgroupvar, contrasts),
+  drop = if (slevels_clash(object, all.vars(formula))) FALSE else TRUE,
   design = create_design(object, formula = formula, drop = drop),
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
@@ -57,11 +47,12 @@ fit_limma(
 fit_lm(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "lm"),
+  contrasts = NULL,
+  formula = default_formula(object, subgroupvar, contrasts = NULL),
+  drop = !slevels_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
-  contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -69,11 +60,12 @@ fit_lm(
 fit_lme(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "lme"),
+  contrasts = NULL,
+  formula = default_formula(object, subgroupvar, contrasts = NULL),
+  drop = !slevels_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
-  contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -81,11 +73,12 @@ fit_lme(
 fit_lmer(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "lmer"),
+  contrasts = NULL,
+  formula = default_formula(object, subgroupvar, contrasts = NULL),
+  drop = !slevels_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
-  contrastdefs = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -93,9 +86,10 @@ fit_lmer(
 fit_wilcoxon(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "wilcoxon"),
+  contrasts = sprintf("\%s-\%s", slevels(object, subgroupvar)[-1], slevels(object,
+    subgroupvar)[1]),
+  formula = NULL,
   coefs = NULL,
-  contrastdefs = contrast_coefs(object, formula = formula),
   block = NULL,
   weightvar = NULL,
   verbose = TRUE,
@@ -146,33 +140,31 @@ Fit model and test for differential expression
 \examples{
 # classical: lm & limma
     require(magrittr)
-    file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, plot=FALSE, impute=TRUE)
-    object$SET \%<>\% factor(); object$SUB \%<>\% factor()
-    object \%<>\% fit_limma(subgroupvar = 'SET')
-    object \%<>\% fit_lm(subgroupvar = 'SET')
-    plot_contrast_venn(testmat(object, coef = 't3'))
+    file <- download_data('atkin18.somascan.adat')
+    object <- read_somascan(file, plot = FALSE, fit = NULL)
+    object \%<>\% fit_limma()
+    object \%<>\% fit_lm()
+   #plot_contrast_venn(testmat(object, coef = 't2'))
     
 # blocked: limma, lme, lmer
-    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB')
-    object \%<>\% fit_lme(subgroupvar = 'SET', block = 'SUB')
-    # object \%<>\% fit_lme(subgroupvar = 'SET', block = 'SUB') # slow
-    plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
+    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID')
+    object \%<>\% fit_lme(  subgroupvar = 'subgroup', block = 'Subject_ID')
+   #object \%<>\% fit_lmer( subgroupvar = 'subgroup', block = 'Subject_ID') # slow
+   #plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
     
 # flexible: limma contrasts
-    object \%<>\% fit_limma(formula=~SET,   coef='t3',            block='SUB')
-    object \%<>\% fit_limma(formula=~0+SET, contrasts='t3-t0', block='SUB')
+    object \%<>\% fit_limma(formula = ~subgroup,   block = 'Subject_ID', coefs = 't1') 
+    object \%<>\% fit_limma(formula = ~0+subgroup, block = 'Subject_ID', contrasts = 't1-t0')
         # flexible, but only approximate
         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
 
 # alternative coding: 
-    stats::contrasts(object$SET) <- MASS::contr.sdif(levels(object$SET))
-    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB') # backward difs
-    stats::contrasts(object$SET) <-stats::contr.treatment(levels(object$SET))
-    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB') # baseline difs
+    stats::contrasts(object$subgroup) <- MASS::contr.sdif(levels(object$subgroup))
+    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID') # backward difs
+    stats::contrasts(object$subgroup) <-stats::contr.treatment(levels(object$subgroup))
+    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID') # baseline difs
     
 # non-parametric: wilcoxon
-    object \%<>\% fit_limma(subgroupvar = 'SET', block = 'SUB')
-    object \%<>\% fit_wilcoxon(subgroupvar='SET', block='SUB', 
-                   contrasts=c('t1-t0', 't2-t0', 't3-t0'))
+    object \%<>\% fit_limma(   subgroupvar = 'subgroup', block = 'Subject_ID')
+    object \%<>\% fit_wilcoxon(subgroupvar = 'subgroup', block = 'Subject_ID')
 }

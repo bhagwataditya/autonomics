@@ -25,6 +25,7 @@ impute(object, ...)
   object,
   shift = 2.5,
   width = 0.3,
+  frac = 0.5,
   verbose = TRUE,
   plot = FALSE,
   palette = make_colors(colnames(object)),
@@ -45,6 +46,9 @@ impute(object, ...)
 \item{n}{number of samples to plot}
 
 \item{palette}{color vector}
+
+\item{frac}{fraction: fraction of available samples should be greater 
+than this value for a subgroup to be called available}
 }
 \value{
 numeric vector, matrix or SumExp
