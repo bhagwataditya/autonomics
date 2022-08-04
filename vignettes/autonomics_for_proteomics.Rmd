@@ -195,7 +195,7 @@ plot_design(object)
 ```
 
 In default treatment coding, the coefficients express baseline differences.
-It might, however, be more interesting to quantify successive rather than baseline differences.
+It might, however, be interesting to quantify successive rather than baseline differences.
 This can be done using the `MASS::contr.sdif` (successive differences) coding scheme:
 
 ```{r, fig.width = 5, fig.height = 3, out.width='50%', out.height='50%'}

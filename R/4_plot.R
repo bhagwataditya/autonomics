@@ -1261,9 +1261,8 @@ plot_design <- function(object){
     designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE)
     rownames(designmat) <- object$subgroup
     designmat %<>% unique()
-    designmat %<>% extract(order(rownames(.)), )
-    
-    subgroups <- rownames(designmat)
+    subgroups <- subgroup_levels(object)
+    designmat %<>% extract(subgroups, )
     coefs <- colnames(designmat)
     ymat <- matrix(seq_along(subgroups), nrow = ncol(designmat), ncol = 1)
     betamat <- solve(designmat) %*% ymat
