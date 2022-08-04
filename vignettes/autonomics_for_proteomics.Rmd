@@ -160,7 +160,7 @@ The General Linear Model generalizes the (two-subgroup) t-test to multiple subgr
 
 In the example dataset `lm` found `r summary$ndown` age-associated downregulations and `r summary$nup` upregulations. Running `lm` on `r nrow(object)` proteins took no more that `r systime[[3]]` seconds, a feat achieved through a performant backend that integrates `lm` into a `data.table` environment.
 
-### Flexibile Model Definitions {-}
+### Defining the model: from simple to advanced {-}
 
 Autonomics provides different ways to specify the model, aimed at serving the tastes of laymen as well as experts, and all levels between.
 
@@ -175,17 +175,17 @@ object %<>% fit_lm(formula = ~ subgroup)
 ```
 
 
-### Alternative coding systems {-}
+### Changing the coefficient meanings {-}
 
-By default R uses treatment coding, which means the $\beta_{\textrm{Intercept}}$ represents the level of the first subgroup, and subsequent coefficients (e.g. $\beta_{\textrm{Adult}}$) differences to that first subgroup:
+By default R uses treatment coding, which means the Intercept represents the level of the first subgroup, and subsequent coefficients differences to that first subgroup:
 
-```{r, fig.width = 5, fig.height = 3, out.width='30%', out.height='30%'}
+```{r, fig.width = 5, fig.height = 3, out.width='50%', out.height='50%'}
 plot_design(object)
 ```
 
 This can be changed, and to understand why this can be useful let's use Billing et al. (2019)'s stem cell differentiation, in which Embryonic Stem cells (subgroup E00) are differentiated into Mesenchymal Stem Cells (M00), over a period of multiple days (E01, E02, E05, E15, E30). Default treatment coding fits a model like discussed above: 
 
-```{r, fig.width = 5, fig.height = 3, out.width='30%', out.height='30%', message = FALSE}
+```{r, fig.width = 5, fig.height = 3, out.width='50%', out.height='50%', message = FALSE}
 file <- download_data('billing19.proteingroups.txt')
 subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30'), '_STD')
 object <- read_proteingroups(file, subgroups = subgroups)
@@ -194,17 +194,18 @@ plot_design(object)
 
 ```
 
-In default treatment coding, the coefficients express differences to the reference subgroup.
-It might, however, be more interesting to quantify successive subgroup differences.
+In default treatment coding, the coefficients express baseline differences.
+It might, however, be more interesting to quantify successive rather than baseline differences.
 This can be done using the `MASS::contr.sdif` (successive differences) coding scheme:
 
-```{r, fig.width = 5, fig.height = 3, out.width='30%', out.height='30%'}
+```{r, fig.width = 5, fig.height = 3, out.width='50%', out.height='50%'}
+object$subgroup %<>% factor()
 contrasts(object$subgroup) <- MASS::contr.sdif(levels(object$subgroup))
 plot_design(object)
 ```
 
  
-## `fit_limma`: Moderated GLM and Generalized Contrasts
+## `fit_limma`: Generalized Contrasts Moderated GLM
 
 ```{r}
   object %<>% fit_limma()                          # rely on defaults
