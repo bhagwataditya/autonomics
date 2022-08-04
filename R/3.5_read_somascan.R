@@ -171,10 +171,9 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
-    rm_na_svars = FALSE, rm_single_value_svars = FALSE, pca = TRUE, 
-    fit = 'limma', formula = NULL, block = NULL, 
-    coefs = NULL, contrasts = NULL, 
-    verbose = TRUE, plot = pca & !is.null(fit)
+    rm_na_svars = FALSE, rm_single_value_svars = FALSE, plot = FALSE, 
+    pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL, 
+    coefs = NULL, contrasts = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_somascan(

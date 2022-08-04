@@ -30,14 +30,14 @@ read_somascan(
   feature_quality = c("FLAG", "PASS"),
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
-  pca = TRUE,
-  fit = "limma",
+  plot = FALSE,
+  pca = plot,
+  fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
-  verbose = TRUE,
-  plot = pca & !is.null(fit)
+  verbose = TRUE
 )
 }
 \arguments{
@@ -69,6 +69,8 @@ read_somascan(
 
 \item{rm_single_value_svars}{bool: rm single value svars?}
 
+\item{plot}{bool: plot?}
+
 \item{pca}{bool: run pca?}
 
 \item{fit}{diffexp engine: 'limma', 'lm', 'lme', 'lmer','wilcoxon' or NULL (none)}
@@ -82,8 +84,6 @@ read_somascan(
 \item{contrasts}{diffexp contrasts to analyze (character vector or NULL)}
 
 \item{verbose}{bool: msg?}
-
-\item{plot}{bool: plot?}
 }
 \value{
 Summarizedexperiment
