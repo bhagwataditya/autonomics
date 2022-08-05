@@ -661,7 +661,7 @@ explicitly_compute_voom_weights <- function(
 # Extract
     log2cpm  <- values(object)
     libsize <- scaledlibsizes(counts(object))
-    design   <- create_design(object, formula=!!enquo(formula))
+    design   <- create_design(object, formula = !!enquo(formula))
 # Assert
     n <- nrow(log2cpm)
     if (n < 2L) stop("Need at least two genes to fit a mean-variance trend")
@@ -741,8 +741,7 @@ preprocess_rnaseq_counts <- function(object,
 # Initialize
     . <- NULL
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
-    if (is.null(formula))      formula <- default_formula(
-                                            object, subgroupvar, fit='limma')
+    if (is.null(formula))      formula <- default_formula(object, subgroupvar)
 # tpm
     if (verbose) message('\t\tPreprocess')
     if (tpm){   assert_is_subset('genesize', fvars(object))
@@ -753,19 +752,28 @@ preprocess_rnaseq_counts <- function(object,
     if (min_count>0)  object %<>% filter_by_expr(
                           formula = formula, min_count = min_count, verbose = verbose)
 # tmm/cpm/voom normalize
-    if (pseudo>0){ if (verbose)  message('\t\t\tcounts: add ', pseudo)
-                        counts(object) %<>% add(pseudo) }
-    if (cpm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
-                object$libsize <- scaledlibsizes(counts(object))
-                if (verbose)  message('\t\t\t\tcpm')
-                cpm(object) <- counts2cpm(counts(object), object$libsize)
-                other <- setdiff(assayNames(object), 'cpm')
-                assays(object) %<>% extract(c('cpm', other)) }
-    if (voom){  object %<>% add_voom(formula, verbose=verbose, plot=plot & is.null(block))
-                if (!is.null(block))  object %<>% add_voom(
-                                     formula, block=block, verbose=verbose, plot=plot) }
-    if (pseudo>0){ if (verbose)  message('\t\t\tcounts: rm ', pseudo)
-                        counts(object) %<>% subtract(pseudo) }
+    if (pseudo>0){
+        if (verbose)  message('\t\t\tcounts: add ', pseudo)
+            counts(object) %<>% add(pseudo) 
+        }
+    if (cpm){
+        if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
+        object$libsize <- scaledlibsizes(counts(object))
+        if (verbose)  message('\t\t\t\tcpm')
+        cpm(object) <- counts2cpm(counts(object), object$libsize)
+        other <- setdiff(assayNames(object), 'cpm')
+        assays(object) %<>% extract(c('cpm', other)) 
+    }
+    if (voom){  
+        object %<>% add_voom(
+            formula, verbose = verbose, plot = plot & is.null(block))
+        if (!is.null(block))  object %<>% add_voom(
+            formula, block = block, verbose = verbose, plot = plot) 
+    }
+    if (pseudo>0){
+        if (verbose)  message('\t\t\tcounts: rm ', pseudo)
+        counts(object) %<>% subtract(pseudo) 
+    }
 # Log2 transform
     if (log2){    assays(object)$log2counts <- log2(pseudo + counts(object))
         if (tpm)  assays(object)$log2tpm    <- log2(pseudo + tpm(object))
@@ -782,7 +790,7 @@ preprocess_rnaseq_counts <- function(object,
 
 
 filter_by_expr <- function(object, formula, min_count, verbose){
-    design <- create_design(object, formula=formula, verbose = FALSE)
+    design <- create_design(object, formula = formula, verbose = FALSE)
     idx <- filterByExpr(counts(object), design = design,#group=object$subgroup,
                 lib.size  = object$libsize, min.count = min_count)
     if (verbose) message('\t\t\tKeep ', sum(idx), '/', length(idx),
@@ -792,10 +800,12 @@ filter_by_expr <- function(object, formula, min_count, verbose){
 }
 
 
-add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
+add_voom <- function(
+    object, formula, block = NULL, verbose = TRUE, plot = TRUE
+){
 # Retain samples with subgroups
     n0 <- ncol(object)
-    design <- create_design(object, formula=formula, verbose = FALSE)
+    design <- create_design(object, formula = formula, verbose = FALSE)
     object %<>% extract(, rownames(design))
     if (verbose & nrow(object)<n0)  message('\t\t\t\tRetain ',
             ncol(object), '/', n0, ' samples with subgroup definitions')
@@ -907,14 +917,14 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
     assertive::assert_has_no_duplicates(fdata1[[fid_col]])
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1[[fid_col]]
-    object <- matrix2sumexp(counts1)
+    object <- matrix2sumexp(counts1, verbose = verbose)
     assayNames(object)[1] <- 'counts'
 # fdata
     object %<>% merge_fdata(fdata1, by.y = fid_col, verbose = verbose)
     object %<>% add_ensdb(ensdb)
 # sdata
     object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id', by.y = by.y)
-    object %<>% add_subgroup(subgroupvar)
+    object %<>% add_subgroup(subgroupvar, verbose = verbose)
     object
 }
 
@@ -1030,9 +1040,9 @@ read_rnaseq_counts <- function(
     sfile = NULL, by.y = NULL, subgroupvar = 'subgroup', block = NULL,
     formula = NULL, min_count = 10, pseudo = 0.5,
     tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
-    pca = TRUE, fit = 'limma', voom = cpm, coefs = NULL,
-    contrasts = NULL, verbose = TRUE, 
-    plot = pca & !is.null(fit), feature_id = NULL, sample_id = NULL, 
+    plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL, voom = cpm, 
+    coefs = NULL, contrasts = NULL, verbose = TRUE, 
+    feature_id = NULL, sample_id = NULL, 
     palette = NULL
 ){
 # Read
@@ -1046,7 +1056,7 @@ read_rnaseq_counts <- function(
         verbose     = verbose)
 # Preprocess
     object %<>% preprocess_rnaseq_counts(
-        subgroupvar= subgroupvar,
+        subgroupvar = subgroupvar,
         formula     = formula,
         block       = block,
         min_count   = min_count,
@@ -1066,7 +1076,7 @@ read_rnaseq_counts <- function(
         block        = block, 
         weightvar    = if (voom) 'weights' else NULL,
         coefs        = coefs, 
-        contrasts = contrasts, 
+        contrasts    = contrasts, 
         verbose      = verbose, 
         plot         = plot, 
         feature_id   = feature_id, 

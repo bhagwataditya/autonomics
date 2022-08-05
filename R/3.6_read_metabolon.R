@@ -156,7 +156,8 @@ pubchem_to_smiles <- function(x){
 #' @export
 .read_metabolon <- function(file, sheet = 'OrigScale',
     fidvar = '(COMP|COMP_ID)', sidvar = '(CLIENT_IDENTIFIER|Client ID)',
-    sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group'
+    sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group', 
+    verbose  = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -186,7 +187,7 @@ pubchem_to_smiles <- function(x){
                 svar_rows  = svar_rows,     svar_cols  = svar_cols,
                 fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
                 sdata_rows = svar_rows,     sdata_cols = sdata_cols,
-                transpose  = FALSE, verbose    = TRUE)
+                transpose  = FALSE, verbose = verbose)
     assayNames(object)[1] <- paste0('metabolon')
 # Update sdata/fdata                        Group   HMDB_ID -> HMDB_ID
     nsv <- length(svars((object)))
@@ -194,7 +195,7 @@ pubchem_to_smiles <- function(x){
     svars(object)[nsv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$1')
     fvars(object)[nfv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$2')
     object %<>% merge_sfile(sfile = sfile, by.x = by.x, by.y = by.y)
-    object %<>% add_subgroup(subgroupvar)
+    object %<>% add_subgroup(subgroupvar, verbose = verbose)
 # Return
     object
 }
@@ -239,12 +240,13 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
     object <- .read_metabolon(
         file = file, sheet = sheet, fidvar = fidvar, sidvar = sidvar, 
-        sfile = sfile, by.x = by.x, by.y = by.y, subgroupvar = subgroupvar)
+        sfile = sfile, by.x = by.x, by.y = by.y, subgroupvar = subgroupvar, 
+        verbose = verbose)
 # Prepare
     assert_is_subset(fnamevar, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fnamevar]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
-    object %<>% log2transform(verbose = TRUE)
+    object %<>% log2transform(verbose = verbose)
     if ({{impute}})     object %<>% impute(plot = FALSE)
     if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (smiles)         object %<>% add_smiles('SMILES')

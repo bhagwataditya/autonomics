@@ -1,8 +1,9 @@
 ---
-title: "Autonomics for Proteomics"
+title: "Autonomics: cross-platform omics data analysis"
 author: "Aditya M Bhagwat"
 date: "`r Sys.Date()`"
 output: BiocStyle::html_document
+bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{autonomics_for_proteomics}
   %\VignetteEngine{knitr::rmarkdown}
@@ -13,15 +14,37 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
 ```
 
-This vignette demonstrates how to use `autonomics` for proteomics data analysis.
+# Read
 
-# Samples
+Autonomics offers `read_xxx` functions for several omics platforms, which import platform-specific data 
+into a common SummarizedExperiment format:
 
-## Design
+```{r, message = FALSE}
+require(autonomics)
+file.rnaseq        <- download_data('billing19.rnacounts.txt'    )
+file.proteingroups <- download_data('billing19.proteingroups.txt')
+file.phosphosites  <- download_data('billing19.phosphosites.txt' )
+file.diann         <- download_data('szymanski22.report.tsv'     )
+file.somascan      <- download_data('atkin18.somascan.adat'      )
+file.metabolon     <- download_data('atkin18.metabolon.xlsx'     )
 
-Fukuda et al. (2020) studied the embryonic development of zebrafish.  
+object.rnaseq        <- read_rnaseq_counts(file.rnaseq,        plot = FALSE) #   RNAseq counts
+object.proteingroups <- read_proteingroups(file.proteingroups, plot = FALSE) # MaxQuant proteingroups
+object.phosphosites  <- read_phosphosites( file.phosphosites,  
+                                           file.proteingroups, plot = FALSE) # MaxQuant phosphosites
+object.diann         <- read_diann(        file.diann,         plot = FALSE) #   DIA-NN report
+object.somascan      <- read_somascan(     file.somascan,      plot = FALSE) # Somascan adat
+object.metabolon     <- read_metabolon(    file.metabolon,     plot = FALSE) # Metabolon xlsx
+```
+
+# Explore
+
+## Samples
+
+### Design
+
+Fukuda et al. (2020) studied the embryonic development of zebrafish.\
 They compared the proteome of 30-days-post-fertilization embryos to adults.
-
 
 ```{r, message = FALSE}
 require(autonomics)
@@ -30,20 +53,17 @@ object <- read_proteingroups(file, plot = FALSE)
 sdt(object)[, 1:3]
 ```
 
-## Principle Component Analysis
+### Principle Component Analysis
 
 In an experiment with p quantified proteingroups, each sample can be thought of as a data point in a p-dimensional space. **Principal Component Analysis** projects these sample points onto that lower (e.g. 2) dimensional space which maximizes the variance between samples. This two-dimensional biplot greatly aids in comprehending the overall sample similarity structure, as shown below for the dataset under consideration, where subgroup is reassuringly observed to be the major source of variation.
-
 
 ```{r, message = FALSE, fig.width = 3.5, fig.height = 2.5, out.width = '50%', out.height = '50%'}
 biplot(pca(object))
 ```
 
-## Sample Distributions
+### Sample Distributions
 
-A sample distribution shows how the values of a **single sample** are distributed **across all features** (proteins).
-Sample distributions can be visualized with density, violin, or box plots, as shown below.
-
+A sample distribution shows how the values of a **single sample** are distributed **across all features** (proteins). Sample distributions can be visualized with density, violin, or box plots, as shown below.
 
 ```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
 require(ggplot2)
@@ -53,10 +73,9 @@ b <- plot_sample_boxplots(object)  + guides(fill = 'none')
 gridExtra::grid.arrange(d, v, b, nrow = 1)
 ```
 
+## Features
 
-# Features
-
-## Filtering
+### Filtering
 
 ```{r}
 n <- analysis(object)$nfeature
@@ -64,17 +83,14 @@ n <- analysis(object)$nfeature
 
 **`r n[[5]]` proteingroups** (out of `r n[[1]]` identified) were retained for further analysis, after applying the following filters:
 
-
 ```{r, echo = FALSE}
 require(data.table)
 data.table(Filter = names(n), n = n)   # Filtering details
 ```
 
-## Feature Distributions
+### Feature Distributions
 
-A feature (protein) distribution shows how the values of a **single feature** are distributed **across all samples**.
-Feature distributions can be visualized with density, violin, or box plots, as shown below.
-
+A feature (protein) distribution shows how the values of a **single feature** are distributed **across all samples**. Feature distributions can be visualized with density, violin, or box plots, as shown below.
 
 ```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
 require(ggplot2)
@@ -84,7 +100,7 @@ b <- plot_feature_boxplots( object, n = 4) + guides(fill = 'none')
 gridExtra::grid.arrange(d, v, b, nrow = 1)
 ```
 
-# Missing values
+# Impute
 
 ## Systematic versus Random
 
@@ -94,16 +110,15 @@ random     <-     sum(random_nas(object))
 no         <-         sum(no_nas(object))
 ```
 
+**`r systematic`** proteingroups have **systematic** NAs: missing completely in some subgroups but detected in others (for at least half of the samples). These represent potential switch-like responses. They require prior imputation for statistical analysis to return p (rather than NA) values. Note that the apparent systematic nature of these NAs can arise due to chance. Increasing sample size gives greater confidence into the systematic nature of these NA values.
 
-**`r systematic`** proteingroups have **systematic** NAs: missing completely in some subgroups but detected in others (for at least half of the samples). These represent potential switch-like responses. They require prior imputation for statistical analysis to return p (rather than NA) values. Note that the apparent systematic nature of these NAs can arise due to chance. Increasing sample size gives greater  confidence into the systematic nature of these NA values.
+**`r random`** proteingroups have **random** NAs. They are missing in some samples, but the missingness is unrelated to subgroup. These samples do not require require imputation for statistical analyis to return pvalues.
 
-**`r random`** proteingroups have **random** NAs. They are missing in some samples, but the missingness is unrelated to subgroup. These samples do not require require imputation for statistical analyis to return pvalues.  
-
-**`r no`** proteingroups have **no** NAs. They are present in all samples.  
+**`r no`** proteingroups have **no** NAs. They are present in all samples.
 
 ## Plotting NA structure
-  
-The NA structure can also be summarized graphically with either of the two functions below.  
+
+The NA structure can also be summarized graphically with either of the two functions below.
 
 ```{r, echo = TRUE, results = 'hide', message = FALSE, fig.width = 6, fig.height = 3, out.width = '100%', out.height = '100%'}
 p1 <- plot_sample_nas(object) + ggplot2::guides(fill = 'none')
@@ -111,26 +126,27 @@ p2 <- plot_subgroup_nas(object)
 gridExtra::grid.arrange(p1, p2, nrow = 1)
 ```
 
-`plot_sample_nas` shows NA structure at **sample** resolution, plotting systematic and random NAs (white) as well as full detections (bright color).  
+`plot_sample_nas` shows NA structure at **sample** resolution, plotting systematic and random NAs (white) as well as full detections (bright color).\
 `plot_subgroup_nas` summarizes NA structure at the **subgroup** level, differentiating systematic NA values (white) from random NA values and full detections (color).
 
 ## Imputing systematic NAs
 
-Proteingroups with systematic misses require prior imputation for statistical analysis to return pvalues (rather than missing values). 
+Proteingroups with systematic misses require prior imputation for statistical analysis to return pvalues (rather than missing values).
 
 ```{r, echo = TRUE, results = 'hide', message = FALSE, fig.cap = 'Left: sample distributions, Right: detections'}
 require(magrittr)
 object %<>% impute(plot = TRUE)
 ```
-The sample distributions (left) show how imputed values are drawn from a normal distribution, 2.5 standard deviations away from the sample mean, 0.3 standard deviations wide.  
+
+The sample distributions (left) show how imputed values are drawn from a normal distribution, 2.5 standard deviations away from the sample mean, 0.3 standard deviations wide.
 
 The detection plot (right) shows imputed values with a lighter color.
 
-# Differential Expression
+# Analyze
 
 ## `fit_lm`: General Linear Model
 
-### $t$ statistic and $p$ value {-}
+### $t$ statistic and $p$ value {.unnumbered}
 
 Diffferential Expression Analysis quantifies whether subgroup differences are significant. The current example dataset has two subgroups (X30dpt and Adults), each with three replicates.
 
@@ -140,13 +156,12 @@ table(object$subgroup)
 
 The t-statistic expresses the **difference** between two subgroups in **standard errors (SE)** (i.e. standard devation, normalized for sample size):
 
-$$t = \frac{\textrm{difference}}{\frac{\textrm{sd}}{\sqrt n}}$$
-When samples from two subgroups are many standard errors away from each other, the $t$ value will be large, and the difference likely arose due to true subgroup differences.  
-When samples from two different subgroups are close to each other, on the other hand, the $t$ value will be small, and the probability that the difference arose due to random sampling is high. This probability (that the difference arose due to random sampling) is known as the **p value**. The p value expresses a signal (difference) to noise (standard error) ratio, and is very useful for feature (protein) prioritization. A general convention is to call $p$ < 0.05 differences significant.
+$$t = \frac{\textrm{difference}}{\frac{\textrm{sd}}{\sqrt n}}$$ When samples from two subgroups are many standard errors away from each other, the $t$ value will be large, and the difference likely arose due to true subgroup differences.\
+When samples from two different subgroups are close to each other, on the other hand, the $t$ value will be small, and the probability that the difference arose due to random sampling is high. This probability (that the difference arose due to random sampling) is known as the **p value**. The p value expresses a signal (difference) to noise (standard error) ratio, and is very useful for feature (protein) prioritization. A general convention is to call $p$ \< 0.05 differences significant.
 
-### General Linear Model and `lm` {-}
+### General Linear Model and `lm` {.unnumbered}
 
-The General Linear Model generalizes the (two-subgroup) t-test to multiple subgroups (e.g. $t_0$,  $t_1$, $t_2$), multiple factors (e.g. time and concentration), as well as numerical covariates (e.g. age and  bmi) in a unified modeling framework. In R its classical implementation is the `lm` modeling engine, to which autonomics offers direct access:
+The General Linear Model generalizes the (two-subgroup) t-test to multiple subgroups (e.g. $t_0$, $t_1$, $t_2$), multiple factors (e.g. time and concentration), as well as numerical covariates (e.g. age and bmi) in a unified modeling framework. In R its classical implementation is the `lm` modeling engine, to which autonomics offers direct access:
 
 ```{r}
   require(magrittr)
@@ -160,12 +175,11 @@ The General Linear Model generalizes the (two-subgroup) t-test to multiple subgr
 
 In the example dataset `lm` found `r summary$ndown` age-associated downregulations and `r summary$nup` upregulations. Running `lm` on `r nrow(object)` proteins took no more that `r systime[[3]]` seconds, a feat achieved through a performant backend that integrates `lm` into a `data.table` environment.
 
-### Defining the model: from simple to advanced {-}
+### Defining the model: from simple to advanced {.unnumbered}
 
 Autonomics provides three ways to specify the model, aimed at serving the tastes of laymen as well as experts, as well as the level between.
 
-The simplest approach is to rely on the  automated **defaults**, which build a model (with intercept) using the sample variable 'subgroup'. A more flexible option is to specify **subgroupvar**, allowing  this variable to be used in model building. Full flexibility is provided through the **formula** interface, allowing to drop intercept, include multiple factors, or numeric covariates. These different options are illustrated below, all are equivalent, serving different tastes.
-
+The simplest approach is to rely on the automated **defaults**, which build a model (with intercept) using the sample variable 'subgroup'. A more flexible option is to specify **subgroupvar**, allowing this variable to be used in model building. Full flexibility is provided through the **formula** interface, allowing to drop intercept, include multiple factors, or numeric covariates. These different options are illustrated below, all are equivalent, serving different tastes.
 
 ```{r, eval = FALSE}
 object %<>% fit_lm()
@@ -173,8 +187,7 @@ object %<>% fit_lm(subgroupvar = 'subgroup')
 object %<>% fit_lm(formula = ~ subgroup)
 ```
 
-
-### Changing the coefficient meanings {-}
+### Changing the coefficient meanings {.unnumbered}
 
 By default R uses treatment coding, which means the Intercept represents the level of the first subgroup, and subsequent coefficients differences to that first subgroup:
 
@@ -182,7 +195,7 @@ By default R uses treatment coding, which means the Intercept represents the lev
 plot_design(object)
 ```
 
-This can be changed, and to understand why this can be useful let's use Billing et al. (2019)'s stem cell differentiation, in which Embryonic Stem cells (E00) are differentiated into Mesenchymal Stem Cells (M00), over a period of multiple days (E01, E02, E05, E15, E30). Default treatment coding fits a model like discussed above: 
+This can be changed, and to understand why this can be useful let's use Billing et al. (2019)'s stem cell differentiation, in which Embryonic Stem cells (E00) are differentiated into Mesenchymal Stem Cells (M00), over a period of multiple days (E01, E02, E05, E15, E30). Default treatment coding fits a model like discussed above:
 
 ```{r, fig.width = 5, fig.height = 3, out.width='70%', out.height='70%', message = FALSE}
 file <- download_data('billing19.proteingroups.txt')
@@ -193,9 +206,7 @@ plot_design(object)
 
 ```
 
-In default treatment coding, the coefficients express baseline differences.
-It might, however, be interesting to quantify successive rather than baseline differences.
-This can be done using the `MASS::contr.sdif` (successive differences) coding scheme:
+In default treatment coding, the coefficients express baseline differences. It might, however, be interesting to quantify successive rather than baseline differences. This can be done using the `MASS::contr.sdif` (successive differences) coding scheme:
 
 ```{r, fig.width = 5, fig.height = 3, out.width='70%', out.height='70%'}
 object$subgroup %<>% factor()
@@ -203,15 +214,13 @@ contrasts(object$subgroup) <- MASS::contr.sdif(levels(object$subgroup))
 plot_design(object)
 ```
 
- 
 ## `fit_limma`: Generalized Contrasts and Moderated GLM
 
-Using alternative coding schemes is a bit of an advanced topic. And though several such alternative coding are available in R (`contr.sum` compares each subgroup to the global mean, `contr.helmert` compares each subgroup level to the average of the previous levels, etc.) it is not always straightforward to find the coding scheme that is appropriate for the scientific question under focus. The coding is also a bit verbose. All of that was made much easier with the arrival of `limma`, to which autonomics offers direct access through `fit_limma`. The development of limma was motivated by the shifting nature of data in Bioinformatics Studies: a sample was no longer associated with a single value but rather with thousands of values for many different features being measured in parallel (genes, transcripts, proteins, ...). This brought challenges, such as false discoveries became much more likely. It also brought wonderful opportunities: since most of the features are typically not differential expressed between two samples (and only a minority are), this background can be used to estimate a residual standard deviation, which is then used to 'moderate' the t-statistic: adding this residual standard devation sd0 creates a moderated $t$ statistic  less subject to inflation due to small standard deviation (rather than decent effect sizes). 
+Alternative coding schemes are a more advanced topic. And though several such alternative coding are available in R (`contr.sum` compares each subgroup to the global mean, `contr.helmert` compares each subgroup level to the average of the previous levels, etc.) it is not always straightforward to find the coding scheme that is appropriate for the scientific question under focus. The coding is also a bit verbose. All of that was made much easier with the arrival of `limma` [@Smyth+2004], to which autonomics offers direct access through `fit_limma`. The development of limma was motivated by the shifting nature of data in Bioinformatics Studies: a sample was no longer associated with a single value but rather with thousands of values for many different features being measured in parallel (genes, transcripts, proteins, ...). This brought challenges, such as false discoveries became much more likely. It also brought wonderful opportunities: since most of the features are typically not differential expressed between two samples (and only a minority are), this background can be used to estimate a residual standard deviation, which is then used to 'moderate' the t-statistic: adding this residual standard devation sd0 creates a moderated $t$ statistic less subject to inflation due to small standard deviation (rather than decent effect sizes).
 
 $$t = \frac{\textrm{difference}}{\frac{\textrm{sd + sd0}}{\sqrt n}}$$
 
 This moderated t statistic was then extended into a General Linear Model. Very interestingly this moderated General Linear Model was formulated in terms of generalized contrasts rather than original coefficients, and an interface was offered to express any scientific question as a custom contrasts of model coefficients. Returning to the simpler zebrafish dataset (Fukuda 2020), `limma` offers an very intuitive way to formulate custom contrasts, in combination with a model with no intercept:
-
 
 ```{r, message = FALSE}
 file <- download_data('fukuda20.proteingroups.txt')
@@ -220,5 +229,6 @@ object %<>% fit_limma(formula   = ~ 0 + subgroup,
                       contrasts = c('Adult - X30dpt'))
 ```
 
-Another advantage of limma is its performance: 
+Another advantage of limma is its performance:
 
+# References

@@ -13,7 +13,7 @@ filter_sample_type <- function(object, sample_type, verbose){
     if ('SampleType' %in% svars(object)){ # missing in older versions
         SampleType <- NULL
         object %<>% filter_samples(
-            SampleType %in% !!enquo(sample_type), verbose = TRUE)
+            SampleType %in% !!enquo(sample_type), verbose = verbose)
     }
     object
 }
@@ -23,7 +23,7 @@ filter_sample_quality <- function(object, sample_quality, verbose){
     if ('RowCheck'   %in% svars(object)){ # sample quality
         RowCheck <- NULL
         object %<>% filter_samples(
-            RowCheck %in% !!enquo(sample_quality), verbose = TRUE)
+            RowCheck %in% !!enquo(sample_quality), verbose = verbose)
     }
     object
 }
@@ -32,7 +32,7 @@ filter_feature_type <- function(object, feature_type, verbose){
     if ('Type'       %in% fvars(object)){ # feature type
         Type <- NULL
         object %<>% filter_features(
-            Type %in% !!enquo(feature_type), verbose = TRUE)
+            Type %in% !!enquo(feature_type), verbose = verbose)
     }
     object
 
@@ -42,7 +42,7 @@ filter_feature_quality <- function(object, feature_quality, verbose){
     if ('ColCheck'   %in% fvars(object)){ # feature quality
         ColCheck <- NULL
         object %<>% filter_features(
-            ColCheck %in% !!enquo(feature_quality), verbose = TRUE)
+            ColCheck %in% !!enquo(feature_quality), verbose = verbose)
     }
     object
 }
@@ -94,7 +94,8 @@ rm_single_value_columns <- function(df){
 #' @export
 .read_somascan <- function(
     file, fidvar = 'SeqId', sidvar = 'SampleId', 
-    sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup'
+    sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup', 
+    verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -125,7 +126,7 @@ rm_single_value_columns <- function(df){
         fdata_rows =  f_row:(s_row-1),  fdata_cols = (f_col+1):n_col,
         svar_rows  =  s_row,            svar_cols  = seq_len(f_col-1),
         sdata_rows = (s_row+1):n_row,   sdata_cols = seq_len(f_col-1),
-        transpose  = TRUE, verbose    = TRUE)
+        transpose  = TRUE, verbose    = verbose)
 # Add metadata/subgroup
     assayNames(object) <- 'somascan'
     object %<>% merge_sfile(sfile = sfile, by.x = by.x, by.y = by.y)
@@ -177,8 +178,8 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 ){
 # Read
     object <- .read_somascan(
-        file, fidvar = fidvar, sidvar = sidvar, 
-        sfile = sfile, by.x = by.x, by.y = by.y, subgroupvar = subgroupvar)
+        file, fidvar = fidvar, sidvar = sidvar, sfile = sfile, 
+        by.x = by.x, by.y = by.y, subgroupvar = subgroupvar, verbose = verbose)
     object$sample_id %<>% make.unique()
 # Prepare
     assert_is_subset(fname_var, fvars(object))
@@ -197,7 +198,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     object %<>% filter_feature_quality(feature_quality, verbose)
     if (rm_na_svars)            sdata(object) %<>% rm_na_columns()
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
-    object %<>% log2transform(verbose = TRUE)
+    object %<>% log2transform(verbose = verbose)
 # Analyze
     object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar, 
                     formula = formula, block = block, 

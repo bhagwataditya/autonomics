@@ -12,7 +12,8 @@
   sfile = NULL,
   by.x = NULL,
   by.y = NULL,
-  subgroupvar = "SampleGroup"
+  subgroupvar = "SampleGroup",
+  verbose = TRUE
 )
 
 read_somascan(
@@ -55,6 +56,8 @@ read_somascan(
 
 \item{subgroupvar}{subgroup var: string}
 
+\item{verbose}{bool: msg?}
+
 \item{fname_var}{featurename var: string}
 
 \item{sample_type}{subset of c('Sample','QC','Buffer','Calibrator')}
@@ -82,8 +85,6 @@ read_somascan(
 \item{coefs}{diffexp coeffs to analyze (character vector or NULL)}
 
 \item{contrasts}{diffexp contrasts to analyze (character vector or NULL)}
-
-\item{verbose}{bool: msg?}
 }
 \value{
 Summarizedexperiment

@@ -22,20 +22,21 @@
 #' object %<>% analyze(pca = TRUE, subgroupvar = 'Group', fit = 'limma')
 #' @export
 analyze <- function(
-        object,
-        pca          = TRUE,
-        fit          = 'limma',
-        subgroupvar  = default_subgroupvar(object),
-        contrasts    = NULL,
-        formula      = default_formula(object, subgroupvar, contrasts),
-        block        = NULL,
-        weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-        coefs        = colnames(create_design(object, formula = formula)),
-        verbose      = TRUE,
-        plot         = pca & !is.null(fit),
-        feature_id   = NULL,
-        sample_id    = NULL,
-        palette      = NULL
+    object,
+    pca          = TRUE,
+    fit          = 'limma',
+    subgroupvar  = default_subgroupvar(object),
+    contrasts    = NULL,
+    formula      = default_formula(object, subgroupvar, contrasts),
+    drop         = varlevels_dont_clash(object, all.vars(formula)),
+    block        = NULL,
+    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+    coefs        = colnames(create_design(object, formula = formula, drop = drop)),
+    verbose      = TRUE,
+    plot         = pca & !is.null(fit),
+    feature_id   = NULL,
+    sample_id    = NULL,
+    palette      = NULL
 ){
     # Analyze
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
@@ -45,7 +46,7 @@ analyze <- function(
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
         if (is.null(formula)) formula <- default_formula(object, subgroupvar, contrasts)
-        if (is.null(coefs)) coefs <- colnames(create_design(object, formula = formula))
+        if (is.null(coefs)) coefs <- colnames(create_design(object, formula = formula, drop = drop))
         object %<>% fitfun( subgroupvar  = subgroupvar,
                             formula      = formula,
                             coefs        = coefs,

@@ -117,7 +117,7 @@ fit_lmx <- function(
     fit, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object, subgroupvar, contrasts = NULL), 
-    drop        = !slevels_clash(object, all.vars(formula)),
+    drop        = varlevels_dont_clash(object, all.vars(formula)),
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs       = NULL, 
@@ -170,7 +170,7 @@ fit_lm <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     contrasts   = NULL,  # for interface equivalence only
     formula     = default_formula(object, subgroupvar, contrasts = NULL), 
-    drop         = !slevels_clash(object, all.vars(formula)),
+    drop         = varlevels_dont_clash(object, all.vars(formula)),
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs       = NULL, 
@@ -204,7 +204,7 @@ fit_lme <- function(
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     contrasts    = NULL,  # for interface equivalence only
     formula      = default_formula(object, subgroupvar, contrasts = NULL), 
-    drop         = !slevels_clash(object, all.vars(formula)),
+    drop         = varlevels_dont_clash(object, all.vars(formula)),
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs        = NULL, 
@@ -249,7 +249,7 @@ fit_lmer <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     contrasts   = NULL,  # for function equivalence only
     formula     = default_formula(object, subgroupvar, contrasts = NULL), 
-    drop         = !slevels_clash(object, all.vars(formula)),
+    drop         = varlevels_dont_clash(object, all.vars(formula)),
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs       = NULL, 

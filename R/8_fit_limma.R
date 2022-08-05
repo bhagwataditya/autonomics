@@ -107,7 +107,7 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' Create design
 #'
 #'  Create design matrix  for statistical analysis
-#' @param object       SummarizedExperiment or sample dataframe
+#' @param object       SummarizedExperiment or data.frame
 #' @param subgroupvar  subgroup svar
 #' @param formula      formula with svars
 #' @param drop         whether to drop predictor names
@@ -134,28 +134,11 @@ create_design <- function(object, ...) UseMethod('create_design')
 
 #' @rdname create_design
 #' @export
-create_design.MultiAssayExperiment <- function(
-    object,
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula     = default_formula(object, subgroupvar),
-    drop        = FALSE, 
-    verbose     = FALSE, 
-    ...
-){
-    create_design.data.frame(sdata(object), 
-                            subgroupvar = subgroupvar, 
-                            formula     = formula, 
-                            drop        = drop,
-                            verbose     = verbose)
-}
-
-#' @rdname create_design
-#' @export
 create_design.SummarizedExperiment <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object, subgroupvar),
-    drop        = FALSE, 
+    drop        = varlevels_dont_clash(object, all.vars(formula)), 
     verbose     = FALSE, 
     ...
 ){
@@ -172,7 +155,7 @@ create_design.data.frame <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula     = default_formula(object, subgroupvar),
-    drop        = FALSE, 
+    drop        = varlevels_dont_clash(object, all.vars(formula)), 
     verbose     = FALSE, 
     ...
 ){
@@ -406,7 +389,7 @@ fit_limma <- function(
     subgroupvar  = if ('subgroup' %in% svars(object))  'subgroup' else NULL,
     contrasts    = NULL,
     formula      = default_formula(object, subgroupvar, contrasts),
-    drop         = !slevels_clash(object, all.vars(formula)),
+    drop         = varlevels_dont_clash(object, all.vars(formula)),
     design       = create_design(object, formula = formula, drop = drop),
     coefs        = if (is.null(contrasts))  colnames(design)     else NULL,
     block        = NULL,
@@ -441,12 +424,42 @@ fit_limma <- function(
 }
 
 
-slevels_clash <- function(object, svars){
-    slevels <- mapply(slevels, svar = svars, MoreArgs = list(object = object))
-    slevels %<>% unlist()
-    any(duplicated(slevels))
+
+#' Are varlevels unique
+#' 
+#' @param object SummarizedExperiment or data.table
+#' @return TRUE or FALSE
+#' @examples 
+#' require(magrittr)
+#' object1 <- expand.grid(genome = c('WT', 'MUT'), treat = c('control', 'drug'))
+#' object2 <- expand.grid(mutant = c('YES', 'NO'), treated = c('YES', 'NO'))
+#' varlevels_dont_clash(object1)
+#' varlevels_dont_clash(object2)
+#' @export
+varlevels_dont_clash <- function(object, ...)  UseMethod('varlevels_dont_clash')
+
+#' @rdname varlevels_dont_clash
+#' @export
+varlevels_dont_clash.data.table <- function(
+    object, vars = names(object)
+){
+    object                         %>% 
+    extract(, vars, with = FALSE)  %>%
+    lapply(factor)                 %>% 
+    lapply(levels)                 %>% 
+    unlist()                       %>% 
+    duplicated()                   %>% 
+    any()                          %>%
+    magrittr::not()
 }
 
+#' @rdname varlevels_dont_clash
+#' @export
+varlevels_dont_clash.SummarizedExperiment <- function(
+    object, vars = svars(object)
+){
+    varlevels_dont_clash.data.table(sdt(object), vars)
+}
 
 #' @rdname fit_limma
 #' @export
@@ -455,7 +468,7 @@ slevels_clash <- function(object, svars){
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup'  else  NULL,
     contrasts    = NULL,
     formula      = default_formula(object, subgroupvar, contrasts),
-    drop         = if (slevels_clash(object, all.vars(formula)))  FALSE else TRUE,
+    drop         = varlevels_dont_clash(object, all.vars(formula)),
     design       = create_design(object, formula = formula, drop = drop),
     coefs        = if (is.null(contrasts))  colnames(design) else NULL,
     block        = NULL, 

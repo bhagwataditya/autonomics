@@ -217,10 +217,7 @@ dt2sumexp  <- function(
 #' object %<>% pca()
 #' biplot(object, color = subgroup)
 #' @export
-matrix2sumexp <- function(
-    x,
-    verbose     = TRUE
-){
+matrix2sumexp <- function(x, verbose = TRUE){
     object <- SummarizedExperiment(list(exprs = x))
     fdata(object)$feature_id   <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)

@@ -13,7 +13,8 @@
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
-  subgroupvar = "Group"
+  subgroupvar = "Group",
+  verbose = TRUE
 )
 
 read_metabolon(
@@ -59,6 +60,8 @@ read_metabolon(
 
 \item{subgroupvar}{subgroup var: string}
 
+\item{verbose}{bool: msg?}
+
 \item{fnamevar}{featurename fvar: string}
 
 \item{kegg_pathways}{bool: add kegg pathways?}
@@ -80,8 +83,6 @@ read_metabolon(
 \item{coefs}{diffexp coefficients to analyze: NULL or character vector}
 
 \item{contrasts}{diffexp contrasts to analyze: NULL or character vector}
-
-\item{verbose}{bool: msg?}
 }
 \value{
 SummarizedExperiment
