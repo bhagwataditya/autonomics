@@ -1,5 +1,5 @@
 ---
-title: "Autonomics: cross-platform omics data analysis"
+title: "Autonomics: cross-omics analysis"
 author: "Aditya M Bhagwat"
 date: "`r Sys.Date()`"
 output: BiocStyle::html_document
@@ -16,8 +16,31 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'ho
 
 # Read
 
-Autonomics offers `read_xxx` functions for several omics platforms, which import platform-specific data 
-into a common SummarizedExperiment format:
+Autonomics offers read functions for several omics platforms, which import platform-specific data into a common SummarizedExperiment format:
+
+```{r, echo = FALSE, out.width = '80%', out.height = '80%', message = FALSE}
+require(data.table)
+require(ggplot2)
+require(autonomics)
+dt <- data.table(
+    x = 0:7, xend = 0:7, y = 2, yend = 1, 
+    label = c('', 'read_affy', 'read_proteingroups', 'read_phosphosites', 
+              'read_diann', 'read_somascan', 'read_metabolon', 
+              'read_rnaseq_counts'), 
+    molecule = c('', 'transcript', 'protein', 'protein', 'protein', 'protein', 
+                 'metabolite', 'transcript'))
+ggplot(dt) + 
+ylim(0, 2) + 
+geom_segment(aes(x = x, xend = xend, y = y, yend = yend), arrow = arrow()) + 
+geom_label(aes(x = x, y = y, label = label, fill = molecule)) + 
+geom_hline(aes(yintercept=1)) + 
+annotate('text', x = 3, y = 0, label = 'SummarizedExperiment', hjust = 0.5) + 
+theme(axis.text  = element_blank(), 
+      axis.ticks = element_blank(), 
+      axis.title = element_blank()) + guides(fill = 'none') + 
+coord_polar() + 
+scale_fill_manual(values = make_colors(unique(dt$molecule[-1])))
+```
 
 ```{r, message = FALSE}
 require(autonomics)
@@ -27,14 +50,13 @@ file.phosphosites  <- download_data('billing19.phosphosites.txt' )
 file.diann         <- download_data('szymanski22.report.tsv'     )
 file.somascan      <- download_data('atkin18.somascan.adat'      )
 file.metabolon     <- download_data('atkin18.metabolon.xlsx'     )
-
-object.rnaseq        <- read_rnaseq_counts(file.rnaseq,        plot = FALSE) #   RNAseq counts
-object.proteingroups <- read_proteingroups(file.proteingroups, plot = FALSE) # MaxQuant proteingroups
-object.phosphosites  <- read_phosphosites( file.phosphosites,  
-                                           file.proteingroups, plot = FALSE) # MaxQuant phosphosites
-object.diann         <- read_diann(        file.diann,         plot = FALSE) #   DIA-NN report
-object.somascan      <- read_somascan(     file.somascan,      plot = FALSE) # Somascan adat
-object.metabolon     <- read_metabolon(    file.metabolon,     plot = FALSE) # Metabolon xlsx
+object.rnaseq        <- read_rnaseq_counts(file.rnaseq,        plot = FALSE)
+object.proteingroups <- read_proteingroups(file.proteingroups, plot = FALSE)
+object.phosphosites  <- read_phosphosites( file.phosphosites,
+                                           file.proteingroups, plot = FALSE)
+object.diann         <- read_diann(        file.diann,         plot = FALSE)
+object.somascan      <- read_somascan(     file.somascan,      plot = FALSE)
+object.metabolon     <- read_metabolon(    file.metabolon,     plot = FALSE)
 ```
 
 # Explore

@@ -87,9 +87,17 @@ make_var_palette <- function(object, var){
     } else if (var %in% fvars(object)){ make_fvar_palette(object, var) }
 }
 
+#' Make colors
+#' @param varlevels character vector
+#' @param sep       string
+#' @param show      TRUE or FALSE: whether to plot
+#' @param verbose   TRUE or FALSE: whether to msg
+#' @examples 
+#' make_colors(c('A',   'B',   'C',  'D'  ), show = TRUE)
+#' make_colors(c('A.1', 'B.1', 'A.2','B.2'), show = TRUE)
+#' @export
 make_colors <- function(
-    varlevels, sep = guess_sep(varlevels), show = FALSE,
-    verbose = FALSE
+    varlevels, sep = guess_sep(varlevels), show = FALSE, verbose = FALSE
 ){
 # Numeric colors
     if (is.numeric(varlevels)){
@@ -123,7 +131,7 @@ make_colors <- function(
 #' @references https://stackoverflow.com/questions/8197559
 #' @noRd
 make_onefactor_colors <- function(
-    varlevels, show, verbose = TRUE, sep = NULL
+    varlevels, show = FALSE, verbose = TRUE, sep = NULL
 ){
     n <- length(varlevels)
     hues <- seq(15, 375, length = n + 1)
@@ -173,17 +181,17 @@ make_twofactor_colors <- function(
     V2levels <- sort(unique(V2))
     n1 <- length(V1levels)
     n2 <- length(V2levels)
+    
     hues <- seq(15, 375, length = n1 + 1)[seq_len(n1)] %>% set_names(V1levels)
 
     colors <- character(0)
-    for (i in seq_along(hues)){
-        colors  %<>%  c(sequential_hcl(
-                                n2, h = hues[[i]], power = 1, c = c(50, 100),
-                                l = c(90, 30)) %>%
-                            set_names(paste0(V1levels[[i]], sep, V2levels)))
+    for (i in seq_along(hues)){  # https://stackoverflow.com/a/5738083
+        basecolor  <- hcl(h = hues[[i]], c = 100, l = 50)
+        newcolors <- colorRampPalette(c('white', basecolor))(n2+1)[-1]
+        names(newcolors) <- paste0(V1levels[[i]], sep, V2levels)
+        colors %<>% c(newcolors)
     }
-    if (show) pie(rep(1, length(colors)), names(colors),
-                col = colors)
+    if (show) pie(rep(1, length(colors)), names(colors), col = colors)
 
     return(colors)
 }
