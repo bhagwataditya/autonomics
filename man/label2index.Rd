@@ -13,9 +13,9 @@ label2index(x)
 Convert labels into indices
 }
 \examples{
-label2index('Reporter intensity 0 WT(0).KD(1).OE(2).R1')
-label2index('Reporter intensity 1 WT(1).KD(2).OE(3).R1')
-label2index('Reporter intensity 0 WT(126).KD(127).OE(128).R1')
-label2index('Reporter intensity 1 WT(126).KD(127).OE(128).R1')
-label2index(x)
+label2index(x = 'Reporter intensity 0 WT(0).KD(1).OE(2).R1')
+label2index(x = 'Reporter intensity 1 WT(1).KD(2).OE(3).R1')
+label2index(x = 'Reporter intensity 0 WT(126).KD(127).OE(128).R1')
+label2index(x = 'Reporter intensity 1 WT(126).KD(127).OE(128).R1')
+label2index(x = 'Reporter intensity 1 Mix1')
 }

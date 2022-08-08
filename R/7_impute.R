@@ -247,8 +247,8 @@ impute.SummarizedExperiment <- function(
     }
 # Plot/Return
     if (plot){
-        p1 <- plot_sample_densities(object)
-        p2 <- if (ncol(object)<=9){ plot_sample_nas(object)
+        p1 <- plot_sample_densities(object, fill = 'subgroup') + guides(fill = 'none')
+        p2 <- if (ncol(object)<=9){ plot_sample_nas(object) + ggtitle('Sample detections')
               } else {   plot_subgroup_nas(object) }
         gridExtra::grid.arrange(p1, p2, nrow = 1)
     }
