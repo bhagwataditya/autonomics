@@ -65,4 +65,8 @@ object <- read_proteingroups(file)
 impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
 impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
 impute(object, plot = TRUE)                         # sumexp
+
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file)
+impute(object, plot = TRUE)
 }

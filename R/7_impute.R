@@ -137,6 +137,10 @@ na_to_string <- function(x){
 #' impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
 #' impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
 #' impute(object, plot = TRUE)                         # sumexp
+#' 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' impute(object, plot = TRUE)
 #' @export
 impute <- function(object, ...) UseMethod('impute')
 
@@ -247,10 +251,15 @@ impute.SummarizedExperiment <- function(
     }
 # Plot/Return
     if (plot){
-        p1 <- plot_sample_densities(object, fill = 'subgroup') + guides(fill = 'none')
-        p2 <- if (ncol(object)<=9){ plot_sample_nas(object) + ggtitle('Sample detections')
+        #p1 <- plot_sample_densities(object, fill = 'subgroup') + guides(fill = 'none')
+        #dt <- sumexp_to_longdt(object)
+        # p1 <- ggplot(dt) + ggridges::geom_density_ridges(aes(
+        #         x = value, y = sample_id, fill = subgroup, group = sample_id)) + 
+        #         theme_bw() + ggtitle('Sample densities')
+        p1 <- if (ncol(object)<=9){ plot_sample_nas(object) + guides(fill = 'none')
               } else {   plot_subgroup_nas(object) }
-        gridExtra::grid.arrange(p1, p2, nrow = 1)
+        p2 <- plot_sample_violins(object, fill = 'subgroup') + guides(fill = 'none') + ggtitle(NULL)
+        gridExtra::grid.arrange(p1, p2, layout_matrix = matrix(c(1,1,2), nrow = 3))
     }
     object
 }
