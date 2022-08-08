@@ -16,9 +16,28 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'ho
 
 # Read
 
-Autonomics offers read functions for several omics platforms, which import platform-specific data into a common SummarizedExperiment format:
+## Platforms
 
-```{r, echo = FALSE, out.width = '80%', out.height = '80%', message = FALSE}
+Autonomics offers platform-specific readers to import omics data into an analysis-ready SummarizedExperiment:
+
+```{r, message = FALSE}
+require(autonomics)
+file.rnaseq          <- download_data('billing19.rnacounts.txt'    )
+file.proteingroups   <- download_data('billing19.proteingroups.txt')
+file.phosphosites    <- download_data('billing19.phosphosites.txt' )
+file.diann           <- download_data('szymanski22.report.tsv'     )
+file.somascan        <- download_data('atkin18.somascan.adat'      )
+file.metabolon       <- download_data('atkin18.metabolon.xlsx'     )
+object.rnaseq        <- read_rnaseq_counts(file.rnaseq,        plot = FALSE)
+object.proteingroups <- read_proteingroups(file.proteingroups, plot = FALSE)
+object.phosphosites  <- read_phosphosites( file.phosphosites,
+                                           file.proteingroups, plot = FALSE)
+object.diann         <- read_diann(        file.diann,         plot = FALSE)
+object.somascan      <- read_somascan(     file.somascan,      plot = FALSE)
+object.metabolon     <- read_metabolon(    file.metabolon,     plot = FALSE)
+```
+
+```{r, echo = FALSE, fig.width = 6, fig.height = 6, out.width = '85%', out.height = '85%', message = FALSE}
 require(data.table)
 require(ggplot2)
 require(autonomics)
@@ -27,8 +46,8 @@ dt <- data.table(
     label = c('', 'read_affy', 'read_proteingroups', 'read_phosphosites', 
               'read_diann', 'read_somascan', 'read_metabolon', 
               'read_rnaseq_counts'), 
-    molecule = c('', 'transcript', 'protein', 'protein', 'protein', 'protein', 
-                 'metabolite', 'transcript'))
+    molecule = c('', 'microarray', 'maxquant', 'maxquant', 'diann', 'epitope', 
+                 'metabolite', 'rnaseq'))
 ggplot(dt) + 
 ylim(0, 2) + 
 geom_segment(aes(x = x, xend = xend, y = y, yend = yend), arrow = arrow()) + 
@@ -42,50 +61,61 @@ coord_polar() +
 scale_fill_manual(values = make_colors(unique(dt$molecule[-1])))
 ```
 
+## SummarizedExperiment
+
+Accessing SummarizedExperiment content is easy, as illsutrated for the proteomics dataset of **@Fukuda2020**. This study compared the proteome of Zebrafish Embryos (30 days post-fertilization) with that of Adults. Mass Spectra were processed using MaxQuant [@Cox2008], and a  proteinGroups file with expression values obtained. Import into autonomics and access to  the **Expression Matrix** is easy:
+
 ```{r, message = FALSE}
-require(autonomics)
-file.rnaseq        <- download_data('billing19.rnacounts.txt'    )
-file.proteingroups <- download_data('billing19.proteingroups.txt')
-file.phosphosites  <- download_data('billing19.phosphosites.txt' )
-file.diann         <- download_data('szymanski22.report.tsv'     )
-file.somascan      <- download_data('atkin18.somascan.adat'      )
-file.metabolon     <- download_data('atkin18.metabolon.xlsx'     )
-object.rnaseq        <- read_rnaseq_counts(file.rnaseq,        plot = FALSE)
-object.proteingroups <- read_proteingroups(file.proteingroups, plot = FALSE)
-object.phosphosites  <- read_phosphosites( file.phosphosites,
-                                           file.proteingroups, plot = FALSE)
-object.diann         <- read_diann(        file.diann,         plot = FALSE)
-object.somascan      <- read_somascan(     file.somascan,      plot = FALSE)
-object.metabolon     <- read_metabolon(    file.metabolon,     plot = FALSE)
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file)
+values(object)[1:3, 1:5]
 ```
+
+Access to the **sample data.table** is also easy:
+
+```{r, message = FALSE}
+sdt(object)[1:3, ]
+```
+
+as is access to the **feature data.table**: 
+
+```{r, message = FALSE}
+fdt(object)[1:3, c(1, 2, 8)]
+```
+
+## Filter Features
+
+Non-informative features are filtered out during reading, with details recorded in the object:
+
+```{r}
+n <- analysis(object)$nfeature
+```
+
+In this case **`r n[[5]]` proteingroups** (out of `r n[[1]]` identified) were retained for  analysis, after applying the following filters:
+
+```{r, echo = FALSE}
+require(data.table)
+data.table(Filter = names(n), n = n)   # Filtering details
+```
+
 
 # Explore
 
+## Features
+
+A feature (e.g. protein) distribution shows how the values of a **single feature** are distributed **across all samples**. Feature distributions can be visualized with density, violin, or box plots, as shown below.
+
+```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
+require(ggplot2)
+d <- plot_feature_densities(object, n = 4) + guides(fill = 'none')
+v <- plot_feature_violins(  object, n = 4) + guides(fill = 'none')
+b <- plot_feature_boxplots( object, n = 4) + guides(fill = 'none')
+gridExtra::grid.arrange(d, v, b, nrow = 1)
+```
+
 ## Samples
 
-### Design
-
-Fukuda et al. (2020) studied the embryonic development of zebrafish.\
-They compared the proteome of 30-days-post-fertilization embryos to adults.
-
-```{r, message = FALSE}
-require(autonomics)
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, plot = FALSE)
-sdt(object)[, 1:3]
-```
-
-### Principle Component Analysis
-
-In an experiment with p quantified proteingroups, each sample can be thought of as a data point in a p-dimensional space. **Principal Component Analysis** projects these sample points onto that lower (e.g. 2) dimensional space which maximizes the variance between samples. This two-dimensional biplot greatly aids in comprehending the overall sample similarity structure, as shown below for the dataset under consideration, where subgroup is reassuringly observed to be the major source of variation.
-
-```{r, message = FALSE, fig.width = 3.5, fig.height = 2.5, out.width = '50%', out.height = '50%'}
-biplot(pca(object))
-```
-
-### Sample Distributions
-
-A sample distribution shows how the values of a **single sample** are distributed **across all features** (proteins). Sample distributions can be visualized with density, violin, or box plots, as shown below.
+A sample distribution shows how the values of a **single sample** are distributed **across all features** (proteins). Sample distributions can also be visualized with density, violin, or box plots:
 
 ```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
 require(ggplot2)
@@ -95,32 +125,14 @@ b <- plot_sample_boxplots(object)  + guides(fill = 'none')
 gridExtra::grid.arrange(d, v, b, nrow = 1)
 ```
 
-## Features
+## Principle Component Analysis
 
-### Filtering
+In an experiment with p quantified features (here proteingroups), each sample can be thought of as a data point in a p-dimensional space. **Principal Component Analysis** [@Pearson1901] projects these sample points onto that lower (e.g. 2) dimensional space which maximizes the variance between samples. This two-dimensional biplot greatly aids in comprehending the overall sample similarity structure, as shown below for the dataset under consideration, where subgroup is reassuringly observed to be the major source of variation.
 
-```{r}
-n <- analysis(object)$nfeature
+```{r, message = FALSE, fig.width = 3.5, fig.height = 2.5, out.width = '50%', out.height = '50%'}
+biplot(pca(object))
 ```
 
-**`r n[[5]]` proteingroups** (out of `r n[[1]]` identified) were retained for further analysis, after applying the following filters:
-
-```{r, echo = FALSE}
-require(data.table)
-data.table(Filter = names(n), n = n)   # Filtering details
-```
-
-### Feature Distributions
-
-A feature (protein) distribution shows how the values of a **single feature** are distributed **across all samples**. Feature distributions can be visualized with density, violin, or box plots, as shown below.
-
-```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
-require(ggplot2)
-d <- plot_feature_densities(object, n = 4) + guides(fill = 'none')
-v <- plot_feature_violins(  object, n = 4) + guides(fill = 'none')
-b <- plot_feature_boxplots( object, n = 4) + guides(fill = 'none')
-gridExtra::grid.arrange(d, v, b, nrow = 1)
-```
 
 # Impute
 
@@ -238,7 +250,7 @@ plot_design(object)
 
 ## `fit_limma`: Generalized Contrasts and Moderated GLM
 
-Alternative coding schemes are a more advanced topic. And though several such alternative coding are available in R (`contr.sum` compares each subgroup to the global mean, `contr.helmert` compares each subgroup level to the average of the previous levels, etc.) it is not always straightforward to find the coding scheme that is appropriate for the scientific question under focus. The coding is also a bit verbose. All of that was made much easier with the arrival of `limma` [@Smyth+2004], to which autonomics offers direct access through `fit_limma`. The development of limma was motivated by the shifting nature of data in Bioinformatics Studies: a sample was no longer associated with a single value but rather with thousands of values for many different features being measured in parallel (genes, transcripts, proteins, ...). This brought challenges, such as false discoveries became much more likely. It also brought wonderful opportunities: since most of the features are typically not differential expressed between two samples (and only a minority are), this background can be used to estimate a residual standard deviation, which is then used to 'moderate' the t-statistic: adding this residual standard devation sd0 creates a moderated $t$ statistic less subject to inflation due to small standard deviation (rather than decent effect sizes).
+Alternative coding schemes are a more advanced topic. And though several such alternative coding are available in R (`contr.sum` compares each subgroup to the global mean, `contr.helmert` compares each subgroup level to the average of the previous levels, etc.) it is not always straightforward to find the coding scheme that is appropriate for the scientific question under focus. The coding is also a bit verbose. All of that was made much easier with the arrival of `limma` [@Smyth2004], to which autonomics offers direct access through `fit_limma`. The development of limma was motivated by the shifting nature of data in Bioinformatics Studies: a sample was no longer associated with a single value but rather with thousands of values for many different features being measured in parallel (genes, transcripts, proteins, ...). This brought challenges, such as false discoveries became much more likely. It also brought wonderful opportunities: since most of the features are typically not differential expressed between two samples (and only a minority are), this background can be used to estimate a residual standard deviation, which is then used to 'moderate' the t-statistic: adding this residual standard devation sd0 creates a moderated $t$ statistic less subject to inflation due to small standard deviation (rather than decent effect sizes).
 
 $$t = \frac{\textrm{difference}}{\frac{\textrm{sd + sd0}}{\sqrt n}}$$
 
