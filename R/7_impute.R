@@ -259,7 +259,7 @@ impute.SummarizedExperiment <- function(
         p1 <- if (ncol(object)<=9){ plot_sample_nas(object) + guides(fill = 'none')
               } else {   plot_subgroup_nas(object) }
         p2 <- plot_sample_violins(object, fill = 'subgroup') + guides(fill = 'none') + ggtitle(NULL)
-        gridExtra::grid.arrange(p1, p2, layout_matrix = matrix(c(1,1,2), nrow = 3))
+        gridExtra::grid.arrange(p1, p2, nrow = 2)
     }
     object
 }
