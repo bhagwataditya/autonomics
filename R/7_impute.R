@@ -545,6 +545,10 @@ venn_detects <- function(object, by = 'subgroup'){
 #==============================================================================
 
 cluster_order_features <- function(object){
+    
+    assert_is_identical_to_false(any(is.infinite(values(object))))
+        # Otherwise Error in hclustfun(distfun(x)) : NA/NaN/Inf
+        # https://stackoverflow.com/questions/23738900
     if (nrow(object) < 3) return(object)
     idx <- is.na(values(object))
     values(object)[idx] <- 0

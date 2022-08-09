@@ -571,7 +571,7 @@ mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
     rownames(mat) <- dt$feature_id
     mat %<>% zero_to_na(verbose = verbose) 
     mat %<>% nan_to_na( verbose = verbose)
-    mat <- log2(1 + mat)
+    mat <- log2(mat)
     mat
 }
 
