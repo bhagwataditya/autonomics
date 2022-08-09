@@ -337,8 +337,9 @@ read_diann <- function(
         fdt0 %<>% unique()
         object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'Protein.Group')
     # sdt
-        object$sample_id <- colnames(object)
-        object$subgroup <- 'group0'
+        snames(object) <- colnames(object)
+        snames(object) %<>% drop_common()
+        object$subgroup  <- infer_subgroup( object$sample_id)
 # Filter. Impute. Analyze
     if (length(contaminants)>0){
         object %<>% rm_diann_contaminants(contaminants, verbose = verbose)
@@ -352,5 +353,28 @@ read_diann <- function(
         block = block,        coefs = coefs,  contrasts = contrasts,
       verbose = verbose,      plot  = plot,     feature_id = feature_id,
     sample_id = sample_id,  palette = palette )
+}
+
+has_one_level <- function(x) length(unique(x))==1
+x <- paste0('pi_exp_', c('wt_r1', 'wt_r2', 'kd_r1', 'kd_r2'))
+drop_common   <- function(x){
+    sep <- guess_sep(x)
+    if (sep == 'NOSEP')  return(x)
+    x <- data.table(x = x)
+    x <- x[, tstrsplit(x, split = sep)]
+    idx <- !vapply(x, has_one_level, logical(1))
+    x <- x[, idx, with = FALSE]
+    x <- Reduce(function(a,b) paste(a, b, sep = sep), x)
+    x
+}
+
+# sampleids <- paste0('pi_exp_', c('wt_r1', 'wt_r2', 'kd_r1', 'kd_r2'))
+infer_subgroup <- function(sampleids){
+    sep <- guess_sep(sampleids)
+    if (sep == 'NOSEP')  return(rep('group0', length(sampleids)))
+    n <- nfactors(sampleids)
+    subgroups <- sampleids %>% split_extract_fixed(sep, 1:(n-1))
+    if (any(duplicated(subgroups)))  return(subgroups)
+    return('group0')
 }
 
