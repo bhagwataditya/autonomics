@@ -46,8 +46,8 @@ dt <- data.table(
     label = c('', 'read_affy', 'read_proteingroups', 'read_phosphosites', 
               'read_diann', 'read_somascan', 'read_metabolon', 
               'read_rnaseq_counts'), 
-    molecule = c('', 'microarray', 'maxquant', 'maxquant', 'diann', 'epitope', 
-                 'metabolite', 'rnaseq'))
+    molecule = c('', 'transcript', 'protein', 'protein', 'protein', 'protein', 
+                 'metabolite', 'transcript'))
 ggplot(dt) + 
 ylim(0, 2) + 
 geom_segment(aes(x = x, xend = xend, y = y, yend = yend), arrow = arrow()) + 
@@ -58,7 +58,8 @@ theme(axis.text  = element_blank(),
       axis.ticks = element_blank(), 
       axis.title = element_blank()) + guides(fill = 'none') + 
 coord_polar() + 
-scale_fill_manual(values = make_colors(unique(dt$molecule[-1])))
+scale_fill_manual(values = make_colors(unique(dt$molecule[-1]))) + 
+theme_void()
 ```
 
 ## SummarizedExperiment

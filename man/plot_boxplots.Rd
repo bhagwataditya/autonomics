@@ -78,7 +78,7 @@ plot_subgroup_boxplots(
   highlight = NULL,
   jitter = TRUE,
   n = 9,
-  facet = vars(feature_id),
+  facet = "feature_id",
   scales = "free_y",
   nrow = NULL,
   ncol = NULL,

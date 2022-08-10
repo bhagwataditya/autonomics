@@ -4,14 +4,14 @@
 \alias{.read_proteingroups}
 \title{Read proteingroups/phosphosites as-is}
 \usage{
-.read_proteingroups(proteinfile, verbose = TRUE)
+.read_proteingroups(file, verbose = TRUE)
 }
 \arguments{
-\item{proteinfile}{file}
+\item{file}{proteingroups / phosphosites file}
 
 \item{verbose}{TRUE / FALSE}
 
-\item{phosphofile}{file}
+\item{proteinfile}{proteingroups file}
 }
 \value{
 data.table
@@ -22,6 +22,6 @@ Read proteingroups/phosphosites as-is
 \examples{
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
-prodt <- .read_proteingroups(proteinfile = proteinfile)
-fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
+prodt <- .read_proteingroups(file = proteinfile)
+fosdt <- .read_phosphosites( file = phosphofile, proteinfile = proteinfile)
 }

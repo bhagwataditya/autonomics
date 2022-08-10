@@ -80,26 +80,26 @@ un_int64 <- function(x) {
 }
 
 #' Read proteingroups/phosphosites as-is
-#' @param proteinfile  file
-#' @param phosphofile  file
+#' @param file         proteingroups / phosphosites file
+#' @param proteinfile  proteingroups file
 #' @param verbose  TRUE / FALSE
 #' @return data.table
 #' @examples 
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
-#' prodt <- .read_proteingroups(proteinfile = proteinfile)
-#' fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
+#' prodt <- .read_proteingroups(file = proteinfile)
+#' fosdt <- .read_phosphosites( file = phosphofile, proteinfile = proteinfile)
 #' @export
-.read_proteingroups <- function(proteinfile, verbose = TRUE){
+.read_proteingroups <- function(file, verbose = TRUE){
 # Assert
-    assert_all_are_existing_files(proteinfile)
-    assert_all_are_matching_fixed(proteinfile, 'roups.txt')
+    assert_all_are_existing_files(file)
+    assert_all_are_matching_fixed(file, 'roups.txt')
 # Read
-    if (verbose)  message('\tRead ', proteinfile)
-    prodt <- fread(proteinfile, colClasses = c(id = 'character'), integer64 = 'numeric')
+    if (verbose)  message('\tRead ', file)
+    prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
     n0 <- nrow(prodt)
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[guess_maxquant_quantity(proteinfile)]]
+    pattern <- MAXQUANT_PATTERNS_QUANTITY[[guess_maxquant_quantity(file)]]
     anncols <- c('id', 'Majority protein IDs', 'Reverse', 
                  'Potential contaminant', 'Contaminant', 'Fasta headers')#, 'Phospho (STY) site IDs')
     anncols %<>% intersect(names(prodt))
@@ -116,16 +116,16 @@ un_int64 <- function(x) {
 }
 
 
-.read_phosphosites <- function(phosphofile, proteinfile, verbose = TRUE){
+.read_phosphosites <- function(file, proteinfile, verbose = TRUE){
 # Assert
-    assert_all_are_existing_files(c(proteinfile, phosphofile))
+    assert_all_are_existing_files(c(proteinfile, file))
     assert_all_are_matching_fixed(proteinfile, 'roups.txt')
-    assert_all_are_matching_fixed(phosphofile, 'ites.txt')
+    assert_all_are_matching_fixed(file, 'ites.txt')
 # Read    
-    if (verbose)  message('\tRead ', phosphofile)
-    fosdt <- fread(phosphofile, colClasses = c(id = 'character'), integer64 = 'numeric')
+    if (verbose)  message('\tRead ', file)
+    fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     fosdt %<>% un_int64()
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[guess_maxquant_quantity(phosphofile)]]
+    pattern <- MAXQUANT_PATTERNS_QUANTITY[[guess_maxquant_quantity(file)]]
     anncols <- c('id', 'Protein group IDs', 'Proteins', 
                  'Positions within proteins', 'Amino acid', 
                  'Reverse', 'Contaminant', 'Potential contaminant', 'Fasta headers')
@@ -411,18 +411,18 @@ CURATEDCOLS <- c('entry', 'isoform', 'uniprot', 'canonical', 'proteinname', 'gen
 #' @return data.table
 #' @examples
 #' # Fukuda 2020: MaxQuant 
-#'     proteinfile <- download_data('fukuda20.proteingroups.txt')
-#'     dt <- .read_proteingroups(proteinfile)
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     dt <- .read_proteingroups(file)
 #'     curate_annotate_maxquant(dt)[, 1:7]
 #'     curate_annotate_fastafile(dt, fastadt = NULL)[, 1:2]
 #'     curate_annotate(dt, fastadt = NULL)[, 1:7]
 #'     
 #' # Billing 2019: Fastafile + MaxQuant
-#'     proteinfile <- download_data('billing19.proteingroups.txt')
+#'     file <- download_data('billing19.proteingroups.txt')
 #'     phosphofile <- download_data('billing19.phosphosites.txt')
 #'     fastafile   <- download_data('uniprot_hsa_20140515.fasta')
 #'     fastadt <-  read_fastahdrs(fastafile)
-#'     dt <- .read_proteingroups(proteinfile, verbose = TRUE)
+#'     dt <- .read_proteingroups(file, verbose = TRUE)
 #'     dt[, 1:4]
 #'     curate_annotate_maxquant( dt)[, 1:7]
 #'     curate_annotate_fastafile(dt, fastadt = NULL)[, 1:7]
@@ -557,9 +557,9 @@ add_feature_id <- function(dt){
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#' prodt <- .read_proteingroups(proteinfile = proteinfile)
-#' fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
-#' prodt %<>% maxquant_curate()
+#' prodt <- .read_proteingroups(file = proteinfile)
+#' fosdt <- .read_phosphosites( file = phosphofile, proteinfile = proteinfile)
+#' prodt %<>% curate_annotate_maxquant()
 #' prodt %<>% add_feature_id()
 #' quantity <- guess_maxquant_quantity(proteinfile)
 #' pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
@@ -594,13 +594,10 @@ mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
 #' @examples
 #' dequantify(c('Ratio H/L WT(L).KD(M).OE(H).R1',             # Ratios
 #'              'Ratio M/L WT(L).KD(M).OE(H).R1'))
-#' 
 #' dequantify(c('Ratio H/L normalized WT(L).KD(M).OE(H).R1',  # Norm. Ratios
 #'              'Ratio M/L normalized WT(L).KD(M).OE(H).R1'))
-#' 
 #' dequantify(c('LFQ intensity WT.R1',                        # LFQ intensity
 #'              'LFQ intensity KD.R1'))
-#' 
 #' dequantify(c('Reporter intensity 1 WT(126).KD(127).R1',    # Rep.intensities
 #'              'Reporter intensity 2 WT(126).KD(127).R1'))
 #' @md
@@ -670,9 +667,9 @@ label2index <- function(x){
 
 
 #' Read proteingroups / phosphosites
-#'
-#' @param proteinfile   proteingroups file
-#' @param phosphofile   phosphosites  file
+#' @param dir           directory with proteingroups file
+#' @param file          proteingroup / phosphosites file
+#' @param proteinfile   proteingroups  file
 #' @param fastadt       fasta data.table or NULL
 #' @param curate        whether to curate uniprots
 #' @param subgroups     character / NULL : subset of subgroups to retain
@@ -695,34 +692,35 @@ label2index <- function(x){
 #' @return SummarizedExperiment
 #' @examples
 #' # fukuda20
-#'     proteinfile <- download_data('fukuda20.proteingroups.txt')
-#'     pro <- read_proteingroups(proteinfile, plot = TRUE)
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     pro <- read_proteingroups(file = file, plot = TRUE)
 #' # billing19
 #'     proteinfile <- download_data('billing19.proteingroups.txt')
 #'     phosphofile <- download_data('billing19.phosphosites.txt')
 #'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #'     fastadt <- read_fastahdrs(fastafile)
 #'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-#'     pro <- read_proteingroups(proteinfile, subgroups = subgroups, plot = TRUE)
-#'     pro <- read_proteingroups(proteinfile, subgroups = subgroups)
-#'     fos <- read_phosphosites( phosphofile, proteinfile, subgroups = subgroups)
-#'     fos <- read_phosphosites( phosphofile, proteinfile, fastadt = fastadt, subgroups = subgroups)
+#'     pro <- read_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
+#'     pro <- read_proteingroups(file = proteinfile, subgroups = subgroups)
+#'     fos <- read_phosphosites( file = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
+#'     fos <- read_phosphosites( file = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
 #' @export
 read_proteingroups <- function(
-    proteinfile, fastadt = NULL, 
-    quantity = guess_maxquant_quantity(proteinfile), curate = TRUE,
-    subgroups = NULL, invert = character(0),
+    dir = getwd(), file = file.path(dir, 'proteinGroups.txt'), 
+    fastadt = NULL, quantity = guess_maxquant_quantity(file), 
+    curate = TRUE, subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = FALSE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,
     formula = NULL, block = NULL, coefs = NULL, contrasts = NULL,
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
+    assert_all_are_dirs(dir)
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
 # Read/Curate
-    prodt <- .read_proteingroups(proteinfile = proteinfile, verbose = verbose)
+    prodt <- .read_proteingroups(file = file, verbose = verbose)
     if (curate)  prodt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     prodt %<>% add_feature_id()
 # SumExp
@@ -757,7 +755,10 @@ read_proteingroups <- function(
 #' @rdname read_proteingroups
 #' @export
 read_phosphosites <- function(
-    phosphofile, proteinfile, fastadt = NULL, 
+    dir = getwd(), 
+    file = file.path(dir, 'phospho (STY)Sites.txt'), 
+    proteinfile = file.path(dir, 'proteinGroups.txt'), 
+    fastadt = NULL, 
     quantity = guess_maxquant_quantity(proteinfile), curate = TRUE, 
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
@@ -766,12 +767,13 @@ read_phosphosites <- function(
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
+    assert_all_are_dirs(dir)
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
 # Read
-    prodt <- .read_proteingroups(proteinfile = proteinfile, verbose = verbose)
-    fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, verbose = verbose)
+    prodt <- .read_proteingroups(file = proteinfile, verbose = verbose)
+    fosdt <- .read_phosphosites(file = file, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
     if (curate)  fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     fosdt %<>% add_feature_id()

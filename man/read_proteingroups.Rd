@@ -6,9 +6,10 @@
 \title{Read proteingroups / phosphosites}
 \usage{
 read_proteingroups(
-  proteinfile,
+  dir = getwd(),
+  file = file.path(dir, "proteinGroups.txt"),
   fastadt = NULL,
-  quantity = guess_maxquant_quantity(proteinfile),
+  quantity = guess_maxquant_quantity(file),
   curate = TRUE,
   subgroups = NULL,
   invert = character(0),
@@ -29,8 +30,9 @@ read_proteingroups(
 )
 
 read_phosphosites(
-  phosphofile,
-  proteinfile,
+  dir = getwd(),
+  file = file.path(dir, "phospho (STY)Sites.txt"),
+  proteinfile = file.path(dir, "proteinGroups.txt"),
   fastadt = NULL,
   quantity = guess_maxquant_quantity(proteinfile),
   curate = TRUE,
@@ -54,7 +56,9 @@ read_phosphosites(
 )
 }
 \arguments{
-\item{proteinfile}{proteingroups file}
+\item{dir}{directory with proteingroups file}
+
+\item{file}{proteingroup / phosphosites file}
 
 \item{fastadt}{fasta data.table or NULL}
 
@@ -92,7 +96,7 @@ read_phosphosites(
 
 \item{verbose}{whether to msg}
 
-\item{phosphofile}{phosphosites  file}
+\item{proteinfile}{proteingroups  file}
 
 \item{localization}{min site localization probability}
 }
@@ -104,16 +108,16 @@ Read proteingroups / phosphosites
 }
 \examples{
 # fukuda20
-    proteinfile <- download_data('fukuda20.proteingroups.txt')
-    pro <- read_proteingroups(proteinfile, plot = TRUE)
+    file <- download_data('fukuda20.proteingroups.txt')
+    pro <- read_proteingroups(file = file, plot = TRUE)
 # billing19
     proteinfile <- download_data('billing19.proteingroups.txt')
     phosphofile <- download_data('billing19.phosphosites.txt')
     fastafile <- download_data('uniprot_hsa_20140515.fasta')
     fastadt <- read_fastahdrs(fastafile)
     subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-    pro <- read_proteingroups(proteinfile, subgroups = subgroups, plot = TRUE)
-    pro <- read_proteingroups(proteinfile, subgroups = subgroups)
-    fos <- read_phosphosites( phosphofile, proteinfile, subgroups = subgroups)
-    fos <- read_phosphosites( phosphofile, proteinfile, fastadt = fastadt, subgroups = subgroups)
+    pro <- read_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
+    pro <- read_proteingroups(file = proteinfile, subgroups = subgroups)
+    fos <- read_phosphosites( file = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
+    fos <- read_phosphosites( file = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
 }

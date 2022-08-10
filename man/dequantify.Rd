@@ -31,13 +31,10 @@ Encode {channel} as suffix.
 \examples{
 dequantify(c('Ratio H/L WT(L).KD(M).OE(H).R1',             # Ratios
              'Ratio M/L WT(L).KD(M).OE(H).R1'))
-
 dequantify(c('Ratio H/L normalized WT(L).KD(M).OE(H).R1',  # Norm. Ratios
              'Ratio M/L normalized WT(L).KD(M).OE(H).R1'))
-
 dequantify(c('LFQ intensity WT.R1',                        # LFQ intensity
              'LFQ intensity KD.R1'))
-
 dequantify(c('Reporter intensity 1 WT(126).KD(127).R1',    # Rep.intensities
              'Reporter intensity 2 WT(126).KD(127).R1'))
 }

@@ -23,9 +23,9 @@ Convert maxquant data.table to matrix
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
-prodt <- .read_proteingroups(proteinfile = proteinfile)
-fosdt <- .read_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
-prodt \%<>\% maxquant_curate()
+prodt <- .read_proteingroups(file = proteinfile)
+fosdt <- .read_phosphosites( file = phosphofile, proteinfile = proteinfile)
+prodt \%<>\% curate_annotate_maxquant()
 prodt \%<>\% add_feature_id()
 quantity <- guess_maxquant_quantity(proteinfile)
 pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
