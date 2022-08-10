@@ -546,7 +546,6 @@ biplot <- function(
     yvar <- round(metadata(object)[[methody]][[y]], 1)
     xlab  <- paste0(x, ' : ', xvar,'% ')
     ylab  <- paste0(y, ' : ', yvar,'% ')
-    
 # Plot
     p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
     p <- p + ggtitle(paste0(x, ':', y))
@@ -557,6 +556,13 @@ biplot <- function(
     if (!is.null(label))  p <- p + geom_text_repel(
                     aes(x = !!sym(x), y = !!sym(y), label = !!sym(label)), 
                     data = sdt(object), na.rm = TRUE)
+    if (!is.null(shape)){
+        n <- length(slevels(object, shape))
+        if (n > 6)  p <- p + scale_shape_manual(values = seq(15, 15+n-1))
+            # Warning messages: The shape palette can deal with a maximum 
+            # of 6 discrete values
+            # https://stackoverflow.com/questions/16813278
+    }
 # Return
     p
 }

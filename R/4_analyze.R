@@ -137,9 +137,9 @@ plot_top_feature <- function(
 ){
     plot_subgroup_boxplots(
         object, 
-        subgroup = subgroup, 
-        fill     = subgroup, 
-        facet    = vars(feature_id),
+        subgroup = 'subgroup', 
+        fill     = 'subgroup', 
+        facet    = 'feature_id',
         palette  = palette, 
         labeller = label_value) + 
     ggtitle('Feature') + guides(fill = 'none') + 
