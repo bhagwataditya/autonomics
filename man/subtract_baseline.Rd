@@ -17,7 +17,7 @@ subtract_baseline(
 
 subtract_pairs(
   object,
-  subgroupvar,
+  subgroupvar = "subgroup",
   subgroupctr = slevels(object, subgroupvar)[1],
   block,
   assaynames = assayNames(object)[1],

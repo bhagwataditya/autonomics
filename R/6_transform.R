@@ -169,7 +169,10 @@ subtract_baseline <- function(
 #' @rdname subtract_baseline
 #' @export
 subtract_pairs <- function(
-    object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], block,
+    object, 
+    subgroupvar = 'subgroup', 
+    subgroupctr = slevels(object, subgroupvar)[1], 
+    block,
     assaynames = assayNames(object)[1], verbose = TRUE
 ){
 # Report
