@@ -123,7 +123,7 @@ plot_summary <- function(
 plot_top_sample <- function(object, palette = make_subgroup_palette(object)){
     plot_sample_densities(
         object, 
-        fill = subgroup, facet = vars(sample_id), palette = palette,
+        fill = 'subgroup', facet = 'sample_id', palette = palette,
         fixed = list(alpha=1, na.rm = TRUE), labeller = label_value) + 
         guides(fill = 'none') + ggtitle('Sample') +
         xlab(assayNames(object)[1]) + ylab(NULL) + 

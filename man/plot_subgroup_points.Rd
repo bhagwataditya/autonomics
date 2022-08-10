@@ -6,12 +6,12 @@
 \usage{
 plot_subgroup_points(
   object,
-  subgroup,
+  subgroup = "subgroup",
   block = NULL,
-  x = !!enquo(subgroup),
-  color = !!enquo(subgroup),
-  group = !!enquo(block),
-  facet = vars(feature_id),
+  x = subgroup,
+  color = subgroup,
+  group = block,
+  facet = "feature_id",
   nrow = NULL,
   scales = "free_y",
   ...,
@@ -56,12 +56,12 @@ Plot features
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, fit='limma', plot = FALSE)
+object <- read_metabolon(file, fit = 'limma', plot = FALSE)
 idx <- order(fdata(object)$F.p.limma)[1:9]
 object \%<>\% extract(idx, )
 plot_sample_boxplots(  object)
 plot_feature_boxplots( object)
-plot_subgroup_boxplots(object, subgroup = SET)
-plot_subgroup_points(  object, subgroup = SET)
-plot_subgroup_points(  object, subgroup = SET, block = SUB)
+plot_subgroup_boxplots(object, subgroup = 'SET')
+plot_subgroup_points(  object, subgroup = 'SET')
+plot_subgroup_points(  object, subgroup = 'SET', block = 'SUB')
 }

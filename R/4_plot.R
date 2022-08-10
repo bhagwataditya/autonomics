@@ -770,21 +770,16 @@ plot_feature_boxplots <- function(
 #' @export
 plot_subgroup_boxplots <- function(
     object, assay = assayNames(object)[1],
-    subgroup = subgroup, x = subgroup, fill = subgroup, 
+    subgroup = 'subgroup', x = subgroup, fill = subgroup, 
     color = NULL, block = NULL, highlight = NULL, jitter = TRUE, n = 9,
-    facet = vars(feature_id), scales = 'free_y', nrow = NULL, ncol = NULL, 
+    facet = 'feature_id', scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value',
     palette = make_subgroup_palette(object), fixed = list(na.rm=TRUE), hlevels = NULL
 ){
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    block     <- enquo(block)
-    highlight <- enquo(highlight)
     plot_boxplots(
         object, assay = assay,
-        x = !!x, fill = !!fill, color = !!color,
-        block = !!block, highlight = !!highlight, 
+        x = x, fill = fill, color = color,
+        block = block, highlight = highlight, 
         facet = facet, scales = scales, nrow = nrow,
         ncol = ncol, page = page,  labeller = labeller, 
         jitter = jitter, palette = palette, 
@@ -1110,32 +1105,29 @@ plot_subgroup_contrasts <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit='limma', plot = FALSE)
+#' object <- read_metabolon(file, fit = 'limma', plot = FALSE)
 #' idx <- order(fdata(object)$F.p.limma)[1:9]
 #' object %<>% extract(idx, )
 #' plot_sample_boxplots(  object)
 #' plot_feature_boxplots( object)
-#' plot_subgroup_boxplots(object, subgroup = SET)
-#' plot_subgroup_points(  object, subgroup = SET)
-#' plot_subgroup_points(  object, subgroup = SET, block = SUB)
+#' plot_subgroup_boxplots(object, subgroup = 'SET')
+#' plot_subgroup_points(  object, subgroup = 'SET')
+#' plot_subgroup_points(  object, subgroup = 'SET', block = 'SUB')
 #' @export
 plot_subgroup_points <- function(
-    object, subgroup, block = NULL, x = !!enquo(subgroup), 
-    color = !!enquo(subgroup), group = !!enquo(block), 
-    facet = vars(feature_id), nrow = NULL, scales = 'free_y', ...,
+    object, subgroup = 'subgroup', block = NULL, x = subgroup, 
+    color = subgroup, group = block, 
+    facet = 'feature_id', nrow = NULL, scales = 'free_y', ...,
     palette = NULL,
     fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
-    theme = list(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+    theme = list(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ){
-    x     <- enquo(x)
-    color <- enquo(color)
-    group <- enquo(group)
-    
     dt <- sumexp_to_longdt(
             object, svars = svars(object), fvars = fvars(object))
     value <- NULL
-    p <- plot_data(dt, geom = geom_point, x = !!x, y = value, color = !!color, 
-                    group = !!group, ..., palette = palette, fixed = fixed)
+    p <- plot_data(dt, geom = geom_point, 
+                   x = !!sym(x), y = value, color = !!sym(color), 
+                   group = !!sym(group), ..., palette = palette, fixed = fixed)
     if (!quo_is_null(enquo(block)))  p <- p + geom_line()
     p <- p + facet_wrap(facets = facet, scales = scales, nrow = nrow)
     p <- p + do.call(ggplot2::theme, theme)

@@ -70,7 +70,7 @@ plot_feature_boxplots(
 plot_subgroup_boxplots(
   object,
   assay = assayNames(object)[1],
-  subgroup = subgroup,
+  subgroup = "subgroup",
   x = subgroup,
   fill = subgroup,
   color = NULL,
