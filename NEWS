@@ -1,2 +1,7 @@
-Changes in version 0.99.0 (2020-08-05)
-    + Submitted to Bioconductor
+1.1.7.2
+    `is_file`:            distinguish between dir and file
+    `read_proteingroups`: dir and file
+    `read_phosphosites`:  dir and file
+
+0.99.0 (2020-08-05)
+    Submitted to BioC
