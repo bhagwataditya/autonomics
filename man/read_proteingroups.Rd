@@ -7,7 +7,7 @@
 \usage{
 read_proteingroups(
   dir = getwd(),
-  file = file.path(dir, "proteinGroups.txt"),
+  file = if (is_file(dir)) dir else file.path(dir, "proteinGroups.txt"),
   fastadt = NULL,
   quantity = guess_maxquant_quantity(file),
   curate = TRUE,
@@ -31,8 +31,8 @@ read_proteingroups(
 
 read_phosphosites(
   dir = getwd(),
-  file = file.path(dir, "phospho (STY)Sites.txt"),
-  proteinfile = file.path(dir, "proteinGroups.txt"),
+  file = if (is_file(dir)) dir else file.path(dir, "phospho (STY)Sites.txt"),
+  proteinfile = file.path(dirname(file), "proteinGroups.txt"),
   fastadt = NULL,
   quantity = guess_maxquant_quantity(proteinfile),
   curate = TRUE,

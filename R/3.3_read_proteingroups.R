@@ -666,6 +666,24 @@ label2index <- function(x){
 #---------------------------------------------------------------------------
 
 
+
+#' Is a file?
+#'
+#' Is a file (and not a dir)
+#'
+#' This function distinguishies between dir and file.
+#' Others dont: is.file, fs::file_exists, assertive::is_existing_file
+#' @examples
+#' dir  <- tempdir();  dir.create(dir, showWarnings = FALSE)
+#' file <- tempfile(); invisible(file.create(file))
+#' is_file(dir)
+#' is_file(file)
+#' @export
+is_file <- function(file){
+    file.exists(file) & !dir.exists(file)
+}
+
+
 #' Read proteingroups / phosphosites
 #' @param dir           directory with proteingroups file
 #' @param file          proteingroup / phosphosites file
@@ -706,7 +724,8 @@ label2index <- function(x){
 #'     fos <- read_phosphosites( file = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
 #' @export
 read_proteingroups <- function(
-    dir = getwd(), file = file.path(dir, 'proteinGroups.txt'), 
+    dir = getwd(), 
+    file = if (is_file(dir)) dir else file.path(dir, 'proteinGroups.txt'), 
     fastadt = NULL, quantity = guess_maxquant_quantity(file), 
     curate = TRUE, subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = FALSE,
@@ -715,7 +734,6 @@ read_proteingroups <- function(
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
-    assert_all_are_dirs(dir)
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
@@ -756,8 +774,8 @@ read_proteingroups <- function(
 #' @export
 read_phosphosites <- function(
     dir = getwd(), 
-    file = file.path(dir, 'phospho (STY)Sites.txt'), 
-    proteinfile = file.path(dir, 'proteinGroups.txt'), 
+    file = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
+    proteinfile = file.path(dirname(file), 'proteinGroups.txt'), 
     fastadt = NULL, 
     quantity = guess_maxquant_quantity(proteinfile), curate = TRUE, 
     subgroups = NULL, invert = character(0), 
@@ -767,7 +785,6 @@ read_phosphosites <- function(
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
-    assert_all_are_dirs(dir)
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
