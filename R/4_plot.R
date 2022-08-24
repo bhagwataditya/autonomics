@@ -106,17 +106,17 @@ make_colors <- function(
         if (show) pie(rep(1, length(colors)), names(colors), col = colors)
         return(colors)
     }
-# Twofactor colors
-    if (!is.null(sep)){            # consistent separator
-        if (length(varlevels)>2){  # 3+ samples
-            n1 <- length(unique(split_extract_fixed(varlevels, sep, 1)))
-            n2 <- length(unique(split_extract_fixed(varlevels, sep, 2)))
-            if (n1>1 & n2>1){             # 2+ huevar levels
-                return(make_twofactor_colors(
-                    varlevels, sep = sep, show = show, verbose = verbose))
-            }
-        }
-    }
+# # Twofactor colors
+#     if (!is.null(sep)){            # consistent separator
+#         if (length(varlevels)>2){  # 3+ samples
+#             n1 <- length(unique(split_extract_fixed(varlevels, sep, 1)))
+#             n2 <- length(unique(split_extract_fixed(varlevels, sep, 2)))
+#             if (n1>1 & n2>1){             # 2+ huevar levels
+#                 return(make_twofactor_colors(
+#                     varlevels, sep = sep, show = show, verbose = verbose))
+#             }
+#         }
+#     }
 # Onefactor colors
     return(make_onefactor_colors(
         varlevels, sep = sep, show = show, verbose = verbose))
@@ -850,18 +850,18 @@ format_coef_vars <- function(
 #' object %<>% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
 #' object$SampleId   %<>% factor()
 #' object$Subject_ID %<>% factor()
-#' plot_coef_boxplots(
+#' plot_contrast_boxplots(
 #'     object, subgroup = SampleGroup, block = Subject_ID, 
 #'     fit='limma', coef = 'SampleGroupt1')
-#' plot_coef_boxplots(
+#' plot_contrast_boxplots(
 #'     object, subgroup=SampleGroup, block = Subject_ID, fit='limma', 
 #'     coef = 'SampleGroupt1', fdrcutoff=0.05)
-#' plot_coef_boxplots(
+#' plot_contrast_boxplots(
 #'     object, subgroup = SampleGroup, block = Subject_ID, 
 #'      fit = c('limma', 'lme'), contrast = 'SampleGroupt1', 
 #'      fdrcutoff = 0.05)
 #' @export
-plot_coef_boxplots <- function(
+plot_contrast_boxplots <- function(
     object, assay = assayNames(object)[1], 
     subgroup, block = NULL, fit = fits(object)[1], 
     coef = setdiff(coefs(object), 'Intercept')[1],
