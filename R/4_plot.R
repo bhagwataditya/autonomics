@@ -672,7 +672,10 @@ plot_boxplots <- function(
     if (!is.null(x))   object[[x]] %<>% num2char()
     dt <- sumexp_to_longdt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
     dt[, medianvalue := median(value, na.rm = TRUE), by = c('feature_id', x)]
-    
+    for (facetvar in facet){ 
+        names(dt) %<>% stri_replace_first_fixed(facetvar, make.names(facetvar))
+        facet %<>% stri_replace_first_fixed(facetvar, make.names(facetvar))
+    } # otherwise facet_wrap_paginate thinks `fdr~coef~limma` is a formula
 # Plot
     p <- ggplot(dt)
     if (!is.null(facet)) p <- p + facet_wrap_paginate(
@@ -834,6 +837,7 @@ format_coef_vars <- function(
 #' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
 #' @param coef     string
 #' @param fdrcutoff    number
+#' @param jitter       TRUE or FALSE
 #' @param palette      color palette (named character vector)
 #' @param title        string
 #' @param ylab         NULL or string
@@ -863,35 +867,41 @@ format_coef_vars <- function(
 #' @export
 plot_contrast_boxplots <- function(
     object, assay = assayNames(object)[1], 
-    subgroup, block = NULL, fit = fits(object)[1], 
+    subgroup = 'subgroup', block = NULL, fit = fits(object)[1], 
     coef = setdiff(coefs(object), 'Intercept')[1],
-    facet = vars(feature_id, !!sym(paste('fdr', coef, fit, sep = FITSEP))),
-    fdrcutoff = 0.05, palette = NULL, title = coef, ylab = NULL, 
+    facet = c('feature_id', paste('fdr', coef, fit, sep = FITSEP)),
+    fdrcutoff = 0.05, 
+    jitter = if (is.null(block)) 0.1 else 0,
+    palette = NULL, title = coef, ylab = NULL, 
     nrow = NULL, ncol = NULL, ntop = 4,
     labeller = 'label_value', scales = 'free_y'
 ){
 # Order/Extract on p value
     . <- NULL
-    subgroup  <- enquo(subgroup); subgroupvar <- if (quo_is_null(subgroup)) character(0) else as_name(subgroup)
-    block     <- enquo(block);    blockvar    <- if (quo_is_null(block))    character(0) else as_name(block)
-    facetvars <- vapply(facet, as_name, character(1))
-    svars0 <- c(subgroupvar, blockvar)
+    subgroupsym  <- if (is.null(subgroup)) quo(NULL) else sym(subgroup)
+    blocksym     <- if (is.null(block))    quo(NULL) else sym(block)
+    
+    svars0 <- c(subgroup, block)
     fdrvar    <- paste('fdr',    coef, fit, sep = FITSEP)
     pvar      <- paste('p',      coef, fit, sep = FITSEP)
     effectvar <- paste('effect', coef, fit, sep = FITSEP)
-    fvars0 <- c(facetvars, fdrvar, pvar, effectvar)
+    
+    fvars0 <- c(facet, fdrvar, pvar, effectvar)
     object %<>% extract_coef_features(coef = coef, fit = fit, fdrcutoff = fdrcutoff, ntop = ntop)
     object %<>% format_coef_vars(     coef = coef, fit = fit)
-# Plot
+# Prepare
     dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
-    mediandt <- summarize_median(dt, subgroupvar)
+    mediandt <- summarize_median(dt, subgroup)
     contrastsubgroup <- NULL
     #mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, downlevels)]
     facetstr <- vapply(facet, as_name, character(1))
+    idx <- order(as.numeric(fdt(object)[[pvar]]))  # order on significance
+    object %<>% extract(idx, )
+# Plot
     p <- plot_subgroup_boxplots(
-            object, subgroup = !!subgroup, block = !!block, x = !!subgroup, fill = !!subgroup, 
-            facet = facet, scales = scales, nrow = nrow, 
-            ncol = ncol, labeller = labeller, palette  = palette)  + 
+            object, subgroup = subgroup, block = block, x = subgroup, 
+            fill = subgroup, facet = facet, scales = scales, nrow = nrow, 
+            ncol = ncol, labeller = labeller, jitter = jitter, palette  = palette)  + 
         theme_bw() + xlab(NULL) + ggtitle(title) + ylab(ylab) + 
         # geom_hline( data = mediandt, linetype = 'longdash',
         #        aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 

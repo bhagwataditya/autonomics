@@ -7,12 +7,13 @@
 plot_contrast_boxplots(
   object,
   assay = assayNames(object)[1],
-  subgroup,
+  subgroup = "subgroup",
   block = NULL,
   fit = fits(object)[1],
   coef = setdiff(coefs(object), "Intercept")[1],
-  facet = vars(feature_id, !!sym(paste("fdr", coef, fit, sep = FITSEP))),
+  facet = c("feature_id", paste("fdr", coef, fit, sep = FITSEP)),
   fdrcutoff = 0.05,
+  jitter = if (is.null(block)) 0.1 else 0,
   palette = NULL,
   title = coef,
   ylab = NULL,
@@ -37,6 +38,8 @@ plot_contrast_boxplots(
 \item{coef}{string}
 
 \item{fdrcutoff}{number}
+
+\item{jitter}{TRUE or FALSE}
 
 \item{palette}{color palette (named character vector)}
 
