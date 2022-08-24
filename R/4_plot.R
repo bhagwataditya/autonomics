@@ -1122,13 +1122,17 @@ plot_subgroup_points <- function(
     fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
     theme = list(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ){
-    dt <- sumexp_to_longdt(
-            object, svars = svars(object), fvars = fvars(object))
+    dt <- sumexp_to_longdt(object, svars = svars(object), fvars = fvars(object))
     value <- NULL
+    xsym     <- if (is.null(x))     quo(NULL) else sym(x)
+    colorsym <- if (is.null(color)) quo(NULL) else sym(color)
+    groupsym <- if (is.null(group)) quo(NULL) else sym(group)
+    blocksym <- if (is.null(block)) quo(NULL) else sym(block)
+    
     p <- plot_data(dt, geom = geom_point, 
-                   x = !!sym(x), y = value, color = !!sym(color), 
-                   group = !!sym(group), ..., palette = palette, fixed = fixed)
-    if (!quo_is_null(enquo(block)))  p <- p + geom_line()
+                   x = !!xsym, y = value, color = !!colorsym, 
+                   group = !!groupsym, ..., palette = palette, fixed = fixed)
+    if (!is.null(block))  p <- p + geom_line()
     p <- p + facet_wrap(facets = facet, scales = scales, nrow = nrow)
     p <- p + do.call(ggplot2::theme, theme)
     p
