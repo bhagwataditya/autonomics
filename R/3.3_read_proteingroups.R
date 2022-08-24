@@ -14,9 +14,9 @@ MAXQUANT_PATTERNS_QUANTITY <- c(
     `Ratio`                        = '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
     `Reporter intensity corrected` = '^Reporter intensity corrected ([0-9]+) (.+)$',
     `Reporter intensity`           = '^Reporter intensity ([0-9]+) (.+)$',
+    `LFQ intensity`                = '^LFQ intensity ([HML])? ?(.+)$',
     `Intensity labeled`            = '^Intensity ([HML]) (.+)$',
-    `Intensity`                    = '^Intensity (.+)$',
-    `LFQ intensity`                = '^LFQ intensity ([HML])? ?(.+)$'
+    `Intensity`                    = '^Intensity (.+)$'
 )
 
 

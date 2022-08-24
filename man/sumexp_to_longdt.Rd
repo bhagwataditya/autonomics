@@ -16,9 +16,9 @@ sumexp_to_widedt(
 sumexp_to_longdt(
   object,
   fid = "feature_id",
-  fvars = autonomics::fvars(object),
+  fvars = intersect("feature_name", autonomics::fvars(object)),
   sid = "sample_id",
-  svars = autonomics::svars(object),
+  svars = intersect("subgroup", autonomics::svars(object)),
   assay = assayNames(object) \%>\% intersect(c(.[1], "is_imputed"))
 )
 
