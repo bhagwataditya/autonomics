@@ -60,6 +60,6 @@ Analyze
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
+object <- read_metabolon(file, plot = FALSE)
 object \%<>\% analyze(pca = TRUE, subgroupvar = 'Group', fit = 'limma')
 }
