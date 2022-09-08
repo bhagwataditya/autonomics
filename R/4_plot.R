@@ -477,6 +477,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     assert_is_list(fixed)
 # Prepare
     plotvars <- c('feature_name')
+                              plotvars %<>% c(x)         %>% unique()
                               plotvars %<>% c(fill)      %>% unique()
     if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
     if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
