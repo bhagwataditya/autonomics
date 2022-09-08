@@ -9,7 +9,6 @@
 \alias{fdrvar}
 \alias{up}
 \alias{down}
-\alias{sign}
 \title{Get p/fdr/effect/down/up/sign matrix}
 \usage{
 p(object, coef = coefs(object), fit = fits(object))
@@ -33,14 +32,6 @@ up(
 )
 
 down(
-  object,
-  coef = coefs(object),
-  fit = fits(object),
-  var = "fdr",
-  cutoff = 0.05
-)
-
-sign(
   object,
   coef = coefs(object),
   fit = fits(object),

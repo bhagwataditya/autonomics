@@ -497,18 +497,21 @@ down <- function(
     y
 }
 
-#' @rdname p
+
+#' Get sign
 #' @export
-sign <- function(
+sign.SummarizedExperiment <- function(
     object, 
     coef   = coefs(object),
     fit    = fits(object),
     var    = 'fdr',
     cutoff = 0.05
-){
+){ 
+    if (length(coef)==0) return(matrix(0, nrow = nrow(object), ncol = ncol(object), dimnames = dimnames(object)))
     up(   object, coef = coef, fit = fit, var = var, cutoff = cutoff)  -
     down( object, coef = coef, fit = fit, var = var, cutoff = cutoff)
 }
+
 
 #' Get fit models
 #' 
