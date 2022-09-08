@@ -181,8 +181,12 @@ forge_pg_descriptions <- function(
     dt <- .read_diann_precursors(file, fastadt = fastadt)
     cols <- c('Protein.Group', 'feature_name', 'First.Protein.Description', 
               'Genes', 'Run', 'PG.Quantity', 
-              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ')
-    unique(dt[, cols, with = FALSE ])
+              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'Precursor.No')
+    dt %<>% extract(, cols, with = FALSE )
+    dt[, N.Precursor := .N, by = c('Protein.Group', 'Run')]
+    dt[, Precursor.No := NULL]
+    dt %<>% unique()
+    dt
 }
 
 
@@ -323,12 +327,15 @@ read_diann <- function(
 # SumExp
     # values
         dt <- .read_diann_proteingroups(file, fastadt = fastadt)
-        mat <- data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
+        precursors <- data.table::dcast(dt, Protein.Group ~ Run, value.var = 'N.Precursor')
+        mat        <- data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
+        precursors %<>% dt2mat()
         mat %<>% dt2mat()
         mat %<>% zero_to_na(verbose = verbose)
         mat %<>% nan_to_na( verbose = verbose)
         mat <- log2(mat)
-        l <- set_names(list(exprs = mat), quantity)
+        l <- list(exprs = mat, precursors = precursors)
+        names(l)[1] <- quantity
         object <- SummarizedExperiment(l)
         analysis(object)$nfeatures <- nrow(object)
     # fdt
