@@ -517,7 +517,10 @@ pca1 <- pca2 <- feature_name <- NULL
 #' biplot(object, x = 'pca3', y = 'pca4', color = 'SUB', nloadings = 1)
 #' @export
 biplot <- function(
-    object, x = 'pca1', y = 'pca2', color = 'subgroup', 
+    object, 
+    x = intersect(c('pca1', 'pls1', 'lda1'), svars(object))[1], 
+    y = intersect(c('pca2', 'pls2', 'lda2'), svars(object))[1], 
+    color = 'subgroup', 
     shape = if ('replicate' %in% svars(object)) 'replicate' else NULL, 
     size = NULL, group = NULL, label = NULL, feature_label = 'feature_name', 
     fixed = list(shape = 15, size = 3), 
