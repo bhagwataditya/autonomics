@@ -13,9 +13,13 @@ sumexp_to_widedt <- function(
     assert_is_subset(fvars, fvars(object))
 
     # Extract
-    fdata1 <- data.table(fdata(object)[, unique(c(fid, fvars)), drop = FALSE])
-    exprs1 <- data.table(assays(object)[[assay]])
-    wide1  <- cbind(fdata1, exprs1)
+    wide1 <- fdt(object)[, unique(c(fid, fvars)), with = FALSE]
+    if (is.numeric(assay))  assay <- assayNames(object)[assay]
+    for (ass in assay){
+        exprs1 <- data.table(assays(object)[[ass]])
+        if (length(assay) > 1)  colnames(exprs1) %<>% paste0(ass, '.', .)
+        wide1  %<>% cbind(exprs1)
+    }
     wide1[, (fid) := factor(get(fid), unique(fdata(object)[[fid]]))]
 
     # Return
