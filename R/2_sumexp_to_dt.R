@@ -148,6 +148,7 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
 
 #' Write sumexp to tsv
 #' @param object SummarizedExperiment
+#' @param assay string
 #' @param file filename
 #' @return NULL
 #' @examples 
@@ -157,8 +158,8 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
 #' file %<>% file.path('fukuda20.proteingroups.tsv')
 #' sumexp_to_tsv(object, file)
 #' @export
-sumexp_to_tsv <- function(object, file){
-    widedt <- sumexp_to_widedt(object)
+sumexp_to_tsv <- function(object, assay = assayNames(object)[1], file){
+    widedt <- sumexp_to_widedt(object, assay = assay)
     fwrite(widedt, file, sep = '\t')
 }
 
