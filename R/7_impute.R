@@ -210,6 +210,7 @@ impute.matrix <- function(
 #' @export 
 impute.SummarizedExperiment <- function(
     object, 
+    by       = 'subgroup',
     shift    = 2.5, 
     width    = 0.3, 
     frac     = 0.5,
@@ -230,11 +231,11 @@ impute.SummarizedExperiment <- function(
     dt <- sumexp_to_longdt(object)
     dt[, imputed := impute(value, shift = shift, width = width, 
                            verbose = FALSE, plot = FALSE), by = 'sample_id']
-    dt[,         isNa    :=  is.na(value)]
-    dt[,         isValue := !is.na(value)]
-    dt[, na.subgroup    := sum(isNa)   == .N,   by = c('feature_id', 'subgroup')]
-    dt[, value.subgroup := sum(isValue) > frac*.N, by = c('feature_id', 'subgroup')]
-    dt[, consistent.na := na.subgroup & any(value.subgroup), by = 'feature_id']
+    dt[, isNa    :=  is.na(value)]
+    dt[, isValue := !is.na(value)]
+    dt[, na.group    := sum(isNa)   == .N,   by = c('feature_id', by)]
+    dt[, value.group := sum(isValue) > frac*.N, by = c('feature_id', by)]
+    dt[, consistent.na := na.group & any(value.group), by = 'feature_id']
     dt[consistent.na==TRUE, value := imputed]
 # Update object
     mat <- dcast(dt, feature_id ~ sample_id, value.var = 'value')
@@ -245,7 +246,7 @@ impute.SummarizedExperiment <- function(
     fdt(object)$imputed <- rowAnys(is_imputed(object))
     values(object) <- mat
     if (verbose & any(is_imputed(object))){
-        message(sprintf('\tImputed %d/%d features in the following subgroups:', 
+        message(sprintf('\tImputed %d/%d features in the following groups:', 
                         sum(is_imputed_feature(object)), nrow(object)))
         message_df('\t\t%s', n_imputed_features_per_subgroup(object))
     }
@@ -258,7 +259,7 @@ impute.SummarizedExperiment <- function(
         #         theme_bw() + ggtitle('Sample densities')
         p1 <- if (ncol(object)<=9){ plot_sample_nas(object) + guides(fill = 'none')
               } else {   plot_subgroup_nas(object) }
-        p2 <- plot_sample_violins(object, fill = 'subgroup') + guides(fill = 'none') + ggtitle(NULL)
+        p2 <- plot_sample_violins(object, fill = by) + guides(fill = 'none') + ggtitle(NULL)
         gridExtra::grid.arrange(p1, p2, nrow = 2)
     }
     object
