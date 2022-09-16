@@ -320,7 +320,6 @@ read_diann <- function(
 # Assert
     assert_all_are_existing_files(file)
     if (!is.null(fastadt))  assert_is_data.table(fastadt)
-    assert_is_a_string(quantity)
     assert_is_subset(quantity, 
          c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum'))
     if (!is.null(contaminants))  assert_is_character(contaminants)
@@ -328,15 +327,15 @@ read_diann <- function(
     # values
         dt <- .read_diann_proteingroups(file, fastadt = fastadt)
         precursors <- data.table::dcast(dt, Protein.Group ~ Run, value.var = 'N.Precursor')
-        mat        <- data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
         precursors %<>% dt2mat()
-        mat %<>% dt2mat()
-        mat %<>% zero_to_na(verbose = verbose)
-        mat %<>% nan_to_na( verbose = verbose)
-        mat <- log2(mat)
-        l <- list(exprs = mat, precursors = precursors)
-        names(l)[1] <- quantity
-        object <- SummarizedExperiment(l)
+        dcast_quantity <- function(quantity) data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
+        assays0 <- Map(dcast_quantity, quantity)           # Map retains names - lapply doesnt
+        assays0 %<>% lapply(dt2mat)
+        assays0 %<>% lapply(zero_to_na, verbose = verbose) # lapply allows for multiple arguments - Map doesnt
+        assays0 %<>% lapply(nan_to_na,  verbose = verbose)
+        assays0 %<>% lapply(log2)
+        assays0 %<>% c(list(precursors = precursors))
+        object <- SummarizedExperiment(assays0)
         analysis(object)$nfeatures <- nrow(object)
     # fdt
         fdt(object)$feature_id <- rownames(object)
@@ -360,6 +359,7 @@ read_diann <- function(
         block = block,        coefs = coefs,  contrasts = contrasts,
       verbose = verbose,      plot  = plot,     feature_id = feature_id,
     sample_id = sample_id,  palette = palette )
+    object
 }
 
 has_one_level <- function(x) length(unique(x))==1
