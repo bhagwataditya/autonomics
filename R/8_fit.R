@@ -324,66 +324,6 @@ subgroup_matrix <- function(object, subgroupvar){
 #
 #==============================================================================
 
-#' Get p vars/values
-#' 
-#' @param object SummarizedExperiment
-#' @return  character vector
-#' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, impute=TRUE, plot=FALSE)
-#' object %<>% fit_limma(subgroupvar='SET')
-#' object %<>% fit_lm(subgroupvar = 'SET')
-#' 
-#' effect(object)[7:10, ]
-#'      p(object)[7:10, ]
-#'    fdr(object)[7:10, ]
-#'   down(object)[7:10, ]
-#'     up(object)[7:10, ]
-#'   effectsign(object)[7:10, ]
-#'testmat(object)[7:10, ]
-#' 
-#'  pvars(object)
-#'    fdr(object)
-#' effect(object)
-#' @export
-pvars <- function(object){
-    . <- NULL
-    fvars(object) %>% extract(stri_startswith_fixed(., paste0('p', FITSEP)))
-}
-
-
-#' @rdname pvars
-#' @export
-tvars <- function(object){
-    . <- NULL
-    fvars(object) %>% extract(stri_startswith_fixed(., paste0('t', FITSEP)))
-}
-
-
-#' @rdname pvars
-#' @export
-effectvars <- function(object){
-    pvars0 <- pvars(object)
-    effectvars0 <- pvars0 %>% stri_replace_first_fixed('p', 'effect')
-    assert_is_subset(effectvars0, fvars(object))
-    effectvars0
-}
-
-#' @rdname pvars
-#' @export
-fdrvars <- function(object){
-    pvars0 <- pvars(object)
-    fdrvars0 <- pvars0 %>% stri_replace_first_fixed('p', 'fdr')
-    assert_is_subset(fdrvars0, fvars(object))
-    fdrvars0
-}
-
-fdf2fdt <- function(fdf){
-    dt <- data.table(fdf, keep.rownames = TRUE)
-    setnames(dt, 'rn', 'feature_id')
-    dt
-}
-
 #' Get p/fdr/effect/down/up/sign matrix
 #' @param object    SummarizedExperiment
 #' @param fit       string
@@ -551,8 +491,8 @@ fits <- function(object){
 #' @export
 coefs <- function(object, fit = fits(object), svars = NULL){
     . <- NULL
-    coefs0 <- split_extract_fixed(pvars(object), FITSEP, 2)
-    fits0  <- split_extract_fixed(pvars(object), FITSEP, 3)
+    coefs0 <- split_extract_fixed(pvar(object), FITSEP, 2)
+    fits0  <- split_extract_fixed(pvar(object), FITSEP, 3)
     coefs0 %<>% extract(fits0 %in% fit)
     coefs0 %<>% unique()
     if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))
