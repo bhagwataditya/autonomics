@@ -1,6 +1,6 @@
 #' opentargets dir
 #' @export
-OPENTARGETSDIR <- file.path(R_user_dir('autonomics', 'cache'), 'opentargets', '22.04')
+OPENTARGETSDIR <- file.path(tools::R_user_dir('autonomics', 'cache'), 'opentargets', '22.04')
 
 download_opentargets_targets <- function(){
     if (!dir.exists(file.path(OPENTARGETSDIR, 'targets'))){

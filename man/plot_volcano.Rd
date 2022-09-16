@@ -7,12 +7,12 @@
 plot_volcano(
   object,
   fit = fits(object),
-  coefs = autonomics::coefs(object, fit[1]),
+  coef = autonomics::coefs(object, fit[1]),
   label = "feature_id",
-  features = character(0),
-  ntop = 1,
+  max.overlaps = 10,
+  features = NULL,
   nrow = length(fit),
-  intercept = identical("Intercept", coefs)
+  intercept = identical("Intercept", coef)
 )
 }
 \arguments{
@@ -20,17 +20,17 @@ plot_volcano(
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
-\item{coefs}{character vector}
+\item{coef}{character vector}
 
 \item{label}{fvar for labeling top features (string)}
 
 \item{features}{character vector: features to plot}
 
-\item{ntop}{number: n top features to be annotated}
-
 \item{nrow}{number: no of rows in plot}
 
 \item{intercept}{TRUE/FALSE: plot also intercept?}
+
+\item{ntop}{number: n top features to be annotated}
 }
 \value{
 ggplot object
@@ -43,14 +43,15 @@ require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
 plot_volcano(object)
-plot_volcano(object, features = c('A2VCZ6', 'A0A2R8Q7V9', 'Q503D2'))
+plot_volcano(object, label = 'genesymbol')
+plot_volcano(object, label = 'genesymbol', features = c('F1QDE4', 'Q503D2'))
 object \%<>\% fit_lm()
 plot_volcano(object)
 
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, impute=TRUE, fit='limma', plot=FALSE)
-plot_volcano(object, coefs = c('t1', 't2', 't3'))
+plot_volcano(object, coef = c('t1', 't2', 't3'))
 object \%<>\% fit_lm(subgroupvar = 'SET')
-plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
-plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
+plot_volcano(object, coef = c('t1', 't2', 't3'), nrow=2)
+plot_volcano(object, coef = c('t1', 't2', 't3'), fit='lm')
 }

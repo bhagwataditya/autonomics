@@ -4,10 +4,12 @@
 \alias{sumexp_to_tsv}
 \title{Write sumexp to tsv}
 \usage{
-sumexp_to_tsv(object, file)
+sumexp_to_tsv(object, assay = assayNames(object)[1], file)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{assay}{string}
 
 \item{file}{filename}
 }

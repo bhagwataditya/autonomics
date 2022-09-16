@@ -79,29 +79,30 @@ melt_contrastdefs <- function(contrastdefmat){
 #' Create volcano datatable
 #' @param object  SummarizedExperiment
 #' @param fit     'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coefs   character vector: coefs for which to plot volcanoes
+#' @param coef   character vector: coefs for which to plot volcanoes
 #' @param ntop    no of top features to be annotated
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
-#' make_volcano_dt(object, fit = 'limma', coefs = 'subgroupAdult')
+#' make_volcano_dt(object, fit = 'limma', coef = 'subgroupAdult')
 #' @export
 make_volcano_dt <- function(
-    object, fit = fits(object)[1], coefs = autonomics::coefs(object)[1],
+    object, fit = fits(object)[1], coef = autonomics::coefs(object)[1],
     label = 'feature_id', ntop = 3
 ){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
     id.vars <- c('feature_id', label, 'imputed', 'control')
     id.vars %<>% intersect(fvars(object))
-    fvars0 <- c(id.vars, effectvars(object), pvars(object), fdrvars(object))
-    dt <- data.table(fdata(object)[, fvars0, drop = FALSE])
+    value.vars  <-  effectvar(object, coef = coef, fit = fit)  # elminate similar function pvars etc.
+    value.vars %<>%  c(  pvar(object, coef = coef, fit = fit))
+    value.vars %<>%  c(fdrvar(object, coef = coef, fit = fit))
+    value.vars %<>%  c(bonvar(object, coef = coef, fit = fit))
+    
+    dt <- fdt(object)[, c(id.vars, value.vars), with = FALSE]
     dt %<>% melt.data.table(id.vars = id.vars)
     dt %<>% tidyr::separate(
                 .data$variable, into = c('quantity', 'coef', 'fit'), sep = FITSEP)
-    dt %<>% extract(coefs, on = 'coef')
-    dt %<>% extract(fit,   on = 'fit')
-
     id.vars %<>% c('coef', 'fit')
     #dt %<>% dcast.data.table(feature_id+feature_name+coef+fit ~ quantity, value.var = 'value')
     dt %<>% tidyr::pivot_wider(
@@ -117,23 +118,28 @@ make_volcano_dt <- function(
     # Otherwise the (very few) features with effect=0 will have no effect for
     # 'significance'
     by <- intersect(c('coef', 'imputed', 'fit'), names(dt))
-    dt[,topdown := top_down(effect, fdr, mlp, ntop), by = by]
-    dt[,topup   := top_up(  effect, fdr, mlp, ntop), by = by]
-    dt[effect <= 0,            significance := 'down']
-    dt[effect > 0,            significance :=   'up']
-    dt[effect <= 0 & fdr < 0.05, significance := 'down: fdr<0.05']
-    dt[effect > 0 & fdr < 0.05, significance :=   'up: fdr<0.05']
-    dt[topdown == TRUE,        significance := 'down: top']
-    dt[topup == TRUE,        significance :=   'up: top']
-    dt[,significance := factor(significance, c(
-        'down: top','down: fdr<0.05','down','up','up: fdr<0.05','up: top'))]
+    #dt[,topdown := top_down(effect, fdr, mlp, ntop), by = by]
+    #dt[,topup   := top_up(  effect, fdr, mlp, ntop), by = by]
+    dt[effect <= 0,              significance := 'down']
+    dt[effect <= 0 & p   < 0.05, significance := 'down: p < 0.05']
+    dt[effect <= 0 & fdr < 0.05, significance := 'down: fdr < 0.05']
+    dt[effect <= 0 & bon < 0.05, significance := 'down: bon < 0.05']
+    dt[effect >  0,              significance := 'up']
+    dt[effect >  0 & p   < 0.05, significance := 'up: p < 0.05']
+    dt[effect >  0 & fdr < 0.05, significance := 'up: fdr < 0.05']
+    dt[effect >  0 & bon < 0.05, significance := 'up: bon < 0.05']
+    # dt[topdown == TRUE,        significance := 'down: top']
+    # dt[topup == TRUE,        significance :=   'up: top']
+    dt$significance %<>% factor(c(
+        'down: bon < 0.05', 'down: fdr < 0.05', 'down: p < 0.05', 'down',
+        'up', 'up: p < 0.05', 'up: fdr < 0.05', 'up: bon < 0.05'))
     dt[]
 }
 
 #' Plot volcano
 #' @param object    SummarizedExperiment
 #' @param fit      'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coefs     character vector
+#' @param coef     character vector
 #' @param label     fvar for labeling top features (string)
 #' @param features  character vector: features to plot 
 #' @param ntop      number: n top features to be annotated
@@ -145,30 +151,31 @@ make_volcano_dt <- function(
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
 #' plot_volcano(object)
-#' plot_volcano(object, features = c('A2VCZ6', 'A0A2R8Q7V9', 'Q503D2'))
+#' plot_volcano(object, label = 'genesymbol')
+#' plot_volcano(object, label = 'genesymbol', features = c('F1QDE4', 'Q503D2'))
 #' object %<>% fit_lm()
 #' plot_volcano(object)
 #'
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute=TRUE, fit='limma', plot=FALSE)
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'))
+#' plot_volcano(object, coef = c('t1', 't2', 't3'))
 #' object %<>% fit_lm(subgroupvar = 'SET')
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
+#' plot_volcano(object, coef = c('t1', 't2', 't3'), nrow=2)
+#' plot_volcano(object, coef = c('t1', 't2', 't3'), fit='lm')
 #' @export
 plot_volcano <- function(object,
     fit       = fits(object), 
-    coefs     = autonomics::coefs(object, fit[1]),
+    coef     = autonomics::coefs(object, fit[1]),
     label     = 'feature_id', 
-    features  = character(0),
-    ntop      = 1, 
+    max.overlaps = 10,
+    features  = NULL,
     nrow      = length(fit),
-    intercept = identical("Intercept", coefs)
+    intercept = identical("Intercept", coef)
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
     assert_is_subset(fit, fits(object))
-    assert_is_subset(coefs, autonomics::coefs(object, fit))
+    assert_is_subset(coef, autonomics::coefs(object, fit))
     if (!is.null(label)){
         assert_is_a_string(label)
         assert_is_subset(label, fvars(object))
@@ -176,38 +183,52 @@ plot_volcano <- function(object,
     assert_is_a_number(ntop)
     assert_is_a_number(nrow)
     assert_is_a_bool(intercept)
-    if (!intercept) coefs %<>% setdiff('Intercept')
+    if (!intercept) coef %<>% setdiff('Intercept')
     topup <- topdown <- effect <- mlp <- facetrow <- facetcol <- NULL
+# Bonferroni
+    pdt <- fdt(object)[ , pvar(object, coef = coef, fit = fit) , with = FALSE]
+    pdt[, names(pdt) := lapply(.SD, p.adjust, method = 'bonferroni'), .SDcols = names(pdt)]
+    names(pdt) %<>% stri_replace_first_fixed('p~', 'bon~')
+    fdt(object) %<>% cbind(pdt)
 # Prepare
-    plotdt <- make_volcano_dt(object, fit, coefs, ntop = ntop, label = label)
-    txtdt  <- copy(plotdt)
-    txtdt[, select := topup == TRUE | topdown == TRUE]
-    if (length(features) > 0){
-        txtdt[, singlefeature := feature_id]
-        txtdt %<>% separate_rows(singlefeature) %>% data.table()
-        txtdt[, select := select | singlefeature %in% features ]
-        txtdt[, singlefeature := NULL]
-        txtdt %<>% unique()
+    plotdt <- make_volcano_dt(object, fit = fit, coef = coef, ntop = ntop, label = label)
+    bondt <- plotdt[bon <= 0.05]
+    if (!is.null(features)){
+        seldt <- copy(plotdt)
+        seldt[, singlefeature := feature_id]
+        seldt %<>% separate_rows(singlefeature) %>% data.table()
+        seldt %<>% extract(singlefeature %in% features)
+        seldt[, singlefeature := NULL]
+        seldt %<>% unique()
     }
-    txtdt %<>% extract(select==TRUE)
-    colorvalues <- c(hcl(h =   0, l = c(20, 70, 100), c = 100), # 20 70 100
-                     hcl(h = 120, l = c(100, 70, 20), c = 100)) # 100 70 20
+    colorvalues <- c(hcl(h =   0, l = c(30,  60, 80, 100), c = 100), # 20 70 100
+                     hcl(h = 120, l = c(100, 80, 60,  30), c = 100)) # 100 70 20
     names(colorvalues) <- levels(plotdt$significance)
 # Plot
     imputed <- NULL # fallback when plotdt misses "imputed"
     significance <- NULL
-    p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow) +
-    geom_point(aes(x = effect,y = mlp,color = significance, shape = imputed),
-               na.rm = TRUE)
+    p <- ggplot(plotdt) + 
+         theme_bw() + 
+         facet_wrap(fit~coef, nrow = nrow) +
+         geom_point(aes(x = effect,y = mlp, color = significance, shape = imputed), na.rm = TRUE) + 
+         scale_color_manual(values = colorvalues, name = NULL) + 
+         xlab('log2(FC)') +
+         ylab('-log10(p)') +
+         ggtitle('volcano')#+
+        
     if (!is.null(label)){
-        p <- p + geom_text_repel(data = txtdt, 
-             aes(x = effect, y = mlp, label = !!sym(label), color = significance), 
-             na.rm = TRUE, show.legend = FALSE)
+        p <- p + ggrepel::geom_label_repel(data = bondt, 
+                    aes(x = effect, y = mlp, label = !!sym(label), color = significance), #color = 'black', 
+                    label.size = NA, fill = alpha(c('white'), 1),
+                    na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps)
+        if (!is.null(features)){
+            p <- p + ggrepel::geom_label_repel(data = seldt, 
+                        aes(x = effect, y = mlp, label = !!sym(label)), color = 'black', 
+                        label.size = NA, fill = alpha(c('white'), 1),
+                        na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps, )
+            p <- p + geom_point(data = seldt, aes(x = effect, y = mlp), shape = 1, size = 4, color = 'black')
+        }
     }
-    p + theme_bw() +
-        scale_color_manual(values = colorvalues, name = NULL) +
-        xlab('log2(FC)') +
-        ylab('-log10(p)') +
-        ggtitle('volcano')#+
+    p
         #guides(color = 'none')
 }

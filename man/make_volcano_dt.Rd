@@ -7,7 +7,7 @@
 make_volcano_dt(
   object,
   fit = fits(object)[1],
-  coefs = autonomics::coefs(object)[1],
+  coef = autonomics::coefs(object)[1],
   label = "feature_id",
   ntop = 3
 )
@@ -17,7 +17,7 @@ make_volcano_dt(
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
-\item{coefs}{character vector: coefs for which to plot volcanoes}
+\item{coef}{character vector: coefs for which to plot volcanoes}
 
 \item{ntop}{no of top features to be annotated}
 }
@@ -30,5 +30,5 @@ Create volcano datatable
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
-make_volcano_dt(object, fit = 'limma', coefs = 'subgroupAdult')
+make_volcano_dt(object, fit = 'limma', coef = 'subgroupAdult')
 }
