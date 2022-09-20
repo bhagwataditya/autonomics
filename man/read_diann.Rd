@@ -6,14 +6,23 @@
 \alias{read_diann}
 \title{Read diann}
 \usage{
-.read_diann_precursors(file, fastadt = NULL)
+.read_diann_precursors(
+  file,
+  precursor_quantity = PRECURSOR_QUANTITY,
+  fastadt = NULL
+)
 
-.read_diann_proteingroups(file, fastadt = NULL)
+.read_diann_proteingroups(
+  file,
+  precursor_quantity = PRECURSOR_QUANTITY,
+  fastadt = NULL
+)
 
 read_diann(
   file,
   fastadt = NULL,
   quantity = "PG.MaxLFQ",
+  precursor_quantity = PRECURSOR_QUANTITY,
   contaminants = character(0),
   impute = FALSE,
   plot = FALSE,
@@ -31,6 +40,8 @@ read_diann(
 }
 \arguments{
 \item{file}{'report.tsv' file}
+
+\item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
 
 \item{fastadt}{NULL or data.table}
 

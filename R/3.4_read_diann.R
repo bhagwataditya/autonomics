@@ -141,14 +141,22 @@ forge_pg_descriptions <- function(
     }
 }
 
+#' diann precursor quantity
+#' @export
+PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 
 #' @rdname read_diann
 #' @export
-.read_diann_precursors <- function(file, fastadt = NULL){
+.read_diann_precursors <- function(
+    file, precursor_quantity = PRECURSOR_QUANTITY, fastadt = NULL
+){
+# Assert
+    assert_all_are_existing_files(file)
+    assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
 # Read
     anncols <- c('Genes', 'Protein.Names', 'Protein.Group', 
                  'First.Protein.Description', 'Precursor.Id', 'Run')
-    numcols <- c('PG.MaxLFQ', 'Precursor.Quantity', 'PG.Quantity')
+    numcols <- c('PG.MaxLFQ', precursor_quantity, 'PG.Quantity')
     cols <- c(anncols, numcols)
     dt <- fread(file, select = cols)
     for (col in numcols){
@@ -162,14 +170,14 @@ forge_pg_descriptions <- function(
     pgdt[, feature_name := forge_pg_descriptions(Protein.Group, Protein.Names, fastadt)]
     pgdt[, Protein.Names := NULL]
     dt %<>% .merge(pgdt, by = 'Protein.Group')
-    dt %<>% extract(order(feature_name, Run, -Precursor.Quantity))
+    dt %<>% extract(order(feature_name, Run, -get(precursor_quantity)))
 # Summarize/Return
     dt[, Precursor.No := seq_len(.N), by = c('Protein.Group', 'Run')]
-    dt[, PG.Top1 :=     rev(sort(Precursor.Quantity))[1],                  by = c('Protein.Group', 'Run')]
-    dt[, PG.Top3 := sum(rev(sort(Precursor.Quantity))[1:3], na.rm = TRUE), by = c('Protein.Group', 'Run')]
-    dt[, PG.Sum  := sum(         Precursor.Quantity,        na.rm = TRUE), by = c('Protein.Group', 'Run')]
+    dt[, PG.Top1 :=     rev(sort(get(precursor_quantity)))[1],                  by = c('Protein.Group', 'Run')]
+    dt[, PG.Top3 := sum(rev(sort(get(precursor_quantity)))[1:3], na.rm = TRUE), by = c('Protein.Group', 'Run')]
+    dt[, PG.Sum  := sum(         get(precursor_quantity),        na.rm = TRUE), by = c('Protein.Group', 'Run')]
     cols <- c('Protein.Group', 'feature_name', 'First.Protein.Description', 
-              'Genes', 'Run', 'Precursor.No', 'Precursor.Id',  'Precursor.Quantity', 
+              'Genes', 'Run', 'Precursor.No', 'Precursor.Id',  precursor_quantity, 
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum' , 'PG.MaxLFQ')
     dt %<>% extract(, cols, with = FALSE)
     dt
@@ -177,8 +185,10 @@ forge_pg_descriptions <- function(
 
 #' @rdname read_diann
 #' @export
-.read_diann_proteingroups <- function(file, fastadt = NULL){
-    dt <- .read_diann_precursors(file, fastadt = fastadt)
+.read_diann_proteingroups <- function(
+    file, precursor_quantity = PRECURSOR_QUANTITY, fastadt = NULL){
+    dt <- .read_diann_precursors(file, precursor_quantity = precursor_quantity, 
+                                 fastadt = fastadt)
     cols <- c('Protein.Group', 'feature_name', 'First.Protein.Description', 
               'Genes', 'Run', 'PG.Quantity', 
               'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'Precursor.No')
@@ -275,6 +285,7 @@ rm_diann_contaminants <- function(
 #' @param file         'report.tsv' file
 #' @param fastadt       NULL or data.table
 #' @param quantity     'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
+#' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
 #' @param contaminants  character vector with uniprot ids
 #' @param plot          whether to plot
 #' @param pca           whether to pca
@@ -311,7 +322,9 @@ rm_diann_contaminants <- function(
 #'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
 #' @export
 read_diann <- function(
-    file, fastadt = NULL, quantity = 'PG.MaxLFQ', contaminants = character(0), 
+    file, fastadt = NULL, 
+    quantity = 'PG.MaxLFQ', precursor_quantity = PRECURSOR_QUANTITY, 
+    contaminants = character(0), 
     impute = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
     coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
@@ -325,7 +338,7 @@ read_diann <- function(
     if (!is.null(contaminants))  assert_is_character(contaminants)
 # SumExp
     # values
-        dt <- .read_diann_proteingroups(file, fastadt = fastadt)
+        dt <- .read_diann_proteingroups(file, precursor_quantity = precursor_quantity, fastadt = fastadt)
         precursors <- data.table::dcast(dt, Protein.Group ~ Run, value.var = 'N.Precursor')
         precursors %<>% dt2mat()
         dcast_quantity <- function(quantity) data.table::dcast(dt, Protein.Group ~ Run, value.var = quantity)
