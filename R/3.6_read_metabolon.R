@@ -237,7 +237,6 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     palette = NULL, verbose = TRUE
 ){
 # Read
-    subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
     object <- .read_metabolon(
         file = file, sheet = sheet, fidvar = fidvar, sidvar = sidvar, 
         sfile = sfile, by.x = by.x, by.y = by.y, subgroupvar = subgroupvar, 
@@ -251,7 +250,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze
-    object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar, 
+    object %<>% analyze(pca = pca, fit = fit, 
                     formula = formula, block = block, 
                     coefs=coefs, contrasts = contrasts, 
                     verbose = verbose, plot = plot)
