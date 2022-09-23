@@ -155,7 +155,7 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
 # Read
     anncols <- c('Genes', 'Protein.Names', 'Protein.Group', 
-                 'First.Protein.Description', 'Precursor.Id', 'Run')
+                 'First.Protein.Description', 'Precursor.Id', 'Run', 'File.Name')
     numcols <- c('PG.MaxLFQ', precursor_quantity, 'PG.Quantity')
     cols <- c(anncols, numcols)
     dt <- fread(file, select = cols)

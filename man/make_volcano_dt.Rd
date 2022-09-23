@@ -8,8 +8,7 @@ make_volcano_dt(
   object,
   fit = fits(object)[1],
   coef = autonomics::coefs(object)[1],
-  label = "feature_id",
-  ntop = 3
+  label = "feature_id"
 )
 }
 \arguments{
@@ -18,8 +17,6 @@ make_volcano_dt(
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
 \item{coef}{character vector: coefs for which to plot volcanoes}
-
-\item{ntop}{no of top features to be annotated}
 }
 \value{
 data.table

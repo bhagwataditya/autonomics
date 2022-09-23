@@ -578,12 +578,14 @@ detect_order_features <- function(object, by = 'subgroup'){
 #' @rdname plot_sample_nas
 #' @export
 plot_detections <- function(...){
+    .Deprecated('plot_sample_nas')
     plot_sample_nas(...)
 }
 
 #' @rdname plot_sample_nas
 #' @export
 plot_summarized_detections <- function(...){
+    .Deprecated('plot_subgroup_nas')
     plot_subgroup_nas(...)
 }
 

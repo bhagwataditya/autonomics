@@ -29,8 +29,6 @@ plot_volcano(
 \item{nrow}{number: no of rows in plot}
 
 \item{intercept}{TRUE/FALSE: plot also intercept?}
-
-\item{ntop}{number: n top features to be annotated}
 }
 \value{
 ggplot object

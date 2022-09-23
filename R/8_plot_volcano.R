@@ -80,7 +80,6 @@ melt_contrastdefs <- function(contrastdefmat){
 #' @param object  SummarizedExperiment
 #' @param fit     'limma', 'lme', 'lm', 'wilcoxon'
 #' @param coef   character vector: coefs for which to plot volcanoes
-#' @param ntop    no of top features to be annotated
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
@@ -89,7 +88,7 @@ melt_contrastdefs <- function(contrastdefmat){
 #' @export
 make_volcano_dt <- function(
     object, fit = fits(object)[1], coef = autonomics::coefs(object)[1],
-    label = 'feature_id', ntop = 3
+    label = 'feature_id'
 ){
     effect <- p <- mlp <- topdown <- topup <- significance <- fdr <- NULL
     id.vars <- c('feature_id', label, 'imputed', 'control')
@@ -142,7 +141,6 @@ make_volcano_dt <- function(
 #' @param coef     character vector
 #' @param label     fvar for labeling top features (string)
 #' @param features  character vector: features to plot 
-#' @param ntop      number: n top features to be annotated
 #' @param nrow      number: no of rows in plot
 #' @param intercept TRUE/FALSE: plot also intercept?
 #' @return ggplot object
@@ -164,7 +162,7 @@ make_volcano_dt <- function(
 #' plot_volcano(object, coef = c('t1', 't2', 't3'), fit='lm')
 #' @export
 plot_volcano <- function(object,
-    fit       = fits(object), 
+    fit      = fits(object), 
     coef     = autonomics::coefs(object, fit[1]),
     label     = 'feature_id', 
     max.overlaps = 10,
@@ -180,7 +178,6 @@ plot_volcano <- function(object,
         assert_is_a_string(label)
         assert_is_subset(label, fvars(object))
     }
-    assert_is_a_number(ntop)
     assert_is_a_number(nrow)
     assert_is_a_bool(intercept)
     if (!intercept) coef %<>% setdiff('Intercept')
@@ -191,7 +188,7 @@ plot_volcano <- function(object,
     names(pdt) %<>% stri_replace_first_fixed('p~', 'bon~')
     fdt(object) %<>% cbind(pdt)
 # Prepare
-    plotdt <- make_volcano_dt(object, fit = fit, coef = coef, ntop = ntop, label = label)
+    plotdt <- make_volcano_dt(object, fit = fit, coef = coef, label = label)
     bondt <- plotdt[bon <= 0.05]
     if (!is.null(features)){
         seldt <- copy(plotdt)
