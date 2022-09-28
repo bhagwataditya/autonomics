@@ -112,7 +112,7 @@ forge_pg_descriptions <- function(
     if (is.null(fastadt)){
         assert_is_character(Protein.Name)
         pgdt <- data.table(Protein.Group = Protein.Group, Protein.Name = Protein.Name)
-        pgdt$Protein.Name %<>% stri_replace_all_regex('_[A-Z]+', '')
+        # pgdt$Protein.Name %<>% stri_replace_all_regex('_[A-Z]+', '') # rm '_HUMAN'
         pgdt[, isoform := pg_to_isoforms(Protein.Group) ]
         pgdt[, feature_id := Protein.Name]
         #pgdt[stri_detect_fixed(Protein.Name, ';'), feature_id := commonify_collapsed_strings(feature_id, ';'), by = 'feature_id']
@@ -176,7 +176,7 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
     dt[, PG.Top1 :=     rev(sort(get(precursor_quantity)))[1],                  by = c('Protein.Group', 'Run')]
     dt[, PG.Top3 := sum(rev(sort(get(precursor_quantity)))[1:3], na.rm = TRUE), by = c('Protein.Group', 'Run')]
     dt[, PG.Sum  := sum(         get(precursor_quantity),        na.rm = TRUE), by = c('Protein.Group', 'Run')]
-    cols <- c('Protein.Group', 'feature_name', 'First.Protein.Description', 
+    cols <- c('Protein.Group', 'feature_name', 'Protein.Names', 'First.Protein.Description', 
               'Genes', 'Run', 'Precursor.No', 'Precursor.Id',  precursor_quantity, 
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum' , 'PG.MaxLFQ')
     dt %<>% extract(, cols, with = FALSE)
@@ -189,7 +189,7 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
     file, precursor_quantity = PRECURSOR_QUANTITY, fastadt = NULL){
     dt <- .read_diann_precursors(file, precursor_quantity = precursor_quantity, 
                                  fastadt = fastadt)
-    cols <- c('Protein.Group', 'feature_name', 'First.Protein.Description', 
+    cols <- c('Protein.Group', 'feature_name', 'Protein.Names', 'First.Protein.Description', 
               'Genes', 'Run', 'PG.Quantity', 
               'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'Precursor.No')
     dt %<>% extract(, cols, with = FALSE )
@@ -353,7 +353,7 @@ read_diann <- function(
         analysis(object)$nfeatures <- nrow(object)
     # fdt
         fdt(object)$feature_id <- rownames(object)
-        fdt0 <- dt[, .(Protein.Group, feature_name, Genes, First.Protein.Description)]
+        fdt0 <- dt[, .(Protein.Group, feature_name, Protein.Names, Genes, First.Protein.Description)]
         fdt0 %<>% unique()
         object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'Protein.Group')
     # sdt
