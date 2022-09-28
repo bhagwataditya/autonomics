@@ -225,8 +225,8 @@ extract_reviewed <- function(`Fasta headers`){
 extract_entry <- function(`Fasta headers`){
     `Fasta headers` %>% 
     split_extract_fixed(' ', 1)        %>% 
-    split_extract_fixed('|', 3)        %>% 
-    split_extract_fixed('_', 1)
+    split_extract_fixed('|', 3)        #%>%  # drop _HUMAN
+    #split_extract_fixed('_', 1)
 }
 
 extract_genesymbol <- function(`Fasta headers`){
@@ -307,7 +307,7 @@ parse_fastahdrs <- function(`Fasta headers`){
 #' # Multiple fastafiles
 #'    # dir <- R_user_dir('autonomics', 'cache')
 #'    # dir %<>% file.path('uniprot', 'uniprot_sprot-only2014_01')
-#'    # fastafile <- sprintf('%s/uniprot_sprot-only2014_01_%s.fasta', dir, c('human', 'mouse'))
+#'    # fastafile <- file.path(dir, c("uniprot_sprot_human.fasta", "uniprot_sprot_mouse.fasta"))
 #'    # read_fastahdrs(fastafile)
 #' @return data.table(uniprot, entry, gene, protein, reviewed, existence)
 #' @note existence values are always those of the canonical isoform
@@ -316,19 +316,21 @@ parse_fastahdrs <- function(`Fasta headers`){
 read_fastahdrs <- function(fastafile, verbose = TRUE){
 # Assert
     if (is.null(fastafile)) return(NULL)
-    if (!requireNamespace('seqinr', quietly = TRUE)){
-        stop("BiocManager::install('seqinr'). Then re-run.") }
     assert_all_are_existing_files(fastafile)
 # Read
     if (verbose) message('\tRead ', paste0(fastafile, collapse = '\n\t     '))
-    fastahdrs <- Map(seqinr::read.fasta, fastafile)
-    fastahdrs %<>% Map(function(x) vapply(x, attr, character(1), 'Annot') %>% unname(), .)
-    names(fastahdrs) %<>% basename()
-    names(fastahdrs) %<>% split_extract_fixed('.', 1)
-# Parse
-    fastahdrs %<>% Map(parse_fastahdrs, .)
-    for (i in seq_along(fastahdrs))  fastahdrs[[i]][, fastafile := names(fastahdrs)[i]]
+    fastahdrs <- Map(.read_fastahdrs, fastafile)
     fastahdrs %<>% data.table::rbindlist()
+    fastahdrs
+}
+
+.read_fastahdrs <- function(fastafile, verbose = TRUE){
+    if (!requireNamespace('Biostrings', quietly = TRUE)){
+        stop("BiocManager::install('Biostrings'). Then re-run.") }
+    fastahdrs <- Biostrings::readAAStringSet(fastafile)
+    fastahdrs %<>% names()
+    fastahdrs %<>% parse_fastahdrs()
+    fastahdrs
 }
 
 

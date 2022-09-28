@@ -245,13 +245,14 @@ download_contaminants <-  function(url = CONTAMINANTSURL, overwrite = FALSE){
 #' dt <- read_contaminants(file)
 #' @export
 read_contaminants <-  function(file = download_contaminants()){
+    if (!requireNamespace('Biostrings', quietly = TRUE)){
+        stop("BiocManager::install('Biostrings'). Then re-run.") }
     assert_all_are_existing_files(file)
     assert_is_identical_to_true(substr(file, nchar(file)-4, nchar(file)) == 'fasta')
-    dt <- seqinr::read.fasta(file)
-    dt %<>% vapply(attr, character(1), 'Annot') %>% unname()
-    dt %<>% split_extract_fixed(' ', 1)
-    dt %<>% substr(2, nchar(.))
-    dt
+    y <- Biostrings::readAAStringSet(file)
+    y %<>% names()
+    y %<>% split_extract_fixed(' ', 1)
+    y
 }
 
 #' Rm contaminants

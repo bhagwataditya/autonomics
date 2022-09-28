@@ -67,6 +67,7 @@ Suggests:
   AnnotationDbi,
   BiocManager,
   BiocStyle,
+  Biostrings,
   diagram,
   GenomicRanges,
   GEOquery,
@@ -89,7 +90,6 @@ Suggests:
   ropls,
   Rsubread, 
   rtracklayer, 
-  seqinr,
   statmod,
   testthat,
   UniProt.ws

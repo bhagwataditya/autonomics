@@ -31,6 +31,6 @@ existence values are always those of the canonical isoform
 # Multiple fastafiles
    # dir <- R_user_dir('autonomics', 'cache')
    # dir \%<>\% file.path('uniprot', 'uniprot_sprot-only2014_01')
-   # fastafile <- sprintf('\%s/uniprot_sprot-only2014_01_\%s.fasta', dir, c('human', 'mouse'))
+   # fastafile <- file.path(dir, c("uniprot_sprot_human.fasta", "uniprot_sprot_mouse.fasta"))
    # read_fastahdrs(fastafile)
 }

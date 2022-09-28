@@ -42,14 +42,14 @@ test_that("read_proteingroups(file, invert_subgroups)", {
                           "E_EM.R3", "EM_BM.R1", "EM_BM.R2", "EM_BM.R3")) 
 })
 
-if (requireNamespace('seqinr', quietly = TRUE)){
+if (requireNamespace('Biostrings', quietly = TRUE)){
     test_that("read_proteingroups(file, fastafile)", {
         file <- download_data('billing16.proteingroups.txt')
         fastafile <- download_data('uniprot_hsa_20140515.fasta')
+        fastadt <- read_fastahdrs(fastafile)
         invert <- c('EM_E', 'BM_E', 'BM_EM')
-        object0 <- read_proteingroups(file, invert_subgroups=invert, plot=FALSE)
-        object  <- read_proteingroups(file, invert_subgroups=invert,
-                                        fastafile = fastafile, plot = FALSE)
+        object0 <- read_proteingroups(file, invert = invert, plot=FALSE)
+        object  <- read_proteingroups(file, invert = invert, fastadt = fastadt, plot = FALSE)
         expect_s4_class(object, 'SummarizedExperiment')
         expect_true('canonical' %in% fvars(object))
         expect_true(any(nchar(fdata(object)$uniprot) <
