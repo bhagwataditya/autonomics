@@ -121,14 +121,13 @@ pca <- function(
     tmpobj %<>% rm_missing_in_all_samples(verbose = verbose)
 # (Double) center and (global) normalize
     if (doublecenter){
-        row_means <- rowMeans(assays(tmpobj)[[assay]], na.rm=TRUE)
+        row_means <- rowMeans(        assays(tmpobj)[[assay]], na.rm=TRUE)
         col_means <- colWeightedMeans(assays(tmpobj)[[assay]], abs(row_means), na.rm = TRUE)
         global_mean <- mean(col_means)
-        assays(tmpobj)[[assay]] %<>% 
-                            apply(1, '-', col_means)  %>%   # Center columns
-                            apply(1, '-', row_means)  %>%   # Center rows
-                            add(global_mean)          %>%   # Add doubly subtracted
-                            divide_by(sd(., na.rm=TRUE))    # Normalize
+        assays(tmpobj)[[assay]] %<>% apply(1, '-', col_means)  %>%   # Center columns
+                                     apply(1, '-', row_means)  %>%   # Center rows
+                                     add(global_mean)          %>%   # Add doubly subtracted
+                                     divide_by(sd(., na.rm=TRUE))    # Normalize
     }
 # Perform PCA
     pca_res  <- pcaMethods::pca(t(assays(tmpobj)[[assay]]),
