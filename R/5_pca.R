@@ -83,7 +83,7 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' Add sample scores, feature loadings, and dimension variances to object.
 #'
 #' @param object  SummarizedExperiment
-#' @param subgroupvar   subgroup svar
+#' @param assay   string
 #' @param ndim          number
 #' @param minvar        number
 #' @param doublecenter  whether to double center data prior to pca

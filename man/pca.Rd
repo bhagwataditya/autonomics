@@ -43,6 +43,8 @@ lda(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{assay}{string}
+
 \item{ndim}{number}
 
 \item{minvar}{number}
@@ -54,8 +56,6 @@ lda(
 \item{doublecenter}{whether to double center data prior to pca}
 
 \item{...}{passed to biplot}
-
-\item{subgroupvar}{subgroup svar}
 }
 \value{
 SummarizedExperiment
