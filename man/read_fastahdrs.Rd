@@ -7,7 +7,7 @@
 read_fastahdrs(fastafile, verbose = TRUE)
 }
 \arguments{
-\item{fastafile}{path to fasta file}
+\item{fastafile}{string (or character vector)}
 
 \item{verbose}{bool}
 
@@ -24,6 +24,13 @@ existence values are always those of the canonical isoform
       (no isoform-level resolution for this field)
 }
 \examples{
-fastafile <- download_data('uniprot_hsa_20140515.fasta')
-read_fastafile_headers(fastafile)
+# Single fastafile
+   fastafile <- download_data('uniprot_hsa_20140515.fasta')
+   read_fastafile_headers(fastafile)
+   
+# Multiple fastafiles
+   # dir <- R_user_dir('autonomics', 'cache')
+   # dir \%<>\% file.path('uniprot', 'uniprot_sprot-only2014_01')
+   # fastafile <- sprintf('\%s/uniprot_sprot-only2014_01_\%s.fasta', dir, c('human', 'mouse'))
+   # read_fastahdrs(fastafile)
 }

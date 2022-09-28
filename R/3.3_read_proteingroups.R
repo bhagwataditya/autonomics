@@ -296,12 +296,19 @@ parse_fastahdrs <- function(`Fasta headers`){
 
 #' Read headers from uniprot fastafile
 #'
-#' @param fastafile    path to fasta file
+#' @param fastafile    string (or character vector)
 #' @param fastafields  character vector
 #' @param verbose      bool
 #' @examples
-#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#' read_fastafile_headers(fastafile)
+#' # Single fastafile
+#'    fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#'    read_fastafile_headers(fastafile)
+#'    
+#' # Multiple fastafiles
+#'    # dir <- R_user_dir('autonomics', 'cache')
+#'    # dir %<>% file.path('uniprot', 'uniprot_sprot-only2014_01')
+#'    # fastafile <- sprintf('%s/uniprot_sprot-only2014_01_%s.fasta', dir, c('human', 'mouse'))
+#'    # read_fastahdrs(fastafile)
 #' @return data.table(uniprot, entry, gene, protein, reviewed, existence)
 #' @note existence values are always those of the canonical isoform
 #'       (no isoform-level resolution for this field)
@@ -313,11 +320,15 @@ read_fastahdrs <- function(fastafile, verbose = TRUE){
         stop("BiocManager::install('seqinr'). Then re-run.") }
     assert_all_are_existing_files(fastafile)
 # Read
-    if (verbose) message('\tRead ', fastafile)
-    fastahdrs <- seqinr::read.fasta(fastafile)
-    fastahdrs %<>% vapply(attr, character(1), 'Annot') %>% unname()
+    if (verbose) message('\tRead ', paste0(fastafile, collapse = '\n\t     '))
+    fastahdrs <- Map(seqinr::read.fasta, fastafile)
+    fastahdrs %<>% Map(function(x) vapply(x, attr, character(1), 'Annot') %>% unname(), .)
+    names(fastahdrs) %<>% basename()
+    names(fastahdrs) %<>% split_extract_fixed('.', 1)
 # Parse
-    parse_fastahdrs(fastahdrs)
+    fastahdrs %<>% Map(parse_fastahdrs, .)
+    for (i in seq_along(fastahdrs))  fastahdrs[[i]][, fastafile := names(fastahdrs)[i]]
+    fastahdrs %<>% data.table::rbindlist()
 }
 
 
