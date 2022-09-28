@@ -103,7 +103,7 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
-    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, doublecenter = TRUE, ...
+    object, assay = assayNames(object)[1], ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, doublecenter = TRUE, ...
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -116,21 +116,22 @@ pca <- function(
     if (verbose)  message('\t\tAdd PCA')
 # Prepare
     tmpobj <- object
-    values(tmpobj) %<>% inf_to_na(verbose=verbose)
-    values(tmpobj) %<>% nan_to_na(verbose=verbose)
+    assays(tmpobj)[[assay]] %<>% inf_to_na(verbose=verbose)
+    assays(tmpobj)[[assay]] %<>% nan_to_na(verbose=verbose)
     tmpobj %<>% rm_missing_in_all_samples(verbose = verbose)
 # (Double) center and (global) normalize
     if (doublecenter){
-        row_means <- rowMeans(values(tmpobj), na.rm=TRUE)
-        col_means <- colWeightedMeans(values(tmpobj), abs(row_means), na.rm = TRUE)
+        row_means <- rowMeans(assays(tmpobj)[[assay]], na.rm=TRUE)
+        col_means <- colWeightedMeans(assays(tmpobj)[[assay]], abs(row_means), na.rm = TRUE)
         global_mean <- mean(col_means)
-        values(tmpobj) %<>% apply(1, '-', col_means)  %>%   # Center columns
+        assays(tmpobj)[[assay]] %<>% 
+                            apply(1, '-', col_means)  %>%   # Center columns
                             apply(1, '-', row_means)  %>%   # Center rows
                             add(global_mean)          %>%   # Add doubly subtracted
                             divide_by(sd(., na.rm=TRUE))    # Normalize
     }
 # Perform PCA
-    pca_res  <- pcaMethods::pca(t(values(tmpobj)),
+    pca_res  <- pcaMethods::pca(t(assays(tmpobj)[[assay]]),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
     samples   <- pca_res@scores
     features  <- pca_res@loadings

@@ -9,6 +9,7 @@
 \usage{
 pca(
   object,
+  assay = assayNames(object)[1],
   ndim = 2,
   minvar = 0,
   verbose = TRUE,
