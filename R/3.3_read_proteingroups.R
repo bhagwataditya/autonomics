@@ -538,6 +538,7 @@ add_feature_id <- function(dt){
     dt %<>% copy()
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     dt[, feature_id := entry]
+    dt$feature_id %<>% stri_replace_all_regex('_[^;]+', '')
     dt[isoform!=0, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(isoform, ';', ''), ')')]
     if (idcol=='fosId'){
         dt$feature_id %<>% paste0('-',dt$`Amino acid`)
@@ -761,8 +762,10 @@ read_proteingroups <- function(
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
     pepdt <- prodt[, pepcols, with = FALSE]
     prodt %<>% extract(, names(prodt) %>% setdiff(colnames(promat)) %>% setdiff(names(pepdt)), with = FALSE)
-    object <- SummarizedExperiment(assays  = list(log2proteins = promat), 
-                                   rowData = prodt)
+    object <- list(promat)
+    names(object) <- paste0('log2 ', quantity)
+    names(object) %<>% make.names()
+    object %<>% SummarizedExperiment(rowData = prodt)
 # Dequantify. Add pepcounts
     object$mqcol <- colnames(object)
     colnames(object) %<>% dequantify()
@@ -774,11 +777,12 @@ read_proteingroups <- function(
     object %<>% process_maxquant(
         subgroups = subgroups,      invert = invert,       reverse = reverse,
      contaminants = contaminants,   impute = impute,       verbose = verbose)
+    mean_assays <- c(assayNames(object)[1], 'pepcounts')
     object %<>% analyze(
-              pca = pca,               fit = fit,          formula = formula,
-            block = block,           coefs = coefs,   contrasts = contrasts, 
-          verbose = verbose,          plot = plot,      feature_id = feature_id, 
-        sample_id = sample_id,     palette = palette )
+        mean       = mean_assays,  pca       = pca,        fit     = fit,       
+        formula    = formula,      block     = block,      coefs   = coefs,
+        contrasts  = contrasts,    verbose   = verbose,    plot    = plot,
+        feature_id = feature_id,   sample_id = sample_id,  palette = palette )
     object
 }
 
@@ -835,11 +839,12 @@ read_phosphosites <- function(
         subgroups = subgroups,     invert = invert,      
           reverse = reverse, contaminants = contaminants,  localization = localization, 
            impute = impute,      verbose = verbose)
+    mean_assays <- c('log2sites', 'pepcounts')
     object %<>% analyze(
-              pca = pca,              fit = fit,         formula = formula, 
-            block = block,          coefs = coefs,  contrasts = contrasts, 
-          verbose = verbose,         plot = plot,     feature_id = feature_id, 
-        sample_id = sample_id,    palette = palette)
+        mean       = mean,         pca       = pca,        fit     = fit,       
+        formula    = formula,      block     = block,      coefs   = coefs,
+        contrasts  = contrasts,    verbose   = verbose,    plot    = plot,
+        feature_id = feature_id,   sample_id = sample_id,  palette = palette )
     object
 }
 

@@ -6,6 +6,7 @@
 \usage{
 analyze(
   object,
+  mean = character(0),
   pca = TRUE,
   fit = "limma",
   subgroupvar = default_subgroupvar(object),
@@ -24,6 +25,8 @@ analyze(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{mean}{character vector: assays for which to add mean to fdt}
 
 \item{pca}{whether to perform pca}
 
@@ -61,5 +64,5 @@ Analyze
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-object \%<>\% analyze(pca = TRUE, subgroupvar = 'Group', fit = 'limma')
+object \%<>\% analyze(pca = TRUE, fit = 'limma')
 }

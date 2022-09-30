@@ -521,7 +521,7 @@ biplot <- function(
     x = intersect(c('pca1', 'pls1', 'lda1'), svars(object))[1], 
     y = intersect(c('pca2', 'pls2', 'lda2'), svars(object))[1], 
     color = 'subgroup', 
-    shape = if ('replicate' %in% svars(object)) 'replicate' else NULL, 
+    shape = NULL, 
     size = NULL, group = NULL, label = NULL, feature_label = 'feature_name', 
     fixed = list(shape = 15, size = 3), 
     nloadings = 0,

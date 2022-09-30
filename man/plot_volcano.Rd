@@ -7,12 +7,14 @@
 plot_volcano(
   object,
   fit = fits(object),
-  coef = autonomics::coefs(object, fit[1]),
+  coef = default_coef(object, fit[1]),
+  shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
+  size = NULL,
+  alpha = NULL,
   label = "feature_id",
   max.overlaps = 10,
   features = NULL,
-  nrow = length(fit),
-  intercept = identical("Intercept", coef)
+  nrow = length(fit)
 )
 }
 \arguments{
@@ -22,13 +24,19 @@ plot_volcano(
 
 \item{coef}{character vector}
 
-\item{label}{fvar for labeling top features (string)}
+\item{shape}{shape fvar (string)}
+
+\item{size}{size  fvar (string)}
+
+\item{alpha}{alpha fvar (string)}
+
+\item{label}{label fvar (string)}
+
+\item{max.overlaps}{number: passed to ggrepel}
 
 \item{features}{character vector: features to plot}
 
 \item{nrow}{number: no of rows in plot}
-
-\item{intercept}{TRUE/FALSE: plot also intercept?}
 }
 \value{
 ggplot object

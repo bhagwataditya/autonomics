@@ -7,7 +7,10 @@
 make_volcano_dt(
   object,
   fit = fits(object)[1],
-  coef = autonomics::coefs(object)[1],
+  coef = default_coef(object, fit = fit),
+  shape = "imputed",
+  size = NULL,
+  alpha = NULL,
   label = "feature_id"
 )
 }
@@ -26,6 +29,6 @@ Create volcano datatable
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, impute = TRUE, fit='limma', plot=FALSE)
-make_volcano_dt(object, fit = 'limma', coef = 'subgroupAdult')
+object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
+make_volcano_dt(object, fit = 'limma', coef = 'Adult')
 }

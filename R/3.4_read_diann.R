@@ -112,7 +112,7 @@ forge_pg_descriptions <- function(
     if (is.null(fastadt)){
         assert_is_character(Protein.Name)
         pgdt <- data.table(Protein.Group = Protein.Group, Protein.Name = Protein.Name)
-        # pgdt$Protein.Name %<>% stri_replace_all_regex('_[A-Z]+', '') # rm '_HUMAN'
+        pgdt$Protein.Name %<>% stri_replace_all_regex('_[A-Z]+', '') # rm '_HUMAN'
         pgdt[, isoform := pg_to_isoforms(Protein.Group) ]
         pgdt[, feature_id := Protein.Name]
         #pgdt[stri_detect_fixed(Protein.Name, ';'), feature_id := commonify_collapsed_strings(feature_id, ';'), by = 'feature_id']
@@ -368,11 +368,12 @@ read_diann <- function(
     object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
     object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
     if ({{impute}})   object %<>% impute()
+    mean_assays <- c(quantity, 'precursors')
     object %<>% analyze(
-          pca = pca,            fit = fit,         formula = formula, 
-        block = block,        coefs = coefs,  contrasts = contrasts,
-      verbose = verbose,      plot  = plot,     feature_id = feature_id,
-    sample_id = sample_id,  palette = palette )
+        mean       = mean_assays,    pca        = pca,         fit    = fit,
+        formula    = formula,        block     = block,       coefs   = coefs,  
+        contrasts  = contrasts,      verbose   = verbose,     plot    = plot,
+        feature_id = feature_id,     sample_id = sample_id,   palette = palette )
     object
 }
 

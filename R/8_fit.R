@@ -405,7 +405,7 @@ fdrvar <- function(object, coef = coefs(object), fit = fits(object)){
 
 
 bonvar <- function(object, coef = coefs(object), fit = fits(object)){
-    x <- expand.grid(var = 'bon', fit = fit, coef = coef)
+    x <- expand.grid(var = 'bonferroni', fit = fit, coef = coef)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))  # all fits not necessarily all coefs, e.g:
     x               # limma(contrasts = .) generally run without intercept

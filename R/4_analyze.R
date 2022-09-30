@@ -1,6 +1,7 @@
 
 #' Analyze
 #' @param object       SummarizedExperiment
+#' @param mean         character vector: assays for which to add mean to fdt
 #' @param pca          whether to perform pca
 #' @param fit          NULL, 'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
 #' @param subgroupvar  subgroup svar
@@ -19,10 +20,11 @@
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% analyze(pca = TRUE, subgroupvar = 'Group', fit = 'limma')
+#' object %<>% analyze(pca = TRUE, fit = 'limma')
 #' @export
 analyze <- function(
     object,
+    mean         = character(0),
     pca          = TRUE,
     fit          = 'limma',
     subgroupvar  = default_subgroupvar(object),
@@ -39,9 +41,9 @@ analyze <- function(
     palette      = NULL
 ){
     # Analyze
-    if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
-    if (is.null(palette))      palette <- make_subgroup_palette(object)
-    subgroup <- if (is.null(subgroupvar))  quo(NULL) else sym(subgroupvar)
+    if (is.null(subgroupvar))   subgroupvar <- default_subgroupvar(object)
+    if (is.null(palette))       palette <- make_subgroup_palette(object)
+    for (assay in {{mean}})  object %<>% add_assay_means(assay)
     if (pca)  object %<>% pca(verbose = verbose, plot = FALSE)
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
@@ -94,7 +96,7 @@ plot_summary <- function(
         feature_id <- fnames(object)[idx]
     }
 # Create plots
-    detections <- plot_summarized_detections(
+    detections <- plot_subgroup_nas(
         object, 
         palette  = palette) + ggtitle('Detections') + xlab('subgroup') + 
         theme(plot.title = element_text(hjust = 0.5))
@@ -157,7 +159,7 @@ plot_top_volcano <- function(object, fit, coef){
     summarydt <- summarize_fit(object, fit = fit)
     summarydt %<>% extract(contrast==coef)  # nup favours intercept !
     
-    plot_volcano(object, coefs = coef) + 
+    plot_volcano(object, coef = coef) + 
     guides(color = 'none') + 
     ggtitle('Volcano') + 
     #ggtitle(sprintf('%d down | %d up', summarydt$ndown, summarydt$nup)) +
