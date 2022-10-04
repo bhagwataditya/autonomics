@@ -275,6 +275,14 @@ extract_existence <- function(`Fasta headers`){
     as.integer()
 }
 
+extract_organism <- function(`Fasta headers`){
+    `Fasta headers` %>% 
+    split_extract_fixed('OS=', 2)    %>%
+    split_extract_fixed(' ', 1:2)    %>%
+    nastring_to_nachar()
+        
+}
+
 parse_fastahdrs <- function(`Fasta headers`){
     dt <- data.table(                                       # reviewed
         reviewed    = extract_reviewed(   `Fasta headers`), #   0 tr
@@ -285,7 +293,8 @@ parse_fastahdrs <- function(`Fasta headers`){
         isoform     = extract_isoform(    `Fasta headers`), #   1 transcript
         proteinname = extract_proteinname(`Fasta headers`), #   2 homolog
         fragment    = extract_fragment(   `Fasta headers`), #   3 prediction
-        existence   = extract_existence(  `Fasta headers`)) #   4 uncertain
+        existence   = extract_existence(  `Fasta headers`), #   4 uncertain
+        organism    = extract_organism(   `Fasta headers`))
     dt[, existence := unique(.SD)[, existence[!is.na(existence)]], by = 'canonical']
     # `unique`: for phosphosites the Fasta headers are sometimes
     #  replicated (when protein has multiple phosphosites)
@@ -302,7 +311,7 @@ parse_fastahdrs <- function(`Fasta headers`){
 #' @examples
 #' # Single fastafile
 #'    fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#'    read_fastafile_headers(fastafile)
+#'    read_fastahdrs(fastafile)
 #'    
 #' # Multiple fastafiles
 #'    # dir <- R_user_dir('autonomics', 'cache')
@@ -398,7 +407,8 @@ drop_inferior <- function(anndt, verbose = TRUE){
     dt[sorter]
 }
 
-CURATEDCOLS <- c('entry', 'isoform', 'uniprot', 'canonical', 'proteinname', 'genesymbol')
+CURATEDCOLS <- c('entry', 'isoform', 'uniprot', 'canonical', 
+                 'proteinname', 'genesymbol', 'organism')
 
 #' Curate and Annotate.
 #'

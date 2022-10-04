@@ -150,7 +150,7 @@ add_assay_means <- function(
     for (.assay in assay){
         if (.assay %in% fvars(object))  fdt(object)[[.assay]] <- NULL
         fdt(object)$placeholder <- rowMeans(assays(object)[[assay]], na.rm = TRUE)
-        fvars(object) %<>% stri_replace_first_fixed('placeholder', assay)
+        fvars(object) %<>% stri_replace_first_fixed('placeholder', paste0('mean.', assay))
     }
 # Return
     object
@@ -268,8 +268,8 @@ make_volcano_dt <- function(
 #' object %<>% fit_limma()
 #' plot_volcano(object)
 #' plot_volcano(object, label = 'genesymbol')
-#' plot_volcano(object, label = 'genesymbol', size = 'log2.LFQ.intensity')
-#' plot_volcano(object, label = 'genesymbol', size = 'log2.LFQ.intensity', alpha = 'pepcounts')
+#' plot_volcano(object, label = 'genesymbol', size = 'mean.log2.LFQ.intensity')
+#' plot_volcano(object, label = 'genesymbol', size = 'mean.log2.LFQ.intensity', alpha = 'mean.pepcounts')
 #' plot_volcano(object, label = 'genesymbol', features = c('hmbsb'))
 #' object %<>% fit_lm()
 #'

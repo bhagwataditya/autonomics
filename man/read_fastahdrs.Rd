@@ -26,7 +26,7 @@ existence values are always those of the canonical isoform
 \examples{
 # Single fastafile
    fastafile <- download_data('uniprot_hsa_20140515.fasta')
-   read_fastafile_headers(fastafile)
+   read_fastahdrs(fastafile)
    
 # Multiple fastafiles
    # dir <- R_user_dir('autonomics', 'cache')
