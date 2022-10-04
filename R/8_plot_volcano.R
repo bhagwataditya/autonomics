@@ -270,9 +270,6 @@ make_volcano_dt <- function(
 #' plot_volcano(object, label = 'genesymbol', size = 'log2.LFQ.intensity')
 #' plot_volcano(object, label = 'genesymbol', size = 'log2.LFQ.intensity', alpha = 'pepcounts')
 #' plot_volcano(object, label = 'genesymbol', features = c('hmbsb'))
-#' plot_volcano(object, label = 'genesymbol', features = c('F1QDE4', 'Q503D2'))
-#' object %<>% fit_lm()
-#' plot_volcano(object)
 #'
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute=TRUE, fit='limma', plot=FALSE)
@@ -341,7 +338,7 @@ plot_volcano <- function(
         if (!is.null(features)){
             p <- p + ggrepel::geom_label_repel(data = seldt, 
                         aes(x = effect, y = mlp, label = !!sym(label)), color = 'black', 
-                        label.size = NA, fill = alpha(c('white'), 1),
+                        label.size = NA, fill = alpha(c('white'), 0.6),
                         na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps)
             p <- p + geom_point(data = seldt, aes(x = effect, y = mlp), shape = 1, size = 4, color = 'black')
         }
