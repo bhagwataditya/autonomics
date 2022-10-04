@@ -291,7 +291,7 @@ parse_fastahdrs <- function(`Fasta headers`){
         uniprot     = extract_uniprot(    `Fasta headers`), # existence 
         canonical   = extract_canonical(  `Fasta headers`), #   1 protein 
         isoform     = extract_isoform(    `Fasta headers`), #   1 transcript
-        proteinname = extract_proteinname(`Fasta headers`), #   2 homolog
+        #proteinname = extract_proteinname(`Fasta headers`), #   2 homolog
         fragment    = extract_fragment(   `Fasta headers`), #   3 prediction
         existence   = extract_existence(  `Fasta headers`), #   4 uncertain
         organism    = extract_organism(   `Fasta headers`))
@@ -355,9 +355,9 @@ drop_inferior <- function(anndt, verbose = TRUE){
     anndt %<>% copy()
     idcol <- if ('fosId' %in% names(anndt)) 'fosId' else 'proId'
     
-    if (verbose)  message('\t\t\tDrop proteins with NA entry / proteinname')
+    if (verbose)  message('\t\t\tDrop proteins with NA entry') #/ proteinname')
     anndt <- anndt[    entry   != 'NA']
-    anndt <- anndt[proteinname != 'NA']
+    #anndt <- anndt[proteinname != 'NA']
     
     if (verbose)  message('\t\t\tWithin ', idcol, ': drop trembl    in favour of swissprot')
     anndt <- anndt[, .SD[ reviewed == max(reviewed) ], by = idcol]
@@ -371,11 +371,11 @@ drop_inferior <- function(anndt, verbose = TRUE){
         anndt <- anndt[, .SD[existence == min(existence)], by = idcol] }
     anndt[, c('reviewed', 'fragment', 'existence') := NULL]
     
-    if (verbose)  message("\t\t\tDrop 'Isoform x of ' in Protein names")
-    anndt$proteinname %<>% stri_replace_first_regex('Isoform [0-9A-Z]+ of ', '')
+    #if (verbose)  message("\t\t\tDrop 'Isoform x of ' in Protein names")
+    #anndt$proteinname %<>% stri_replace_first_regex('Isoform [0-9A-Z]+ of ', '')
     
-    if (verbose)  message("\t\t\tDrop '(Fragment)'    in Protein names")
-    anndt$proteinname %<>% stri_replace_first_fixed(' (Fragment)', '')
+    #if (verbose)  message("\t\t\tDrop '(Fragment)'    in Protein names")
+    #anndt$proteinname %<>% stri_replace_first_fixed(' (Fragment)', '')
     if (assertive::is_numeric_string(anndt[[idcol]][1])){
         anndt[order(as.integer(get(idcol)), canonical, isoform)]
     } else {
@@ -407,8 +407,8 @@ drop_inferior <- function(anndt, verbose = TRUE){
     dt[sorter]
 }
 
-CURATEDCOLS <- c('entry', 'isoform', 'uniprot', 'canonical', 
-                 'proteinname', 'genesymbol', 'organism')
+CURATEDCOLS <- c('entry', 'isoform', 'uniprot', 'canonical', # 'proteinname', 
+                 'genesymbol', 'organism')
 
 #' Curate and Annotate.
 #'
