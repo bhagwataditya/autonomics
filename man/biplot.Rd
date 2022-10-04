@@ -10,7 +10,7 @@ biplot(
   x = intersect(c("pca1", "pls1", "lda1"), svars(object))[1],
   y = intersect(c("pca2", "pls2", "lda2"), svars(object))[1],
   color = "subgroup",
-  shape = if ("replicate" \%in\% svars(object)) "replicate" else NULL,
+  shape = NULL,
   size = NULL,
   group = NULL,
   label = NULL,

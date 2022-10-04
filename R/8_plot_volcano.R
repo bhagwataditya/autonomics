@@ -267,6 +267,9 @@ make_volcano_dt <- function(
 #' object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
 #' plot_volcano(object)
 #' plot_volcano(object, label = 'genesymbol')
+#' plot_volcano(object, label = 'genesymbol', size = 'log2.LFQ.intensity')
+#' plot_volcano(object, label = 'genesymbol', size = 'log2.LFQ.intensity', alpha = 'pepcounts')
+#' plot_volcano(object, label = 'genesymbol', features = c('hmbsb'))
 #' plot_volcano(object, label = 'genesymbol', features = c('F1QDE4', 'Q503D2'))
 #' object %<>% fit_lm()
 #' plot_volcano(object)
@@ -291,7 +294,7 @@ plot_volcano <- function(
     nrow  = length(fit)
 ){
 # Assert
-    if (!is.null(features)){ assert_is_subset(  label, fdt(object)$feature_id)}
+    if (!is.null(features)){ assert_is_subset(  features, fdt(object)[[label]])}
     assert_is_a_number(nrow)
     effect <- mlp <- NULL
 # Volcano 
@@ -322,15 +325,15 @@ plot_volcano <- function(
     p <- p + guides(color = 'none')
 # Labels
     if (!is.null(label)){
+        labeldt <- plotdt[bon<0.05]
         if (!is.null(features)){
             seldt <- copy(plotdt)
-            seldt[, singlefeature := feature_id]
+            seldt[, singlefeature := get(label)]
             seldt %<>% separate_rows(singlefeature) %>% data.table()
             seldt %<>% extract(singlefeature %in% features)
             seldt[, singlefeature := NULL]
             seldt %<>% unique()
         }
-        labeldt <- plotdt[bon<0.05]
         p <- p + ggrepel::geom_label_repel(data = labeldt, 
                     aes(x = effect, y = mlp, label = !!sym(label), color = direction), #color = 'black', 
                     label.size = NA, fill = alpha(c('white'), 1),
@@ -339,7 +342,7 @@ plot_volcano <- function(
             p <- p + ggrepel::geom_label_repel(data = seldt, 
                         aes(x = effect, y = mlp, label = !!sym(label)), color = 'black', 
                         label.size = NA, fill = alpha(c('white'), 1),
-                        na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps, )
+                        na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps)
             p <- p + geom_point(data = seldt, aes(x = effect, y = mlp), shape = 1, size = 4, color = 'black')
         }
     }
