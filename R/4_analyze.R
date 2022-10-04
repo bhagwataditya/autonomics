@@ -1,7 +1,6 @@
 
 #' Analyze
 #' @param object       SummarizedExperiment
-#' @param mean         character vector: assays for which to add mean to fdt
 #' @param pca          whether to perform pca
 #' @param fit          NULL, 'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
 #' @param subgroupvar  subgroup svar
@@ -24,7 +23,6 @@
 #' @export
 analyze <- function(
     object,
-    mean         = character(0),
     pca          = TRUE,
     fit          = 'limma',
     subgroupvar  = default_subgroupvar(object),
@@ -43,7 +41,6 @@ analyze <- function(
     # Analyze
     if (is.null(subgroupvar))   subgroupvar <- default_subgroupvar(object)
     if (is.null(palette))       palette <- make_subgroup_palette(object)
-    for (assay in {{mean}})  object %<>% add_assay_means(assay)
     if (pca)  object %<>% pca(verbose = verbose, plot = FALSE)
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))

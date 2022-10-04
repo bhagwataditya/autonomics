@@ -6,7 +6,6 @@
 \usage{
 analyze(
   object,
-  mean = character(0),
   pca = TRUE,
   fit = "limma",
   subgroupvar = default_subgroupvar(object),
@@ -25,8 +24,6 @@ analyze(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{mean}{character vector: assays for which to add mean to fdt}
 
 \item{pca}{whether to perform pca}
 

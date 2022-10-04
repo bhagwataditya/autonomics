@@ -368,9 +368,10 @@ read_diann <- function(
     object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
     object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
     if ({{impute}})   object %<>% impute()
-    mean_assays <- c(quantity, 'precursors')
+    assays <- c(quantity, 'precursors')
+    for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
-        mean       = mean_assays,    pca        = pca,         fit    = fit,
+        pca        = pca,            fit       = fit,
         formula    = formula,        block     = block,       coefs   = coefs,  
         contrasts  = contrasts,      verbose   = verbose,     plot    = plot,
         feature_id = feature_id,     sample_id = sample_id,   palette = palette )

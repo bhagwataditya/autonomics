@@ -777,9 +777,10 @@ read_proteingroups <- function(
     object %<>% process_maxquant(
         subgroups = subgroups,      invert = invert,       reverse = reverse,
      contaminants = contaminants,   impute = impute,       verbose = verbose)
-    mean_assays <- c(assayNames(object)[1], 'pepcounts')
+    assays <- c(assayNames(object)[1], 'pepcounts')
+    for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
-        mean       = mean_assays,  pca       = pca,        fit     = fit,       
+        pca        = pca,          fit     = fit,       
         formula    = formula,      block     = block,      coefs   = coefs,
         contrasts  = contrasts,    verbose   = verbose,    plot    = plot,
         feature_id = feature_id,   sample_id = sample_id,  palette = palette )
@@ -840,8 +841,9 @@ read_phosphosites <- function(
           reverse = reverse, contaminants = contaminants,  localization = localization, 
            impute = impute,      verbose = verbose)
     mean_assays <- c('log2sites', 'pepcounts')
+    for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
-        mean       = mean,         pca       = pca,        fit     = fit,       
+        pca        = pca,          fit       = fit,       
         formula    = formula,      block     = block,      coefs   = coefs,
         contrasts  = contrasts,    verbose   = verbose,    plot    = plot,
         feature_id = feature_id,   sample_id = sample_id,  palette = palette )
