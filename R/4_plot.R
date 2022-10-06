@@ -429,6 +429,7 @@ plot_feature_densities <- function(
 #' Plot sample/feature violins
 #'
 #' @param object      SummarizedExperiment
+#' @param assay       string
 #' @param subgroup    subgroup svar
 #' @param x           svar (string)
 #' @param fill        svar (string)
@@ -455,13 +456,14 @@ plot_feature_densities <- function(
 #'     plot_sample_violins(object[, 1:12],  highlight = 'control')
 #'     plot_subgroup_violins(object[1:4, ], subgroup = 'subgroup')
 #' @export
-plot_violins <- function(object, x, fill, color = NULL, group = NULL, 
-    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = "free", 
-    labeller = label_value, highlight = NULL, palette = NULL, 
-    fixed = list(na.rm = TRUE)
+plot_violins <- function(object, assay = assayNames(object)[1], x, fill, 
+    color = NULL, group = NULL, facet = NULL, nrow = NULL, ncol = NULL, 
+    dir = 'h', scales = "free", labeller = label_value, highlight = NULL, 
+    palette = NULL, fixed = list(na.rm = TRUE)
 ){
 # Process
     assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(assay, assayNames(object))
                               assert_is_a_string(x)
                               assert_is_a_string(fill)
     if (!is.null(color))      assert_is_a_string(color)
@@ -484,7 +486,7 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
     if (!is.null(facet))      plotvars %<>% c(facet)     %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
-    dt <- sumexp_to_longdt(object, svars = plottedsvars, fvars = plottedfvars)
+    dt <- sumexp_to_longdt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
     dtsum <- dt[, .(median = median(value, na.rm = TRUE), 
                        iqr =    IQR(value, na.rm = TRUE) ), by = x]
 # Plot
@@ -517,13 +519,14 @@ plot_violins <- function(object, x, fill, color = NULL, group = NULL,
 #' @rdname plot_violins
 #' @export
 plot_feature_violins <- function(
-    object, x = 'feature_id', fill = 'feature_id', color = NULL, n = 9,
+    object, assay = assayNames(object)[1], x = 'feature_id', 
+    fill = 'feature_id', color = NULL, n = 9,
     facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free',
     labeller = label_value, highlight = NULL, fixed = list(na.rm = TRUE)
 ){
     object %<>% extract_features_evenly(n)
     plot_violins(
-        object, x = x, fill = fill, color = color, facet = facet, 
+        object, assay = assay, x = x, fill = fill, color = color, facet = facet, 
         nrow = nrow, ncol = ncol, dir  = dir, labeller = labeller,
         highlight = highlight, fixed = fixed) + 
         ggtitle('Feature Violins')
@@ -533,13 +536,13 @@ plot_feature_violins <- function(
 #' @rdname plot_violins
 #' @export
 plot_sample_violins <- function(
-    object, x = 'sample_id', fill = 'sample_id', color = NULL, n = 100,
-    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free',
-    labeller = label_value, highlight = NULL, fixed = list(na.rm = TRUE)
+    object, assay = assayNames(object)[1], x = 'sample_id', fill = 'sample_id', 
+    color = NULL, n = 100, facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', 
+    scales = 'free', labeller = label_value, highlight = NULL, fixed = list(na.rm = TRUE)
 ){
     object %<>% extract_samples_evenly(n)
     plot_violins(
-        object, x = x, fill = fill, color = color, facet = facet, 
+        object, assay = assay, x = x, fill = fill, color = color, facet = facet, 
         nrow = nrow, ncol = ncol, dir = dir, scales = scales, 
         labeller = labeller, highlight = highlight, fixed = fixed) + 
     ggtitle('Sample Violins')
@@ -568,12 +571,12 @@ subgroup <- NULL
 #' @rdname plot_violins
 #' @export
 plot_subgroup_violins <- function(
-    object, subgroup, x = 'subgroup', fill = 'subgroup', 
-    color = NULL, highlight = NULL, facet = 'feature_id', 
+    object, assay = assayNames(object)[1], subgroup, x = 'subgroup', 
+    fill = 'subgroup', color = NULL, highlight = NULL, facet = 'feature_id', 
     fixed = list(na.rm = TRUE)
 ){
     plot_violins(
-       object, x = x, fill = fill, color = color,
+       object, assay = assay(object), x = x, fill = fill, color = color,
         facet = facet, highlight = highlight, fixed = fixed) + 
     ggtitle('Subgroup violins')
 }

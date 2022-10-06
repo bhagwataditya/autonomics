@@ -9,6 +9,7 @@
 \usage{
 plot_violins(
   object,
+  assay = assayNames(object)[1],
   x,
   fill,
   color = NULL,
@@ -26,6 +27,7 @@ plot_violins(
 
 plot_feature_violins(
   object,
+  assay = assayNames(object)[1],
   x = "feature_id",
   fill = "feature_id",
   color = NULL,
@@ -42,6 +44,7 @@ plot_feature_violins(
 
 plot_sample_violins(
   object,
+  assay = assayNames(object)[1],
   x = "sample_id",
   fill = "sample_id",
   color = NULL,
@@ -58,6 +61,7 @@ plot_sample_violins(
 
 plot_subgroup_violins(
   object,
+  assay = assayNames(object)[1],
   subgroup,
   x = "subgroup",
   fill = "subgroup",
@@ -69,6 +73,8 @@ plot_subgroup_violins(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{assay}{string}
 
 \item{x}{svar (string)}
 
