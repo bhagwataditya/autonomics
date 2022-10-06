@@ -713,6 +713,9 @@ is_file <- function(file){
 #' @param file          proteingroup / phosphosites file
 #' @param proteinfile   proteingroups  file
 #' @param fastadt       fasta data.table or NULL
+#' @param quantity      'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
+#'                      'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
+#'                      'Intensity'
 #' @param curate        whether to curate uniprots
 #' @param subgroups     character / NULL : subset of subgroups to retain
 #' @param contaminants  whether to include contaminants

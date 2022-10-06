@@ -62,6 +62,10 @@ read_phosphosites(
 
 \item{fastadt}{fasta data.table or NULL}
 
+\item{quantity}{'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
+'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
+'Intensity'}
+
 \item{curate}{whether to curate uniprots}
 
 \item{subgroups}{character / NULL : subset of subgroups to retain}
