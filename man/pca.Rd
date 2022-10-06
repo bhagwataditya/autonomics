@@ -20,6 +20,7 @@ pca(
 
 pls(
   object,
+  assay = assayNames(object)[1],
   subgroupvar = "subgroup",
   ndim = 2,
   minvar = 0,
@@ -28,10 +29,19 @@ pls(
   ...
 )
 
-sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
+sma(
+  object,
+  assay = assayNames(object)[1],
+  ndim = 2,
+  minvar = 0,
+  verbose = TRUE,
+  plot = FALSE,
+  ...
+)
 
 lda(
   object,
+  assay = assayNames(object)[1],
   subgroupvar = "subgroup",
   ndim = 2,
   minvar = 0,

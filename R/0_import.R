@@ -28,7 +28,8 @@
 #' @importFrom assertive   assert_is_logical        assert_is_non_empty
 #' @importFrom assertive   assert_is_non_scalar     assert_is_not_null
 #' @importFrom assertive   assert_is_matrix         assert_is_numeric
-#' @importFrom assertive   assert_is_of_length      assert_is_subset
+#' @importFrom assertive   assert_is_of_length      assert_is_scalar
+#' @importFrom assertive   assert_is_subset
 #' @importFrom assertive   false                    get_name_in_parent
 #' @importFrom assertive   has_names                has_no_duplicates
 #' @importFrom assertive   is_a_string  is_empty    is_empty_character  

@@ -103,10 +103,12 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
-    object, assay = assayNames(object)[1], ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, doublecenter = TRUE, ...
+    object, assay = assayNames(object)[1], ndim = 2, minvar = 0, verbose = TRUE, 
+    plot = FALSE, doublecenter = TRUE, ...
 ){
 # Assert
     assert_is_valid_sumexp(object)
+    assert_is_scalar(assay); assert_is_subset(assay, assayNames(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_less_than_or_equal_to(ndim, ncol(object))
@@ -153,14 +155,15 @@ pca <- function(
 #' @rdname pca
 #' @export
 pls <- function(
-    object,  subgroupvar = 'subgroup', ndim = 2, minvar = 0, 
-    verbose = FALSE, plot = FALSE, ...
+    object,  assay = assayNames(object)[1], subgroupvar = 'subgroup', ndim = 2, 
+    minvar = 0, verbose = FALSE, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         message("BiocManager::install('mixOmics'). Then re-run.")
         return(object) }
     assert_is_valid_sumexp(object)
+    assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     assert_is_subset(subgroupvar, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
@@ -169,7 +172,7 @@ pls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(values(object))
+    x <- t(assays(object)[[assay]])
     y <- svalues(object, subgroupvar)
     pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
@@ -193,12 +196,16 @@ pls <- function(
 
 #' @rdname pca
 #' @export
-sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
+sma <- function(
+    object, assay = assayNames(object)[1], ndim = 2, minvar = 0, verbose = TRUE, 
+    plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
         return(object)}
     assert_is_valid_sumexp(object)
+    assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -207,11 +214,11 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
     . <- NULL
 # Preprocess
     tmpobj <- object
-    values(tmpobj) %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
-    values(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
+    assays(tmpobj)[[assay]] %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
+    assays(tmpobj)[[assay]] %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
     tmpobj        %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
-    df <- data.frame(feature = rownames(tmpobj), values(tmpobj))
+    df <- data.frame(feature = rownames(tmpobj), assays(tmpobj)[[assay]])
     mpm_tmp <- mpm::mpm(
                 df, logtrans = FALSE, closure = 'none', center = 'double',
                 normal = 'global', row.weight = 'mean', col.weight = 'constant')
@@ -246,13 +253,16 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 
 #' @rdname pca
 #' @export
-lda <- function(object, subgroupvar = 'subgroup', ndim=2, minvar=0, 
-    verbose = TRUE, plot = FALSE, ...){
+lda <- function(
+    object, assay = assayNames(object)[1], subgroupvar = 'subgroup', ndim = 2, 
+    minvar = 0, verbose = TRUE, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
         message("BiocManager::install('MASS'). Then re-run.")
         return(object)}
     assert_is_valid_sumexp(object)
+    assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     assert_is_subset(subgroupvar, svars(object))
     nsubgroup <- length(slevels(object, subgroupvar))
     if (is.infinite(ndim))  ndim <- nsubgroup - 1
@@ -265,11 +275,11 @@ lda <- function(object, subgroupvar = 'subgroup', ndim=2, minvar=0,
     . <- NULL
 # Preprocess
     tmpobj <- object
-    values(tmpobj) %<>% minusinf_to_na(verbose = verbose)         # SVD singular
-    values(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
+    assays(tmpobj)[[assay]] %<>% minusinf_to_na(verbose = verbose)         # SVD singular
+    assays(tmpobj)[[assay]] %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
     tmpobj %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
-    exprs_t  <- t(values(tmpobj))
+    exprs_t  <- t(assays(tmpobj)[[assay]])
     lda_out  <- suppressWarnings(
                     MASS::lda( exprs_t,grouping = object[[subgroupvar]]))
     features <- lda_out$scaling
@@ -307,14 +317,16 @@ lda <- function(object, subgroupvar = 'subgroup', ndim=2, minvar=0,
 #' spls(object, subgroupvar ='Group')
 #' @noRd
 spls <- function(
-    object, subgroupvar = 'subgroup', ndim = 2, minvar = 0, plot = FALSE, ...
+    object, assay = assayNames(object)[1], subgroupvar = 'subgroup', ndim = 2, 
+    minvar = 0, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         message("BiocManager::install('mixOmics'). Then re-run.")
         return(object)
     }
-    assert_is_valid_sumexp(object)
+    assert_is_valid_sumexp(object);  assert_is_scalar(assay)
+    assert_is_subset(assay, assayNames(object))
     assert_is_subset(subgroupvar, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
@@ -323,7 +335,7 @@ spls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(values(object))
+    x <- t(assays(object)[[assay]])
     y <- object[[subgroupvar]]
     pls_out <- mixOmics::splsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
@@ -354,7 +366,8 @@ spls <- function(
 #' opls(object)
 #' @noRd
 opls <- function(
-    object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...
+    object, assay = assayNames(object)[1], ndim = 2, minvar = 0, 
+    verbose = FALSE, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
@@ -362,6 +375,7 @@ opls <- function(
         return(object)
     }
     assert_is_valid_sumexp(object)
+    assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -369,7 +383,7 @@ opls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(values(object))
+    x <- t(assays(object)[[assay]])
     y <- subgroup_values(object)
     pls_out <- ropls::opls(x, y, predI = ndim, permI = 0, fig.pdfC = FALSE)
     samples   <- pls_out@scoreMN
