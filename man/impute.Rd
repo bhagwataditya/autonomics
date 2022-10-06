@@ -23,6 +23,7 @@ impute(object, ...)
 
 \method{impute}{SummarizedExperiment}(
   object,
+  assay = assayNames(object)[1],
   by = "subgroup",
   shift = 2.5,
   width = 0.3,

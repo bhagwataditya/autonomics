@@ -209,7 +209,8 @@ impute.matrix <- function(
 #' @rdname impute
 #' @export 
 impute.SummarizedExperiment <- function(
-    object, 
+    object,
+    assay    = assayNames(object)[1],
     by       = 'subgroup',
     shift    = 2.5, 
     width    = 0.3, 
@@ -220,6 +221,7 @@ impute.SummarizedExperiment <- function(
     n        = min(9, ncol(object))
 ){
 # Assert
+    assert_is_scalar(assay); assert_is_subset(assay, assayNames(object))
     assert_is_a_number(shift)
     assert_is_a_number(width)
     assert_is_a_bool(verbose)
@@ -228,7 +230,7 @@ impute.SummarizedExperiment <- function(
     assert_has_names(palette)
     assert_is_a_number(n)
 # Impute systematic NAs
-    dt <- sumexp_to_longdt(object)
+    dt <- sumexp_to_longdt(object, assay = assay)
     dt[, imputed := impute(value, shift = shift, width = width, 
                            verbose = FALSE, plot = FALSE), by = 'sample_id']
     dt[, isNa    :=  is.na(value)]
