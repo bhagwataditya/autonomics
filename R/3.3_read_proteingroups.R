@@ -90,7 +90,7 @@ un_int64 <- function(x) {
 #' prodt <- .read_proteingroups(file = proteinfile)
 #' fosdt <- .read_phosphosites( file = phosphofile, proteinfile = proteinfile)
 #' @export
-.read_proteingroups <- function(file, verbose = TRUE){
+.read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file), verbose = TRUE){
 # Assert
     assert_all_are_existing_files(file)
     assert_all_are_matching_fixed(file, 'roups.txt')
@@ -99,7 +99,7 @@ un_int64 <- function(x) {
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
     n0 <- nrow(prodt)
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[guess_maxquant_quantity(file)]]
+    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
     anncols <- c('id', 'Majority protein IDs', 'Reverse', 
                  'Potential contaminant', 'Contaminant', 'Fasta headers')#, 'Phospho (STY) site IDs')
     anncols %<>% intersect(names(prodt))
@@ -116,7 +116,7 @@ un_int64 <- function(x) {
 }
 
 
-.read_phosphosites <- function(file, proteinfile, verbose = TRUE){
+.read_phosphosites <- function(file, proteinfile, quantity, verbose = TRUE){
 # Assert
     assert_all_are_existing_files(c(proteinfile, file))
     assert_all_are_matching_fixed(proteinfile, 'roups.txt')
@@ -125,7 +125,7 @@ un_int64 <- function(x) {
     if (verbose)  message('\tRead ', file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     fosdt %<>% un_int64()
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[guess_maxquant_quantity(file)]]
+    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
     anncols <- c('id', 'Protein group IDs', 'Proteins', 
                  'Positions within proteins', 'Amino acid', 
                  'Reverse', 'Contaminant', 'Potential contaminant', 'Fasta headers')
@@ -765,7 +765,7 @@ read_proteingroups <- function(
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
 # Read/Curate
-    prodt <- .read_proteingroups(file = file, verbose = verbose)
+    prodt <- .read_proteingroups(file = file, quantity = quantity, verbose = verbose)
     if (curate)  prodt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     prodt %<>% add_feature_id()
 # SumExp
@@ -820,8 +820,8 @@ read_phosphosites <- function(
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
 # Read
-    prodt <- .read_proteingroups(file = proteinfile, verbose = verbose)
-    fosdt <- .read_phosphosites(file = file, proteinfile = proteinfile, verbose = verbose)
+    prodt <- .read_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
+    fosdt <- .read_phosphosites(file = file, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
     if (curate)  fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     fosdt %<>% add_feature_id()

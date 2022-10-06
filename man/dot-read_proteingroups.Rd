@@ -4,7 +4,11 @@
 \alias{.read_proteingroups}
 \title{Read proteingroups/phosphosites as-is}
 \usage{
-.read_proteingroups(file, verbose = TRUE)
+.read_proteingroups(
+  file,
+  quantity = guess_maxquant_quantity(file),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{file}{proteingroups / phosphosites file}
