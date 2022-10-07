@@ -1088,3 +1088,49 @@ read_rnaseq_counts <- function(
     object
 }
 
+
+.read_salmon_sample <- function(sampledir){
+    file <- sprintf('%s/quant.sf', sampledir)
+    dt <- fread(file)[, .(Name, TPM)]
+    setnames(dt, 'TPM', basename(sampledir))
+    dt
+}
+
+
+#' Read salmon
+#' @param dir   salmon results rootdir
+#' @param ensdb EnsDb object
+#' @param sfile samplefile
+#' @param by    samplefile column to merge by
+#' @return SummarizedExperiment
+#' @examples 
+#' # dir <- '../bh/salmon_quants'
+#' # sfile <- '../bh/samplesheet.csv'
+#' # by <- 'salmonDir'
+#' # ah <- AnnotationHub::AnnotationHub()
+#' # ensdb <- ah[['AH98078']]
+#' # read_salmon(dir, sfile = sfile, by = 'salmonDir', ensdb = ensdb)
+#' @export
+read_salmon <- function(
+    dir, sfile = NULL, by = NULL, ensdb = NULL
+){
+# Assert
+    assertive.files::assert_all_are_dirs(dir)
+    if (!is.null(ensdb))   assert_is_all_of(ensdb, 'EnsDb')
+    if (!is.null(sfile))   assert_all_are_existing_files(sfile)
+    if (!is.null(by)) assert_is_subset(by, names(fread(sfile)))
+# Read
+    samples <- list.dirs(dir, recursive = FALSE, full.names = TRUE)
+    object <- Map(.read_salmon_sample, samples)
+    names(object) %<>% basename()
+    object %<>% Reduce(function(x, y) merge(x, y, by = 'Name'), .)
+    object %<>% dt2mat()
+    object <- list(log2tpm = log2(0.00001 + object))  # assay
+    object %<>% SummarizedExperiment()
+    sdt(object)$sample_id <- snames(object)           # samples
+    object %<>% merge_sfile(sfile, by.y = by)
+    fdt(object)$feature_id <- fnames(object)          # features
+    fdt(object)$enst <- fdt(object)$feature_id %>% split_extract_fixed('.', 1)
+    fdt(object)$gene <- ensembldb::mapIds(ensdb, keys = fdt(object)$enst, keytype = 'TXID', column = 'GENENAME')
+    object
+}
