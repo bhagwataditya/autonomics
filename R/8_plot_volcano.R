@@ -293,7 +293,7 @@ plot_volcano <- function(
     nrow  = length(fit)
 ){
 # Assert
-    if (!is.null(features)){ assert_is_subset(  features, fdt(object)[[label]])}
+    if (!is.null(features)){ assert_is_subset(  features, fdt(object)$feature_id)}
     assert_is_a_number(nrow)
     effect <- mlp <- NULL
 # Volcano 
@@ -327,7 +327,7 @@ plot_volcano <- function(
         labeldt <- plotdt[bon<0.05]
         if (!is.null(features)){
             seldt <- copy(plotdt)
-            seldt[, singlefeature := get(label)]
+            seldt[, singlefeature := feature_id]
             seldt %<>% separate_rows(singlefeature) %>% data.table()
             seldt %<>% extract(singlefeature %in% features)
             seldt[, singlefeature := NULL]
