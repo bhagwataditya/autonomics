@@ -293,7 +293,6 @@ plot_volcano <- function(
     nrow  = length(fit)
 ){
 # Assert
-    if (!is.null(features)){ assert_is_subset(  features, fdt(object)$feature_id)}
     assert_is_a_number(nrow)
     effect <- mlp <- NULL
 # Volcano 
