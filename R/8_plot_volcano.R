@@ -318,6 +318,7 @@ plot_volcano <- function(
                          yintercept = c(min(mlp[p<0.05]), 
                                         min(mlp[fdr<0.05]), 
                                         min(mlp[bon<0.05]))), by = c('fit', 'coef')]
+    cutdt %<>% extract(!is.infinite(yintercept))
     p <- p + geom_hline(data = cutdt, mapping = aes(yintercept = yintercept))
     p <- p + geom_label(data = cutdt, mapping = aes(x = maxeffect, y = yintercept, label = label), label.size = NA, hjust = 1)
     p <- p + guides(color = 'none')
