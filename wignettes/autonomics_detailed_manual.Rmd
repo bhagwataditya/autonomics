@@ -28,13 +28,12 @@ file.phosphosites    <- download_data('billing19.phosphosites.txt' )
 file.diann           <- download_data('szymanski22.report.tsv'     )
 file.somascan        <- download_data('atkin18.somascan.adat'      )
 file.metabolon       <- download_data('atkin18.metabolon.xlsx'     )
-object.rnaseq        <- read_rnaseq_counts(file.rnaseq,        plot = FALSE)
-object.proteingroups <- read_proteingroups(file.proteingroups, plot = FALSE)
-object.phosphosites  <- read_phosphosites( file.phosphosites,
-                                           file.proteingroups, plot = FALSE)
-object.diann         <- read_diann(        file.diann,         plot = FALSE)
-object.somascan      <- read_somascan(     file.somascan,      plot = FALSE)
-object.metabolon     <- read_metabolon(    file.metabolon,     plot = FALSE)
+object.rnaseq        <- read_rnaseq_counts(file = file.rnaseq,        plot = FALSE)
+object.proteingroups <- read_proteingroups(file = file.proteingroups, plot = FALSE)
+object.phosphosites  <- read_phosphosites( file = file.phosphosites, proteinfile = file.proteingroups, plot = FALSE)
+object.diann         <- read_diann(        file = file.diann,         plot = FALSE)
+object.somascan      <- read_somascan(     file = file.somascan,      plot = FALSE)
+object.metabolon     <- read_metabolon(    file = file.metabolon,     plot = FALSE)
 ```
 
 ```{r, echo = FALSE, fig.width = 6, fig.height = 6, out.width = '85%', out.height = '85%', message = FALSE}
@@ -95,6 +94,7 @@ n <- analysis(object)$nfeature
 In this case **`r n[[5]]` proteingroups** (out of `r n[[1]]` identified) were retained for  analysis, after applying the following filters:
 
 ```{r, echo = FALSE}
+
 require(data.table)
 data.table(Filter = names(n), n = n)   # Filtering details
 ```

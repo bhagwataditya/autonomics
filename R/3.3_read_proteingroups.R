@@ -816,6 +816,7 @@ read_phosphosites <- function(
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
+    assert_all_are_existing_files(c(file, proteinfile))
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
@@ -853,7 +854,7 @@ read_phosphosites <- function(
         subgroups = subgroups,     invert = invert,      
           reverse = reverse, contaminants = contaminants,  localization = localization, 
            impute = impute,      verbose = verbose)
-    mean_assays <- c('log2sites', 'pepcounts')
+    assays <- c('log2sites', 'pepcounts')
     for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
         pca        = pca,          fit       = fit,       
