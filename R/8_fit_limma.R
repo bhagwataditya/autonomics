@@ -525,15 +525,15 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         limmafit %<>% eBayes()
         if ('p' %in% statvars){ 
             dt0 <- data.table(limmafit$p.value)
-            dt0 %<>% setna(1)
+            #dt0 %<>% setna(1)
             names(dt0) %<>% paste0('p', sep, ., suffix); limmadt %<>% cbind(dt0)  }
         if ('t' %in% statvars){ 
             dt0 <- data.table(limmafit$t)
-            dt0 %<>% setna(0)
+            #dt0 %<>% setna(0)
             names(dt0) %<>% paste0('t', sep, ., suffix); limmadt %<>% cbind(dt0)  }
         if ('fdr' %in% statvars){
             dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
-            dt0 %<>% setna(1)
+            #dt0 %<>% setna(1)
             names(dt0) %<>% paste0('fdr', sep, .,suffix); limmadt %<>% cbind(dt0)  } }
     limmadt
 }
