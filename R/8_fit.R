@@ -538,6 +538,7 @@ summarize_fit <- function(object, fit = fits(object)){
     sumdt$contrast %<>% pull_level('Intercept')
     setorderv(sumdt, c('fit', 'contrast'))
     sumdt %<>% extract(fit, on = 'fit')
+    sumdt %<>% extract(coefs(object), on = 'contrast')
     sumdt
 }
 
