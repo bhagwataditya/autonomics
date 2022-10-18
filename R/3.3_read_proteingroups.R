@@ -521,7 +521,8 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
     if (verbose)  message('\t\t\tUncollapse, Drop truncated, Parse')
     anndt <- dt[, c(idcol, 'Fasta headers'), with = FALSE]
     anndt %<>% uncollapse(`Fasta headers`, sep = ';')
-    anndt %<>% extract( stri_count_fixed(`Fasta headers`, '|') == 2)
+    # anndt %<>% extract( stri_count_fixed(`Fasta headers`, '|') == 2)       # drop truncated fasta headers
+    anndt %<>% extract(`Fasta headers` %>% stri_detect_regex('.+SV=[0-9]+'))
     anndt %<>% cbind(parse_fastahdrs(anndt$`Fasta headers`))
     anndt %<>% drop_inferior(verbose = verbose)
     setnames(dt, 'uniprot', 'Original')
