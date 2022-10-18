@@ -547,18 +547,28 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
 
 add_feature_id <- function(dt){
     dt %<>% copy()
-    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
-    dt[, feature_id := entry]
-    dt$feature_id %<>% stri_replace_all_regex('_[^;]+', '')
-    dt[isoform!=0, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(isoform, ';', ''), ')')]
+    
+    dt1 <- dt[Reverse ==''  & `Potential contaminant` == '']
+    dt2 <- dt[Reverse =='+' & `Potential contaminant` == '' ]
+    dt3 <- dt[Reverse ==''  & `Potential contaminant` == '+']
+    dt4 <- dt[Reverse =='+' & `Potential contaminant` == '+']
+    
+    idcol <- if ('fosId' %in% names(dt1)) 'fosId' else 'proId'
+    dt1[, feature_id := entry]
+    if (length(unique(dt1$organism)) == 1)  dt1$feature_id %<>% stri_replace_all_regex('_[^;]+', '')
+    dt1[isoform!=0, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(isoform, ';', ''), ')')]
     if (idcol=='fosId'){
-        dt$feature_id %<>% paste0('-',dt$`Amino acid`)
-        dt$feature_id %<>% paste0(split_extract_fixed(dt$`Positions within proteins`, ';', 1))
+        dt1$feature_id %<>% paste0('-',dt$`Amino acid`)
+        dt1$feature_id %<>% paste0(split_extract_fixed(dt$`Positions within proteins`, ';', 1))
     }
-    dt[                Reverse == '+', feature_id := paste0('REV_', get(idcol))]
-    dt[`Potential contaminant` == '+', feature_id := paste0('CON_', get(idcol))]
+    dt2[, feature_id := paste0('REV_',     get(idcol))]
+    dt3[, feature_id := paste0('CON_',     get(idcol))]
+    dt4[, feature_id := paste0('REV_CON_', get(idcol))]
         # Contaminants and actual proteins get mixed up. For naming: make sure to use contaminant.
+    dt <- dt1 %>% rbind(dt2) %>% rbind(dt3) %>% rbind(dt4)
     dt %<>% pull_columns(c(idcol, 'feature_id'))
+    assertive::assert_all_are_non_missing_nor_empty_character(dt$feature_id)
+    assertive::assert_has_no_duplicates(dt$feature_id)
     dt[]
 }
 
