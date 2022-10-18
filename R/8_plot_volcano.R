@@ -324,7 +324,7 @@ plot_volcano <- function(
     p <- p + guides(color = 'none')
 # Labels
     if (!is.null(label)){
-        labeldt <- plotdt[bon<0.05]
+        labeldt <- plotdt[fdr<0.05]
         if (!is.null(features)){
             seldt <- copy(plotdt)
             seldt[, singlefeature := feature_id]
