@@ -423,7 +423,8 @@ num2char <- function(x){
 add_scores <- function(
     p, object, x = 'pca1', y = 'pca2', color = 'subgroup', 
     shape = if ('replicate' %in% svars(object)) 'replicate' else NULL,
-    size = NULL, group = NULL, fixed = list(shape = 15, size = 3, na.rm = TRUE)
+    size = NULL, group = NULL, linetype = NULL,
+    fixed = list(shape = 15, size = 3, na.rm = TRUE)
 ){
 # manual colors require non-numerics
     if (!is.null(color))    object[[color]] %<>% num2char() 
@@ -433,7 +434,7 @@ add_scores <- function(
     shapesym <- if (is.null(shape)) quo(NULL) else sym(shape)
     sizesym  <- if (is.null(size))  quo(NULL) else sym(size )
     groupsym <- if (is.null(group)) quo(NULL) else sym(group)
-    
+    linetypesym <- if (is.null(linetype)) quo(NULL) else sym(linetype)
 # Points    
     p <- p + layer(  
                 geom     = 'point',
@@ -452,10 +453,11 @@ add_scores <- function(
                 mapping  = aes(x = !!xsym, 
                                y = !!ysym, 
                            color = !!colorsym, 
-                           group = !!groupsym),
+                           group = !!groupsym, 
+                           linetype = !!linetypesym),
                 stat     = "identity",
                 data     = sdt(object),
-                params   = list(size = 0.1, linetype = 'solid', na.rm = TRUE),
+                params   = list(size = 0.1, na.rm = TRUE),
                 position = 'identity')
     p
 }
@@ -516,6 +518,7 @@ pca1 <- pca2 <- feature_name <- NULL
 #' @param shape          svar (string)
 #' @param label          svar (string)
 #' @param group          svar (string)
+#' @param linetype       svar (string)
 #' @param feature_label  fvar (string)
 #' @param fixed          fixed plot aesthetics
 #' @param nloadings      number of loadings per half-axis to plot
@@ -536,7 +539,11 @@ biplot <- function(
     y = intersect(c('pca2', 'pls2', 'lda2'), svars(object))[1], 
     color = 'subgroup', 
     shape = NULL, 
-    size = NULL, group = NULL, label = NULL, feature_label = 'feature_name', 
+    size  = NULL, 
+    group = NULL, 
+    linetype = NULL,
+    label = NULL, 
+    feature_label = 'feature_name', 
     fixed = list(shape = 15, size = 3), 
     nloadings = 0,
     palette = make_svar_palette(object, color)
@@ -568,7 +575,7 @@ biplot <- function(
     p <- p + ggtitle(paste0(x, ':', y))
     p %<>% add_loadings(object, x = x, y = y, label = feature_label, nloadings = nloadings)
     p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
-                      size = size, group = group, fixed = fixed)
+                      size = size, group = group, linetype = linetype, fixed = fixed)
     p <- p + scale_color_manual(values = palette, na.value = 'gray80')
     if (!is.null(label))  p <- p + geom_text_repel(
                     aes(x = !!sym(x), y = !!sym(y), label = !!sym(label)), 

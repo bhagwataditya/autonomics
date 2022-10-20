@@ -13,6 +13,7 @@ biplot(
   shape = NULL,
   size = NULL,
   group = NULL,
+  linetype = NULL,
   label = NULL,
   feature_label = "feature_name",
   fixed = list(shape = 15, size = 3),
@@ -34,6 +35,8 @@ plot_biplot(...)
 \item{shape}{svar (string)}
 
 \item{group}{svar (string)}
+
+\item{linetype}{svar (string)}
 
 \item{label}{svar (string)}
 
