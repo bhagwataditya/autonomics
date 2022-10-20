@@ -237,6 +237,7 @@ make_volcano_dt <- function(
     #dt %<>% dcast.data.table(feature_id+feature_name+coef+fit ~ quantity, value.var = 'value')
     dt %<>% tidyr::pivot_wider(id_cols = all_of(idvars), names_from = 'quantity', values_from = 'value')
     dt %<>% data.table()
+    dt$coef %<>% factor(coef)
     dt[, fdr := p.adjust(p, method = 'fdr'),        by = c('fit', 'coef')]
     dt[, bon := p.adjust(p, method = 'bonferroni'), by = c('fit', 'coef')]
     dt[, mlp := -log10(p)]
