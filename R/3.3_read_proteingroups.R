@@ -201,6 +201,16 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 #
 #-----------------------------------------------------------------------------
 
+#' Uncollapse 
+#' 
+#' Uncollapse data.table cols
+#' @param dt data.table
+#' @param ... cols
+#' @param sep string
+#' @examples
+#' dt <- data.table(protein = 'P1;P2', gene = 'G1;G2')
+#' uncollapse(dt, protein, gene, sep = ';')
+#' @export
 uncollapse <- function(dt, ..., sep = ';'){
     dt %>% 
     separate_rows(..., sep = sep) %>%
