@@ -335,7 +335,7 @@ plot_volcano <- function(
         }
         p <- p + ggrepel::geom_label_repel(data = labeldt, 
                     aes(x = effect, y = mlp, label = !!sym(label), color = direction), #color = 'black', 
-                    label.size = NA, fill = alpha(c('white'), 1),
+                    label.size = NA, fill = alpha(c('white'), 0.6),
                     na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps)
         if (!is.null(features)){
             p <- p + ggrepel::geom_label_repel(data = seldt, 
