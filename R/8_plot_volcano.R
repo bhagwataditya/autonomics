@@ -315,10 +315,12 @@ plot_volcano <- function(
     if (!is.null(alpha))  p <- p + scale_alpha_manual(values = c(0.3, 0.5, 1))
 # Significance lines
     maxeffect <- max(plotdt$effect)
+    minn <- function(x) if (length(x)==0) return(Inf) else min(x, na.rm = TRUE) 
+        # Avoid warning 'no non-missing arguments to min; returning Inf'
     cutdt <- plotdt[, .( label = c('p < 0.05', 'fdr < 0.05', 'bon < 0.05'),
-                         yintercept = c(min(mlp[p<0.05]), 
-                                        min(mlp[fdr<0.05]), 
-                                        min(mlp[bon<0.05]))), by = c('fit', 'coef')]
+                         yintercept = c(minn(mlp[p<0.05]), 
+                                        minn(mlp[fdr<0.05]), 
+                                        minn(mlp[bon<0.05]))), by = c('fit', 'coef')]
     cutdt %<>% extract(!is.infinite(yintercept))
     p <- p + geom_hline(data = cutdt, mapping = aes(yintercept = yintercept), color = 'gray30', linetype = 'longdash')
     p <- p + geom_label(data = cutdt, mapping = aes(x = maxeffect, y = yintercept, label = label), 
