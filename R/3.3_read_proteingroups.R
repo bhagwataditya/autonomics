@@ -394,6 +394,16 @@ drop_inferior <- function(anndt, verbose = TRUE){
 }
 
 
+#' Clean Merge
+#' @param dt1 data.table
+#' @param dt2 data.table
+#' @param by string
+#' @examples
+#' dt1 <- data.table(feature_id = c('PG1', 'PG2'), gene    = c('G1', 'G2'))
+#' dt2 <- data.table(feature_id = c('PG1', 'PG2'), protein = c('P1', 'P2'))
+#' dt1 %<>% .merge(dt2, by = 'feature_id')
+#' dt1
+#' @export
 .merge <- function(dt1, dt2, by){
     dt1 %<>% copy()
     dt2 %<>% copy()
