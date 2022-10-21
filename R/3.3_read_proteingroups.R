@@ -579,8 +579,8 @@ add_feature_id <- function(dt){
     if (length(unique(dt1$organism)) == 1)  dt1$feature_id %<>% stri_replace_all_regex('_[^;]+', '')
     dt1[isoform!=0, feature_id := paste0(feature_id, '(', stri_replace_all_fixed(isoform, ';', ''), ')')]
     if (idcol=='fosId'){
-        dt1$feature_id %<>% paste0('-',dt$`Amino acid`)
-        dt1$feature_id %<>% paste0(split_extract_fixed(dt$`Positions within proteins`, ';', 1))
+        dt1[, feature_id := paste0(feature_id, '-', `Amino acid`) ]
+        dt1[, feature_id := paste0(feature_id, split_extract_fixed(`Positions within proteins`, ';', 1)) ]
     }
     dt2[, feature_id := paste0('REV_',     get(idcol))]
     dt3[, feature_id := paste0('CON_',     get(idcol))]
