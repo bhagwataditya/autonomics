@@ -226,8 +226,9 @@ nastring_to_0 <- function(x){
 }
 
 extract_reviewed <- function(`Fasta headers`){
-    `Fasta headers`                    %>% 
-    substr(2, 3)                       %>%
+    `Fasta headers`                    %>%   # seqinr::read.fasta          gives '>sp|tr' fastahdrs
+    split_extract_fixed('|',1)         %>%   # Biostrings::readAAStringSet gives  'sp|tr' fastahdrs
+    substr(nchar(.)-1, nchar(.))       %>%   # this function now works with both scenarios
     equals('sp')                       %>%
     as.integer()
 }
