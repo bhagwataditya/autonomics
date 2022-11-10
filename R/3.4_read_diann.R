@@ -287,6 +287,7 @@ rm_diann_contaminants <- function(
 #' @param fastadt       NULL or data.table
 #' @param quantity     'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
+#' @param simplify_snames TRUE/FALSE : whether to simplify (i.e. drop common parts in) sample names
 #' @param contaminants  character vector with uniprot ids
 #' @param plot          whether to plot
 #' @param pca           whether to pca
@@ -324,7 +325,9 @@ rm_diann_contaminants <- function(
 #' @export
 read_diann <- function(
     file, fastadt = NULL, 
-    quantity = 'PG.MaxLFQ', precursor_quantity = PRECURSOR_QUANTITY, 
+    quantity = 'PG.MaxLFQ', 
+    precursor_quantity = PRECURSOR_QUANTITY, 
+    simplify_snames = TRUE,
     contaminants = character(0), 
     impute = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
@@ -358,7 +361,7 @@ read_diann <- function(
         object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'Protein.Group')
     # sdt
         snames(object) <- colnames(object)
-        snames(object) %<>% drop_common()
+        if (simplify_snames)  snames(object) %<>% simplify_snames()
         object$subgroup  <- infer_subgroup( object$sample_id)
 # Filter. Impute. Analyze
     if (length(contaminants)>0){
@@ -380,7 +383,7 @@ read_diann <- function(
 
 has_one_level <- function(x) length(unique(x))==1
 x <- paste0('pi_exp_', c('wt_r1', 'wt_r2', 'kd_r1', 'kd_r2'))
-drop_common   <- function(x){
+simplify_snames <- function(x){
     sep <- guess_sep(x)
     if (sep == 'NOSEP')  return(x)
     x <- data.table(x = x)

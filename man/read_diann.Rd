@@ -23,6 +23,7 @@ read_diann(
   fastadt = NULL,
   quantity = "PG.MaxLFQ",
   precursor_quantity = PRECURSOR_QUANTITY,
+  simplify_snames = TRUE,
   contaminants = character(0),
   impute = FALSE,
   plot = FALSE,
@@ -46,6 +47,8 @@ read_diann(
 \item{fastadt}{NULL or data.table}
 
 \item{quantity}{'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'}
+
+\item{simplify_snames}{TRUE/FALSE : whether to simplify (i.e. drop common parts in) sample names}
 
 \item{contaminants}{character vector with uniprot ids}
 
