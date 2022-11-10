@@ -1174,7 +1174,7 @@ list2mat <- function(x){
     uni <- unique(Reduce(union, x))
     mat <- matrix(0, nrow = length(uni), ncol = length(x),
            dimnames = list(uni, names(x)))
-    for (i in seq_along(x))  mat[x[[i]], names(x)[i]] <- 1
+    for (i in seq_along(x))  mat[x[[i]], i] <- 1
     mat
 }
 
