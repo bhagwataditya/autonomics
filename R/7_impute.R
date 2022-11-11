@@ -230,7 +230,7 @@ impute.SummarizedExperiment <- function(
     assert_has_names(palette)
     assert_is_a_number(n)
 # Impute systematic NAs
-    dt <- sumexp_to_longdt(object, assay = assay)
+    dt <- sumexp_to_longdt(object, assay = assay, svars = by)
     dt[, imputed := impute(value, shift = shift, width = width, 
                            verbose = FALSE, plot = FALSE), by = 'sample_id']
     dt[, isNa    :=  is.na(value)]
@@ -634,7 +634,7 @@ plot_sample_nas <- function(object, by = 'subgroup', fill = by){
     nconsistent <- sum(systematic_nas(y, by = by))
     nrandom     <- sum(random_nas(    y, by = by))
 # Melt
-    plotdt  <-  sumexp_to_longdt(object, svars = by)
+    plotdt  <-  sumexp_to_longdt(object, svars = unique(c(by, fill)))
     alpha <- NULL
     plotdt[,             detection := 'detect']
     plotdt[is.na(value), detection := 'nondetect']
@@ -643,7 +643,7 @@ plot_sample_nas <- function(object, by = 'subgroup', fill = by){
     plotdt[, detection  := factor(detection, c('nondetect', 'impute', 'detect'))]
     plotdt[, sample_id  := factor( sample_id, unique(snames(object)))]
     plotdt[, feature_id := factor(feature_id, rev(unique(fnames(object))))]
-    colors <- make_colors(slevels(object, by))
+    colors <- make_colors(slevels(object, fill))
     colors %<>% c(nondetect = "#FFFFFF")
 # Plot
     ggplot(plotdt) +
