@@ -668,7 +668,7 @@ plot_sample_nas <- function(
              axis.text.x  = element_text(angle = 90, vjust = 0.5),
              legend.title = element_blank(),
              panel.grid   = element_blank()) +
-    geom_hline(yintercept = cumsum(c(nfull, nrandom, nconsistent))) +
+    geom_hline(yintercept = cumsum(c(nfull, nrandom, nconsistent)), size = 1.2) +
     guides(alpha = 'none')
 }
 
