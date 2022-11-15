@@ -677,25 +677,31 @@ plot_sample_nas <- function(
     plotdt[, feature_id := factor(feature_id, rev(unique(fnames(object))))]
     palette %<>% c(nondetect = "#FFFFFF")
 # Plot
-    ggplot(plotdt) +
-    geom_tile(aes(x = sample_id, y = feature_id, fill = !!sym(fill), alpha = detection)) +
-    scale_fill_manual( values = palette, breaks = names(palette) %>% setdiff('nondetect')) +
-    scale_alpha_manual(values = c(nondetect = 0, impute = 0.3, detect = 1)) +
-    scale_x_discrete(position = 'top') +
-    ylab(paste0(nrow(object), ' Features')) +
-    xlab(paste0(ncol(object), ' Samples')) +
-    #ggtitle(sprintf('detects: %d full, %d random, %d consistent',
-    #                nfull, nrandom, nconsistent)) +
-    theme_bw() +
-    theme(   axis.text.y  = element_blank(), 
-             axis.ticks.y = element_blank(),
-             axis.text.x  = element_text(angle = 90, vjust = 0.5),
-             legend.title = element_blank(),
-             panel.grid   = element_blank(), 
-             panel.border = element_rect(size = 1.5)) +
-    geom_hline(yintercept = cumsum(c(nfull, nrandom)), size = 1) +
-    #geom_hline(yintercept = cumsum(c(nfull, nrandom, nconsistent)), size = 1) +
-    guides(alpha = 'none')
+    p <- ggplot(plotdt) +
+        geom_tile(aes(x = sample_id, y = feature_id, fill = !!sym(fill), alpha = detection)) +
+        scale_fill_manual( values = palette, breaks = names(palette) %>% setdiff('nondetect')) +
+        scale_alpha_manual(values = c(nondetect = 0, impute = 0.3, detect = 1)) +
+        scale_x_discrete(position = 'top') +
+        ylab(paste0(nrow(object), ' Features')) +
+        xlab(paste0(ncol(object), ' Samples')) +
+        #ggtitle(sprintf('detects: %d full, %d random, %d consistent',
+        #                nfull, nrandom, nconsistent)) +
+        theme_bw() +
+        theme(   axis.text.y  = element_blank(), 
+                 axis.ticks.y = element_blank(),
+                 axis.text.x  = element_text(angle = 90, vjust = 0.5),
+                 legend.title = element_blank(),
+                 panel.grid   = element_blank(), 
+                 panel.border = element_rect(size = 1.5))
+# Add lines
+    hlines <- cumsum(c(nfull, nrandom ))  # cumsum(c(nfull, nrandom, nconsistent))
+    vlines <- table(object[[by]])
+    vlines %<>% extract(-length(.))
+    vlines %<>% cumsum()
+    vlines %<>% add(0.5)
+    p <- p + geom_hline(yintercept = hlines, size = 1)
+    p <- p + geom_vline(xintercept = vlines, size = 1)
+    p +  guides(alpha = 'none')
 }
 
 
