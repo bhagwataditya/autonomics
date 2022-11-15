@@ -11,7 +11,12 @@ plot_detections(...)
 
 plot_summarized_detections(...)
 
-plot_sample_nas(object, by = "subgroup", fill = by)
+plot_sample_nas(
+  object,
+  by = "subgroup",
+  fill = by,
+  palette = make_svar_palette(object, fill)
+)
 
 plot_subgroup_nas(
   object,
@@ -28,7 +33,7 @@ plot_subgroup_nas(
 
 \item{fill}{svar (string)}
 
-\item{na_imputes}{whether to NA imputes prior to plotting (TRUE / FALSE)}
+\item{palette}{color vector (names = levels, values = colors)}
 }
 \value{
 ggplot object

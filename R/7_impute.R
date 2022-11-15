@@ -604,7 +604,7 @@ plot_summarized_detections <- function(...){
 #' @param object     SummarizedExperiment
 #' @param by         svar (string)
 #' @param fill       svar (string)
-#' @param na_imputes whether to NA imputes prior to plotting (TRUE / FALSE)
+#' @param palette    color vector (names = levels, values = colors)
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -621,7 +621,12 @@ plot_summarized_detections <- function(...){
 #' plot_sample_nas(object, 'subgroup')
 #' plot_sample_nas(object, 'TIME_POINT')
 #' @export
-plot_sample_nas <- function(object, by = 'subgroup', fill = by){
+plot_sample_nas <- function(
+    object, 
+    by = 'subgroup', 
+    fill = by, 
+    palette = make_svar_palette(object, fill)
+){
 # Process
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(by, svars(object))
@@ -646,12 +651,11 @@ plot_sample_nas <- function(object, by = 'subgroup', fill = by){
     plotdt[, detection  := factor(detection, c('nondetect', 'impute', 'detect'))]
     plotdt[, sample_id  := factor( sample_id, unique(snames(object)))]
     plotdt[, feature_id := factor(feature_id, rev(unique(fnames(object))))]
-    colors <- make_colors(slevels(object, fill))
-    colors %<>% c(nondetect = "#FFFFFF")
+    palette %<>% c(nondetect = "#FFFFFF")
 # Plot
     ggplot(plotdt) +
     geom_tile(aes(x = sample_id, y = feature_id, fill = !!sym(fill), alpha = detection)) +
-    scale_fill_manual( values = colors) +
+    scale_fill_manual( values = palette) +
     scale_alpha_manual(values = c(nondetect = 0, impute = 0.3, detect = 1)) +
     scale_x_discrete(position = 'top') +
     ylab(paste0(nrow(object), ' Features')) +
@@ -666,7 +670,6 @@ plot_sample_nas <- function(object, by = 'subgroup', fill = by){
              panel.grid   = element_blank()) +
     geom_hline(yintercept = cumsum(c(nfull, nrandom, nconsistent))) +
     guides(alpha = 'none')
-
 }
 
 
