@@ -636,7 +636,7 @@ plot_sample_nas <- function(
     object[[by]] %<>% factor()
     object %<>% extract(, order(.[[by]]))
 # Reorder/block features
-    object %<>% detect_order_features()
+    object %<>% detect_order_features(by = by)
     y <- object; values(y)[is_imputed(y)] <- NA
     nfull       <- sum(no_nas(y))
     nconsistent <- sum(systematic_nas(y, by = by))
