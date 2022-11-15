@@ -561,7 +561,27 @@ cluster_order_features <- function(object){
     object
 }
 
-detect_order_features <- function(object, by = 'subgroup'){
+detect_order_features <- function(object, by){
+    objlist <- object %>% split_samples(by)
+    block_detected <- function(obj){
+        as.character(as.numeric(!rowAlls(is.na(values(obj)))))
+    }
+    object <- Reduce(cbind, objlist)
+    fdt(object)$natype <- objlist %>% Map(block_detected, .) %>% Reduce(paste0, .)
+    fdt(object)$natype[rowAlls(!is.na(values(object)))] <- '222'
+
+    natypes <- table(fdt(object)$natype)
+    natypes %<>% sort(decreasing = TRUE)
+    natypes %<>% names()
+    natypes %<>% setdiff(c('111', '222'))
+    natypes %<>% c('111', '222')
+    fdt(object)$natype %<>% factor(natypes)
+    object %<>% extract(order(fdt(.)$natype), )
+    object
+}
+
+
+detect_order_features_old <- function(object, by = 'subgroup'){
     x <- object
     values(x)[is_imputed(x)] <- NA
     idx1 <- fnames(cluster_order_features(x[systematic_nas(x, by = by),]))
@@ -636,6 +656,7 @@ plot_sample_nas <- function(
     object[[by]] %<>% factor()
     object %<>% extract(, order(.[[by]]))
 # Reorder/block features
+    # object %<>% detect_order_features_old(by = by)
     object %<>% detect_order_features(by = by)
     y <- object; values(y)[is_imputed(y)] <- NA
     nfull       <- sum(no_nas(y))
@@ -655,7 +676,7 @@ plot_sample_nas <- function(
 # Plot
     ggplot(plotdt) +
     geom_tile(aes(x = sample_id, y = feature_id, fill = !!sym(fill), alpha = detection)) +
-    scale_fill_manual( values = palette) +
+    scale_fill_manual( values = palette, breaks = names(palette) %>% setdiff('nondetect')) +
     scale_alpha_manual(values = c(nondetect = 0, impute = 0.3, detect = 1)) +
     scale_x_discrete(position = 'top') +
     ylab(paste0(nrow(object), ' Features')) +
@@ -668,7 +689,8 @@ plot_sample_nas <- function(
              axis.text.x  = element_text(angle = 90, vjust = 0.5),
              legend.title = element_blank(),
              panel.grid   = element_blank()) +
-    geom_hline(yintercept = cumsum(c(nfull, nrandom, nconsistent)), size = 1.2) +
+    geom_hline(yintercept = cumsum(c(nfull, nrandom)), size = 0.8) +
+    #geom_hline(yintercept = cumsum(c(nfull, nrandom, nconsistent)), size = 1) +
     guides(alpha = 'none')
 }
 
