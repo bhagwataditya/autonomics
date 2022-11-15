@@ -623,6 +623,9 @@ plot_summarized_detections <- function(...){
 #' @export
 plot_sample_nas <- function(object, by = 'subgroup', fill = by){
 # Process
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(by, svars(object))
+    assert_is_subset(fill, svars(object))
     . <- detection <- feature_id <- sample_id <- value <- NULL
 # Reorder samples
     object[[by]] %<>% factor()
