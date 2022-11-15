@@ -694,12 +694,14 @@ plot_sample_nas <- function(
                  panel.grid   = element_blank(), 
                  panel.border = element_rect(size = 1.5))
 # Add lines
-    hlines <- cumsum(c(nfull, nrandom ))  # cumsum(c(nfull, nrandom, nconsistent))
+    hlines <- cumsum(c(nfull, nrandom )) + 0.5  # cumsum(c(nfull, nrandom, nconsistent))
+    fainthlines <- cumsum(rev(table(fdt(object)$natype))) + 0.5
     vlines <- table(object[[by]])
     vlines %<>% extract(-length(.))
     vlines %<>% cumsum()
     vlines %<>% add(0.5)
     p <- p + geom_hline(yintercept = hlines, size = 1)
+    p <- p + geom_hline(yintercept = fainthlines, size = 0.5)
     p <- p + geom_vline(xintercept = vlines, size = 1)
     p +  guides(alpha = 'none')
 }
