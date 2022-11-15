@@ -568,13 +568,16 @@ detect_order_features <- function(object, by){
     }
     object <- Reduce(cbind, objlist)
     fdt(object)$natype <- objlist %>% Map(block_detected, .) %>% Reduce(paste0, .)
-    fdt(object)$natype[rowAlls(!is.na(values(object)))] <- '222'
+    ngroup <- length(objlist)
+    onestring <- paste0(rep('1', ngroup), collapse = '')
+    twostring <- paste0(rep('2', ngroup), collapse = '')
+    fdt(object)$natype[rowAlls(!is.na(values(object)))] <- twostring
 
     natypes <- table(fdt(object)$natype)
     natypes %<>% sort(decreasing = TRUE)
     natypes %<>% names()
-    natypes %<>% setdiff(c('111', '222'))
-    natypes %<>% c('111', '222')
+    natypes %<>% setdiff(c(onestring, twostring))
+    natypes %<>% c(onestring, twostring)
     fdt(object)$natype %<>% factor(natypes)
     object %<>% extract(order(fdt(.)$natype), )
     object
@@ -688,8 +691,9 @@ plot_sample_nas <- function(
              axis.ticks.y = element_blank(),
              axis.text.x  = element_text(angle = 90, vjust = 0.5),
              legend.title = element_blank(),
-             panel.grid   = element_blank()) +
-    geom_hline(yintercept = cumsum(c(nfull, nrandom)), size = 0.8) +
+             panel.grid   = element_blank(), 
+             panel.border = element_rect(size = 1.5)) +
+    geom_hline(yintercept = cumsum(c(nfull, nrandom)), size = 1) +
     #geom_hline(yintercept = cumsum(c(nfull, nrandom, nconsistent)), size = 1) +
     guides(alpha = 'none')
 }
