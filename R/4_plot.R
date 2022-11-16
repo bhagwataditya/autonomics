@@ -806,7 +806,8 @@ extract_coef_features <- function(
     pvals   <- p(     object, coef = coef, fit = fit)[, 1]
     fdrs    <- fdr(   object, coef = coef, fit = fit)[, 1]
     effects <- effect(object, coef = coef, fit = fit)[, 1]
-    signs   <- sign(  object, coef = coef, fit = fit)[, 1]
+    signs   <- sign.SummarizedExperiment(  object, coef = coef, fit = fit, cutoff = fdrcutoff)[, 1]
+    names(pvals) <- names(fdrs) <- names(effects) <- names(signs) <- fnames(object)
     
     upfeatures <- names(    sort(pvals[signs>0 & fdrs < fdrcutoff]))
     dnfeatures <- names(rev(sort(pvals[signs<0 & fdrs < fdrcutoff])))
@@ -814,6 +815,7 @@ extract_coef_features <- function(
     dnfeatures %<>% utils::tail(ntop-length(upfeatures))
     
     object %<>% extract(c(dnfeatures, upfeatures), )
+    object
 }
 
 format_coef_vars <- function(

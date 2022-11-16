@@ -351,7 +351,9 @@ p <- function(object, coef = coefs(object), fit = fits(object)){
     var <- pvar(object, coef = coef, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
-    as.matrix(dt, rownames = rownames(object))
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
 }
 
 
@@ -371,7 +373,9 @@ effect <- function(object, coef = coefs(object), fit = fits(object)){
     var <- effectvar(object, coef = coef, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
-    as.matrix(dt, rownames = rownames(object))
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
 }
 
 
@@ -391,7 +395,9 @@ fdr <- function(object, coef = coefs(object), fit = fits(object)){
     var <- fdrvar(object, coef = coef, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
-    as.matrix(dt, rownames = rownames(object))
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
 }
 
 #' @rdname p
