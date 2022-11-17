@@ -572,7 +572,7 @@ biplot <- function(
     ylab  <- paste0(y, ' : ', yvar,'% ')
 # Plot
     p <- ggplot() + theme_bw() + theme(panel.grid = element_blank())
-    p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + 
+    p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
     p <- p + ggtitle(paste0(x, ':', y))
     p %<>% add_loadings(object, x = x, y = y, label = feature_label, nloadings = nloadings)
     p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
