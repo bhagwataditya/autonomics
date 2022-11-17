@@ -299,7 +299,8 @@ plot_volcano <- function(
 # Volcano 
     plotdt <- make_volcano_dt(object, fit = fit, coef = coef, 
                   label = label, shape = shape, size = size, alpha = alpha)
-    p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow) + theme_bw()
+    p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow)
+    p <- p + theme_bw() + theme(panel.grid = element_blank())
     p <- p + xlab('log2(FC)') + ylab('-log10(p)') + ggtitle('volcano')
     shapesym <- if (is.null(shape))  quo(NULL) else sym(shape)
     sizesym  <- if (is.null(size))   quo(NULL) else sym(size)
