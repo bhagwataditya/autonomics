@@ -40,6 +40,49 @@ pg_to_isoforms <- function(x, unique = TRUE){
     paste0(z, collapse = ',')
 }
 
+#' Extract common substring
+#' @param a first string
+#' @param b second string
+#' @return  string
+#' @examples
+#' # Sequences
+#'   a <- "heart-specific Fatty acid binding protein"
+#'   b <- "Fatty acid binding protein, isoform 3"
+#'   extract_common_substr(a, b)
+#'
+#'   a <- "Small nuclear ribonucleoprotein-associated proteins B and B'"
+#'   b <- "Small nuclear ribonucleoprotein-associated protein N"
+#'   extract_common_substr(a, b)
+#' @references https://stackoverflow.com/questions/28261825
+#' @noRd
+extract_common_substr <- function(a, b){
+
+    tt <- drop(attr(adist(a, b, counts=TRUE), "trafos"))
+
+    # Nothing in common
+    if (!stri_detect_regex(tt, 'M+')) return('')
+
+    # Something in common
+    aa  <-  stri_sub(tt, stri_locate_all_regex(tt, '[DM]+')[[1]]) %>%
+            paste0(collapse = '') %>% trimws()
+            # paste is required because multiple substrings can be found
+    #bb <- tt %>%
+    # stri_sub(stri_locate_all_regex(tt, '[IM]+')[[1]]) %>%
+    # paste0(collapse = '')
+
+    stri_sub(a, stri_locate_all_regex(aa, 'M+')[[1]]) %>%
+    paste0(collapse = '') %>%
+    trimws()
+
+    # different  = c(a %>%
+    #    stri_sub(stri_locate_all_regex(aa, 'D+')[[1]]) %>%
+    #    trimws(),
+    # b %>%
+    #    stri_sub(stri_locate_all_regex(bb, 'I+')[[1]])) %>%
+    #    trimws())
+
+}
+
 #' Commonify strings
 #' @param x character vector
 #' @examples
