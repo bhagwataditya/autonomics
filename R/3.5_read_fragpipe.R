@@ -32,23 +32,60 @@
     fdt1 %<>% unique()
 # feature_id
     fdt1 %<>% extract(fdt0$fastahdr, on = 'fastahdr')
+    fdt1[, feature_id := protein]
+    fdt1 %<>% pull_columns(c('feature_id', 'protein', 'organism', 'gene'))
+    fdt1
     # fdt1[gene %in% gene[duplicated(gene)]][order(gene)]
     # fdt1[uniprot %>% stri_detect_fixed(';')]
 }
 
+.read_fragpipe_mat <- function(file, quantity){
+    # Add a space: 'MaxLFQ Intensity' -> ' MaxLFQ Intensity'
+    # Makes regex stricter and substring dropping easier
+    quantity %<>% paste0(' ', .)
+    
+    dt <- fread(file, integer64 = 'numeric') %>% un_int64()
+    cols <- names(dt) %>% extract(stri_detect_fixed(., quantity))
+    cols %<>% c('Protein', .)
+    dt %<>% extract(, cols, with = FALSE)
+    dt %<>% dt2mat()
+    colnames(dt) %<>% stri_replace_first_fixed(quantity, '')
+    dt
+}
 
 
 #' Read fragpipe
-#' @param dir directory with 'combined_protein.tsv'
+#' @param  dir       directory with 'combined_protein.tsv'
+#' @param  file      'combined_protein.tsv' (full path)
+#' @param  quantity  'MaxLFQ Intensity'
+#' @return SummarizedExperiment
 #' @examples 
 #' file <- '../combined_protein.tsv'
+#' object <- read_fragpipe(file = file)
+#' biplot(pca(object))
+#' @export
 read_fragpipe <- function(
     dir = getwd(), 
-    file = if (is_file(dir)) dir else file.path(dir, 'combined_protein.tsv')
+    file = if (is_file(dir)) dir else file.path(dir, 'combined_protein.tsv'),
+    quantity = 'MaxLFQ Intensity'
 ){
 # Assert
     assert_all_are_existing_files(file)
+    assert_is_subset(quantity, 'MaxLFQ Intensity')
 # Read
     fdt0 <- .read_fragpipe_fdt(file)
-    
+    object <- .read_fragpipe_mat(file, quantity)
+    assert_all_are_true(fdt0$fastahdr == rownames(object))
+    rownames(object) <- fdt0$feature_id
+# Preprocess
+    object %<>% zero_to_na()
+    object %<>% log2() 
+# Sumexp
+    object %<>% list()
+    names(object) <- quantity %>% paste0('log2 ', .) %>% make.names()
+    object %<>% SummarizedExperiment()
+    fdt(object) <- fdt0
+    sdt(object) <- data.table(sample_id = colnames(object), subgroup = 'group0')
+# Preprocess
+    object 
 }
