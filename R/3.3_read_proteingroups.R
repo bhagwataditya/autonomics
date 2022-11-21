@@ -537,13 +537,15 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
     dropdt <- dt[ idxdrop]
     dt     <- dt[!idxdrop]
 # Curate
-    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
-    if (verbose)  message('\t\tMaxQuant Fastahdrs')
-    if (verbose)  message('\t\t\tUncollapse, Drop truncated, Parse')
-    anndt <- dt[, c(idcol, 'Fasta headers'), with = FALSE]
-    anndt %<>% uncollapse(`Fasta headers`, sep = ';')
-    # anndt %<>% extract( stri_count_fixed(`Fasta headers`, '|') == 2)       # drop truncated fasta headers
-    anndt %<>% extract(`Fasta headers` %>% stri_detect_regex('.+SV=[0-9]+'))
+    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'           # Maxquant doesnt provide protein entries
+    if (verbose)  message('\t\tMaxQuant Fastahdrs')                     # They can be inferred from the fastahdrs
+    if (verbose)  message('\t\t\tUncollapse, Drop truncated, Parse')    # These fastahdrs are sometimes truncated
+    anndt <- dt[, c(idcol, 'Fasta headers'), with = FALSE]              # Only headers starting with 'tr|F1Q6Z9|F1Q6Z9_DANRE' are useful (protein!)
+    anndt %<>% uncollapse(`Fasta headers`, sep = ';')                   # Headers ending with SV=1 are preferable (they are not truncated)
+    anndt %<>% extract( stri_count_fixed(`Fasta headers`, '|') == 2)    # But this requirement cant be met for each proteingroup (e.g. 3550 in fukuda)
+    anndt[, endok := `Fasta headers` %>% stri_count_regex('.+SV=[0-9]+'), by = idcol]
+    anndt <- anndt[, .SD[endok==max(endok)], by = idcol]
+    anndt[, endok := NULL]
     anndt %<>% cbind(parse_fastahdrs(anndt$`Fasta headers`))
     anndt %<>% drop_inferior(verbose = verbose)
     setnames(dt, 'uniprot', 'Original')
