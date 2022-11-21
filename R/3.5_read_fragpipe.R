@@ -12,7 +12,7 @@
     fdt1[, protein      := proteingroup %>% split_extract_fixed('|', 3)]
     fdt1[, organism     := protein      %>% split_extract_fixed('_', 2)]
     fdt1[, uniprot      := proteingroup %>% split_extract_fixed('|', 2)]
-    fdt1[, contaminant  := proteingroup %>% substr(1,6) %>% equals('contam') %>% as.integer()]
+    fdt1[, contaminant  := '']; fdt1[substr(proteingroup, 1,6) == 'contam', contaminant := '+']
     fdt1[, reviewed     := proteingroup %>% substr(1,2) %>% equals('sp')     %>% as.integer()]
     fdt1[, proteingroup := NULL ]
 # Filter    
@@ -62,6 +62,7 @@
 #' @examples 
 #' file <- '../multiorganism.combined_protein.tsv'
 #' object <- read_fragpipe(file = file)
+#' fdt(object)
 #' biplot(pca(object))
 #' @export
 read_fragpipe <- function(

@@ -106,7 +106,7 @@ test_that('`read_fastahdrs` reads first protein',
         fastadt['P31946', on = 'uniprot'],
         data.table(
             reviewed    = 1,
-            entry       = '1433B', 
+            protein      = '1433B', 
             genesymbol  = 'YWHAB',
             uniprot     = 'P31946', 
             canonical   = 'P31946', 
@@ -120,7 +120,7 @@ test_that('`read_fastahdrs` reads intermediate swissprot protein',
         fastadt['Q9BUJ2-4', on = 'uniprot'],
         data.table(
             reviewed    = 1,
-            entry       = 'HNRL1', 
+            protein     = 'HNRL1', 
             genesymbol  = 'HNRNPUL1',
             uniprot     = 'Q9BUJ2-4', 
             canonical   = 'Q9BUJ2', 
@@ -134,7 +134,7 @@ test_that('`read_fastahdrs` reads intermediate trembl protein',
         fastadt['G5E9N3', on = 'uniprot'],
         data.table(
             reviewed    = 0,
-            entry       = 'G5E9N3', 
+            protein     = 'G5E9N3', 
             genesymbol  = 'RETSAT',
             uniprot     = 'G5E9N3', 
             canonical   = 'G5E9N3', 
@@ -148,7 +148,7 @@ test_that('`read_fastahdrs` reads last trembl protein',
         fastadt['R4GMM2', on = 'uniprot'],
         data.table(
             reviewed    = 0,
-            entry       = 'R4GMM2', 
+            protein     = 'R4GMM2', 
             genesymbol  = 'PARD6A',
             uniprot     = 'R4GMM2', 
             canonical   = 'R4GMM2', 
@@ -174,7 +174,7 @@ pro1 <- curate_annotate_maxquant(pro)
 fos1 <- curate_annotate_maxquant(fos)
 pro2 <- curate_annotate_fastafile(pro, fastadt)
 fos2 <- curate_annotate_fastafile(fos, fastadt)
-anncols <- c('entry', 'genesymbol','canonical', 'isoform', 'proteinname')
+anncols <- c('protein', 'genesymbol','canonical', 'isoform', 'proteinname')
 
 test_that('`curate` preserves rows',     {
     expect_equal( nrow(pro1), nrow(pro))  # pro maxquant
@@ -209,12 +209,12 @@ test_that('`curate` preserves contents', {
 test_that('Curated uniprots are a subset', {
     expect_true(
         all(is_collapsed_subset(
-                  pro1[Reverse=='' & `Potential contaminant` == '']$uniprot, 
-                  pro[ Reverse=='' & `Potential contaminant` == '']$uniprot)))
+                  pro1[Reverse=='' & contaminant == '']$uniprot, 
+                  pro[ Reverse=='' & contaminant == '']$uniprot)))
     expect_true(
         all(is_collapsed_subset( 
-                  fos1[Reverse=='' & `Potential contaminant` == '']$uniprot, 
-                  fos[ Reverse=='' & `Potential contaminant` == '']$uniprot)))
+                  fos1[Reverse=='' & contaminant == '']$uniprot, 
+                  fos[ Reverse=='' & contaminant == '']$uniprot)))
 })
 
 
@@ -229,8 +229,8 @@ proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 pro1 <- .read_proteingroups(proteinfile) %>% curate_annotate()
 pro2 <- .read_proteingroups(proteinfile) %>% curate_annotate(fastadt)
-fos1 <- .read_phosphosites(phosphofile, proteinfile) %>% curate_annotate()
-fos2 <- .read_phosphosites(phosphofile, proteinfile) %>% curate_annotate(fastadt)
+fos1 <- .read_phosphosites( phosphofile, proteinfile) %>% curate_annotate()
+fos2 <- .read_phosphosites( phosphofile, proteinfile) %>% curate_annotate(fastadt)
 
 pro1b <- add_feature_id(pro1)
 pro2b <- add_feature_id(pro2)

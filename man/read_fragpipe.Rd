@@ -26,5 +26,6 @@ Read fragpipe
 \examples{
 file <- '../multiorganism.combined_protein.tsv'
 object <- read_fragpipe(file = file)
+fdt(object)
 biplot(pca(object))
 }

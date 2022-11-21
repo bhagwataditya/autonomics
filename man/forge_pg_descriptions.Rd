@@ -4,14 +4,14 @@
 \alias{forge_pg_descriptions}
 \title{Forge PG descriptions}
 \usage{
-forge_pg_descriptions(Protein.Group, Protein.Name = NULL, fastadt = NULL)
+forge_pg_descriptions(uniprot, Protein.Name = NULL, fastadt = NULL)
 }
 \arguments{
-\item{Protein.Group}{string vector (without duplicates)}
+\item{uniprot}{string vector (without duplicates)}
 
 \item{fastadt}{data.table}
 
-\item{Protein.Names}{NULL or string vector (with same length as Protein.Group)}
+\item{protein}{NULL or string vector (with same length as uniprot)}
 }
 \value{
 string vector
@@ -21,11 +21,11 @@ Forge PG descriptions
 }
 \examples{
 # Without file 
-    Protein.Group <- c('Q96JP5;Q96JP5-2', 'O75822', 'Q96AC1;Q96AC1-3;Q9BQL6')
-    Protein.Names <- c('ZFP91', 'EIF3J', 'FERM2;FERM1')
-    forge_pg_descriptions(Protein.Group, Protein.Names)
+    uniprot <- c('Q96JP5;Q96JP5-2', 'O75822', 'Q96AC1;Q96AC1-3;Q9BQL6')
+    protein <- c('ZFP91', 'EIF3J', 'FERM2;FERM1')
+    forge_pg_descriptions(uniprot, protein)
 # With file
     file <- download_data('uniprot_hsa_20140515.fasta')
     fastadt <- read_fastahdrs(file)
-    forge_pg_descriptions(Protein.Group, fastadt = fastadt)
+    forge_pg_descriptions(uniprot, fastadt = fastadt)
 }
