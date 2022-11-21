@@ -288,28 +288,20 @@ extract_existence <- function(`Fasta headers`){
     as.integer()
 }
 
-extract_organism <- function(`Fasta headers`){
-    `Fasta headers` %>% 
-    split_extract_fixed('OS=', 2)    %>%
-    split_extract_fixed(' ', 1:2)    %>%
-    nastring_to_nachar()
-        
-}
-
 parse_fastahdrs <- function(`Fasta headers`){
-    dt <- data.table(                                       # reviewed
-        reviewed    = extract_reviewed(   `Fasta headers`), #   0 tr
-        protein     = extract_protein(    `Fasta headers`), #   1 sp
+    dt <- data.table(                                        # reviewed
+        reviewed    = extract_reviewed(   `Fasta headers`),  #   0 tr
+        protein     = extract_protein(    `Fasta headers`),  #   1 sp
         gene        = extract_gene(       `Fasta headers`),
-        uniprot     = extract_uniprot(    `Fasta headers`), # existence 
-        canonical   = extract_canonical(  `Fasta headers`), #   1 protein 
-        isoform     = extract_isoform(    `Fasta headers`), #   2 transcript
-        fragment    = extract_fragment(   `Fasta headers`), #   3 homolog
-        existence   = extract_existence(  `Fasta headers`), #   4 prediction
-        organism    = extract_organism(   `Fasta headers`)) #   5 uncertain
+        uniprot     = extract_uniprot(    `Fasta headers`),  # existence 
+        canonical   = extract_canonical(  `Fasta headers`),  #   1 protein 
+        isoform     = extract_isoform(    `Fasta headers`),  #   2 transcript
+        fragment    = extract_fragment(   `Fasta headers`),  #   3 homolog
+        existence   = extract_existence(  `Fasta headers`))  #   4 prediction
+    dt[, organism  := split_extract_fixed(protein, '_', 2)]  #   5 uncertain
     dt[, existence := unique(.SD)[, existence[!is.na(existence)]], by = 'canonical']
-    # `unique`: for phosphosites the Fasta headers are sometimes
-    #  replicated (when protein has multiple phosphosites)
+    # `unique`: for phosphosites the Fasta headers are
+    #  replicated when protein has multiple phosphosites
     #  This duplication needs to be eliminated before proceeding.
     dt[]
 }
