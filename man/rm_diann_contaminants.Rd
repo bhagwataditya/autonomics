@@ -24,7 +24,7 @@ SummarizedExperiment
 Rm contaminants from DIA-NN SumExp
 }
 \examples{
-file <- download_data('szymanski22.report.tsv')
+file <- download_data('dilution.report.tsv')
 object <- read_diann(file)
 # object \%<>\% rm_diann_contaminants()
 }

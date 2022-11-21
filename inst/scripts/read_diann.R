@@ -4,7 +4,7 @@
     require(data.table)
     
     # Read
-    url <- 'https://bitbucket.org/graumannlabtools/autonomics/downloads/szymanski22.report.tsv'
+    url <- 'https://bitbucket.org/graumannlabtools/autonomics/downloads/dilution.report.tsv'
     file <- file.path(tempdir(), basename(url))
     # download.file(url, destfile = file, mode = 'wb')
     dt <- fread(file)
@@ -33,7 +33,7 @@
     require(data.table)
     
     # Read
-    url <- 'https://bitbucket.org/graumannlabtools/autonomics/downloads/szymanski22.report.tsv'
+    url <- 'https://bitbucket.org/graumannlabtools/autonomics/downloads/dilution.report.tsv'
     file <- file.path(tempdir(), basename(url))
     # download.file(url, destfile = file, mode = 'wb')
     dt <- fread(file)

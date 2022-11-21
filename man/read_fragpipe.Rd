@@ -24,7 +24,7 @@ SummarizedExperiment
 Read fragpipe
 }
 \examples{
-file <- '../combined_protein.tsv'
+file <- '../multiorganism.combined_protein.tsv'
 object <- read_fragpipe(file = file)
 biplot(pca(object))
 }

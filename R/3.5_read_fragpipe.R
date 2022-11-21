@@ -60,7 +60,7 @@
 #' @param  quantity  'MaxLFQ Intensity'
 #' @return SummarizedExperiment
 #' @examples 
-#' file <- '../combined_protein.tsv'
+#' file <- '../multiorganism.combined_protein.tsv'
 #' object <- read_fragpipe(file = file)
 #' biplot(pca(object))
 #' @export

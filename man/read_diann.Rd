@@ -82,14 +82,14 @@ Read diann
 }
 \examples{
 # Read & Analyze
-   file <- download_data('szymanski22.report.tsv')
+   file <- download_data('dilution.report.tsv')
    object <- read_diann(file)
    snames(object) \%<>\% split_extract_fixed('_', 3)
    object$subgroup <- as.numeric(object$sample_id)
    analyze(object)
     
 # Read data.table (lower-level)
-    file <- download_data('szymanski22.report.tsv')
+    file <- download_data('dilution.report.tsv')
    (PR   <- .read_diann_precursors(file))       # precursor    dt
    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
 # Compare Summarizations
