@@ -379,6 +379,8 @@ read_diann <- function(
 ){
 # Assert
     assert_all_are_existing_files(file)
+    assert_are_identical(names(fread(file, select = 1:3, nrows = 0)), 
+                         c('File.Name', 'Run', 'Protein.Group'))
     if (!is.null(fastadt))  assert_is_data.table(fastadt)
     assert_is_subset(quantity, 
          c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum'))
