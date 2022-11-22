@@ -796,25 +796,56 @@ plot_subgroup_boxplots <- function(
 }
 
 
+#' Extract coef features
+#' @param object      SummarizedXExperiment
+#' @param fit         string
+#' @param coef        string
+#' @param effectsize  effectsize cutoff
+#' @param p           p cutoff
+#' @param fdr         fdr cutoff
+#' @param ntop        ntop cutoff
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, fit = 'limma')
+#' nrow(object)                                    # 4534 features
+#' nrow(extract_coef_features(object))             # 3772   p != NA
+#' nrow(extract_coef_features(object,   p = 0.05)) # 1961   p < 0.05 
+#' nrow(extract_coef_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
+#' @noRd
 extract_coef_features <- function(
     object, 
-    coef = setdiff(coefs(object), 'Intercept')[1],
-    fit  = fits(object)[1], 
-    fdrcutoff, 
-    ntop
+    fit        = fits(object)[1], 
+    coef       = default_coef(object, fit = fit),
+    effectsize = 0,
+    p          = 1,
+    fdr        = 1,
+    ntop       = Inf
 ){
-    pvals   <- p(     object, coef = coef, fit = fit)[, 1]
-    fdrs    <- fdr(   object, coef = coef, fit = fit)[, 1]
-    effects <- effect(object, coef = coef, fit = fit)[, 1]
-    signs   <- sign.SummarizedExperiment(  object, coef = coef, fit = fit, cutoff = fdrcutoff)[, 1]
-    names(pvals) <- names(fdrs) <- names(effects) <- names(signs) <- fnames(object)
+# Assert
+    if (length(coef)==0)  return(object)
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(fit, fits(object))
+    assert_is_subset(coef, coefs(object, fit = fit))
+    assert_is_a_number(effectsize)
+    assert_is_a_number(p)
+    assert_is_a_number(fdr)
+    assert_is_a_number(ntop)
     
-    upfeatures <- names(    sort(pvals[signs>0 & fdrs < fdrcutoff]))
-    dnfeatures <- names(rev(sort(pvals[signs<0 & fdrs < fdrcutoff])))
-    upfeatures %<>% utils::head(ntop %/% 2)
-    dnfeatures %<>% utils::tail(ntop-length(upfeatures))
+# Filter
+    pvar0 <- pvar(object, fit = fit, coef = coef)   # available
+    idx <- !is.na(fdt(object)[[pvar0]])
+    object %<>% extract(idx, )
     
-    object %<>% extract(c(dnfeatures, upfeatures), )
+    ntop %<>% min(nrow(object))                     # top
+    idx <- order(fdt(object)[[pvar0]])[1:ntop]
+    object %<>% extract(idx, )
+                                                    # significant
+    idx <- (abs(autonomics::effect(object, fit = fit, coef = coef)[, 1]) > effectsize)  & 
+           (autonomics::p(     object, fit = fit, coef = coef)[, 1] < p)                & 
+           (autonomics::fdr(   object, fit = fit, coef = coef)[, 1] < fdr)
+    object %<>% extract(idx, )
+    
+# Return
     object
 }
 
@@ -893,7 +924,7 @@ plot_contrast_boxplots <- function(
     effectvar <- paste('effect', coef, fit, sep = FITSEP)
     
     fvars0 <- c(facet, fdrvar, pvar, effectvar)
-    object %<>% extract_coef_features(coef = coef, fit = fit, fdrcutoff = fdrcutoff, ntop = ntop)
+    object %<>% extract_coef_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
     object %<>% format_coef_vars(     coef = coef, fit = fit)
 # Prepare
     dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
@@ -1307,4 +1338,3 @@ plot_design <- function(object){
     #       panel.grid.major.x = element_blank(), 
     #       panel.grid.minor.x = element_blank())
 }
-
