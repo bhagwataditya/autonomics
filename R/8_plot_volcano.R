@@ -318,17 +318,32 @@ plot_volcano <- function(
     if (!is.null(size))   p <- p + scale_size_manual( values = 1:3)
     if (!is.null(alpha))  p <- p + scale_alpha_manual(values = c(0.3, 0.5, 1))
 # Significance lines
-    maxeffect <- max(plotdt$effect)
+    xmin <- min(plotdt$effect)
+    xmax <- max(plotdt$effect)
+    dy <- 0.03*(max(plotdt$mlp) - min(plotdt$mlp))
     minn <- function(x) if (length(x)==0) return(Inf) else min(x, na.rm = TRUE) 
         # Avoid warning 'no non-missing arguments to min; returning Inf'
-    cutdt <- plotdt[, .( label = c('p < 0.05', 'fdr < 0.05', 'bon < 0.05'),
-                         yintercept = c(minn(mlp[p<0.05]), 
-                                        minn(mlp[fdr<0.05]), 
-                                        minn(mlp[bon<0.05]))), by = c('fit', 'coef')]
-    cutdt %<>% extract(!is.infinite(yintercept))
-    p <- p + geom_hline(data = cutdt, mapping = aes(yintercept = yintercept), color = 'gray30', linetype = 'longdash')
-    p <- p + geom_label(data = cutdt, mapping = aes(x = maxeffect, y = yintercept, label = label), 
-                        label.size = NA, hjust = 1, fill = alpha(c('white'), 0.6), color = 'gray30')
+    summarydt <- plotdt[, 
+        .( 
+            label      = c('p = 0.05',                 'fdr = 0.05',                 'bon = 0.05'),
+            yintercept = c( minn(mlp[p<0.05]),          minn(mlp[fdr<0.05]),          minn(mlp[bon<0.05])),
+            down       = c( sum(p <0.05 & effect < 0),  sum(fdr <0.05 & effect < 0),  sum(bon <0.05 & effect < 0)),
+            up         = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))
+        ),
+        by = c('fit', 'coef')
+    ]
+    summarydt %<>% extract(!is.infinite(yintercept))
+    p <- p + geom_hline(data = summarydt, mapping = aes(yintercept = yintercept), color = 'gray30', linetype = 'longdash')
+    do_geom_label <- function(mapping, label.size){  
+                        geom_label(data       = summarydt, 
+                                   mapping    = mapping, 
+                                   label.size = label.size, 
+                                   hjust      = 0.5, 
+                                   fill       = alpha(c('white'), 0.6), 
+                                   color      = 'gray30')  }
+    p <- p + do_geom_label(mapping = aes(x = 0,    y = yintercept,      label = label), label.size = 0.5)
+    p <- p + do_geom_label(mapping = aes(x = xmin, y = yintercept + dy, label = down ), label.size = NA)
+    p <- p + do_geom_label(mapping = aes(x = xmax, y = yintercept + dy, label = up   ), label.size = NA)
     p <- p + guides(color = 'none')
 # Labels
     if (!is.null(label)){
