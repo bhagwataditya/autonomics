@@ -808,11 +808,11 @@ plot_subgroup_boxplots <- function(
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
 #' nrow(object)                                    # 4534 features
-#' nrow(extract_coef_features(object))             # 3772   p != NA
-#' nrow(extract_coef_features(object,   p = 0.05)) # 1961   p < 0.05 
-#' nrow(extract_coef_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
-#' @noRd
-extract_coef_features <- function(
+#' nrow(filter_contrast_features(object))             # 3772   p != NA
+#' nrow(filter_contrast_features(object,   p = 0.05)) # 1961   p < 0.05 
+#' nrow(filter_contrast_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
+#' @export
+filter_contrast_features <- function(
     object, 
     fit        = fits(object)[1], 
     coef       = default_coef(object, fit = fit),
@@ -924,7 +924,7 @@ plot_contrast_boxplots <- function(
     effectvar <- paste('effect', coef, fit, sep = FITSEP)
     
     fvars0 <- c(facet, fdrvar, pvar, effectvar)
-    object %<>% extract_coef_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
+    object %<>% filter_contrast_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
     object %<>% format_coef_vars(     coef = coef, fit = fit)
 # Prepare
     dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
