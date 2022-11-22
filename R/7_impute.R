@@ -689,7 +689,7 @@ plot_sample_nas <- function(
         theme_bw() +
         theme(   axis.text.y  = element_blank(), 
                  axis.ticks.y = element_blank(),
-                 axis.text.x  = element_text(angle = 90, vjust = 0.5),
+                 axis.text.x  = element_text(angle = 90, vjust = 0.5, hjust = 0),
                  legend.title = element_blank(),
                  panel.grid   = element_blank(), 
                  panel.border = element_rect(size = 1.5))
