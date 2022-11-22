@@ -285,6 +285,7 @@ plot_volcano <- function(
     object,
     fit   = fits(object), 
     coef  = default_coef(object, fit[1]),
+    facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
     shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
     size  = NULL,
     alpha = NULL,
@@ -296,10 +297,12 @@ plot_volcano <- function(
 # Assert
     assert_is_a_number(nrow)
     effect <- mlp <- NULL
+    facet %<>% lapply(sym)
+    facet <- vars(!!!facet)
 # Volcano 
     plotdt <- make_volcano_dt(object, fit = fit, coef = coef, 
                   label = label, shape = shape, size = size, alpha = alpha)
-    p <- ggplot(plotdt) + facet_wrap(fit~coef, nrow = nrow)
+    p <- ggplot(plotdt) + facet_wrap(facet, nrow = nrow)
     p <- p + theme_bw() + theme(panel.grid = element_blank())
     p <- p + xlab('log2(FC)') + ylab('-log10(p)') + ggtitle('volcano')
     shapesym <- if (is.null(shape))  quo(NULL) else sym(shape)
