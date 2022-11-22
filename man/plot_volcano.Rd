@@ -25,6 +25,8 @@ plot_volcano(
 
 \item{coef}{character vector}
 
+\item{facet}{svars mapped to facet}
+
 \item{shape}{shape fvar (string)}
 
 \item{size}{size  fvar (string)}
