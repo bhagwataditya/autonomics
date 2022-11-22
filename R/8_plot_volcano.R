@@ -254,6 +254,7 @@ make_volcano_dt <- function(
 #' @param object    SummarizedExperiment
 #' @param fit      'limma', 'lme', 'lm', 'wilcoxon'
 #' @param coef      character vector
+#' @param facet     svars mapped to facet
 #' @param label     label fvar (string)
 #' @param shape     shape fvar (string)
 #' @param size      size  fvar (string)
