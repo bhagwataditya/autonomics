@@ -727,7 +727,7 @@ plot_boxplots <- function(
 #                       plot_sample_boxplots
 #                       plot_feature_boxplots
 #                       plot_subgroup_boxplots
-#                       plot_contrast_boxplots
+#                       plot_top_boxplots
 #
 #============================================================================
 
@@ -891,18 +891,18 @@ format_coef_vars <- function(
 #' object %<>% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
 #' object$SampleId   %<>% factor()
 #' object$Subject_ID %<>% factor()
-#' plot_contrast_boxplots(
+#' plot_top_boxplots(
 #'     object, subgroup = SampleGroup, block = Subject_ID, 
 #'     fit='limma', coef = 'SampleGroupt1')
-#' plot_contrast_boxplots(
+#' plot_top_boxplots(
 #'     object, subgroup=SampleGroup, block = Subject_ID, fit='limma', 
 #'     coef = 'SampleGroupt1', fdrcutoff=0.05)
-#' plot_contrast_boxplots(
+#' plot_top_boxplots(
 #'     object, subgroup = SampleGroup, block = Subject_ID, 
 #'      fit = c('limma', 'lme'), contrast = 'SampleGroupt1', 
 #'      fdrcutoff = 0.05)
 #' @export
-plot_contrast_boxplots <- function(
+plot_top_boxplots <- function(
     object, assay = assayNames(object)[1], 
     subgroup = 'subgroup', block = NULL, fit = fits(object)[1], 
     coef = setdiff(coefficients(object), 'Intercept')[1],
