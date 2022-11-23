@@ -7,7 +7,11 @@
 plot_top_heatmap(
   object,
   fit = fits(object)[1],
-  coef = default_coefficient(object, fit = fit),
+  coefficient = default_coefficient(object, fit = fit),
+  effectsize = 0,
+  p = 0.5,
+  fdr = 1,
+  ntop = 9,
   fvar = "feature_id",
   lowColor = "yellow",
   highColor = "blue1",

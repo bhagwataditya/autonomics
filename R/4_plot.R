@@ -807,42 +807,42 @@ plot_subgroup_boxplots <- function(
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
-#' nrow(object)                                    # 4534 features
-#' nrow(fiter_top_features(object))             # 3772   p != NA
-#' nrow(fiter_top_features(object,   p = 0.05)) # 1961   p < 0.05 
-#' nrow(fiter_top_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
+#' nrow(object)                                  # 4534 features
+#' nrow(filter_top_features(object, p = 1))      # 3772   p != NA
+#' nrow(filter_top_features(object))             # 1961   p < 0.05 
+#' nrow(filter_top_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
 #' @export
-fiter_top_features <- function(
+filter_top_features <- function(
     object, 
-    fit        = fits(object)[1], 
-    coef       = default_coefficient(object, fit = fit),
-    effectsize = 0,
-    p          = 1,
-    fdr        = 1,
-    ntop       = Inf
+    fit         = fits(object)[1], 
+    coefficient = default_coefficient(object, fit = fit),
+    effectsize  = 0,
+    p           = 0.05,
+    fdr         = 1,
+    ntop        = Inf
 ){
 # Assert
-    if (length(coef)==0)  return(object)
+    if (length(coefficient)==0)  return(object)
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(fit,  fits(object))
-    assert_is_subset(coef, coefficients(object, fit = fit))
+    assert_is_subset(coefficient, coefficients(object, fit = fit))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
     assert_is_a_number(ntop)
     
 # Filter
-    pvar0 <- pvar(object, fit = fit, coef = coef)   # available
+    pvar0 <- pvar(object, fit = fit, coef = coefficient)   # available
     idx <- !is.na(fdt(object)[[pvar0]])
     object %<>% extract(idx, )
     
-    ntop %<>% min(nrow(object))                     # top
+    ntop %<>% min(nrow(object))                            # top
     idx <- order(fdt(object)[[pvar0]])[1:ntop]
     object %<>% extract(idx, )
-                                                    # significant
-    idx <- (abs(autonomics::effect(object, fit = fit, coef = coef)[, 1]) > effectsize)  & 
-           (autonomics::p(     object, fit = fit, coef = coef)[, 1] < p)                & 
-           (autonomics::fdr(   object, fit = fit, coef = coef)[, 1] < fdr)
+                                                           # significant
+    idx <- (abs(autonomics::effect(object, fit = fit, coef = coefficient)[, 1]) > effectsize)  & 
+           (    autonomics::p(     object, fit = fit, coef = coefficient)[, 1]  < p  )         & 
+           (    autonomics::fdr(   object, fit = fit, coef = coefficient)[, 1]  < fdr)
     object %<>% extract(idx, )
     
 # Return
@@ -924,7 +924,7 @@ plot_top_boxplots <- function(
     effectvar <- paste('effect', coef, fit, sep = FITSEP)
     
     fvars0 <- c(facet, fdrvar, pvar, effectvar)
-    object %<>% fiter_top_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
+    object %<>% filter_top_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
     object %<>% format_coef_vars(     coef = coef, fit = fit)
 # Prepare
     dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
@@ -1354,18 +1354,30 @@ plot_design <- function(object){
 #' @export
 plot_top_heatmap <- function(
     object,
-    fit       = fits(object)[1],
-    coef      = default_coefficient(object, fit = fit),
-    fvar      = 'feature_id',
-    lowColor  = "yellow",
-    highColor = "blue1",
-    midColor  = "gray",
-    width     = 2,
-    height    = 4,
-    fontsize  = 0
+    fit         = fits(object)[1],
+    coefficient = default_coefficient(object, fit = fit),
+    effectsize  = 0,
+    p           = 0.5,
+    fdr         = 1,
+    ntop        = 9,
+    fvar        = 'feature_id',
+    lowColor    = "yellow",
+    highColor   = "blue1",
+    midColor    = "gray",
+    width       = 2,
+    height      = 4,
+    fontsize    = 0
 ){
-    object %<>% fiter_top_features(fit = fit, coef = coef)
+# Assert
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(fit,                 fits(object))
+    assert_is_subset(coefficient, coefficients(object))
     
+    object %<>% filter_top_features(
+        fit        = fit,             coefficient = coefficient,
+        effectsize = effectsize,      p           = p,
+        fdr        = fdr,             ntop        = ntop)
+  
    autonomics.import::fnames(object) <- object %>%
                                         autonomics.import::fvalues(fvar) %>%
                                         autonomics.support::uniquify()
