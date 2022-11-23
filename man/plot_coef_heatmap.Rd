@@ -7,7 +7,7 @@
 plot_coef_heatmap(
   object,
   fit = fits(object)[1],
-  coef = default_coef(object, fit = fit),
+  coef = default_coefficient(object, fit = fit),
   fvar = "feature_id",
   lowColor = "yellow",
   highColor = "blue1",

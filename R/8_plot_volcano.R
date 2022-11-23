@@ -76,7 +76,7 @@ melt_contrastdefs <- function(contrastdefmat){
 }
 
 
-default_coef <- function(object, fit = fits(object)){
+default_coefficient <- function(object, fit = fits(object)){
     if (length(fit)==0) return(character(0))    # none
     y <- autonomics::coefs(object, fit = fit)   # intercept
     if (length(y)==1)  return(y)
@@ -174,7 +174,7 @@ add_assay_means <- function(
 #' @return SummarizedExperiment
 #' @export
 add_adjusted_pvalues <- function(
-    object, method, fit = fits(object)[1], coef = default_coef(object, fit)
+    object, method, fit = fits(object)[1], coef = default_coefficient(object, fit)
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -206,7 +206,7 @@ add_adjusted_pvalues <- function(
 #' make_volcano_dt(object, fit = 'limma', coef = 'Adult')
 #' @export
 make_volcano_dt <- function(
-    object, fit = fits(object)[1], coef = default_coef(object, fit = fit),
+    object, fit = fits(object)[1], coef = default_coefficient(object, fit = fit),
     shape = 'imputed', size = NULL, alpha = NULL,
     label = 'feature_id'
 ){
@@ -286,7 +286,7 @@ make_volcano_dt <- function(
 plot_volcano <- function(
     object,
     fit   = fits(object), 
-    coef  = default_coef(object, fit[1]),
+    coef  = default_coefficient(object, fit[1]),
     facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
     shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
     size  = NULL,

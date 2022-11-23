@@ -8,7 +8,7 @@ add_adjusted_pvalues(
   object,
   method,
   fit = fits(object)[1],
-  coef = default_coef(object, fit)
+  coef = default_coefficient(object, fit)
 )
 }
 \arguments{

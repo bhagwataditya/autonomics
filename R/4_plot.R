@@ -815,7 +815,7 @@ plot_subgroup_boxplots <- function(
 filter_coefficient_features <- function(
     object, 
     fit        = fits(object)[1], 
-    coef       = default_coef(object, fit = fit),
+    coef       = default_coefficient(object, fit = fit),
     effectsize = 0,
     p          = 1,
     fdr        = 1,
@@ -1355,7 +1355,7 @@ plot_design <- function(object){
 plot_coef_heatmap <- function(
     object,
     fit       = fits(object)[1],
-    coef      = default_coef(object, fit = fit),
+    coef      = default_coefficient(object, fit = fit),
     fvar      = 'feature_id',
     lowColor  = "yellow",
     highColor = "blue1",
