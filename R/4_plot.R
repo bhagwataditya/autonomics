@@ -808,11 +808,11 @@ plot_subgroup_boxplots <- function(
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
 #' nrow(object)                                  # 4534 features
-#' nrow(filter_top_features(object, p = 1))      # 3772   p != NA
-#' nrow(filter_top_features(object))             # 1961   p < 0.05 
-#' nrow(filter_top_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
+#' nrow(extract_top_features(object, p = 1))      # 3772   p != NA
+#' nrow(extract_top_features(object))             # 1961   p < 0.05 
+#' nrow(extract_top_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
 #' @export
-filter_top_features <- function(
+extract_top_features <- function(
     object, 
     fit         = fits(object)[1], 
     coefficient = default_coefficient(object, fit = fit),
@@ -924,7 +924,7 @@ plot_top_boxplots <- function(
     effectvar <- paste('effect', coef, fit, sep = FITSEP)
     
     fvars0 <- c(facet, fdrvar, pvar, effectvar)
-    object %<>% filter_top_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
+    object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
     object %<>% format_coef_vars(     coef = coef, fit = fit)
 # Prepare
     dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
@@ -1340,24 +1340,32 @@ plot_design <- function(object){
 }
 
 #' Plot top heatmap
-#' @param object    SummarizedExperiment
-#' @param fvar      string
-#' @param lowColor  color for downregulation (Default color yellow)
-#' @param highColor color for upregulation (Default color royal blue)
-#' @param midColor  color for midpoint (Default color gray)
-#' @param width     number: width  in inches (Default width 2 inches)
-#' @param height    number: height in inches (Default height 4 inches)
-#' @param fontsize  number: font size for feature name (Default size 0 for not showing feature names)
+#' @param object       SummarizedExperiment
+#' @param assay        string: one of assayNames(object)
+#' @param fit         'limma', 'lm', 'lme(r)', 'wilcoxon'
+#' @param coefficient  string: one of coefficients(object)
+#' @param effectsize   number: effectsize filter
+#' @param p            number: p    filter
+#' @param fdr          number: fdr  filter
+#' @param ntop         number: ntop filter
+#' @param fvar         string
+#' @param lowColor     color for downregulation (Default color yellow)
+#' @param highColor    color for upregulation (Default color royal blue)
+#' @param midColor     color for midpoint (Default color gray)
+#' @param width        number: width  in inches (Default width 2 inches)
+#' @param height       number: height in inches (Default height 4 inches)
+#' @param fontsize     number: font size for feature name (Default size 0 for not showing feature names)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
 #' @export
 plot_top_heatmap <- function(
     object,
+    assay       = assayNames(object)[1],
     fit         = fits(object)[1],
     coefficient = default_coefficient(object, fit = fit),
     effectsize  = 0,
-    p           = 0.5,
+    p           = 0.05,
     fdr         = 1,
     ntop        = 9,
     fvar        = 'feature_id',
@@ -1370,21 +1378,20 @@ plot_top_heatmap <- function(
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(assay,         assayNames(object))
     assert_is_subset(fit,                 fits(object))
     assert_is_subset(coefficient, coefficients(object))
-    
-    object %<>% filter_top_features(
+    assert_is_a_number(effectsize)
+    assert_is_a_number(p)
+    assert_is_a_number(fdr)
+    assert_is_a_number(ntop)
+# Filter    
+    object %<>% extract_top_features(
         fit        = fit,             coefficient = coefficient,
         effectsize = effectsize,      p           = p,
         fdr        = fdr,             ntop        = ntop)
-  
-   autonomics.import::fnames(object) <- object %>%
-                                        autonomics.import::fvalues(fvar) %>%
-                                        autonomics.support::uniquify()
-   autonomics.support::cmessage('\t\tImpute NA(N) values')
-   object %<>% autonomics.preprocess::impute(method = 'impute.QRILC')
-   x <- autonomics.import::exprs(object)
-   hres <- stats::hclust(stats::as.dist(1 - stats::cor(t(x), method="pearson"))) #compute correlation for matrix
+# 
+   x <- assays(object)[[assay]]
    h.row.order <- hres$order # clustering on row
    row.order.df <- x[h.row.order,]
    scaled.x = t(scale(t(row.order.df),center=T)) #scaling dataframe

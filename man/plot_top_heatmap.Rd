@@ -6,10 +6,11 @@
 \usage{
 plot_top_heatmap(
   object,
+  assay = assayNames(object)[1],
   fit = fits(object)[1],
   coefficient = default_coefficient(object, fit = fit),
   effectsize = 0,
-  p = 0.5,
+  p = 0.05,
   fdr = 1,
   ntop = 9,
   fvar = "feature_id",
@@ -23,6 +24,20 @@ plot_top_heatmap(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{assay}{string: one of assayNames(object)}
+
+\item{fit}{'limma', 'lm', 'lme(r)', 'wilcoxon'}
+
+\item{coefficient}{string: one of coefficients(object)}
+
+\item{effectsize}{number: effectsize filter}
+
+\item{p}{number: p    filter}
+
+\item{fdr}{number: fdr  filter}
+
+\item{ntop}{number: ntop filter}
 
 \item{fvar}{string}
 
