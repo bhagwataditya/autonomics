@@ -808,11 +808,11 @@ plot_subgroup_boxplots <- function(
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
 #' nrow(object)                                    # 4534 features
-#' nrow(filter_coefficient_features(object))             # 3772   p != NA
-#' nrow(filter_coefficient_features(object,   p = 0.05)) # 1961   p < 0.05 
-#' nrow(filter_coefficient_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
+#' nrow(fiter_top_features(object))             # 3772   p != NA
+#' nrow(fiter_top_features(object,   p = 0.05)) # 1961   p < 0.05 
+#' nrow(fiter_top_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
 #' @export
-filter_coefficient_features <- function(
+fiter_top_features <- function(
     object, 
     fit        = fits(object)[1], 
     coef       = default_coefficient(object, fit = fit),
@@ -924,7 +924,7 @@ plot_top_boxplots <- function(
     effectvar <- paste('effect', coef, fit, sep = FITSEP)
     
     fvars0 <- c(facet, fdrvar, pvar, effectvar)
-    object %<>% filter_coefficient_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
+    object %<>% fiter_top_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
     object %<>% format_coef_vars(     coef = coef, fit = fit)
 # Prepare
     dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
@@ -1339,7 +1339,7 @@ plot_design <- function(object){
     #       panel.grid.minor.x = element_blank())
 }
 
-#' Plot coef heatmap
+#' Plot top heatmap
 #' @param object    SummarizedExperiment
 #' @param fvar      string
 #' @param lowColor  color for downregulation (Default color yellow)
@@ -1352,7 +1352,7 @@ plot_design <- function(object){
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
 #' @export
-plot_coef_heatmap <- function(
+plot_top_heatmap <- function(
     object,
     fit       = fits(object)[1],
     coef      = default_coefficient(object, fit = fit),
@@ -1364,7 +1364,7 @@ plot_coef_heatmap <- function(
     height    = 4,
     fontsize  = 0
 ){
-    object %<>% filter_coefficient_features(fit = fit, coef = coef)
+    object %<>% fiter_top_features(fit = fit, coef = coef)
     
    autonomics.import::fnames(object) <- object %>%
                                         autonomics.import::fvalues(fvar) %>%
