@@ -80,15 +80,15 @@
 #' @rdname fit_limma
 fit_wilcoxon <- function(
     object,
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    contrasts   = sprintf('%s-%s', slevels(object, subgroupvar)[-1], 
-                                   slevels(object, subgroupvar)[ 1]),
-    formula     = NULL,
-    coefs       = NULL, 
-    block       = NULL, 
-    weightvar   = NULL, 
-    verbose     = TRUE, 
-    plot        = FALSE
+    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
+    contrasts    = sprintf('%s-%s', slevels(object, subgroupvar)[-1], 
+                                    slevels(object, subgroupvar)[ 1]),
+    formula      = NULL,
+    coefficients = NULL, 
+    block        = NULL, 
+    weightvar    = NULL, 
+    verbose      = TRUE, 
+    plot         = FALSE
 ){
 # assert
     assert_is_identical_to_false(

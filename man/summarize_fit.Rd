@@ -19,8 +19,8 @@ Summarize fit
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, subgroupvar = 'SET', impute=TRUE, plot=FALSE)
+object <- read_metabolon(file, subgroupvar = 'SET', impute = TRUE, plot = FALSE)
 object \%<>\% fit_limma(subgroupvar = 'SET')
-object \%<>\% fit_lm(subgroupvar = 'SET')
+object \%<>\% fit_lm(   subgroupvar = 'SET')
 summarize_fit(object)
 }

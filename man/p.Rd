@@ -11,21 +11,21 @@
 \alias{down}
 \title{Get p/fdr/effect/down/up/sign matrix}
 \usage{
-p(object, coef = coefs(object), fit = fits(object))
+p(object, coef = coefficients(object), fit = fits(object))
 
-pvar(object, coef = coefs(object), fit = fits(object))
+pvar(object, coef = coefficients(object), fit = fits(object))
 
-effect(object, coef = coefs(object), fit = fits(object))
+effect(object, coef = coefficients(object), fit = fits(object))
 
-effectvar(object, coef = coefs(object), fit = fits(object))
+effectvar(object, coef = coefficients(object), fit = fits(object))
 
-fdr(object, coef = coefs(object), fit = fits(object))
+fdr(object, coef = coefficients(object), fit = fits(object))
 
-fdrvar(object, coef = coefs(object), fit = fits(object))
+fdrvar(object, coef = coefficients(object), fit = fits(object))
 
 up(
   object,
-  coef = coefs(object),
+  coef = coefficients(object),
   fit = fits(object),
   var = "fdr",
   cutoff = 0.05
@@ -33,7 +33,7 @@ up(
 
 down(
   object,
-  coef = coefs(object),
+  coef = coefficients(object),
   fit = fits(object),
   var = "fdr",
   cutoff = 0.05

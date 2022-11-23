@@ -6,7 +6,7 @@
 \usage{
 \method{sign}{SummarizedExperiment}(
   object,
-  coef = coefs(object),
+  coef = coefficients(object),
   fit = fits(object),
   var = "fdr",
   cutoff = 0.05

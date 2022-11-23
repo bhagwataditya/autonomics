@@ -21,7 +21,7 @@ read_proteingroups(
   fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
-  coefs = NULL,
+  coefficients = NULL,
   contrasts = NULL,
   feature_id = NULL,
   sample_id = NULL,
@@ -47,7 +47,7 @@ read_phosphosites(
   fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
-  coefs = NULL,
+  coefficients = NULL,
   contrasts = NULL,
   feature_id = NULL,
   sample_id = NULL,
@@ -88,7 +88,7 @@ read_phosphosites(
 
 \item{block}{block var (sdt)}
 
-\item{coefs}{character: coefficients to test}
+\item{coefficients}{character: coefficients to test}
 
 \item{contrasts}{character: coefficient contrasts to test}
 

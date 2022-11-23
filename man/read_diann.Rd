@@ -31,7 +31,7 @@ read_diann(
   fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
-  coefs = NULL,
+  coefficients = NULL,
   contrasts = NULL,
   feature_id = NULL,
   sample_id = NULL,
@@ -62,7 +62,7 @@ read_diann(
 
 \item{block}{block var (sdt)}
 
-\item{coefs}{character: coefficients to test}
+\item{coefficients}{character: coefficients to test}
 
 \item{contrasts}{character: coefficient contrasts to test}
 
@@ -72,7 +72,7 @@ read_diann(
 
 \item{palette}{character: color palette}
 
-\item{verbose}{whether to msg}
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 data.table / SummarizedExperiment
@@ -92,6 +92,7 @@ Read diann
     file <- download_data('dilution.report.tsv')
    (PR   <- .read_diann_precursors(file))       # precursor    dt
    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
+   
 # Compare Summarizations
      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85\%) proteingroups
      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15\%) proteingroups

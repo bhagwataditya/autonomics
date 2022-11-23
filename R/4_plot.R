@@ -796,7 +796,7 @@ plot_subgroup_boxplots <- function(
 }
 
 
-#' Extract coef features
+#' Filter coefficient features
 #' @param object      SummarizedXExperiment
 #' @param fit         string
 #' @param coef        string
@@ -824,8 +824,8 @@ filter_coefficient_features <- function(
 # Assert
     if (length(coef)==0)  return(object)
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(fit, fits(object))
-    assert_is_subset(coef, coefs(object, fit = fit))
+    assert_is_subset(fit,  fits(object))
+    assert_is_subset(coef, coefficients(object, fit = fit))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
@@ -850,7 +850,7 @@ filter_coefficient_features <- function(
 }
 
 format_coef_vars <- function(
-    object, coef = setdiff(coefs(object), 'Intercept')[1], fit = fits(object)[1]
+    object, coef = setdiff(coefficients(object), 'Intercept')[1], fit = fits(object)[1]
 ){
     effectvars <- effectvar(object, coef = coef, fit = fit)
     pvars      <- pvar(     object, coef = coef, fit = fit)
@@ -905,7 +905,7 @@ format_coef_vars <- function(
 plot_contrast_boxplots <- function(
     object, assay = assayNames(object)[1], 
     subgroup = 'subgroup', block = NULL, fit = fits(object)[1], 
-    coef = setdiff(coefs(object), 'Intercept')[1],
+    coef = setdiff(coefficients(object), 'Intercept')[1],
     facet = c('feature_id', paste('fdr', coef, fit, sep = FITSEP)),
     fdrcutoff = 0.05, 
     jitter = if (is.null(block)) 0.1 else 0,
@@ -1085,7 +1085,7 @@ plot_subgroup_contrasts <- function(
     object, 
     subgroup, 
     block     = NULL, 
-    contrasts = coefs(object), #, svars = as_name(!!enquo(subgroup))),
+    contrasts = coefficients(object), #, svars = as_name(!!enquo(subgroup))),
     x         = !!enquo(subgroup), 
     fill      = !!enquo(subgroup),
     jitter    = FALSE,
@@ -1314,14 +1314,14 @@ plot_design <- function(object){
     designmat %<>% unique()
     subgroups <- subgroup_levels(object)
     designmat %<>% extract(subgroups, )
-    coefs <- colnames(designmat)
+    coefficients <- colnames(designmat)
     ymat <- matrix(seq_along(subgroups), nrow = ncol(designmat), ncol = 1)
     betamat <- solve(designmat) %*% ymat
     betamat[1,1] <- 1 # not strictly required, but plot is nicer if Intercept 
                       # is 1 unit long (in MASS:contr.sdif it gets much longer, 
                       # I think to maintain orthogonality of design)
     plotdt <- data.table(subgroup = subgroups, 
-                         coef     = coefs, 
+                         coef     = coefficients, 
                          x        = seq_along(subgroups),
                          yend     = seq_along(subgroups),
                          y        = seq_along(subgroups) - betamat[, 1])

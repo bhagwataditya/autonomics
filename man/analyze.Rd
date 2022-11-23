@@ -14,7 +14,7 @@ analyze(
   drop = varlevels_dont_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefs = colnames(create_design(object, formula = formula, drop = drop)),
+  coefficients = colnames(create_design(object, formula = formula, drop = drop)),
   verbose = TRUE,
   plot = pca & !is.null(fit),
   feature_id = NULL,
@@ -39,7 +39,7 @@ analyze(
 
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
 
-\item{coefs}{NULL or character vector: model coefficients to test}
+\item{coefficients}{NULL or character vector: model coefficients to test}
 
 \item{verbose}{whether to msg}
 

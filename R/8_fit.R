@@ -347,7 +347,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #'          pvar(object)
 #'        fdrvar(object)
 #' @export
-p <- function(object, coef = coefs(object), fit = fits(object)){
+p <- function(object, coef = coefficients(object), fit = fits(object)){
     var <- pvar(object, coef = coef, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
@@ -359,7 +359,7 @@ p <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-pvar <- function(object, coef = coefs(object), fit = fits(object)){
+pvar <- function(object, coef = coefficients(object), fit = fits(object)){
     x <- expand.grid(var = 'p', fit = fit, coef = coef)
     x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))
@@ -369,7 +369,7 @@ pvar <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-effect <- function(object, coef = coefs(object), fit = fits(object)){
+effect <- function(object, coef = coefficients(object), fit = fits(object)){
     var <- effectvar(object, coef = coef, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
@@ -381,7 +381,7 @@ effect <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-effectvar <- function(object, coef = coefs(object), fit = fits(object)){
+effectvar <- function(object, coef = coefficients(object), fit = fits(object)){
     x <- expand.grid(var = 'effect', fit = fit, coef = coef)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))
@@ -391,7 +391,7 @@ effectvar <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-fdr <- function(object, coef = coefs(object), fit = fits(object)){
+fdr <- function(object, coef = coefficients(object), fit = fits(object)){
     var <- fdrvar(object, coef = coef, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
@@ -402,26 +402,26 @@ fdr <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-fdrvar <- function(object, coef = coefs(object), fit = fits(object)){
+fdrvar <- function(object, coef = coefficients(object), fit = fits(object)){
     x <- expand.grid(var = 'fdr', fit = fit, coef = coef)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
-    x %<>% intersect(fvars(object))  # all fits not necessarily all coefs, e.g:
+    x %<>% intersect(fvars(object))  # all fits not necessarily all coefficients, e.g:
     x               # limma(contrasts = .) generally run without intercept
-}                   # lm(coefs = .)        typically run with intercept
+}                   # lm(coefficients = .) typically run with intercept
 
 
-bonvar <- function(object, coef = coefs(object), fit = fits(object)){
+bonvar <- function(object, coef = coefficients(object), fit = fits(object)){
     x <- expand.grid(var = 'bonferroni', fit = fit, coef = coef)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
-    x %<>% intersect(fvars(object))  # all fits not necessarily all coefs, e.g:
+    x %<>% intersect(fvars(object))  # all fits not necessarily all coefficients, e.g:
     x               # limma(contrasts = .) generally run without intercept
-}                   # lm(coefs = .)        typically run with intercept
+}                   # lm(coefficients = .) typically run with intercept
 
 #' @rdname p
 #' @export
 up <- function(
     object, 
-    coef   = coefs(object),
+    coef   = coefficients(object),
     fit    = fits(object),
     var    = 'fdr', 
     cutoff = 0.05
@@ -438,7 +438,7 @@ up <- function(
 #' @export
 down <- function(
     object, 
-    coef    = coefs(object), 
+    coef    = coefficients(object), 
     fit     = fits(object), 
     var     = 'fdr', 
     cutoff  = 0.05
@@ -456,7 +456,7 @@ down <- function(
 #' @export
 sign.SummarizedExperiment <- function(
     object, 
-    coef   = coefs(object),
+    coef   = coefficients(object),
     fit    = fits(object),
     var    = 'fdr',
     cutoff = 0.05
@@ -466,7 +466,7 @@ sign.SummarizedExperiment <- function(
     down( object, coef = coef, fit = fit, var = var, cutoff = cutoff)
 }
 
-# dont rm - its the lower-level function used by fits() and coefs() !
+# dont rm - its the lower-level function used by fits() and coefficients() !
 .pvars <- function(object){
     . <- NULL
     fvars(object) %>% extract(stri_startswith_fixed(., paste0('p', FITSEP)))
@@ -489,7 +489,7 @@ fits <- function(object){
     x
 }
 
-#' Get fit coefs
+#' Get fit coefficients
 #' 
 #' @param object  SummarizedExperiment
 #' @param fit    string: 'limma', 'lm', 'lme', 'lmer'
@@ -499,9 +499,9 @@ fits <- function(object){
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, fit='limma', plot=FALSE)
-#' coefs(object)
+#' coefficients(object)
 #' @export
-coefs <- function(object, fit = fits(object), svars = NULL){
+coefficients <- function(object, fit = fits(object), svars = NULL){
     . <- NULL
     coefs0 <- split_extract_fixed(.pvars(object), FITSEP, 2)
     fits0  <- split_extract_fixed(.pvars(object), FITSEP, 3)
@@ -519,14 +519,14 @@ coefs <- function(object, fit = fits(object), svars = NULL){
 #==============================================================================
 
 #' Summarize fit
-#' @param object SummarizedExperiment
-#' @param fit 'limma', 'lme', 'lm', 'lme', 'wilcoxon'
+#' @param object  SummarizedExperiment
+#' @param fit     'limma', 'lme', 'lm', 'lme', 'wilcoxon'
 #' @return data.table(contrast, nup, ndown)
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, subgroupvar = 'SET', impute=TRUE, plot=FALSE)
+#' object <- read_metabolon(file, subgroupvar = 'SET', impute = TRUE, plot = FALSE)
 #' object %<>% fit_limma(subgroupvar = 'SET')
-#' object %<>% fit_lm(subgroupvar = 'SET')
+#' object %<>% fit_lm(   subgroupvar = 'SET')
 #' summarize_fit(object)
 #' @export
 summarize_fit <- function(object, fit = fits(object)){
@@ -544,7 +544,7 @@ summarize_fit <- function(object, fit = fits(object)){
     sumdt$contrast %<>% pull_level('Intercept')
     setorderv(sumdt, c('fit', 'contrast'))
     sumdt %<>% extract(fit, on = 'fit')
-    sumdt %<>% extract(coefs(object), on = 'contrast')
+    sumdt %<>% extract(coefficients(object), on = 'contrast')
     sumdt
 }
 
@@ -586,17 +586,12 @@ merge_fit_quantities <- function(x, y){
 
 
 #' Extract fit datatable
-#' @param object SummarizedExperiment
-#' @param fit 'limma', 'lme', 'lm', 'lmer', 'wilcoxon'
+#' @param object  SummarizedExperiment
+#' @param fit     'limma', 'lme', 'lm', 'lmer', 'wilcoxon'
 #' @return melted data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, fit='limma', plot=FALSE)
-#' extract_fit_dt(object, fit = 'limma')
-#'
-#' file <- download_data('atkin18.metabolo.xlsx')
-#' object <- read_proteingroups(
-#'            file, invert_subgroups=inv, fit='limma', plot=FALSE)
+#' object <- read_proteingroups(file, fit = 'limma', plot = FALSE)
 #' extract_fit_dt(object, fit = 'limma')
 #' @noRd
 extract_fit_dt <- function(object, fit){
@@ -671,7 +666,7 @@ old_summarize_fit <- function(
 is_sig <- function(
     object,
     fit = fits(object)[1],
-    contrast = coefs(object),
+    contrast = coefficients(object),
     quantity = 'fdr'
 ){
 # Assert
@@ -680,7 +675,7 @@ is_sig <- function(
     assert_is_character(fit)
     assert_is_subset(fit, fits(object))
     if (is.character(contrast))  for (fi in fit){
-        assert_is_subset(contrast, coefs(object, fit=fi)) }
+        assert_is_subset(contrast, coefficients(object, fit=fi)) }
 # Run across models
     res <-  mapply(.is_sig, fit, 
                     MoreArgs = list(object = object, contrast = contrast, quantity = quantity),

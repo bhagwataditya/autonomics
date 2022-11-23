@@ -179,15 +179,15 @@ pubchem_to_smiles <- function(x){
     sid_rows  <-  svar_names %>% is_in(sidvar) %>% which() %>% extract(1)
 # Systematic read
     object <- read_rectangles(
-                file,                       sheet      = sheet,
-                fid_rows   = fid_rows,      fid_cols   = fid_cols,
-                sid_rows   = sid_rows,      sid_cols   = sid_cols,
-                expr_rows  = expr_rows,     expr_cols  = expr_cols,
-                fvar_rows  = fvar_rows,     fvar_cols  = fvar_cols,
-                svar_rows  = svar_rows,     svar_cols  = svar_cols,
-                fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
-                sdata_rows = svar_rows,     sdata_cols = sdata_cols,
-                transpose  = FALSE, verbose = verbose)
+        file,                       sheet      = sheet,
+        fid_rows   = fid_rows,      fid_cols   = fid_cols,
+        sid_rows   = sid_rows,      sid_cols   = sid_cols,
+        expr_rows  = expr_rows,     expr_cols  = expr_cols,
+        fvar_rows  = fvar_rows,     fvar_cols  = fvar_cols,
+        svar_rows  = svar_rows,     svar_cols  = svar_cols,
+        fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
+        sdata_rows = svar_rows,     sdata_cols = sdata_cols,
+        transpose  = FALSE,         verbose    = verbose)
     assayNames(object)[1] <- paste0('metabolon')
 # Update sdata/fdata                        Group   HMDB_ID -> HMDB_ID
     nsv <- length(svars((object)))
@@ -218,7 +218,7 @@ pubchem_to_smiles <- function(x){
 #' @param fit           diffexp engine: 'limma', 'lm', 'lme', 'lmer', 'wilcoxon' or NULL (none)
 #' @param formula       diffexp formula
 #' @param block         diffexp block var: string or NULL
-#' @param coefs         diffexp coefficients to analyze: NULL or character vector
+#' @param coefficients         diffexp coefficients to analyze: NULL or character vector
 #' @param contrasts  diffexp contrasts to analyze: NULL or character vector
 #' @param verbose       bool: msg?
 #' @param plot          bool: plot?
@@ -233,13 +233,15 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fnamevar = 'BIOCHEMICAL', kegg_pathways = FALSE, smiles = FALSE,
     impute  = TRUE, plot = FALSE, pca = plot, 
     fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL, 
-    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL,
+    coefficients = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL,
     palette = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_metabolon(
-        file = file, sheet = sheet, fidvar = fidvar, sidvar = sidvar, 
-        sfile = sfile, by.x = by.x, by.y = by.y, subgroupvar = subgroupvar, 
+        file    = file,    sheet       = sheet, 
+        fidvar  = fidvar,  sidvar      = sidvar, 
+        sfile   = sfile,   by.x        = by.x, 
+        by.y    = by.y,    subgroupvar = subgroupvar, 
         verbose = verbose)
 # Prepare
     assert_is_subset(fnamevar, fvars(object))
@@ -250,10 +252,11 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze
-    object %<>% analyze(pca = pca, fit = fit, 
-                    formula = formula, block = block, 
-                    coefs=coefs, contrasts = contrasts, 
-                    verbose = verbose, plot = plot)
+    object %<>% analyze(
+        pca          = pca,           fit       = fit, 
+        formula      = formula,       block     = block, 
+        coefficients = coefficients,  contrasts = contrasts, 
+        verbose      = verbose,       plot      = plot)
 # Return
     object
 }

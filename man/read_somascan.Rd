@@ -36,7 +36,7 @@ read_somascan(
   fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
-  coefs = NULL,
+  coefficients = NULL,
   contrasts = NULL,
   verbose = TRUE
 )
@@ -82,7 +82,7 @@ read_somascan(
 
 \item{block}{diffexp block var (string)}
 
-\item{coefs}{diffexp coeffs to analyze (character vector or NULL)}
+\item{coefficients}{diffexp coeffs to analyze (character vector or NULL)}
 
 \item{contrasts}{diffexp contrasts to analyze (character vector or NULL)}
 }

@@ -328,23 +328,23 @@ rm_diann_contaminants <- function(
 
 #' Read diann
 #'
-#' @param file         'report.tsv' file
-#' @param fastadt       NULL or data.table
-#' @param quantity     'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
+#' @param file               'report.tsv' file
+#' @param fastadt             NULL or data.table
+#' @param quantity           'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
-#' @param simplify_snames TRUE/FALSE : whether to simplify (i.e. drop common parts in) sample names
-#' @param contaminants  character vector with uniprot ids
-#' @param plot          whether to plot
-#' @param pca           whether to pca
-#' @param fit           model fit engine: 'limma', 'lm', 'lmer', 'lme'
-#' @param formula       model formula
-#' @param block         block var (sdt)
-#' @param coefs         character: coefficients to test
-#' @param contrasts  character: coefficient contrasts to test
-#' @param feature_id    string: summary plot feature
-#' @param sample_id     string: summary plot sample
-#' @param palette       character: color palette
-#' @param verbose       whether to msg
+#' @param simplify_snames     TRUE/FALSE : whether to simplify (i.e. drop common parts in) sample names
+#' @param contaminants        character vector with uniprot ids
+#' @param plot                whether to plot
+#' @param pca                 whether to pca
+#' @param fit                 model fit engine: 'limma', 'lm', 'lmer', 'lme'
+#' @param formula             model formula
+#' @param block               block var (sdt)
+#' @param coefficients        character: coefficients to test
+#' @param contrasts           character: coefficient contrasts to test
+#' @param feature_id          string: summary plot feature
+#' @param sample_id           string: summary plot sample
+#' @param palette             character: color palette
+#' @param verbose             TRUE or FALSE
 #' @return  data.table / SummarizedExperiment
 #' @examples 
 #' # Read & Analyze
@@ -358,6 +358,7 @@ rm_diann_contaminants <- function(
 #'     file <- download_data('dilution.report.tsv')
 #'    (PR   <- .read_diann_precursors(file))       # precursor    dt
 #'    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
+#'    
 #' # Compare Summarizations
 #'      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
 #'      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
@@ -376,7 +377,7 @@ read_diann <- function(
     contaminants = character(0), 
     impute = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
-    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
+    coefficients = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
     palette = make_subgroup_palette(object), verbose = TRUE
 ){
 # Assert
@@ -421,10 +422,12 @@ read_diann <- function(
     assays <- c(quantity, 'precursors')
     for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
-        pca        = pca,            fit       = fit,
-        formula    = formula,        block     = block,       coefs   = coefs,  
-        contrasts  = contrasts,      verbose   = verbose,     plot    = plot,
-        feature_id = feature_id,     sample_id = sample_id,   palette = palette )
+        pca          = pca,           fit       = fit,
+        formula      = formula,       block     = block,      
+        coefficients = coefficients,  contrasts = contrasts,   
+        verbose      = verbose,       plot      = plot,
+        feature_id   = feature_id,    sample_id = sample_id,  
+        palette      = palette)
     object
 }
 

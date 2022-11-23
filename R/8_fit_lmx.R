@@ -15,10 +15,10 @@
     fitres %<>% stats::coefficients()
     fitres
     
-    pvalues <- as.data.table(as.list(fitres[, pname,      drop=FALSE]))
-    tvalues <- as.data.table(as.list(fitres[, tname,      drop=FALSE]))
-    effects <- as.data.table(as.list(fitres[, effectname, drop=FALSE]))
-    stderrs <- as.data.table(as.list(fitres[, sename,     drop=FALSE]))
+    pvalues <- as.data.table(as.list(fitres[, pname,      drop = FALSE]))
+    tvalues <- as.data.table(as.list(fitres[, tname,      drop = FALSE]))
+    effects <- as.data.table(as.list(fitres[, effectname, drop = FALSE]))
+    stderrs <- as.data.table(as.list(fitres[, sename,     drop = FALSE]))
     names(pvalues) %<>% paste0('p.', .)
     names(tvalues) %<>% paste0('t.', .)
     names(effects) %<>% paste0('effect.', .)
@@ -120,7 +120,7 @@ fit_lmx <- function(
     drop        = varlevels_dont_clash(object, all.vars(formula)),
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs       = NULL, 
+    coefficients       = NULL, 
     verbose     = TRUE, 
     plot        = FALSE
 ){
@@ -156,9 +156,9 @@ fit_lmx <- function(
     formula %<>% droplhs() %<>% formula2str()
     if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
-    if (is.null(coefs)) coefs <- coefs(object, fit = fit)
-    if (length(coefs) > 1) coefs %<>% setdiff('Intercept')
-    if (plot)  print(plot_volcano(object, fit = fit, coefs = coefs))
+    if (is.null(coefficients)) coefficients <- coefficients(object, fit = fit)
+    if (length(coefficients) > 1) coefficients %<>% setdiff('Intercept')
+    if (plot)  print(plot_volcano(object, fit = fit, coefficients = coefficients))
     object 
 }
 
@@ -173,7 +173,7 @@ fit_lm <- function(
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs       = NULL, 
+    coefficients       = NULL, 
     verbose     = TRUE, 
     plot        = FALSE
 ){
@@ -184,16 +184,12 @@ fit_lm <- function(
         # integrated in formula and also gets checked for (unnecessarily!)
 # Fit    
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
-    fit_lmx(object, 
-            fit         = 'lm', 
-            subgroupvar = subgroupvar, 
-            formula     = formula, 
-            drop        = drop,
-            block       = block, 
-            weightvar   = weightvar, 
-            coefs       = coefs, 
-            verbose     = verbose, 
-            plot        = plot)
+    fit_lmx(
+        object,                     fit          = 'lm', 
+        subgroupvar = subgroupvar,  formula      = formula, 
+        drop        = drop,         block        = block, 
+        weightvar   = weightvar,    coefficients = coefficients, 
+        verbose     = verbose,      plot         = plot)
 }
 
 
@@ -207,7 +203,7 @@ fit_lme <- function(
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs        = NULL, 
+    coefficients = NULL, 
     verbose      = TRUE, 
     plot         = FALSE
 ){
@@ -229,16 +225,12 @@ fit_lme <- function(
 # Fit
     if (verbose)  message('\t\tlme(', formula2str(formula), ', ', 
                         'random = ',  formula2str(block),')')
-    fit_lmx(object, 
-            fit         = 'lme', 
-            subgroupvar = subgroupvar, 
-            formula     = formula, 
-            drop        = drop,
-            block       = block, 
-            weightvar   = weightvar, 
-            coefs       = coefs, 
-            verbose     = verbose, 
-            plot        = plot)
+    fit_lmx(
+        object,                     fit          = 'lme', 
+        subgroupvar = subgroupvar,  formula      = formula, 
+        drop        = drop,         block        = block, 
+        weightvar   = weightvar,    coefficients = coefficients, 
+        verbose     = verbose,      plot         = plot)
 }
 
 
@@ -246,15 +238,15 @@ fit_lme <- function(
 #' @export
 fit_lmer <- function(
     object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    contrasts   = NULL,  # for function equivalence only
-    formula     = default_formula(object, subgroupvar, contrasts = NULL), 
-    drop         = varlevels_dont_clash(object, all.vars(formula)),
-    block       = NULL, 
-    weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs       = NULL, 
-    verbose     = TRUE, 
-    plot        = FALSE
+    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
+    contrasts    = NULL,  # for function equivalence only
+    formula      = default_formula(object, subgroupvar, contrasts = NULL), 
+    drop          = varlevels_dont_clash(object, all.vars(formula)),
+    block        = NULL, 
+    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    coefficients = NULL, 
+    verbose      = TRUE, 
+    plot         = FALSE
 ){
 # Assert
     . <- NULL
@@ -279,14 +271,10 @@ fit_lmer <- function(
 # Fit
     if (verbose)  message('\t\tlmer(', formula2str(formula), ')')
     metadata(object)$lmer <- NULL
-    fit_lmx(object, 
-            fit         = 'lmer', 
-            subgroupvar = subgroupvar, 
-            formula     = formula, 
-            drop        = drop,
-            block       = NULL, 
-            weightvar   = weightvar, 
-            coefs       = coefs, 
-            verbose     = verbose, 
-            plot        = plot)
+    fit_lmx(
+        object,                     fit          = 'lmer', 
+        subgroupvar = subgroupvar,  formula      = formula, 
+        drop        = drop,         block        = NULL, 
+        weightvar   = weightvar,    coefficients = coefficients, 
+        verbose     = verbose,      plot         = plot)
 }

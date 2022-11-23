@@ -73,7 +73,7 @@ read_rnaseq_counts(
   pca = plot,
   fit = if (plot) "limma" else NULL,
   voom = cpm,
-  coefs = NULL,
+  coefficients = NULL,
   contrasts = NULL,
   verbose = TRUE,
   feature_id = NULL,
@@ -130,7 +130,7 @@ read_rnaseq_counts(
 
 \item{sample_id}{string: which sample to visualize}
 
-\item{coefs}{NULL or character vector: model coefficients to test}
+\item{coefficients}{NULL or character vector: model coefficients to test}
 }
 \value{
 SummarizedExperiment
@@ -147,16 +147,15 @@ Read/analyze rnaseq counts / bamfiles
            fit = 'limma', plot = TRUE)
     }
 # counts
-    rnafile <- download_data('billing19.rnacounts.txt')
-    fid <- 'CAV2'
-    rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05')
-    rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F)
-    rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F, cpm = F)
-    rna <- read_rnaseq_counts(rnafile, fid_col = 'gene_name', sample_id = 'E05_R1', feature_id = fid, coefs = 'subgroupE05', voom = F, cpm = F, log2 = F) 
+    file <- download_data('billing19.rnacounts.txt')
+    rna <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E05')
+    rna <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E05', voom = FALSE)
+    rna <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E05', voom = FALSE, cpm = FALSE)
+    rna <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
 \dontrun{
     ah <- AnnotationHub::AnnotationHub()
     ensdb <- ah[['AH64923']]
-    object <- read_rnaseq_counts(file, feature_id = fid, coefs = 'subgroupE02', tpm = TRUE, ensdb = ensdb)
+    object <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E02', tpm = TRUE, ensdb = ensdb)
  }
 }
 \author{

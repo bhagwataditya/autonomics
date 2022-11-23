@@ -2,7 +2,7 @@
 % Please edit documentation in R/4_plot.R
 \name{filter_coefficient_features}
 \alias{filter_coefficient_features}
-\title{Extract coef features}
+\title{Filter coefficient features}
 \usage{
 filter_coefficient_features(
   object,
@@ -30,7 +30,7 @@ filter_coefficient_features(
 \item{ntop}{ntop cutoff}
 }
 \description{
-Extract coef features
+Filter coefficient features
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')

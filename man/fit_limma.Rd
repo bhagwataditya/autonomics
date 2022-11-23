@@ -17,7 +17,7 @@ fit_limma(
   formula = default_formula(object, subgroupvar, contrasts),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   design = create_design(object, formula = formula, drop = drop),
-  coefs = if (is.null(contrasts)) colnames(design) else NULL,
+  coefficients = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
@@ -34,7 +34,7 @@ fit_limma(
   formula = default_formula(object, subgroupvar, contrasts),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   design = create_design(object, formula = formula, drop = drop),
-  coefs = if (is.null(contrasts)) colnames(design) else NULL,
+  coefficients = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
@@ -52,7 +52,7 @@ fit_lm(
   drop = varlevels_dont_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefs = NULL,
+  coefficients = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -65,7 +65,7 @@ fit_lme(
   drop = varlevels_dont_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefs = NULL,
+  coefficients = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -78,7 +78,7 @@ fit_lmer(
   drop = varlevels_dont_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefs = NULL,
+  coefficients = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -89,7 +89,7 @@ fit_wilcoxon(
   contrasts = sprintf("\%s-\%s", slevels(object, subgroupvar)[-1], slevels(object,
     subgroupvar)[1]),
   formula = NULL,
-  coefs = NULL,
+  coefficients = NULL,
   block = NULL,
   weightvar = NULL,
   verbose = TRUE,
@@ -115,7 +115,7 @@ fit_wilcoxon(
 
 \item{design}{design matrix}
 
-\item{coefs}{NULL or character vector: model coefficients to test}
+\item{coefficients}{NULL or character vector: model coefficients to test}
 
 \item{block}{block svar (or NULL)}
 
@@ -153,7 +153,7 @@ Fit model and test for differential expression
    #plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
     
 # flexible: limma contrasts
-    object \%<>\% fit_limma(formula = ~subgroup,   block = 'Subject_ID', coefs = 't1') 
+    object \%<>\% fit_limma(formula = ~subgroup,   block = 'Subject_ID', coefficients = 't1') 
     object \%<>\% fit_limma(formula = ~0+subgroup, block = 'Subject_ID', contrasts = 't1-t0')
         # flexible, but only approximate
         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
