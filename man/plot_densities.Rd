@@ -70,7 +70,7 @@ plot_feature_densities(
 
 \item{dir}{'h' (horizontal) or 'v' (vertical)}
 
-\item{labeller}{e.g. ggplot2::label_value}
+\item{labeller}{e.g. label_value}
 
 \item{palette}{named character vector}
 

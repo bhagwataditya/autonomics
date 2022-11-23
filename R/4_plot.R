@@ -247,7 +247,7 @@ plot_data <- function(
     fillstr  <- if (quo_is_null(fill))  NULL else as_name(fill)
     p <- add_color_scale(p, colorstr, data, palette = palette)
     p <- add_fill_scale( p, fillstr,  data, palette = palette)
-    p <- p + do.call(ggplot2::theme, theme)
+    p <- p + do.call(theme, theme)
 
     p
 }
@@ -295,7 +295,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' @param nrow        number of facet rows
 #' @param ncol        number of facet cols
 #' @param dir         'h' (horizontal) or 'v' (vertical)
-#' @param labeller    e.g. ggplot2::label_value
+#' @param labeller    e.g. label_value
 #' @param palette     named character vector
 #' @param fixed       fixed aesthetics
 #' @seealso \code{\link{plot_sample_violins}},
@@ -618,7 +618,7 @@ plot_subgroup_violins <- function(
 #'     controlfeatures <- c('biotin','phosphate')
 #'     fdata(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
 #' # Plot
-#'     vars <- ggplot2::vars
+#'     vars <- vars
 #'     plot_boxplots(object[,1:9],  x = 'sample_id',  fill = 'sample_id' )
 #'     plot_boxplots(object[1:9,],  x = 'feature_id', fill = 'feature_id')
 #'     plot_boxplots(object[1:9, ], x = 'SET', fill = 'SET', facet = 'feature_id')
@@ -643,7 +643,7 @@ plot_boxplots <- function(
 ){
 # Assert/Process
     assert_is_all_of(object, "SummarizedExperiment")
-    if (nrow(object)==0)  return(ggplot2::ggplot())
+    if (nrow(object)==0)  return(ggplot())
     if (!is.null(x))          assert_is_a_string(x)
     if (!is.null(fill))       assert_is_a_string(fill)
     if (!is.null(color))      assert_is_a_string(color)
@@ -830,21 +830,21 @@ extract_top_features <- function(
     assert_is_a_number(p)
     assert_is_a_number(fdr)
     assert_is_a_number(ntop)
-    
-# Filter
-    pvar0 <- pvar(object, fit = fit, coef = coefficient)   # available
+# Filter available
+    pvar0 <- pvar(object, fit = fit, coef = coefficient)
     idx <- !is.na(fdt(object)[[pvar0]])
     object %<>% extract(idx, )
-    
-    ntop %<>% min(nrow(object))                            # top
+# Filter top
+    ntop %<>% min(nrow(object))
     idx <- order(fdt(object)[[pvar0]])[1:ntop]
     object %<>% extract(idx, )
-                                                           # significant
     idx <- (abs(autonomics::effect(object, fit = fit, coef = coefficient)[, 1]) > effectsize)  & 
            (    autonomics::p(     object, fit = fit, coef = coefficient)[, 1]  < p  )         & 
            (    autonomics::fdr(   object, fit = fit, coef = coefficient)[, 1]  < fdr)
     object %<>% extract(idx, )
-    
+# Order on effect
+    idx <- order(effect(object, fit = fit, coef = coefficient)[, 1])
+    object %<>% extract(idx, )
 # Return
     object
 }
@@ -925,7 +925,7 @@ plot_top_boxplots <- function(
     
     fvars0 <- c(facet, fdrvar, pvar, effectvar)
     object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
-    object %<>% format_coef_vars(     coef = coef, fit = fit)
+    object %<>% format_coef_vars(    coef = coef, fit = fit)
 # Prepare
     dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
     mediandt <- summarize_median(dt, subgroup)
@@ -1181,7 +1181,7 @@ plot_subgroup_points <- function(
                    group = !!groupsym, ..., palette = palette, fixed = fixed)
     if (!is.null(block))  p <- p + geom_line()
     p <- p + facet_wrap(facets = facet, scales = scales, nrow = nrow)
-    p <- p + do.call(ggplot2::theme, theme)
+    p <- p + do.call(theme, theme)
     p
 }
 
@@ -1348,16 +1348,12 @@ plot_design <- function(object){
 #' @param p            number: p    filter
 #' @param fdr          number: fdr  filter
 #' @param ntop         number: ntop filter
-#' @param fvar         string
-#' @param lowColor     color for downregulation (Default color yellow)
-#' @param highColor    color for upregulation (Default color royal blue)
-#' @param midColor     color for midpoint (Default color gray)
-#' @param width        number: width  in inches (Default width 2 inches)
-#' @param height       number: height in inches (Default height 4 inches)
-#' @param fontsize     number: font size for feature name (Default size 0 for not showing feature names)
+#' @param flabel       string: feature label
+#' @param colorscale   (continuous) color scale
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
+#' plot_top_heatmap(object)
 #' @export
 plot_top_heatmap <- function(
     object,
@@ -1367,14 +1363,9 @@ plot_top_heatmap <- function(
     effectsize  = 0,
     p           = 0.05,
     fdr         = 1,
-    ntop        = 9,
-    fvar        = 'feature_id',
-    lowColor    = "yellow",
-    highColor   = "blue1",
-    midColor    = "gray",
-    width       = 2,
-    height      = 4,
-    fontsize    = 0
+    ntop        = 30,
+    flabel      = intersect(c('gene', 'feature_id'), fvars(object))[1],
+    colorscale  = scale_fill_continuous(low = "#56B1F7", high = "#132B43", na.value = 'white') # '#D55E00' '#009E73'
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -1386,34 +1377,21 @@ plot_top_heatmap <- function(
     assert_is_a_number(fdr)
     assert_is_a_number(ntop)
 # Filter    
-    object %<>% extract_top_features(
-        fit        = fit,             coefficient = coefficient,
-        effectsize = effectsize,      p           = p,
-        fdr        = fdr,             ntop        = ntop)
-# 
-   x <- assays(object)[[assay]]
-   h.row.order <- hres$order # clustering on row
-   row.order.df <- x[h.row.order,]
-   scaled.x = t(scale(t(row.order.df),center=T)) #scaling dataframe
-   df.molten.dat <- reshape2::melt(scaled.x) #resturcturing dataframe
-
-   myPlot <- ggplot2::ggplot(data = df.molten.dat, ggplot2::aes_string(x = 'Var2', y = 'Var1', fill = 'value')) +
-             ggplot2::geom_tile() +
-             #ggplot2::facet_wrap(~ branch, scales = 'free') +
-             ggplot2::scale_fill_gradient2(low = lowColor, mid = midColor, high = highColor) +
-             ggplot2::theme(axis.text.x   = ggplot2::element_text(angle = 90, hjust = 1, size=width),
-                            axis.text.y   = ggplot2::element_text(size=fontsize),
-                            axis.ticks.length = grid::unit(.01, "cm"),
-                            axis.ticks    = ggplot2::element_blank(),
-                            axis.title.x  = ggplot2::element_blank(),
-                            axis.title.y  = ggplot2::element_blank(),
-                            legend.title  = ggplot2::element_blank(),
-                            panel.background = ggplot2::element_blank(),
-                            legend.justification = "top",
-                            legend.key.width =   grid::unit(0.2, "cm"),
-                            legend.key.height =  grid::unit(0.3,"cm"),
-                            legend.text =        ggplot2::element_text(size=fontsize),
-                            legend.box.margin =  ggplot2::margin(-10,-10,-10,-12))
-
-   myPlot
+    obj <- extract_top_features(
+        object,                       fit        = fit,
+        coefficient = coefficient,    effectsize  = effectsize,
+        p           = p,              fdr         = fdr,
+        ntop        = ntop)
+    fdt(obj)[[flabel]] %<>% factor(unique(.)) # fix order
+# Zscore
+    assays(obj)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
+    dt <- sumexp_to_longdt(obj, assay = assay, fvars = flabel)
+    setnames(dt, 'value', 'z-score')
+# Plot    
+    ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +
+    geom_tile() +
+    theme_minimal() + xlab(NULL) + ylab(NULL) + 
+    scale_x_discrete(position = 'top') + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 0)) + 
+    colorscale
 }

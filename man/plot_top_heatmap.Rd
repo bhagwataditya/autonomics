@@ -12,14 +12,10 @@ plot_top_heatmap(
   effectsize = 0,
   p = 0.05,
   fdr = 1,
-  ntop = 9,
-  fvar = "feature_id",
-  lowColor = "yellow",
-  highColor = "blue1",
-  midColor = "gray",
-  width = 2,
-  height = 4,
-  fontsize = 0
+  ntop = 30,
+  flabel = intersect(c("gene", "feature_id"), fvars(object))[1],
+  colorscale = scale_fill_continuous(low = "#56B1F7", high = "#132B43", na.value =
+    "white")
 )
 }
 \arguments{
@@ -39,19 +35,9 @@ plot_top_heatmap(
 
 \item{ntop}{number: ntop filter}
 
-\item{fvar}{string}
+\item{flabel}{string: feature label}
 
-\item{lowColor}{color for downregulation (Default color yellow)}
-
-\item{highColor}{color for upregulation (Default color royal blue)}
-
-\item{midColor}{color for midpoint (Default color gray)}
-
-\item{width}{number: width  in inches (Default width 2 inches)}
-
-\item{height}{number: height in inches (Default height 4 inches)}
-
-\item{fontsize}{number: font size for feature name (Default size 0 for not showing feature names)}
+\item{colorscale}{(continuous) color scale}
 }
 \description{
 Plot top heatmap
@@ -59,4 +45,5 @@ Plot top heatmap
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, fit = 'limma')
+plot_top_heatmap(object)
 }

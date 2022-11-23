@@ -136,7 +136,7 @@ Plot boxplots
     controlfeatures <- c('biotin','phosphate')
     fdata(object) \%<>\% cbind(control = .$feature_name \%in\% controlfeatures)
 # Plot
-    vars <- ggplot2::vars
+    vars <- vars
     plot_boxplots(object[,1:9],  x = 'sample_id',  fill = 'sample_id' )
     plot_boxplots(object[1:9,],  x = 'feature_id', fill = 'feature_id')
     plot_boxplots(object[1:9, ], x = 'SET', fill = 'SET', facet = 'feature_id')
