@@ -808,11 +808,11 @@ plot_subgroup_boxplots <- function(
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
 #' nrow(object)                                    # 4534 features
-#' nrow(filter_contrast_features(object))             # 3772   p != NA
-#' nrow(filter_contrast_features(object,   p = 0.05)) # 1961   p < 0.05 
-#' nrow(filter_contrast_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
+#' nrow(filter_coefficient_features(object))             # 3772   p != NA
+#' nrow(filter_coefficient_features(object,   p = 0.05)) # 1961   p < 0.05 
+#' nrow(filter_coefficient_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
 #' @export
-filter_contrast_features <- function(
+filter_coefficient_features <- function(
     object, 
     fit        = fits(object)[1], 
     coef       = default_coef(object, fit = fit),
@@ -924,7 +924,7 @@ plot_contrast_boxplots <- function(
     effectvar <- paste('effect', coef, fit, sep = FITSEP)
     
     fvars0 <- c(facet, fdrvar, pvar, effectvar)
-    object %<>% filter_contrast_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
+    object %<>% filter_coefficient_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
     object %<>% format_coef_vars(     coef = coef, fit = fit)
 # Prepare
     dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
@@ -1337,4 +1337,64 @@ plot_design <- function(object){
     # theme(axis.text = element_blank(), 
     #       panel.grid.major.x = element_blank(), 
     #       panel.grid.minor.x = element_blank())
+}
+
+#' Plot coef heatmap
+#' @param object    SummarizedExperiment
+#' @param fvar      string
+#' @param lowColor  color for downregulation (Default color yellow)
+#' @param highColor color for upregulation (Default color royal blue)
+#' @param midColor  color for midpoint (Default color gray)
+#' @param width     number: width  in inches (Default width 2 inches)
+#' @param height    number: height in inches (Default height 4 inches)
+#' @param fontsize  number: font size for feature name (Default size 0 for not showing feature names)
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, fit = 'limma')
+#' @export
+plot_coef_heatmap <- function(
+    object,
+    fit       = fits(object)[1],
+    coef      = default_coef(object, fit = fit),
+    fvar      = 'feature_id',
+    lowColor  = "yellow",
+    highColor = "blue1",
+    midColor  = "gray",
+    width     = 2,
+    height    = 4,
+    fontsize  = 0
+){
+    object %<>% filter_coefficient_features(fit = fit, coef = coef)
+    
+   autonomics.import::fnames(object) <- object %>%
+                                        autonomics.import::fvalues(fvar) %>%
+                                        autonomics.support::uniquify()
+   autonomics.support::cmessage('\t\tImpute NA(N) values')
+   object %<>% autonomics.preprocess::impute(method = 'impute.QRILC')
+   x <- autonomics.import::exprs(object)
+   hres <- stats::hclust(stats::as.dist(1 - stats::cor(t(x), method="pearson"))) #compute correlation for matrix
+   h.row.order <- hres$order # clustering on row
+   row.order.df <- x[h.row.order,]
+   scaled.x = t(scale(t(row.order.df),center=T)) #scaling dataframe
+   df.molten.dat <- reshape2::melt(scaled.x) #resturcturing dataframe
+
+   myPlot <- ggplot2::ggplot(data = df.molten.dat, ggplot2::aes_string(x = 'Var2', y = 'Var1', fill = 'value')) +
+             ggplot2::geom_tile() +
+             #ggplot2::facet_wrap(~ branch, scales = 'free') +
+             ggplot2::scale_fill_gradient2(low = lowColor, mid = midColor, high = highColor) +
+             ggplot2::theme(axis.text.x   = ggplot2::element_text(angle = 90, hjust = 1, size=width),
+                            axis.text.y   = ggplot2::element_text(size=fontsize),
+                            axis.ticks.length = grid::unit(.01, "cm"),
+                            axis.ticks    = ggplot2::element_blank(),
+                            axis.title.x  = ggplot2::element_blank(),
+                            axis.title.y  = ggplot2::element_blank(),
+                            legend.title  = ggplot2::element_blank(),
+                            panel.background = ggplot2::element_blank(),
+                            legend.justification = "top",
+                            legend.key.width =   grid::unit(0.2, "cm"),
+                            legend.key.height =  grid::unit(0.3,"cm"),
+                            legend.text =        ggplot2::element_text(size=fontsize),
+                            legend.box.margin =  ggplot2::margin(-10,-10,-10,-12))
+
+   myPlot
 }
