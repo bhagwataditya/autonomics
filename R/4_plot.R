@@ -247,7 +247,7 @@ plot_data <- function(
     fillstr  <- if (quo_is_null(fill))  NULL else as_name(fill)
     p <- add_color_scale(p, colorstr, data, palette = palette)
     p <- add_fill_scale( p, fillstr,  data, palette = palette)
-    p <- p + do.call(theme, theme)
+    p <- p + do.call(ggplot2::theme, {{theme}})
 
     p
 }
@@ -1181,7 +1181,7 @@ plot_subgroup_points <- function(
                    group = !!groupsym, ..., palette = palette, fixed = fixed)
     if (!is.null(block))  p <- p + geom_line()
     p <- p + facet_wrap(facets = facet, scales = scales, nrow = nrow)
-    p <- p + do.call(theme, theme)
+    p <- p + do.call(ggplot2::theme, {{theme}})
     p
 }
 
