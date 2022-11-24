@@ -8,7 +8,7 @@ plot_subgroup_contrasts(
   object,
   subgroup,
   block = NULL,
-  contrasts = coefficients(object),
+  contrasts = coefs(object),
   x = !!enquo(subgroup),
   fill = !!enquo(subgroup),
   jitter = FALSE,

@@ -7,7 +7,7 @@
 is_sig(
   object,
   fit = fits(object)[1],
-  contrast = coefficients(object),
+  contrast = coefs(object),
   quantity = "fdr"
 )
 }

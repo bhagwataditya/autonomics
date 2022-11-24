@@ -35,7 +35,7 @@ read_metabolon(
   fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
-  coefficients = NULL,
+  coefs = NULL,
   contrasts = NULL,
   feature_id = NULL,
   sample_id = NULL,
@@ -80,7 +80,7 @@ read_metabolon(
 
 \item{block}{diffexp block var: string or NULL}
 
-\item{coefficients}{diffexp coefficients to analyze: NULL or character vector}
+\item{coefs}{diffexp coefs to analyze: NULL or character vector}
 
 \item{contrasts}{diffexp contrasts to analyze: NULL or character vector}
 }

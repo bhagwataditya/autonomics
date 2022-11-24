@@ -84,7 +84,7 @@ fit_wilcoxon <- function(
     contrasts    = sprintf('%s-%s', slevels(object, subgroupvar)[-1], 
                                     slevels(object, subgroupvar)[ 1]),
     formula      = NULL,
-    coefficients = NULL, 
+    coefs        = NULL, 
     block        = NULL, 
     weightvar    = NULL, 
     verbose      = TRUE, 

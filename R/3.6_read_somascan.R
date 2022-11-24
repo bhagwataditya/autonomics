@@ -158,7 +158,7 @@ rm_single_value_columns <- function(df){
 #' @param fit           diffexp engine: 'limma', 'lm', 'lme', 'lmer','wilcoxon' or NULL (none)
 #' @param formula       diffexp model formula
 #' @param block         diffexp block var (string)
-#' @param coefficients         diffexp coeffs to analyze (character vector or NULL)
+#' @param coefs         diffexp coeffs to analyze (character vector or NULL)
 #' @param contrasts  diffexp contrasts to analyze (character vector or NULL)
 #' @param verbose       bool: msg?
 #' @param plot          bool: plot?
@@ -174,7 +174,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL, 
-    coefficients = NULL, contrasts = NULL, verbose = TRUE
+    coefs = NULL, contrasts = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_somascan(
@@ -203,7 +203,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
     object %<>% analyze(
         pca         = pca,          fit          = fit, 
         subgroupvar = subgroupvar,  formula      = formula, 
-        block       = block,        coefficients = coefficients, 
+        block       = block,        coefs        = coefs, 
         contrasts   = contrasts,    verbose      = verbose, 
         plot=plot)
 # Return

@@ -39,7 +39,7 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    contrastmat  <- makeContrasts(contrasts = coefficients(object), levels = design)
+    contrastmat  <- makeContrasts(contrasts = coefs(object), levels = design)
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
         to   <- true_names(contrastvector>0)

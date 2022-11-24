@@ -335,7 +335,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param subgroupvar  subgroup variable
 #' @param formula      modeling formula
 #' @param design       design matrix
-#' @param coefficients NULL or character vector: model coefficients to test
+#' @param coefs        NULL or character vector: model coefs to test
 #' @param contrasts    NULL or character vector: coefficient contrasts to test
 #' \itemize{
 #' \item{c("t1-t0", "t2-t1", "t3-t2")}
@@ -369,7 +369,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'    #plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
 #'     
 #' # flexible: limma contrasts
-#'     object %<>% fit_limma(formula = ~subgroup,   block = 'Subject_ID', coefficients = 't1') 
+#'     object %<>% fit_limma(formula = ~subgroup,   block = 'Subject_ID', coefs = 't1') 
 #'     object %<>% fit_limma(formula = ~0+subgroup, block = 'Subject_ID', contrasts = 't1-t0')
 #'         # flexible, but only approximate
 #'         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
@@ -391,7 +391,7 @@ fit_limma <- function(
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     design       = create_design(object, formula = formula, drop = drop),
-    coefficients = if (is.null(contrasts))  colnames(design)     else NULL,
+    coefs        = if (is.null(contrasts))  colnames(design)     else NULL,
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
     statvars     = c('effect', 'p', 'fdr'),
@@ -404,7 +404,7 @@ fit_limma <- function(
         object       = object,        subgroupvar  = subgroupvar,
         contrasts    = contrasts,     formula      = formula, 
         drop         = drop,          design       = design, 
-        coefficients = coefficients,  block        = block,
+        coefs        = coefs,         block        = block,
         weightvar    = weightvar,     statvars     = statvars,
         sep          = sep,           suffix       = suffix,
         verbose      = verbose)
@@ -464,7 +464,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     design       = create_design(object, formula = formula, drop = drop),
-    coefficients = if (is.null(contrasts))  colnames(design) else NULL,
+    coefs        = if (is.null(contrasts))  colnames(design) else NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars     = c('effect', 'p', 'fdr'),
@@ -504,7 +504,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
                 block = block, correlation = metadata(object)$dupcor,
                 weights = weightmat))
 # Effect
-    if (is.null(contrasts)){  limmafit %<>% contrasts.fit(coefficients = coefficients) 
+    if (is.null(contrasts)){  limmafit %<>% contrasts.fit(coefficients = coefs) 
     } else {                  limmafit %<>% contrasts.fit(contrasts = makeContrasts(
                                                   contrasts = contrasts, levels = design)) }
     limmadt <- data.table(feature_id = rownames(limmafit))

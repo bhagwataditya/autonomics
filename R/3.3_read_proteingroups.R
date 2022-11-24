@@ -754,7 +754,7 @@ is_file <- function(file){
 #' @param fit           model fit engine: 'limma', 'lm', 'lmer', 'lme'
 #' @param formula       model formula
 #' @param block         block var (sdt)
-#' @param coefficients  character: coefficients to test
+#' @param coefs         character: coefs to test
 #' @param contrasts     character: coefficient contrasts to test
 #' @param feature_id    string: summary plot feature
 #' @param sample_id     string: summary plot sample
@@ -783,7 +783,7 @@ read_proteingroups <- function(
     curate = TRUE, subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = FALSE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,
-    formula = NULL, block = NULL, coefficients = NULL, contrasts = NULL,
+    formula = NULL, block = NULL, coefs = NULL, contrasts = NULL,
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
@@ -821,7 +821,7 @@ read_proteingroups <- function(
     object %<>% analyze(
         pca          = pca,           fit       = fit,       
         formula      = formula,       block     = block,       
-        coefficients = coefficients,  contrasts = contrasts,    
+        coefs        = coefs,         contrasts = contrasts,    
         verbose      = verbose,       plot      = plot,
         feature_id   = feature_id,    sample_id = sample_id,   
         palette      = palette )
@@ -840,7 +840,7 @@ read_phosphosites <- function(
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
     impute = FALSE, plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,  
-    formula = NULL, block = NULL, coefficients = NULL, contrasts = NULL, 
+    formula = NULL, block = NULL, coefs = NULL, contrasts = NULL, 
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
@@ -887,7 +887,7 @@ read_phosphosites <- function(
     object %<>% analyze(
         pca          = pca,           fit       = fit, 
         formula      = formula,       block     = block,   
-        coefficients = coefficients,  contrasts = contrasts,
+        coefs        = coefs,         contrasts = contrasts,
         verbose      = verbose,       plot      = plot,
         feature_id   = feature_id,    sample_id = sample_id,
         palette      = palette )

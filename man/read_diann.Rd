@@ -31,7 +31,7 @@ read_diann(
   fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
-  coefficients = NULL,
+  coefs = NULL,
   contrasts = NULL,
   feature_id = NULL,
   sample_id = NULL,
@@ -62,7 +62,7 @@ read_diann(
 
 \item{block}{block var (sdt)}
 
-\item{coefficients}{character: coefficients to test}
+\item{coefs}{character: coefs to test}
 
 \item{contrasts}{character: coefficient contrasts to test}
 

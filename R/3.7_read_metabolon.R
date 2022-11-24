@@ -218,8 +218,8 @@ pubchem_to_smiles <- function(x){
 #' @param fit           diffexp engine: 'limma', 'lm', 'lme', 'lmer', 'wilcoxon' or NULL (none)
 #' @param formula       diffexp formula
 #' @param block         diffexp block var: string or NULL
-#' @param coefficients         diffexp coefficients to analyze: NULL or character vector
-#' @param contrasts  diffexp contrasts to analyze: NULL or character vector
+#' @param coefs         diffexp coefs to analyze: NULL or character vector
+#' @param contrasts     diffexp contrasts to analyze: NULL or character vector
 #' @param verbose       bool: msg?
 #' @param plot          bool: plot?
 #' @return SummarizedExperiment
@@ -233,7 +233,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     fnamevar = 'BIOCHEMICAL', kegg_pathways = FALSE, smiles = FALSE,
     impute  = TRUE, plot = FALSE, pca = plot, 
     fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL, 
-    coefficients = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL,
+    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL,
     palette = NULL, verbose = TRUE
 ){
 # Read
@@ -255,7 +255,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     object %<>% analyze(
         pca          = pca,           fit       = fit, 
         formula      = formula,       block     = block, 
-        coefficients = coefficients,  contrasts = contrasts, 
+        coefs        = coefs,         contrasts = contrasts, 
         verbose      = verbose,       plot      = plot)
 # Return
     object

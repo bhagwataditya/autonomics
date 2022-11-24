@@ -78,9 +78,10 @@ melt_contrastdefs <- function(contrastdefmat){
 
 default_coefficient <- function(object, fit = fits(object)){
     if (length(fit)==0) return(character(0))    # none
-    y <- autonomics::coefficients(object, fit = fit)   # intercept
+    y <- autonomics::coefs(object, fit = fit)   # intercept
     if (length(y)==1)  return(y)
     y %<>% setdiff('Intercept')                 # intercept + others
+    y %<>% extract(1)
     y
 }
 
@@ -179,7 +180,7 @@ add_adjusted_pvalues <- function(
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(fit, fits(object))
-    assert_is_subset(coef, coefficients(object, fit))
+    assert_is_subset(coef, coefs(object, fit))
     assert_is_subset(method, stats::p.adjust.methods)
 # Compute
     for (.fit  in fit){
@@ -198,7 +199,7 @@ add_adjusted_pvalues <- function(
 #' Create volcano datatable
 #' @param object  SummarizedExperiment
 #' @param fit    'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coef    character vector: coefficients for which to plot volcanoes
+#' @param coef    character vector: coefs for which to plot volcanoes
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
@@ -214,7 +215,7 @@ make_volcano_dt <- function(
     assert_is_all_of(object, "SummarizedExperiment")
     assertive::assert_any_are_matching_regex(fvars(object), paste0('^p', FITSEP))
     assert_is_subset(fit, fits(object))
-    assert_is_subset(coef, autonomics::coefficients(object, fit))
+    assert_is_subset(coef, autonomics::coefs(object, fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
     if (!is.null(alpha)){ assert_is_subset(alpha, fvars(object)); object %<>% bin(alpha) }

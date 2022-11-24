@@ -7,7 +7,7 @@
 #' @param formula      model formula
 #' @param block        block svar
 #' @param weightvar    NULL or name of weight matrix in assays(object)
-#' @param coefficients NULL or character vector: model coefficients to test
+#' @param coefs        NULL or character vector: model coefs to test
 #' @param contrasts    NULL or character vector: coefficient contrasts to test
 #' @param verbose      whether to msg
 #' @param plot         whether to plot
@@ -31,7 +31,7 @@ analyze <- function(
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    coefficients = colnames(create_design(object, formula = formula, drop = drop)),
+    coefs        = colnames(create_design(object, formula = formula, drop = drop)),
     verbose      = TRUE,
     plot         = pca & !is.null(fit),
     feature_id   = NULL,
@@ -45,10 +45,10 @@ analyze <- function(
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
         if (is.null(formula)) formula <- default_formula(object, subgroupvar, contrasts)
-        if (is.null(coefficients)) coefficients <- colnames(create_design(object, formula = formula, drop = drop))
+        if (is.null(coefs))   coefs <- colnames(create_design(object, formula = formula, drop = drop))
         object %<>% fitfun(
             subgroupvar  = subgroupvar,   formula      = formula,
-            coefficients = coefficients,  contrasts    = contrasts,
+            coefs        = coefs,         contrasts    = contrasts,
             block        = block,         weightvar    = weightvar,
             verbose      = verbose,       plot         = FALSE) 
     }
@@ -74,7 +74,7 @@ analyze <- function(
 plot_summary <- function(
     object, 
     fit         = fits(object)[1], 
-    coef        = c(setdiff(coefficients(object), 'Intercept'), 'Intercept')[1],
+    coef        = c(setdiff(coefs(object), 'Intercept'), 'Intercept')[1],
     feature_id  = NULL, 
     sample_id   = NULL, 
     palette     = make_subgroup_palette(object)

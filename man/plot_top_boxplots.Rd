@@ -10,7 +10,7 @@ plot_top_boxplots(
   subgroup = "subgroup",
   block = NULL,
   fit = fits(object)[1],
-  coef = setdiff(coefficients(object), "Intercept")[1],
+  coef = setdiff(coefs(object), "Intercept")[1],
   facet = c("feature_id", paste("fdr", coef, fit, sep = FITSEP)),
   fdrcutoff = 0.05,
   pointsize = if (is.null(block)) 0 else 0.5,

@@ -992,7 +992,7 @@ read_rnaseq_bams <- function(
 #' @param subgroupvar   subgroup svar
 #' @param block         block svar
 #' @param formula       designmat formula
-#' @param coefficients  NULL or character vector: model coefficients to test
+#' @param coefs         NULL or character vector: model coefs to test
 #' @param contrasts     NULL or character vector: coefficient contrasts to test
 #' @param min_count     min feature count required in some samples
 #' @param pseudo        added pseudocount to prevent -Inf log2 values
@@ -1017,14 +1017,14 @@ read_rnaseq_bams <- function(
 #'     }
 #' # counts
 #'     file <- download_data('billing19.rnacounts.txt')
-#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E05')
-#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E05', voom = FALSE)
-#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E05', voom = FALSE, cpm = FALSE)
-#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
+#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05')
+#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
+#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
+#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
 #' \dontrun{
 #'     ah <- AnnotationHub::AnnotationHub()
 #'     ensdb <- ah[['AH64923']]
-#'     object <- read_rnaseq_counts(file, fit = 'limma', coefficients = 'E02', tpm = TRUE, ensdb = ensdb)
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E02', tpm = TRUE, ensdb = ensdb)
 #'  }
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
@@ -1034,7 +1034,7 @@ read_rnaseq_counts <- function(
     formula = NULL, min_count = 10, pseudo = 0.5,
     tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL, voom = cpm, 
-    coefficients = NULL, contrasts = NULL, verbose = TRUE, 
+    coefs = NULL, contrasts = NULL, verbose = TRUE, 
     feature_id = NULL, sample_id = NULL, 
     palette = NULL
 ){
@@ -1057,7 +1057,7 @@ read_rnaseq_counts <- function(
         pca          = pca,           fit       = fit, 
         subgroupvar  = subgroupvar,   formula   = formula, 
         block        = block,         weightvar = if (voom) 'weights' else NULL,
-        coefficients = coefficients,  contrasts = contrasts, 
+        coefs        = coefs,         contrasts = contrasts, 
         verbose      = verbose,       plot      = plot, 
         feature_id   = feature_id,    sample_id = sample_id, 
         palette      = palette)

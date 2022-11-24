@@ -19,7 +19,7 @@ make_volcano_dt(
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
-\item{coef}{character vector: coefficients for which to plot volcanoes}
+\item{coef}{character vector: coefs for which to plot volcanoes}
 }
 \value{
 data.table

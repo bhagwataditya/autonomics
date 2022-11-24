@@ -7,7 +7,7 @@
 plot_summary(
   object,
   fit = fits(object)[1],
-  coef = c(setdiff(coefficients(object), "Intercept"), "Intercept")[1],
+  coef = c(setdiff(coefs(object), "Intercept"), "Intercept")[1],
   feature_id = NULL,
   sample_id = NULL,
   palette = make_subgroup_palette(object)

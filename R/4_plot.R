@@ -828,7 +828,7 @@ extract_top_features <- function(
     if (length(coefficient)==0)  return(object)
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(fit,  fits(object))
-    assert_is_subset(coefficient, coefficients(object, fit = fit))
+    assert_is_subset(coefficient, coefs(object, fit = fit))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
@@ -853,7 +853,7 @@ extract_top_features <- function(
 }
 
 format_coef_vars <- function(
-    object, coef = setdiff(coefficients(object), 'Intercept')[1], fit = fits(object)[1]
+    object, coef = setdiff(coefs(object), 'Intercept')[1], fit = fits(object)[1]
 ){
     effectvars <- effectvar(object, coef = coef, fit = fit)
     pvars      <- pvar(     object, coef = coef, fit = fit)
@@ -908,7 +908,7 @@ format_coef_vars <- function(
 plot_top_boxplots <- function(
     object, assay = assayNames(object)[1], 
     subgroup = 'subgroup', block = NULL, fit = fits(object)[1], 
-    coef = setdiff(coefficients(object), 'Intercept')[1],
+    coef = setdiff(coefs(object), 'Intercept')[1],
     facet = c('feature_id', paste('fdr', coef, fit, sep = FITSEP)),
     fdrcutoff = 0.05, 
     pointsize = if (is.null(block)) 0 else 0.5,
@@ -1090,7 +1090,7 @@ plot_subgroup_contrasts <- function(
     object, 
     subgroup, 
     block     = NULL, 
-    contrasts = coefficients(object), #, svars = as_name(!!enquo(subgroup))),
+    contrasts = coefs(object), #, svars = as_name(!!enquo(subgroup))),
     x         = !!enquo(subgroup), 
     fill      = !!enquo(subgroup),
     jitter    = FALSE,
@@ -1319,14 +1319,14 @@ plot_design <- function(object){
     designmat %<>% unique()
     subgroups <- subgroup_levels(object)
     designmat %<>% extract(subgroups, )
-    coefficients <- colnames(designmat)
+    coefs <- colnames(designmat)
     ymat <- matrix(seq_along(subgroups), nrow = ncol(designmat), ncol = 1)
     betamat <- solve(designmat) %*% ymat
     betamat[1,1] <- 1 # not strictly required, but plot is nicer if Intercept 
                       # is 1 unit long (in MASS:contr.sdif it gets much longer, 
                       # I think to maintain orthogonality of design)
     plotdt <- data.table(subgroup = subgroups, 
-                         coef     = coefficients, 
+                         coef     = coefs, 
                          x        = seq_along(subgroups),
                          yend     = seq_along(subgroups),
                          y        = seq_along(subgroups) - betamat[, 1])
@@ -1348,7 +1348,7 @@ plot_design <- function(object){
 #' @param object       SummarizedExperiment
 #' @param assay        string: one of assayNames(object)
 #' @param fit         'limma', 'lm', 'lme(r)', 'wilcoxon'
-#' @param coefficient  string: one of coefficients(object)
+#' @param coefficient  string: one of coefs(object)
 #' @param effectsize   number: effectsize filter
 #' @param p            number: p    filter
 #' @param fdr          number: fdr  filter
@@ -1378,7 +1378,7 @@ plot_top_heatmap <- function(
     assert_is_a_string(fit)
     assert_is_subset(  fit, fits(object))
     assert_is_a_string(coefficient)
-    assert_is_subset(  coefficient, coefficients(object))
+    assert_is_subset(  coefficient, coefs(object))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)

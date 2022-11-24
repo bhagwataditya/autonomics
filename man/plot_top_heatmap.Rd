@@ -24,7 +24,7 @@ plot_top_heatmap(
 
 \item{fit}{'limma', 'lm', 'lme(r)', 'wilcoxon'}
 
-\item{coefficient}{string: one of coefficients(object)}
+\item{coefficient}{string: one of coefs(object)}
 
 \item{effectsize}{number: effectsize filter}
 
