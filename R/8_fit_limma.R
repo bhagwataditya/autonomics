@@ -464,7 +464,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     design       = create_design(object, formula = formula, drop = drop),
-    coefficients        = if (is.null(contrasts))  colnames(design) else NULL,
+    coefficients = if (is.null(contrasts))  colnames(design) else NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars     = c('effect', 'p', 'fdr'),
@@ -510,7 +510,6 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     limmadt <- data.table(feature_id = rownames(limmafit))
     if ('effect' %in% statvars){
         dt0 <- data.table(limmafit$coefficients)
-        dt0 %<>% setna(0)
         names(dt0) %<>% paste0('effect', sep, ., suffix)
         limmadt %<>% cbind(data.table(dt0)) 
     }
@@ -519,15 +518,12 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         limmafit %<>% eBayes()
         if ('p' %in% statvars){ 
             dt0 <- data.table(limmafit$p.value)
-            #dt0 %<>% setna(1)
             names(dt0) %<>% paste0('p', sep, ., suffix); limmadt %<>% cbind(dt0)  }
         if ('t' %in% statvars){ 
             dt0 <- data.table(limmafit$t)
-            #dt0 %<>% setna(0)
             names(dt0) %<>% paste0('t', sep, ., suffix); limmadt %<>% cbind(dt0)  }
         if ('fdr' %in% statvars){
             dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
-            #dt0 %<>% setna(1)
             names(dt0) %<>% paste0('fdr', sep, .,suffix); limmadt %<>% cbind(dt0)  } }
     limmadt
 }
