@@ -2,7 +2,7 @@
 % Please edit documentation in R/4_plot.R
 \name{extract_top_features}
 \alias{extract_top_features}
-\title{Filter coefficient features}
+\title{Extract top features}
 \usage{
 extract_top_features(
   object,
@@ -30,7 +30,7 @@ extract_top_features(
 \item{coef}{string}
 }
 \description{
-Filter coefficient features
+Extract top features
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')

@@ -799,7 +799,7 @@ plot_subgroup_boxplots <- function(
 }
 
 
-#' Filter coefficient features
+#' Extract top features
 #' @param object      SummarizedXExperiment
 #' @param fit         string
 #' @param coef        string
@@ -844,9 +844,6 @@ extract_top_features <- function(
     idx <- (abs(autonomics::effect(object, fit = fit, coef = coefficient)[, 1]) > effectsize)  & 
            (    autonomics::p(     object, fit = fit, coef = coefficient)[, 1]  < p  )         & 
            (    autonomics::fdr(   object, fit = fit, coef = coefficient)[, 1]  < fdr)
-    object %<>% extract(idx, )
-# Order on effect
-    idx <- order(effect(object, fit = fit, coef = coefficient)[, 1])
     object %<>% extract(idx, )
 # Return
     object
