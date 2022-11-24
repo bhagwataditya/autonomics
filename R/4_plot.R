@@ -1354,7 +1354,7 @@ plot_design <- function(object){
 #' @param fdr          number: fdr  filter
 #' @param ntop         number: ntop filter
 #' @param flabel       string: feature label
-#' @param colorscale   (continuous) color scale
+#' @param group        sample groupvar
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, fit = 'limma')
@@ -1366,37 +1366,66 @@ plot_top_heatmap <- function(
     fit         = fits(object)[1],
     coefficient = default_coefficient(object, fit = fit),
     effectsize  = 0,
-    p           = 0.05,
-    fdr         = 1,
-    ntop        = 30,
-    flabel      = intersect(c('gene', 'feature_id'), fvars(object))[1],
-    colorscale  = scale_fill_continuous(low = "#56B1F7", high = "#132B43", na.value = 'white') # '#D55E00' '#009E73'
+    p           = 1,
+    fdr         = 0.05,
+    ntop        = 100,
+    flabel      = intersect(c('gene', 'feature_id'), fvars(object))[1], 
+    group       = 'subgroup'
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(assay,         assayNames(object))
-    assert_is_subset(fit,                 fits(object))
-    assert_is_subset(coefficient, coefficients(object))
+    assert_is_a_string(fit)
+    assert_is_subset(  fit, fits(object))
+    assert_is_a_string(coefficient)
+    assert_is_subset(  coefficient, coefficients(object))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
     assert_is_a_number(ntop)
-# Filter    
-    obj <- extract_top_features(
-        object,                       fit        = fit,
-        coefficient = coefficient,    effectsize  = effectsize,
-        p           = p,              fdr         = fdr,
-        ntop        = ntop)
-    fdt(obj)[[flabel]] %<>% factor(unique(.)) # fix order
+    assert_is_a_string(flabel)
+    assert_is_subset(  flabel, fvars(object))
+    assert_is_subset(group,  svars(object))
+# Filter: significant features
+    object0 <- object
+    object %<>% extract_top_features(
+        fit         = fit,           coefficient = coefficient,    
+        effectsize  = effectsize,    p           = p,
+        fdr         = fdr,           ntop        = ntop)
 # Zscore
-    assays(obj)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
-    dt <- sumexp_to_longdt(obj, assay = assay, fvars = flabel)
+    assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
+    assays(object)[[assay]] %<>% na_to_zero()
+# Order features                                # in an edge case one of the groups had no obs
+    idx <- rowSds(assays(object)[[assay]]) > 0  # still limma::lmFit produced a p value - limma bug ?
+    object %<>% extract(idx, )                  # leads to a 0 variance error in the next line
+    idx <- hclust(as.dist(1-cor(t(assays(object)[[assay]]))))$order
+    object  %<>% extract(  idx , )                          # order features
+    idx <- effect(object, fit = fit, coef = coefficient)[, 1] < 0      # split down/up
+    down <- object[idx, ]
+    idx <- effect(object, fit = fit, coef = coefficient)[, 1] > 0
+    up <- object[idx, ]
+    object <- rbind(down, up)                                   # rbind
+    fdt(object)[[flabel]] %<>% factor(unique(.))                # fix order
+# Order samples
+    idx <- matrixStats::colSds(assays(object)[[assay]]) > 0
+    object %<>% extract(, idx)
+    idx <- hclust(as.dist(1-cor(assays(object)[[assay]])))$order
+    object %<>% extract(, idx)                              # order samples
+    object %<>% split_samples(group)                            # split by group
+    object %<>% Reduce(cbind, .)                                # cbind
+    sdt(object)$sample_id %<>% factor(unique(.))                # fix order
+# Prepare
+    dt <- sumexp_to_longdt(object, assay = assay, fvars = flabel)
     setnames(dt, 'value', 'z-score')
-# Plot    
+    vlines <- 0.5 + c(0, cumsum(table(object[[group]])))
+    hlines <- 0.5 + c(0, sum(effect(object, fit = fit, coef = coefficient)[, 1] < 0), nrow(object))
+# Plot
     ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +
     geom_tile() +
     theme_minimal() + xlab(NULL) + ylab(NULL) + 
     scale_x_discrete(position = 'top') + 
     theme(axis.text.x = element_text(angle = 90, hjust = 0)) + 
-    colorscale
+    scale_fill_gradient2(low = '#ff5050', high = '#009933', na.value = 'white') + 
+    geom_vline(xintercept = vlines) + 
+    geom_hline(yintercept = hlines)
 }

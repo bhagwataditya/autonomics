@@ -10,12 +10,11 @@ plot_top_heatmap(
   fit = fits(object)[1],
   coefficient = default_coefficient(object, fit = fit),
   effectsize = 0,
-  p = 0.05,
-  fdr = 1,
-  ntop = 30,
+  p = 1,
+  fdr = 0.05,
+  ntop = 100,
   flabel = intersect(c("gene", "feature_id"), fvars(object))[1],
-  colorscale = scale_fill_continuous(low = "#56B1F7", high = "#132B43", na.value =
-    "white")
+  group = "subgroup"
 )
 }
 \arguments{
@@ -37,7 +36,7 @@ plot_top_heatmap(
 
 \item{flabel}{string: feature label}
 
-\item{colorscale}{(continuous) color scale}
+\item{group}{sample groupvar}
 }
 \description{
 Plot top heatmap
