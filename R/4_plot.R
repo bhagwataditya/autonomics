@@ -604,7 +604,7 @@ plot_subgroup_violins <- function(
 #' @param ncol          number of facet columns 
 #' @param page          number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}
 #' @param highlight     fvar expressing which feature should be highlighted (string)
-#' @param points        TRUE or FALSE
+#' @param pointsize     number
 #' @param jitter        jitter width (number)
 #' @param hlevels    xlevels for which to plot horizontal lines
 #' @return  ggplot object
@@ -635,7 +635,7 @@ plot_boxplots <- function(
     x = 'subgroup',  fill = 'subgroup', color = NULL, 
     block = NULL, facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value', highlight = NULL, 
-    points = if (is.null(block)) FALSE else TRUE, 
+    pointsize = if (is.null(block)) 0 else 0.5, 
     jitter = if (is.null(block)) 0.1 else 0,
     fillpalette  = make_var_palette(object, fill), 
     colorpalette = make_var_palette(object, color),
@@ -685,7 +685,7 @@ plot_boxplots <- function(
     if (!is.null(facet)) p <- p + facet_wrap_paginate(
         facets = facet, scales = scales, nrow = nrow, ncol = ncol, 
         page = page, labeller = labeller)
-    outlier.shape <- if (points) NA else 19
+    outlier.shape <- if (pointsize==0) NA else 19
     p <- p + geom_boxplot(aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym), 
                           outlier.shape = outlier.shape, na.rm = TRUE)
     p <- add_color_scale(p, color, data = dt, palette = colorpalette)
@@ -698,10 +698,10 @@ plot_boxplots <- function(
         p <- p + geom_line(aes(x = !!xsym, y = value, color = !!xsym, group = !!blocksym), na.rm = TRUE) # color = direction
         p <- add_color_scale(p, x, data = dt, palette = fillpalette)    # 'direction'
     }
-    # Points
-    if (points){
+    # Pointsize
+    if (pointsize>0){
         p <- p + geom_jitter(aes(x = !!xsym, y = value),
-                position = position_jitter(width = jitter, height = 0), size = 0.5, na.rm = TRUE)
+                position = position_jitter(width = jitter, height = 0), size = pointsize, na.rm = TRUE)
     }
     p %<>% add_highlights(x = x, hl = highlight, geom = geom_point, fixed_color = "darkred")
     # Add hline
@@ -736,7 +736,7 @@ plot_boxplots <- function(
 plot_sample_boxplots <- function(
     object, assay = assayNames(object)[1], 
     x = 'sample_id', fill = 'sample_id', color = NULL, highlight = NULL,
-    points = FALSE, jitter = 0.1, palette = NULL, n = 100,
+    pointsize = 0, jitter = 0.1, palette = NULL, n = 100,
     facet = NULL, scales = 'free_x', nrow = NULL, ncol = NULL, page = 1, 
     labeller = 'label_value'
 ){
@@ -744,7 +744,7 @@ plot_sample_boxplots <- function(
     plot_boxplots(
         object, assay = assay, 
         x = x, fill = fill, color = color,
-        highlight = highlight, points = points, 
+        highlight = highlight, pointsize = pointsize, 
         jitter = jitter, palette = palette,  
         facet = facet, scales = scales, nrow = nrow, ncol = ncol, page = page, 
         labeller = labeller) + 
@@ -757,7 +757,7 @@ plot_sample_boxplots <- function(
 plot_feature_boxplots <- function(
     object, assay = assayNames(object)[1],
     x = 'feature_id', fill = 'feature_id', color = NULL, highlight = NULL,
-    points = FALSE, jitter = 0.1, palette = NULL, n = 9,
+    pointsize = FALSE, jitter = 0.1, palette = NULL, n = 9,
     facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, page = 1, 
     labeller = 'label_value'
 ){
@@ -765,7 +765,7 @@ plot_feature_boxplots <- function(
     plot_boxplots(
         object, assay = assay,
         x = x, fill = fill, color = color,
-        highlight = highlight, points = points, 
+        highlight = highlight, pointsize = pointsize, 
         jitter = jitter, palette = palette,  
         facet = facet, scales = scales, nrow = nrow, ncol = ncol, page = page, 
         labeller = labeller) + 
@@ -778,7 +778,9 @@ plot_feature_boxplots <- function(
 plot_subgroup_boxplots <- function(
     object, assay = assayNames(object)[1],
     subgroup = 'subgroup', x = subgroup, fill = subgroup, 
-    color = NULL, block = NULL, highlight = NULL, jitter = TRUE, n = 9,
+    color = NULL, block = NULL, highlight = NULL, 
+    pointsize = if (is.null(block)) 0 else 0.5,
+    jitter = if (is.null(block)) 0.1 else 0, n = 9,
     facet = 'feature_id', scales = 'free_y', nrow = NULL, ncol = NULL, 
     page = 1, labeller = 'label_value',
     palette = make_subgroup_palette(object), fixed = list(na.rm=TRUE), hlevels = NULL
@@ -789,6 +791,7 @@ plot_subgroup_boxplots <- function(
         block = block, highlight = highlight, 
         facet = facet, scales = scales, nrow = nrow,
         ncol = ncol, page = page,  labeller = labeller, 
+        pointsize = pointsize,
         jitter = jitter, palette = palette, 
         fixed = fixed, hlevels = hlevels) + 
     ggtitle(('Subgroup Boxplots'))
@@ -908,6 +911,7 @@ plot_top_boxplots <- function(
     coef = setdiff(coefficients(object), 'Intercept')[1],
     facet = c('feature_id', paste('fdr', coef, fit, sep = FITSEP)),
     fdrcutoff = 0.05, 
+    pointsize = if (is.null(block)) 0 else 0.5,
     jitter = if (is.null(block)) 0.1 else 0,
     palette = NULL, title = coef, ylab = NULL, 
     nrow = NULL, ncol = NULL, ntop = 4,
@@ -938,7 +942,8 @@ plot_top_boxplots <- function(
     p <- plot_subgroup_boxplots(
             object, subgroup = subgroup, block = block, x = subgroup, 
             fill = subgroup, facet = facet, scales = scales, nrow = nrow, 
-            ncol = ncol, labeller = labeller, jitter = jitter, palette  = palette)  + 
+            ncol = ncol, labeller = labeller, pointsize = pointsize, 
+            jitter = jitter, palette  = palette)  + 
         theme_bw() + xlab(NULL) + ggtitle(title) + ylab(ylab) + 
         # geom_hline( data = mediandt, linetype = 'longdash',
         #        aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 

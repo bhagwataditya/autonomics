@@ -13,6 +13,7 @@ plot_top_boxplots(
   coef = setdiff(coefficients(object), "Intercept")[1],
   facet = c("feature_id", paste("fdr", coef, fit, sep = FITSEP)),
   fdrcutoff = 0.05,
+  pointsize = if (is.null(block)) 0 else 0.5,
   jitter = if (is.null(block)) 0.1 else 0,
   palette = NULL,
   title = coef,

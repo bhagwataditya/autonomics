@@ -21,7 +21,7 @@ plot_boxplots(
   page = 1,
   labeller = "label_value",
   highlight = NULL,
-  points = if (is.null(block)) FALSE else TRUE,
+  pointsize = if (is.null(block)) 0 else 0.5,
   jitter = if (is.null(block)) 0.1 else 0,
   fillpalette = make_var_palette(object, fill),
   colorpalette = make_var_palette(object, color),
@@ -36,7 +36,7 @@ plot_sample_boxplots(
   fill = "sample_id",
   color = NULL,
   highlight = NULL,
-  points = FALSE,
+  pointsize = 0,
   jitter = 0.1,
   palette = NULL,
   n = 100,
@@ -55,7 +55,7 @@ plot_feature_boxplots(
   fill = "feature_id",
   color = NULL,
   highlight = NULL,
-  points = FALSE,
+  pointsize = FALSE,
   jitter = 0.1,
   palette = NULL,
   n = 9,
@@ -76,7 +76,8 @@ plot_subgroup_boxplots(
   color = NULL,
   block = NULL,
   highlight = NULL,
-  jitter = TRUE,
+  pointsize = if (is.null(block)) 0 else 0.5,
+  jitter = if (is.null(block)) 0.1 else 0,
   n = 9,
   facet = "feature_id",
   scales = "free_y",
@@ -114,7 +115,7 @@ plot_subgroup_boxplots(
 
 \item{highlight}{fvar expressing which feature should be highlighted (string)}
 
-\item{points}{TRUE or FALSE}
+\item{pointsize}{number}
 
 \item{jitter}{jitter width (number)}
 
