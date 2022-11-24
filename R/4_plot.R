@@ -818,7 +818,7 @@ plot_subgroup_boxplots <- function(
 extract_top_features <- function(
     object, 
     fit         = fits(object)[1], 
-    coefficient = default_coefficient(object, fit = fit),
+    coefficient = default_coefs(object, fit = fit)[1],
     effectsize  = 0,
     p           = 0.05,
     fdr         = 1,
@@ -1361,7 +1361,7 @@ plot_top_heatmap <- function(
     object,
     assay       = assayNames(object)[1],
     fit         = fits(object)[1],
-    coefficient = default_coefficient(object, fit = fit),
+    coefficient = default_coefs(object, fit = fit)[1],
     effectsize  = 0,
     p           = 1,
     fdr         = 0.05,

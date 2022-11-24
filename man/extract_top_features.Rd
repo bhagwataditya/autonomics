@@ -7,7 +7,7 @@
 extract_top_features(
   object,
   fit = fits(object)[1],
-  coefficient = default_coefficient(object, fit = fit),
+  coefficient = default_coefs(object, fit = fit)[1],
   effectsize = 0,
   p = 0.05,
   fdr = 1,
