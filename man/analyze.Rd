@@ -9,12 +9,12 @@ analyze(
   pca = TRUE,
   fit = "limma",
   subgroupvar = default_subgroupvar(object),
-  contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = colnames(create_design(object, formula = formula, drop = drop)),
+  contrasts = NULL,
   verbose = TRUE,
   plot = pca & !is.null(fit),
   feature_id = NULL,
@@ -25,31 +25,31 @@ analyze(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{pca}{whether to perform pca}
+\item{pca}{TRUE/FALSE: perform pca?}
 
-\item{fit}{NULL, 'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'}
+\item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'}
 
 \item{subgroupvar}{subgroup svar}
 
-\item{contrasts}{NULL or character vector: coefficient contrasts to test}
-
 \item{formula}{model formula}
 
-\item{block}{block svar}
+\item{block}{model blockvar}
 
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
 
-\item{coefs}{NULL or character vector: model coefs to test}
+\item{coefs}{model coefficients          of interest: string vector or NULL}
 
-\item{verbose}{whether to msg}
+\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
-\item{plot}{whether to plot}
+\item{verbose}{TRUE/FALSE: message?}
 
-\item{feature_id}{string: which feature to visualize}
+\item{plot}{TRUE/FALSE}
 
-\item{sample_id}{string: which sample to visualize}
+\item{feature_id}{string: feature for summary plot}
 
-\item{palette}{color vector: values = colors, names = slevels}
+\item{sample_id}{string: sample  for summary plot}
+
+\item{palette}{color palette : named string vector}
 }
 \value{
 SummarizedExperiment

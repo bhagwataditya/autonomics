@@ -3,7 +3,7 @@
 \name{.read_metabolon}
 \alias{.read_metabolon}
 \alias{read_metabolon}
-\title{Read metabolon}
+\title{Read metabolon xlsxfile}
 \usage{
 .read_metabolon(
   file,
@@ -44,51 +44,57 @@ read_metabolon(
 )
 }
 \arguments{
-\item{file}{metabolon (excel) file: string}
+\item{file}{metabolon xlsx file}
 
-\item{sheet}{excel sheet: number or string}
+\item{sheet}{excel sheet (number or string)}
 
-\item{fidvar}{featureid var: string}
+\item{fidvar}{featureid var}
 
-\item{sidvar}{samplid var: string}
+\item{sidvar}{samplid var}
 
-\item{sfile}{sample file: string}
+\item{sfile}{sample file}
 
-\item{by.x}{`file`  column to merge sdata: string}
+\item{by.x}{`file`  mergeby column}
 
-\item{by.y}{`sfile` column to merge sdata: string}
+\item{by.y}{`sfile` mergeby column}
 
-\item{subgroupvar}{subgroup var: string}
+\item{subgroupvar}{subgroup var}
 
-\item{verbose}{bool: msg?}
+\item{verbose}{TRUE/FALSE : message?}
 
-\item{fnamevar}{featurename fvar: string}
+\item{fnamevar}{featurename fvar}
 
-\item{kegg_pathways}{bool: add kegg pathways?}
+\item{kegg_pathways}{TRUE/FALSE: add kegg pathways?}
 
-\item{smiles}{bool: add smiles?}
+\item{smiles}{TRUE/FALSE: add smiles?}
 
-\item{impute}{bool: impute?}
+\item{impute}{TRUE/FALSE: impute group-specific NA values?}
 
-\item{plot}{bool: plot?}
+\item{plot}{TRUE/FALSE}
 
-\item{pca}{bool: run pca?}
+\item{pca}{TRUE/FALSE: compute and plot pca?}
 
-\item{fit}{diffexp engine: 'limma', 'lm', 'lme', 'lmer', 'wilcoxon' or NULL (none)}
+\item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
-\item{formula}{diffexp formula}
+\item{formula}{model formula}
 
-\item{block}{diffexp block var: string or NULL}
+\item{block}{model blockvar: string or NULL}
 
-\item{coefs}{diffexp coefs to analyze: NULL or character vector}
+\item{coefs}{model coefficients of interest:          string vector or NULL}
 
-\item{contrasts}{diffexp contrasts to analyze: NULL or character vector}
+\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
+
+\item{feature_id}{string: feature for summary plot}
+
+\item{sample_id}{string: sample  for summary plot}
+
+\item{palette}{color palette : named string vector}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Read metabolon
+Read metabolon xlsxfile
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')

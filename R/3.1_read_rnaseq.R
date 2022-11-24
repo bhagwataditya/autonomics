@@ -976,67 +976,64 @@ read_rnaseq_bams <- function(
 }
 
 
-
-#' Read rnaseq
-#'
-#' Read/analyze rnaseq counts / bamfiles
-#'
-#' @param dir           read_rnaseq_bams: bam/samfile dir
-#' @param paired        read_rnaseq_bams: whether paired end reads
-#' @param genome        read_rnaseq_bams: mm10"/"hg38"/etc. or GTF file
+#' Read rnaseq counts/bams
+#' @param dir           read_rnaseq_bams: bam/sam dir
+#' @param paired        read_rnaseq_bams: TRUE/FALSE : paired end reads ?
+#' @param genome        read_rnaseq_bams: 'mm10', 'hg38', etc. or GTF file
 #' @param nthreads      read_rnaseq_bams: nthreads used by Rsubread::featureCounts()
-#' @param file          read_rnaseq_counts: count file
-#' @param fid_col       featureid fvar
+#' @param file          count file
+#' @param fid_col       featureid column (number or string)
 #' @param sfile         sample file
 #' @param by.y          sample file mergeby column
 #' @param subgroupvar   subgroup svar
-#' @param block         block svar
-#' @param formula       designmat formula
-#' @param coefs         NULL or character vector: model coefs to test
-#' @param contrasts     NULL or character vector: coefficient contrasts to test
+#' @param block         model blockvar: string or NULL
+#' @param formula       model formula
 #' @param min_count     min feature count required in some samples
-#' @param pseudo        added pseudocount to prevent -Inf log2 values
-#' @param ensdb         EnsDb e.g. AnnotationHub::AnnotationHub[['AH64923']]
-#' @param cpm           whether to compute cpm
-#' @param voom          whether to compute voom precision weights
-#' @param log2          whether to log2 transform
-#' @param pca           whether to pca
-#' @param fit           fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param verbose       whether to message
-#' @param plot          whether to plot
-#' @param feature_id    string: which feature to visualize
-#' @param sample_id     string: which sample to visualize
+#' @param pseudo        pseudocount added to prevent -Inf log2 values
+#' @param tpm           TRUE/FALSE : add tpm to assays ( counts / libsize / genelength ) ?
+#' @param ensdb         EnsDb with genesizes : e.g. AnnotationHub::AnnotationHub[['AH64923']]
+#' @param cpm           TRUE/FALSE : add cpm to assays ( counts / effectivelibsize ) ?
+#' @param log2          TRUE/FALSE : log2 transform ?
+#' @param plot          TRUE/FALSE : plot?
+#' @param pca           TRUE/FALSE : perform and plot pca?
+#' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
+#' @param voom          model weights to be computed?  TRUE/FALSE
+#' @param coefs         model coefficients          of interest: string vector or NULL
+#' @param contrasts     model coefficient contrasts of interest: string vector or NULL
+#' @param verbose       TRUE/FALSE : message?
+#' @param feature_id    string: feature for summary plot
+#' @param sample_id     string: sample  for summary plot
+#' @param palette       color palette : named string vector
 #' @return SummarizedExperiment
 #' @examples
-#' # bams
+#' # read_rnaseq_bams
 #'     if (requireNamespace('Rsubread')){
-#'         dir <- download_data('billing16.bam.zip')
+#'        dir <- download_data('billing16.bam.zip')
 #'         object <- read_rnaseq_bams(
-#'            dir, paired = TRUE, genome = 'hg38', pca = TRUE, 
-#'            fit = 'limma', plot = TRUE)
+#'            dir, paired = TRUE, genome = 'hg38', pca = TRUE, fit = 'limma', plot = TRUE)  
 #'     }
-#' # counts
+#' # read_rnaseq_counts
 #'     file <- download_data('billing19.rnacounts.txt')
-#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05')
-#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
-#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
-#'     rna <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
-#' \dontrun{
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05')
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
+#'     
+#' # read_rnaseq_counts(tpm = TRUE)
+#'     \dontrun{
 #'     ah <- AnnotationHub::AnnotationHub()
 #'     ensdb <- ah[['AH64923']]
 #'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E02', tpm = TRUE, ensdb = ensdb)
-#'  }
+#'     }
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_counts <- function(
-    file, fid_col = 1,
-    sfile = NULL, by.y = NULL, subgroupvar = 'subgroup', block = NULL,
-    formula = NULL, min_count = 10, pseudo = 0.5,
-    tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
+    file, fid_col = 1, sfile = NULL, by.y = NULL, 
+    subgroupvar = 'subgroup', block = NULL, formula = NULL, min_count = 10, 
+    pseudo = 0.5, tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL, voom = cpm, 
     coefs = NULL, contrasts = NULL, verbose = TRUE, 
-    feature_id = NULL, sample_id = NULL, 
-    palette = NULL
+    feature_id = NULL, sample_id = NULL, palette = NULL
 ){
 # Read
     object <- .read_rnaseq_counts(

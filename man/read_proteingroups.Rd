@@ -56,53 +56,53 @@ read_phosphosites(
 )
 }
 \arguments{
-\item{dir}{directory with proteingroups file}
+\item{dir}{proteingroups directory}
 
-\item{file}{proteingroup / phosphosites file}
+\item{file}{proteingroups / phosphosites file}
 
-\item{fastadt}{fasta data.table or NULL}
+\item{fastadt}{NULL or data.table}
 
 \item{quantity}{'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
 'Intensity'}
 
-\item{curate}{whether to curate uniprots}
+\item{curate}{TRUE/FALSE: curate uniprots?}
 
-\item{subgroups}{character / NULL : subset of subgroups to retain}
+\item{subgroups}{NULL or string vector : subgroups to retain}
 
-\item{invert}{character : subset of subgroups to invert}
+\item{invert}{string vector : subgroups which require inversion}
 
-\item{contaminants}{whether to include contaminants}
+\item{contaminants}{TRUE/FALSE : retain contaminants ?}
 
-\item{reverse}{whether to include reverse hits}
+\item{reverse}{TRUE/FALSE : include reverse hits ?}
 
-\item{impute}{whether to impute}
+\item{impute}{TRUE/FALSE: impute group-specific NA values?}
 
-\item{plot}{whether to plot}
+\item{plot}{TRUE/FALSE}
 
-\item{pca}{whether to pca}
+\item{pca}{TRUE/FALSE: compute and plot pca?}
 
-\item{fit}{model fit engine: 'limma', 'lm', 'lmer', 'lme'}
+\item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
 \item{formula}{model formula}
 
-\item{block}{block var (sdt)}
+\item{block}{model blockvar: string or NULL}
 
-\item{coefs}{character: coefs to test}
+\item{coefs}{model coefficients          of interest: string vector or NULL}
 
-\item{contrasts}{character: coefficient contrasts to test}
+\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
-\item{feature_id}{string: summary plot feature}
+\item{feature_id}{string: feature for summary plot}
 
-\item{sample_id}{string: summary plot sample}
+\item{sample_id}{string: sample  for summary plot}
 
-\item{palette}{character: color palette}
+\item{palette}{color palette : named string vector}
 
-\item{verbose}{whether to msg}
+\item{verbose}{TRUE/FALSE : message ?}
 
 \item{proteinfile}{proteingroups  file}
 
-\item{localization}{min site localization probability}
+\item{localization}{number: min localization probability (for phosphosites)}
 }
 \value{
 SummarizedExperiment

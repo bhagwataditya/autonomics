@@ -136,32 +136,29 @@ rm_single_value_columns <- function(df){
 }
 
 
-#' Read somascan
-#'
-#' Read data from somascan adat file
-#'
-#' @param file          somascan (adat) file: string
-#' @param fidvar        featureid var: string
-#' @param sidvar        sampleid  var: string
-#' @param sfile         sample file: string
-#' @param by.x          `file`  column to merge sdata
-#' @param by.y          `sfile` column to merge sdata
-#' @param subgroupvar   subgroup var: string
-#' @param fname_var     featurename var: string
-#' @param sample_type   subset of c('Sample','QC','Buffer','Calibrator')
-#' @param feature_type  subset of c('Protein', 'Hybridization Control Elution','Rat Protein')
+#' Read somascan adatfile
+#' @param file                  somascan (adat) file
+#' @param fidvar                featureid var
+#' @param sidvar                sampleid  var
+#' @param sfile                 sample file
+#' @param by.x                 `file`  mergeby column
+#' @param by.y                 `sfile` mergeby column
+#' @param subgroupvar           subgroup var: string
+#' @param fname_var             featurename var: string
+#' @param sample_type           subset of c('Sample','QC','Buffer','Calibrator')
+#' @param feature_type          subset of c('Protein', 'Hybridization Control Elution','Rat Protein')
 #' @param sample_quality        subset of c('PASS', 'FLAG', 'FAIL')
 #' @param feature_quality       subset of c('PASS', 'FLAG', 'FAIL')
-#' @param rm_na_svars           bool: rm NA svars?
-#' @param rm_single_value_svars bool: rm single value svars?
-#' @param pca                   bool: run pca?
-#' @param fit           diffexp engine: 'limma', 'lm', 'lme', 'lmer','wilcoxon' or NULL (none)
-#' @param formula       diffexp model formula
-#' @param block         diffexp block var (string)
-#' @param coefs         diffexp coeffs to analyze (character vector or NULL)
-#' @param contrasts  diffexp contrasts to analyze (character vector or NULL)
-#' @param verbose       bool: msg?
-#' @param plot          bool: plot?
+#' @param rm_na_svars           TRUE/FALSE: rm NA svars?
+#' @param rm_single_value_svars TRUE/FALSE: rm single value svars?
+#' @param plot                  TRUE/FALSE
+#' @param pca                   TRUE/FALSE: run pca?
+#' @param fit                   model engine: 'limma', 'lm', 'lme(r)','wilcoxon' or NULL
+#' @param formula               model formula
+#' @param block                 model blockvar
+#' @param coefs                 model coefficients          of interest: string vector or NULL
+#' @param contrasts             model coefficient contrasts of interest: string vector or NULL
+#' @param verbose               TRUE/FALSE: message?
 #' @return Summarizedexperiment
 #' @examples
 #' file <- download_data('atkin18.somascan.adat')

@@ -735,31 +735,31 @@ is_file <- function(file){
 
 
 #' Read proteingroups / phosphosites
-#' @param dir           directory with proteingroups file
-#' @param file          proteingroup / phosphosites file
+#' @param dir           proteingroups directory
+#' @param file          proteingroups / phosphosites file
 #' @param proteinfile   proteingroups  file
-#' @param fastadt       fasta data.table or NULL
+#' @param fastadt       NULL or data.table
 #' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 #'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
 #'                     'Intensity'
-#' @param curate        whether to curate uniprots
-#' @param subgroups     character / NULL : subset of subgroups to retain
-#' @param contaminants  whether to include contaminants
-#' @param reverse       whether to include reverse hits
-#' @param localization  min site localization probability
-#' @param invert        character : subset of subgroups to invert
-#' @param impute        whether to impute
-#' @param plot          whether to plot
-#' @param pca           whether to pca
-#' @param fit           model fit engine: 'limma', 'lm', 'lmer', 'lme'
+#' @param curate        TRUE/FALSE: curate uniprots?
+#' @param subgroups     NULL or string vector : subgroups to retain
+#' @param contaminants  TRUE/FALSE : retain contaminants ?
+#' @param reverse       TRUE/FALSE : include reverse hits ?
+#' @param localization  number: min localization probability (for phosphosites)
+#' @param invert        string vector : subgroups which require inversion
+#' @param impute        TRUE/FALSE: impute group-specific NA values?
+#' @param plot          TRUE/FALSE
+#' @param pca           TRUE/FALSE: compute and plot pca?
+#' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
 #' @param formula       model formula
-#' @param block         block var (sdt)
-#' @param coefs         character: coefs to test
-#' @param contrasts     character: coefficient contrasts to test
-#' @param feature_id    string: summary plot feature
-#' @param sample_id     string: summary plot sample
-#' @param palette       character: color palette
-#' @param verbose       whether to msg
+#' @param block         model blockvar: string or NULL
+#' @param coefs         model coefficients          of interest: string vector or NULL
+#' @param contrasts     model coefficient contrasts of interest: string vector or NULL
+#' @param feature_id    string: feature for summary plot
+#' @param sample_id     string: sample  for summary plot
+#' @param palette       color palette : named string vector
+#' @param verbose       TRUE/FALSE : message ?
 #' @return SummarizedExperiment
 #' @examples
 #' # fukuda20
@@ -914,17 +914,14 @@ read_phosphosites <- function(
 #'
 #' Invert expressions , subgroups, and sample ids
 #'
-#' @param  x          character vector or SummarizedExperiment
-#' @param  sep        string: collapsed string separator
+#' @param  object     SummarizedExperiment
 #' @param  subgroups  character vector: subgroup levels to be inversed
-#' @param  ... to enable S3 method dispatch
+#' @param  sep        string: collapsed string separator
 #' @return character vector or SummarizedExperiment
 #' @examples
-#'
-#' # SummarizedExperiment
-#'     file <- download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, plot=FALSE)
-#'     invert_subgroups(object)
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_proteingroups(file, plot=FALSE)
+#' invert_subgroups(object)
 #' @export
 #' @export
 invert_subgroups <- function(
@@ -998,15 +995,12 @@ arrange_samples_ <- function(object, svars){
 #'    demultiplex(c('KD.R1','OE.R1'))
 #'    demultiplex(c('WT(L).KD(M).OE(H).R1{M}',  'WT(L).KD(M).OE(H).R1{H}'))
 #'    demultiplex(c('WT(L).KD(M).OE(H).R1{M/L}','WT(L).KD(M).OE(H).R1{H/L}'))
-#'
 #' # run / replicate
 #'    demultiplex(c('WT(L).OE(H).R1{L}',    'WT(L).OE(H).R1{H}'))     # run
 #'    demultiplex(c('WT.R1(L).OE.R1(H){L}', 'WT.R1(L).OE.R1(H){H}'))  # repl
-#'
 #' # label / index
 #'    demultiplex(c('WT(L).OE(H).R1{L}',    'WT(L).OE(H).R1{H}'))     # label
 #'    demultiplex(c('WT(1).OE(2).R1{1}',    'WT(1).OE(2).R1{2}'))     # index
-#' 
 #' # with unused channels
 #'    demultiplex('WT(1).KD(2).OE(3).R1{6}')
 #' @md

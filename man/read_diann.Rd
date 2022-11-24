@@ -48,31 +48,33 @@ read_diann(
 
 \item{quantity}{'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'}
 
-\item{simplify_snames}{TRUE/FALSE : whether to simplify (i.e. drop common parts in) sample names}
+\item{simplify_snames}{TRUE/FALSE : simplify (drop common parts in) samplenames ?}
 
-\item{contaminants}{character vector with uniprot ids}
+\item{contaminants}{string vector: contaminant uniprots}
 
-\item{plot}{whether to plot}
+\item{impute}{TRUE/FALSE : impute group-specific NA values?}
 
-\item{pca}{whether to pca}
+\item{plot}{TRUE/FALSE}
 
-\item{fit}{model fit engine: 'limma', 'lm', 'lmer', 'lme'}
+\item{pca}{TRUE/FALSE : compute and plot pca ?}
+
+\item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
 \item{formula}{model formula}
 
-\item{block}{block var (sdt)}
+\item{block}{model blockvar: string or NULL}
 
-\item{coefs}{character: coefs to test}
+\item{coefs}{model coefficients          of interest: string vector or NULL}
 
-\item{contrasts}{character: coefficient contrasts to test}
+\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
-\item{feature_id}{string: summary plot feature}
+\item{feature_id}{string: feature for summary plot}
 
-\item{sample_id}{string: summary plot sample}
+\item{sample_id}{string: sample  for summary plot}
 
-\item{palette}{character: color palette}
+\item{palette}{color palette: named string vector}
 
-\item{verbose}{TRUE or FALSE}
+\item{verbose}{TRUE/FALSE}
 }
 \value{
 data.table / SummarizedExperiment

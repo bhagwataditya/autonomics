@@ -3,7 +3,7 @@
 \name{.read_somascan}
 \alias{.read_somascan}
 \alias{read_somascan}
-\title{Read somascan}
+\title{Read somascan adatfile}
 \usage{
 .read_somascan(
   file,
@@ -42,21 +42,21 @@ read_somascan(
 )
 }
 \arguments{
-\item{file}{somascan (adat) file: string}
+\item{file}{somascan (adat) file}
 
-\item{fidvar}{featureid var: string}
+\item{fidvar}{featureid var}
 
-\item{sidvar}{sampleid  var: string}
+\item{sidvar}{sampleid  var}
 
-\item{sfile}{sample file: string}
+\item{sfile}{sample file}
 
-\item{by.x}{`file`  column to merge sdata}
+\item{by.x}{`file`  mergeby column}
 
-\item{by.y}{`sfile` column to merge sdata}
+\item{by.y}{`sfile` mergeby column}
 
 \item{subgroupvar}{subgroup var: string}
 
-\item{verbose}{bool: msg?}
+\item{verbose}{TRUE/FALSE: message?}
 
 \item{fname_var}{featurename var: string}
 
@@ -68,29 +68,29 @@ read_somascan(
 
 \item{feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
-\item{rm_na_svars}{bool: rm NA svars?}
+\item{rm_na_svars}{TRUE/FALSE: rm NA svars?}
 
-\item{rm_single_value_svars}{bool: rm single value svars?}
+\item{rm_single_value_svars}{TRUE/FALSE: rm single value svars?}
 
-\item{plot}{bool: plot?}
+\item{plot}{TRUE/FALSE}
 
-\item{pca}{bool: run pca?}
+\item{pca}{TRUE/FALSE: run pca?}
 
-\item{fit}{diffexp engine: 'limma', 'lm', 'lme', 'lmer','wilcoxon' or NULL (none)}
+\item{fit}{model engine: 'limma', 'lm', 'lme(r)','wilcoxon' or NULL}
 
-\item{formula}{diffexp model formula}
+\item{formula}{model formula}
 
-\item{block}{diffexp block var (string)}
+\item{block}{model blockvar}
 
-\item{coefs}{diffexp coeffs to analyze (character vector or NULL)}
+\item{coefs}{model coefficients          of interest: string vector or NULL}
 
-\item{contrasts}{diffexp contrasts to analyze (character vector or NULL)}
+\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 }
 \value{
 Summarizedexperiment
 }
 \description{
-Read data from somascan adat file
+Read somascan adatfile
 }
 \examples{
 file <- download_data('atkin18.somascan.adat')

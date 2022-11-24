@@ -201,27 +201,30 @@ pubchem_to_smiles <- function(x){
 }
 
 
-#' Read metabolon
-#' @param file          metabolon (excel) file: string
-#' @param sheet         excel sheet: number or string
-#' @param fidvar        featureid var: string
-#' @param sidvar        samplid var: string
-#' @param sfile         sample file: string
-#' @param by.x          `file`  column to merge sdata: string
-#' @param by.y          `sfile` column to merge sdata: string
-#' @param subgroupvar   subgroup var: string
-#' @param fnamevar      featurename fvar: string
-#' @param impute        bool: impute?
-#' @param kegg_pathways bool: add kegg pathways?
-#' @param smiles        bool: add smiles?
-#' @param pca           bool: run pca?
-#' @param fit           diffexp engine: 'limma', 'lm', 'lme', 'lmer', 'wilcoxon' or NULL (none)
-#' @param formula       diffexp formula
-#' @param block         diffexp block var: string or NULL
-#' @param coefs         diffexp coefs to analyze: NULL or character vector
-#' @param contrasts     diffexp contrasts to analyze: NULL or character vector
-#' @param verbose       bool: msg?
-#' @param plot          bool: plot?
+#' Read metabolon xlsxfile
+#' @param file          metabolon xlsx file
+#' @param sheet         excel sheet (number or string)
+#' @param fidvar        featureid var
+#' @param sidvar        samplid var
+#' @param sfile         sample file
+#' @param by.x          `file`  mergeby column
+#' @param by.y          `sfile` mergeby column
+#' @param subgroupvar   subgroup var
+#' @param fnamevar      featurename fvar
+#' @param kegg_pathways TRUE/FALSE: add kegg pathways?
+#' @param smiles        TRUE/FALSE: add smiles?
+#' @param impute        TRUE/FALSE: impute group-specific NA values?
+#' @param plot          TRUE/FALSE
+#' @param pca           TRUE/FALSE: compute and plot pca?
+#' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
+#' @param formula       model formula
+#' @param block         model blockvar: string or NULL
+#' @param coefs         model coefficients of interest:          string vector or NULL
+#' @param contrasts     model coefficient contrasts of interest: string vector or NULL
+#' @param feature_id    string: feature for summary plot
+#' @param sample_id     string: sample  for summary plot
+#' @param palette       color palette : named string vector
+#' @param verbose       TRUE/FALSE : message?
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')

@@ -332,19 +332,20 @@ rm_diann_contaminants <- function(
 #' @param fastadt             NULL or data.table
 #' @param quantity           'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
-#' @param simplify_snames     TRUE/FALSE : whether to simplify (i.e. drop common parts in) sample names
-#' @param contaminants        character vector with uniprot ids
-#' @param plot                whether to plot
-#' @param pca                 whether to pca
-#' @param fit                 model fit engine: 'limma', 'lm', 'lmer', 'lme'
+#' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
+#' @param contaminants        string vector: contaminant uniprots
+#' @param impute              TRUE/FALSE : impute group-specific NA values?
+#' @param plot                TRUE/FALSE
+#' @param pca                 TRUE/FALSE : compute and plot pca ?
+#' @param fit                 model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
 #' @param formula             model formula
-#' @param block               block var (sdt)
-#' @param coefs               character: coefs to test
-#' @param contrasts           character: coefficient contrasts to test
-#' @param feature_id          string: summary plot feature
-#' @param sample_id           string: summary plot sample
-#' @param palette             character: color palette
-#' @param verbose             TRUE or FALSE
+#' @param block               model blockvar: string or NULL
+#' @param coefs               model coefficients          of interest: string vector or NULL
+#' @param contrasts           model coefficient contrasts of interest: string vector or NULL
+#' @param feature_id          string: feature for summary plot
+#' @param sample_id           string: sample  for summary plot
+#' @param palette             color palette: named string vector
+#' @param verbose             TRUE/FALSE
 #' @return  data.table / SummarizedExperiment
 #' @examples 
 #' # Read & Analyze

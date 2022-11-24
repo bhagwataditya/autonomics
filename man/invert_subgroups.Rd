@@ -11,13 +11,11 @@ invert_subgroups(
 )
 }
 \arguments{
+\item{object}{SummarizedExperiment}
+
 \item{subgroups}{character vector: subgroup levels to be inversed}
 
 \item{sep}{string: collapsed string separator}
-
-\item{x}{character vector or SummarizedExperiment}
-
-\item{...}{to enable S3 method dispatch}
 }
 \value{
 character vector or SummarizedExperiment
@@ -26,9 +24,7 @@ character vector or SummarizedExperiment
 Invert expressions , subgroups, and sample ids
 }
 \examples{
-
-# SummarizedExperiment
-    file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, plot=FALSE)
-    invert_subgroups(object)
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file, plot=FALSE)
+invert_subgroups(object)
 }

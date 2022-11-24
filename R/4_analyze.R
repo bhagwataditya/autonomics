@@ -1,19 +1,19 @@
 
 #' Analyze
 #' @param object       SummarizedExperiment
-#' @param pca          whether to perform pca
-#' @param fit          NULL, 'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
+#' @param pca          TRUE/FALSE: perform pca?
+#' @param fit          model engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'
 #' @param subgroupvar  subgroup svar
 #' @param formula      model formula
-#' @param block        block svar
+#' @param block        model blockvar
 #' @param weightvar    NULL or name of weight matrix in assays(object)
-#' @param coefs        NULL or character vector: model coefs to test
-#' @param contrasts    NULL or character vector: coefficient contrasts to test
-#' @param verbose      whether to msg
-#' @param plot         whether to plot
-#' @param feature_id   string: which feature to visualize
-#' @param sample_id    string: which sample to visualize
-#' @param palette      color vector: values = colors, names = slevels
+#' @param coefs        model coefficients          of interest: string vector or NULL
+#' @param contrasts    model coefficient contrasts of interest: string vector or NULL
+#' @param verbose      TRUE/FALSE: message?
+#' @param plot         TRUE/FALSE
+#' @param feature_id   string: feature for summary plot
+#' @param sample_id    string: sample  for summary plot
+#' @param palette      color palette : named string vector
 #' @return SummarizedExperiment
 #' @examples 
 #' require(magrittr)
@@ -26,12 +26,12 @@ analyze <- function(
     pca          = TRUE,
     fit          = 'limma',
     subgroupvar  = default_subgroupvar(object),
-    contrasts    = NULL,
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
     coefs        = colnames(create_design(object, formula = formula, drop = drop)),
+    contrasts    = NULL,
     verbose      = TRUE,
     plot         = pca & !is.null(fit),
     feature_id   = NULL,
