@@ -404,10 +404,15 @@ read_diann <- function(
         object <- SummarizedExperiment(assays0)
         analysis(object)$nfeatures <- nrow(object)
     # fdt
-        fdt(object)$feature_id <- rownames(object)
-        fdt0 <- dt[, .(uniprot, feature_name, protein, gene, First.Protein.Description)]
-        fdt0 %<>% unique()
-        object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'uniprot')
+        fdt(object)$feature_id <- rownames(object)                                                             # feature_id
+        fdt0 <- unique(dt[, .(feature_id = uniprot, organism = protein)])                                      # organism
+        fdt0 %<>% uncollapse(organism, sep = ';')
+        fdt0[, organism := split_extract_fixed(organism, '_', 2)]
+        fdt0 <- fdt0[, .(organism = paste_unique(organism, collapse = ';')), by = 'feature_id']
+        object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
+        fdt0 <- unique(dt[, .(feature_id = uniprot, feature_name, protein, gene, First.Protein.Description)])  # gene,protein,etc 
+        object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
+        fdt(object) %<>% pull_columns(c('feature_id', 'gene', 'feature_name', 'protein', 'organism'))
     # sdt
         snames(object) <- colnames(object)
         if (simplify_snames)  snames(object) %<>% simplify_snames()
