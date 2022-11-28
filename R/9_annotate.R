@@ -1,3 +1,59 @@
+#-------------------------------------------------------------------------------
+#
+#               hdl proteome watch
+#
+#-------------------------------------------------------------------------------
+
+#' hdl proteomewatch proteins
+#' @return string vector: HDLProteomeWatch protein entries
+#' @examples
+#' hdlproteins()
+#' @export
+hdlproteins <- function(){
+    url <- 'https://homepages.uc.edu/~davidswm/HDL%20Proteome%20Watch%202021.xlsx'
+    dir <- file.path(tools::R_user_dir('autonomics', 'cache'), 'hdlproteomewatch')
+    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    file <- file.path(dir, basename(url))
+    if (!file.exists(file))  download.file(url, destfile = file, mode = 'wb')
+    hdlproteins <- readxl::read_excel(file, sheet = 3, range = 'C9:E944', col_names = c('entry', 'mw', 'uniprot'))
+    hdlproteins %<>% extract2('entry')
+    hdlproteins
+}
+
+#' Tag hdlproteins
+#' @param object SummarizedExperiment
+#' @param verbose TRUE or FALSE
+#' @return SummarizedExperiment
+#' @examples 
+#' file <- download_data('billing19.proteingroups.txt')
+#' object <- read_proteingroups(file)
+#' object %<>% tag_hdlproteins()
+#' fdt(object)
+#' @export
+tag_hdlproteins <- function(object, verbose = TRUE){
+    hdlproteins <- autonomics::hdlproteins()
+    fdt0 <- fdt(object)[, c('feature_id', 'protein')]
+    fdt0 %<>% uncollapse(protein, sep = ';')
+    fdt0 <- fdt0[, hdl := protein %in% hdlproteins]
+    fdt0 <- fdt0[, .(hdl = any(hdl)), by = feature_id]
+    fdt0$hdl %<>% as.numeric()
+    object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
+    if (verbose)  message(sprintf(
+        '%d/%d HDL groups, %d/%d HDLProteomeWatch proteins', 
+        sum(fdt(object)$hdl), 
+        nrow(object), 
+        length(intersect(fdt(object)[hdl==1, protein], hdlproteins)),
+        length(hdlproteins)))
+    object
+}
+
+
+#-------------------------------------------------------------------------------
+#
+#               open targets
+#
+#-------------------------------------------------------------------------------
+
 #' opentargets dir
 #' @export
 OPENTARGETSDIR <- file.path(tools::R_user_dir('autonomics', 'cache'), 'opentargets', '22.04')
