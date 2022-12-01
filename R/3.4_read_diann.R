@@ -216,7 +216,11 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
     # dt %<>% extract(Lib.PG.Q.Value <= 0.01)
     pgdt <- unique(dt[, .(uniprot, protein)])
     pgdt[, feature_name := forge_pg_descriptions(uniprot, protein, fastadt)]
-    pgdt[, organism := split_extract_fixed(protein, '_', 2)]
+    orgdt <- pgdt[, .(uniprot, protein)]
+    orgdt %<>% uncollapse(protein, sep = ';')
+    orgdt[, organism := split_extract_fixed(protein, '_', 2)]
+    orgdt <- orgdt[, .(organism = organism %>% paste_unique(collapse = ';')), by = 'uniprot']
+    pgdt %<>% .merge(orgdt, by = 'uniprot')
     pgdt[, protein := NULL]
     dt %<>% .merge(pgdt, by = 'uniprot')
     dt %<>% extract(order(feature_name, Run, -get(precursor_quantity)))
@@ -240,15 +244,18 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 #' @rdname read_diann
 #' @export
 .read_diann_proteingroups <- function(
-    file, precursor_quantity = PRECURSOR_QUANTITY, fastadt = NULL){
+    file, 
+    precursor_quantity = PRECURSOR_QUANTITY, 
+    fastadt = NULL, 
+    organism = NULL
+){
     dt <- .read_diann_precursors(file, precursor_quantity = precursor_quantity, 
-                                 fastadt = fastadt)
-    cols <- c('uniprot', 'feature_name', 'protein', 'First.Protein.Description', 
-              'gene', 'Run', 'PG.Quantity', 
-              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'Precursor.No')
+                                 fastadt = fastadt, organism = organism)
+    cols <- c('Run', 'gene', 'feature_name', 'organism', 'protein', 'uniprot', 'PG.Quantity', 
+              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'Precursor.No', 'Precursor.Id', 'Global.PG.Q.Value')
     dt %<>% extract(, cols, with = FALSE )
     dt[, N.Precursor := .N, by = c('uniprot', 'Run')]
-    dt[, Precursor.No := NULL]
+    dt[, c('Precursor.No', 'Precursor.Id') := NULL]
     dt %<>% unique()
     dt
 }
