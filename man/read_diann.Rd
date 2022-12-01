@@ -16,7 +16,9 @@
 .read_diann_proteingroups(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
-  fastadt = NULL
+  fastadt = NULL,
+  organism = NULL,
+  precursorseqs = FALSE
 )
 
 read_diann(
@@ -26,6 +28,8 @@ read_diann(
   precursor_quantity = PRECURSOR_QUANTITY,
   simplify_snames = TRUE,
   contaminants = character(0),
+  organism = NULL,
+  precursorseqs = FALSE,
   impute = FALSE,
   plot = FALSE,
   pca = plot,
@@ -47,17 +51,21 @@ read_diann(
 
 \item{fastadt}{NULL or data.table}
 
+\item{organism}{'HUMAN' etc.: restrict proteingroups to this organism}
+
+\item{precursorseqs}{TRUE / FALSE : record precursorseqs?}
+
 \item{quantity}{'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'}
 
 \item{simplify_snames}{TRUE/FALSE : simplify (drop common parts in) samplenames ?}
 
 \item{contaminants}{string vector: contaminant uniprots}
 
-\item{impute}{TRUE/FALSE : impute group-specific NA values?}
+\item{impute}{TRUE / FALSE : impute group-specific NA values?}
 
-\item{plot}{TRUE/FALSE}
+\item{plot}{TRUE / FALSE}
 
-\item{pca}{TRUE/FALSE : compute and plot pca ?}
+\item{pca}{TRUE / FALSE : compute and plot pca ?}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 

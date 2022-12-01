@@ -235,8 +235,11 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
               'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value')
     dt %<>% pull_columns(cols)
 # Filter
-    if (!is.null(organism)){    idx <- dt$organism == organism
-                                dt %<>% extract(idx)             }
+    if (!is.null(organism)){
+        assert_is_subset(organism, unique(dt$organism))
+        idx <- dt$organism == organism
+        dt %<>% extract(idx)             
+    }
 # Return
     dt 
 }
@@ -246,15 +249,20 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 .read_diann_proteingroups <- function(
     file, 
     precursor_quantity = PRECURSOR_QUANTITY, 
-    fastadt = NULL, 
-    organism = NULL
+    fastadt   = NULL, 
+    organism  = NULL,
+    precursorseqs = FALSE
 ){
     dt <- .read_diann_precursors(file, precursor_quantity = precursor_quantity, 
                                  fastadt = fastadt, organism = organism)
     dt[, N.Precursor := .N,                                  by = c('uniprot', 'Run')]
-    dt[, precursor  := paste0(Precursor.Id, collapse = ';'), by = c('uniprot', 'Run')]
+    if (precursorseqs){
+        dt[, precursorseqs  := paste0(Precursor.Id, collapse = ';'), by = c('uniprot', 'Run')]
+    }
     cols <- c('Run', 'gene', 'feature_name', 'organism', 'protein', 'uniprot', 'PG.Quantity', 
-              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'PG.Q.Value', 'Global.PG.Q.Value')
+              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'PG.Q.Value', 'Global.PG.Q.Value', 
+              'N.Precursor', 'precursorseqs')
+    cols %<>% intersect(names(dt))
     dt %<>% extract(, cols, with = FALSE )
     dt %<>% unique()
     dt
@@ -350,9 +358,11 @@ rm_diann_contaminants <- function(
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
 #' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
 #' @param contaminants        string vector: contaminant uniprots
-#' @param impute              TRUE/FALSE : impute group-specific NA values?
-#' @param plot                TRUE/FALSE
-#' @param pca                 TRUE/FALSE : compute and plot pca ?
+#' @param organism            'HUMAN' etc.: restrict proteingroups to this organism
+#' @param precursorseqs       TRUE / FALSE : record precursorseqs?
+#' @param impute              TRUE / FALSE : impute group-specific NA values?
+#' @param plot                TRUE / FALSE
+#' @param pca                 TRUE / FALSE : compute and plot pca ?
 #' @param fit                 model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
 #' @param formula             model formula
 #' @param block               model blockvar: string or NULL
@@ -392,6 +402,8 @@ read_diann <- function(
     precursor_quantity = PRECURSOR_QUANTITY, 
     simplify_snames = TRUE,
     contaminants = character(0), 
+    organism = NULL,
+    precursorseqs = FALSE,
     impute = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
     coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
@@ -407,7 +419,9 @@ read_diann <- function(
     if (!is.null(contaminants))  assert_is_character(contaminants)
 # SumExp
     # values
-        dt <- .read_diann_proteingroups(file, precursor_quantity = precursor_quantity, fastadt = fastadt)
+        dt <- .read_diann_proteingroups(
+                file, precursor_quantity = precursor_quantity, fastadt = fastadt, 
+                organism = organism, precursorseqs = precursorseqs)
         precursors <- data.table::dcast(dt, uniprot ~ Run, value.var = 'N.Precursor')
         precursors %<>% dt2mat()
         dcast_quantity <- function(quantity) data.table::dcast(dt, uniprot ~ Run, value.var = quantity)
@@ -419,16 +433,13 @@ read_diann <- function(
         assays0 %<>% c(list(precursors = precursors))
         object <- SummarizedExperiment(assays0)
         analysis(object)$nfeatures <- nrow(object)
+        fdt(object)$feature_id <- rownames(object)
     # fdt
-        fdt(object)$feature_id <- rownames(object)                                                             # feature_id
-        fdt0 <- unique(dt[, .(feature_id = uniprot, organism = protein)])                                      # organism
-        fdt0 %<>% uncollapse(organism, sep = ';')
-        fdt0[, organism := split_extract_fixed(organism, '_', 2)]
-        fdt0 <- fdt0[, .(organism = paste_unique(organism, collapse = ';')), by = 'feature_id']
+        cols <- c('uniprot', 'gene', 'feature_name', 'protein', 'organism', 'precursorseqs')
+        cols %<>% intersect(names(dt)) # precursorseqs optional
+        fdt0 <- unique(dt[, cols, with = FALSE])
+        setnames(fdt0, 'uniprot', 'feature_id')
         object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
-        fdt0 <- unique(dt[, .(feature_id = uniprot, feature_name, protein, gene, First.Protein.Description)])  # gene,protein,etc 
-        object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
-        fdt(object) %<>% pull_columns(c('feature_id', 'gene', 'feature_name', 'protein', 'organism'))
     # sdt
         snames(object) <- colnames(object)
         if (simplify_snames)  snames(object) %<>% simplify_snames()
