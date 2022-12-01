@@ -191,15 +191,18 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 #' @rdname read_diann
 #' @export
 .read_diann_precursors <- function(
-    file, precursor_quantity = PRECURSOR_QUANTITY, fastadt = NULL
+    file, 
+    precursor_quantity = PRECURSOR_QUANTITY, 
+    fastadt  = NULL, 
+    organism = NULL
 ){
 # Assert
     assert_all_are_existing_files(file)
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
 # Read
-    anncols <- c('Genes', 'Protein.Names', 'Protein.Group', 
-                 'First.Protein.Description', 'Precursor.Id', 'Run', 'File.Name')
-    numcols <- c('PG.MaxLFQ', precursor_quantity, 'PG.Quantity')
+    anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id', 
+                 'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value')
+    numcols <- c(precursor_quantity, 'PG.Quantity', 'PG.MaxLFQ')
     cols <- c(anncols, numcols)
     dt <- fread(file, select = cols)
     for (col in numcols){
@@ -213,19 +216,25 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
     # dt %<>% extract(Lib.PG.Q.Value <= 0.01)
     pgdt <- unique(dt[, .(uniprot, protein)])
     pgdt[, feature_name := forge_pg_descriptions(uniprot, protein, fastadt)]
+    pgdt[, organism := split_extract_fixed(protein, '_', 2)]
     pgdt[, protein := NULL]
     dt %<>% .merge(pgdt, by = 'uniprot')
     dt %<>% extract(order(feature_name, Run, -get(precursor_quantity)))
-# Summarize/Return
+# Summarize
     dt[, Precursor.No := seq_len(.N), by = c('uniprot', 'Run')]
     dt[, PG.Top1 :=     rev(sort(get(precursor_quantity)))[1],                  by = c('uniprot', 'Run')]
     dt[, PG.Top3 := sum(rev(sort(get(precursor_quantity)))[1:3], na.rm = TRUE), by = c('uniprot', 'Run')]
     dt[, PG.Sum  := sum(         get(precursor_quantity),        na.rm = TRUE), by = c('uniprot', 'Run')]
-    cols <- c('uniprot', 'feature_name', 'protein', 'First.Protein.Description', 
-              'gene', 'Run', 'Precursor.No', 'Precursor.Id',  precursor_quantity, 
-              'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum' , 'PG.MaxLFQ')
-    dt %<>% extract(, cols, with = FALSE)
-    dt
+    cols <- c('Run', 'gene', 'feature_name', 'organism',  'protein', 'uniprot', 
+              'Precursor.No', 'Precursor.Id', 
+              'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', precursor_quantity, 
+              'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value')
+    dt %<>% pull_columns(cols)
+# Filter
+    if (!is.null(organism)){    idx <- dt$organism == organism
+                                dt %<>% extract(idx)             }
+# Return
+    dt 
 }
 
 #' @rdname read_diann

@@ -9,7 +9,8 @@
 .read_diann_precursors(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
-  fastadt = NULL
+  fastadt = NULL,
+  organism = NULL
 )
 
 .read_diann_proteingroups(
