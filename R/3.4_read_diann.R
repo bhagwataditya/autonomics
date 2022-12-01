@@ -445,7 +445,7 @@ read_diann <- function(
         analysis(object)$nfeatures <- nrow(object)
         fdt(object)$feature_id <- rownames(object)
     # fdt
-        cols <- c('uniprot', 'gene', 'feature_name', 'protein', 'organism', 'precursorseqs')
+        cols <- c('uniprot', 'gene', 'feature_name', 'protein', 'organism', 'Global.PG.Q.Value')
         cols %<>% intersect(names(dt)) # precursorseqs optional
         fdt0 <- unique(dt[, cols, with = FALSE])
         setnames(fdt0, 'uniprot', 'feature_id')
