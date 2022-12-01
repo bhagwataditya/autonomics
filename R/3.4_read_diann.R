@@ -188,13 +188,28 @@ forge_pg_descriptions <- function(
 #' @export
 PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 
+
+filter_organism <- function(dt, organism, verbose){
+    dt %<>% copy()
+    if (!is.null(organism)){
+        assert_is_subset(organism, unique(dt$organism))
+        idx <- dt$organism == organism
+        if (verbose){
+            message('\t\tRetain ', sum(idx), '/', length(idx), ' ',  organism, ' precursors')
+        }
+        dt %<>% extract(idx)             
+    }
+    dt
+}
+    
 #' @rdname read_diann
 #' @export
 .read_diann_precursors <- function(
     file, 
     precursor_quantity = PRECURSOR_QUANTITY, 
     fastadt  = NULL, 
-    organism = NULL
+    organism = NULL, 
+    verbose  = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -234,13 +249,8 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', precursor_quantity, 
               'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value')
     dt %<>% pull_columns(cols)
-# Filter
-    if (!is.null(organism)){
-        assert_is_subset(organism, unique(dt$organism))
-        idx <- dt$organism == organism
-        dt %<>% extract(idx)             
-    }
-# Return
+# Filter and Return
+    dt %<>% filter_organism(organism, verbose = verbose)
     dt 
 }
 

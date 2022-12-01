@@ -10,7 +10,8 @@
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
   fastadt = NULL,
-  organism = NULL
+  organism = NULL,
+  verbose = TRUE
 )
 
 .read_diann_proteingroups(
@@ -53,6 +54,8 @@ read_diann(
 
 \item{organism}{'HUMAN' etc.: restrict proteingroups to this organism}
 
+\item{verbose}{TRUE/FALSE}
+
 \item{precursorseqs}{TRUE / FALSE : record precursorseqs?}
 
 \item{quantity}{'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'}
@@ -82,8 +85,6 @@ read_diann(
 \item{sample_id}{string: sample  for summary plot}
 
 \item{palette}{color palette: named string vector}
-
-\item{verbose}{TRUE/FALSE}
 }
 \value{
 data.table / SummarizedExperiment
