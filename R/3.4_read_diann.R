@@ -251,11 +251,11 @@ PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 ){
     dt <- .read_diann_precursors(file, precursor_quantity = precursor_quantity, 
                                  fastadt = fastadt, organism = organism)
+    dt[, N.Precursor := .N,                                  by = c('uniprot', 'Run')]
+    dt[, precursor  := paste0(Precursor.Id, collapse = ';'), by = c('uniprot', 'Run')]
     cols <- c('Run', 'gene', 'feature_name', 'organism', 'protein', 'uniprot', 'PG.Quantity', 
-              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'Precursor.No', 'Precursor.Id', 'Global.PG.Q.Value')
+              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'PG.Q.Value', 'Global.PG.Q.Value')
     dt %<>% extract(, cols, with = FALSE )
-    dt[, N.Precursor := .N, by = c('uniprot', 'Run')]
-    dt[, c('Precursor.No', 'Precursor.Id') := NULL]
     dt %<>% unique()
     dt
 }
