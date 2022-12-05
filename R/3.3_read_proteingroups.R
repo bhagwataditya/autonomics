@@ -92,8 +92,8 @@ un_int64 <- function(x) {
 #' @export
 .read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file), verbose = TRUE){
 # Assert
-    assert_all_are_existing_files(file)
-    assert_all_are_matching_fixed(file, 'roups.txt')
+    assert_proteingroups_file(file)
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
 # Read
     if (verbose)  message('\tRead ', file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
@@ -120,9 +120,8 @@ un_int64 <- function(x) {
 
 .read_phosphosites <- function(file, proteinfile, quantity, verbose = TRUE){
 # Assert
-    assert_all_are_existing_files(c(proteinfile, file))
-    assert_all_are_matching_fixed(proteinfile, 'roups.txt')
-    assert_all_are_matching_fixed(file, 'ites.txt')
+    assert_proteingroups_file(proteinfile)
+    assert_phosphosites_file(file)
 # Read    
     if (verbose)  message('\tRead ', file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')

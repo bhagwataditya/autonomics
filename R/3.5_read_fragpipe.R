@@ -71,10 +71,8 @@ read_fragpipe <- function(
     quantity = 'MaxLFQ Intensity'
 ){
 # Assert
-    assert_all_are_existing_files(file)
+    assert_fragpipe_file(file)
     assert_is_subset(quantity, 'MaxLFQ Intensity')
-    assert_are_identical(names(fread(file, select = 1:3, nrows = 1)), 
-        c('Protein', 'Protein ID', 'Entry Name')) # assert fragipe file
 # Read
     fdt0 <- .read_fragpipe_fdt(file)
     object <- .read_fragpipe_mat(file, quantity)

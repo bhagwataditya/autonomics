@@ -208,26 +208,52 @@ col2 <- function(file)  cols(file)[2]
 col3 <- function(file)  cols(file)[3]
 
 
-#' Assert diann file
-#' @param x     'report.tsv' file
+#' Is diann, fragpipe, proteingroups, phosphosites file?
+#' @param x      file 
 #' @param .xname name of x
 #' @return NULL
 #' @examples
 #' file <- NULL
 #' is_diann_file(file)
-#' assert_diann_file(file)
-#
+#' is_fragpipe_file(file)
+#' is_proteingroups_file(file)
+#' is_phosphosites(file)
+#' 
 #' file <- 3
 #' is_diann_file(file)
-#' assert_diann_file(file)
-#
+#' is_fragpipe_file(file)
+#' is_proteingroups_file(file)
+#' is_phosphosites_file(file)
+#' 
+#' file <- 'blabla.tsv'
+#' is_diann_file(file)
+#' is_fragpipe_file(file)
+#' is_proteingroups_file(file)
+#' is_phosphosites_file(file)
+#' 
 #' file <- download_data('multiorganism.combined_protein.tsv')
 #' is_diann_file(file)
-#' assert_diann_file(file)
-# 
+#' is_fragpipe_file(file)
+#' is_proteingroups_file(file)
+#' is_phosphosites_file(file)
+#' 
 #' file <- download_data('dilution.report.tsv')
 #' is_diann_file(file)
-#' assert_diann_file(file)
+#' is_fragpipe_file(file)
+#' is_proteingroups_file(file)
+#' is_phosphosites_file(file)
+#' 
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' is_diann_file(file)
+#' is_fragpipe_file(file)
+#' is_proteingroups_file(file)
+#' is_phosphosites_file(file)
+#' 
+#' file <- download_data('billing19.phosphosites.txt')
+#' is_diann_file(file)
+#' is_fragpipe_file(file)
+#' is_proteingroups_file(file)
+#' is_phosphosites_file(file)
 #' @export
 is_diann_file <- function(x, .xname = get_name_in_parent(x)){
     if (is.null(x)){                        false('%s is NULL',                  .xname)
@@ -242,8 +268,65 @@ is_diann_file <- function(x, .xname = get_name_in_parent(x)){
 
 #' @rdname is_diann_file
 #' @export
+is_fragpipe_file <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x)){                      false('%s is NULL',                    .xname)
+    } else if (!is_a_string(x)){          false('%s is not a string',            .xname)
+    } else if (!is_existing_file(x)){     false('%s does not exist',             .xname)
+    } else if (col1(x) != 'Protein'){     false('col1(%s) != "Protein"',         .xname)
+    } else if (col2(x) != 'Protein ID'){  false('col2(%s) != "Protein ID"',      .xname)
+    } else if (col3(x) != 'Entry Name'){  false('col3(%s) != "Entry Name"',      .xname)
+    } else {                                TRUE 
+    }
+}
+
+#' @rdname is_diann_file
+#' @export
+is_proteingroups_file <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x)){                      false('%s is NULL',                    .xname)
+    } else if (!is_a_string(x)){          false('%s is not a string',            .xname)
+    } else if (!is_existing_file(x)){     false('%s does not exist',             .xname)
+    } else if (col1(x) != 'Protein'){     false('col1(%s) != "Protein"',         .xname)
+    } else if (col2(x) != 'Protein ID'){  false('col2(%s) != "Protein ID"',      .xname)
+    } else if (col3(x) != 'Entry Name'){  false('col3(%s) != "Entry Name"',      .xname)
+    } else {                                TRUE 
+    }
+}
+
+#' @rdname is_diann_file
+#' @export
+is_phosphosites_file <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x)){                                    false('%s is NULL',                              .xname)
+    } else if (!is_a_string(x)){                        false('%s is not a string',                      .xname)
+    } else if (!is_existing_file(x)){                   false('%s does not exist',                       .xname)
+    } else if (col1(x) != 'Proteins'){                  false('col1(%s) != "Proteins"',                  .xname)
+    } else if (col2(x) != 'Positions within proteins'){ false('col2(%s) != "Positions within proteins"', .xname)
+    } else if (col3(x) != 'Leading proteins'){          false('col3(%s) != "Leading proteins"',          .xname)
+    } else {                                            TRUE 
+    }
+}
+
+#' @rdname is_diann_file
+#' @export
 assert_diann_file <- function(x, .xname = get_name_in_parent(x)){
     assert_engine(is_diann_file, x, .xname = .xname)
+}
+
+#' @rdname is_diann_file
+#' @export
+assert_fragpipe_file <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_fragpipe_file, x, .xname = .xname)
+}
+
+#' @rdname is_diann_file
+#' @export
+assert_proteingroups_file <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_proteingroups_file, x, .xname = .xname)
+}
+
+#' @rdname is_diann_file
+#' @export
+assert_phosphosites_file <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_phosphosites_file, x, .xname = .xname)
 }
 
 #' @rdname read_diann
@@ -258,6 +341,7 @@ assert_diann_file <- function(x, .xname = get_name_in_parent(x)){
 # Assert
     assert_diann_file(file)
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
+    if (!is.null(fastadt))  assert_is_data.table(fastadt)
 # Read
     anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id', 'Stripped.Sequence',
                  'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value')
