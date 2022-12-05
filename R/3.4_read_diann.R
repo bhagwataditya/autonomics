@@ -201,7 +201,51 @@ filter_organism <- function(dt, organism, verbose){
     }
     dt
 }
-    
+
+cols <- function(file)  names(fread(file, nrow = 0))
+col1 <- function(file)  cols(file)[1]
+col2 <- function(file)  cols(file)[2]
+col3 <- function(file)  cols(file)[3]
+
+
+#' Assert diann file
+#' @param x     'report.tsv' file
+#' @param .xname name of x
+#' @return NULL
+#' @examples
+#' file <- NULL
+#' is_diann_file(file)
+#' assert_diann_file(file)
+#
+#' file <- 3
+#' is_diann_file(file)
+#' assert_diann_file(file)
+#
+#' file <- download_data('multiorganism.combined_protein.tsv')
+#' is_diann_file(file)
+#' assert_diann_file(file)
+# 
+#' file <- download_data('dilution.report.tsv')
+#' is_diann_file(file)
+#' assert_diann_file(file)
+#' @export
+is_diann_file <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x)){                        false('%s is NULL',                  .xname)
+    } else if (!is_a_string(x)){            false('%s is not a string',          .xname)
+    } else if (!is_existing_file(x)){       false('%s does not exist',           .xname)
+    } else if (col1(x) != 'File.Name'){     false('col1(%s) != "File.Name"',     .xname)
+    } else if (col2(x) != 'Run'){           false('col2(%s) != "Run"',           .xname)
+    } else if (col3(x) != 'Protein.Group'){ false('col3(%s) != "Protein.Group"', .xname)
+    } else {                                TRUE 
+    }
+}
+
+#' @rdname is_diann_file
+#' @export
+assert_diann_file <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_diann_file, x, .xname = .xname)
+}
+
 #' @rdname read_diann
 #' @export
 .read_diann_precursors <- function(
@@ -212,7 +256,7 @@ filter_organism <- function(dt, organism, verbose){
     verbose  = TRUE
 ){
 # Assert
-    assert_all_are_existing_files(file)
+    assert_diann_file(file)
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
 # Read
     anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id', 'Stripped.Sequence',

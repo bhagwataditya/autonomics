@@ -1,4 +1,5 @@
 #' @importFrom abind       adrop
+#' @importFrom assertive   are_identical
 #' @importFrom assertive   assert_all_are_dirs   assert_all_are_existing_files
 #' @importFrom assertive   assert_all_are_finite
 #' @importFrom assertive   assert_all_are_greater_than
