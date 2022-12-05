@@ -215,7 +215,7 @@ filter_organism <- function(dt, organism, verbose){
     assert_all_are_existing_files(file)
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
 # Read
-    anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id', 
+    anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id', 'Stripped.Sequence',
                  'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value')
     numcols <- c(precursor_quantity, 'PG.Quantity', 'PG.MaxLFQ')
     cols <- c(anncols, numcols)
@@ -224,9 +224,11 @@ filter_organism <- function(dt, organism, verbose){
         dt[[col]] %<>% stri_replace_first_fixed(',', '.') # 1977.16 but 1,35E+11
         dt[[col]] %<>% as.numeric()
     }
-    setnames(dt, c('Genes', 'Protein.Names', 'Protein.Group'), 
-                 c('gene',  'protein',       'uniprot'))
-# Filter/Annotate
+    setnames(dt, # precursor = peptide + modification + chargestate
+         c('Genes', 'Protein.Names', 'Protein.Group', 'Stripped.Sequence'),  
+         c('gene',  'protein',       'uniprot',       'sequence')
+    )
+# Annotate
     # dt %<>% extract(Lib.Q.Value <= 0.05)
     # dt %<>% extract(Lib.PG.Q.Value <= 0.01)
     pgdt <- unique(dt[, .(uniprot, protein)])
@@ -244,8 +246,8 @@ filter_organism <- function(dt, organism, verbose){
     dt[, PG.Top1 :=     rev(sort(get(precursor_quantity)))[1],                  by = c('uniprot', 'Run')]
     dt[, PG.Top3 := sum(rev(sort(get(precursor_quantity)))[1:3], na.rm = TRUE), by = c('uniprot', 'Run')]
     dt[, PG.Sum  := sum(         get(precursor_quantity),        na.rm = TRUE), by = c('uniprot', 'Run')]
-    cols <- c('Run', 'gene', 'feature_name', 'organism',  'protein', 'uniprot', 
-              'Precursor.No', 'Precursor.Id', 
+    cols <- c('Run', 'gene', 'feature_name', 'protein', 'organism', 'uniprot', 
+              'Precursor.No', 'sequence', 'Precursor.Id', 
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', precursor_quantity, 
               'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value')
     dt %<>% pull_columns(cols)
