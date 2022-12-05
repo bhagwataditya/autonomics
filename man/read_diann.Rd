@@ -9,6 +9,7 @@
 .read_diann_precursors(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
+  sequence = FALSE,
   fastadt = NULL,
   organism = NULL,
   verbose = TRUE
@@ -17,6 +18,7 @@
 .read_diann_proteingroups(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
+  sequence = FALSE,
   fastadt = NULL,
   organism = NULL
 )
@@ -48,6 +50,8 @@ read_diann(
 \item{file}{'report.tsv' file}
 
 \item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
+
+\item{sequence}{TRUE/FALSE: record peptide sequence?}
 
 \item{fastadt}{NULL or data.table}
 
@@ -82,8 +86,6 @@ read_diann(
 \item{sample_id}{string: sample  for summary plot}
 
 \item{palette}{color palette: named string vector}
-
-\item{sequences}{TRUE/FALSE: record peptide sequences?}
 }
 \value{
 data.table / SummarizedExperiment
@@ -92,25 +94,18 @@ data.table / SummarizedExperiment
 Read diann
 }
 \examples{
-# Read & Analyze
+# Read
    file <- download_data('dilution.report.tsv')
-   object <- read_diann(file)
-   snames(object) \%<>\% split_extract_fixed('_', 3)
-   object$subgroup <- as.numeric(object$sample_id)
-   analyze(object)
-    
-# Read data.table (lower-level)
-    file <- download_data('dilution.report.tsv')
-   (PR   <- .read_diann_precursors(file))       # precursor    dt
-   (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
-   
-# Compare Summarizations
-     PG[PG.Quantity==PG.Top1] # matches      : 26063 (85\%) proteingroups
-     PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15\%) proteingroups
-     run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
-     PR[uniprot=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
-     PR[uniprot=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
-     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
-     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
-     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
+   (PR <- .read_diann_precursors(file))          #    precursors longdt
+   (PG <- .read_diann_proteingroups(file))       # proteingroups longdt
+   (OB <- read_diann(file))                      # proteingroups sumexp
+# Compare
+    PG[PG.Quantity==PG.Top1] # matches      : 26063 (85\%) proteingroups
+    PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15\%) proteingroups
+    run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
+    PR[uniprot=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
+    PR[uniprot=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
+    PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
+    PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
+    PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
 }

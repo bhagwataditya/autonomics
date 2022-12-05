@@ -334,28 +334,25 @@ assert_phosphosites_file <- function(x, .xname = get_name_in_parent(x)){
 .read_diann_precursors <- function(
     file, 
     precursor_quantity = PRECURSOR_QUANTITY, 
-    fastadt  = NULL, 
-    organism = NULL, 
-    verbose  = TRUE
+    sequence = FALSE, fastadt  = NULL, organism = NULL, verbose  = TRUE
 ){
 # Assert
     assert_diann_file(file)
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
     if (!is.null(fastadt))  assert_is_data.table(fastadt)
 # Read
-    anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id', 'Stripped.Sequence',
+    anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id',
                  'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value')
+    if (sequence)  anncols %<>% c('Stripped.Sequence')
     numcols <- c(precursor_quantity, 'PG.Quantity', 'PG.MaxLFQ')
     cols <- c(anncols, numcols)
-    dt <- fread(file, select = cols)
-    for (col in numcols){
-        dt[[col]] %<>% stri_replace_first_fixed(',', '.') # 1977.16 but 1,35E+11
-        dt[[col]] %<>% as.numeric()
-    }
-    setnames(dt, # precursor = peptide + modification + chargestate
-         c('Genes', 'Protein.Names', 'Protein.Group', 'Stripped.Sequence'),  
-         c('gene',  'protein',       'uniprot',       'sequence')
-    )
+    dt <- fread(file, select = cols)                  # 1977.16 but 1,35E+11
+    for (col in numcols){   dt[[col]] %<>% stri_replace_first_fixed(',', '.') 
+                            dt[[col]] %<>% as.numeric()  }
+    setnames(dt, 'Genes',         'gene')
+    setnames(dt, 'Protein.Names', 'protein')
+    setnames(dt, 'Protein.Group', 'uniprot')
+    if (sequence)  setnames(dt, 'Stripped.Sequence', 'sequence')
 # Annotate
     # dt %<>% extract(Lib.Q.Value <= 0.05)
     # dt %<>% extract(Lib.PG.Q.Value <= 0.01)
@@ -389,25 +386,133 @@ assert_phosphosites_file <- function(x, .xname = get_name_in_parent(x)){
 .read_diann_proteingroups <- function(
     file, 
     precursor_quantity = PRECURSOR_QUANTITY, 
-    fastadt   = NULL, 
-    organism  = NULL,
-    precursorseqs = FALSE
+    sequence = FALSE, fastadt   = NULL, organism  = NULL
 ){
-    dt <- .read_diann_precursors(file, precursor_quantity = precursor_quantity, 
-                                 fastadt = fastadt, organism = organism)
-    dt[, N.Precursor := .N,                                  by = c('uniprot', 'Run')]
-    if (precursorseqs){
-        dt[, precursorseqs  := paste0(Precursor.Id, collapse = ';'), by = c('uniprot', 'Run')]
-    }
-    cols <- c('Run', 'gene', 'feature_name', 'organism', 'protein', 'uniprot', 'PG.Quantity', 
-              'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 'PG.Q.Value', 'Global.PG.Q.Value', 
-              'N.Precursor', 'precursorseqs')
-    cols %<>% intersect(names(dt))
+    dt <- .read_diann_precursors(
+            file, precursor_quantity = precursor_quantity, 
+            sequence = sequence, fastadt = fastadt, organism = organism)
+    dt[, precount := length(unique(Precursor.Id)), by = c('uniprot', 'Run')]
+    dt[, pepcount := length(unique(sequence)),     by = c('uniprot', 'Run')]
+    if (sequence)  dt[, sequence := paste0(unique(sequence), collapse = ';'), 
+                        by = c('uniprot', 'Run')]
+    cols <- c('Run', 'gene', 'feature_name', 'organism', 'protein', 'uniprot',
+              'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 
+              'PG.Q.Value', 'Global.PG.Q.Value', 'precount', 'pepcount')
+    if (sequence)  cols %<>% c('sequence')
     dt %<>% extract(, cols, with = FALSE )
     dt %<>% unique()
+    #dt[, .N, by = c('Run', 'protein')][N!=1] # single row per run/protein - yes!
     dt
 }
 
+
+
+#' Read diann
+#'
+#' @param file               'report.tsv' file
+#' @param fastadt             NULL or data.table
+#' @param quantity           'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
+#' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
+#' @param sequence           TRUE/FALSE: record peptide sequence?
+#' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
+#' @param contaminants        string vector: contaminant uniprots
+#' @param organism            'HUMAN' etc.: restrict proteingroups to this organism
+#' @param impute              TRUE / FALSE : impute group-specific NA values?
+#' @param plot                TRUE / FALSE
+#' @param pca                 TRUE / FALSE : compute and plot pca ?
+#' @param fit                 model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
+#' @param formula             model formula
+#' @param block               model blockvar: string or NULL
+#' @param coefs               model coefficients          of interest: string vector or NULL
+#' @param contrasts           model coefficient contrasts of interest: string vector or NULL
+#' @param feature_id          string: feature for summary plot
+#' @param sample_id           string: sample  for summary plot
+#' @param palette             color palette: named string vector
+#' @param verbose             TRUE/FALSE
+#' @return  data.table / SummarizedExperiment
+#' @examples
+#' # Read
+#'    file <- download_data('dilution.report.tsv')
+#'    (PR <- .read_diann_precursors(file))          #    precursors longdt
+#'    (PG <- .read_diann_proteingroups(file))       # proteingroups longdt
+#'    (OB <- read_diann(file))                      # proteingroups sumexp
+#' # Compare
+#'     PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
+#'     PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
+#'     run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
+#'     PR[uniprot=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
+#'     PR[uniprot=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
+#'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
+#'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
+#'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
+#' @export
+read_diann <- function(
+    file, fastadt = NULL, 
+    quantity = 'PG.MaxLFQ', 
+    precursor_quantity = PRECURSOR_QUANTITY, 
+    sequence = FALSE, 
+    simplify_snames = TRUE,
+    contaminants = character(0), 
+    organism = NULL,
+    impute = FALSE, plot = FALSE, 
+    pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
+    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
+    palette = make_subgroup_palette(object), verbose = TRUE
+){
+# Assert
+    assert_is_subset(quantity, c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum'))
+    if (!is.null(contaminants))  assert_is_character(contaminants)
+# SumExp
+    dt <- .read_diann_proteingroups(
+            file, precursor_quantity = precursor_quantity, sequence = sequence, 
+            fastadt = fastadt, organism = organism)
+    precursors <- data.table::dcast(dt, uniprot ~ Run, value.var = 'precount')
+    precursors %<>% dt2mat()
+    precursors %<>% na_to_zero()
+    dcast_quantity <- function(quantity) data.table::dcast(dt, uniprot ~ Run, value.var = quantity)
+    assays0 <- Map(dcast_quantity, quantity)           # Map retains names - lapply doesnt
+    assays0 %<>% lapply(dt2mat)
+    assays0 %<>% lapply(zero_to_na, verbose = verbose) # lapply allows for multiple arguments - Map doesnt
+    assays0 %<>% lapply(nan_to_na,  verbose = verbose)
+    assays0 %<>% lapply(log2)
+    assays0 %<>% c(list(precursors = precursors))
+    object <- SummarizedExperiment(assays0)
+    analysis(object)$nfeatures <- nrow(object)
+    fdt(object)$feature_id <- rownames(object)
+# fdt
+    dt[, sequence      := unique(unlist(stri_split_fixed(sequence, ';'))) %>% paste0(collapse = ';'), by = c('protein')]
+    dt[, mean.precount := mean(precount), by = c('protein')]; dt[, precount := NULL]
+    dt[, mean.pepcount := mean(pepcount), by = c('protein')]; dt[, pepcount := NULL]
+    dt[, Run := NULL]
+    cols <- c('uniprot', 'gene', 'feature_name', 'protein', 'organism', 'Global.PG.Q.Value', 'mean.precount', 'mean.pepcount')
+    if (sequence)  cols %<>% c('sequence')
+    fdt0 <- dt[, cols, with = FALSE]
+    fdt0%<>% unique()
+    setnames(fdt0, 'uniprot', 'feature_id')
+    object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
+# sdt
+    snames(object) <- colnames(object)
+    if (simplify_snames)  snames(object) %<>% simplify_snames()
+    object$subgroup  <- infer_subgroup( object$sample_id)
+# Filter. Impute. Analyze
+    if (length(contaminants)>0){
+        object %<>% rm_diann_contaminants(contaminants, verbose = verbose)
+    }
+    object %<>% rm_missing_in_all_samples(verbose = verbose)
+    object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
+    object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
+    if ({{impute}})   object %<>% impute()
+    assays <- c(quantity, 'precursors')
+    for (assay in assays)  object %<>% add_assay_means(assay)
+    object %<>% analyze(
+        pca          = pca,           fit       = fit,
+        formula      = formula,       block     = block,      
+        coefs        = coefs,         contrasts = contrasts,   
+        verbose      = verbose,       plot      = plot,
+        feature_id   = feature_id,    sample_id = sample_id,  
+        palette      = palette)
+    object
+}
 
 #' Contaminants URL
 #' @examples 
@@ -488,120 +593,6 @@ rm_diann_contaminants <- function(
     fdt0 %<>% extract(, .(contaminant = any(contaminant)), by = 'feature_id')
     object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
     object %<>% filter_features(!contaminant, verbose = verbose)
-}
-
-#' Read diann
-#'
-#' @param file               'report.tsv' file
-#' @param fastadt             NULL or data.table
-#' @param quantity           'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
-#' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
-#' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
-#' @param contaminants        string vector: contaminant uniprots
-#' @param organism            'HUMAN' etc.: restrict proteingroups to this organism
-#' @param precursorseqs       TRUE / FALSE : record precursorseqs?
-#' @param impute              TRUE / FALSE : impute group-specific NA values?
-#' @param plot                TRUE / FALSE
-#' @param pca                 TRUE / FALSE : compute and plot pca ?
-#' @param fit                 model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
-#' @param formula             model formula
-#' @param block               model blockvar: string or NULL
-#' @param coefs               model coefficients          of interest: string vector or NULL
-#' @param contrasts           model coefficient contrasts of interest: string vector or NULL
-#' @param feature_id          string: feature for summary plot
-#' @param sample_id           string: sample  for summary plot
-#' @param palette             color palette: named string vector
-#' @param verbose             TRUE/FALSE
-#' @return  data.table / SummarizedExperiment
-#' @examples 
-#' # Read & Analyze
-#'    file <- download_data('dilution.report.tsv')
-#'    object <- read_diann(file)
-#'    snames(object) %<>% split_extract_fixed('_', 3)
-#'    object$subgroup <- as.numeric(object$sample_id)
-#'    analyze(object)
-#'     
-#' # Read data.table (lower-level)
-#'     file <- download_data('dilution.report.tsv')
-#'    (PR   <- .read_diann_precursors(file))       # precursor    dt
-#'    (PG   <- .read_diann_proteingroups(file))    # proteingroup dt
-#'    
-#' # Compare Summarizations
-#'      PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
-#'      PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
-#'      run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
-#'      PR[uniprot=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
-#'      PR[uniprot=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
-#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
-#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
-#'      PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
-#' @export
-read_diann <- function(
-    file, fastadt = NULL, 
-    quantity = 'PG.MaxLFQ', 
-    precursor_quantity = PRECURSOR_QUANTITY, 
-    simplify_snames = TRUE,
-    contaminants = character(0), 
-    organism = NULL,
-    precursorseqs = FALSE,
-    impute = FALSE, plot = FALSE, 
-    pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
-    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
-    palette = make_subgroup_palette(object), verbose = TRUE
-){
-# Assert
-    assert_all_are_existing_files(file)
-    assert_are_identical(names(fread(file, select = 1:3, nrows = 0)), 
-                         c('File.Name', 'Run', 'Protein.Group'))
-    if (!is.null(fastadt))  assert_is_data.table(fastadt)
-    assert_is_subset(quantity, 
-         c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum'))
-    if (!is.null(contaminants))  assert_is_character(contaminants)
-# SumExp
-    # values
-        dt <- .read_diann_proteingroups(
-                file, precursor_quantity = precursor_quantity, fastadt = fastadt, 
-                organism = organism, precursorseqs = precursorseqs)
-        precursors <- data.table::dcast(dt, uniprot ~ Run, value.var = 'N.Precursor')
-        precursors %<>% dt2mat()
-        dcast_quantity <- function(quantity) data.table::dcast(dt, uniprot ~ Run, value.var = quantity)
-        assays0 <- Map(dcast_quantity, quantity)           # Map retains names - lapply doesnt
-        assays0 %<>% lapply(dt2mat)
-        assays0 %<>% lapply(zero_to_na, verbose = verbose) # lapply allows for multiple arguments - Map doesnt
-        assays0 %<>% lapply(nan_to_na,  verbose = verbose)
-        assays0 %<>% lapply(log2)
-        assays0 %<>% c(list(precursors = precursors))
-        object <- SummarizedExperiment(assays0)
-        analysis(object)$nfeatures <- nrow(object)
-        fdt(object)$feature_id <- rownames(object)
-    # fdt
-        cols <- c('uniprot', 'gene', 'feature_name', 'protein', 'organism', 'Global.PG.Q.Value')
-        cols %<>% intersect(names(dt)) # precursorseqs optional
-        fdt0 <- unique(dt[, cols, with = FALSE])
-        setnames(fdt0, 'uniprot', 'feature_id')
-        object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
-    # sdt
-        snames(object) <- colnames(object)
-        if (simplify_snames)  snames(object) %<>% simplify_snames()
-        object$subgroup  <- infer_subgroup( object$sample_id)
-# Filter. Impute. Analyze
-    if (length(contaminants)>0){
-        object %<>% rm_diann_contaminants(contaminants, verbose = verbose)
-    }
-    object %<>% rm_missing_in_all_samples(verbose = verbose)
-    object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
-    object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
-    if ({{impute}})   object %<>% impute()
-    assays <- c(quantity, 'precursors')
-    for (assay in assays)  object %<>% add_assay_means(assay)
-    object %<>% analyze(
-        pca          = pca,           fit       = fit,
-        formula      = formula,       block     = block,      
-        coefs        = coefs,         contrasts = contrasts,   
-        verbose      = verbose,       plot      = plot,
-        feature_id   = feature_id,    sample_id = sample_id,  
-        palette      = palette)
-    object
 }
 
 has_one_level <- function(x) length(unique(x))==1
