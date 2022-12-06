@@ -430,7 +430,7 @@ split_values <- function(x){
 
 
 
-#' Merge sample/feature data
+#' Merge sample/feature dt
 #' @param object          SummarizedExperiment
 #' @param dt              data.frame, data.table, DataFrame
 #' @param by.x            string : object mergevar
@@ -441,12 +441,20 @@ split_values <- function(x){
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% merge_sdata( data.table(sample_id = object$sample_id,
+#' object %<>% merge_sdt(   data.table(sample_id = object$sample_id,
 #'                                     number = seq_along(object$sample_id)))
 #' sdt(object)
 #'@export
 merge_sdata <- function(
     object, dt, by.x = 'sample_id',  by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
+){
+    .Deprecated('merge_sdt')
+    merge_sdt(object, dt = dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
+}
+
+#' @rdname merge_sdata
+merge_sdt <- function(
+    object, dt, by.x = 'sample_id',  by.y = 'sample_id', all.x = TRUE, verbose = TRUE
 ){
     if (!all.x)  object %<>% filter_samples(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = verbose)
     sdt(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
@@ -458,6 +466,15 @@ merge_sdata <- function(
 #'@export
 merge_fdata <- function(
     object, dt, by.x = 'feature_id', by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
+){
+    .Deprecated('merge_fdt')
+    merge_fdt(object, dt = dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
+}
+
+#'@rdname merge_sdata
+#'@export
+merge_fdt <- function(
+    object, dt, by.x = 'feature_id', by.y = 'feature_id', all.x = TRUE, verbose = TRUE
 ){
     if (!all.x)  object %<>% filter_features(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = TRUE)
     fdt(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)

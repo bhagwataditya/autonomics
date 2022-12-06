@@ -2,8 +2,10 @@
 % Please edit documentation in R/3.0_read_omics.R
 \name{merge_sdata}
 \alias{merge_sdata}
+\alias{merge_sdt}
 \alias{merge_fdata}
-\title{Merge sample/feature data}
+\alias{merge_fdt}
+\title{Merge sample/feature dt}
 \usage{
 merge_sdata(
   object,
@@ -14,11 +16,29 @@ merge_sdata(
   verbose = TRUE
 )
 
+merge_sdt(
+  object,
+  dt,
+  by.x = "sample_id",
+  by.y = "sample_id",
+  all.x = TRUE,
+  verbose = TRUE
+)
+
 merge_fdata(
   object,
   dt,
   by.x = "feature_id",
   by.y = names(dt)[1],
+  all.x = TRUE,
+  verbose = TRUE
+)
+
+merge_fdt(
+  object,
+  dt,
+  by.x = "feature_id",
+  by.y = "feature_id",
   all.x = TRUE,
   verbose = TRUE
 )
@@ -40,12 +60,12 @@ merge_fdata(
 SummarizedExperiment
 }
 \description{
-Merge sample/feature data
+Merge sample/feature dt
 }
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file)
-object \%<>\% merge_sdata( data.table(sample_id = object$sample_id,
+object \%<>\% merge_sdt(   data.table(sample_id = object$sample_id,
                                     number = seq_along(object$sample_id)))
 sdt(object)
 }
