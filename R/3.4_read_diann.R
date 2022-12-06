@@ -282,12 +282,12 @@ is_fragpipe_file <- function(x, .xname = get_name_in_parent(x)){
 #' @rdname is_diann_file
 #' @export
 is_proteingroups_file <- function(x, .xname = get_name_in_parent(x)){
-    if (is.null(x)){                      false('%s is NULL',                    .xname)
-    } else if (!is_a_string(x)){          false('%s is not a string',            .xname)
-    } else if (!is_existing_file(x)){     false('%s does not exist',             .xname)
-    } else if (col1(x) != 'Protein'){     false('col1(%s) != "Protein"',         .xname)
-    } else if (col2(x) != 'Protein ID'){  false('col2(%s) != "Protein ID"',      .xname)
-    } else if (col3(x) != 'Entry Name'){  false('col3(%s) != "Entry Name"',      .xname)
+    if (is.null(x)){                                false('%s is NULL',                         .xname)
+    } else if (!is_a_string(x)){                    false('%s is not a string',                 .xname)
+    } else if (!is_existing_file(x)){               false('%s does not exist',                  .xname)
+    } else if (col1(x) != 'Protein IDs'){           false('col1(%s) != "Protein IDs"',          .xname)
+    } else if (col2(x) != 'Majority protein IDs'){  false('col2(%s) != "Majority protein ID"',  .xname)
+    } else if (col3(x) != 'Peptide counts (all)'){  false('col3(%s) != "Peptide counts (all)"', .xname)
     } else {                                TRUE 
     }
 }
