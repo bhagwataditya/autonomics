@@ -9,7 +9,6 @@
 .read_diann_precursors(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
-  sequence = FALSE,
   fastadt = NULL,
   organism = NULL,
   verbose = TRUE
@@ -18,7 +17,6 @@
 .read_diann_proteingroups(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
-  sequence = FALSE,
   fastadt = NULL,
   organism = NULL
 )
@@ -28,7 +26,6 @@ read_diann(
   fastadt = NULL,
   quantity = "PG.MaxLFQ",
   precursor_quantity = PRECURSOR_QUANTITY,
-  sequence = FALSE,
   simplify_snames = TRUE,
   contaminants = character(0),
   organism = NULL,
@@ -42,7 +39,7 @@ read_diann(
   contrasts = NULL,
   feature_id = NULL,
   sample_id = NULL,
-  palette = make_subgroup_palette(object),
+  palette = NULL,
   verbose = TRUE
 )
 }
@@ -50,8 +47,6 @@ read_diann(
 \item{file}{'report.tsv' file}
 
 \item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
-
-\item{sequence}{TRUE/FALSE: record peptide sequence?}
 
 \item{fastadt}{NULL or data.table}
 
@@ -96,10 +91,16 @@ Read diann
 \examples{
 # Read
    file <- download_data('dilution.report.tsv')
-   (PR <- .read_diann_precursors(file))          #    precursors longdt
-   (PG <- .read_diann_proteingroups(file))       # proteingroups longdt
-   (OB <- read_diann(file))                      # proteingroups sumexp
+   .read_diann_precursors(file)      #    precursors longdt
+   .read_diann_proteingroups(file)   # proteingroups longdt
+   fdt(read_diann(file))             # proteingroups sumexp
+# Read with sequence
+   .read_diann_precursors(   file, sequence = TRUE)
+   .read_diann_proteingroups(file, sequence = TRUE)
+   fdt(read_diann(           file, sequence = TRUE))
 # Compare
+    PR <- .read_diann_precursors(file)
+    PG <- .read_diann_proteingroups(file)
     PG[PG.Quantity==PG.Top1] # matches      : 26063 (85\%) proteingroups
     PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15\%) proteingroups
     run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
