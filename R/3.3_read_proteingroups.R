@@ -202,20 +202,30 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 #
 #-----------------------------------------------------------------------------
 
-#' Uncollapse 
+#' Uncollapse/Recollapse
 #' 
 #' Uncollapse data.table cols
 #' @param dt data.table
 #' @param ... cols
 #' @param sep string
+#' @param by  string
 #' @examples
-#' dt <- data.table(protein = 'P1;P2', gene = 'G1;G2')
-#' uncollapse(dt, protein, gene, sep = ';')
+#'(dt <- data.table(uniprot  = 'Q9BQL6;Q96AC1;Q96AC1-3', 
+#'                  protein  = 'FERM1_HUMAN;FERM2_HUMAN', 
+#'                  gene     = 'FERMT1;FERMT2'))
+#'(dt %<>% uncollapse(protein, gene, sep = ';'))
+#'(dt %>% recollapse(by = 'uniprot')) 
 #' @export
 uncollapse <- function(dt, ..., sep = ';'){
     dt %>% 
     separate_rows(..., sep = sep) %>%
     data.table()
+}
+
+#' @rdname uncollapse
+#' @export
+recollapse <- function(dt, by, sep = ';'){
+    dt[, lapply(.SD, paste_unique, collapse = sep), by = by]
 }
 
 nastring_to_nachar <- function(x){ x[x=='NA'] <- NA_character_;  x }

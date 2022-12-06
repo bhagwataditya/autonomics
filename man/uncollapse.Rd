@@ -2,9 +2,12 @@
 % Please edit documentation in R/3.3_read_proteingroups.R
 \name{uncollapse}
 \alias{uncollapse}
-\title{Uncollapse}
+\alias{recollapse}
+\title{Uncollapse/Recollapse}
 \usage{
 uncollapse(dt, ..., sep = ";")
+
+recollapse(dt, by, sep = ";")
 }
 \arguments{
 \item{dt}{data.table}
@@ -12,11 +15,16 @@ uncollapse(dt, ..., sep = ";")
 \item{...}{cols}
 
 \item{sep}{string}
+
+\item{by}{string}
 }
 \description{
 Uncollapse data.table cols
 }
 \examples{
-dt <- data.table(protein = 'P1;P2', gene = 'G1;G2')
-uncollapse(dt, protein, gene, sep = ';')
+(dt <- data.table(uniprot  = 'Q9BQL6;Q96AC1;Q96AC1-3', 
+                 protein  = 'FERM1_HUMAN;FERM2_HUMAN', 
+                 gene     = 'FERMT1;FERMT2'))
+(dt \%<>\% uncollapse(protein, gene, sep = ';'))
+(dt \%>\% recollapse(by = 'uniprot')) 
 }
