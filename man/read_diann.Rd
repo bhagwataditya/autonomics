@@ -10,15 +10,13 @@
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
   fastadt = NULL,
-  organism = NULL,
   verbose = TRUE
 )
 
 .read_diann_proteingroups(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
-  fastadt = NULL,
-  organism = NULL
+  fastadt = NULL
 )
 
 read_diann(
@@ -28,7 +26,6 @@ read_diann(
   precursor_quantity = PRECURSOR_QUANTITY,
   simplify_snames = TRUE,
   contaminants = character(0),
-  organism = NULL,
   impute = FALSE,
   plot = FALSE,
   pca = plot,
@@ -49,8 +46,6 @@ read_diann(
 \item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
 
 \item{fastadt}{NULL or data.table}
-
-\item{organism}{'HUMAN' etc.: restrict proteingroups to this organism}
 
 \item{verbose}{TRUE/FALSE}
 

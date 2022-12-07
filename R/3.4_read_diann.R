@@ -133,19 +133,6 @@ commonify_strings <- function(x){
 PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 
 
-filter_organism <- function(dt, organism, verbose){
-    dt %<>% copy()
-    if (!is.null(organism)){
-        assert_is_subset(organism, unique(dt$organism))
-        idx <- dt$organism == organism
-        if (verbose){
-            message('\t\tRetain ', sum(idx), '/', length(idx), ' ',  organism, ' precursors')
-        }
-        dt %<>% extract(idx)             
-    }
-    dt
-}
-
 cols <- function(file)  names(fread(file, nrow = 0))
 col1 <- function(file)  cols(file)[1]
 col2 <- function(file)  cols(file)[2]
@@ -169,7 +156,8 @@ uniprot2isoforms <- function(x){
 .read_diann_precursors <- function(
     file, 
     precursor_quantity = PRECURSOR_QUANTITY, 
-    fastadt  = NULL, organism = NULL, verbose  = TRUE
+    fastadt  = NULL, 
+    verbose  = TRUE
 ){
 # Assert
     assert_diann_file(file)
@@ -225,8 +213,6 @@ uniprot2isoforms <- function(x){
     dt[, PG.Top1 :=     rev(sort(get(precursor_quantity)))[1],                  by = c('uniprot', 'Run')]
     dt[, PG.Top3 := sum(rev(sort(get(precursor_quantity)))[1:3], na.rm = TRUE), by = c('uniprot', 'Run')]
     dt[, PG.Sum  := sum(         get(precursor_quantity),        na.rm = TRUE), by = c('uniprot', 'Run')]
-# Filter and Return
-    dt %<>% filter_organism(organism, verbose = verbose)
     dt 
 }
 
@@ -235,11 +221,11 @@ uniprot2isoforms <- function(x){
 .read_diann_proteingroups <- function(
     file, 
     precursor_quantity = PRECURSOR_QUANTITY, 
-    fastadt   = NULL, organism  = NULL
+    fastadt   = NULL
 ){
     dt <- .read_diann_precursors(
             file, precursor_quantity = precursor_quantity, 
-            fastadt = fastadt, organism = organism)
+            fastadt = fastadt)
     dt[, sequence := sequence[1], by = c('uniprot', 'Run')]
     cols <- c('gene', 'feature_name', 'protein', 'organism', 'uniprot', 'Run',
               'npeptide', 'nprecursor', 'sequence',
@@ -261,7 +247,6 @@ uniprot2isoforms <- function(x){
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
 #' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
 #' @param contaminants        string vector: contaminant uniprots
-#' @param organism            'HUMAN' etc.: restrict proteingroups to this organism
 #' @param impute              TRUE / FALSE : impute group-specific NA values?
 #' @param plot                TRUE / FALSE
 #' @param pca                 TRUE / FALSE : compute and plot pca ?
@@ -299,7 +284,6 @@ read_diann <- function(
     precursor_quantity = PRECURSOR_QUANTITY, 
     simplify_snames = TRUE,
     contaminants = character(0), 
-    organism = NULL,
     impute = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
     coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
