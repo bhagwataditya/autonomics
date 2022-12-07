@@ -9,19 +9,13 @@
 .read_diann_precursors(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
-  fastadt = NULL,
   verbose = TRUE
 )
 
-.read_diann_proteingroups(
-  file,
-  precursor_quantity = PRECURSOR_QUANTITY,
-  fastadt = NULL
-)
+.read_diann_proteingroups(file, precursor_quantity = PRECURSOR_QUANTITY)
 
 read_diann(
   file,
-  fastadt = NULL,
   quantity = "PG.MaxLFQ",
   precursor_quantity = PRECURSOR_QUANTITY,
   simplify_snames = TRUE,
@@ -44,8 +38,6 @@ read_diann(
 \item{file}{'report.tsv' file}
 
 \item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
-
-\item{fastadt}{NULL or data.table}
 
 \item{verbose}{TRUE/FALSE}
 

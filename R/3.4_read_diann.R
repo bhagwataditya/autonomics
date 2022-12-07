@@ -154,15 +154,11 @@ uniprot2isoforms <- function(x){
 #' @rdname read_diann
 #' @export
 .read_diann_precursors <- function(
-    file, 
-    precursor_quantity = PRECURSOR_QUANTITY, 
-    fastadt  = NULL, 
-    verbose  = TRUE
+    file, precursor_quantity = PRECURSOR_QUANTITY, verbose  = TRUE
 ){
 # Assert
     assert_diann_file(file)
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
-    if (!is.null(fastadt))  assert_is_data.table(fastadt)
 # Read
     anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id',
                  'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value', 'Stripped.Sequence')
@@ -219,21 +215,17 @@ uniprot2isoforms <- function(x){
 #' @rdname read_diann
 #' @export
 .read_diann_proteingroups <- function(
-    file, 
-    precursor_quantity = PRECURSOR_QUANTITY, 
-    fastadt   = NULL
+    file, precursor_quantity = PRECURSOR_QUANTITY
 ){
-    dt <- .read_diann_precursors(
-            file, precursor_quantity = precursor_quantity, 
-            fastadt = fastadt)
+    dt <- .read_diann_precursors(file, precursor_quantity = precursor_quantity)
     dt[, sequence := sequence[1], by = c('uniprot', 'Run')]
-    cols <- c('gene', 'feature_name', 'protein', 'organism', 'uniprot', 'Run',
+    cols <- c('gene', 'feature_id', 'protein', 'organism', 'uniprot', 'Run',
               'npeptide', 'nprecursor', 'sequence',
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 
               'PG.Q.Value', 'Global.PG.Q.Value')
     dt %<>% extract(, cols, with = FALSE )
     dt %<>% unique()
-    #dt[, .N, by = c('Run', 'protein')][N!=1] # single row per run/protein - yes!
+    #dt[, .SD[.N>1], by = c('Run', 'feature_id')] # single row per run/protein - yes!
     dt
 }
 
@@ -242,7 +234,6 @@ uniprot2isoforms <- function(x){
 #' Read diann
 #'
 #' @param file               'report.tsv' file
-#' @param fastadt             NULL or data.table
 #' @param quantity           'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
 #' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
@@ -279,7 +270,7 @@ uniprot2isoforms <- function(x){
 #'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
 #' @export
 read_diann <- function(
-    file, fastadt = NULL, 
+    file, 
     quantity = 'PG.MaxLFQ', 
     precursor_quantity = PRECURSOR_QUANTITY, 
     simplify_snames = TRUE,
