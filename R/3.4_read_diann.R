@@ -127,62 +127,6 @@ commonify_strings <- function(x){
     paste0(common, .)
 }
 
-commonify_collapsed_strings <- function(x, sep = ';'){
-    commonify_strings(unlist(stri_split_fixed(x, sep)))
-}
-
-#' Forge PG descriptions
-#' @param uniprot string vector (without duplicates)
-#' @param protein NULL or string vector (with same length as uniprot)
-#' @param fastadt data.table
-#' @return string vector
-#' @examples
-#' # Without file 
-#'     uniprot <- c('Q96JP5;Q96JP5-2', 'O75822', 'Q96AC1;Q96AC1-3;Q9BQL6')
-#'     protein <- c('ZFP91', 'EIF3J', 'FERM2;FERM1')
-#'     forge_pg_descriptions(uniprot, protein)
-#' # With file
-#'     file <- download_data('uniprot_hsa_20140515.fasta')
-#'     fastadt <- read_fastahdrs(file)
-#'     forge_pg_descriptions(uniprot, fastadt = fastadt)
-#' @export
-forge_pg_descriptions <- function(
-    uniprot, Protein.Name = NULL, fastadt = NULL
-){
-    assert_is_character(uniprot)
-    assert_has_no_duplicates(uniprot)
-    
-    if (is.null(fastadt)){
-        assert_is_character(Protein.Name)
-        pgdt <- data.table(uniprot = uniprot, Protein.Name = Protein.Name)
-        pgdt$Protein.Name %<>% stri_replace_all_regex('_[A-Z]+', '') # rm '_HUMAN'
-        pgdt[, isoform := pg_to_isoforms(uniprot) ]
-        pgdt[, feature_id := Protein.Name]
-        #pgdt[stri_detect_fixed(Protein.Name, ';'), feature_id := commonify_collapsed_strings(feature_id, ';'), by = 'feature_id']
-        pgdt[isoform!='0', feature_id := paste0(feature_id, '(', isoform, ')') ]
-        PG0 <- uniprot
-        pgdt %<>% extract(PG0, on = 'uniprot')
-        pgdt$feature_id
-    } else {
-        pgdt <- data.table(proId = uniprot, uniprot = uniprot)
-        pgdt %<>% separate_rows(uniprot, sep = ';') %>% data.table()
-        fastadt %<>% extract(, c('uniprot', 'protein', 'canonical', 'isoform'))
-        pgdt %<>% merge(fastadt, by = 'uniprot', sort = FALSE)
-        # pgdt %<>% drop_inferior(verbose = FALSE)
-            # DIA-NN has a non-razor approach
-            # P63151, Q66LE6, P63151;Q66LE6 are three different proteingroups !
-            # curation is incompatible with this setup
-        pgdt %<>% extract(order(proId, protein, isoform))
-        pgdt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = c('proId', 'canonical')) # Collapse PG isoforms
-        pgdt[, feature_id := protein]
-        pgdt[, isoform := stri_replace_all_fixed(isoform, ';', ',')]
-        pgdt[isoform!='0', feature_id := paste0(feature_id, '(', isoform, ')')]
-        pgdt[, isoform := NULL]
-        pgdt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = c('proId'))              # Collapse PG paralogs
-        pgdt %<>% extract(uniprot, on = 'proId')
-        pgdt$feature_id
-    }
-}
 
 #' diann precursor quantity
 #' @export
@@ -329,6 +273,18 @@ assert_phosphosites_file <- function(x, .xname = get_name_in_parent(x)){
     assert_engine(is_phosphosites_file, x, .xname = .xname)
 }
 
+# x <- 'Q15149;Q15149-3;Q15149-4;Q15149-8'
+# uniprot2isoforms(x)
+uniprot2isoforms <- function(x){
+    x %<>% stri_split_fixed(';') 
+    x %<>% unlist() 
+    x %<>% split_extract_fixed('-', 2)
+    x[x=='NA'] <- '0'
+    #x %<>% unique()  #doesnt work with the way diann organises its proteingroups
+    x %<>% sort()
+    paste0(x, collapse = ',')
+}
+
 #' @rdname read_diann
 #' @export
 .read_diann_precursors <- function(
@@ -351,12 +307,14 @@ assert_phosphosites_file <- function(x, .xname = get_name_in_parent(x)){
     setnames(dt, 'Genes',         'gene')
     setnames(dt, 'Protein.Names', 'protein')
     setnames(dt, 'Protein.Group', 'uniprot')
+    setnames(dt, 'Precursor.Id',  'precursor')
     setnames(dt, 'Stripped.Sequence', 'sequence')
-# Order(npeptides, nprecursors, maxlfq)
-    dt <- dt[, .SD[rev(order(get(precursor_quantity)))], by = c('uniprot', 'Run')] # order precursors by intensity
-    dt[, iprecursor := seq_len(.N),               by = c('uniprot', 'Run')]
-    dt[, nprecursor := length(unique(precursor)), by = c('uniprot', 'Run')]
-    dt[, npeptide   := length(unique(sequence)),  by = c('uniprot', 'Run')]
+# Order precursors
+    dt <- dt[, .SD[rev(order(get(precursor_quantity)))], by = c('uniprot', 'Run')]
+    dt[, iprecursor := seq_len(.N),                      by = c('uniprot', 'Run')]
+    dt[, nprecursor := length(unique(precursor)),        by = c('uniprot', 'Run')]
+    dt[, npeptide   := length(unique(sequence)),         by = c('uniprot', 'Run')]
+# Order proteingroups
     pgdt <- dt[, .(uniprot, Run, npeptide, nprecursor, PG.MaxLFQ)]
     pgdt %<>% unique()
     pgdt %<>% extract(, .(npeptide   = sum(npeptide), 
@@ -366,18 +324,23 @@ assert_phosphosites_file <- function(x, .xname = get_name_in_parent(x)){
     dt[, uniprot := factor(uniprot, pgdt$uniprot)]
     dt %<>% extract(order(uniprot, Run, iprecursor))
     dt[, uniprot := as.character(uniprot)]
-# Annotate
-    pgdt <- unique(dt[, .(uniprot, protein)])                                    # annotate proteingroups
-    pgdt %<>% uncollapse(protein, sep = ';')                                     #     uncollapse proteins
-    pgdt[, organism := split_extract_fixed(protein, '_', 2)]                     #     separate organism
+# Intuify protein
+    pgdt <- unique(dt[, .(uniprot, protein)])
+    pgdt %<>% uncollapse(protein, sep = ';')                                     #     uncollapse
+    pgdt[, organism := split_extract_fixed(protein, '_', 2)]                     #     drop organism
     pgdt[, protein  := split_extract_fixed(protein, '_', 1)]                     # 
     pgdt[, protein := commonify_strings(protein), by = c('uniprot', 'organism')] #     commonify  (within proteingroup/organism)
     pgdt %<>% recollapse(by = c('uniprot', 'organism'), sep = ';')               #     recollapse (within proteingroup/organism)
     pgdt[, protein := paste0(protein, '_', organism)]                            #     add organism
     pgdt %<>% recollapse(by = 'uniprot')                                         #     recollapse (within proteingroup)
-    pgdt[, feature_name := forge_pg_descriptions(uniprot, protein, fastadt)]     #     add feature_name
+# Add feature_id
+    pgdt[, isoform := uniprot2isoforms(uniprot), by = 'uniprot']
+    pgdt[, feature_id := paste0(protein, '-', isoform)]
+    assert_has_no_duplicates(pgdt$feature_id)
+    pgdt[, c('isoform') := NULL]
+    # pgdt[, feature_name := forge_pg_descriptions(uniprot, protein, fastadt)]     #     add feature_name
     dt %<>% .merge(pgdt, by = 'uniprot')
-    dt %<>% pull_columns(c('gene', 'feature_name', 'protein', 'organism', 'uniprot', 
+    dt %<>% pull_columns(c('gene', 'protein', 'organism', 'feature_id', 'uniprot', 
                 'Run', 'npeptide', 'nprecursor', 'iprecursor', 'precursor', 'sequence'))
 # Summarize
     dt[, PG.Top1 :=     rev(sort(get(precursor_quantity)))[1],                  by = c('uniprot', 'Run')]
