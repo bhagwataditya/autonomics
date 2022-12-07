@@ -161,7 +161,7 @@ uniprot2isoforms <- function(x){
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
 # Read
     anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id',
-                 'Q.Value', 'PG.Q.Value', 'Global.PG.Q.Value', 'Stripped.Sequence')
+                 'Q.Value', 'PG.Q.Value', 'Lib.PG.Q.Value', 'Stripped.Sequence')
     numcols <- c(precursor_quantity, 'PG.Quantity', 'PG.MaxLFQ')
     cols <- c(anncols, numcols)
     dt <- fread(file, select = cols)                  # 1977.16 but 1,35E+11
@@ -222,10 +222,10 @@ uniprot2isoforms <- function(x){
     cols <- c('gene', 'feature_id', 'protein', 'organism', 'uniprot', 'Run',
               'npeptide', 'nprecursor', 'sequence',
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 
-              'PG.Q.Value', 'Global.PG.Q.Value')
+              'PG.Q.Value', 'Lib.PG.Q.Value')
     dt %<>% extract(, cols, with = FALSE )
     dt %<>% unique()
-    #dt[, .SD[.N>1], by = c('Run', 'feature_id')] # single row per run/protein - yes!
+    #dt[, .N, by = c('Run', 'feature_id')]$N # single row per run/protein - yes!
     dt
 }
 
