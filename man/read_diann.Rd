@@ -16,7 +16,6 @@
 
 read_diann(
   file,
-  quantity = "PG.MaxLFQ",
   precursor_quantity = PRECURSOR_QUANTITY,
   simplify_snames = TRUE,
   contaminants = character(0),
@@ -40,8 +39,6 @@ read_diann(
 \item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
 
 \item{verbose}{TRUE/FALSE}
-
-\item{quantity}{'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'}
 
 \item{simplify_snames}{TRUE/FALSE : simplify (drop common parts in) samplenames ?}
 

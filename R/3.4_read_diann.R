@@ -234,7 +234,6 @@ uniprot2isoforms <- function(x){
 #' Read diann
 #'
 #' @param file               'report.tsv' file
-#' @param quantity           'PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', or 'PG.Sum'
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
 #' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
 #' @param contaminants        string vector: contaminant uniprots
@@ -271,7 +270,6 @@ uniprot2isoforms <- function(x){
 #' @export
 read_diann <- function(
     file, 
-    quantity = 'PG.MaxLFQ', 
     precursor_quantity = PRECURSOR_QUANTITY, 
     simplify_snames = TRUE,
     contaminants = character(0), 
