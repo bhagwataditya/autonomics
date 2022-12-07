@@ -167,14 +167,16 @@ uniprot2isoforms <- function(x){
     dt <- fread(file, select = cols)                  # 1977.16 but 1,35E+11
     for (col in numcols){   dt[, (col) := stri_replace_first_fixed(get(col), ',', '.') ] 
                             dt[, (col) := as.numeric(get(col))  ] }
-    setnames(dt, 'Genes',         'gene')
-    setnames(dt, 'Protein.Names', 'protein')
-    setnames(dt, 'Protein.Group', 'uniprot')
-    setnames(dt, 'Precursor.Id',  'precursor')
+    setnames(dt, 'Genes',             'gene')
+    setnames(dt, 'Protein.Names',     'protein')
+    setnames(dt, 'Protein.Group',     'uniprot')
+    setnames(dt, 'Precursor.Id',      'precursor')
+    setnames(dt, 'Lib.PG.Q.Value',    'Lib.PG.Q')
     setnames(dt, 'Stripped.Sequence', 'sequence')
 # Filter
     n0 <- length(unique(dt$uniprot))
-    dt %<>% extract(Lib.PG.Q.Value < Lib.PG.Q)
+    q <- Lib.PG.Q
+    dt %<>% extract(Lib.PG.Q < q)
     n1 <- length(unique(dt$uniprot))
     if (verbose)  message('\t\tRetain ', n1, '/', n0, ' proteingroups: Lib.PG.Q < ', Lib.PG.Q)
 # Order precursors
@@ -228,7 +230,7 @@ uniprot2isoforms <- function(x){
     cols <- c('gene', 'feature_id', 'protein', 'organism', 'uniprot', 'Run',
               'npeptide', 'nprecursor', 'sequence',
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 
-              'Lib.PG.Q.Value', 'Lib.PG.Q.Value')
+              'Lib.PG.Q')
     dt %<>% extract(, cols, with = FALSE )
     dt %<>% unique()
     assert_is_identical_to_true(all(dt[, .N, by = c('Run', 'feature_id')]$N==1))  # single row per run/protein - yes!
@@ -241,7 +243,7 @@ uniprot2isoforms <- function(x){
 #'
 #' @param file               'report.tsv' file
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
-#' @param Lib.PG.Q            Lib.PG.Q.Value cutoff
+#' @param Lib.PG.Q            Lib.PG.Q cutoff
 #' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
 #' @param contaminants        string vector: contaminant uniprots
 #' @param impute              TRUE / FALSE : impute group-specific NA values?
@@ -305,7 +307,7 @@ read_diann <- function(
     analysis(object)$nfeatures <- nrow(object)
 # fdt
     cols <- c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 
-              'Lib.PG.Q.Value', 'sequence', 'Run', 'npeptide', 'nprecursor')
+              'sequence', 'Run', 'npeptide', 'nprecursor')
     dt[, (cols) := NULL]
     dt %<>% unique()
     assert_are_identical(nrow(dt), nrow(object)) # if not more fields need to be NULLed

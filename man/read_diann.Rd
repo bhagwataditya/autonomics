@@ -44,7 +44,7 @@ read_diann(
 
 \item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
 
-\item{Lib.PG.Q}{Lib.PG.Q.Value cutoff}
+\item{Lib.PG.Q}{Lib.PG.Q cutoff}
 
 \item{verbose}{TRUE/FALSE}
 
