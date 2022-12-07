@@ -279,18 +279,15 @@ read_diann <- function(
     palette = NULL, verbose = TRUE
 ){
 # Assert
-    assert_is_subset(quantity, c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum'))
     if (!is.null(contaminants))  assert_is_character(contaminants)
 # SumExp
-    dt <- .read_diann_proteingroups(
-            file, precursor_quantity = precursor_quantity,
-            fastadt = fastadt, organism = organism)
+    dt <- .read_diann_proteingroups(file, precursor_quantity = precursor_quantity)
     object <- SummarizedExperiment(list(
-        log2.PG.MaxLFQ   = dcast_diann(dt, 'PG.MaxLFQ',   fill = NA, log2 = TRUE),
-        log2.PG.Quantity = dcast_diann(dt, 'PG.Quantity', fill = NA, log2 = TRUE),
-        log2.PG.Top1     = dcast_diann(dt, 'PG.Top1',     fill = NA, log2 = TRUE),
-        log2.PG.Top3     = dcast_diann(dt, 'PG.Top3',     fill = NA, log2 = TRUE),
-        log2.PG.Sum      = dcast_diann(dt, 'PG.Sum',      fill = NA             ),
+        log2.MaxLFQ      = dcast_diann(dt, 'PG.MaxLFQ',   fill = NA, log2 = TRUE),
+        log2.Quantity    = dcast_diann(dt, 'PG.Quantity', fill = NA, log2 = TRUE),
+        log2.Top1        = dcast_diann(dt, 'PG.Top1',     fill = NA, log2 = TRUE),
+        log2.Top3        = dcast_diann(dt, 'PG.Top3',     fill = NA, log2 = TRUE),
+        log2.Sum         = dcast_diann(dt, 'PG.Sum',      fill = NA             ),
         npeptide         = dcast_diann(dt, 'npeptide',    fill = 0              ),
         nprecursor       = dcast_diann(dt, 'nprecursor',  fill = 0              ), 
         sequence         = dcast_diann(dt, 'sequence',    fill = '')))
@@ -303,11 +300,10 @@ read_diann <- function(
     dt[, (cols) := NULL]
     dt %<>% unique()
     assert_are_identical(nrow(dt), nrow(object)) # if not more fields need to be NULLed
-    dt[, feature_id := uniprot]
     object %<>% merge_fdt(dt)
-    fdt(object)$npeptide       <- rowMeans(assays(object)$npeptide)                     %>% round(digits = 1)
-    fdt(object)$nprecursor     <- rowMeans(assays(object)$nprecursor)                   %>% round(digits = 1)
-    fdt(object)$log2.PG.MaxLFQ <- rowMeans(assays(object)$log2.PG.MaxLFQ, na.rm = TRUE) %>% round(digits = 1)
+    fdt(object)$npeptide    <- rowMeans(assays(object)$npeptide)                  %>% round(digits = 1)
+    fdt(object)$nprecursor  <- rowMeans(assays(object)$nprecursor)                %>% round(digits = 1)
+    fdt(object)$log2.MaxLFQ <- rowMeans(assays(object)$log2.MaxLFQ, na.rm = TRUE) %>% round(digits = 1)
 # sdt
     snames(object) <- colnames(object)
     if (simplify_snames)  snames(object) %<>% simplify_snames()
@@ -337,9 +333,9 @@ read_diann <- function(
 # dcast_diann(dt, quantity = 'npeptide',   fill = 0               )[1:3, 1:3]
 # dcast_diann(dt, quantity = 'sequence',   fill = ''              )[1:3, 1:3]
 dcast_diann <- function(dt, quantity, fill, log2 = FALSE){
-    mat <- data.table::dcast(dt, uniprot ~ Run, value.var = quantity, fill = fill)
+    mat <- data.table::dcast(dt, feature_id ~ Run, value.var = quantity, fill = fill)
     mat %<>% dt2mat()
-    mat %<>% extract(unique(dt$uniprot), ) # preserve original order
+    mat %<>% extract(unique(dt$feature_id), ) # preserve original order
     if (is.na(fill))  mat %<>% zero_to_na() %>% nan_to_na()
     if (log2)         mat %<>% log2()
     mat
