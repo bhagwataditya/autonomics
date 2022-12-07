@@ -141,8 +141,8 @@ pca <- function(
     colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
-    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
+    object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdt(mat2dt(features, 'feature_id'))
     metadata(object)$pca <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
@@ -182,8 +182,8 @@ pls <- function(
     colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
-    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
+    object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdt(mat2dt(features, 'feature_id'))
     metadata(object)$pls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
@@ -239,8 +239,8 @@ sma <- function(
 # Add
     samples  %<>% cbind( sample_id = rownames(.), .)
     features %<>% cbind(feature_id = rownames(.), .)
-    object %<>% merge_sdata(samples, 'sample_id')
-    object %<>% merge_fdata(features, 'feature_id')
+    object %<>% merge_sdt(samples, 'sample_id')
+    object %<>% merge_fdt(features, 'feature_id')
     metadata(object)$sma <- variances
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
@@ -297,8 +297,8 @@ lda <- function(
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Merge - Filter - Return
-    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
-    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
+    object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdt(mat2dt(features, 'feature_id'))
     metadata(object)$lda <- variances
     object %<>% .filter_minvar('lda', minvar)
     lda1 <- lda2 <- NULL
@@ -345,8 +345,8 @@ spls <- function(
     colnames(features) <- sprintf('spls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('spls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(mat2dt(samples,  'sample_id'))
-    object %<>% merge_fdata(mat2dt(features,'feature_id'))
+    object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
+    object %<>% merge_fdt(mat2dt(features,'feature_id'))
     metadata(object)$spls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
@@ -393,8 +393,8 @@ opls <- function(
     colnames(features) <- sprintf('opls%d', seq_len(ncol(features)))
     names(variances)   <- sprintf('opls%d', seq_len(length(variances)))
 # Add
-    object %<>% merge_sdata(mat2dt(samples,  'sample_id'))
-    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
+    object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
+    object %<>% merge_fdt(mat2dt(features, 'feature_id'))
     metadata(object)$opls <- variances
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
@@ -427,7 +427,12 @@ add_scores <- function(
     fixed = list(shape = 15, size = 3, na.rm = TRUE)
 ){
 # manual colors require non-numerics
-    if (!is.null(color))    object[[color]] %<>% num2char() 
+    if (!is.null(color)){
+        if (is.numeric(color)){
+            levs <- as.character(unique(sort(object[[color]])))
+            object[[color]] %<>% num2char() %>% factor(levs)
+        }
+    }
     xsym <- sym(x)
     ysym <- sym(y)
     colorsym <- if (is.null(color)) quo(NULL) else sym(color)
@@ -546,7 +551,7 @@ biplot <- function(
     feature_label = 'feature_name', 
     fixed = list(shape = 15, size = 3), 
     nloadings = 0,
-    palette = make_svar_palette(object, color)
+    palette =  make_svar_palette(object, color)
 ){
 # Assert / Process
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -577,8 +582,8 @@ biplot <- function(
     p %<>% add_loadings(object, x = x, y = y, label = feature_label, nloadings = nloadings)
     p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
                       size = size, group = group, linetype = linetype, fixed = fixed)
-    p <- p + scale_color_manual(values = palette, na.value = 'gray80')
-    if (!is.null(label))  p <- p + geom_text_repel(
+    if (!is.null(palette))  p <- p + scale_color_manual(values = palette, na.value = 'gray80')
+    if (!is.null(label  ))  p <- p + geom_text_repel(
                     aes(x = !!sym(x), y = !!sym(y), label = !!sym(label)), 
                     data = sdt(object), na.rm = TRUE)
     if (!is.null(shape)){
