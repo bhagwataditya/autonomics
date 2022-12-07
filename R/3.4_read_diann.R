@@ -161,7 +161,7 @@ uniprot2isoforms <- function(x){
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
 # Read
     anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id',
-                 'Q.Value', 'PG.Q.Value', 'Lib.PG.Q.Value', 'Stripped.Sequence')
+                 'Q.Value', 'Lib.PG.Q.Value', 'Stripped.Sequence')
     numcols <- c(precursor_quantity, 'PG.Quantity', 'PG.MaxLFQ')
     cols <- c(anncols, numcols)
     dt <- fread(file, select = cols)                  # 1977.16 but 1,35E+11
@@ -172,6 +172,11 @@ uniprot2isoforms <- function(x){
     setnames(dt, 'Protein.Group', 'uniprot')
     setnames(dt, 'Precursor.Id',  'precursor')
     setnames(dt, 'Stripped.Sequence', 'sequence')
+# Filter
+    n0 <- length(unique(dt$uniprot))
+    dt %<>% extract(Lib.PG.Q.Value < 0.01)
+    n1 <- length(unique(dt$uniprot))
+    if (verbose)  message('\t\tRetain ', n1, '/', n0, ' proteingroups: Lib.PG.Q < 0.01')
 # Order precursors
     dt <- dt[, .SD[rev(order(get(precursor_quantity)))], by = c('uniprot', 'Run')]
     dt[, iprecursor := seq_len(.N),                      by = c('uniprot', 'Run')]
@@ -209,7 +214,7 @@ uniprot2isoforms <- function(x){
     dt[, PG.Top1 :=     rev(sort(get(precursor_quantity)))[1],                  by = c('uniprot', 'Run')]
     dt[, PG.Top3 := sum(rev(sort(get(precursor_quantity)))[1:3], na.rm = TRUE), by = c('uniprot', 'Run')]
     dt[, PG.Sum  := sum(         get(precursor_quantity),        na.rm = TRUE), by = c('uniprot', 'Run')]
-    dt 
+    dt[]
 }
 
 #' @rdname read_diann
@@ -222,10 +227,10 @@ uniprot2isoforms <- function(x){
     cols <- c('gene', 'feature_id', 'protein', 'organism', 'uniprot', 'Run',
               'npeptide', 'nprecursor', 'sequence',
               'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 
-              'PG.Q.Value', 'Lib.PG.Q.Value')
+              'Lib.PG.Q.Value', 'Lib.PG.Q.Value')
     dt %<>% extract(, cols, with = FALSE )
     dt %<>% unique()
-    #dt[, .N, by = c('Run', 'feature_id')]$N # single row per run/protein - yes!
+    assert_is_identical_to_true(all(dt[, .N, by = c('Run', 'feature_id')]$N==1))  # single row per run/protein - yes!
     dt
 }
 
@@ -296,7 +301,7 @@ read_diann <- function(
     analysis(object)$nfeatures <- nrow(object)
 # fdt
     cols <- c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 
-              'PG.Q.Value', 'sequence', 'Run', 'npeptide', 'nprecursor')
+              'Lib.PG.Q.Value', 'sequence', 'Run', 'npeptide', 'nprecursor')
     dt[, (cols) := NULL]
     dt %<>% unique()
     assert_are_identical(nrow(dt), nrow(object)) # if not more fields need to be NULLed
