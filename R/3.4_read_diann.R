@@ -154,7 +154,7 @@ uniprot2isoforms <- function(x){
 #' @rdname read_diann
 #' @export
 .read_diann_precursors <- function(
-    file, precursor_quantity = PRECURSOR_QUANTITY, verbose  = TRUE
+    file, precursor_quantity = PRECURSOR_QUANTITY, Lib.PG.Q = 0.01, verbose  = TRUE
 ){
 # Assert
     assert_diann_file(file)
@@ -174,9 +174,9 @@ uniprot2isoforms <- function(x){
     setnames(dt, 'Stripped.Sequence', 'sequence')
 # Filter
     n0 <- length(unique(dt$uniprot))
-    dt %<>% extract(Lib.PG.Q.Value < 0.01)
+    dt %<>% extract(Lib.PG.Q.Value < Lib.PG.Q)
     n1 <- length(unique(dt$uniprot))
-    if (verbose)  message('\t\tRetain ', n1, '/', n0, ' proteingroups: Lib.PG.Q < 0.01')
+    if (verbose)  message('\t\tRetain ', n1, '/', n0, ' proteingroups: Lib.PG.Q < ', Lib.PG.Q)
 # Order precursors
     dt <- dt[, .SD[rev(order(get(precursor_quantity)))], by = c('uniprot', 'Run')]
     dt[, iprecursor := seq_len(.N),                      by = c('uniprot', 'Run')]
@@ -220,9 +220,10 @@ uniprot2isoforms <- function(x){
 #' @rdname read_diann
 #' @export
 .read_diann_proteingroups <- function(
-    file, precursor_quantity = PRECURSOR_QUANTITY
+    file, precursor_quantity = PRECURSOR_QUANTITY, Lib.PG.Q = 0.01
 ){
-    dt <- .read_diann_precursors(file, precursor_quantity = precursor_quantity)
+    dt <- .read_diann_precursors(
+        file, precursor_quantity = precursor_quantity, Lib.PG.Q = Lib.PG.Q)
     dt[, sequence := sequence[1], by = c('uniprot', 'Run')]
     cols <- c('gene', 'feature_id', 'protein', 'organism', 'uniprot', 'Run',
               'npeptide', 'nprecursor', 'sequence',
@@ -240,6 +241,7 @@ uniprot2isoforms <- function(x){
 #'
 #' @param file               'report.tsv' file
 #' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
+#' @param Lib.PG.Q            Lib.PG.Q.Value cutoff
 #' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
 #' @param contaminants        string vector: contaminant uniprots
 #' @param impute              TRUE / FALSE : impute group-specific NA values?
@@ -275,7 +277,8 @@ uniprot2isoforms <- function(x){
 #' @export
 read_diann <- function(
     file, 
-    precursor_quantity = PRECURSOR_QUANTITY, 
+    precursor_quantity = PRECURSOR_QUANTITY,
+    Lib.PG.Q = 0.01,
     simplify_snames = TRUE,
     contaminants = character(0), 
     impute = FALSE, plot = FALSE, 
@@ -286,7 +289,8 @@ read_diann <- function(
 # Assert
     if (!is.null(contaminants))  assert_is_character(contaminants)
 # SumExp
-    dt <- .read_diann_proteingroups(file, precursor_quantity = precursor_quantity)
+    dt <- .read_diann_proteingroups(
+        file, precursor_quantity = precursor_quantity, Lib.PG.Q = Lib.PG.Q)
     object <- SummarizedExperiment(list(
         log2.MaxLFQ      = dcast_diann(dt, 'PG.MaxLFQ',   fill = NA, log2 = TRUE),
         log2.Quantity    = dcast_diann(dt, 'PG.Quantity', fill = NA, log2 = TRUE),

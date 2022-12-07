@@ -9,14 +9,20 @@
 .read_diann_precursors(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
+  Lib.PG.Q = 0.01,
   verbose = TRUE
 )
 
-.read_diann_proteingroups(file, precursor_quantity = PRECURSOR_QUANTITY)
+.read_diann_proteingroups(
+  file,
+  precursor_quantity = PRECURSOR_QUANTITY,
+  Lib.PG.Q = 0.01
+)
 
 read_diann(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
+  Lib.PG.Q = 0.01,
   simplify_snames = TRUE,
   contaminants = character(0),
   impute = FALSE,
@@ -37,6 +43,8 @@ read_diann(
 \item{file}{'report.tsv' file}
 
 \item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
+
+\item{Lib.PG.Q}{Lib.PG.Q.Value cutoff}
 
 \item{verbose}{TRUE/FALSE}
 
