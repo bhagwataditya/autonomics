@@ -37,7 +37,7 @@ tag_hdlproteins <- function(object, verbose = TRUE){
     fdt0 <- fdt0[, hdl := protein %in% hdlproteins]
     fdt0 <- fdt0[, .(hdl = any(hdl)), by = feature_id]
     fdt0$hdl %<>% as.numeric()
-    object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
+    object %<>% merge_fdt(fdt0)
     if (verbose)  message(sprintf(
         '%d/%d HDL groups, %d/%d HDLProteomeWatch proteins', 
         sum(fdt(object)$hdl), 
