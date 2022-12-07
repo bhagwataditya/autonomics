@@ -94,10 +94,6 @@ Read diann
    .read_diann_precursors(file)      #    precursors longdt
    .read_diann_proteingroups(file)   # proteingroups longdt
    fdt(read_diann(file))             # proteingroups sumexp
-# Read with sequence
-   .read_diann_precursors(   file, sequence = TRUE)
-   .read_diann_proteingroups(file, sequence = TRUE)
-   fdt(read_diann(           file, sequence = TRUE))
 # Compare
     PR <- .read_diann_precursors(file)
     PG <- .read_diann_proteingroups(file)
