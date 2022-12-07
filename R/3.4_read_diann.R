@@ -164,6 +164,18 @@ uniprot2isoforms <- function(x){
     paste0(x, collapse = ',')
 }
 
+# x <- 'Q15149;Q15149-3;Q15149-4;Q15149-8'
+# uniprot2isoforms(x)
+uniprot2isoforms <- function(x){
+    x %<>% stri_split_fixed(';') 
+    x %<>% unlist() 
+    x %<>% split_extract_fixed('-', 2)
+    x[x=='NA'] <- '0'
+    #x %<>% unique()  #doesnt work with the way diann organises its proteingroups
+    x %<>% sort()
+    paste0(x, collapse = ',')
+}
+
 #' @rdname read_diann
 #' @export
 .read_diann_precursors <- function(
