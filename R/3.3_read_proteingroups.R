@@ -93,7 +93,7 @@ un_int64 <- function(x) {
 .read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file), verbose = TRUE){
 # Assert
     assert_proteingroups_file(file)
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
 # Read
     if (verbose)  message('\tRead ', file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
