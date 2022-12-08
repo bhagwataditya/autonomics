@@ -9,7 +9,7 @@ read_maxquant_proteingroups(
   dir = getwd(),
   file = if (is_file(dir)) dir else file.path(dir, "proteinGroups.txt"),
   fastadt = NULL,
-  quantity = guess_maxquant_quantity(file),
+  quantity = NULL,
   subgroups = NULL,
   invert = character(0),
   contaminants = FALSE,
@@ -39,7 +39,7 @@ read_proteingroups(...)
 
 \item{quantity}{'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
-'Intensity'}
+'Intensity' or NULL}
 
 \item{subgroups}{NULL or string vector : subgroups to retain}
 

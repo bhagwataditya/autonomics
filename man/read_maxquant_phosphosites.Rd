@@ -10,7 +10,7 @@ read_maxquant_phosphosites(
   phosphofile = if (is_file(dir)) dir else file.path(dir, "phospho (STY)Sites.txt"),
   proteinfile = file.path(dirname(file), "proteinGroups.txt"),
   fastadt = NULL,
-  quantity = guess_maxquant_quantity(proteinfile),
+  quantity = NULL,
   subgroups = NULL,
   invert = character(0),
   contaminants = FALSE,
@@ -43,7 +43,7 @@ read_phosphosites(...)
 
 \item{quantity}{'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
-'Intensity'}
+'Intensity' or NULL}
 
 \item{subgroups}{NULL or string vector : subgroups to retain}
 

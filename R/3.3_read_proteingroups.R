@@ -481,6 +481,7 @@ CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism
 #' @md
 #' @export
 curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
+    if (!is.null(fastadt))
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     dt %<>% copy()
     dt[, protein := NA_character_]
@@ -498,7 +499,8 @@ curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
 #' @rdname curate_annotate
 #' @export
 curate_annotate_fastafile <- function(dt, fastadt, verbose = TRUE){
-# Return if NULL fastadt
+# Assert
+    assert_fastadt_or_null(fastadt)
     dt %<>% copy()
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     if (is.null(fastadt)){
@@ -759,7 +761,7 @@ is_file <- function(file){
 #' @param fastadt       NULL or data.table
 #' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 #'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
-#'                     'Intensity'
+#'                     'Intensity' or NULL
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE/FALSE : retain contaminants ?
 #' @param reverse       TRUE/FALSE : include reverse hits ?
@@ -794,7 +796,7 @@ is_file <- function(file){
 read_maxquant_proteingroups <- function(
     dir = getwd(), 
     file = if (is_file(dir)) dir else file.path(dir, 'proteinGroups.txt'), 
-    fastadt = NULL, quantity = guess_maxquant_quantity(file), 
+    fastadt = NULL, quantity = NULL, 
     subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = FALSE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,
@@ -802,6 +804,8 @@ read_maxquant_proteingroups <- function(
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
+    assert_proteingroups_file(file)
+    if (is.null(quantity))  quantity <- guess_maxquant_quantity(file)
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
@@ -859,7 +863,7 @@ read_proteingroups <- function(...){
 #' @param fastadt       NULL or data.table
 #' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 #'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
-#'                     'Intensity'
+#'                     'Intensity' or NULL
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE/FALSE : retain contaminants ?
 #' @param reverse       TRUE/FALSE : include reverse hits ?
@@ -894,7 +898,7 @@ read_maxquant_phosphosites <- function(
     phosphofile = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
     proteinfile = file.path(dirname(file), 'proteinGroups.txt'), 
     fastadt = NULL, 
-    quantity = guess_maxquant_quantity(proteinfile), 
+    quantity = NULL, 
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
     impute = FALSE, plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,  
@@ -903,6 +907,7 @@ read_maxquant_phosphosites <- function(
 ){
 # Assert
     assert_all_are_existing_files(c(phosphofile, proteinfile))
+    if (is.null(quantity))  quantity <- guess_maxquant_quantity(file)
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
