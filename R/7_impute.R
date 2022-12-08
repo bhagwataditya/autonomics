@@ -416,12 +416,33 @@ split_by_fvar <- function(object, fvar){
 #
 #=============================================================================
 
-has_complete_nondetects <- function(object) any(rowAlls(is.na(values(object))))
+is_complete_nondetect <- function(object) rowAlls(is.na(values(object)))
+
+is_consistent_nondetect <- function(object, by = 'subgroup'){
+    y <- split_samples(object, by = by)
+    rowAnys(vapply(y, is_complete_nondetect, logical(nrow(object))))
+}
+
+#' Rm consistent nondetects 
+#' @param object SummarizedExperiment
+#' @param verbose TRUE or FALSE
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' rm_consistent_nondetects(object)
+#' @return SummarizedExperiment
+#' @export
+rm_consistent_nondetects <- function(object, verbose = TRUE){
+    idx <- is_consistent_nondetect(object, by = by)
+    if (verbose)  message('Rm ', sum(idx), '/', length(idx), ' consistent nondetects')
+    object %<>% extract(idx, )
+    object
+}
 
 has_consistent_nondetects <- function(object, by = 'subgroup'){
-    y <- split_samples(object, by)
-    any(vapply(y, has_complete_nondetects, logical(1)))
+    any(is_consistent_nondetect(object, by = by))
 }
+
 
 #' Is systematic/random/full detect
 #' @param object SummarizedExperiment
@@ -624,10 +645,11 @@ plot_summarized_detections <- function(...){
 #' \code{plot_subgroup_nas} shows systematic missingness at subgroup resolution.
 #' Random missingness and full detection are shown together (bright color).
 #' Imputations are also shown (light color).
-#' @param object     SummarizedExperiment
-#' @param by         svar (string)
-#' @param fill       svar (string)
-#' @param palette    color vector (names = levels, values = colors)
+#' @param object       SummarizedExperiment
+#' @param by           svar (string)
+#' @param fill         svar (string)
+#' @param palette      color vector (names = levels, values = colors)
+#' @param axis.text.y  passed to ggplot2::theme
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -648,7 +670,8 @@ plot_sample_nas <- function(
     object, 
     by = 'subgroup', 
     fill = by, 
-    palette = make_svar_palette(object, fill)
+    palette = make_svar_palette(object, fill), 
+    axis.text.y = element_blank()
 ){
 # Process
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -687,12 +710,12 @@ plot_sample_nas <- function(
         #ggtitle(sprintf('detects: %d full, %d random, %d consistent',
         #                nfull, nrandom, nconsistent)) +
         theme_bw() +
-        theme(   axis.text.y  = element_blank(), 
+        theme(   axis.text.y  = axis.text.y, 
                  axis.ticks.y = element_blank(),
                  axis.text.x  = element_text(angle = 90, vjust = 0.5, hjust = 0),
                  legend.title = element_blank(),
                  panel.grid   = element_blank(), 
-                 panel.border = element_rect(size = 1.5))
+                 panel.border = element_rect(linewidth = 1.5))
 # Add lines
     hlines <- cumsum(c(nfull, nrandom )) + 0.5  # cumsum(c(nfull, nrandom, nconsistent))
     fainthlines <- cumsum(rev(table(fdt(object)$natype))) + 0.5

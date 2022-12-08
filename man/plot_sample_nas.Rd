@@ -15,7 +15,8 @@ plot_sample_nas(
   object,
   by = "subgroup",
   fill = by,
-  palette = make_svar_palette(object, fill)
+  palette = make_svar_palette(object, fill),
+  axis.text.y = element_blank()
 )
 
 plot_subgroup_nas(
@@ -34,6 +35,8 @@ plot_subgroup_nas(
 \item{fill}{svar (string)}
 
 \item{palette}{color vector (names = levels, values = colors)}
+
+\item{axis.text.y}{passed to ggplot2::theme}
 }
 \value{
 ggplot object
