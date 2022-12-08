@@ -262,9 +262,9 @@ uniprot2isoforms <- function(x){
 #' @examples
 #' # Read
 #'    file <- download_data('dilution.report.tsv')
-#'    .read_diann_precursors(file)      #    precursors longdt
-#'    .read_diann_proteingroups(file)   # proteingroups longdt
-#'    fdt(read_diann(file))             # proteingroups sumexp
+#'    .read_diann_precursors(file)         #    precursors longdt
+#'    .read_diann_proteingroups(file)      # proteingroups longdt
+#'    fdt(read_diann_proteingroups(file))  # proteingroups sumexp
 #' # Compare
 #'     PR <- .read_diann_precursors(file)
 #'     PG <- .read_diann_proteingroups(file)
@@ -424,7 +424,7 @@ read_contaminants <-  function(file = download_contaminants()){
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('dilution.report.tsv')
-#' object <- read_diann(file)
+#' object <- read_diann_proteingroups(file)
 #' # object %<>% rm_diann_contaminants()
 #' @export
 rm_diann_contaminants <- function(
