@@ -1101,8 +1101,8 @@ process_maxquant <- function(
     if (!reverse)       object %<>% filter_features(reverse == '', verbose = verbose)
     if (!contaminants)  object %<>% filter_features(contaminant== '', verbose = verbose)
     object %<>% rm_missing_in_all_samples(verbose = verbose)
-    object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
-    if ('Localization prob' %in% fvars(object)){
+    #object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose) # doesnt work for single-instance subgroups
+    if ('Localization prob' %in% fvars(object)){                             # subgroup could be increasing concentrations or so
         object %<>% filter_features(
             `Localization prob` >= localization, verbose = verbose)  }
 # Impute
