@@ -791,7 +791,7 @@ is_file <- function(file){
 #'     pro <- read_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
 #'     pro <- read_proteingroups(file = file, subgroups = subgroups)
 #' @export
-read_proteingroups <- function(
+read_maxquant_proteingroups <- function(
     dir = getwd(), 
     file = if (is_file(dir)) dir else file.path(dir, 'proteinGroups.txt'), 
     fastadt = NULL, quantity = guess_maxquant_quantity(file), 
@@ -844,6 +844,14 @@ read_proteingroups <- function(
 }
 
 
+#' @rdname read_maxquant_proteingroups
+#' @export
+read_proteingroups <- function(...){
+    .Deprecate('read_maquant_proteingroups')
+    read_maxquant_proteingroups(...)
+}
+
+
 #' Read maxquant phosphosites
 #' @param dir           proteingroups directory
 #' @param phosphofile   phosphosites  file
@@ -881,7 +889,7 @@ read_proteingroups <- function(
 #' fos <- read_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
 #' fos <- read_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
 #' @export
-read_phosphosites <- function(
+read_maxquant_phosphosites <- function(
     dir = getwd(), 
     phosphofile = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
     proteinfile = file.path(dirname(file), 'proteinGroups.txt'), 
@@ -942,6 +950,14 @@ read_phosphosites <- function(
         feature_id   = feature_id,    sample_id = sample_id,
         palette      = palette )
     object
+}
+
+
+#' @rdname read_maxquant_phosphosites
+#' @export
+read_phosphosites <- function(...){
+    .Deprecate('read_maxquant_phosphosites')
+   read_maxquant_phosphosites(...) 
 }
 
 
