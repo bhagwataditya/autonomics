@@ -854,7 +854,7 @@ read_phosphosites <- function(
     file = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
     proteinfile = file.path(dirname(file), 'proteinGroups.txt'), 
     fastadt = NULL, 
-    quantity = guess_maxquant_quantity(proteinfile), curate = TRUE, 
+    quantity = guess_maxquant_quantity(proteinfile), 
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
     impute = FALSE, plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,  
@@ -870,7 +870,7 @@ read_phosphosites <- function(
     prodt <- .read_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
     fosdt <- .read_phosphosites(file = file, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
-    if (curate)  fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
+    fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     fosdt %<>% add_feature_id()
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp
