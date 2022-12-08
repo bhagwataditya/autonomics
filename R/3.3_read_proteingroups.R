@@ -751,7 +751,6 @@ is_file <- function(file){
 #' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 #'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
 #'                     'Intensity'
-#' @param curate        TRUE/FALSE: curate uniprots?
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE/FALSE : retain contaminants ?
 #' @param reverse       TRUE/FALSE : include reverse hits ?
@@ -789,7 +788,7 @@ read_proteingroups <- function(
     dir = getwd(), 
     file = if (is_file(dir)) dir else file.path(dir, 'proteinGroups.txt'), 
     fastadt = NULL, quantity = guess_maxquant_quantity(file), 
-    curate = TRUE, subgroups = NULL, invert = character(0),
+    subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = FALSE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,
     formula = NULL, block = NULL, coefs = NULL, contrasts = NULL,
@@ -801,7 +800,7 @@ read_proteingroups <- function(
     assert_is_a_bool(verbose)
 # Read/Curate
     prodt <- .read_proteingroups(file = file, quantity = quantity, verbose = verbose)
-    if (curate)  prodt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
+    prodt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     prodt %<>% add_feature_id()
 # SumExp
     if (verbose)  message('\tCreate SummarizedExperiment')

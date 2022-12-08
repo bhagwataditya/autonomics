@@ -10,7 +10,6 @@ read_proteingroups(
   file = if (is_file(dir)) dir else file.path(dir, "proteinGroups.txt"),
   fastadt = NULL,
   quantity = guess_maxquant_quantity(file),
-  curate = TRUE,
   subgroups = NULL,
   invert = character(0),
   contaminants = FALSE,
@@ -65,8 +64,6 @@ read_phosphosites(
 \item{quantity}{'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
 'Intensity'}
-
-\item{curate}{TRUE/FALSE: curate uniprots?}
 
 \item{subgroups}{NULL or string vector : subgroups to retain}
 
