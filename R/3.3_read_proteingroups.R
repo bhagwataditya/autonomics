@@ -249,10 +249,11 @@ extract_reviewed <- function(fastahdrs){
 }
 
 extract_protein <- function(fastahdrs){
-    fastahdrs %>% 
-    split_extract_fixed(' ', 1)        %>% 
-    split_extract_fixed('|', 3)        #%>%  # drop _HUMAN
-    #split_extract_fixed('_', 1)
+    y <- fastahdrs %>% split_extract_fixed(' ', 1)
+    idx <- stri_detect_fixed(y, '|')         # >IL2-FAT1  (645 aa)
+    y[idx] %<>% split_extract_fixed('|', 3)  # >sp|P22234|PUR6_HUMAN
+    #split_extract_fixed('_', 1)             # drop _HUMAN: not robust in multi-organism db!
+    y
 }
 
 extract_gene <- function(fastahdrs){
@@ -302,7 +303,7 @@ extract_existence <- function(fastahdrs){
 }
 
 parse_fastahdrs <- function(fastahdrs){
-    dt <- data.table(                                        # reviewed
+    dt <- data.table(                                  # reviewed
         reviewed    = extract_reviewed(   fastahdrs),  #   0 tr
         protein     = extract_protein(    fastahdrs),  #   1 sp
         gene        = extract_gene(       fastahdrs),
@@ -545,12 +546,17 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'           # Maxquant doesnt provide protein entries
     if (verbose)  message('\t\tMaxQuant Fastahdrs')                     # They can be inferred from the fastahdrs
     if (verbose)  message('\t\t\tUncollapse, Drop truncated, Parse')    # These fastahdrs are sometimes truncated
-    anndt <- dt[, c(idcol, 'fastahdrs'), with = FALSE]                  # Only headers starting with 'tr|F1Q6Z9|F1Q6Z9_DANRE' are useful (protein!)
-    anndt %<>% uncollapse(fastahdrs, sep = ';')                         # Headers ending with SV=1 are preferable (they are not truncated)
-    anndt %<>% extract( stri_count_fixed(fastahdrs, '|') == 2)          # But this requirement cant be met for each proteingroup (e.g. 3550 in fukuda)
-    anndt[, endok := fastahdrs %>% stri_count_regex('.+SV=[0-9]+'), by = idcol]
-    anndt <- anndt[, .SD[endok==max(endok)], by = idcol]
-    anndt[, endok := NULL]
+    anndt <- dt[, c(idcol, 'fastahdrs'), with = FALSE]
+    anndt %<>% uncollapse(fastahdrs, sep = ';')
+    
+    anndt[, ok := stri_count_fixed(fastahdrs, '|')]                            # prefer non-truncated fastahdrs: starting with 'tr|F1Q6Z9|F1Q6Z9_DANRE'
+    anndt <- anndt[, .SD[ok==max(ok)], by = idcol]
+    anndt[, ok := NULL]
+    
+    anndt[, ok := fastahdrs %>% stri_count_regex('.+SV=[0-9]+'), by = idcol]   # prefer non-trnuncated fastahdrs: ending with SV=1
+    anndt <- anndt[, .SD[ok==max(ok)], by = idcol]
+    anndt[, ok := NULL]
+    
     anndt %<>% cbind(parse_fastahdrs(anndt$fastahdrs))
     anndt %<>% drop_inferior(verbose = verbose)
     setnames(dt, 'uniprot', 'Original')
