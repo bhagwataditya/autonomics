@@ -151,7 +151,7 @@ uniprot2isoforms <- function(x){
     paste0(x, collapse = ',')
 }
 
-#' @rdname read_diann
+#' @rdname read_diann_proteingroups
 #' @export
 .read_diann_precursors <- function(
     file, precursor_quantity = PRECURSOR_QUANTITY, Lib.PG.Q = 0.01, verbose  = TRUE
@@ -219,7 +219,7 @@ uniprot2isoforms <- function(x){
     dt[]
 }
 
-#' @rdname read_diann
+#' @rdname read_diann_proteingroups
 #' @export
 .read_diann_proteingroups <- function(
     file, precursor_quantity = PRECURSOR_QUANTITY, Lib.PG.Q = 0.01
@@ -277,7 +277,7 @@ uniprot2isoforms <- function(x){
 #'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
 #'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
 #' @export
-read_diann <- function(
+read_diann_proteingroups <- function(
     file, 
     precursor_quantity = PRECURSOR_QUANTITY,
     Lib.PG.Q = 0.01,
@@ -335,6 +335,14 @@ read_diann <- function(
         feature_id   = feature_id,    sample_id = sample_id,  
         palette      = palette)
     object
+}
+
+
+#' @rdname read_diann_proteingroups
+#' @export
+read_diann <- function(...){
+    .Deprecated('read_diann')
+    read_diann_proteingroups(...)
 }
 
 # file <- download_data('dilution.report.tsv')

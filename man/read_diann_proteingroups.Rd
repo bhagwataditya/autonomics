@@ -3,6 +3,7 @@
 \name{.read_diann_precursors}
 \alias{.read_diann_precursors}
 \alias{.read_diann_proteingroups}
+\alias{read_diann_proteingroups}
 \alias{read_diann}
 \title{Read diann}
 \usage{
@@ -19,7 +20,7 @@
   Lib.PG.Q = 0.01
 )
 
-read_diann(
+read_diann_proteingroups(
   file,
   precursor_quantity = PRECURSOR_QUANTITY,
   Lib.PG.Q = 0.01,
@@ -38,6 +39,8 @@ read_diann(
   palette = NULL,
   verbose = TRUE
 )
+
+read_diann(...)
 }
 \arguments{
 \item{file}{'report.tsv' file}
