@@ -8,7 +8,7 @@ add_adjusted_pvalues(
   object,
   method,
   fit = fits(object)[1],
-  coef = default_coefs(object, fit)[1]
+  coefs = default_coefs(object, fit)[1]
 )
 }
 \arguments{
@@ -18,7 +18,7 @@ add_adjusted_pvalues(
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer'}
 
-\item{coef}{coefficient (string)}
+\item{coefs}{coefficient (string)}
 }
 \value{
 SummarizedExperiment

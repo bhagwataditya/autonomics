@@ -7,7 +7,7 @@
 extract_top_features(
   object,
   fit = fits(object)[1],
-  coefficient = default_coefs(object, fit = fit)[1],
+  coef = default_coefs(object, fit = fit)[1],
   effectsize = 0,
   p = 0.05,
   fdr = 1,
@@ -19,6 +19,8 @@ extract_top_features(
 
 \item{fit}{string}
 
+\item{coef}{string}
+
 \item{effectsize}{effectsize cutoff}
 
 \item{p}{p cutoff}
@@ -26,8 +28,6 @@ extract_top_features(
 \item{fdr}{fdr cutoff}
 
 \item{ntop}{ntop cutoff}
-
-\item{coef}{string}
 }
 \description{
 Extract top features

@@ -11,21 +11,21 @@
 \alias{down}
 \title{Get p/fdr/effect/down/up/sign matrix}
 \usage{
-p(object, coef = coefs(object), fit = fits(object))
+p(object, coefs = autonomics::coefs(object), fit = fits(object))
 
-pvar(object, coef = coefs(object), fit = fits(object))
+pvar(object, coefs = autonomics::coefs(object), fit = fits(object))
 
-effect(object, coef = coefs(object), fit = fits(object))
+effect(object, coefs = autonomics::coefs(object), fit = fits(object))
 
-effectvar(object, coef = coefs(object), fit = fits(object))
+effectvar(object, coefs = autonomics::coefs(object), fit = fits(object))
 
-fdr(object, coef = coefs(object), fit = fits(object))
+fdr(object, coefs = autonomics::coefs(object), fit = fits(object))
 
-fdrvar(object, coef = coefs(object), fit = fits(object))
+fdrvar(object, coefs = autonomics::coefs(object), fit = fits(object))
 
 up(
   object,
-  coef = coefs(object),
+  coefs = autonomics::coefs(object),
   fit = fits(object),
   var = "fdr",
   cutoff = 0.05
@@ -33,7 +33,7 @@ up(
 
 down(
   object,
-  coef = coefs(object),
+  coefs = autonomics::coefs(object),
   fit = fits(object),
   var = "fdr",
   cutoff = 0.05
@@ -42,9 +42,9 @@ down(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{coef}{string}
-
 \item{fit}{string}
+
+\item{coef}{string}
 }
 \value{
 matrix (feature x coef)
@@ -55,9 +55,9 @@ Get p/fdr/effect/down/up/sign matrix
 \examples{
 # Read
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, impute = TRUE, plot = FALSE)
-    object \%<>\% fit_limma(subgroupvar = 'SET')
-    object \%<>\% fit_lm(   subgroupvar = 'SET')
+    object <- read_metabolon(file, subgroupvar = 'SET', impute = TRUE, plot = FALSE)
+    object \%<>\% fit_limma()
+    object \%<>\% fit_lm()
 # Values
     effect(object)[1:3, ]
          p(object)[1:3, ]

@@ -332,9 +332,9 @@ subgroup_matrix <- function(object, subgroupvar){
 #' @examples 
 #' # Read
 #'     file <- download_data('atkin18.metabolon.xlsx')
-#'     object <- read_metabolon(file, impute = TRUE, plot = FALSE)
-#'     object %<>% fit_limma(subgroupvar = 'SET')
-#'     object %<>% fit_lm(   subgroupvar = 'SET')
+#'     object <- read_metabolon(file, subgroupvar = 'SET', impute = TRUE, plot = FALSE)
+#'     object %<>% fit_limma()
+#'     object %<>% fit_lm()
 #' # Values
 #'     effect(object)[1:3, ]
 #'          p(object)[1:3, ]
@@ -347,8 +347,8 @@ subgroup_matrix <- function(object, subgroupvar){
 #'          pvar(object)
 #'        fdrvar(object)
 #' @export
-p <- function(object, coef = coefs(object), fit = fits(object)){
-    var <- pvar(object, coef = coef, fit = fit)
+p <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    var <- pvar(object, coefs = coefs, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
     mat <- as.matrix(dt)
@@ -359,8 +359,8 @@ p <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-pvar <- function(object, coef = coefs(object), fit = fits(object)){
-    x <- expand.grid(var = 'p', fit = fit, coef = coef)
+pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 'p', fit = fit, coefs = coefs)
     x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))
     x
@@ -369,8 +369,8 @@ pvar <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-effect <- function(object, coef = coefs(object), fit = fits(object)){
-    var <- effectvar(object, coef = coef, fit = fit)
+effect <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    var <- effectvar(object, coef = coefs, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
     mat <- as.matrix(dt)
@@ -381,8 +381,8 @@ effect <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-effectvar <- function(object, coef = coefs(object), fit = fits(object)){
-    x <- expand.grid(var = 'effect', fit = fit, coef = coef)
+effectvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 'effect', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))
     x
@@ -391,8 +391,8 @@ effectvar <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-fdr <- function(object, coef = coefs(object), fit = fits(object)){
-    var <- fdrvar(object, coef = coef, fit = fit)
+fdr <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    var <- fdrvar(object, coef = coefs, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
     mat <- as.matrix(dt)
@@ -402,16 +402,16 @@ fdr <- function(object, coef = coefs(object), fit = fits(object)){
 
 #' @rdname p
 #' @export
-fdrvar <- function(object, coef = coefs(object), fit = fits(object)){
-    x <- expand.grid(var = 'fdr', fit = fit, coef = coef)
+fdrvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 'fdr', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))  # all fits not necessarily all coefs, e.g:
     x               # limma(contrasts = .) generally run without intercept
 }                   # lm(coefs = .) typically run with intercept
 
 
-bonvar <- function(object, coef = coefs(object), fit = fits(object)){
-    x <- expand.grid(var = 'bonferroni', fit = fit, coef = coef)
+bonvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 'bonferroni', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))  # all fits not necessarily all coefs, e.g:
     x               # limma(contrasts = .) generally run without intercept
@@ -421,13 +421,13 @@ bonvar <- function(object, coef = coefs(object), fit = fits(object)){
 #' @export
 up <- function(
     object, 
-    coef   = coefs(object),
+    coefs  = autonomics::coefs(object),
     fit    = fits(object),
     var    = 'fdr', 
     cutoff = 0.05
 ){
-    fdrmat  <- get(var)(object, coef = coef, fit = fit)
-    effectmat <- effect(object, coef = coef, fit = fit)
+    fdrmat  <- get(var)(object, coefs = coefs, fit = fit)
+    effectmat <- effect(object, coefs = coefs, fit = fit)
     y <- fdrmat < cutoff  &  effectmat > 0
     y[is.na(y)] <- FALSE
     mode(y) <- 'numeric'
@@ -438,13 +438,13 @@ up <- function(
 #' @export
 down <- function(
     object, 
-    coef    = coefs(object), 
+    coefs   = autonomics::coefs(object), 
     fit     = fits(object), 
     var     = 'fdr', 
     cutoff  = 0.05
 ){
-    fdrmat  <- get(var)(object, coef = coef, fit = fit)
-    effectmat <- effect(object, coef = coef, fit = fit)
+    fdrmat  <- get(var)(object, coefs = coefs, fit = fit)
+    effectmat <- effect(object, coefs = coefs, fit = fit)
     y <- fdrmat < cutoff  &  effectmat < 0
     y[is.na(y)] <- FALSE
     mode(y) <- 'numeric'
@@ -456,14 +456,14 @@ down <- function(
 #' @export
 sign.SummarizedExperiment <- function(
     object, 
-    coef   = coefs(object),
+    coefs  = autonomics::coefs(object),
     fit    = fits(object),
     var    = 'fdr',
     cutoff = 0.05
 ){ 
-    if (length(coef)==0) return(matrix(0, nrow = nrow(object), ncol = ncol(object), dimnames = dimnames(object)))
-    up(   object, coef = coef, fit = fit, var = var, cutoff = cutoff)  -
-    down( object, coef = coef, fit = fit, var = var, cutoff = cutoff)
+    if (length(coefs)==0) return(matrix(0, nrow = nrow(object), ncol = ncol(object), dimnames = dimnames(object)))
+    up(   object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)  -
+    down( object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)
 }
 
 # dont rm - its the lower-level function used by fits() and coefs() !
