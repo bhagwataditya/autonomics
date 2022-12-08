@@ -26,12 +26,12 @@ test_that("read_maxquant_proteingroups(file, select_subgroups)", {
                     slevels(object, 'subgroup'), select_subgroups))
 })
 
-test_that("read_phosphosites(file)", {
+test_that("read_maxquant_phosphosites(file)", {
     file        <- download_data('billing19.phosphosites.txt')
     proteinfile <- download_data('billing19.proteingroups.txt')
     select_subgroups <- sprintf('%s_STD', 
                                 c('E00','E01','E02','E05','E15','E30','M00'))
-    object <- read_phosphosites(file, proteinfile =proteinfile, 
+    object <- read_maxquant_phosphosites(file, proteinfile = proteinfile, 
                             select_subgroups = select_subgroups, plot = FALSE)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('proteingroups' %in% SummarizedExperiment::assayNames(object))

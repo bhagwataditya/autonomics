@@ -1,15 +1,15 @@
 #============================================================================
 #
 #      .read_maxquant_proteingroups
-#      .read_phosphosites
+#      .read_maxquant_phosphosites
 #
 #============================================================================
 
-context('.read_maxquant_proteingroups/.read_phosphosites')
+context('.read_maxquant_proteingroups/.read_maxquant_phosphosites')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 pro <- .read_maxquant_proteingroups(proteinfile, verbose = TRUE)
-fos <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
+fos <- .read_maxquant_phosphosites(phosphofile, proteinfile, verbose = TRUE)
 prodt <- fread(proteinfile, colClasses = c(id='character'))
 fosdt <- fread(phosphofile, colClasses = c(id='character'), integer64='numeric')
 fosdt %<>% extract(fos$fosId, on = 'id')
@@ -49,7 +49,7 @@ context('`drop_differing_uniprots`')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 prodt <- .read_maxquant_proteingroups(proteinfile,              verbose = TRUE)
-fosdt <- .read_phosphosites( phosphofile, proteinfile, verbose = TRUE)
+fosdt <- .read_maxquant_phosphosites( phosphofile, proteinfile, verbose = TRUE)
 fosdt1 <- drop_differing_uniprots(fosdt, prodt,        verbose = TRUE)
 
 test_that('`drop_differing_uniprots` preserves colnames', {
@@ -169,7 +169,7 @@ context('`curate_annotate_maxquant/curate_annotate_fastafile`')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 pro <- .read_maxquant_proteingroups(proteinfile, verbose = TRUE)
-fos <- .read_phosphosites(phosphofile, proteinfile, verbose = TRUE)
+fos <- .read_maxquant_phosphosites(phosphofile, proteinfile, verbose = TRUE)
 pro1 <- curate_annotate_maxquant(pro)
 fos1 <- curate_annotate_maxquant(fos)
 pro2 <- curate_annotate_fastafile(pro, fastadt)
@@ -229,8 +229,8 @@ proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 pro1 <- .read_maxquant_proteingroups(proteinfile) %>% curate_annotate()
 pro2 <- .read_maxquant_proteingroups(proteinfile) %>% curate_annotate(fastadt)
-fos1 <- .read_phosphosites( phosphofile, proteinfile) %>% curate_annotate()
-fos2 <- .read_phosphosites( phosphofile, proteinfile) %>% curate_annotate(fastadt)
+fos1 <- .read_maxquant_phosphosites( phosphofile, proteinfile) %>% curate_annotate()
+fos2 <- .read_maxquant_phosphosites( phosphofile, proteinfile) %>% curate_annotate(fastadt)
 
 pro1b <- add_feature_id(pro1)
 pro2b <- add_feature_id(pro2)
@@ -397,7 +397,7 @@ test_that('`demultiplex` works', {
 
 #============================================================================
 #
-#      read_phosphosites
+#      read_maxquant_phosphosites
 #
 #============================================================================
 
@@ -405,7 +405,7 @@ proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 quantity <- guess_maxquant_quantity(proteinfile)
 pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
-fos <- read_phosphosites(phosphofile, proteinfile, plot = FALSE, impute = FALSE)
+fos <- read_maxquant_phosphosites(phosphofile, proteinfile, plot = FALSE, impute = FALSE)
 
 str(log2sites(fos))
 dt <- fread(phosphofile, integer64 = 'numeric', colClasses = c(id = 'character'))
@@ -415,11 +415,11 @@ colnames(dt) %<>% stri_replace_first_fixed('___1', '')
 colnames(dt) %<>% dequantify()
 colnames(dt) %<>% demultiplex()
 
-test_that('`read_phosphosites` preserves samples', 
+test_that('`read_maxquant_phosphosites` preserves samples', 
     expect_equal(snames(fos), colnames(dt))
 )
 
-test_that('`read_phosphosites` preserves phosphosite values', {
+test_that('`read_maxquant_phosphosites` preserves phosphosite values', {
     str(data.matrix(dt))
     str(log2sites(fos))
     expect_equal(snames(fos), colnames(dt))

@@ -35,7 +35,7 @@ PRO/FOS
     fosfile <- download_data('billing19.phosphosites.txt')
     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
     pro <- read_maxquant_proteingroups(profile, plot = FALSE, subgroups = subgroups)
-    fos <- read_phosphosites(fosfile, profile, subgroups = subgroups, plot = FALSE)
+    fos <- read_maxquant_phosphosites(fosfile, profile, subgroups = subgroups, plot = FALSE)
     pro$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
     fos$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
 sumexplist to longdt
