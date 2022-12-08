@@ -370,29 +370,24 @@ is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
+#' sdt(object)
 #' split_samples(object, by = 'subgroup')  # 
 #' split_samples(object, by = 'age')       # not in svars! 
+#' fdt(object)
+#' split_features(object, by = 'isoform')
 #' @export
 split_samples <- function(object, by = 'subgroup'){
     if (!by %in% svars(object))  return(list(object))
-    extract_samples  <- function(slevel){
-        object %>% extract(, .[[by]] == slevel)
-    }
+    extract_samples  <- function(level){  object %>% extract(, .[[by]] == level)  }
     Map(extract_samples, slevels(object, by))
 }
 
 #' @rdname split_samples
 #' @export
-split_features <- function(object, fvar){
-    fvar <- enquo(fvar)
-    fvarstr <- as_name(fvar)
-
-    if (is.null(fvar)) return(list(object))
-    extract_features  <- function(sg){
-                            idx <- fdt(object)[[fvarstr]] == sg
-                            object[idx, ]
-                        }
-    Map(extract_features, flevels(object, fvarstr))
+split_features <- function(object, by){
+    if (!by %in% fvars(object))  return(list(object))
+    extract_features  <- function(level)  object %>% extract(.[[by]] == level, )
+    Map(extract_features, flevels(object, by))
 }
 
 #' @rdname split_samples

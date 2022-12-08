@@ -9,7 +9,7 @@
 \usage{
 split_samples(object, by = "subgroup")
 
-split_features(object, fvar)
+split_features(object, by)
 
 split_by_svar(object, svar = subgroup)
 
@@ -29,6 +29,9 @@ Split samples by svar
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
+sdt(object)
 split_samples(object, by = 'subgroup')  # 
 split_samples(object, by = 'age')       # not in svars! 
+fdt(object)
+split_features(object, by = 'isoform')
 }
