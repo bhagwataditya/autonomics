@@ -1036,7 +1036,7 @@ demultiplex <- function(x, verbose = FALSE){
 # All channels defined (TMT) ? 
     if (all(assertive::is_numeric_string(channel))){
         channel %<>% as.numeric()
-        y %<>% `&`(all(as.numeric(channel) <= n_open))
+        y %<>% and(all(as.numeric(channel) <= n_open))
     }
     y
 }
