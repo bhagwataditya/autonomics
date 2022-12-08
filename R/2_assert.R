@@ -27,11 +27,11 @@ has_some_svalues <- function(object, svar){
 #' @return logical
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' contains_ratios(object)
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file, plot = FALSE)
 #' contains_ratios(object)
 #' @noRd
 contains_ratios <- function(object){

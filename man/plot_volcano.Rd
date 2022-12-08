@@ -56,7 +56,7 @@ Plot volcano
 \examples{
 require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, impute = TRUE)
+object <- read_maxquant_proteingroups(file, impute = TRUE)
 object \%<>\% fit_limma()
 plot_volcano(object)
 plot_volcano(object, label = 'genesymbol')

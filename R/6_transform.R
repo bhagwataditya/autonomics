@@ -258,7 +258,7 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 #'
 #' object                       %>% plot_sample_densities()
 #' invnorm(object)              %>% plot_sample_densities()
@@ -325,7 +325,7 @@ zscore <- function(object, verbose = FALSE){
 #' require(magrittr)
 #' require(matrixStats)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 #' fdata(object)$housekeeping <- FALSE
 #' fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
 #' values(object)[, object$subgroup=='Adult'] %<>% add(5)
@@ -538,7 +538,7 @@ plot_transformation_biplots <- function(
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' invert <- c('EM_E', 'EM_BM', 'BM_E')
-#' object <- read_proteingroups(file, invert_subgroups = invert, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, invert_subgroups = invert, plot = FALSE)
 #' explore_transformations(object)
 #' @export
 explore_transformations <- function(

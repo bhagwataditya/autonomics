@@ -56,7 +56,7 @@ Convert SummarizedExperiment into data.table
 # Stem cell comparison
     file <- download_data('billing16.proteingroups.txt')
     invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-    object <- read_proteingroups(file, invert = invert_subgroups, plot = FALSE)
+    object <- read_maxquant_proteingroups(file, invert = invert_subgroups, plot = FALSE)
     sumexp_to_widedt(object)
     sumexp_to_longdt(object)
     sumexp_to_subrep_dt(object)
@@ -70,7 +70,7 @@ Convert SummarizedExperiment into data.table
 
 # Fukuda
    file <- download_data('fukuda20.proteingroups.txt')
-   object <- read_proteingroups(file, impute = FALSE)
+   object <- read_maxquant_proteingroups(file, impute = FALSE)
    sumexp_to_longdt(object)
    object \%<>\% impute(plot = FALSE)
    sumexp_to_widedt(object)

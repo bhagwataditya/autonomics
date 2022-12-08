@@ -30,7 +30,7 @@ Center samples
 require(magrittr)
 require(matrixStats)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
+object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 fdata(object)$housekeeping <- FALSE
 fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
 values(object)[, object$subgroup=='Adult'] \%<>\% add(5)

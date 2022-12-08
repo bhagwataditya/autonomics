@@ -158,7 +158,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot = FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' object %<>% filter_replicated()
 #' @export
 filter_replicated  <- function(

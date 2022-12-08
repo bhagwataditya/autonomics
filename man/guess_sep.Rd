@@ -52,6 +52,6 @@ Guess separator
    # guess_sep(object)
 
    # file <- download_data('billing16.proteingroups.txt')
-   # object <- read_proteingroups(file, plot=FALSE)
+   # object <- read_maxquant_proteingroups(file, plot = FALSE)
    # guess_sep(object)
 }

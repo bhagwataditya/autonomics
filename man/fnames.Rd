@@ -29,7 +29,7 @@ Get/Set feature names
 \examples{
 require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_maxquant_proteingroups(file)
 fnames(object) \%<>\% paste0('protein_', .)
 object
 }

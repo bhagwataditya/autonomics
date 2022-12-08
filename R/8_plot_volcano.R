@@ -43,7 +43,7 @@ top_down <- function(effect, fdr, mlp, ntop){
 #' @examples
 #' file <- download_data("billing16.proteingroups.txt")
 #' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(
+#' object <- read_maxquant_proteingroups(
 #'           file, invert_subgroups=invert_subgroups, fit='limma', plot=FALSE)
 #' effect <-      limma(object)[,1,'effect']
 #' fdr    <-      limma(object)[,1,'fdr']
@@ -95,7 +95,7 @@ default_coefs <- function(object, fit = fits(object)){
 #'     bin(object)
 #' # SummarizedExperiment
 #'     file <- download_data('fukuda20.proteingroups.txt')
-#'     fdt(object <- read_proteingroups(file))
+#'     fdt(object <- read_maxquant_proteingroups(file))
 #'     fdt(object %<>% add_assay_means('pepcounts'))
 #'     fdt(bin(object, 'pepcounts'))
 #' @export
@@ -133,7 +133,7 @@ bin.SummarizedExperiment <- function(object, fvar, probs = c(0, 0.33, 0.66, 1)){
 #' @return SummarizedExperiment
 #' @examples 
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_maxquant_proteingroups(file)
 #' fdt(object)
 #' fdt(add_assay_means(object))
 #' @export
@@ -166,7 +166,7 @@ add_assay_means <- function(
 #' @param coefs   coefficient (string)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_limma()
 #' object %<>% extract(order(fdt(.)$`p~Adult~limma`), )
 #' fdt(object)
@@ -202,7 +202,7 @@ add_adjusted_pvalues <- function(
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
+#' object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
 #' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 #' @export
 make_volcano_dt <- function(
@@ -269,7 +269,7 @@ make_volcano_dt <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = TRUE)
+#' object <- read_maxquant_proteingroups(file, impute = TRUE)
 #' object %<>% fit_limma()
 #' plot_volcano(object)
 #' plot_volcano(object, label = 'genesymbol')

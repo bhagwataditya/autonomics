@@ -33,7 +33,7 @@ Get/Set svar values
 }
 \examples{
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_maxquant_proteingroups(file)
 svalues(object, 'subgroup')
 subgroup_values(object)
 }

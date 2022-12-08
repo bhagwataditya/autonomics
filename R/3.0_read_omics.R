@@ -525,7 +525,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 #' file <- download_data('billing19.proteingroups.txt')
 #' subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #' subgroups %<>% paste0('_STD')
-#' object <- read_proteingroups(file, subgroups = subgroups)
+#' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
 #' sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
 #' sfile %<>% paste0('.samples.txt')
 #' dt <- data.table(sample_id = object$sample_id, 
@@ -715,7 +715,7 @@ read_genex <- function(file){
 #'     profile <- download_data('billing19.proteingroups.txt')
 #'     fosfile <- download_data('billing19.phosphosites.txt')
 #'     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-#'     pro <- read_proteingroups(profile, plot = FALSE, subgroups = subgroups)
+#'     pro <- read_maxquant_proteingroups(profile, plot = FALSE, subgroups = subgroups)
 #'     fos <- read_phosphosites(fosfile, profile, subgroups = subgroups, plot = FALSE)
 #'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')

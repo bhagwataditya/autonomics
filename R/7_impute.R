@@ -133,7 +133,7 @@ na_to_string <- function(x){
 #' @return numeric vector, matrix or SumExp
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_maxquant_proteingroups(file)
 #' impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
 #' impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
 #' impute(object, plot = TRUE)                         # sumexp
@@ -369,7 +369,7 @@ is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 #' @return  SummarizedExperiment list
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
+#' object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
 #' sdt(object)
 #' split_samples(object, by = 'subgroup')  # 
 #' split_samples(object, by = 'age')       # not in svars! 
@@ -444,7 +444,7 @@ has_consistent_nondetects <- function(object, by = 'subgroup'){
 #' @param by svar (string)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_maxquant_proteingroups(file)
 #' head(systematic_nas(object))  # missing in some subgroups, present in others
 #' head(random_nas(object))        # missing in some samples, independent of subgroup
 #' head(no_nas(object))             # missing in no samples
@@ -487,7 +487,7 @@ no_nas <- function(object){
 #' @return  \code{NULL}
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
+#' object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
 #' venn_detects(object, subgroup)
 #' @export
 venn_detects <- function(object, by = 'subgroup'){
@@ -520,7 +520,7 @@ venn_detects <- function(object, by = 'subgroup'){
 # @return SummarizedExperiment
 # @examples
 # file <- download_data('fukuda20.proteingroups.txt')
-# object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
+# object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
 # impute_consistent_nas(object)
 # @export
 #impute_consistent_nas <- function(object, subgroup = subgroup,
@@ -649,7 +649,7 @@ plot_summarized_detections <- function(...){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = FALSE)
+#' object <- read_maxquant_proteingroups(file, impute = FALSE)
 #' plot_subgroup_nas(object)
 #' plot_sample_nas(object)
 #' plot_sample_nas(impute(object, plot = FALSE))
@@ -826,7 +826,7 @@ plot_subgroup_nas <- function(
 #'@return matrix (get) or updated object (set)
 #'@examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' sum(is_imputed(object))
 #' @rdname is_imputed
 #' @export

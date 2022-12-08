@@ -84,13 +84,13 @@ Read maxquant proteingroups
 \examples{
 # fukuda20 - LFQ
     file <- download_data('fukuda20.proteingroups.txt')
-    pro <- read_proteingroups(file = file, plot = TRUE)
+    pro <- read_maxquant_proteingroups(file = file, plot = TRUE)
     
 # billing19 - Normalized Ratios
     file <- download_data('billing19.proteingroups.txt')
     fastafile <- download_data('uniprot_hsa_20140515.fasta')
     fastadt <- read_fastahdrs(fastafile)
     subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-    pro <- read_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
-    pro <- read_proteingroups(file = file, subgroups = subgroups)
+    pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
+    pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
 }

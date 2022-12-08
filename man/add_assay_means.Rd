@@ -19,7 +19,7 @@ Add assay means
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_maxquant_proteingroups(file)
 fdt(object)
 fdt(add_assay_means(object))
 }

@@ -34,7 +34,7 @@ Bin continuous variable
     bin(object)
 # SummarizedExperiment
     file <- download_data('fukuda20.proteingroups.txt')
-    fdt(object <- read_proteingroups(file))
+    fdt(object <- read_maxquant_proteingroups(file))
     fdt(object \%<>\% add_assay_means('pepcounts'))
     fdt(bin(object, 'pepcounts'))
 }

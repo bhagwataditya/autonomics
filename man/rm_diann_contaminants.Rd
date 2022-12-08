@@ -25,6 +25,6 @@ Rm contaminants from DIA-NN SumExp
 }
 \examples{
 file <- download_data('dilution.report.tsv')
-object <- read_diann(file)
+object <- read_diann_proteingroups(file)
 # object \%<>\% rm_diann_contaminants()
 }

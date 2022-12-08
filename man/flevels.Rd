@@ -19,6 +19,6 @@ Get fvar levels
 }
 \examples{
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_maxquant_proteingroups(file)
 head(flevels(object, 'feature_id'))
 }

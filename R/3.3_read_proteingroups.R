@@ -69,8 +69,8 @@ guess_maxquant_quantity <- function(x){
 
 #---------------------------------------------------------------------------
 # 
-#                       .read_proteingroups
-#                       .read_phosphosites
+#                       .read_maxquant_proteingroups
+#                       .read_maxquant_phosphosites
 #
 #---------------------------------------------------------------------------
 
@@ -87,10 +87,10 @@ un_int64 <- function(x) {
 #' @examples 
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
-#' prodt <- .read_proteingroups(file = proteinfile)
-#' fosdt <- .read_phosphosites( file = phosphofile, proteinfile = proteinfile)
+#' prodt <- .read_maxquant_proteingroups(file = proteinfile)
+#' fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinfile)
 #' @export
-.read_proteingroups <- function(file, quantity = guess_maxquant_quantity(file), verbose = TRUE){
+.read_maxquant_proteingroups <- function(file, quantity = guess_maxquant_quantity(file), verbose = TRUE){
 # Assert
     assert_proteingroups_file(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
@@ -120,7 +120,7 @@ un_int64 <- function(x) {
 }
 
 
-.read_phosphosites <- function(file, proteinfile, quantity, verbose = TRUE){
+.read_maxquant_phosphosites <- function(file, proteinfile, quantity, verbose = TRUE){
 # Assert
     assert_proteingroups_file(proteinfile)
     assert_phosphosites_file(file)
@@ -462,7 +462,7 @@ CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism
 #' @examples
 #' # Fukuda 2020: MaxQuant 
 #'     file <- download_data('fukuda20.proteingroups.txt')
-#'     dt <- .read_proteingroups(file)
+#'     dt <- .read_maxquant_proteingroups(file)
 #'     curate_annotate_maxquant(dt)[, 1:7]
 #'     curate_annotate_fastafile(dt, fastadt = NULL)[, 1:2]
 #'     curate_annotate(dt, fastadt = NULL)[, 1:7]
@@ -472,7 +472,7 @@ CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism
 #'     phosphofile <- download_data('billing19.phosphosites.txt')
 #'     fastafile   <- download_data('uniprot_hsa_20140515.fasta')
 #'     fastadt <-  read_fastahdrs(fastafile)
-#'     dt <- .read_proteingroups(file, verbose = TRUE)
+#'     dt <- .read_maxquant_proteingroups(file, verbose = TRUE)
 #'     dt[, 1:4]
 #'     curate_annotate_maxquant( dt)[, 1:7]
 #'     curate_annotate_fastafile(dt, fastadt = NULL)[, 1:7]
@@ -626,8 +626,8 @@ add_feature_id <- function(dt){
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#' prodt <- .read_proteingroups(file = proteinfile)
-#' fosdt <- .read_phosphosites( file = phosphofile, proteinfile = proteinfile)
+#' prodt <- .read_maxquant_proteingroups(file = proteinfile)
+#' fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinfile)
 #' prodt %<>% curate_annotate_maxquant()
 #' prodt %<>% add_feature_id()
 #' quantity <- guess_maxquant_quantity(proteinfile)
@@ -729,8 +729,8 @@ label2index <- function(x){
 
 #---------------------------------------------------------------------------
 # 
-#                   read_proteingroups
-#                   read_phosphosites
+#                   read_maxquant_proteingroups
+#                   read_maxquant_phosphosites
 #
 #---------------------------------------------------------------------------
 
@@ -781,15 +781,15 @@ is_file <- function(file){
 #' @examples
 #' # fukuda20 - LFQ
 #'     file <- download_data('fukuda20.proteingroups.txt')
-#'     pro <- read_proteingroups(file = file, plot = TRUE)
+#'     pro <- read_maxquant_proteingroups(file = file, plot = TRUE)
 #'     
 #' # billing19 - Normalized Ratios
 #'     file <- download_data('billing19.proteingroups.txt')
 #'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #'     fastadt <- read_fastahdrs(fastafile)
 #'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-#'     pro <- read_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
-#'     pro <- read_proteingroups(file = file, subgroups = subgroups)
+#'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
+#'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
 #' @export
 read_maxquant_proteingroups <- function(
     dir = getwd(), 
@@ -806,7 +806,7 @@ read_maxquant_proteingroups <- function(
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
 # Read/Curate
-    prodt <- .read_proteingroups(file = file, quantity = quantity, verbose = verbose)
+    prodt <- .read_maxquant_proteingroups(file = file, quantity = quantity, verbose = verbose)
     prodt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     prodt %<>% add_feature_id()
 # SumExp
@@ -884,10 +884,10 @@ read_proteingroups <- function(...){
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' fastadt <- read_fastahdrs(fastafile)
 #' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-#' pro <- read_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
-#' pro <- read_proteingroups(file = proteinfile, subgroups = subgroups)
-#' fos <- read_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
-#' fos <- read_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
+#' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
+#' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
 #' @export
 read_maxquant_phosphosites <- function(
     dir = getwd(), 
@@ -907,8 +907,8 @@ read_maxquant_phosphosites <- function(
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
 # Read
-    prodt <- .read_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
-    fosdt <- .read_phosphosites(file = phosphofile, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
+    prodt <- .read_maxquant_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
+    fosdt <- .read_maxquant_phosphosites(file = phosphofile, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
     fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     fosdt %<>% add_feature_id()
@@ -986,7 +986,7 @@ read_phosphosites <- function(...){
 #' @return character vector or SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot=FALSE)
 #' invert_subgroups(object)
 #' @export
 #' @export
@@ -1179,7 +1179,7 @@ process_maxquant <- function(
 #' @examples 
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' proteinfile <- download_data('billing19.proteingroups.txt')
-#' object <- read_phosphosites(phosphofile, proteinfile)
+#' object <- read_maxquant_phosphosites(phosphofile, proteinfile)
 #' fdt(object)
 #' object %<>% add_psp()
 #' fdt(object)
@@ -1266,7 +1266,7 @@ paste_unique <- function(x, collapse) paste0(unique(x), collapse=collapse)
 #' # SummarizedExperiment
 #'     require(magrittr)
 #'     file <- download_data('fukuda20.proteingroups.txt')
-#'     x <- read_proteingroups(file, plot=FALSE)
+#'     x <- read_maxquant_proteingroups(file, plot=FALSE)
 #'     x %<>% extract(1:10, )
 #'     fdata(x)[1:3, ]
 #'     # x %<>% annotate_uniprot_ws(upws)
@@ -1341,7 +1341,7 @@ annotate_uniprot_ws.SummarizedExperiment <- function(
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot=FALSE)
 #' log2proteins(object)[1:3, 1:3]
 #' @rdname log2proteins
 #' @export
@@ -1383,7 +1383,7 @@ function(object, value){
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot=FALSE)
 #' log2sites(object)[1:3, 1:3]
 #' @rdname log2sites
 #' @export
@@ -1425,7 +1425,7 @@ function(object, value){
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot=FALSE)
 #' log2diffs(object)[1:3, 1:3]
 #' @rdname log2diffs
 #' @export

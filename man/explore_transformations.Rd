@@ -38,6 +38,6 @@ Explore transformations
 \examples{
 file <- download_data('billing16.proteingroups.txt')
 invert <- c('EM_E', 'EM_BM', 'BM_E')
-object <- read_proteingroups(file, invert_subgroups = invert, plot=FALSE)
+object <- read_maxquant_proteingroups(file, invert_subgroups = invert, plot = FALSE)
 explore_transformations(object)
 }

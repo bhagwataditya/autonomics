@@ -31,6 +31,6 @@ Get/Set log2sites
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, plot=FALSE)
+object <- read_maxquant_proteingroups(file, plot=FALSE)
 log2sites(object)[1:3, 1:3]
 }

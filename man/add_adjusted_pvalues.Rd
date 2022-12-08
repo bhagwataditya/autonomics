@@ -28,7 +28,7 @@ Add adjusted pvalues
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_maxquant_proteingroups(file)
 object \%<>\% fit_limma()
 object \%<>\% extract(order(fdt(.)$`p~Adult~limma`), )
 fdt(object)

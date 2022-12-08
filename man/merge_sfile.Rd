@@ -56,7 +56,7 @@ Merge sample / feature file
 file <- download_data('billing19.proteingroups.txt')
 subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 subgroups \%<>\% paste0('_STD')
-object <- read_proteingroups(file, subgroups = subgroups)
+object <- read_maxquant_proteingroups(file, subgroups = subgroups)
 sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
 sfile \%<>\% paste0('.samples.txt')
 dt <- data.table(sample_id = object$sample_id, 

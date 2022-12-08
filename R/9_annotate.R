@@ -26,7 +26,7 @@ hdlproteins <- function(){
 #' @return SummarizedExperiment
 #' @examples 
 #' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_maxquant_proteingroups(file)
 #' object %<>% tag_hdlproteins()
 #' fdt(object)
 #' @export
@@ -119,7 +119,7 @@ save_opentargets_targets <- function(){
 #' @return  SummarizedExperiment
 #' @examples 
 #' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_proteingroups(file)
+#' object <- read_maxquant_proteingroups(file)
 #' object %<>% add_opentargets_by_uniprot()
 #' @export
 add_opentargets_by_uniprot <- function(object){

@@ -19,7 +19,7 @@ Tag hdlproteins
 }
 \examples{
 file <- download_data('billing19.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_maxquant_proteingroups(file)
 object \%<>\% tag_hdlproteins()
 fdt(object)
 }

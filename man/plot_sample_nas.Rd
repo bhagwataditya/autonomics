@@ -54,7 +54,7 @@ Imputations are also shown (light color).
 \examples{
 require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, impute = FALSE)
+object <- read_maxquant_proteingroups(file, impute = FALSE)
 plot_subgroup_nas(object)
 plot_sample_nas(object)
 plot_sample_nas(impute(object, plot = FALSE))

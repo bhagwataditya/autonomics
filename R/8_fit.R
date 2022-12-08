@@ -77,7 +77,7 @@ has_identical_values <- function(x) length(unique(x))==1
 #'    # guess_sep(object)
 #'
 #'    # file <- download_data('billing16.proteingroups.txt')
-#'    # object <- read_proteingroups(file, plot=FALSE)
+#'    # object <- read_maxquant_proteingroups(file, plot = FALSE)
 #'    # guess_sep(object)
 #' @export
 guess_sep <- function (x, ...)  UseMethod("guess_sep", x)
@@ -561,9 +561,8 @@ pull_level <- function(x, lev){
 #' @return melted data.table
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(
-#'             file, invert_subgroups=inv, fit='limma', plot=FALSE)
+#' invert <- c('EM_E', 'BM_E', 'BM_EM')
+#' object <- read_maxquant_proteingroups(file, invert = invert, fit = 'limma', plot = FALSE)
 #' extract_fit_quantity(object, fit = 'limma')
 #' @noRd
 extract_fit_quantity <- function(object, fit, quantity='p'){
@@ -591,7 +590,7 @@ merge_fit_quantities <- function(x, y){
 #' @return melted data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, fit = 'limma', plot = FALSE)
+#' object <- read_maxquant_proteingroups(file, fit = 'limma', plot = FALSE)
 #' extract_fit_dt(object, fit = 'limma')
 #' @noRd
 extract_fit_dt <- function(object, fit){
@@ -657,7 +656,7 @@ old_summarize_fit <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
 #' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')

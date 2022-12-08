@@ -7,7 +7,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
     
     test_that(  "fit: fukuda20", {
         file <- download_data('fukuda20.proteingroups.txt') 
-        object <- read_proteingroups(file, plot = FALSE)
+        object <- read_maxquant_proteingroups(file, plot = FALSE)
         expect_true(sumexp_contains_fit(fit_wilcoxon(object), 'wilcoxon'))
         expect_true(sumexp_contains_fit(fit_lm(object),       'lm'))
         expect_true(sumexp_contains_fit(fit_limma(object),    'limma'))
@@ -15,7 +15,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
 
     test_that('fit: billing19.rnacounts', {
         file <- download_data('billing19.rnacounts.txt')
-        object <- read_rnaseq_counts(file, voom=TRUE, plot=FALSE)
+        object <- read_rnaseq_counts(file, voom = TRUE, plot = FALSE)
         #expect_true(sumexp_contains_fit(fit_wilcoxon(object), 'wilcoxon'))
         #expect_true(sumexp_contains_fit(fit_lm(object),       'lm'))
         object %<>% fit_limma()
@@ -23,7 +23,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         
         object %<>% fit_limma(weightvar = NULL)
         expect_true(sumexp_contains_fit(object,    'limma'))
-        expect_s3_class(summarize_fit(object, fit='limma'), 'data.table')
+        expect_s3_class(summarize_fit(object, fit = 'limma'), 'data.table')
     })
     
 # PAIRED: wilcoxon does work
@@ -80,7 +80,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         expect_s3_class(fitdt, 'data.table')
 
         # ~ 0 + Group + t2d | block
-        object %<>% fit_limma(formula=~0+Group+T2D, block='SUB', plot=FALSE)
+        object %<>% fit_limma(formula = ~0+Group+T2D, block = 'SUB', plot = FALSE)
         fitdt <- summarize_fit(object, fit = 'limma')
         expect_s3_class(fitdt, 'data.table')
     })
@@ -89,7 +89,7 @@ if (requireNamespace('diagram', quietly = TRUE)){
     context('plot_contrastogram')
     msg <- 'plot_contrastogram("fukuda20.proteingroups.txt")'
     file <-  download_data('fukuda20.proteingroups.txt')
-    object <- read_proteingroups(file, fit='limma', plot=FALSE)
+    object <- read_maxquant_proteingroups(file, fit = 'limma', plot = FALSE)
     test_that(msg, expect_error(
         plot_contrastogram(object, subgroupvar = 'subgroup'), NA))
 }

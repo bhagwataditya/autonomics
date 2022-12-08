@@ -50,7 +50,7 @@ Within proteingroup
 \examples{
 # Fukuda 2020: MaxQuant 
     file <- download_data('fukuda20.proteingroups.txt')
-    dt <- .read_proteingroups(file)
+    dt <- .read_maxquant_proteingroups(file)
     curate_annotate_maxquant(dt)[, 1:7]
     curate_annotate_fastafile(dt, fastadt = NULL)[, 1:2]
     curate_annotate(dt, fastadt = NULL)[, 1:7]
@@ -60,7 +60,7 @@ Within proteingroup
     phosphofile <- download_data('billing19.phosphosites.txt')
     fastafile   <- download_data('uniprot_hsa_20140515.fasta')
     fastadt <-  read_fastahdrs(fastafile)
-    dt <- .read_proteingroups(file, verbose = TRUE)
+    dt <- .read_maxquant_proteingroups(file, verbose = TRUE)
     dt[, 1:4]
     curate_annotate_maxquant( dt)[, 1:7]
     curate_annotate_fastafile(dt, fastadt = NULL)[, 1:7]

@@ -34,7 +34,7 @@ Extract top features
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, fit = 'limma')
+object <- read_maxquant_proteingroups(file, fit = 'limma')
 nrow(object)                                  # 4534 features
 nrow(extract_top_features(object, p = 1))      # 3772   p != NA
 nrow(extract_top_features(object))             # 1961   p < 0.05 

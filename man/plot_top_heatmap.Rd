@@ -43,6 +43,6 @@ Plot top heatmap
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, fit = 'limma')
+object <- read_maxquant_proteingroups(file, fit = 'limma')
 plot_top_heatmap(object)
 }

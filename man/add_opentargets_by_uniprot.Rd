@@ -17,6 +17,6 @@ Add opentargets annotations
 }
 \examples{
 file <- download_data('billing19.proteingroups.txt')
-object <- read_proteingroups(file)
+object <- read_maxquant_proteingroups(file)
 object \%<>\% add_opentargets_by_uniprot()
 }

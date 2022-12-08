@@ -13,7 +13,7 @@
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(
+#' object <- read_maxquant_proteingroups(
 #'            file, invert_subgroups=inv, fit='limma', plot=FALSE)
 #' dim(limma(object))
 #' dim(limma(object[1:5, ]))
