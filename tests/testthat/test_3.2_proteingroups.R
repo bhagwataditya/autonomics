@@ -198,8 +198,8 @@ test_that('`curate` adds anncols',       {
 })
 
 test_that('`curate` preserves contents', {
-    procols <- intersect(names(pro), names(pro1)) %>% setdiff(c('uniprot', 'Fasta headers'))
-    foscols <- intersect(names(fos), names(fos1)) %>% setdiff(c('uniprot', 'Fasta headers'))
+    procols <- intersect(names(pro), names(pro1)) %>% setdiff(c('uniprot', 'fastahdrs'))
+    foscols <- intersect(names(fos), names(fos1)) %>% setdiff(c('uniprot', 'fastahdrs'))
     expect_equal(pro1[, procols, with = FALSE],  pro[, procols, with = FALSE])   # pro maxquant
     expect_equal(pro2[, procols, with = FALSE],  pro[, procols, with = FALSE])   #     fastafile
     expect_equal(fos1[, foscols, with = FALSE],  fos[, foscols, with = FALSE])   # fos maxquant

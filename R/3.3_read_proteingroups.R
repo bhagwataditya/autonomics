@@ -113,7 +113,9 @@ un_int64 <- function(x) {
     names(prodt) %<>% stri_replace_first_fixed(          'Reverse',     'reverse')
     names(prodt) %<>% stri_replace_first_fixed(          'Contaminant', 'contaminant') # older MaxQuant
     names(prodt) %<>% stri_replace_first_fixed('Potential contaminant', 'contaminant') # newer MaxQuant
-    setnames(prodt, c('id', 'Majority protein IDs'), c('proId', 'uniprot'))
+    setnames(prodt, 'id',                   'proId')
+    setnames(prodt, 'Majority protein IDs', 'uniprot')
+    setnames(prodt, 'Fasta headers',        'fastahdrs')
     prodt
 }
 
@@ -150,8 +152,10 @@ un_int64 <- function(x) {
                           ' phosphosites with signal in some sample')
 # Rename 
     names(fosdt) %<>% stri_replace_first_fixed('___1', '')
-    setnames(fosdt, c('id',    'Protein group IDs', 'Proteins'), 
-                    c('fosId', 'proId',             'uniprot'))
+    setnames(fosdt, 'id',                'fosId')
+    setnames(fosdt, 'Protein group IDs', 'proId')
+    setnames(fosdt, 'Proteins',          'uniprot')
+    setnames(fosdt, 'Fasta headers',     'fastahdrs')
 }
 
 
@@ -236,80 +240,80 @@ nastring_to_0 <- function(x){
         # https://www.uniprot.org/uniprotkb/Q9H0P0/entry#sequences
 }
 
-extract_reviewed <- function(`Fasta headers`){
-    `Fasta headers`                    %>%   # seqinr::read.fasta          gives '>sp|tr' fastahdrs
+extract_reviewed <- function(fastahdrs){
+    fastahdrs                    %>%   # seqinr::read.fasta          gives '>sp|tr' fastahdrs
     split_extract_fixed('|',1)         %>%   # Biostrings::readAAStringSet gives  'sp|tr' fastahdrs
     substr(nchar(.)-1, nchar(.))       %>%   # this function now works with both scenarios
     equals('sp')                       %>%
     as.integer()
 }
 
-extract_protein <- function(`Fasta headers`){
-    `Fasta headers` %>% 
+extract_protein <- function(fastahdrs){
+    fastahdrs %>% 
     split_extract_fixed(' ', 1)        %>% 
     split_extract_fixed('|', 3)        #%>%  # drop _HUMAN
     #split_extract_fixed('_', 1)
 }
 
-extract_gene <- function(`Fasta headers`){
-    `Fasta headers` %>% 
+extract_gene <- function(fastahdrs){
+    fastahdrs %>% 
     split_extract_fixed('GN=', 2)      %>% 
     split_extract_fixed(' ', 1)}
 
-extract_uniprot <- function(`Fasta headers`){
-    `Fasta headers`                    %>%
+extract_uniprot <- function(fastahdrs){
+    fastahdrs                    %>%
     split_extract_fixed(' ', 1)        %>% 
     split_extract_fixed('|', 2) 
 }
 
-extract_canonical <- function(`Fasta headers`){
-    `Fasta headers`                    %>%
+extract_canonical <- function(fastahdrs){
+    fastahdrs                    %>%
     extract_uniprot()                  %>%
     split_extract_fixed('-', 1) 
 }
 
-extract_isoform <- function(`Fasta headers`){
-    `Fasta headers`                    %>%
+extract_isoform <- function(fastahdrs){
+    fastahdrs                    %>%
     extract_uniprot()                  %>%
     split_extract_fixed('-', 2)        %>%
     nastring_to_0()                    %>%
     as.integer()
 }
 
-extract_proteinname <- function(`Fasta headers`){
-    `Fasta headers`                    %>%
+extract_proteinname <- function(fastahdrs){
+    fastahdrs                    %>%
     split_extract_regex('_[A-Z]+ ', 2) %>% 
     split_extract_regex(' OS=', 1)
 }
 
-extract_fragment <- function(`Fasta headers`){
-    `Fasta headers`                    %>%
+extract_fragment <- function(fastahdrs){
+    fastahdrs                    %>%
     extract_proteinname()              %>%
     stri_detect_fixed(  'ragment')     %>%
     as.integer()
 }
 
-extract_existence <- function(`Fasta headers`){
-    `Fasta headers`                   %>%
+extract_existence <- function(fastahdrs){
+    fastahdrs                   %>%
     split_extract_fixed('PE=', 2)     %>%
     split_extract_fixed(' ', 1)       %>%
     nastring_to_nachar()              %>%
     as.integer()
 }
 
-parse_fastahdrs <- function(`Fasta headers`){
+parse_fastahdrs <- function(fastahdrs){
     dt <- data.table(                                        # reviewed
-        reviewed    = extract_reviewed(   `Fasta headers`),  #   0 tr
-        protein     = extract_protein(    `Fasta headers`),  #   1 sp
-        gene        = extract_gene(       `Fasta headers`),
-        uniprot     = extract_uniprot(    `Fasta headers`),  # existence 
-        canonical   = extract_canonical(  `Fasta headers`),  #   1 protein 
-        isoform     = extract_isoform(    `Fasta headers`),  #   2 transcript
-        fragment    = extract_fragment(   `Fasta headers`),  #   3 homolog
-        existence   = extract_existence(  `Fasta headers`))  #   4 prediction
+        reviewed    = extract_reviewed(   fastahdrs),  #   0 tr
+        protein     = extract_protein(    fastahdrs),  #   1 sp
+        gene        = extract_gene(       fastahdrs),
+        uniprot     = extract_uniprot(    fastahdrs),  # existence 
+        canonical   = extract_canonical(  fastahdrs),  #   1 protein 
+        isoform     = extract_isoform(    fastahdrs),  #   2 transcript
+        fragment    = extract_fragment(   fastahdrs),  #   3 homolog
+        existence   = extract_existence(  fastahdrs))  #   4 prediction
     dt[, organism  := split_extract_fixed(protein, '_', 2)]  #   5 uncertain
     dt[, existence := unique(.SD)[, existence[!is.na(existence)]], by = 'canonical']
-    # `unique`: for phosphosites the Fasta headers are
+    # `unique`: for phosphosites the fastahdrs are
     #  replicated when protein has multiple phosphosites
     #  This duplication needs to be eliminated before proceeding.
     dt[]
@@ -485,7 +489,7 @@ curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
     dt  <- dt[!idx]
     dt %<>% rbind(dt1)
     dt %<>% extract(order(as.integer(get(idcol))))
-    dt[, `Fasta headers` := NULL]
+    dt[, fastahdrs := NULL]
     dt[]
 }
 
@@ -541,13 +545,13 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'           # Maxquant doesnt provide protein entries
     if (verbose)  message('\t\tMaxQuant Fastahdrs')                     # They can be inferred from the fastahdrs
     if (verbose)  message('\t\t\tUncollapse, Drop truncated, Parse')    # These fastahdrs are sometimes truncated
-    anndt <- dt[, c(idcol, 'Fasta headers'), with = FALSE]              # Only headers starting with 'tr|F1Q6Z9|F1Q6Z9_DANRE' are useful (protein!)
-    anndt %<>% uncollapse(`Fasta headers`, sep = ';')                   # Headers ending with SV=1 are preferable (they are not truncated)
-    anndt %<>% extract( stri_count_fixed(`Fasta headers`, '|') == 2)    # But this requirement cant be met for each proteingroup (e.g. 3550 in fukuda)
-    anndt[, endok := `Fasta headers` %>% stri_count_regex('.+SV=[0-9]+'), by = idcol]
+    anndt <- dt[, c(idcol, 'fastahdrs'), with = FALSE]                  # Only headers starting with 'tr|F1Q6Z9|F1Q6Z9_DANRE' are useful (protein!)
+    anndt %<>% uncollapse(fastahdrs, sep = ';')                         # Headers ending with SV=1 are preferable (they are not truncated)
+    anndt %<>% extract( stri_count_fixed(fastahdrs, '|') == 2)          # But this requirement cant be met for each proteingroup (e.g. 3550 in fukuda)
+    anndt[, endok := fastahdrs %>% stri_count_regex('.+SV=[0-9]+'), by = idcol]
     anndt <- anndt[, .SD[endok==max(endok)], by = idcol]
     anndt[, endok := NULL]
-    anndt %<>% cbind(parse_fastahdrs(anndt$`Fasta headers`))
+    anndt %<>% cbind(parse_fastahdrs(anndt$fastahdrs))
     anndt %<>% drop_inferior(verbose = verbose)
     setnames(dt, 'uniprot', 'Original')
     if (verbose)  message('\t\t\tCollapse')
