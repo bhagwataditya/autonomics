@@ -642,7 +642,7 @@ cpm2counts <- function(x, libsize){
 #' counts2tpm(counts(object), genesize=1)[1:3, 1:3]
 #' @export
 counts2tpm <- function(x, genesize){
-    x  %<>% '/'(genesize)
+    x  %<>% divide_by(genesize)
     libsize <- matrixStats::colSums2(x, na.rm = TRUE)
     t(t(x)/libsize) * 1e6
 }
