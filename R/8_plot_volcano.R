@@ -163,7 +163,7 @@ add_assay_means <- function(
 #' @param object  SummarizedExperiment
 #' @param method 'fdr', 'bonferroni', ... (see `p.adjust.methods`)
 #' @param fit    'limma', 'lm', 'lme', 'lmer'
-#' @param coef   coefficient (string)
+#' @param coefs   coefficient (string)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file)
@@ -174,16 +174,16 @@ add_assay_means <- function(
 #' @return SummarizedExperiment
 #' @export
 add_adjusted_pvalues <- function(
-    object, method, fit = fits(object)[1], coef = default_coefs(object, fit)[1]
+    object, method, fit = fits(object)[1], coefs = default_coefs(object, fit)[1]
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(fit, fits(object))
-    assert_is_subset(coef, coefs(object, fit))
+    assert_is_subset(coefs, autonomics::coefs(object, fit))
     assert_is_subset(method, stats::p.adjust.methods)
 # Compute
     for (.fit  in fit){
-    for (.coef in coef){
+    for (.coef in coefs){
     for (.method in method){
         pdt <- fdt(object)[ , pvar(object, coef = .coef, fit = .fit) , with = FALSE]
         pdt[, names(pdt) := lapply(.SD, p.adjust, method = .method), .SDcols = names(pdt)]
@@ -198,15 +198,15 @@ add_adjusted_pvalues <- function(
 #' Create volcano datatable
 #' @param object  SummarizedExperiment
 #' @param fit    'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coef    character vector: coefs for which to plot volcanoes
+#' @param coefs    character vector: coefs for which to plot volcanoes
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
-#' make_volcano_dt(object, fit = 'limma', coef = 'Adult')
+#' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 #' @export
 make_volcano_dt <- function(
-    object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1],
+    object, fit = fits(object)[1], coefs = default_coefs(object, fit = fit)[1],
     shape = 'imputed', size = NULL, alpha = NULL,
     label = 'feature_id'
 ){
@@ -214,12 +214,12 @@ make_volcano_dt <- function(
     assert_is_all_of(object, "SummarizedExperiment")
     assertive::assert_any_are_matching_regex(fvars(object), paste0('^p', FITSEP))
     assert_is_subset(fit, fits(object))
-    assert_is_subset(coef, autonomics::coefs(object, fit))
+    assert_is_subset(coefs, autonomics::coefs(object, fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
     if (!is.null(alpha)){ assert_is_subset(alpha, fvars(object)); object %<>% bin(alpha) }
     if (!is.null(label))  assert_is_subset(label, fvars(object))
-    object %<>% add_adjusted_pvalues('bonferroni', fit, coef)
+    object %<>% add_adjusted_pvalues('bonferroni', fit, coefs)
 # Prepare
     effect <- p <- mlp <- significance <- fdr <- NULL
     idvars <- 'feature_id'
@@ -228,8 +228,8 @@ make_volcano_dt <- function(
     if (!is.null(shape))  idvars %<>% union(shape)
     if (!is.null(size))   idvars %<>% union(size)
     if (!is.null(alpha))  idvars %<>% union(alpha)
-    valuevars  <-  effectvar(object, coef = coef, fit = fit)  # elminate similar function pvars etc.
-    valuevars %<>%  c(  pvar(object, coef = coef, fit = fit))
+    valuevars  <-  effectvar(object, coefs = coefs, fit = fit)  # elminate similar function pvars etc.
+    valuevars %<>%  c(  pvar(object, coefs = coefs, fit = fit))
 
     dt <- fdt(object)[, c(idvars, valuevars), with = FALSE]
     dt %<>% melt.data.table(id.vars = idvars)
@@ -238,7 +238,7 @@ make_volcano_dt <- function(
     #dt %<>% dcast.data.table(feature_id+feature_name+coef+fit ~ quantity, value.var = 'value')
     dt %<>% tidyr::pivot_wider(id_cols = all_of(idvars), names_from = 'quantity', values_from = 'value')
     dt %<>% data.table()
-    dt$coef %<>% factor(coef)
+    dt$coef %<>% factor(coefs)
     dt[, fdr := p.adjust(p, method = 'fdr'),        by = c('fit', 'coef')]
     dt[, bon := p.adjust(p, method = 'bonferroni'), by = c('fit', 'coef')]
     dt[, mlp := -log10(p)]
@@ -254,7 +254,7 @@ make_volcano_dt <- function(
 #' Plot volcano
 #' @param object    SummarizedExperiment
 #' @param fit      'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coef      character vector
+#' @param coefs      character vector
 #' @param facet     svars mapped to facet
 #' @param label     label fvar (string)
 #' @param shape     shape fvar (string)
@@ -263,6 +263,8 @@ make_volcano_dt <- function(
 #' @param max.overlaps  number: passed to ggrepel
 #' @param features  character vector: features to plot 
 #' @param nrow      number: no of rows in plot
+#' @param p         number: p cutoff for labeling
+#' @param fdr       number: fdr cutoff for labeling
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -277,16 +279,16 @@ make_volcano_dt <- function(
 #' object %<>% fit_lm()
 #'
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, impute = TRUE, fit = 'limma', plot = FALSE)
-#' plot_volcano(object, coef = c('t1', 't2', 't3'))
+#' object <- read_metabolon(file, impute = TRUE, fit = 'limma')
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'))
 #' object %<>% fit_lm(subgroupvar = 'SET')
-#' plot_volcano(object, coef = c('t1', 't2', 't3'), nrow=2)
-#' plot_volcano(object, coef = c('t1', 't2', 't3'), fit='lm')
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
 #' @export
 plot_volcano <- function(
     object,
     fit   = fits(object)[1], 
-    coef  = default_coefs(object, fit)[1],
+    coefs  = default_coefs(object, fit)[1],
     facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
     shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
     size  = NULL,
@@ -294,7 +296,9 @@ plot_volcano <- function(
     label = 'feature_id', 
     max.overlaps = 10,
     features  = NULL,
-    nrow  = length(fit)
+    nrow  = length(fit),
+    p   = 0.05, 
+    fdr = 0.05
 ){
 # Assert
     assert_is_a_number(nrow)
@@ -302,23 +306,23 @@ plot_volcano <- function(
     facet %<>% lapply(sym)
     facet <- vars(!!!facet)
 # Volcano 
-    plotdt <- make_volcano_dt(object, fit = fit, coef = coef, 
+    plotdt <- make_volcano_dt(object, fit = fit, coefs = coefs, 
                   label = label, shape = shape, size = size, alpha = alpha)
-    p <- ggplot(plotdt) + facet_wrap(facet, nrow = nrow)
-    p <- p + theme_bw() + theme(panel.grid = element_blank())
-    p <- p + xlab('log2(FC)') + ylab('-log10(p)') + ggtitle('volcano')
+    g <- ggplot(plotdt) + facet_wrap(facet, nrow = nrow)
+    g <- g + theme_bw() + theme(panel.grid = element_blank())
+    g <- g + xlab('log2(FC)') + ylab('-log10(p)') + ggtitle('volcano')
     shapesym <- if (is.null(shape))  quo(NULL) else sym(shape)
     sizesym  <- if (is.null(size))   quo(NULL) else sym(size)
     alphasym <- if (is.null(alpha))  quo(NULL) else sym(alpha)
     colorvalues <- c(down = '#ff5050', unchanged = 'grey', up = '#009933')
-    p <- p + geom_point(data = plotdt, 
+    g <- g + geom_point(data = plotdt, 
                         mapping = aes(x = effect, y = mlp, color = direction, 
                                       shape = !!shapesym, alpha = !!alphasym, 
                                       size = !!sizesym), 
                         na.rm = TRUE) + 
              scale_color_manual(values = colorvalues)
-    if (!is.null(size))   p <- p + scale_size_manual( values = 1:3)
-    if (!is.null(alpha))  p <- p + scale_alpha_manual(values = c(0.3, 0.5, 1))
+    if (!is.null(size))   g <- g + scale_size_manual( values = 1:3)
+    if (!is.null(alpha))  g <- g + scale_alpha_manual(values = c(0.3, 0.5, 1))
 # Significance lines
     xmin <- min(plotdt$effect)
     xmax <- max(plotdt$effect)
@@ -326,16 +330,13 @@ plot_volcano <- function(
     minn <- function(x) if (length(x)==0) return(Inf) else min(x, na.rm = TRUE) 
         # Avoid warning 'no non-missing arguments to min; returning Inf'
     summarydt <- plotdt[, 
-        .( 
-            label      = c('p = 0.05',                 'fdr = 0.05',                 'bon = 0.05'),
+        .(  label      = c('p = 0.05',                 'fdr = 0.05',                 'bon = 0.05'),
             yintercept = c( minn(mlp[p<0.05]),          minn(mlp[fdr<0.05]),          minn(mlp[bon<0.05])),
             down       = c( sum(p <0.05 & effect < 0),  sum(fdr <0.05 & effect < 0),  sum(bon <0.05 & effect < 0)),
-            up         = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))
-        ),
-        by = c('fit', 'coef')
-    ]
+            up         = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))),
+        by = c('fit', 'coef')  ]
     summarydt %<>% extract(!is.infinite(yintercept))
-    p <- p + geom_hline(data = summarydt, mapping = aes(yintercept = yintercept), color = 'gray30', linetype = 'longdash')
+    g <- g + geom_hline(data = summarydt, mapping = aes(yintercept = yintercept), color = 'gray30', linetype = 'longdash')
     do_geom_label <- function(mapping, label.size){  
                         geom_label(data       = summarydt, 
                                    mapping    = mapping, 
@@ -343,13 +344,14 @@ plot_volcano <- function(
                                    hjust      = 0.5, 
                                    fill       = alpha(c('white'), 0.6), 
                                    color      = 'gray30')  }
-    p <- p + do_geom_label(mapping = aes(x = 0,    y = yintercept,      label = label), label.size = 0.5)
-    p <- p + do_geom_label(mapping = aes(x = xmin, y = yintercept + dy, label = down ), label.size = NA)
-    p <- p + do_geom_label(mapping = aes(x = xmax, y = yintercept + dy, label = up   ), label.size = NA)
-    p <- p + guides(color = 'none')
+    g <- g + do_geom_label(mapping = aes(x = 0,    y = yintercept,      label = label), label.size = 0.5)
+    g <- g + do_geom_label(mapping = aes(x = xmin, y = yintercept + dy, label = down ), label.size = NA)
+    g <- g + do_geom_label(mapping = aes(x = xmax, y = yintercept + dy, label = up   ), label.size = NA)
+    g <- g + guides(color = 'none')
 # Labels
     if (!is.null(label)){
-        labeldt <- plotdt[fdr<0.05]
+        idx <- plotdt$fdr < fdr & plotdt$p < p
+        labeldt <- plotdt[idx]
         if (!is.null(features)){
             seldt <- copy(plotdt)
             seldt[, singlefeature := feature_id]
@@ -358,17 +360,17 @@ plot_volcano <- function(
             seldt[, singlefeature := NULL]
             seldt %<>% unique()
         }
-        p <- p + ggrepel::geom_label_repel(data = labeldt, 
+        g <- g + ggrepel::geom_label_repel(data = labeldt, 
                     aes(x = effect, y = mlp, label = !!sym(label), color = direction), #color = 'black', 
                     label.size = NA, fill = alpha(c('white'), 0.6),
                     na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps)
         if (!is.null(features)){
-            p <- p + ggrepel::geom_label_repel(data = seldt, 
+            g <- g + ggrepel::geom_label_repel(data = seldt, 
                         aes(x = effect, y = mlp, label = !!sym(label)), color = 'black', 
                         label.size = NA, fill = alpha(c('white'), 0.6),
                         na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps)
-            p <- p + geom_point(data = seldt, aes(x = effect, y = mlp), shape = 1, size = 4, color = 'black')
+            g <- g + geom_point(data = seldt, aes(x = effect, y = mlp), shape = 1, size = 4, color = 'black')
         }
     }
-    p
+    g
 }

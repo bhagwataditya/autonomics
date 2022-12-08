@@ -7,7 +7,7 @@
 make_volcano_dt(
   object,
   fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  coefs = default_coefs(object, fit = fit)[1],
   shape = "imputed",
   size = NULL,
   alpha = NULL,
@@ -19,7 +19,7 @@ make_volcano_dt(
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
-\item{coef}{character vector: coefs for which to plot volcanoes}
+\item{coefs}{character vector: coefs for which to plot volcanoes}
 }
 \value{
 data.table
@@ -30,5 +30,5 @@ Create volcano datatable
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
-make_volcano_dt(object, fit = 'limma', coef = 'Adult')
+make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 }

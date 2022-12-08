@@ -7,7 +7,7 @@
 plot_volcano(
   object,
   fit = fits(object)[1],
-  coef = default_coefs(object, fit)[1],
+  coefs = default_coefs(object, fit)[1],
   facet = if (is_scalar(fit)) "coef" else c("fit", "coef"),
   shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
   size = NULL,
@@ -15,7 +15,9 @@ plot_volcano(
   label = "feature_id",
   max.overlaps = 10,
   features = NULL,
-  nrow = length(fit)
+  nrow = length(fit),
+  p = 0.05,
+  fdr = 0.05
 )
 }
 \arguments{
@@ -23,7 +25,7 @@ plot_volcano(
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
-\item{coef}{character vector}
+\item{coefs}{character vector}
 
 \item{facet}{svars mapped to facet}
 
@@ -40,6 +42,10 @@ plot_volcano(
 \item{features}{character vector: features to plot}
 
 \item{nrow}{number: no of rows in plot}
+
+\item{p}{number: p cutoff for labeling}
+
+\item{fdr}{number: fdr cutoff for labeling}
 }
 \value{
 ggplot object
@@ -60,9 +66,9 @@ plot_volcano(object, label = 'genesymbol', features = c('hmbsb'))
 object \%<>\% fit_lm()
 
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, impute = TRUE, fit = 'limma', plot = FALSE)
-plot_volcano(object, coef = c('t1', 't2', 't3'))
+object <- read_metabolon(file, impute = TRUE, fit = 'limma')
+plot_volcano(object, coefs = c('t1', 't2', 't3'))
 object \%<>\% fit_lm(subgroupvar = 'SET')
-plot_volcano(object, coef = c('t1', 't2', 't3'), nrow=2)
-plot_volcano(object, coef = c('t1', 't2', 't3'), fit='lm')
+plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
+plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
 }
