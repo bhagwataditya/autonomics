@@ -847,7 +847,7 @@ read_maxquant_proteingroups <- function(
 #' @rdname read_maxquant_proteingroups
 #' @export
 read_proteingroups <- function(...){
-    .Deprecate('read_maquant_proteingroups')
+    .Deprecated('read_maquant_proteingroups')
     read_maxquant_proteingroups(...)
 }
 
@@ -956,7 +956,7 @@ read_maxquant_phosphosites <- function(
 #' @rdname read_maxquant_phosphosites
 #' @export
 read_phosphosites <- function(...){
-    .Deprecate('read_maxquant_phosphosites')
+    .Deprecated('read_maxquant_phosphosites')
    read_maxquant_phosphosites(...) 
 }
 
