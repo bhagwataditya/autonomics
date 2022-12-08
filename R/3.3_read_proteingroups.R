@@ -753,10 +753,9 @@ is_file <- function(file){
 }
 
 
-#' Read proteingroups / phosphosites
+#' Read maxquant proteingroups
 #' @param dir           proteingroups directory
-#' @param file          proteingroups / phosphosites file
-#' @param proteinfile   proteingroups  file
+#' @param file          proteingroups file
 #' @param fastadt       NULL or data.table
 #' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
 #'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
@@ -780,19 +779,17 @@ is_file <- function(file){
 #' @param verbose       TRUE/FALSE : message ?
 #' @return SummarizedExperiment
 #' @examples
-#' # fukuda20
+#' # fukuda20 - LFQ
 #'     file <- download_data('fukuda20.proteingroups.txt')
 #'     pro <- read_proteingroups(file = file, plot = TRUE)
-#' # billing19
-#'     proteinfile <- download_data('billing19.proteingroups.txt')
-#'     phosphofile <- download_data('billing19.phosphosites.txt')
+#'     
+#' # billing19 - Normalized Ratios
+#'     file <- download_data('billing19.proteingroups.txt')
 #'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #'     fastadt <- read_fastahdrs(fastafile)
 #'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-#'     pro <- read_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
-#'     pro <- read_proteingroups(file = proteinfile, subgroups = subgroups)
-#'     fos <- read_phosphosites( file = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
-#'     fos <- read_phosphosites( file = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
+#'     pro <- read_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
+#'     pro <- read_proteingroups(file = file, subgroups = subgroups)
 #' @export
 read_proteingroups <- function(
     dir = getwd(), 
@@ -847,11 +844,46 @@ read_proteingroups <- function(
 }
 
 
-#' @rdname read_proteingroups
+#' Read maxquant phosphosites
+#' @param dir           proteingroups directory
+#' @param phosphofile   phosphosites  file
+#' @param proteinfile   proteingroups file
+#' @param fastadt       NULL or data.table
+#' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
+#'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
+#'                     'Intensity'
+#' @param subgroups     NULL or string vector : subgroups to retain
+#' @param contaminants  TRUE/FALSE : retain contaminants ?
+#' @param reverse       TRUE/FALSE : include reverse hits ?
+#' @param localization  number: min localization probability (for phosphosites)
+#' @param invert        string vector : subgroups which require inversion
+#' @param impute        TRUE/FALSE: impute group-specific NA values?
+#' @param plot          TRUE/FALSE
+#' @param pca           TRUE/FALSE: compute and plot pca?
+#' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
+#' @param formula       model formula
+#' @param block         model blockvar: string or NULL
+#' @param coefs         model coefficients          of interest: string vector or NULL
+#' @param contrasts     model coefficient contrasts of interest: string vector or NULL
+#' @param feature_id    string: feature for summary plot
+#' @param sample_id     string: sample  for summary plot
+#' @param palette       color palette : named string vector
+#' @param verbose       TRUE/FALSE : message ?
+#' @return SummarizedExperiment
+#' @examples
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' fastadt <- read_fastahdrs(fastafile)
+#' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
+#' pro <- read_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
+#' pro <- read_proteingroups(file = proteinfile, subgroups = subgroups)
+#' fos <- read_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
+#' fos <- read_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
 #' @export
 read_phosphosites <- function(
     dir = getwd(), 
-    file = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
+    phosphofile = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
     proteinfile = file.path(dirname(file), 'proteinGroups.txt'), 
     fastadt = NULL, 
     quantity = guess_maxquant_quantity(proteinfile), 
@@ -862,13 +894,13 @@ read_phosphosites <- function(
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
-    assert_all_are_existing_files(c(file, proteinfile))
+    assert_all_are_existing_files(c(phosphofile, proteinfile))
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
     assert_is_a_bool(verbose)
 # Read
     prodt <- .read_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
-    fosdt <- .read_phosphosites(file = file, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
+    fosdt <- .read_phosphosites(file = phosphofile, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
     fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
     fosdt %<>% add_feature_id()
