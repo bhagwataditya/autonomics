@@ -140,7 +140,7 @@ add_opentargets_by_uniprot <- function(object){
     fdt0 %<>% merge(targetsdt, by.x = 'canonical', by.y = 'uniprot', all.x = TRUE, sort = FALSE)
     fdt0[, canonical := NULL]
     fdt0 %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idvar)
-    object %<>% merge_fdata(fdt0, by.x = idvar, by.y = idvar)
+    object %<>% merge_fdt(fdt0, by.x = idvar, by.y = idvar)
     object    
 }
 

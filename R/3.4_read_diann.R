@@ -437,7 +437,7 @@ rm_diann_contaminants <- function(
     fdt0[uniprot %in% contaminants, contaminant := TRUE]
     fdt0[, uniprot := NULL]
     fdt0 %<>% extract(, .(contaminant = any(contaminant)), by = 'feature_id')
-    object %<>% merge_fdata(fdt0, by.x = 'feature_id', by.y = 'feature_id')
+    object %<>% merge_fdt(fdt0)
     object %<>% filter_features(!contaminant, verbose = verbose)
 }
 

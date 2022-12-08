@@ -319,10 +319,10 @@ merge_fitres <- function(object, fitres, fit, statistic=NULL){
     fitresdt <- data.table::copy(fitres)   # dont change in original
     firstcols <- intersect(c('feature_id', 'Intercept'), names(fitresdt))
     fitresdt %<>% extract(,c(firstcols, 
-                            sort(setdiff(names(.), firstcols))), with=FALSE)
+                            sort(setdiff(names(.), firstcols))), with = FALSE)
     if (!is.null(statistic)) names(fitresdt)[-1] %<>% paste0(statistic,FITSEP,.)
     names(fitresdt)[-1] %<>% paste0(FITSEP, fit)
-    object %<>% merge_fdata(fitresdt)
+    object %<>% merge_fdt(fitresdt)
     object
 }
 
@@ -409,7 +409,7 @@ fit_limma <- function(
         sep          = sep,           suffix       = suffix,
         verbose      = verbose)
     object %<>% reset_fitres('limma')
-    object %<>% merge_fdata(limmadt, by.x = 'feature_id', by.y = 'feature_id')
+    object %<>% merge_fdt(limmadt)
         #fdata(object)$F.limma   <- limmares$F
         #fdata(object)$F.p.limma <- limmares$F.p
     if (plot)  print(plot_volcano(object, fit = 'limma')) 

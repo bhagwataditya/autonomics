@@ -1212,7 +1212,7 @@ add_psp <- function(
 # Merge
     fdt(object)$uniprot1  <- split_extract_fixed(fdt(object)$Curated, ';', 1)
     fdt(object)$Position1 <- split_extract_fixed(fdt(object)$`Positions within proteins`, ';', 1)
-    object %<>% merge_fdata(dt, by.x = c('uniprot1', 'Position1'), 
+    object %<>% merge_fdt(dt, by.x = c('uniprot1', 'Position1'), 
                                 by.y = c('ACC_ID', 'MOD_RSD'))
     idx <- fdt(object)[, !is.na(psp) &  AA != `Amino acid`]
     fdt(object)$psp[idx] <- NA
@@ -1318,11 +1318,11 @@ annotate_uniprot_ws.SummarizedExperiment <- function(
     # Annotate
         uniprot <- NULL
         fdt %<>% extract(uniprot %in% UniProt.ws::keys(upws, keytype = 'UNIPROTKB'))
-        fdt %<>% annotate_uniprot_ws.data.table(upws, columns=columns, collapse=collapse)
+        fdt %<>% annotate_uniprot_ws.data.table(upws, columns = columns, collapse = collapse)
     # Collapse
-        fdt <- fdt[, lapply(.SD, trimws),                          by='feature_id'] # trim whitespace
-        fdt <- fdt[, lapply(.SD, paste_unique, collapse=collapse), by='feature_id'] # collapse
-        x %<>% merge_fdata(fdt)
+        fdt <- fdt[, lapply(.SD, trimws),                          by = 'feature_id'] # trim whitespace
+        fdt <- fdt[, lapply(.SD, paste_unique, collapse=collapse), by = 'feature_id'] # collapse
+        x %<>% merge_fdt(fdt)
         x
 }
 

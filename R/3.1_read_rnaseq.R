@@ -854,7 +854,7 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
     genesize <- ensembldb::lengthOf(
         ensdb, filter = ensembldb::GeneidFilter(fdt(object)$feature_id))
     genesize <- data.table(feature_id = names(genesize), genesize = genesize)
-    object %<>% merge_fdata(genesize)
+    object %<>% merge_fdt(genesize)
 # Return
     object
 }
@@ -886,7 +886,7 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
 
     colnames(fcounts$counts) <- sample_names
     object <- matrix2sumexp(fcounts$counts)
-    object %<>% merge_fdata(data.table(fcounts$annotation), by.y = 'feature_id')
+    object %<>% merge_fdt(data.table(fcounts$annotation))
     assayNames(object)[1] <- 'counts'
 # Add sample/feature data
     object %<>% merge_sfile(
@@ -922,7 +922,7 @@ is_numeric_character <- function(x)  all(!is.na(suppressWarnings(as.numeric(x)))
     object <- matrix2sumexp(counts1, verbose = verbose)
     assayNames(object)[1] <- 'counts'
 # fdata
-    object %<>% merge_fdata(fdt0, by.y = fid_col, verbose = verbose)
+    object %<>% merge_fdt(fdt0, by.y = fid_col, verbose = verbose)
     object %<>% add_ensdb(ensdb)
 # sdata
     object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id', by.y = by.y)
