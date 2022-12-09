@@ -74,7 +74,8 @@ make_subgroup_palette <- function(object){
     make_colors(subgroup_levels(object))
 }
 make_svar_palette <- function(object, svar){ 
-    if (is.null(svar)) return(NULL)
+    if (is.null(svar))               return(NULL)
+    if (is.numeric(object[[svar]]))  return(NULL)
     make_colors(slevels(object, svar))
 }
 make_fvar_palette <- function(object, fvar){
@@ -809,7 +810,7 @@ plot_subgroup_boxplots <- function(
 #' @param ntop        ntop cutoff
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, fit = 'limma')
+#' object <- read_maxquant_proteingroups(file, fit = 'limma')
 #' nrow(object)                                  # 4534 features
 #' nrow(extract_top_features(object, p = 1))      # 3772   p != NA
 #' nrow(extract_top_features(object))             # 1961   p < 0.05 
@@ -818,32 +819,32 @@ plot_subgroup_boxplots <- function(
 extract_top_features <- function(
     object, 
     fit         = fits(object)[1], 
-    coefficient = default_coefs(object, fit = fit)[1],
+    coef = default_coefs(object, fit = fit)[1],
     effectsize  = 0,
     p           = 0.05,
     fdr         = 1,
     ntop        = Inf
 ){
 # Assert
-    if (length(coefficient)==0)  return(object)
+    if (length(coef)==0)  return(object)
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(fit,  fits(object))
-    assert_is_subset(coefficient, coefs(object, fit = fit))
+    assert_is_subset(coef, coefs(object, fit = fit))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
     assert_is_a_number(ntop)
 # Filter available
-    pvar0 <- pvar(object, fit = fit, coef = coefficient)
+    pvar0 <- pvar(object, fit = fit, coef = coef)
     idx <- !is.na(fdt(object)[[pvar0]])
     object %<>% extract(idx, )
 # Filter top
     ntop %<>% min(nrow(object))
     idx <- order(fdt(object)[[pvar0]])[1:ntop]
     object %<>% extract(idx, )
-    idx <- (abs(autonomics::effect(object, fit = fit, coef = coefficient)[, 1]) > effectsize)  & 
-           (    autonomics::p(     object, fit = fit, coef = coefficient)[, 1]  < p  )         & 
-           (    autonomics::fdr(   object, fit = fit, coef = coefficient)[, 1]  < fdr)
+    idx <- (abs(autonomics::effect(object, fit = fit, coef = coef)[, 1]) > effectsize)  & 
+           (    autonomics::p(     object, fit = fit, coef = coef)[, 1]  < p  )         & 
+           (    autonomics::fdr(   object, fit = fit, coef = coef)[, 1]  < fdr)
     object %<>% extract(idx, )
 # Return
     object
@@ -1345,7 +1346,7 @@ plot_design <- function(object){
 #' @param object       SummarizedExperiment
 #' @param assay        string: one of assayNames(object)
 #' @param fit         'limma', 'lm', 'lme(r)', 'wilcoxon'
-#' @param coefficient  string: one of coefs(object)
+#' @param coef  string: one of coefs(object)
 #' @param effectsize   number: effectsize filter
 #' @param p            number: p    filter
 #' @param fdr          number: fdr  filter
@@ -1354,14 +1355,14 @@ plot_design <- function(object){
 #' @param group        sample groupvar
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, fit = 'limma')
+#' object <- read_maxquant_proteingroups(file, fit = 'limma')
 #' plot_top_heatmap(object)
 #' @export
 plot_top_heatmap <- function(
     object,
     assay       = assayNames(object)[1],
     fit         = fits(object)[1],
-    coefficient = default_coefs(object, fit = fit)[1],
+    coef = default_coefs(object, fit = fit)[1],
     effectsize  = 0,
     p           = 1,
     fdr         = 0.05,
@@ -1374,8 +1375,8 @@ plot_top_heatmap <- function(
     assert_is_subset(assay,         assayNames(object))
     assert_is_a_string(fit)
     assert_is_subset(  fit, fits(object))
-    assert_is_a_string(coefficient)
-    assert_is_subset(  coefficient, coefs(object))
+    assert_is_a_string(coef)
+    assert_is_subset(  coef, coefs(object))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
@@ -1386,7 +1387,7 @@ plot_top_heatmap <- function(
 # Filter: significant features
     object0 <- object
     object %<>% extract_top_features(
-        fit         = fit,           coefficient = coefficient,    
+        fit         = fit,           coef = coef,    
         effectsize  = effectsize,    p           = p,
         fdr         = fdr,           ntop        = ntop)
 # Zscore
@@ -1397,9 +1398,9 @@ plot_top_heatmap <- function(
     object %<>% extract(idx, )                  # leads to a 0 variance error in the next line
     idx <- hclust(as.dist(1-cor(t(assays(object)[[assay]]))))$order
     object  %<>% extract(  idx , )                          # order features
-    idx <- effect(object, fit = fit, coef = coefficient)[, 1] < 0      # split down/up
+    idx <- effect(object, fit = fit, coef = coef)[, 1] < 0      # split down/up
     down <- object[idx, ]
-    idx <- effect(object, fit = fit, coef = coefficient)[, 1] > 0
+    idx <- effect(object, fit = fit, coef = coef)[, 1] > 0
     up <- object[idx, ]
     object <- rbind(down, up)                                   # rbind
     fdt(object)[[flabel]] %<>% factor(unique(.))                # fix order
@@ -1415,7 +1416,7 @@ plot_top_heatmap <- function(
     dt <- sumexp_to_longdt(object, assay = assay, fvars = flabel)
     setnames(dt, 'value', 'z-score')
     vlines <- 0.5 + c(0, cumsum(table(object[[group]])))
-    hlines <- 0.5 + c(0, sum(effect(object, fit = fit, coef = coefficient)[, 1] < 0), nrow(object))
+    hlines <- 0.5 + c(0, sum(effect(object, fit = fit, coef = coef)[, 1] < 0), nrow(object))
 # Plot
     ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +
     geom_tile() +
