@@ -453,6 +453,7 @@ merge_sdata <- function(
 }
 
 #' @rdname merge_sdata
+#' @export
 merge_sdt <- function(
     object, dt, by.x = 'sample_id',  by.y = 'sample_id', all.x = TRUE, verbose = TRUE
 ){
