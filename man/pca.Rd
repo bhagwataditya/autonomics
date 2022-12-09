@@ -20,8 +20,8 @@ pca(
 
 pls(
   object,
+  by = "subgroup",
   assay = assayNames(object)[1],
-  subgroupvar = "subgroup",
   ndim = 2,
   minvar = 0,
   verbose = FALSE,
@@ -42,7 +42,7 @@ sma(
 lda(
   object,
   assay = assayNames(object)[1],
-  subgroupvar = "subgroup",
+  by = "subgroup",
   ndim = 2,
   minvar = 0,
   verbose = TRUE,
@@ -66,6 +66,8 @@ lda(
 \item{doublecenter}{whether to double center data prior to pca}
 
 \item{...}{passed to biplot}
+
+\item{by}{string}
 }
 \value{
 SummarizedExperiment
@@ -78,8 +80,8 @@ Add sample scores, feature loadings, and dimension variances to object.
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
-pls(object, subgroupvar = 'Group')  # Partial Least Squares
-lda(object, subgroupvar = 'Group')  # Linear Discriminant Analysis
+pls(object, by = 'Group')  # Partial Least Squares
+lda(object, by = 'Group')  # Linear Discriminant Analysis
 sma(object)  # Spectral Map Analysis
 pca(object, ndim=3)
 pca(object, ndim=Inf, minvar=5)

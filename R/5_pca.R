@@ -83,7 +83,8 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' Add sample scores, feature loadings, and dimension variances to object.
 #'
 #' @param object  SummarizedExperiment
-#' @param assay   string
+#' @param by            string 
+#' @param assay         string
 #' @param ndim          number
 #' @param minvar        number
 #' @param doublecenter  whether to double center data prior to pca
@@ -95,8 +96,8 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
-#' pls(object, subgroupvar = 'Group')  # Partial Least Squares
-#' lda(object, subgroupvar = 'Group')  # Linear Discriminant Analysis
+#' pls(object, by = 'Group')  # Partial Least Squares
+#' lda(object, by = 'Group')  # Linear Discriminant Analysis
 #' sma(object)  # Spectral Map Analysis
 #' pca(object, ndim=3)
 #' pca(object, ndim=Inf, minvar=5)
@@ -155,7 +156,8 @@ pca <- function(
 #' @rdname pca
 #' @export
 pls <- function(
-    object,  assay = assayNames(object)[1], subgroupvar = 'subgroup', ndim = 2, 
+    object,  by = 'subgroup', 
+    assay = assayNames(object)[1], ndim = 2, 
     minvar = 0, verbose = FALSE, plot = FALSE, ...
 ){
 # Assert
@@ -164,7 +166,7 @@ pls <- function(
         return(object) }
     assert_is_valid_sumexp(object)
     assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
-    assert_is_subset(subgroupvar, svars(object))
+    assert_is_subset(by, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -173,7 +175,7 @@ pls <- function(
     . <- NULL
 # Transform
     x <- t(assays(object)[[assay]])
-    y <- svalues(object, subgroupvar)
+    y <- svalues(object, by)
     pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
@@ -254,7 +256,7 @@ sma <- function(
 #' @rdname pca
 #' @export
 lda <- function(
-    object, assay = assayNames(object)[1], subgroupvar = 'subgroup', ndim = 2, 
+    object, assay = assayNames(object)[1], by = 'subgroup', ndim = 2, 
     minvar = 0, verbose = TRUE, plot = FALSE, ...
 ){
 # Assert
@@ -263,8 +265,8 @@ lda <- function(
         return(object)}
     assert_is_valid_sumexp(object)
     assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
-    assert_is_subset(subgroupvar, svars(object))
-    nsubgroup <- length(slevels(object, subgroupvar))
+    assert_is_subset(by, svars(object))
+    nsubgroup <- length(slevels(object, by))
     if (is.infinite(ndim))  ndim <- nsubgroup - 1
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, nsubgroup-1)
@@ -281,7 +283,7 @@ lda <- function(
 # Transform
     exprs_t  <- t(assays(tmpobj)[[assay]])
     lda_out  <- suppressWarnings(
-                    MASS::lda( exprs_t,grouping = object[[subgroupvar]]))
+                    MASS::lda( exprs_t,grouping = object[[by]]))
     features <- lda_out$scaling
     if (ncol(features)==1) features %<>% cbind(LD2 = 0)
     exprs_t %<>% scale(center = colMeans(lda_out$means), scale = FALSE)
@@ -308,16 +310,16 @@ lda <- function(
 
 
 #' @param object  SummarizedExperiment
-#' @param subgroupvar subgrup svar
+#' @param by subgrup svar
 #' @param ndim    number
 #' @return        SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' spls(object, subgroupvar ='Group')
+#' spls(object, by ='Group')
 #' @noRd
 spls <- function(
-    object, assay = assayNames(object)[1], subgroupvar = 'subgroup', ndim = 2, 
+    object, assay = assayNames(object)[1], by = 'subgroup', ndim = 2, 
     minvar = 0, plot = FALSE, ...
 ){
 # Assert
@@ -327,7 +329,7 @@ spls <- function(
     }
     assert_is_valid_sumexp(object);  assert_is_scalar(assay)
     assert_is_subset(assay, assayNames(object))
-    assert_is_subset(subgroupvar, svars(object))
+    assert_is_subset(by, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -336,7 +338,7 @@ spls <- function(
     . <- NULL
 # Transform
     x <- t(assays(object)[[assay]])
-    y <- object[[subgroupvar]]
+    y <- object[[by]]
     pls_out <- mixOmics::splsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
