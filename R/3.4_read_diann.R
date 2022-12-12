@@ -341,7 +341,7 @@ read_diann_proteingroups <- function(
 #' @rdname read_diann_proteingroups
 #' @export
 read_diann <- function(...){
-    .Deprecated('read_diann')
+    .Deprecated('read_diann_proteingroups')
     read_diann_proteingroups(...)
 }
 
