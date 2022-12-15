@@ -250,10 +250,10 @@ assert_phosphosites_file <- function(x, .xname = get_name_in_parent(x)){
 #' is_fastadt_or_null(x)
 #' @export
 is_fastadt_or_null <- function(x, .xname = get_name_im_parent(x)){
-    if (is.null(fastadt))                  return(TRUE)
-    if (!is.data.table(fastadt))           return(false('%s is not a data.table', .xname))
-    if (names(fastadt)[1] != 'reviewed')   return(false('col1(%s) != "reviewed"', .xname))
-    if (names(fastadt)[2] != 'protein')    return(false('col2(%s) != "protein"',  .xname))
+    if (is.null(x))                  return(TRUE)
+    if (!is.data.table(x))           return(false('%s is not a data.table', .xname))
+    if (names(x)[1] != 'reviewed')   return(false('col1(%s) != "reviewed"', .xname))
+    if (names(x)[2] != 'protein')    return(false('col2(%s) != "protein"',  .xname))
     return(TRUE)
 }
 
