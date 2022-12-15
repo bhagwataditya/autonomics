@@ -355,7 +355,7 @@ plot_volcano <- function(
         if (!is.null(features)){
             seldt <- copy(plotdt)
             seldt[, singlefeature := feature_id]
-            seldt %<>% separate_rows(singlefeature) %>% data.table()
+            seldt %<>% uncollapse(singlefeature, sep = ';')
             seldt %<>% extract(singlefeature %in% features)
             seldt[, singlefeature := NULL]
             seldt %<>% unique()
