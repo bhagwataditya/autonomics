@@ -481,7 +481,6 @@ CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism
 #' @md
 #' @export
 curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
-    if (!is.null(fastadt))
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     dt %<>% copy()
     dt[, protein := NA_character_]
