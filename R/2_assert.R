@@ -124,43 +124,43 @@ assert_is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
 #' @examples
 #' file <- NULL
 #' is_diann_report(file)
-#' is_fragpipe_file(file)
+#' is_fragpipe_tsv(file)
 #' is_proteingroups_file(file)
 #' is_phosphosites(file)
 #' 
 #' file <- 3
 #' is_diann_report(file)
-#' is_fragpipe_file(file)
+#' is_fragpipe_tsv(file)
 #' is_proteingroups_file(file)
 #' is_phosphosites_file(file)
 #' 
 #' file <- 'blabla.tsv'
 #' is_diann_report(file)
-#' is_fragpipe_file(file)
+#' is_fragpipe_tsv(file)
 #' is_proteingroups_file(file)
 #' is_phosphosites_file(file)
 #' 
 #' file <- download_data('multiorganism.combined_protein.tsv')
 #' is_diann_report(file)
-#' is_fragpipe_file(file)
+#' is_fragpipe_tsv(file)
 #' is_proteingroups_file(file)
 #' is_phosphosites_file(file)
 #' 
 #' file <- download_data('dilution.report.tsv')
 #' is_diann_report(file)
-#' is_fragpipe_file(file)
+#' is_fragpipe_tsv(file)
 #' is_proteingroups_file(file)
 #' is_phosphosites_file(file)
 #' 
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' is_diann_report(file)
-#' is_fragpipe_file(file)
+#' is_fragpipe_tsv(file)
 #' is_proteingroups_file(file)
 #' is_phosphosites_file(file)
 #' 
 #' file <- download_data('billing19.phosphosites.txt')
 #' is_diann_report(file)
-#' is_fragpipe_file(file)
+#' is_fragpipe_tsv(file)
 #' is_proteingroups_file(file)
 #' is_phosphosites_file(file)
 #' @export
@@ -177,7 +177,7 @@ is_diann_report <- function(x, .xname = get_name_in_parent(x)){
 
 #' @rdname is_diann_report
 #' @export
-is_fragpipe_file <- function(x, .xname = get_name_in_parent(x)){
+is_fragpipe_tsv <- function(x, .xname = get_name_in_parent(x)){
     if (is.null(x)){                      false('%s is NULL',                    .xname)
     } else if (!is_a_string(x)){          false('%s is not a string',            .xname)
     } else if (!is_existing_file(x)){     false('%s does not exist',             .xname)
@@ -222,8 +222,8 @@ assert_diann_report <- function(x, .xname = get_name_in_parent(x)){
 
 #' @rdname is_diann_report
 #' @export
-assert_fragpipe_file <- function(x, .xname = get_name_in_parent(x)){
-    assert_engine(is_fragpipe_file, x, .xname = .xname)
+assert_fragpipe_tsv <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_fragpipe_tsv, x, .xname = .xname)
 }
 
 #' @rdname is_diann_report

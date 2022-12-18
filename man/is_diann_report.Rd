@@ -2,18 +2,18 @@
 % Please edit documentation in R/2_assert.R
 \name{is_diann_report}
 \alias{is_diann_report}
-\alias{is_fragpipe_file}
+\alias{is_fragpipe_tsv}
 \alias{is_proteingroups_file}
 \alias{is_phosphosites_file}
 \alias{assert_diann_report}
-\alias{assert_fragpipe_file}
+\alias{assert_fragpipe_tsv}
 \alias{assert_proteingroups_file}
 \alias{assert_phosphosites_file}
 \title{Is diann, fragpipe, proteingroups, phosphosites file?}
 \usage{
 is_diann_report(x, .xname = get_name_in_parent(x))
 
-is_fragpipe_file(x, .xname = get_name_in_parent(x))
+is_fragpipe_tsv(x, .xname = get_name_in_parent(x))
 
 is_proteingroups_file(x, .xname = get_name_in_parent(x))
 
@@ -21,7 +21,7 @@ is_phosphosites_file(x, .xname = get_name_in_parent(x))
 
 assert_diann_report(x, .xname = get_name_in_parent(x))
 
-assert_fragpipe_file(x, .xname = get_name_in_parent(x))
+assert_fragpipe_tsv(x, .xname = get_name_in_parent(x))
 
 assert_proteingroups_file(x, .xname = get_name_in_parent(x))
 
@@ -38,43 +38,43 @@ Is diann, fragpipe, proteingroups, phosphosites file?
 \examples{
 file <- NULL
 is_diann_report(file)
-is_fragpipe_file(file)
+is_fragpipe_tsv(file)
 is_proteingroups_file(file)
 is_phosphosites(file)
 
 file <- 3
 is_diann_report(file)
-is_fragpipe_file(file)
+is_fragpipe_tsv(file)
 is_proteingroups_file(file)
 is_phosphosites_file(file)
 
 file <- 'blabla.tsv'
 is_diann_report(file)
-is_fragpipe_file(file)
+is_fragpipe_tsv(file)
 is_proteingroups_file(file)
 is_phosphosites_file(file)
 
 file <- download_data('multiorganism.combined_protein.tsv')
 is_diann_report(file)
-is_fragpipe_file(file)
+is_fragpipe_tsv(file)
 is_proteingroups_file(file)
 is_phosphosites_file(file)
 
 file <- download_data('dilution.report.tsv')
 is_diann_report(file)
-is_fragpipe_file(file)
+is_fragpipe_tsv(file)
 is_proteingroups_file(file)
 is_phosphosites_file(file)
 
 file <- download_data('fukuda20.proteingroups.txt')
 is_diann_report(file)
-is_fragpipe_file(file)
+is_fragpipe_tsv(file)
 is_proteingroups_file(file)
 is_phosphosites_file(file)
 
 file <- download_data('billing19.phosphosites.txt')
 is_diann_report(file)
-is_fragpipe_file(file)
+is_fragpipe_tsv(file)
 is_proteingroups_file(file)
 is_phosphosites_file(file)
 }

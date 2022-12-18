@@ -71,7 +71,7 @@ read_fragpipe <- function(
     quantity = 'MaxLFQ Intensity'
 ){
 # Assert
-    assert_fragpipe_file(file)
+    assert_fragpipe_tsv(file)
     assert_is_subset(quantity, 'MaxLFQ Intensity')
 # Read
     fdt0 <- .read_fragpipe_fdt(file)
