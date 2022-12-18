@@ -204,14 +204,13 @@ is_maxquant_proteingroups <- function(x, .xname = get_name_in_parent(x)){
 #' @rdname is_diann_report
 #' @export
 is_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
-    if (is.null(x)){                                    false('%s is NULL',                              .xname)
-    } else if (!is_a_string(x)){                        false('%s is not a string',                      .xname)
-    } else if (!is_existing_file(x)){                   false('%s does not exist',                       .xname)
-    } else if (col1(x) != 'Proteins'){                  false('col1(%s) != "Proteins"',                  .xname)
-    } else if (col2(x) != 'Positions within proteins'){ false('col2(%s) != "Positions within proteins"', .xname)
-    } else if (col3(x) != 'Leading proteins'){          false('col3(%s) != "Leading proteins"',          .xname)
-    } else {                                            TRUE 
-    }
+    if (is.null(x))                               return(false('%s is NULL',                              .xname))
+    if (!is_a_string(x))                          return(false('%s is not a string',                      .xname))
+    if (!is_existing_file(x))                     return(false('%s does not exist',                       .xname))
+    if (col1(x) != 'Proteins')                    return(false('col1(%s) != "Proteins"',                  .xname))
+    if (col2(x) != 'Positions within proteins')   return(false('col2(%s) != "Positions within proteins"', .xname))
+    if (col3(x) != 'Leading proteins')            return(false('col3(%s) != "Leading proteins"',          .xname))
+    return(TRUE)
 }
 
 #' @rdname is_diann_report
