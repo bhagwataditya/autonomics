@@ -157,7 +157,7 @@ uniprot2isoforms <- function(x){
     file, precursor_quantity = PRECURSOR_QUANTITY, Lib.PG.Q = 0.01, verbose  = TRUE
 ){
 # Assert
-    assert_diann_file(file)
+    assert_diann_report(file)
     assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
 # Read
     anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id',
