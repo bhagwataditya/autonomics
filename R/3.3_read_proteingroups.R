@@ -123,7 +123,7 @@ un_int64 <- function(x) {
 .read_maxquant_phosphosites <- function(file, proteinfile, quantity, verbose = TRUE){
 # Assert
     assert_maxquant_proteingroups(proteinfile)
-    assert_phosphosites_file(file)
+    assert_maxquant_phosphosites(file)
 # Read    
     if (verbose)  message('\tRead ', file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')

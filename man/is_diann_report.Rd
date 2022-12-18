@@ -4,11 +4,11 @@
 \alias{is_diann_report}
 \alias{is_fragpipe_tsv}
 \alias{is_maxquant_proteingroups}
-\alias{is_phosphosites_file}
+\alias{is_maxquant_phosphosites}
 \alias{assert_diann_report}
 \alias{assert_fragpipe_tsv}
 \alias{assert_maxquant_proteingroups}
-\alias{assert_phosphosites_file}
+\alias{assert_maxquant_phosphosites}
 \title{Is diann, fragpipe, proteingroups, phosphosites file?}
 \usage{
 is_diann_report(x, .xname = get_name_in_parent(x))
@@ -17,7 +17,7 @@ is_fragpipe_tsv(x, .xname = get_name_in_parent(x))
 
 is_maxquant_proteingroups(x, .xname = get_name_in_parent(x))
 
-is_phosphosites_file(x, .xname = get_name_in_parent(x))
+is_maxquant_phosphosites(x, .xname = get_name_in_parent(x))
 
 assert_diann_report(x, .xname = get_name_in_parent(x))
 
@@ -25,7 +25,7 @@ assert_fragpipe_tsv(x, .xname = get_name_in_parent(x))
 
 assert_maxquant_proteingroups(x, .xname = get_name_in_parent(x))
 
-assert_phosphosites_file(x, .xname = get_name_in_parent(x))
+assert_maxquant_phosphosites(x, .xname = get_name_in_parent(x))
 }
 \arguments{
 \item{x}{file}
@@ -46,35 +46,35 @@ file <- 3
 is_diann_report(file)
 is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)
-is_phosphosites_file(file)
+is_maxquant_phosphosites(file)
 
 file <- 'blabla.tsv'
 is_diann_report(file)
 is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)
-is_phosphosites_file(file)
+is_maxquant_phosphosites(file)
 
 file <- download_data('multiorganism.combined_protein.tsv')
 is_diann_report(file)
 is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)
-is_phosphosites_file(file)
+is_maxquant_phosphosites(file)
 
 file <- download_data('dilution.report.tsv')
 is_diann_report(file)
 is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)
-is_phosphosites_file(file)
+is_maxquant_phosphosites(file)
 
 file <- download_data('fukuda20.proteingroups.txt')
 is_diann_report(file)
 is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)
-is_phosphosites_file(file)
+is_maxquant_phosphosites(file)
 
 file <- download_data('billing19.phosphosites.txt')
 is_diann_report(file)
 is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)
-is_phosphosites_file(file)
+is_maxquant_phosphosites(file)
 }
