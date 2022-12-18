@@ -92,7 +92,7 @@ un_int64 <- function(x) {
 #' @export
 .read_maxquant_proteingroups <- function(file, quantity = guess_maxquant_quantity(file), verbose = TRUE){
 # Assert
-    assert_proteingroups_file(file)
+    assert_maxquant_proteingroups(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
 # Read
     if (verbose)  message('\tRead ', file)
@@ -122,7 +122,7 @@ un_int64 <- function(x) {
 
 .read_maxquant_phosphosites <- function(file, proteinfile, quantity, verbose = TRUE){
 # Assert
-    assert_proteingroups_file(proteinfile)
+    assert_maxquant_proteingroups(proteinfile)
     assert_phosphosites_file(file)
 # Read    
     if (verbose)  message('\tRead ', file)
@@ -803,7 +803,7 @@ read_maxquant_proteingroups <- function(
     feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
-    assert_proteingroups_file(file)
+    assert_maxquant_proteingroups(file)
     if (is.null(quantity))  quantity <- guess_maxquant_quantity(file)
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
