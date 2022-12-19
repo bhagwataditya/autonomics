@@ -4,18 +4,39 @@
 \alias{read_olink_file}
 \title{Read olink file}
 \usage{
-read_olink_file(file, cfile)
+read_olink_file(
+  file,
+  sample_excel = NULL,
+  by.x.excel = "sample_id",
+  by.y.excel = NULL,
+  sample_tsv = NULL,
+  by.x.tsv = "sample_id",
+  by.y.tsv = NULL
+)
 }
 \arguments{
-\item{file}{olink file}
+\item{file}{olinkfile}
 
-\item{cfile}{clinical file}
+\item{sample_excel}{sample excel}
+
+\item{by.x.excel}{sample excel mergeby column}
+
+\item{by.y.excel}{sample excel mergeby column}
+
+\item{sample_tsv}{sample tsv}
+
+\item{by.x.tsv}{sample tsv   mergeby column}
+
+\item{by.y.tsv}{sample tsv   mergeby column}
+}
+\value{
+SummarizedExperiment
 }
 \description{
 Read olink file
 }
 \examples{
 file  <- '../olink_example_NPX.csv'
-cfile <- '../olink_example_clinical.xlsx'
-object <- read_olink_file(file, cfile)
+sample_excel <- '../olink_example_clinical.xlsx'
+object <- read_olink_file(file, sample_excel = sample_excel, by.y.excel = 'SampleID')
 }

@@ -211,21 +211,31 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 
 
 #' Read olink file
-#' @param file   olink file
-#' @param cfile  clinical file
+#' @param file             olinkfile
+#' @param sample_excel     sample excel
+#' @param sample_tsv       sample tsv
+#' @param by.x.excel       sample excel mergeby column
+#' @param by.y.excel       sample excel mergeby column
+#' @param by.x.tsv         sample tsv   mergeby column
+#' @param by.y.tsv         sample tsv   mergeby column
+#' @return SummarizedExperiment
 #' @examples 
 #' file  <- '../olink_example_NPX.csv'
-#' cfile <- '../olink_example_clinical.xlsx'
-#' object <- read_olink_file(file, cfile)
+#' sample_excel <- '../olink_example_clinical.xlsx'
+#' object <- read_olink_file(file, sample_excel = sample_excel, by.y.excel = 'SampleID')
 #' @export
-read_olink_file <- function(file, cfile){
+read_olink_file <- function(
+    file, 
+    sample_excel = NULL,  by.x.excel = 'sample_id', by.y.excel = NULL,
+    sample_tsv   = NULL,  by.x.tsv   = 'sample_id', by.y.tsv   = NULL
+){
+# Assert
     if (!requireNamespace('OlinkAnalyze', quietly = TRUE)){
         message("BiocManager::install('OlinkAnalyze'). Then re-run.")
         return(NULL) 
     }
 # Read    
     dt <- OlinkAnalyze::read_NPX(file) %>% data.table()
-# SumExp
     mat <- dcast.data.table(dt, OlinkID ~ SampleID, value.var = 'NPX')
     mat %<>% dt2mat()
     fdt0 <- unique(dt[, .(feature_id = Assay, OlinkID)])
@@ -237,8 +247,11 @@ read_olink_file <- function(file, cfile){
     fdt(object)$feature_id <- fnames(object)
     object %<>% merge_sdt(sdt0)
     object %<>% merge_fdt(fdt0)
-# Merge in clinical data
-    object %<>% merge_sample_file(cfile)
+# Merge
+    if (!is.null(sample_excel))  object %<>% merge_sample_excel(sample_excel, by.x = by.x.excel, by.y = by.y.excel)
+    if (!is.null(sample_tsv  ))  object %<>% merge_sample_tsv(  sample_tsv,   by.x = by.x.tsv,   by.y = by.y.tsv  )
+# Return
+    object
 }
 
 
