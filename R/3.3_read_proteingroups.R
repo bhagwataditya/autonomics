@@ -850,7 +850,7 @@ read_maxquant_proteingroups <- function(
 #' @rdname read_maxquant_proteingroups
 #' @export
 read_proteingroups <- function(...){
-    .Deprecated('read_maquant_proteingroups')
+    .Deprecated('read_maxquant_proteingroups')
     read_maxquant_proteingroups(...)
 }
 
