@@ -194,7 +194,7 @@ pubchem_to_smiles <- function(x){
     nfv <- length(fvars((object)))
     svars(object)[nsv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$1')
     fvars(object)[nfv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$2')
-    object %<>% merge_sfile(sfile = sfile, by.x = by.x, by.y = by.y)
+    object %<>% merge_sample_file(sfile = sfile, by.x = by.x, by.y = by.y)
     object %<>% add_subgroup(subgroupvar, verbose = verbose)
 # Return
     object

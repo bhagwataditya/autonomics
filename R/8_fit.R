@@ -210,7 +210,7 @@ split_extract <- function(x, i, sep=guess_sep(x)){
 
 #=============================================================================
 #
-#               merge_sfile
+#               merge_sample_file
 #                   file_exists
 #                       default_sfile
 #

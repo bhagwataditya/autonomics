@@ -414,7 +414,7 @@ read_rectangles <- function(
                         fdata_rows = fdata_rows, fdata_cols = fdata_cols,
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
-        object %<>% merge_sfile(
+        object %<>% merge_sample_file(
             sfile = sfile, by.x = 'sample_id', by.y = sfileby, verbose=verbose)
     object
 }
@@ -532,9 +532,9 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 #' dt <- data.table(sample_id = object$sample_id, 
 #'                  day = split_extract_fixed(object$subgroup, '_', 1))
 #' fwrite(dt, sfile)                 
-#' merge_sfile(object, sfile)
+#' merge_sample_file(object, sfile)
 #'@export
-merge_sfile <- function(
+merge_sample_file <- function(
     object, sfile = NULL, by.x = 'sample_id', by.y = 'sample_id', all.x = TRUE, 
     select = NULL, stringsAsFactors = FALSE, verbose = TRUE
 ){

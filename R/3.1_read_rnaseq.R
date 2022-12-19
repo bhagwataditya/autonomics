@@ -889,7 +889,7 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
     object %<>% merge_fdt(data.table(fcounts$annotation))
     assayNames(object)[1] <- 'counts'
 # Add sample/feature data
-    object %<>% merge_sfile(
+    object %<>% merge_sample_file(
         sfile, by.x = 'sample_id',  by.y = by.y, verbose = verbose)
     fdt(object)$feature_id %<>% split_extract_fixed('.', 1)  # drop ensemblid version
     object %<>% add_ensdb(ensdb)    
@@ -925,7 +925,7 @@ is_numeric_character <- function(x)  all(!is.na(suppressWarnings(as.numeric(x)))
     object %<>% merge_fdt(fdt0, by.y = fid_col, verbose = verbose)
     object %<>% add_ensdb(ensdb)
 # sdata
-    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id', by.y = by.y)
+    object %<>% merge_sample_file(sfile = sfile, by.x = 'sample_id', by.y = by.y)
     object %<>% add_subgroup(subgroupvar, verbose = verbose)
     object
 }
@@ -1102,7 +1102,7 @@ read_salmon <- function(
     object <- list(log2tpm = log2(0.00001 + object))  # assay
     object %<>% SummarizedExperiment()
     sdt(object)$sample_id <- snames(object)           # samples
-    object %<>% merge_sfile(sfile, by.y = by)
+    object %<>% merge_sample_file(sfile, by.y = by)
     fdt(object)$feature_id <- fnames(object)          # features
     fdt(object)$enst <- fdt(object)$feature_id %>% split_extract_fixed('.', 1)
     fdt(object)$gene <- ensembldb::mapIds(ensdb, keys = fdt(object)$enst, keytype = 'TXID', column = 'GENENAME')
