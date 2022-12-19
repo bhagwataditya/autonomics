@@ -80,6 +80,7 @@ Suggests:
   mixOmics,
   mpm,
   nlme,
+  OlinkAnalyze,
   org.Hs.eg.db, 
   org.Mm.eg.db,
   pheatmap,

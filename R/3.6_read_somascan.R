@@ -208,3 +208,64 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 }
 
 
+
+
+#' Read olink file
+#' @param file   olink file
+#' @param cfile  clinical file
+#' @examples 
+#' file  <- '../olink_example_NPX.csv'
+#' cfile <- '../olink_example_clinical.xlsx'
+#' object <- read_olink_file(file, cfile)
+#' @export
+read_olink_file <- function(file, cfile){
+    if (!requireNamespace('OlinkAnalyze', quietly = TRUE)){
+        message("BiocManager::install('OlinkAnalyze'). Then re-run.")
+        return(NULL) 
+    }
+# Read    
+    dt <- OlinkAnalyze::read_NPX(file) %>% data.table()
+# SumExp
+    mat <- dcast.data.table(dt, OlinkID ~ SampleID, value.var = 'NPX')
+    mat %<>% dt2mat()
+    fdt0 <- unique(dt[, .(feature_id = Assay, OlinkID)])
+    fdt0[cduplicated(feature_id), feature_id := paste0(feature_id, '-', OlinkID)]
+    rownames(mat) <- fdt0$feature_id
+    sdt0 <- unique(dt[, .(sample_id = SampleID)])
+    object <- SummarizedExperiment(assays = list(OlinkNPX = mat))
+    sdt(object)$sample_id  <- snames(object)
+    fdt(object)$feature_id <- fnames(object)
+    object %<>% merge_sdt(sdt0)
+    object %<>% merge_fdt(fdt0)
+# Merge in clinical data
+    object %<>% merge_sample_file(cfile)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
