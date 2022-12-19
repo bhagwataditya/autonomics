@@ -132,7 +132,7 @@ commonify_strings <- function(x){
 #' @export
 PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 
-
+excelcols <- function(file, range) colnames(read_excel(file, range = range, n_max = 0))
 cols <- function(file)  names(fread(file, nrow = 0))
 col1 <- function(file)  cols(file)[1]
 col2 <- function(file)  cols(file)[2]

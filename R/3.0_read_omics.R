@@ -548,7 +548,28 @@ merge_sample_file <- function(
     object
 }
 
-#' @rdname merge_sfile
+#' Merge sample excel
+#' @param object SummarizedExperiment
+#' @param sfile  sample file
+#' @return SummarizedExperiment
+#' @export
+merge_sample_excel <- function(
+    object, sfile, range = NULL, by.x = 'sample_id', by.y = 'sample_id'
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_all_are_existing_files(sfile)
+    assert_is_subset(by.y, excelcols(sfile, range = range))
+# Read, Merge, Return
+    sdt0 <- read_excel(sfile, range = range)
+    sdt0 %<>% data.table()
+    sdt0$sample_id
+    object %<>% merge_sdt(sdt0, by.x = by.x, by.y = by.y)
+    object
+}
+
+
+#' @rdname merge_sample_file
 #' @export
 merge_ffile <- function(
     object, ffile = NULL, by.x = 'feature_id', by.y = 'feature_id', all.x = TRUE,
