@@ -262,3 +262,93 @@ assert_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
     assert_engine(is_fastadt_or_null, x, .xname = .xname)
 }
 
+
+#---------------
+
+#' Is scalar subset
+#' @param x scalar
+#' @param y SummarizedExperiment
+#' @param name of x
+#' @param name of y
+#' @examples 
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file)
+#' is_scalar_subset('subgroup',     svars(object))
+#' is_scalar_subset('subject',      svars(object))
+#' assert_scalar_subset('subgroup', svars(object))
+#' @export
+is_scalar_subset <- function(x, y, .xname = get_name_in_parent(x), .yname = get_name_in_parent(y)){
+    if (!(ok <- is_scalar(x, .xname = .xname)))                       return(ok)
+    if (!(ok <- is_subset(x, y, .xname = .xname, .yname = .yname)))   return(ok)
+    return(TRUE)
+}
+
+#' @rdname is_scalar_subset
+#' @export
+assert_scalar_subset <- function(x, y, .xname = get_name_in_parent(x), .yname = get_name_in_parent(y)){
+    assert_engine(is_scalar_subset, x, y, .xname = .xname, .yname = .yname)
+}
+
+#-------------------
+
+#' Is positive number
+#' @param x number
+#' @param .xname name of x
+#' @return TRUE or assertiVe::false
+#' @examples 
+#' is_positive_number( 3)
+#' is_positive_number(-3)
+#' is_positive_number( 0)
+#' is_weakly_positive_number(0)
+#' assert_positive_number(3)
+#' @export
+is_positive_number <- function(x, .xname = get_name_in_parent(x)){
+    if (!is_a_number(x, .xname = .xname))                     return(false('%s is not a number',  .xname))
+    if (!is_greater_than(x, 0,.xname = .xname))               return(false('%s <= 0', .xname))
+    return(TRUE)
+}
+
+#' @rdname is_positive_number
+#' @export
+assert_positive_number <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_positive_number, x, .xname = .xname)
+}
+
+#' @rdname is_positive_number
+#' @export
+is_weakly_positive_number <- function(x, .xname = get_name_in_parent(x)){
+    if (!is_a_number(x, .xname = .xname))                     return(false('%s is not a number',  .xname))
+    if (!is_greater_than_or_equal_to(x, 0,.xname = .xname))   return(false('%s < 0', .xname))
+    return(TRUE)
+}
+
+
+#' @rdname is_positive_number
+#' @export
+assert_weakly_positive_number <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_weakly_positive_number, x, .xname = .xname)
+}
+
+#---------------------
+
+#' Is fraction
+#' @param x number
+#' @return TRUE or false
+#' @examples
+#' is_fraction(0.1)          # YES
+#' is_fraction(1)            # YES
+#' is_fraction(1.2)          # NO - more than 1
+#' is_fraction(c(0.1, 0.2))  # NO - vector
+#' @export
+is_fraction <- function(x, .xname = get_name_in_parent(x)){
+    if (!(ok <- is_a_number(x, .xname = .xname)))                       return(ok)
+    if (!is_in_closed_range(x, lower = 0, upper = 1, .xname = .xname))  return(false('%s is not a fraction', .xname))
+    TRUE
+}
+
+#' @rdname is_fraction
+#' @export
+assert_is_fraction <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_fraction, x, .xname = .xname)
+}
+

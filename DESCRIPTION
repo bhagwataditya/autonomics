@@ -26,7 +26,13 @@ Depends:
     R (>= 4.0)
 Imports: 
   abind,
-  assertive, 
+  assertive.base, 
+  assertive.files,
+  assertive.numbers,
+  assertive.properties,
+  assertive.sets,
+  assertive.strings,
+  assertive.types,
   BiocFileCache,
   BiocGenerics,
   bit64,
