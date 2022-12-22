@@ -155,7 +155,8 @@ pubchem_to_smiles <- function(x){
 #' @rdname read_metabolon
 #' @export
 .read_metabolon <- function(file, sheet = 'OrigScale',
-    fidvar = '(COMP|COMP_ID)', sidvar = '(CLIENT_IDENTIFIER|Client ID)',
+    fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
+    sidvar = '(CLIENT_IDENTIFIER|Client ID)',
     sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group', 
     verbose  = TRUE
 ){
@@ -231,7 +232,8 @@ pubchem_to_smiles <- function(x){
 #' read_metabolon(file, pca = TRUE, fit = 'limma', block='SUB')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
-    fidvar = '(COMP|COMP_ID)', sidvar = '(CLIENT_IDENTIFIER|Client ID)',
+    fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
+    sidvar = '(CLIENT_IDENTIFIER|Client ID)',
     sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group',
     fnamevar = 'BIOCHEMICAL', kegg_pathways = FALSE, smiles = FALSE,
     impute  = TRUE, plot = FALSE, pca = plot, 

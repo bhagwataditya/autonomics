@@ -8,7 +8,7 @@
 .read_metabolon(
   file,
   sheet = "OrigScale",
-  fidvar = "(COMP|COMP_ID)",
+  fidvar = "BIOCHEMICAL",
   sidvar = "(CLIENT_IDENTIFIER|Client ID)",
   sfile = NULL,
   by.x = "sample_id",
@@ -20,7 +20,7 @@
 read_metabolon(
   file,
   sheet = "OrigScale",
-  fidvar = "(COMP|COMP_ID)",
+  fidvar = "BIOCHEMICAL",
   sidvar = "(CLIENT_IDENTIFIER|Client ID)",
   sfile = NULL,
   by.x = "sample_id",
