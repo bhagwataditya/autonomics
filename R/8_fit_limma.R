@@ -520,6 +520,7 @@ pull_level <- function(x, lev){
 #' Summarize fit
 #' @param fdt  fdt(object)
 #' @param fit  'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL
+#' @param coefs string vector
 #' @return data.table(contrast, nup, ndown)
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
@@ -527,9 +528,9 @@ pull_level <- function(x, lev){
 #' object %<>% extract(!is_consistent_nondetect(.), )
 #' object %<>% fit_limma()
 #' object %<>% fit_lm()
-#' summarize_fit(fdt(object))
+#' summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 #' @export
-summarize_fit <- function(fdt, fit = NULL){
+summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
     assert_is_data.table(fdt)
     cols <- names(fdt) %>% extract(stri_detect_fixed(., FITSEP))
     fdt %<>% extract(, c('feature_id', cols), with = FALSE)
@@ -540,18 +541,49 @@ summarize_fit <- function(fdt, fit = NULL){
     longdt[,    fit := split_extract_fixed(variable, FITSEP, 3)]
     longdt[, variable := NULL]
     
-    widedt <- dcast.data.table(longdt, feature_id + contrast + fit ~ statistic, value.var = 'value')
-    widedt <- widedt[, .(
-                downfdr = sum(effect < 0  & fdr < 0.05, na.rm = TRUE), 
-                upfdr   = sum(effect > 0  & fdr < 0.05, na.rm = TRUE),
-                downp   = sum(effect < 0  &   p < 0.05, na.rm = TRUE), 
-                upp     = sum(effect > 0  &   p < 0.05, na.rm = TRUE) 
-               ), by = c('fit', 'contrast') ]
+    summarydt <- dcast.data.table(longdt, feature_id + contrast + fit ~ statistic, value.var = 'value')
+    summarydt <- summarydt[, .(
+        downfdr = sum(effect < 0  & fdr < 0.05, na.rm = TRUE), 
+        upfdr   = sum(effect > 0  & fdr < 0.05, na.rm = TRUE),
+        downp   = sum(effect < 0  &   p < 0.05, na.rm = TRUE), 
+        upp     = sum(effect > 0  &   p < 0.05, na.rm = TRUE)), by = c('fit', 'contrast') ]
     if (!is.null(fit)){
-        idx <- widedt$fit %in% fit
-        widedt %<>% extract(idx)
+        idx <- summarydt$fit %in% fit
+        summarydt %<>% extract(idx)
     }
-    widedt
+    if (!is.null(coefs)){
+        summarydt <- summarydt[contrast %in% coefs]
+    }
+    summarydt
+}
+
+#' Plot fit summary
+#' @param summarydt data.table
+#' @examples
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, impute = TRUE, plot = FALSE)
+#' object %<>% extract(!is_consistent_nondetect(.), )
+#' object %<>% fit_lm()
+#' object %<>% fit_limma(block = 'SUB')
+#' summarydt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
+#' plot_fit_summary(summarydt)
+#' @export
+plot_fit_summary <- function(summarydt, nrow = NULL, ncol = 1){
+    #summarydt <- summarydt[order(downfdr+upfdr, downp+upp, decreasing = TRUE)]
+    #summarydt[, contrast := factor(contrast, unique(contrast))]
+    ggplot(summarydt) + facet_wrap(vars(fit), nrow = nrow, ncol = ncol) + 
+    geom_col(aes(y = contrast, x = -downp),   fill = 'firebrick',   alpha = 0.3) +
+    geom_col(aes(y = contrast, x =    upp),   fill = 'forestgreen', alpha = 0.3) + 
+    geom_col(aes(y = contrast, x = -downfdr), fill = 'firebrick',   alpha = 1) +
+    geom_col(aes(y = contrast, x =    upfdr), fill = 'forestgreen', alpha = 1) + 
+    geom_text(data = summarydt[  downp>0], aes(y = contrast, x = -max(downp), label = paste0(downp, ' | ', downfdr) ), hjust = +1) + 
+    geom_text(data = summarydt[    upp>0], aes(y = contrast, x =    max(upp), label = paste0(upfdr, ' | ', upp) ), hjust = 0) + 
+    ylab('count') + 
+    xlab(NULL) + 
+    xlim(c(-max(summarydt$downp)-100, max(summarydt$upp)+100)) + 
+    #scale_x_continuous(n.breaks = 20) + 
+    theme_bw() + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
 }
 
 
