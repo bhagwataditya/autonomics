@@ -4,7 +4,7 @@
 \alias{plot_fit_summary}
 \title{Plot fit summary}
 \usage{
-plot_fit_summary(summarydt, nrow = NULL, ncol = NULL)
+plot_fit_summary(summarydt, nrow = NULL, ncol = 1)
 }
 \arguments{
 \item{summarydt}{data.table}
@@ -16,8 +16,8 @@ Plot fit summary
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, impute = TRUE, plot = FALSE)
 object \%<>\% extract(!is_consistent_nondetect(.), )
-object \%<>\% fit_limma()
 object \%<>\% fit_lm()
-summarydt <- summarize_fit(fdt(object))
+object \%<>\% fit_limma(block = 'SUB')
+summarydt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 plot_fit_summary(summarydt)
 }

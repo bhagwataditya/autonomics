@@ -7,7 +7,6 @@
 \alias{svars<-}
 \alias{svars<-,SummarizedExperiment,character-method}
 \alias{svars<-,MultiAssayExperiment,character-method}
-\alias{vars.SummarizedExperiment}
 \title{Get/Set svars}
 \usage{
 svars(object)
@@ -21,8 +20,6 @@ svars(object) <- value
 \S4method{svars}{SummarizedExperiment,character}(object) <- value
 
 \S4method{svars}{MultiAssayExperiment,character}(object) <- value
-
-vars.SummarizedExperiment(object)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

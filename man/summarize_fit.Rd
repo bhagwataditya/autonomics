@@ -25,5 +25,5 @@ object <- read_metabolon(file, impute = TRUE, plot = FALSE)
 object \%<>\% extract(!is_consistent_nondetect(.), )
 object \%<>\% fit_limma()
 object \%<>\% fit_lm()
-summarize_fit(fdt(object))
+summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 }

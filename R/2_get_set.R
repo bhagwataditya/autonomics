@@ -490,7 +490,3 @@ function(object, value){
     object
 })
 
-#' @rdname svars
-#' @export
-vars.SummarizedExperiment <- function(object)  unique(c(svars(object), fvars(object)))
-
