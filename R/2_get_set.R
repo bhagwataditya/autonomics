@@ -490,4 +490,7 @@ function(object, value){
     object
 })
 
+#' @rdname svars
+#' @export
+vars <- function(object)  unique(c(svars(object), fvars(object)))
 

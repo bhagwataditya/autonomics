@@ -300,7 +300,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' @param palette     named character vector
 #' @param fixed       fixed aesthetics
 #' @seealso \code{\link{plot_sample_violins}},
-#'          \code{\link{plot_sample_boxplots}}
+#'          \code{\link{boxplot_samples}}
 #' @return  ggplot object
 #' @examples
 #' # Data
@@ -312,7 +312,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' # Sample distributions
 #'     plot_sample_densities(object)
 #'     plot_sample_violins(  object, facet = 'SET')
-#'     plot_sample_boxplots( object, facet = 'SET')
+#'     boxplot_samples( object, facet = 'SET')
 #'     
 #' # Feature distributions
 #'     plot_feature_densities(object)
@@ -442,7 +442,7 @@ plot_feature_densities <- function(
 #' @param fixed       fixed aesthetics
 #' @return  ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
-#'          \code{\link{plot_sample_boxplots}}
+#'          \code{\link{boxplot_samples}}
 #' @examples
 #' # data
 #'     require(magrittr)
@@ -590,76 +590,45 @@ plot_subgroup_violins <- function(
 #==============================================================================
 
 
-#' Plot boxplots
-#'
-#' @param object        SummarizedExperiment
-#' @param assay         string
-#' @param subgroup      svar (string)
-#' @param x             svar (string)
-#' @param fill          svar (string)
-#' @param color         svar (string)
-#' @param block         svar used to connect points (string)
-#' @param facet         svar (string)
-#' @param scales       'free', 'fixed', 'free_x', 'free_y'
-#' @param nrow          number of facet rows
-#' @param ncol          number of facet columns 
-#' @param page          number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}
-#' @param highlight     fvar expressing which feature should be highlighted (string)
-#' @param pointsize     number
-#' @param jitter        jitter width (number)
-#' @param hlevels    xlevels for which to plot horizontal lines
-#' @return  ggplot object
-#' @seealso \code{\link{plot_sample_densities}},
-#'          \code{\link{plot_sample_violins}}
-#' @examples
-#' # Read
-#'     require(magrittr)
-#'     file <- download_data('atkin18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot = FALSE)
-#'     controlfeatures <- c('biotin','phosphate')
-#'     fdata(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
-#' # Plot
-#'     vars <- vars
-#'     plot_boxplots(object[,1:9],  x = 'sample_id',  fill = 'sample_id' )
-#'     plot_boxplots(object[1:9,],  x = 'feature_id', fill = 'feature_id')
-#'     plot_boxplots(object[1:9, ], x = 'SET', fill = 'SET', facet = 'feature_id')
-#'     plot_boxplots(object[1, ],   x = 'SET', fill = 'SET', jitter = TRUE)
-#'     plot_boxplots(object[1, ],   x = 'SET', fill = 'SET', block = 'SUB')
-#'     plot_feature_boxplots(object[1:9, ])
-#'     plot_sample_boxplots(object[, 1:12])
-#'     plot_sample_boxplots(object[, 1:12], highlight = 'control')
-#'     plot_subgroup_boxplots(object[1:2, ], subgroup = 'SET')
-#'     plot_subgroup_boxplots(object[1:2, ], subgroup = 'SET', block = 'SUB')
-#' @export
-plot_boxplots <- function(
-    object, assay = assayNames(object)[1], 
-    x = 'subgroup',  fill = 'subgroup', color = NULL, 
-    block = NULL, facet = NULL, scales = 'free_y', nrow = NULL, ncol = NULL, 
-    page = 1, labeller = 'label_value', highlight = NULL, 
-    pointsize = if (is.null(block)) 0 else 0.5, 
-    jitter = if (is.null(block)) 0.1 else 0,
+plot_boxplots <- function(...){
+    .Deprecated('boxplot.SummarizedExperiment')
+    boxplot.SummarizedExperiment(...)
+}
+
+boxplot.SummarizedExperiment <- function(
+    object, 
+    assay        = assayNames(object)[1], 
+    x            = 'subgroup',  
+    fill         = 'subgroup', 
+    color        = NULL, 
+    block        = NULL, 
+    facet        = NULL, 
+    scales       = 'free_y', 
+    nrow         = NULL, 
+    ncol         = NULL, 
+    page         = 1, 
+    labeller     = 'label_value', 
+    highlight    = NULL, 
+    pointsize    = if (is.null(block)) 0   else 0.5, 
+    jitter       = if (is.null(block)) 0.1 else 0,
     fillpalette  = make_var_palette(object, fill), 
     colorpalette = make_var_palette(object, color),
-    hlevels = NULL, ...
+    hlevels      = NULL, 
+    ...
 ){
-# Assert/Process
-    assert_is_all_of(object, "SummarizedExperiment")
-    if (nrow(object)==0)  return(ggplot())
-    if (!is.null(x))          assert_is_a_string(x)
-    if (!is.null(fill))       assert_is_a_string(fill)
-    if (!is.null(color))      assert_is_a_string(color)
-    if (!is.null(block))      assert_is_a_string(block)
-    if (!is.null(facet))      assert_is_character(facet)
+# Assert
+    assert_is_valid_sumexp(object)
+    if (nrow(object)==0)      return(ggplot())
+    assert_scalar_subset(assay, assayNames(object))
+                              assert_scalar_subset(x,         vars(object))
+    if (!is.null(fill))       assert_scalar_subset(fill,      vars(object))
+    if (!is.null(color))      assert_scalar_subset(color,     vars(object))
+    if (!is.null(block))      assert_scalar_subset(block,     vars(object))
+    if (!is.null(facet))          assert_is_subset(facet,     vars(object))
+    if (!is.null(highlight))  assert_scalar_subset(highlight, vars(object))
     if (!is.null(nrow))       assert_is_a_number(nrow)
     if (!is.null(ncol))       assert_is_a_number(ncol)
-    if (!is.null(highlight))  assert_is_a_string(highlight)
-    if (!is.null(x))          assert_is_subset(x,          c(svars(object), fvars(object)))
-    if (!is.null(fill))       assert_is_subset(fill,       c(svars(object), fvars(object)))
-    if (!is.null(color))      assert_is_subset(color,      c(svars(object), fvars(object)))
-    if (!is.null(block))      assert_is_subset(block,      c(svars(object), fvars(object)))
-    if (!is.null(facet))      assert_is_subset(facet,      c(svars(object), fvars(object)))
-    if (!is.null(highlight))  assert_is_subset(highlight, c(svars(object), fvars(object)))
-                              assert_is_subset(scales, c('fixed', 'free', 'free_x', 'free_y'))
+    if (!is.null(facet))      assert_is_subset(scales, c('fixed', 'free', 'free_x', 'free_y'))
 # Prepare
     xsym     <- sym(x)
     fillsym  <- if (is.null(fill))   quo(NULL) else  sym(fill)
@@ -671,7 +640,7 @@ plot_boxplots <- function(
     if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
     if (!is.null(block))      plotvars %<>% c(block)     %>% unique()
     if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
-    if (!is.null(facet))      plotvars %<>% c(facet) %>% unique()
+    if (!is.null(facet))      plotvars %<>% c(facet)     %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
     if (!is.null(x))   object[[x]] %<>% num2char()
@@ -723,18 +692,20 @@ plot_boxplots <- function(
     p
 }
 
+
 #============================================================================
 #
-#                       plot_sample_boxplots
-#                       plot_feature_boxplots
-#                       plot_subgroup_boxplots
-#                       plot_top_boxplots
+#                       boxplot.SummarizedExperiment
+#                       boxplot_samples
+#                       boxplot_features
+#                       boxplot_subgroups
+#                       boxplot_samplegroups_per_coef
 #
 #============================================================================
 
-#' @rdname plot_boxplots
+#' @rdname boxplot_subgroups
 #' @export
-plot_sample_boxplots <- function(
+boxplot_samples <- function(
     object, assay = assayNames(object)[1], 
     x = 'sample_id', fill = 'sample_id', color = NULL, highlight = NULL,
     pointsize = 0, jitter = 0.1, palette = NULL, n = 100,
@@ -742,7 +713,7 @@ plot_sample_boxplots <- function(
     labeller = 'label_value'
 ){
     object %<>% extract_samples_evenly(n)
-    plot_boxplots(
+    boxplot.SummarizedExperiment(
         object, assay = assay, 
         x = x, fill = fill, color = color,
         highlight = highlight, pointsize = pointsize, 
@@ -752,10 +723,17 @@ plot_sample_boxplots <- function(
     ggtitle('Sample Boxplots')
 }
 
-
-#' @rdname plot_boxplots
+#' @rdname boxplot_subgroups
 #' @export
-plot_feature_boxplots <- function(
+plot_sample_boxplots <- function(...){
+    .Deprecated('boxplot_samples')
+    boxplot_samples(...)
+}
+
+
+#' @rdname boxplot_subgroups
+#' @export
+boxplot_features <- function(
     object, assay = assayNames(object)[1],
     x = 'feature_id', fill = 'feature_id', color = NULL, highlight = NULL,
     pointsize = FALSE, jitter = 0.1, palette = NULL, n = 9,
@@ -763,7 +741,7 @@ plot_feature_boxplots <- function(
     labeller = 'label_value'
 ){
     object %<>% extract_features_evenly(n)
-    plot_boxplots(
+    boxplot.SummarizedExperiment(
         object, assay = assay,
         x = x, fill = fill, color = color,
         highlight = highlight, pointsize = pointsize, 
@@ -773,79 +751,71 @@ plot_feature_boxplots <- function(
     ggtitle('Feature Boxplots')
 }
 
-
-#' @rdname plot_boxplots
+#' @rdname boxplot_subgroups
 #' @export
-plot_subgroup_boxplots <- function(
-    object, assay = assayNames(object)[1],
-    subgroup = 'subgroup', x = subgroup, fill = subgroup, 
-    color = NULL, block = NULL, highlight = NULL, 
-    pointsize = if (is.null(block)) 0 else 0.5,
-    jitter = if (is.null(block)) 0.1 else 0, n = 9,
-    facet = 'feature_id', scales = 'free_y', nrow = NULL, ncol = NULL, 
-    page = 1, labeller = 'label_value',
-    palette = make_subgroup_palette(object), fixed = list(na.rm=TRUE), hlevels = NULL
-){
-    plot_boxplots(
-        object, assay = assay,
-        x = x, fill = fill, color = color,
-        block = block, highlight = highlight, 
-        facet = facet, scales = scales, nrow = nrow,
-        ncol = ncol, page = page,  labeller = labeller, 
-        pointsize = pointsize,
-        jitter = jitter, palette = palette, 
-        fixed = fixed, hlevels = hlevels) + 
-    ggtitle(('Subgroup Boxplots'))
-    #p <- p + stat_summary(fun='mean', geom='line', aes(group=1), color='black', size=0.7, na.rm = TRUE)
+plot_feature_boxplots <- function(...){
+    .Deprecated('boxplot_features')
+    boxplot_features(...)
 }
 
 
 #' Extract top features
 #' @param object      SummarizedXExperiment
-#' @param fit         string
+#' @param fit         'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
 #' @param coef        string
-#' @param effectsize  effectsize cutoff
-#' @param p           p cutoff
-#' @param fdr         fdr cutoff
-#' @param ntop        ntop cutoff
+#' @param effectsize  effectsize threshold
+#' @param p           p threshold
+#' @param fdr         fdr threshold
+#' @param sign        effect sign
+#' @param ntop        number of top features (Inf means all)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
-#' nrow(object)                                  # 4534 features
-#' nrow(extract_top_features(object, p = 1))      # 3772   p != NA
-#' nrow(extract_top_features(object))             # 1961   p < 0.05 
-#' nrow(extract_top_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
+#' nrow(object)                                              # 6679 features
+#' nrow(extract_top_features(object,   p = 1))               # 3927   p != NA
+#' nrow(extract_top_features(object,   p = 0.05))            # 1984   p < 0.05 
+#' nrow(extract_top_features(object, fdr = 0.05))            # 1615 fdr < 0.05 
+#' nrow(extract_top_features(object, fdr = 0.05, sign = +1)) #  635 fdr < 0.05, upregulated
 #' @export
 extract_top_features <- function(
     object, 
     fit         = fits(object)[1], 
-    coef = default_coefs(object, fit = fit)[1],
+    coef        = default_coefs(object, fit = fit)[1],
     effectsize  = 0,
-    p           = 0.05,
+    p           = 1,
     fdr         = 1,
+    sign        = c(-1,+1),
     ntop        = Inf
 ){
 # Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(fit,  fits(object))
     if (length(coef)==0)  return(object)
-    assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(fit,  fits(object))
-    assert_is_subset(coef, coefs(object, fit = fit))
-    assert_is_a_number(effectsize)
-    assert_is_a_number(p)
-    assert_is_a_number(fdr)
-    assert_is_a_number(ntop)
-# Filter available
-    pvar0 <- pvar(object, fit = fit, coef = coef)
+    assert_scalar_subset(coef, coefs(object, fit = fit))
+    assert_weakly_positive_number(effectsize)
+    assert_is_fraction(p)
+    assert_is_fraction(fdr)
+    if (!is.null(sign))  assert_is_subset(sign, c(-1, +1))
+    assert_positive_number(ntop)
+# Filter for available pvalues
+    pvar0 <- pvar(object, fit = fit, coefs = coef)
     idx <- !is.na(fdt(object)[[pvar0]])
     object %<>% extract(idx, )
-# Filter top
+# Filter for sign & effectsize
+    x <- autonomics::effect(object, fit = fit, coef = coef)[, 1]
+    idx <-  (sign(x ) %in% sign) &  (abs(x)  > effectsize)
+    object %<>% extract(idx, )  
+# Order on p
+    idx <- order(fdt(object)[[pvar0]])
+    object %<>% extract(idx, )
+# Filter on significance
+    pvalues      <- autonomics::p(  object, fit = fit, coef = coef)[, 1]
+    fdrvalues    <- autonomics::fdr(object, fit = fit, coef = coef)[, 1]
+    idx <- (pvalues  < p)  &  (fdrvalues  < fdr)
+    object %<>% extract(idx, )
+# Filter on ntop
     ntop %<>% min(nrow(object))
-    idx <- order(fdt(object)[[pvar0]])[1:ntop]
-    object %<>% extract(idx, )
-    idx <- (abs(autonomics::effect(object, fit = fit, coef = coef)[, 1]) > effectsize)  & 
-           (    autonomics::p(     object, fit = fit, coef = coef)[, 1]  < p  )         & 
-           (    autonomics::fdr(   object, fit = fit, coef = coef)[, 1]  < fdr)
-    object %<>% extract(idx, )
+    object %<>% extract(1:ntop, )
 # Return
     object
 }
@@ -853,281 +823,128 @@ extract_top_features <- function(
 format_coef_vars <- function(
     object, coef = setdiff(coefs(object), 'Intercept')[1], fit = fits(object)[1]
 ){
-    effectvars <- effectvar(object, coef = coef, fit = fit)
-    pvars      <- pvar(     object, coef = coef, fit = fit)
-    fdrvars    <- fdrvar(   object, coef = coef, fit = fit)
+    effectvars <- effectvar(object, coefs = coef, fit = fit)
+    pvars      <- pvar(     object, coefs = coef, fit = fit)
+    fdrvars    <- fdrvar(   object, coefs = coef, fit = fit)
     for (var in c(effectvars, pvars, fdrvars)){
         fdt(object)[[var]] %<>% formatC(format='e', digits=0)
+        fdt(object)[[var]] %<>% as.character()
+        fdt(object)[[var]] %<>% paste0(split_extract_fixed(var, FITSEP, 1), ': ', .)
     }
     object
     
 }
 
-
-#' Plot coef boxplots
-#'
+#' Boxplot samplegroups
 #' @param object       SummarizedExperiment
 #' @param assay        string
-#' @param subgroup     symbol: subgroup svar
-#' @param block        symbol: block var
-#' @param downlevels   character vector
-#' @param uplevels     character vector
+#' @param x            svar (string)
+#' @param fill         svar (string)
+#' @param highlight     fvar expressing which feature should be highlighted (string)
+#' @param block        svar on which points are connected (string)
 #' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param coef     string
+#' @param coef         string
+#' @param label        label fvar
+#' @param facet        fvars on which to facet
 #' @param fdrcutoff    number
-#' @param jitter       TRUE or FALSE
+#' @param pointsize    number
+#' @param jitter        jitter width (number)
 #' @param palette      color palette (named character vector)
 #' @param title        string
-#' @param ylab         NULL or string
+#' @param ylab         string
 #' @param nrow         number
 #' @param ncol         number
+#' @param page          number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}
+#' @param ntop         number
 #' @param labeller     string or function
 #' @param scales       'free', 'free_x', 'free_y', 'fixed'
+#' @param theme        ggplot2::theme() construct (or NULL)
+#' @param hlevels    xlevels for which to plot horizontal lines
+#' @return ggplot object
+#' @seealso \code{\link{plot_sample_densities}},
+#'          \code{\link{plot_sample_violins}}
 #' @examples 
-#' require(magrittr)
-#' require(grid)
-#' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
-#' object %<>% fit_limma(subgroupvar='SampleGroup', block='Subject_ID')
-#' object %<>% fit_lme(  subgroupvar='SampleGroup', block='Subject_ID')
-#' object$SampleId   %<>% factor()
-#' object$Subject_ID %<>% factor()
-#' plot_top_boxplots(
-#'     object, subgroup = SampleGroup, block = Subject_ID, 
-#'     fit='limma', coef = 'SampleGroupt1')
-#' plot_top_boxplots(
-#'     object, subgroup=SampleGroup, block = Subject_ID, fit='limma', 
-#'     coef = 'SampleGroupt1', fdrcutoff=0.05)
-#' plot_top_boxplots(
-#'     object, subgroup = SampleGroup, block = Subject_ID, 
-#'      fit = c('limma', 'lme'), contrast = 'SampleGroupt1', 
-#'      fdrcutoff = 0.05)
+#' # Read
+#'     require(magrittr)
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file, plot = FALSE, fit = 'limma')
+#'     controlfeatures <- c('biotin','phosphate')
+#'     fdata(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
+#' # Boxplot
+#'     boxplot_features(object[1:9, ])
+#'     boxplot_samples(object[, 1:12])
+#'     boxplot_samples(object[, 1:12], highlight = 'control')
+#'     boxplot_subgroups(object, x = 'SET')
+#'     boxplot_subgroups(object, x = 'SET', block = 'SUB')
+#'     boxplot_subgroups_per_coef(object, x = 'SET', block = 'SUB')
 #' @export
-plot_top_boxplots <- function(
-    object, assay = assayNames(object)[1], 
-    subgroup = 'subgroup', block = NULL, fit = fits(object)[1], 
-    coef = setdiff(coefs(object), 'Intercept')[1],
-    facet = c('feature_id', paste('fdr', coef, fit, sep = FITSEP)),
-    fdrcutoff = 0.05, 
-    pointsize = if (is.null(block)) 0 else 0.5,
-    jitter = if (is.null(block)) 0.1 else 0,
-    palette = NULL, title = coef, ylab = NULL, 
-    nrow = NULL, ncol = NULL, ntop = 4,
-    labeller = 'label_value', scales = 'free_y'
+boxplot_subgroups <- function(
+    object, 
+    assay       = assayNames(object)[1], 
+    x           = 'subgroup',
+    fill        = x, 
+    block       = NULL, 
+    fit         = fits(object)[1], 
+    coef        = setdiff(coefs(object), 'Intercept')[1],
+    label       = 'feature_id',
+    facet       = c(label, pvar(object, coef, fit), fdrvar(object, coef, fit)),
+    fdr         = 1,
+    pointsize   = if (is.null(block)) 0   else 0.5,
+    jitter      = if (is.null(block)) 0.1 else 0,
+    palette     = NULL, 
+    title       = coef, 
+    ylab        = NULL, 
+    nrow        = NULL, 
+    ncol        = NULL, 
+    ntop        = 4,
+    labeller    = 'label_value',
+    scales      = 'free_y',
+    theme       = NULL           # allows mapplying over this function!
 ){
-# Order/Extract on p value
+# Extract. Format.
     . <- NULL
-    subgroupsym  <- if (is.null(subgroup)) quo(NULL) else sym(subgroup)
     blocksym     <- if (is.null(block))    quo(NULL) else sym(block)
-    
-    svars0 <- c(subgroup, block)
-    fdrvar    <- paste('fdr',    coef, fit, sep = FITSEP)
-    pvar      <- paste('p',      coef, fit, sep = FITSEP)
-    effectvar <- paste('effect', coef, fit, sep = FITSEP)
-    
-    fvars0 <- c(facet, fdrvar, pvar, effectvar)
-    object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdrcutoff, ntop = ntop)
+    object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdr, ntop = ntop)
+    idx <- order(as.numeric(fdt(object)[[pvar(object, coef, fit)]]))  # order on significance
+    object %<>% extract(idx, )
     object %<>% format_coef_vars(    coef = coef, fit = fit)
 # Prepare
-    dt <- sumexp_to_longdt(object, assay = assay, svars = svars0, fvars = fvars0)
-    mediandt <- summarize_median(dt, subgroup)
-    contrastsubgroup <- NULL
-    #mediandt[, contrastsubgroup := get(subgroupvar) %in% c(uplevels, downlevels)]
-    facetstr <- vapply(facet, as_name, character(1))
-    idx <- order(as.numeric(fdt(object)[[pvar]]))  # order on significance
-    object %<>% extract(idx, )
 # Plot
-    p <- plot_subgroup_boxplots(
-            object, subgroup = subgroup, block = block, x = subgroup, 
-            fill = subgroup, facet = facet, scales = scales, nrow = nrow, 
+    p <- boxplot.SummarizedExperiment(
+            object, assay = assay, x = x, fill = fill, block = block,
+            facet = facet, scales = scales, nrow = nrow, 
             ncol = ncol, labeller = labeller, pointsize = pointsize, 
             jitter = jitter, palette  = palette)  + 
         theme_bw() + xlab(NULL) + ggtitle(title) + ylab(ylab) + 
-        # geom_hline( data = mediandt, linetype = 'longdash',
-        #        aes(yintercept=!!sym('value'), alpha=contrastsubgroup, 
-        #            color = !!sym(subgroupvar))) + 
         guides(alpha = 'none')
+    if (!is.null(theme))  p <- p + theme
     p
-# Color
-    #if (is.null(palette))  palette <- make_colors(levels(object[[subgroupvar]]))
-    #facetdt <- unique(object[, c(facetstr, effectvar, subgroupvar), with=FALSE])
-    #facetdt <- rbind(
-    #    facetdt[ as.numeric(get(fdrvar   )) < fdrcutoff & as.numeric(get(effectvar)) > 0, .SD[get(subgroupvar) %in% uplevels  ]],
-    #    facetdt[ as.numeric(get(fdrvar   )) < fdrcutoff & as.numeric(get(effectvar)) < 0, .SD[get(subgroupvar) %in% downlevels]])
-    #facetpalette <- facetdt[, palette[get(subgroupvar)] %>% set_names(feature_id)]
-    #g <- color_facets(p, facetpalette)
-# Return
-    #grid::grid.draw(g)
-    #invisible(g)
-}
-
-summarize_median <- function(dt, subgroupvar){
-    value <- NULL
-    mediandt <- copy(dt)
-    mediandt[,value:=median(value, na.rm=TRUE), by=c('feature_id', subgroupvar)]
-    mediandt[,sample_id := NULL]
-    unique(mediandt)
-}
-
-color_facets <- function(p, palette){
-    . <- NULL
-    g <- ggplot_gtable(ggplot_build(p))
-    facets <- which(grepl('strip-', g$layout$name))
-    for (facet in facets){
-        if (!is(g$grobs[[facet]], 'zeroGrob')){
-            for (strip in seq_along(g$grobs[[facet]]$grobs)){
-                content <- g$grobs[[facet]]$grobs[[strip]]$children[[2]]$children[[1]]$label
-                if (grepl('feature_id', content)){
-                    content %<>% gsub('feature_id: ', '', ., fixed=TRUE) 
-                    g$grobs[[facet]]$grobs[[strip]]$children[[2]]$children[[1]]$label <- content
-                    feature <- content
-                }
-                if (grepl('fdr', content)){
-                    content %<>% gsub('^[^:]+[:] ', '', .)
-                    content %<>% as.numeric()
-                    if (content < 0.05){
-                        g$grobs[[facet]]$grobs[[strip]]$children[[1]]$gp$fill <- palette[[feature]] } } } } }
-    g
-}
-
-which.names <- function(x) names(x[x])
-
-expand_into_vector <- function(value, templatevector){
-    y <- rep(value, length(templatevector))
-    names(y) <- templatevector
-    y
 }
 
 
-
-#===========================================================================
-#
-#                plot_svar_boxplots
-#
-#===========================================================================
-
-
-.prep_subgroup_contrasts <- function(
-    object,
-    svar,
-    contrast,
-    xvar,
-    fillvar,
-    blockvar,
-    fit = fits(object) [1],
-    nfeature = 1
-){
-    contr <- contrast
-    sumdt <- summarize_fit(object, fit = fit)[contrast==contr]
-    pvar   <- paste('p',   contrast, fit, sep = FITSEP)
-    fdrvar <- paste('fdr', contrast, fit, sep = FITSEP)
-    topfid <- fnames(object)[order(fdata(object)[[pvar]])[nfeature]]
-    topfname <- as.character(fdata(object)[topfid, ]$feature_name)
-    subject <- object[topfid, ]
-    subject$xinteraction <- interaction(subject[[xvar]], subject[[svar]])
-    plotdt <- sumexp_to_longdt(subject,
-                                svars = c('xinteraction', fillvar, blockvar),
-                                fvars = c('feature_name', pvar, fdrvar))
-    setnames(plotdt, pvar,   'p')
-    setnames(plotdt, fdrvar, 'fdr')
-    plotdt$facet <- contrast
-    plotdt
-}
-
-
-prep_subgroup_contrasts <- function(
-    object, svar, contrasts, xvar, fillvar, blockvar, nfeature
-){
-    contrastlevels <- summarize_fit(object)[rev(order(ndown+nup))]$contrast
-    contrastlevels %<>% as.character()
-    . <- NULL
-    plotdt <- mapply(
-        .prep_subgroup_contrasts,
-        svar = svar,
-        contrast = contrasts,
-        MoreArgs = list(object   = object,
-                        xvar     = xvar,
-                        fillvar  = fillvar,
-                        blockvar = blockvar, 
-                        nfeature = nfeature),
-        SIMPLIFY = FALSE)
-    plotdt %<>% data.table::rbindlist()
-    plotdt %<>% data.table::setorder(p)
-    plotdt[, fdr := paste0('FDR ', formatC(fdr, format='e', digits=2))]
-    plotdt$facet %<>% factor(contrastlevels)
-    plotdt
-}
-
-
-plot_svar_boxplots <- function(...){
-    .Deprecated('plot_subgroup_contrasts')
-}
-
-
-
-#' Plot subgroup contrasts
-#' @param object    SummarizedExperiment
-#' @param svar      string
-#' @param contrasts character vector
-#' @param xvar      string
-#' @param fillvar   string
-#' @param blockvar  string
-#' @param nfeature  number of plotted features per contrast
-#' @param nrow      number of plot rows
-#' @param ncol      number of plot columns
-#' @param palette   named character vector : color palette
-#' @return ggplot 
-#' @examples
-#' require(magrittr)
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% fit_limma(subgroupvar = 'SET')
-#' plot_subgroup_contrasts(object, subgroup = SET, block = SUB)
+#' @rdname boxplot_subgroups
 #' @export
-plot_subgroup_contrasts <- function(
+boxplot_subgroups_per_coef <- function(
     object, 
-    subgroup, 
-    block     = NULL, 
-    contrasts = coefs(object), #, svars = as_name(!!enquo(subgroup))),
-    x         = !!enquo(subgroup), 
-    fill      = !!enquo(subgroup),
-    jitter    = FALSE,
-    nfeature  = 1, 
-    nrow      = NULL, 
-    ncol      = NULL, 
-    palette   = NULL
+    x     = 'subgroup',
+    block = NULL,
+    coefs = autonomics::coefs(object), 
+    nrow  = 1, 
+    ncol  = NULL, 
+    theme = ggplot2::theme(legend.position = 'bottom', 
+                           legend.title    = element_blank(), 
+                           plot.title      = element_text(hjust = 0.05))
 ){
-    facet <- palette <- NULL
-    subgroup <- enquo(subgroup)
-    x        <- enquo(x)
-    fill     <- enquo(fill)
-    block    <- enquo(block)
-
-    subgroupstr <- as_name(subgroup)
-    xstr     <- as_name(x)
-    fillstr  <- as_name(fill)
-    blockstr <- if (quo_is_null(block)) NULL else as_name(block)
-
-    plotdt <- prep_subgroup_contrasts(
-                object      = object,
-                svar        = subgroupstr,
-                contrasts   = contrasts,
-                xvar        = xstr,
-                fillvar     = fillstr,
-                blockvar    = blockstr, 
-                nfeature    = nfeature)
-    plot_boxplots(
-        plotdt,
-        x       = !!x,
-        fill    = !!fill,
-        block   = !!block,
-        facet   = vars(facet, feature_name, fdr),
-        jitter  = jitter,
-        scales  = 'free',
-        nrow    = nrow,
-        ncol    = ncol,
-        palette = palette)
-
+    assert_is_valid_sumexp(object)
+    n <- length(coefs)
+    theme <- 
+    grobs <- mapply(boxplot_subgroups, 
+                    x    = x, 
+                    coef = coefs, 
+                    title = coefs,
+                    MoreArgs = list(object = object, block = block, ntop = 1, theme = theme), 
+                    SIMPLIFY = FALSE)
+    gridExtra::grid.arrange(grobs = grobs, nrow = nrow)
 }
 
 
@@ -1387,9 +1204,7 @@ plot_top_heatmap <- function(
 # Filter: significant features
     object0 <- object
     object %<>% extract_top_features(
-        fit         = fit,           coef = coef,    
-        effectsize  = effectsize,    p           = p,
-        fdr         = fdr,           ntop        = ntop)
+        fit = fit, coef = coef, effectsize = effectsize, p = p, fdr = fdr, ntop = ntop)
 # Zscore
     assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
     assays(object)[[assay]] %<>% na_to_zero()

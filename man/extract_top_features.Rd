@@ -9,25 +9,28 @@ extract_top_features(
   fit = fits(object)[1],
   coef = default_coefs(object, fit = fit)[1],
   effectsize = 0,
-  p = 0.05,
+  p = 1,
   fdr = 1,
+  sign = c(-1, +1),
   ntop = Inf
 )
 }
 \arguments{
 \item{object}{SummarizedXExperiment}
 
-\item{fit}{string}
+\item{fit}{'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'}
 
 \item{coef}{string}
 
-\item{effectsize}{effectsize cutoff}
+\item{effectsize}{effectsize threshold}
 
-\item{p}{p cutoff}
+\item{p}{p threshold}
 
-\item{fdr}{fdr cutoff}
+\item{fdr}{fdr threshold}
 
-\item{ntop}{ntop cutoff}
+\item{sign}{effect sign}
+
+\item{ntop}{number of top features (Inf means all)}
 }
 \description{
 Extract top features
@@ -35,8 +38,9 @@ Extract top features
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file, fit = 'limma')
-nrow(object)                                  # 4534 features
-nrow(extract_top_features(object, p = 1))      # 3772   p != NA
-nrow(extract_top_features(object))             # 1961   p < 0.05 
-nrow(extract_top_features(object, fdr = 0.05)) # 1622 fdr < 0.05 
+nrow(object)                                              # 6679 features
+nrow(extract_top_features(object,   p = 1))               # 3927   p != NA
+nrow(extract_top_features(object,   p = 0.05))            # 1984   p < 0.05 
+nrow(extract_top_features(object, fdr = 0.05))            # 1615 fdr < 0.05 
+nrow(extract_top_features(object, fdr = 0.05, sign = +1)) #  635 fdr < 0.05, upregulated
 }

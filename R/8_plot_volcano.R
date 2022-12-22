@@ -42,9 +42,9 @@ top_down <- function(effect, fdr, mlp, ntop){
 
 #' @examples
 #' file <- download_data("billing16.proteingroups.txt")
-#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
+#' invert <- c('EM_E', 'BM_E', 'BM_EM')
 #' object <- read_maxquant_proteingroups(
-#'           file, invert_subgroups=invert_subgroups, fit='limma', plot=FALSE)
+#'     file, invert = invert_subgroups, fit = 'limma', formula = 0 + subroup, plot = FALSE)
 #' effect <-      limma(object)[,1,'effect']
 #' fdr    <-      limma(object)[,1,'fdr']
 #' mlp    <- -log(limma(object)[,1,'p'])
@@ -55,6 +55,7 @@ top_down <- function(effect, fdr, mlp, ntop){
 top_up <- function(effect, fdr, mlp, ntop){
     fdr_ok   <- fdr  < 0.05
     coef_ok  <- effect >  0 # currently no filter
+    
     coef_top <- if (any(fdr_ok)) {  effect > nmax(effect[fdr_ok], ntop + 1)
                 } else {          rep(FALSE, length(effect)) }
     mlp_top  <- if (any(coef_ok)) { mlp > nmax(mlp[coef_ok], ntop + 1)
@@ -272,10 +273,10 @@ make_volcano_dt <- function(
 #' object <- read_maxquant_proteingroups(file, impute = TRUE)
 #' object %<>% fit_limma()
 #' plot_volcano(object)
-#' plot_volcano(object, label = 'genesymbol')
-#' plot_volcano(object, label = 'genesymbol', size = 'mean.log2.LFQ.intensity')
-#' plot_volcano(object, label = 'genesymbol', size = 'mean.log2.LFQ.intensity', alpha = 'mean.pepcounts')
-#' plot_volcano(object, label = 'genesymbol', features = c('hmbsb'))
+#' plot_volcano(object, label = 'gene')
+#' plot_volcano(object, label = 'gene', size = 'log2.LFQ.intensity')
+#' plot_volcano(object, label = 'gene', size = 'log2.LFQ.intensity', alpha = 'mean.pepcounts')
+#' plot_volcano(object, label = 'gene', features = c('hmbsb'))
 #' object %<>% fit_lm()
 #'
 #' file <- download_data('atkin18.metabolon.xlsx')

@@ -42,6 +42,4 @@ sumexplist to longdt
     sumexplist <- list(rna = rna, pro = pro, fos = fos)
     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
     dt \%<>\% extract(feature_name \%in\% c('TNMD', 'TSPAN6'))
-    plot_boxplots(dt, x=subgroup, fill=subgroup)
-    plot_subgroup_boxplots(dt, subgroup=subgroup, facet=vars(feature_name, feature_id))
 }

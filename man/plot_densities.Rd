@@ -92,7 +92,7 @@ Plot sample/feature distributions
 # Sample distributions
     plot_sample_densities(object)
     plot_sample_violins(  object, facet = 'SET')
-    plot_sample_boxplots( object, facet = 'SET')
+    boxplot_samples( object, facet = 'SET')
     
 # Feature distributions
     plot_feature_densities(object)
@@ -101,5 +101,5 @@ Plot sample/feature distributions
 }
 \seealso{
 \code{\link{plot_sample_violins}},
-         \code{\link{plot_sample_boxplots}}
+         \code{\link{boxplot_samples}}
 }
