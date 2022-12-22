@@ -115,8 +115,8 @@ fit_wilcoxon <- function(
         colnames(quantitymat) %<>% stri_replace_first_fixed(quantitydot, '')
         quantitymat }
 # Return
-    if (plot)  print(plot_volcano(object, fit = 'wilcoxon')) 
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(object,'wilcoxon'))
+    if (plot)  print(plot_volcano(fdt(object), fit = 'wilcoxon')) 
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object),'wilcoxon'))
     object
 }
 

@@ -144,13 +144,13 @@ plot_top_feature <- function(
 }
 
 top_coef <- function(object, fit){
-    summarydt <- summarize_fit(object, fit = fit)
+    summarydt <- summarize_fit(fdt(object), fit = fit)
     summarydt %<>% extract(which.max(ndown))  # nup favours intercept !
     summarydt$contrast
 }
 
 plot_top_volcano <- function(object, fit, coef){
-    summarydt <- summarize_fit(object, fit = fit)
+    summarydt <- summarize_fit(fdt(object), fit = fit)
     summarydt %<>% extract(contrast==coef)  # nup favours intercept !
     
     plot_volcano(object, coef = coef) + 

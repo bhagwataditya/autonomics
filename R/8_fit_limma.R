@@ -367,7 +367,6 @@ fit_limma <- function(
         #fdata(object)$F.limma   <- limmares$F
         #fdata(object)$F.p.limma <- limmares$F.p
     if (plot)  print(plot_volcano(object, fit = 'limma')) 
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(object, 'limma'))
     object
 }
 
@@ -428,7 +427,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     plot         = FALSE
 ){
 # Design/contrasts
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
     assert_is_subset(statvars, c('effect', 'p', 'fdr', 't'))
     . <- NULL
     if (verbose)  message('\t\tlmFit(', formula2str(formula),
@@ -472,14 +471,87 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         limmafit %<>% eBayes()
         if ('p' %in% statvars){ 
             dt0 <- data.table(limmafit$p.value)
-            names(dt0) %<>% paste0('p', sep, ., suffix); limmadt %<>% cbind(dt0)  }
+            names(dt0) %<>% paste0('p', sep, ., suffix)
+            limmadt %<>% cbind(dt0)  
+        } 
         if ('t' %in% statvars){ 
             dt0 <- data.table(limmafit$t)
-            names(dt0) %<>% paste0('t', sep, ., suffix); limmadt %<>% cbind(dt0)  }
+            names(dt0) %<>% paste0('t', sep, ., suffix)
+            limmadt %<>% cbind(dt0)  
+        } 
         if ('fdr' %in% statvars){
             dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
-            names(dt0) %<>% paste0('fdr', sep, .,suffix); limmadt %<>% cbind(dt0)  } }
+            names(dt0) %<>% paste0('fdr', sep, .,suffix)
+            limmadt %<>% cbind(dt0)  
+        } 
+    }
+# Return
+    if (verbose)  message_df('\t\t\t%s',  summarize_fit(limmadt, fit = 'limma'))
     limmadt
+
+}
+
+old_summarize_fit <- function(object, fit = fits(object)){
+    . <- NULL
+    downdt <- colSums(down(object, fit = fit)) %>% data.table(coef = names(.), ndown = .)
+    downdt %<>% tidyr::separate(
+                    col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
+    
+    updt <- colSums(up(object)) %>% data.table(coef = names(.), nup = .)
+    updt %<>% tidyr::separate(
+                    col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
+    
+    sumdt <- merge(downdt, updt, by = c('fit', 'contrast'))
+    sumdt$contrast %<>% factor()
+    sumdt$contrast %<>% pull_level('Intercept')
+    setorderv(sumdt, c('fit', 'contrast'))
+    sumdt %<>% extract(fit, on = 'fit')
+    sumdt %<>% extract(coefs(object), on = 'contrast')
+    sumdt
+}
+
+pull_level <- function(x, lev){
+    assert_is_factor(x)
+    if (lev %in% levels(x))  x %<>% 
+        factor(levels = c(lev, setdiff(levels(x), lev)))
+    x
+}
+
+#' Summarize fit
+#' @param fdt  fdt(object)
+#' @param fit  'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL
+#' @return data.table(contrast, nup, ndown)
+#' @examples
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, impute = TRUE, plot = FALSE)
+#' object %<>% extract(!is_consistent_nondetect(.), )
+#' object %<>% fit_limma()
+#' object %<>% fit_lm()
+#' summarize_fit(fdt(object))
+#' @export
+summarize_fit <- function(fdt, fit = NULL){
+    assert_is_data.table(fdt)
+    cols <- names(fdt) %>% extract(stri_detect_fixed(., FITSEP))
+    fdt %<>% extract(, c('feature_id', cols), with = FALSE)
+    
+    longdt <- fdt %>% melt.data.table(id.vars = 'feature_id')
+    longdt[, statistic := split_extract_fixed(variable, FITSEP, 1)]
+    longdt[,      contrast := split_extract_fixed(variable, FITSEP, 2)]
+    longdt[,    fit := split_extract_fixed(variable, FITSEP, 3)]
+    longdt[, variable := NULL]
+    
+    widedt <- dcast.data.table(longdt, feature_id + contrast + fit ~ statistic, value.var = 'value')
+    widedt <- widedt[, .(
+                downfdr = sum(effect < 0  & fdr < 0.05, na.rm = TRUE), 
+                upfdr   = sum(effect > 0  & fdr < 0.05, na.rm = TRUE),
+                downp   = sum(effect < 0  &   p < 0.05, na.rm = TRUE), 
+                upp     = sum(effect > 0  &   p < 0.05, na.rm = TRUE) 
+               ), by = c('fit', 'contrast') ]
+    if (!is.null(fit)){
+        idx <- widedt$fit %in% fit
+        widedt %<>% extract(idx)
+    }
+    widedt
 }
 
 

@@ -23,7 +23,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         
         object %<>% fit_limma(weightvar = NULL)
         expect_true(sumexp_contains_fit(object,    'limma'))
-        expect_s3_class(summarize_fit(object, fit = 'limma'), 'data.table')
+        expect_s3_class(summarize_fit(fdt(object), fit = 'limma'), 'data.table')
     })
     
 # PAIRED: wilcoxon does work
@@ -69,19 +69,19 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         object <- read_metabolon(file, plot=FALSE)
         suppressWarnings(object %<>% fit_limma(subgroupvar = 'Group'))
         expect_true(sumexp_contains_fit(object, 'limma'))
-        fitdt <- summarize_fit(object, fit = 'limma')
+        fitdt <- summarize_fit(fdt(object), fit = 'limma')
         expect_s3_class(fitdt, 'data.table')
 
         # ~ 0 + Group | block
         suppressWarnings(object %<>% fit_limma(
                                         subgroupvar = 'Group', block = 'SUB'))
         expect_true(sumexp_contains_fit(object, 'limma'))
-        fitdt <- summarize_fit(object, fit = 'limma')
+        fitdt <- summarize_fit(fdt(object), fit = 'limma')
         expect_s3_class(fitdt, 'data.table')
 
         # ~ 0 + Group + t2d | block
         object %<>% fit_limma(formula = ~0+Group+T2D, block = 'SUB', plot = FALSE)
-        fitdt <- summarize_fit(object, fit = 'limma')
+        fitdt <- summarize_fit(fdt(object), fit = 'limma')
         expect_s3_class(fitdt, 'data.table')
     })
     

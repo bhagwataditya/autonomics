@@ -38,25 +38,25 @@ context('fit: GSE161731')
         object$subgroup <- object$time_since_onset
         object %<>% fit_limma()
         expect_true(sumexp_contains_fit(object))
-        ndown <- summarize_fit(object, 'limma')$ndown
-        nup   <- summarize_fit(object, 'limma')$nup
+        ndown <- summarize_fit(fdt(object), 'limma')$ndown
+        nup   <- summarize_fit(fdt(object), 'limma')$nup
         # subgroupvar
         object %<>% fit_limma(subgroupvar = 'time_since_onset')
         expect_true(sumexp_contains_fit(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==ndown)
-        expect_true(summarize_fit(object, 'limma')$nup  ==nup)
+        expect_true(summarize_fit(fdt(object), 'limma')$ndown==ndown)
+        expect_true(summarize_fit(fdt(object), 'limma')$nup  ==nup)
         # formula without intercept
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~ 0 + time_since_onset)
         expect_true(sumexp_contains_fit(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==ndown)
-        expect_true(summarize_fit(object, 'limma')$nup  ==nup)
+        expect_true(summarize_fit(fdt(object), 'limma')$ndown==ndown)
+        expect_true(summarize_fit(fdt(object), 'limma')$nup  ==nup)
         # fomula with intercept
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~ time_since_onset)
         expect_true(sumexp_contains_fit(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==ndown)
-        expect_true(summarize_fit(object, 'limma')$nup  ==nup)
+        expect_true(summarize_fit(fdt(object), 'limma')$ndown==ndown)
+        expect_true(summarize_fit(fdt(object), 'limma')$nup  ==nup)
     })
 
     
@@ -65,19 +65,19 @@ context('fit: GSE161731')
         object %<>% fit_limma(formula = ~ subject_id + time_since_onset, 
                               contrasts = 'late')
         expect_true(sumexp_contains_fit(object))
-        ndown <- summarize_fit(object, 'limma')$ndown==10
-        nup   <- summarize_fit(object, 'limma')$nup  ==54
+        ndown <- summarize_fit(fdt(object), 'limma')$ndown==10
+        nup   <- summarize_fit(fdt(object), 'limma')$nup  ==54
         # ~ time_since_onset + subject_id
         object %<>% fit_limma(formula = ~ time_since_onset + subject_id)
         expect_true(sumexp_contains_fit(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==ndown)
-        expect_true(summarize_fit(object, 'limma')$nup  ==nup)
+        expect_true(summarize_fit(fdt(object), 'limma')$ndown==ndown)
+        expect_true(summarize_fit(fdt(object), 'limma')$nup  ==nup)
         # ~ 0 + subject_id + time_since_onset
         object %<>% fit_limma(formula = ~ 0 + subject_id + time_since_onset, 
                               contrasts = 'late')
         expect_true(sumexp_contains_fit(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==ndown)
-        expect_true(summarize_fit(object, 'limma')$nup  ==nup)
+        expect_true(summarize_fit(fdt(object), 'limma')$ndown==ndown)
+        expect_true(summarize_fit(fdt(object), 'limma')$nup  ==nup)
         # 0 + time_since_onset + subject_id
         object$subgroup <- NULL
         object %<>% fit_limma(formula = ~ 0 + time_since_onset + subject_id)
@@ -91,13 +91,13 @@ context('fit: GSE161731')
     #    # ~ time_since_onset | subject_id
     #    object %<>% fit_limma(formula=~0+time_since_onset, block='subject_id')
     #    expect_true(sumexp_contains_fit(object))
-    #    expect_true(summarize_fit(object, 'limma')$ndown==8)
-    #    expect_true(summarize_fit(object, 'limma')$nup  ==86)
+    #    expect_true(summarize_fit(fdt(object), 'limma')$ndown==8)
+    #    expect_true(summarize_fit(fdt(object), 'limma')$nup  ==86)
     #    
     #    # ~ 0 + time_since_onset | subject_id
     #    object %<>% fit_limma(formula = ~time_since_onset, block='subject_id')
-    #    expect_true(summarize_fit(object, 'limma')$ndown== 8)
-    #    expect_true(summarize_fit(object, 'limma')$nup  == 85)
+    #    expect_true(summarize_fit(fdt(object), 'limma')$ndown== 8)
+    #    expect_true(summarize_fit(fdt(object), 'limma')$nup  == 85)
     #    expect_true(sumexp_contains_fit(object))
     #})
 
@@ -109,8 +109,8 @@ context('fit: GSE161731')
         #object %<>% fit_lme(formula = ~time_since_onset, block='subject_id')
         #object %<>% fit_lmer(formula = ~time_since_onset, block='subject_id')
         #expect_true(sumexp_contains_fit(object))
-        #expect_true(summarize_fit(object, 'limma')$ndown==8)
-        #expect_true(summarize_fit(object, 'limma')$nup  ==86)
+        #expect_true(summarize_fit(fdt(object), 'limma')$ndown==8)
+        #expect_true(summarize_fit(fdt(object), 'limma')$nup  ==86)
     # })
     
     
@@ -123,19 +123,19 @@ context('fit: GSE161731')
         # 'subgroup1'
         object %<>% fit_limma()
         expect_true(sumexp_contains_fit(object))
-        ndown <- summarize_fit(object, 'limma')$ndown
-        nup <- summarize_fit(object, 'limma')$nup
+        ndown <- summarize_fit(fdt(object), 'limma')$ndown
+        nup   <- summarize_fit(fdt(object), 'limma')$nup
         # NULL subgroup
         object$subgroup <- NULL
         object %<>% fit_limma()
         expect_true(sumexp_contains_fit(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==ndown)
-        expect_true(summarize_fit(object, 'limma')$nup  ==nup)
+        expect_true(summarize_fit(fdt(object), 'limma')$ndown==ndown)
+        expect_true(summarize_fit(fdt(object), 'limma')$nup  ==nup)
         # ~ 1
         object %<>% fit_limma(formula=~1)
         expect_true(sumexp_contains_fit(object))
-        expect_true(summarize_fit(object, 'limma')$ndown==ndown)
-        expect_true(summarize_fit(object, 'limma')$nup  ==nup)
+        expect_true(summarize_fit(fdt(object), 'limma')$ndown==ndown)
+        expect_true(summarize_fit(fdt(object), 'limma')$nup  ==nup)
     })
 
     # a bit slow    
@@ -143,8 +143,8 @@ context('fit: GSE161731')
     #    object$subgroup <- NULL
     #    object %<>% fit_lm(formula=~1)
     #    expect_true(sumexp_contains_fit(object))
-    #    expect_true(summarize_fit(object, 'limma')$ndown==0)
-    #    expect_true(summarize_fit(object, 'limma')$nup  ==0)
+    #    expect_true(summarize_fit(fdt(object), 'limma')$ndown==0)
+    #    expect_true(summarize_fit(fdt(object), 'limma')$nup  ==0)
     #})
 
 

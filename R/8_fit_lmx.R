@@ -155,7 +155,7 @@ fit_lmx <- function(
                             MoreArgs = list(fitres=fitres), SIMPLIFY = FALSE)
     formula %<>% droplhs() %<>% formula2str()
     if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(object, fit))
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object), fit = fit))
     if (is.null(coefs)) coefs <- autonomics::coefs(object, fit = fit)
     if (length(coefs) > 1) coefs %<>% setdiff('Intercept')
     if (plot)  print(plot_volcano(object, fit = fit, coefs = coefs))
