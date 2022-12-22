@@ -80,6 +80,7 @@ boxplot_subgroups_per_coef(
   x = "subgroup",
   block = NULL,
   coefs = autonomics::coefs(object),
+  title = coefs,
   nrow = 1,
   ncol = NULL,
   theme = ggplot2::theme(legend.position = "bottom", legend.title = element_blank(),

@@ -929,6 +929,7 @@ boxplot_subgroups_per_coef <- function(
     x     = 'subgroup',
     block = NULL,
     coefs = autonomics::coefs(object), 
+    title = coefs, 
     nrow  = 1, 
     ncol  = NULL, 
     theme = ggplot2::theme(legend.position = 'bottom', 
@@ -941,7 +942,7 @@ boxplot_subgroups_per_coef <- function(
     grobs <- mapply(boxplot_subgroups, 
                     x    = x, 
                     coef = coefs, 
-                    title = coefs,
+                    title = title,
                     MoreArgs = list(object = object, block = block, ntop = 1, theme = theme), 
                     SIMPLIFY = FALSE)
     gridExtra::grid.arrange(grobs = grobs, nrow = nrow)
