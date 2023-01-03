@@ -666,6 +666,14 @@ format_coef_vars <- function(
     object
 }
 
+facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)){
+    y <- 'feature_id'
+    if (!is.null(coefs(object))){
+        y %<>% c(pvar(  object, fit = fit, coefs = coefs))
+        y %<>% c(fdrvar(object, fit = fit, coefs = coefs))
+    }
+    y
+}
 
 #' Plot exprs
 #' @param object       SummarizedExperiment
@@ -699,16 +707,17 @@ format_coef_vars <- function(
 #' # Read
 #'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot = FALSE, fit = 'limma')
+#'     object <- read_metabolon(file)
 #'     controlfeatures <- c('biotin','phosphate')
 #'     fdt(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
 #' # Plot
 #'     plot_exprs(object)
 #'     plot_exprs(object, block = 'SUB')
-#'     plot_exprs(object, dim = 'samples')
 #'     plot_exprs(object, dim = 'samples', highlight = 'control')
-#'     plot_exprs(object, dim = 'features')
 #'     plot_exprs(object, dim = 'features', block = 'sample_id')
+#' # Limma 
+#'     object %<>% fit_limma()
+#'     plot_exprs(object)
 #'     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
 #' @export
 plot_exprs <- function(
@@ -716,7 +725,7 @@ plot_exprs <- function(
     x  = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
     fill = x, color = NULL, block = NULL, highlight = NULL, 
     fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fdr = 1, n = 4,
-    facet = if (dim=='both')  c('feature_id', pvar(object, coef, fit), fdrvar(object, coef, fit)) else NULL, 
+    facet = if (dim=='both')  facets(object, fit = fit, coefs = coef) else NULL,
     nrow = NULL, ncol = NULL,  scales = 'free_y', page = 1, labeller = 'label_value', 
     pointsize = if (is.null(block)) 0 else 0.5, jitter = if (is.null(block)) 0.1 else 0,
     fillpalette  = make_var_palette(object, fill), colorpalette = make_var_palette(object, color),
@@ -738,12 +747,15 @@ plot_exprs <- function(
     if (!is.null(ncol))       assert_is_a_number(ncol)
     if (!is.null(facet))      assert_is_subset(scales, c('fixed', 'free', 'free_x', 'free_y'))
 # Extract
-    if        (dim == 'features'){   object %<>% extract_features_evenly(n)
-    } else if (dim == 'samples' ){   object %<>% extract_samples_evenly(n)
-    } else if (dim == 'both'){       object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdr, n = n)
-                                     idx <- order(as.numeric(fdt(object)[[pvar(object, coef, fit)]]))  # order on significance
+    if        (dim == 'samples' ){   object %<>% extract_samples_evenly(n)
+    } else if (dim == 'features'){   object %<>% extract_features_evenly(n)
+    } else if (dim == 'both'){  
+        if (is.null(coef)){          object %<>% extract_features_evenly(n) 
+        } else {                     object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdr, n = n)
+                                     idx <- order(as.numeric(fdt(object)[[pvar(object, coef, fit)]]))   # order on significance
                                      object %<>% extract(idx, )
-                                     object %<>% format_coef_vars(coef = coef, fit = fit)
+                                     object %<>% format_coef_vars(coef = coef, fit = fit) 
+        }
     }
 # Prepare
     xsym     <- sym(x)

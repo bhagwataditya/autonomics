@@ -24,8 +24,7 @@ plot_exprs(
   coef = default_coefs(object, fit = fit)[1],
   fdr = 1,
   n = 4,
-  facet = if (dim == "both") c("feature_id", pvar(object, coef, fit), fdrvar(object,
-    coef, fit)) else NULL,
+  facet = if (dim == "both") facets(object, fit = fit, coefs = coef) else NULL,
   nrow = NULL,
   ncol = NULL,
   scales = "free_y",
@@ -126,16 +125,17 @@ Plot exprs
 # Read
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, plot = FALSE, fit = 'limma')
+    object <- read_metabolon(file)
     controlfeatures <- c('biotin','phosphate')
     fdt(object) \%<>\% cbind(control = .$feature_name \%in\% controlfeatures)
 # Plot
     plot_exprs(object)
     plot_exprs(object, block = 'SUB')
-    plot_exprs(object, dim = 'samples')
     plot_exprs(object, dim = 'samples', highlight = 'control')
-    plot_exprs(object, dim = 'features')
     plot_exprs(object, dim = 'features', block = 'sample_id')
+# Limma 
+    object \%<>\% fit_limma()
+    plot_exprs(object)
     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
 }
 \seealso{
