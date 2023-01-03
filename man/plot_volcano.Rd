@@ -17,7 +17,10 @@ plot_volcano(
   features = NULL,
   nrow = length(fit),
   p = 0.05,
-  fdr = 0.05
+  fdr = 0.05,
+  xlabel = 0,
+  xdown = NULL,
+  xup = NULL
 )
 }
 \arguments{

@@ -289,7 +289,7 @@ make_volcano_dt <- function(
 plot_volcano <- function(
     object,
     fit   = fits(object)[1], 
-    coefs  = default_coefs(object, fit)[1],
+    coefs = default_coefs(object, fit)[1],
     facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
     shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
     size  = NULL,
@@ -299,7 +299,10 @@ plot_volcano <- function(
     features  = NULL,
     nrow  = length(fit),
     p   = 0.05, 
-    fdr = 0.05
+    fdr = 0.05,
+    xlabel = 0,
+    xdown  = NULL,
+    xup    = NULL
 ){
 # Assert
     assert_is_a_number(nrow)
@@ -325,8 +328,8 @@ plot_volcano <- function(
     if (!is.null(size))   g <- g + scale_size_manual( values = 1:3)
     if (!is.null(alpha))  g <- g + scale_alpha_manual(values = c(0.3, 0.5, 1))
 # Significance lines
-    xmin <- min(plotdt$effect)
-    xmax <- max(plotdt$effect)
+    if (is.null(xdown))  xdown <- min(plotdt$effect)
+    if (is.null(xup  ))  xup   <- max(plotdt$effect)
     dy <- 0.03*(max(plotdt$mlp) - min(plotdt$mlp))
     minn <- function(x) if (length(x)==0) return(Inf) else min(x, na.rm = TRUE) 
         # Avoid warning 'no non-missing arguments to min; returning Inf'
@@ -345,9 +348,9 @@ plot_volcano <- function(
                                    hjust      = 0.5, 
                                    fill       = alpha(c('white'), 0.6), 
                                    color      = 'gray30')  }
-    g <- g + do_geom_label(mapping = aes(x = 0,    y = yintercept,      label = label), label.size = 0.5)
-    g <- g + do_geom_label(mapping = aes(x = xmin, y = yintercept + dy, label = down ), label.size = NA)
-    g <- g + do_geom_label(mapping = aes(x = xmax, y = yintercept + dy, label = up   ), label.size = NA)
+    g <- g + do_geom_label(mapping = aes(x = xlabel,  y = yintercept,      label = label), label.size = 0.5)
+    g <- g + do_geom_label(mapping = aes(x = xdown,   y = yintercept + dy, label = down ), label.size = NA)
+    g <- g + do_geom_label(mapping = aes(x = xup,     y = yintercept + dy, label = up   ), label.size = NA)
     g <- g + guides(color = 'none')
 # Labels
     if (!is.null(label)){
