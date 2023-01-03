@@ -541,46 +541,48 @@ summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
     longdt[,    fit := split_extract_fixed(variable, FITSEP, 3)]
     longdt[, variable := NULL]
     
-    summarydt <- dcast.data.table(longdt, feature_id + contrast + fit ~ statistic, value.var = 'value')
-    summarydt <- summarydt[, .(
+    sumdt <- dcast.data.table(longdt, feature_id + contrast + fit ~ statistic, value.var = 'value')
+    sumdt <- sumdt[, .(
         downfdr = sum(effect < 0  & fdr < 0.05, na.rm = TRUE), 
         upfdr   = sum(effect > 0  & fdr < 0.05, na.rm = TRUE),
         downp   = sum(effect < 0  &   p < 0.05, na.rm = TRUE), 
         upp     = sum(effect > 0  &   p < 0.05, na.rm = TRUE)), by = c('fit', 'contrast') ]
     if (!is.null(fit)){
-        idx <- summarydt$fit %in% fit
-        summarydt %<>% extract(idx)
+        idx <- sumdt$fit %in% fit
+        sumdt %<>% extract(idx)
     }
     if (!is.null(coefs)){
-        summarydt <- summarydt[contrast %in% coefs]
+        sumdt <- sumdt[contrast %in% coefs]
     }
-    summarydt
+    sumdt
 }
 
 #' Plot fit summary
-#' @param summarydt data.table
+#' @param sumdt data.table
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, impute = TRUE, plot = FALSE)
 #' object %<>% extract(!is_consistent_nondetect(.), )
 #' object %<>% fit_lm()
 #' object %<>% fit_limma(block = 'SUB')
-#' summarydt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
-#' plot_fit_summary(summarydt)
+#' sumdt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
+#' plot_fit_summary(sumdt)
 #' @export
-plot_fit_summary <- function(summarydt, nrow = NULL, ncol = 1){
-    #summarydt <- summarydt[order(downfdr+upfdr, downp+upp, decreasing = TRUE)]
-    #summarydt[, contrast := factor(contrast, unique(contrast))]
-    ggplot(summarydt) + facet_wrap(vars(fit), nrow = nrow, ncol = ncol) + 
+plot_fit_summary <- function(sumdt, nrow = NULL, ncol = NULL, order = FALSE){
+    if (order){
+        sumdt <- sumdt[order(downfdr+upfdr, downp+upp)]
+        sumdt[, contrast := factor(contrast, unique(contrast))]
+    }
+    ggplot(sumdt) + facet_wrap(vars(fit), nrow = nrow, ncol = ncol) + 
     geom_col(aes(y = contrast, x = -downp),   fill = 'firebrick',   alpha = 0.3) +
     geom_col(aes(y = contrast, x =    upp),   fill = 'forestgreen', alpha = 0.3) + 
     geom_col(aes(y = contrast, x = -downfdr), fill = 'firebrick',   alpha = 1) +
     geom_col(aes(y = contrast, x =    upfdr), fill = 'forestgreen', alpha = 1) + 
-    geom_text(data = summarydt[  downp>0], aes(y = contrast, x = -max(downp), label = paste0(downp, ' | ', downfdr) ), hjust = +1) + 
-    geom_text(data = summarydt[    upp>0], aes(y = contrast, x =    max(upp), label = paste0(upfdr, ' | ', upp) ), hjust = 0) + 
-    ylab('count') + 
-    xlab(NULL) + 
-    xlim(c(-max(summarydt$downp)-100, max(summarydt$upp)+100)) + 
+    geom_text(data = sumdt[  downp>0], aes(y = contrast, x = -max(downp), label = paste0(downp, ' | ', downfdr) ), hjust = +1) + 
+    geom_text(data = sumdt[    upp>0], aes(y = contrast, x =    max(upp), label = paste0(upfdr, ' | ', upp) ), hjust = 0) + 
+    xlab('count') + 
+    ylab(NULL) + 
+    xlim(c(-max(sumdt$downp)-100, max(sumdt$upp)+100)) + 
     #scale_x_continuous(n.breaks = 20) + 
     theme_bw() + 
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
