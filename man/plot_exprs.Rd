@@ -135,7 +135,8 @@ Plot exprs
     plot_exprs(object, dim = 'features', block = 'sample_id')
 # Limma 
     object \%<>\% fit_limma()
-    plot_exprs(object)
+    plot_exprs(object, block = 'SUB')
+    plot_exprs(object, block = 'SUB', coef = 't2')
     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
 }
 \seealso{

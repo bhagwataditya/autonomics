@@ -717,7 +717,8 @@ facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)
 #'     plot_exprs(object, dim = 'features', block = 'sample_id')
 #' # Limma 
 #'     object %<>% fit_limma()
-#'     plot_exprs(object)
+#'     plot_exprs(object, block = 'SUB')
+#'     plot_exprs(object, block = 'SUB', coef = 't2')
 #'     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
 #' @export
 plot_exprs <- function(

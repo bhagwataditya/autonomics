@@ -222,9 +222,9 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 #' @examples 
 #' file  <- '../olink_example_NPX.csv'
 #' sample_excel <- '../olink_example_clinical.xlsx'
-#' object <- read_olink_file(file, sample_excel = sample_excel, by.y.excel = 'SampleID')
+#' object <- read_olink(file, sample_excel = sample_excel, by.y.excel = 'SampleID')
 #' @export
-read_olink_file <- function(
+read_olink <- function(
     file, 
     sample_excel = NULL,  by.x.excel = 'sample_id', by.y.excel = NULL,
     sample_tsv   = NULL,  by.x.tsv   = 'sample_id', by.y.tsv   = NULL
