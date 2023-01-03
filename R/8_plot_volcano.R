@@ -78,9 +78,9 @@ melt_contrastdefs <- function(contrastdefmat){
 
 
 default_coefs <- function(object, fit = fits(object)){
-    if (length(fit)==0) return(character(0))    # none
+    if (length(fit)==0) return(NULL)    # none
     y <- autonomics::coefs(object, fit = fit)   # intercept
-    if (length(y)==1)  return(y)
+    if (length(y)==1)   return(y)
     y %<>% setdiff('Intercept')                 # intercept + others
     y
 }

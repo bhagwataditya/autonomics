@@ -486,6 +486,7 @@ fits <- function(object){
     x <- .pvars(object)
     x %<>% split_extract_fixed(FITSEP, 3)
     x %<>% unique()
+    if (length(x)==0)  x <- NULL
     x
 }
 
