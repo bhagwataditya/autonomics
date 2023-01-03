@@ -431,7 +431,6 @@ rm_diann_contaminants <- function(
     object, contaminants = read_contaminants(), verbose = TRUE
 ){
     fdt0 <- fdt(object)
-    fdt0[, uniprot := feature_id ]
     fdt0 %<>% separate_rows(uniprot, sep = ';') %>% data.table()
     fdt0[, contaminant := FALSE]
     fdt0[uniprot %in% contaminants, contaminant := TRUE]
