@@ -362,8 +362,9 @@ p <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'p', fit = fit, coefs = coefs)
     x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
-    x %<>% intersect(fvars(object))
-    x
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
 }
 
 
@@ -384,10 +385,10 @@ effect <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
 effectvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'effect', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
-    x %<>% intersect(fvars(object))
-    x
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
 }
-
 
 #' @rdname p
 #' @export
@@ -405,17 +406,18 @@ fdr <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 fdrvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'fdr', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
-    x %<>% intersect(fvars(object))  # all fits not necessarily all coefs, e.g:
-    x               # limma(contrasts = .) generally run without intercept
-}                   # lm(coefs = .) typically run with intercept
-
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x) == 0)  x <- NULL         # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
+}                   
 
 bonvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'bonferroni', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
-    x %<>% intersect(fvars(object))  # all fits not necessarily all coefs, e.g:
-    x               # limma(contrasts = .) generally run without intercept
-}                   # lm(coefs = .) typically run with intercept
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <-NULL            # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs = .)`mostly with intercept
+}                   
 
 #' @rdname p
 #' @export
