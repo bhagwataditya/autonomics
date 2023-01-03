@@ -12,7 +12,7 @@ extract_top_features(
   p = 1,
   fdr = 1,
   sign = c(-1, +1),
-  ntop = Inf
+  n = Inf
 )
 }
 \arguments{
@@ -30,7 +30,7 @@ extract_top_features(
 
 \item{sign}{effect sign}
 
-\item{ntop}{number of top features (Inf means all)}
+\item{n}{number of top features (Inf means all)}
 }
 \description{
 Extract top features
