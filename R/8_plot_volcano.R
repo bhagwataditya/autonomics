@@ -378,3 +378,65 @@ plot_volcano <- function(
     }
     g
 }
+
+
+#' Detect fixed patterns in collapsed strings
+#' @param x         vector with collapsed strings
+#' @param patterns  vector with fixed patterns (strings)
+#' @param sep       collapse separator (string) or NULL (if uncollapsed)
+#' @return boolean vector
+#' @examples 
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file)
+#' x <- fdt(object)$uniprot
+#' patterns <- c('A0A2R8Q0N1', 'Q5PQZ7')
+#' stri_detect_fixed_in_collapsed(x = x, patterns = patterns, sep = ';')
+#' fdt(object)[stri_detect_fixed_set(x, patternset)]
+#' @export
+stri_detect_fixed_in_collapsed <- function(x, patterns, sep){
+# Assert
+    assert_is_character(x)
+    assert_is_character(patterns)
+    assert_is_a_string(sep)
+# Detect
+    dt <- data.table( x0 = x, x = x)
+    if (!is.null(sep))  dt %<>% uncollapse(x, sep = sep)
+    dt[, detect := x %in% patterns]
+    dt %<>% extract(, .(detect = any(detect)), by = x0)
+    dt <- dt[x, on = 'x0']
+# Return
+    dt$detect
+}
+
+
+#' Map fvalues
+#' @param object   SummarizedExperiment
+#' @param fvalues  uncollapsed string vector
+#' @param from     string (fvar)
+#' @param to       string (svar)
+#' @param sep      collapse separator
+#' @return string vector
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file)
+#' map_fvalues(object, c('A0A2R8Q0N1', 'Q5PQZ7'), from = 'uniprot', to = 'feature_id', sep = ';')
+#' @export
+map_fvalues <- function(object, fvalues = c('A0A2R8Q0N1', 'Q5PQZ7'), from = 'uniprot', to = 'feature_id', sep = ';'){
+# Assert 
+    assert_is_valid_sumexp(object)
+    assert_is_character(fvalues)
+    assert_scalar_subset(from, fvars(object))
+    assert_scalar_subset(to,   fvars(object))
+# Map
+    x <- fdt(object)[[from]]
+    idx <- stri_detect_fixed_in_collapsed(x, fvalues, sep )
+    y <- fdt(object)[[to ]][idx]
+# Return
+    y
+}
+
+
+
+
+
+
