@@ -720,19 +720,36 @@ facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)
 #'     plot_exprs(object, block = 'SUB')
 #'     plot_exprs(object, block = 'SUB', coef = 't2')
 #'     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
+#' # Points
+#'     plot_exprs(object, geom = 'point', block = 'SUB')
 #' @export
 plot_exprs <- function(
-    object, dim = 'both', assay = assayNames(object)[1], 
-    x  = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
-    fill = x, color = NULL, block = NULL, highlight = NULL, 
-    fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fdr = 1, n = 4,
-    facet = if (dim=='both')  facets(object, fit = fit, coefs = coef) else NULL,
-    nrow = NULL, ncol = NULL,  scales = 'free_y', page = 1, labeller = 'label_value', 
-    pointsize = if (is.null(block)) 0 else 0.5, jitter = if (is.null(block)) 0.1 else 0,
-    fillpalette  = make_var_palette(object, fill), colorpalette = make_var_palette(object, color),
-    hlevels = NULL, 
-    title = switch(dim, both = coef, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
-    xlab = NULL, ylab = 'value', theme = ggplot2::theme(plot.title = element_text(hjust = 0.5))
+    object, 
+    dim         = 'both', 
+    assay       = assayNames(object)[1], 
+    geom        = 'boxplot',
+    x           = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
+    color       = switch(geom, boxplot = NULL, point = x),
+    fill        = switch(geom, boxplot = x,    point = NULL),
+    block       = NULL, 
+    highlight   = NULL, 
+    fit         = fits(object)[1], 
+    coef        = default_coefs(object, fit = fit)[1], 
+    fdr         = 1, 
+    n           = 4,
+    facet       = if (dim=='both')  facets(object, fit = fit, coefs = coef) else NULL,
+    nrow        = NULL, 
+    ncol        = NULL,  
+    scales      = 'free_y', 
+    page        = 1, 
+    labeller    = 'label_value', 
+    pointsize   = if (is.null(block)) 0 else 0.5, jitter = if (is.null(block)) 0.1 else 0,
+    fillpalette = make_var_palette(object, fill), colorpalette = make_var_palette(object, color),
+    hlevels     = NULL, 
+    title       = switch(dim, both = coef, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
+    xlab        = NULL, 
+    ylab        = 'value', 
+    theme       = ggplot2::theme(plot.title = element_text(hjust = 0.5))
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -780,13 +797,20 @@ plot_exprs <- function(
         facet %<>% stri_replace_first_fixed(facetvar, make.names(facetvar))
     } # otherwise facet_wrap_paginate thinks `fdr~coef~limma` is a formula
 # Plot
-    p <- ggplot(dt)
-    if (!is.null(facet)) p <- p + facet_wrap_paginate(
-        facets = facet, scales = scales, nrow = nrow, ncol = ncol, 
-        page = page, labeller = labeller)
-    outlier.shape <- if (pointsize==0) NA else 19
-    p <- p + geom_boxplot(aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym), 
-                          outlier.shape = outlier.shape, na.rm = TRUE)
+    p <- ggplot(dt) + theme_bw()
+    if (!is.null(facet)){
+        p <- p + facet_wrap_paginate(facets = facet, scales = scales, nrow = nrow, ncol = ncol, page = page, labeller = labeller)
+    }
+    if (geom == 'boxplot'){
+        outlier.shape <- if (pointsize==0) NA else 19
+        p <- p + geom_boxplot(aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym), outlier.shape = outlier.shape, na.rm = TRUE)
+        if (pointsize>0){
+            p <- p + geom_jitter(aes(x = !!xsym, y = value),
+                    position = position_jitter(width = jitter, height = 0), size = pointsize, na.rm = TRUE)
+        }
+    } else {
+        p <- p + geom_point(  aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym), na.rm = TRUE)
+    }
     p <- add_color_scale(p, color, data = dt, palette = colorpalette)
     p <- add_fill_scale( p, fill,  data = dt, palette = fillpalette)
 # Connect blocks
@@ -797,11 +821,7 @@ plot_exprs <- function(
         p <- p + geom_line(aes(x = !!xsym, y = value, color = !!xsym, group = !!blocksym), na.rm = TRUE) # color = direction
         p <- add_color_scale(p, x, data = dt, palette = fillpalette)    # 'direction'
     }
-# Add jittered points
-    if (pointsize>0){
-        p <- p + geom_jitter(aes(x = !!xsym, y = value),
-                position = position_jitter(width = jitter, height = 0), size = pointsize, na.rm = TRUE)
-    }
+# Add highlighted points
     p %<>% add_highlights(x = x, hl = highlight, geom = geom_point, fixed_color = "darkred")
 # Add hline
     if (!is.null(hlevels)){

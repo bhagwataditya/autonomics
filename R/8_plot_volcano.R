@@ -391,7 +391,6 @@ plot_volcano <- function(
 #' x <- fdt(object)$uniprot
 #' patterns <- c('A0A2R8Q0N1', 'Q5PQZ7')
 #' stri_detect_fixed_in_collapsed(x = x, patterns = patterns, sep = ';')
-#' fdt(object)[stri_detect_fixed_set(x, patternset)]
 #' @export
 stri_detect_fixed_in_collapsed <- function(x, patterns, sep){
 # Assert

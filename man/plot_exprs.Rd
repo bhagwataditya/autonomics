@@ -15,9 +15,10 @@ plot_exprs(
   object,
   dim = "both",
   assay = assayNames(object)[1],
+  geom = "boxplot",
   x = switch(dim, both = "subgroup", features = "feature_id", samples = "sample_id"),
-  fill = x,
-  color = NULL,
+  color = switch(geom, boxplot = NULL, point = x),
+  fill = switch(geom, boxplot = x, point = NULL),
   block = NULL,
   highlight = NULL,
   fit = fits(object)[1],
@@ -138,6 +139,8 @@ Plot exprs
     plot_exprs(object, block = 'SUB')
     plot_exprs(object, block = 'SUB', coef = 't2')
     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
+# Points
+    plot_exprs(object, geom = 'point', block = 'SUB')
 }
 \seealso{
 \code{\link{plot_sample_densities}},
