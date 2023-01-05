@@ -675,106 +675,13 @@ facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)
     y
 }
 
-#' Plot exprs
-#' @param object       SummarizedExperiment
-#' @param assay        string
-#' @param x            svar (string)
-#' @param fill         svar (string)
-#' @param highlight    fvar expressing which feature should be highlighted (string)
-#' @param block        svar on which points are connected (string)
-#' @param fit         'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param coef         string
-#' @param label        label fvar
-#' @param facet        fvars on which to facet
-#' @param fdrcutoff    number
-#' @param pointsize    number
-#' @param jitter       jitter width (number)
-#' @param palette      color palette (named character vector)
-#' @param title        string
-#' @param ylab         string
-#' @param nrow         number
-#' @param ncol         number
-#' @param page         number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}
-#' @param n            number
-#' @param labeller     string or function
-#' @param scales      'free', 'free_x', 'free_y', 'fixed'
-#' @param theme        ggplot2::theme(...) or NULL
-#' @param hlevels    xlevels for which to plot horizontal lines
-#' @return ggplot object
-#' @seealso \code{\link{plot_sample_densities}},
-#'          \code{\link{plot_sample_violins}}
-#' @examples 
-#' # Read
-#'     require(magrittr)
-#'     file <- download_data('atkin18.metabolon.xlsx')
-#'     object <- read_metabolon(file)
-#'     controlfeatures <- c('biotin','phosphate')
-#'     fdt(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
-#' # Plot
-#'     plot_exprs(object)
-#'     plot_exprs(object, block = 'SUB')
-#'     plot_exprs(object, dim = 'samples', highlight = 'control')
-#'     plot_exprs(object, dim = 'features', block = 'sample_id')
-#' # Limma 
-#'     object %<>% fit_limma()
-#'     plot_exprs(object, block = 'SUB')
-#'     plot_exprs(object, block = 'SUB', coef = 't2')
-#'     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
-#' # Points
-#'     plot_exprs(object, geom = 'point', block = 'SUB')
-#' @export
-plot_exprs <- function(
-    object, 
-    dim         = 'both', 
-    assay       = assayNames(object)[1], 
-    geom        = 'boxplot',
-    x           = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
-    color       = switch(geom, boxplot = NULL, point = x),
-    fill        = switch(geom, boxplot = x,    point = NULL),
-    block       = NULL, 
-    highlight   = NULL, 
-    fit         = fits(object)[1], 
-    coef        = default_coefs(object, fit = fit)[1], 
-    fdr         = 1, 
-    n           = 4,
-    facet       = if (dim=='both')  facets(object, fit = fit, coefs = coef) else NULL,
-    nrow        = NULL, 
-    ncol        = NULL,  
-    scales      = 'free_y', 
-    page        = 1, 
-    labeller    = 'label_value', 
-    pointsize   = if (is.null(block)) 0 else 0.5, jitter = if (is.null(block)) 0.1 else 0,
-    fillpalette = make_var_palette(object, fill), colorpalette = make_var_palette(object, color),
-    hlevels     = NULL, 
-    title       = switch(dim, both = coef, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
-    xlab        = NULL, 
-    ylab        = 'value', 
-    theme       = ggplot2::theme(plot.title = element_text(hjust = 0.5))
+
+.plot_exprs <- function(
+    object, assay, geom, x, fill, color, block, highlight, 
+    facet, scales, nrow, ncol, page, labeller, 
+    pointsize, jitter, colorpalette, fillpalette, hlevels, 
+    title, xlab, ylab, theme
 ){
-# Assert
-    assert_is_valid_sumexp(object)
-    if (nrow(object)==0)      return(ggplot())
-    assert_scalar_subset(assay, assayNames(object))
-                              assert_scalar_subset(x,         c(svars(object), fvars(object)))
-    if (!is.null(fill))       assert_scalar_subset(fill,      c(svars(object), fvars(object)))
-    if (!is.null(color))      assert_scalar_subset(color,     c(svars(object), fvars(object)))
-    if (!is.null(block))      assert_scalar_subset(block,     c(svars(object), fvars(object)))
-    if (!is.null(facet))      assert_is_subset(facet,         c(svars(object), fvars(object)))
-    if (!is.null(highlight))  assert_scalar_subset(highlight, c(svars(object), fvars(object)))
-    if (!is.null(nrow))       assert_is_a_number(nrow)
-    if (!is.null(ncol))       assert_is_a_number(ncol)
-    if (!is.null(facet))      assert_is_subset(scales, c('fixed', 'free', 'free_x', 'free_y'))
-# Extract
-    if        (dim == 'samples' ){   object %<>% extract_samples_evenly(n)
-    } else if (dim == 'features'){   object %<>% extract_features_evenly(n)
-    } else if (dim == 'both'){  
-        if (is.null(coef)){          object %<>% extract_features_evenly(n) 
-        } else {                     object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdr, n = n)
-                                     idx <- order(as.numeric(fdt(object)[[pvar(object, coef, fit)]]))   # order on significance
-                                     object %<>% extract(idx, )
-                                     object %<>% format_coef_vars(coef = coef, fit = fit) 
-        }
-    }
 # Prepare
     xsym     <- sym(x)
     fillsym  <- if (is.null(fill))   quo(NULL) else  sym(fill)
@@ -842,6 +749,137 @@ plot_exprs <- function(
     p <- p + xlab(xlab) + ylab(ylab) + ggtitle(title)
     p
 }
+
+#' Plot exprs
+#' @param object       SummarizedExperiment
+#' @param assay        string
+#' @param x            svar (string)
+#' @param fill         svar (string)
+#' @param highlight    fvar expressing which feature should be highlighted (string)
+#' @param block        svar on which points are connected (string)
+#' @param fit         'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
+#' @param coef         string
+#' @param label        label fvar
+#' @param facet        fvars on which to facet
+#' @param fdrcutoff    number
+#' @param pointsize    number
+#' @param jitter       jitter width (number)
+#' @param palette      color palette (named character vector)
+#' @param title        string
+#' @param ylab         string
+#' @param nrow         number
+#' @param ncol         number
+#' @param n            number
+#' @param labeller     string or function
+#' @param scales      'free', 'free_x', 'free_y', 'fixed'
+#' @param theme        ggplot2::theme(...) or NULL
+#' @param hlevels    xlevels for which to plot horizontal lines
+#' @return ggplot object
+#' @seealso \code{\link{plot_sample_densities}},
+#'          \code{\link{plot_sample_violins}}
+#' @examples 
+#' # Read
+#'     require(magrittr)
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     controlfeatures <- c('biotin','phosphate')
+#'     fdt(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
+#' # Plot
+#'     plot_exprs(object)
+#'     plot_exprs(object, block = 'SUB')
+#'     plot_exprs(object, dim = 'samples', highlight = 'control')
+#'     plot_exprs(object, dim = 'features', block = 'sample_id')
+#' # Limma 
+#'     object %<>% fit_limma()
+#'     plot_exprs(object, block = 'SUB')
+#'     plot_exprs(object, block = 'SUB', coef = 't2')
+#'     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
+#' # Points
+#'     plot_exprs(object, geom = 'point', block = 'SUB')
+#' # Multiple pages
+#'     plot_exprs(object, block = 'SUB', n = 4, nrow = 1, ncol = 2)
+#' @export
+plot_exprs <- function(
+    object, 
+    dim          = 'both', 
+    assay        = assayNames(object)[1], 
+    geom         = 'boxplot',
+    x            = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
+    color        = switch(geom, boxplot = NULL, point = x),
+    fill         = switch(geom, boxplot = x,    point = NULL),
+    block        = NULL, 
+    highlight    = NULL, 
+    fit          = fits(object)[1], 
+    coef         = default_coefs(object, fit = fit)[1], 
+    fdr          = 1, 
+    facet        = if (dim=='both')  facets(object, fit = fit, coefs = coef) else NULL,
+    n            = 4,
+    ncol         = ceiling(sqrt(n)), 
+    nrow         = ceiling(n/ncol),   # https://stackoverflow.com/a/60110740
+    scales       = 'free_y', 
+    labeller     = 'label_value', 
+    pointsize    = if (is.null(block)) 0 else 0.5, 
+    jitter       = if (is.null(block)) 0.1 else 0,
+    fillpalette  = make_var_palette(object, fill), 
+    colorpalette = make_var_palette(object, color),
+    hlevels      = NULL, 
+    title        = switch(dim, both = coef, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
+    xlab         = NULL, 
+    ylab         = 'value', 
+    theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
+    file         = NULL, 
+    width        = 7, 
+    height       = 7
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    if (nrow(object)==0)      return(ggplot())
+    assert_scalar_subset(assay, assayNames(object))
+                              assert_scalar_subset(x,         c(svars(object), fvars(object)))
+    if (!is.null(fill))       assert_scalar_subset(fill,      c(svars(object), fvars(object)))
+    if (!is.null(color))      assert_scalar_subset(color,     c(svars(object), fvars(object)))
+    if (!is.null(block))      assert_scalar_subset(block,     c(svars(object), fvars(object)))
+    if (!is.null(facet))      assert_is_subset(facet,         c(svars(object), fvars(object)))
+    if (!is.null(highlight))  assert_scalar_subset(highlight, c(svars(object), fvars(object)))
+    if (!is.null(nrow))       assert_is_a_number(nrow)
+    if (!is.null(ncol))       assert_is_a_number(ncol)
+    if (!is.null(facet))      assert_is_subset(scales, c('fixed', 'free', 'free_x', 'free_y'))
+# Extract
+    if        (dim == 'samples' ){   object %<>% extract_samples_evenly(n)
+    } else if (dim == 'features'){   object %<>% extract_features_evenly(n)
+    } else if (dim == 'both'){  
+        if (is.null(coef)){          object %<>% extract_features_evenly(n) 
+        } else {                     object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdr, n = n)
+                                     idx <- order(as.numeric(fdt(object)[[pvar(object, coef, fit)]]))   # order on significance
+                                     object %<>% extract(idx, )
+                                     object %<>% format_coef_vars(coef = coef, fit = fit) 
+        }
+    }
+# Plot
+    if (!is.null(file))  pdf(file, wieght = weight, height = height)
+    npages <- if (dim == 'samples' ) 1  else  ceiling(nrow(object) / nrow / ncol)
+    for (i in seq_len(npages)){
+        p <- .plot_exprs(
+            object,
+            assay         = assay,             geom        = geom,
+            x             = x,                 fill        = fill,
+            color         = color,             block       = block,
+            highlight     = highlight,         facet       = facet,     
+            scales        = scales,            nrow        = nrow,
+            ncol          = ncol,              page        = i,
+            labeller      = labeller,          pointsize   = pointsize,  
+            jitter        = jitter, 
+            colorpalette  = colorpalette,      fillpalette = fillpalette, 
+            hlevels       = hlevels,           title       = title,
+            xlab          = xlab,              ylab        = ylab,
+            theme         = theme
+        )
+        if (i < npages) print(p)  # otherwise last page double printed!
+    }
+    if (!is.null(file))  dev.off()
+    p
+}
+
 
 #' @rdname plot_exprs
 #' @export

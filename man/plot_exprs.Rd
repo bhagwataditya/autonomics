@@ -24,12 +24,11 @@ plot_exprs(
   fit = fits(object)[1],
   coef = default_coefs(object, fit = fit)[1],
   fdr = 1,
-  n = 4,
   facet = if (dim == "both") facets(object, fit = fit, coefs = coef) else NULL,
-  nrow = NULL,
-  ncol = NULL,
+  n = 4,
+  ncol = ceiling(sqrt(n)),
+  nrow = ceiling(n/ncol),
   scales = "free_y",
-  page = 1,
   labeller = "label_value",
   pointsize = if (is.null(block)) 0 else 0.5,
   jitter = if (is.null(block)) 0.1 else 0,
@@ -40,7 +39,10 @@ plot_exprs(
     "Sample Boxplots"),
   xlab = NULL,
   ylab = "value",
-  theme = ggplot2::theme(plot.title = element_text(hjust = 0.5))
+  theme = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
+  file = NULL,
+  width = 7,
+  height = 7
 )
 
 plot_boxplots(...)
@@ -84,17 +86,15 @@ plot_exprs_per_coef(
 
 \item{coef}{string}
 
-\item{n}{number}
-
 \item{facet}{fvars on which to facet}
 
-\item{nrow}{number}
+\item{n}{number}
 
 \item{ncol}{number}
 
-\item{scales}{'free', 'free_x', 'free_y', 'fixed'}
+\item{nrow}{number}
 
-\item{page}{number of facet pages: \code{\link[ggforce]{facet_wrap_paginate}}}
+\item{scales}{'free', 'free_x', 'free_y', 'fixed'}
 
 \item{labeller}{string or function}
 
@@ -141,6 +141,8 @@ Plot exprs
     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
 # Points
     plot_exprs(object, geom = 'point', block = 'SUB')
+# Multiple pages
+    plot_exprs(object, block = 'SUB', nrow = 1, ncol = 2)
 }
 \seealso{
 \code{\link{plot_sample_densities}},
