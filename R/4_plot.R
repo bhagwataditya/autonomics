@@ -842,9 +842,9 @@ plot_exprs <- function(
     if (!is.null(ncol))       assert_is_a_number(ncol)
     if (!is.null(facet))      assert_is_subset(scales, c('fixed', 'free', 'free_x', 'free_y'))
 # Extract
-    if        (dim == 'samples' ){   object %<>% extract_samples_evenly(n)
-    } else if (dim == 'features'){   object %<>% extract_features_evenly(n)
-    } else if (dim == 'both'){  
+    if        (dim == 'samples' ){   n %<>% min(ncol(object));  object %<>% extract_samples_evenly(n)
+    } else if (dim == 'features'){   n %<>% min(nrow(object));  object %<>% extract_features_evenly(n)
+    } else if (dim == 'both'){       n %<>% min(nrow(object)); 
         if (is.null(coef)){          object %<>% extract_features_evenly(n) 
         } else {                     object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdr, n = n)
                                      idx <- order(as.numeric(fdt(object)[[pvar(object, coef, fit)]]))   # order on significance
