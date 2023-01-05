@@ -39,10 +39,7 @@ plot_exprs(
     "Sample Boxplots"),
   xlab = NULL,
   ylab = "value",
-  theme = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
-  file = NULL,
-  width = 7,
-  height = 7
+  theme = ggplot2::theme(plot.title = element_text(hjust = 0.5))
 )
 
 plot_boxplots(...)
@@ -142,7 +139,7 @@ Plot exprs
 # Points
     plot_exprs(object, geom = 'point', block = 'SUB')
 # Multiple pages
-    plot_exprs(object, block = 'SUB', nrow = 1, ncol = 2)
+    plot_exprs(object, block = 'SUB', n = 4, nrow = 1, ncol = 2)
 }
 \seealso{
 \code{\link{plot_sample_densities}},

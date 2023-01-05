@@ -826,10 +826,7 @@ plot_exprs <- function(
     title        = switch(dim, both = coef, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
     xlab         = NULL, 
     ylab         = 'value', 
-    theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
-    file         = NULL, 
-    width        = 7, 
-    height       = 7
+    theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5))
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -856,7 +853,6 @@ plot_exprs <- function(
         }
     }
 # Plot
-    if (!is.null(file))  pdf(file, wieght = weight, height = height)
     npages <- if (dim == 'samples' ) 1  else  ceiling(nrow(object) / nrow / ncol)
     for (i in seq_len(npages)){
         p <- .plot_exprs(
@@ -876,7 +872,6 @@ plot_exprs <- function(
         )
         if (i < npages) print(p)  # otherwise last page double printed!
     }
-    if (!is.null(file))  dev.off()
     p
 }
 
