@@ -814,8 +814,8 @@ plot_exprs <- function(
     fdr          = 1, 
     facet        = if (dim=='both')  facets(object, fit = fit, coefs = coef) else NULL,
     n            = 4,
-    ncol         = ceiling(sqrt(n)), 
-    nrow         = ceiling(n/ncol),   # https://stackoverflow.com/a/60110740
+    ncol         = NULL,
+    nrow         = NULL,
     scales       = 'free_y', 
     labeller     = 'label_value', 
     pointsize    = if (is.null(block)) 0 else 0.5, 
@@ -853,6 +853,8 @@ plot_exprs <- function(
         }
     }
 # Plot
+    if (is.null(ncol))  ncol <- ceiling(sqrt(n))
+    if (is.null(nrow))  nrow <- ceiling(n/ncol )   # https://stackoverflow.com/a/60110740
     npages <- if (dim == 'samples' ) 1  else  ceiling(nrow(object) / nrow / ncol)
     for (i in seq_len(npages)){
         p <- .plot_exprs(
