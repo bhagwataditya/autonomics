@@ -274,8 +274,8 @@ make_volcano_dt <- function(
 #' object %<>% fit_limma()
 #' plot_volcano(object)
 #' plot_volcano(object, label = 'gene')
-#' plot_volcano(object, label = 'gene', size = 'log2.LFQ.intensity')
-#' plot_volcano(object, label = 'gene', size = 'log2.LFQ.intensity', alpha = 'mean.pepcounts')
+#' plot_volcano(object, label = 'gene', size = 'mean.log2.LFQ.intensity')
+#' plot_volcano(object, label = 'gene', size = 'mean.log2.LFQ.intensity', alpha = 'mean.pepcounts')
 #' plot_volcano(object, label = 'gene', features = c('hmbsb'))
 #' object %<>% fit_lm()
 #'

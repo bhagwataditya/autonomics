@@ -4,6 +4,7 @@
 \alias{p}
 \alias{pvar}
 \alias{effect}
+\alias{effectsize}
 \alias{effectvar}
 \alias{fdr}
 \alias{fdrvar}
@@ -16,6 +17,8 @@ p(object, coefs = autonomics::coefs(object), fit = fits(object))
 pvar(object, coefs = autonomics::coefs(object), fit = fits(object))
 
 effect(object, coefs = autonomics::coefs(object), fit = fits(object))
+
+effectsize(object, coefs = autonomics::coefs(object), fit = fits(object))
 
 effectvar(object, coefs = autonomics::coefs(object), fit = fits(object))
 

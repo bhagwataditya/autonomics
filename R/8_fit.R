@@ -382,6 +382,14 @@ effect <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
 
 #' @rdname p
 #' @export
+effectsize <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    abs(effect(object, coefs = coefs, fit = fit))
+}
+
+
+
+#' @rdname p
+#' @export
 effectvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'effect', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)

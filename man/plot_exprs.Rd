@@ -22,9 +22,10 @@ plot_exprs(
   block = NULL,
   highlight = NULL,
   fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  coefs = default_coefs(object, fit = fit)[1],
+  p = 1,
   fdr = 1,
-  facet = if (dim == "both") facets(object, fit = fit, coefs = coef) else NULL,
+  facet = if (dim == "both") facets(object, fit = fit, coefs = coefs) else NULL,
   n = 4,
   ncol = NULL,
   nrow = NULL,
@@ -35,7 +36,7 @@ plot_exprs(
   fillpalette = make_var_palette(object, fill),
   colorpalette = make_var_palette(object, color),
   hlevels = NULL,
-  title = switch(dim, both = coef, features = "Feature Boxplots", samples =
+  title = switch(dim, both = coefs, features = "Feature Boxplots", samples =
     "Sample Boxplots"),
   xlab = NULL,
   ylab = "value",
@@ -69,29 +70,37 @@ plot_exprs_per_coef(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{assay}{string}
+\item{dim}{'samples'   (per-sample distribution across features), \cr
+'features' (per-feature distribution across samples ) or 
+'both'        (subgroup distribution faceted per feature)}
 
-\item{x}{svar (string)}
+\item{assay}{string: value in assayNames(object)}
 
-\item{fill}{svar (string)}
+\item{x}{string: svar mapped to x}
 
-\item{block}{svar on which points are connected (string)}
+\item{fill}{string: svar mapped to fill}
 
-\item{highlight}{fvar expressing which feature should be highlighted (string)}
+\item{block}{string: blocking svar (to connect points)}
+
+\item{highlight}{string: svar mapped to highlights}
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
-\item{coef}{string}
+\item{coefs}{subset of coefs(object) to consider in selecting top}
 
-\item{facet}{fvars on which to facet}
+\item{p}{fraction: p   cutoff}
 
-\item{n}{number}
+\item{fdr}{fraction: fdr cutoff}
 
-\item{ncol}{number}
+\item{facet}{string: fvar mapped to facet}
 
-\item{nrow}{number}
+\item{n}{number of samples (dim = 'samples') or features (dim = 'features' or 'both') to plot}
 
-\item{scales}{'free', 'free_x', 'free_y', 'fixed'}
+\item{ncol}{number of cols in faceted plot (if dim = 'both')}
+
+\item{nrow}{number of rows in faceted plot (if dim = 'both)}
+
+\item{scales}{'free_y', 'free'x', 'fixed'}
 
 \item{labeller}{string or function}
 
@@ -99,19 +108,19 @@ plot_exprs_per_coef(
 
 \item{jitter}{jitter width (number)}
 
-\item{hlevels}{xlevels for which to plot horizontal lines}
+\item{fillpalette}{named character vector: fill palette}
+
+\item{colorpalette}{named character vector: color palette}
+
+\item{hlevels}{xlevels for which to plot hlines}
 
 \item{title}{string}
+
+\item{xlab}{string}
 
 \item{ylab}{string}
 
 \item{theme}{ggplot2::theme(...) or NULL}
-
-\item{label}{label fvar}
-
-\item{fdrcutoff}{number}
-
-\item{palette}{color palette (named character vector)}
 }
 \value{
 ggplot object

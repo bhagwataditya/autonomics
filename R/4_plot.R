@@ -585,96 +585,232 @@ plot_subgroup_violins <- function(
 
 #==============================================================================
 #
-#                   plot_exprs
-#                   plot_exprs_per_coef
+#               extract_coef_features
+#                   .extract_p_features
+#                   .extract_fdr_features
+#                   .extract_effectsize_features
+#                       ..extract_statistic_features
+#                   .extract_sign_features
+#                   .extract_n_features
 #
 #==============================================================================
 
-#' Extract top features
-#' @param object      SummarizedXExperiment
-#' @param fit         'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
-#' @param coef        string
-#' @param effectsize  effectsize threshold
-#' @param p           p threshold
-#' @param fdr         fdr threshold
-#' @param sign        effect sign
-#' @param n           number of top features (Inf means all)
-#' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, fit = 'limma')
-#' nrow(object)                                              # 6679 features
-#' nrow(extract_top_features(object,   p = 1))               # 3927   p != NA
-#' nrow(extract_top_features(object,   p = 0.05))            # 1984   p < 0.05 
-#' nrow(extract_top_features(object, fdr = 0.05))            # 1615 fdr < 0.05 
-#' nrow(extract_top_features(object, fdr = 0.05, sign = +1)) #  635 fdr < 0.05, upregulated
-#' @export
-extract_top_features <- function(
-    object, 
-    fit         = fits(object)[1], 
-    coef        = default_coefs(object, fit = fit)[1],
-    effectsize  = 0,
-    p           = 1,
-    fdr         = 1,
-    sign        = c(-1,+1),
-    n           = Inf
+
+cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
+
+..extract_statistic_features <- function(
+    object, coefs, statistic, comparer, threshold, 
+    fit = fits(object)[1], combiner = '|', verbose  = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    if (is.null(fit))  return(object)
-    if (is.null(coef)) return(object)
-    assert_scalar_subset(fit,  fits(object))
-    assert_scalar_subset(coef, coefs(object, fit = fit))
-    assert_weakly_positive_number(effectsize)
+    if (is.null(fit))   return(object)
+    if (is.null(coefs)) return(object)
+    assert_scalar_subset(statistic, c('p', 'fdr', 'effect', 'effectsize'))
+    assert_scalar_subset(comparer,  c('<', '>', '=='))
+    assert_is_a_number(threshold)
+    assert_is_subset(fit, fits(object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_scalar_subset(combiner, c('|', '&'))
+    assert_is_a_bool(verbose)
+# Filter
+    fun <- getFromNamespace(statistic, 'autonomics')
+    x <- fun(object, fit = fit, coefs = coefs)
+    idx <- get(comparer)(x, threshold)
+    idx[is.na(idx)] <- FALSE
+    fun <- function(y) Reduce(get(combiner), y)
+    idx %<>% apply(1, fun)
+    idx %<>% unname()
+# Return
+    n0 <- length(idx)
+    n1 <- sum(idx, na.rm = TRUE)
+    if (verbose & n1<n0){
+        cmessage('\t\t\tRetain %d/%d features: %s(%s) %s %s', 
+                n1, n0, statistic, paste0(coefs, collapse = combiner), 
+                comparer, as.character(threshold))  
+    }
+    object[idx, ]
+}
+
+#' @rdname extract_coef_features
+#' @export
+.extract_p_features <- function(
+    object, coefs, p = 0.05, fit = fits(object), combiner = '|',  verbose = TRUE
+){
     assert_is_fraction(p)
+    ..extract_statistic_features(
+        object    = object,        coefs     = coefs,
+        statistic = 'p',           comparer  = '<',   
+        threshold = p,             fit       = fit,
+        combiner  = combiner,      verbose   = verbose )
+}
+
+#' @rdname extract_coef_features
+#' @export
+.extract_fdr_features <- function(
+    object, coefs, fdr = 0.05, fit = fits(object), combiner = '|',  verbose = TRUE
+){
     assert_is_fraction(fdr)
-    if (!is.null(sign))  assert_is_subset(sign, c(-1, +1))
+    ..extract_statistic_features(
+        object    = object,        coefs     = coefs,
+        statistic = 'fdr',         comparer  = '<',
+        threshold = fdr,           fit       = fit,
+        combiner  = combiner,      verbose   = verbose )
+}
+
+
+#' @rdname extract_coef_features
+#' @export
+.extract_effectsize_features <- function(
+    object, coefs, effectsize = 1, fit = fits(object), combiner = '|',  verbose = TRUE
+){
+    assert_weakly_positive_number(effectsize)
+    ..extract_statistic_features(
+        object    = object,        coefs     = coefs, 
+        statistic = 'effectsize',  comparer  = '>',
+        threshold = effectsize,    fit       = fit,
+        combiner  = combiner,      verbose   = verbose )
+}
+
+#' @rdname extract_coef_features
+#' @export
+.extract_sign_features <- function(
+    object, 
+    coefs, 
+    sign, 
+    fit      = fits(object)[1], 
+    combiner = '|',
+    verbose  = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_is_subset(sign, c(-1, +1))
+# Filter
+    x <- autonomics::effect(object, fit = fit, coefs = coefs)
+    idx <- unname(apply(sign(x), 1, function(y)  Reduce(get(combiner), sign(y) %in% sign) ))
+# Return
+    n0 <- length(idx)
+    n1 <- sum(idx, na.rm = TRUE)
+    if (verbose & n1<n0){
+        cmessage('\t\t\tRetain %d/%d features: sign(%s) %%in%% c(%s)', 
+            n1, n0, paste0(coefs, collapse = combiner), paste0(sign,  collapse = ','))
+    }
+    object[idx, ]
+}
+
+
+order_on_p <- function(object, coefs, fit = fits(object)[1]){
+    x <- autonomics::p(object, fit = fit, coefs = coefs)
+    idx <- order(matrixStats::rowMins(x))
+    object[idx, ]
+}
+
+#' @rdname extract_coef_features
+#' @export
+.extract_n_features <- function(object, coefs, n, fit = fits(object)[1], verbose = TRUE){
+# Assert
+    assert_is_valid_sumexp(object)
     assert_positive_number(n)
-# Filter for available pvalues
-    pvar0 <- pvar(object, fit = fit, coefs = coef)
-    idx <- !is.na(fdt(object)[[pvar0]])
-    object %<>% extract(idx, )
-# Filter for sign & effectsize
-    x <- autonomics::effect(object, fit = fit, coef = coef)[, 1]
-    idx <-  (sign(x ) %in% sign) &  (abs(x)  > effectsize)
-    object %<>% extract(idx, )  
-# Order on p
-    idx <- order(fdt(object)[[pvar0]])
-    object %<>% extract(idx, )
-# Filter on significance
-    pvalues      <- autonomics::p(  object, fit = fit, coef = coef)[, 1]
-    fdrvalues    <- autonomics::fdr(object, fit = fit, coef = coef)[, 1]
-    idx <- (pvalues  < p)  &  (fdrvalues  < fdr)
-    object %<>% extract(idx, )
-# Filter on n
+# Filter
+    object %<>% order_on_p(coefs = coefs, fit = fit)
     n %<>% min(nrow(object))
-    object %<>% extract(1:n, )
+    idx <- c(rep(TRUE, n), rep(FALSE, nrow(object)-n))
+    n0 <- length(idx)
+    n1 <- sum(idx, na.rm = TRUE)
+    if (verbose & n1<n0){
+        cmessage('\t\t\tRetain %d/%d features: p(%s) is in smallest %d', 
+                 n1, n0, paste0(coefs, collapse = '|'), n)
+    }
+# Return
+    object[idx, ]
+}
+
+
+#' Extract coefficient features
+#' @param object      SummarizedXExperiment
+#' @param fit         subset of fits(object)
+#' @param coefs       subset of coefs(object)
+#' @param combiner    '|' or '&': how to combine multiple fits/coefs
+#' @param p           p threshold
+#' @param fdr         fdr threshold
+#' @param effectsize  effectsize threshold
+#' @param sign        effect sign
+#' @param n           number of top features (Inf means all)
+#' @param verbose     TRUE or FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' # Read and Fit
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     object %<>% fit_limma()
+#' # Single coef
+#'     object0 <- object
+#'     object %<>% .extract_p_features(         coefs = 't1', p = 0.05)
+#'     object %<>% .extract_fdr_features(       coefs = 't1', fdr = 0.05)
+#'     object %<>% .extract_effectsize_features(coefs = 't1', effectsize = 1)
+#'     object %<>% .extract_sign_features(      coefs = 't1', sign = -1)
+#'     object %<>% .extract_n_features(         coefs = 't1', n = 4)
+#'     object <- object0
+#'     object %<>%  extract_coef_features(
+#'         coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+#' # Multiple coefs
+#'     object <- object0
+#'     object %<>% .extract_p_features(         coefs = c('t1', 't2'), p = 0.05)
+#'     object %<>% .extract_fdr_features(       coefs = c('t1', 't2'), fdr = 0.05)
+#'     object %<>% .extract_effectsize_features(coefs = c('t1', 't2'), effectsize = 1)
+#'     object %<>% .extract_sign_features(      coefs = c('t1', 't2'), sign = -1)
+#'     object %<>% .extract_n_features(         coefs = c('t1', 't2'), n = 4)
+#'     object <- object0
+#'     object %<>%  extract_coef_features(
+#'         coefs = c('t1', 't2'), p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+#' @export
+extract_coef_features <- function(
+    object, 
+    coefs,
+    fit         = fits(object)[1], 
+    combiner    = '|',
+    p           = 1, 
+    fdr         = 1, 
+    effectsize  = 0, 
+    sign        = c(-1,+1), 
+    n           = 4,
+    verbose     = TRUE
+){
+# Assert
+# Filter
+    object %<>% .extract_p_features(         coefs = coefs, p = p,                   fit = fit, combiner = combiner, verbose = verbose)
+    object %<>% .extract_fdr_features(       coefs = coefs, fdr = fdr,               fit = fit, combiner = combiner, verbose = verbose)
+    object %<>% .extract_effectsize_features(coefs = coefs, effectsize = effectsize, fit = fit, combiner = combiner, verbose = verbose)
+    object %<>% .extract_sign_features(      coefs = coefs, sign = sign,             fit = fit, combiner = combiner, verbose = verbose)
+    object %<>% .extract_n_features(         coefs = coefs, n = n,                   fit = fit,                      verbose = verbose)
 # Return
     object
 }
 
+
 format_coef_vars <- function(
-    object, coef = setdiff(coefs(object), 'Intercept')[1], fit = fits(object)[1]
+    object, coefs = setdiff(coefs(object), 'Intercept')[1], fit = fits(object)[1]
 ){
-    effectvars <- effectvar(object, coefs = coef, fit = fit)
-    pvars      <- pvar(     object, coefs = coef, fit = fit)
-    fdrvars    <- fdrvar(   object, coefs = coef, fit = fit)
+    effectvars <- effectvar(object, coefs = coefs, fit = fit)
+    pvars      <- pvar(     object, coefs = coefs, fit = fit)
+    fdrvars    <- fdrvar(   object, coefs = coefs, fit = fit)
     for (var in c(effectvars, pvars, fdrvars)){
         fdt(object)[[var]] %<>% formatC(format='e', digits=0)
         fdt(object)[[var]] %<>% as.character()
-        fdt(object)[[var]] %<>% paste0(split_extract_fixed(var, FITSEP, 1), ': ', .)
+        fdt(object)[[var]] %<>% paste0(split_extract_fixed(var, FITSEP, 2), ' : ',  
+                                       split_extract_fixed(var, FITSEP, 1), ' = ', .)
     }
     object
 }
 
-facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)){
-    y <- 'feature_id'
-    if (!is.null(coefs(object))){
-        y %<>% c(pvar(  object, fit = fit, coefs = coefs))
-        y %<>% c(fdrvar(object, fit = fit, coefs = coefs))
-    }
-    y
-}
 
+#==============================================================================
+#
+#               plot_exprs_per_coef
+#                   plot_exprs
+#                       .plot_exprs
+#
+#==============================================================================
 
 .plot_exprs <- function(
     object, assay, geom, x, fill, color, block, highlight, 
@@ -750,30 +886,45 @@ facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)
     p
 }
 
+
+facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)){
+    y <- 'feature_id'
+    if (!is.null(coefs(object))){
+        y %<>% c(pvar(  object, fit = fit, coefs = coefs))
+        y %<>% c(fdrvar(object, fit = fit, coefs = coefs))
+    }
+    y
+}
+
 #' Plot exprs
-#' @param object       SummarizedExperiment
-#' @param assay        string
-#' @param x            svar (string)
-#' @param fill         svar (string)
-#' @param highlight    fvar expressing which feature should be highlighted (string)
-#' @param block        svar on which points are connected (string)
-#' @param fit         'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param coef         string
-#' @param label        label fvar
-#' @param facet        fvars on which to facet
-#' @param fdrcutoff    number
-#' @param pointsize    number
-#' @param jitter       jitter width (number)
-#' @param palette      color palette (named character vector)
-#' @param title        string
-#' @param ylab         string
-#' @param nrow         number
-#' @param ncol         number
-#' @param n            number
-#' @param labeller     string or function
-#' @param scales      'free', 'free_x', 'free_y', 'fixed'
-#' @param theme        ggplot2::theme(...) or NULL
-#' @param hlevels    xlevels for which to plot horizontal lines
+#' @param object        SummarizedExperiment
+#' @param dim          'samples'   (per-sample distribution across features), \cr
+#'                     'features' (per-feature distribution across samples ) or 
+#'                     'both'        (subgroup distribution faceted per feature)
+#' @param assay         string: value in assayNames(object)
+#' @param x             string: svar mapped to x
+#' @param fill          string: svar mapped to fill
+#' @param highlight     string: svar mapped to highlights 
+#' @param block         string: blocking svar (to connect points)
+#' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
+#' @param coefs         subset of coefs(object) to consider in selecting top
+#' @param p             fraction: p   cutoff
+#' @param fdr           fraction: fdr cutoff
+#' @param facet         string: fvar mapped to facet
+#' @param n             number of samples (dim = 'samples') or features (dim = 'features' or 'both') to plot
+#' @param nrow          number of rows in faceted plot (if dim = 'both)
+#' @param ncol          number of cols in faceted plot (if dim = 'both')
+#' @param scales        'free_y', 'free'x', 'fixed'
+#' @param labeller      string or function
+#' @param pointsize     number
+#' @param jitter        jitter width (number)
+#' @param fillpalette   named character vector: fill palette
+#' @param colorpalette  named character vector: color palette
+#' @param hlevels       xlevels for which to plot hlines
+#' @param title         string
+#' @param xlab          string
+#' @param ylab          string
+#' @param theme         ggplot2::theme(...) or NULL
 #' @return ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
@@ -810,9 +961,10 @@ plot_exprs <- function(
     block        = NULL, 
     highlight    = NULL, 
     fit          = fits(object)[1], 
-    coef         = default_coefs(object, fit = fit)[1], 
+    coefs         = default_coefs(object, fit = fit)[1], 
+    p            = 1,
     fdr          = 1, 
-    facet        = if (dim=='both')  facets(object, fit = fit, coefs = coef) else NULL,
+    facet        = if (dim=='both')  facets(object, fit = fit, coefs = coefs) else NULL,
     n            = 4,
     ncol         = NULL,
     nrow         = NULL,
@@ -823,7 +975,7 @@ plot_exprs <- function(
     fillpalette  = make_var_palette(object, fill), 
     colorpalette = make_var_palette(object, color),
     hlevels      = NULL, 
-    title        = switch(dim, both = coef, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
+    title        = switch(dim, both = coefs, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
     xlab         = NULL, 
     ylab         = 'value', 
     theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5))
@@ -845,11 +997,9 @@ plot_exprs <- function(
     if        (dim == 'samples' ){   n %<>% min(ncol(object));  object %<>% extract_samples_evenly(n)
     } else if (dim == 'features'){   n %<>% min(nrow(object));  object %<>% extract_features_evenly(n)
     } else if (dim == 'both'){       n %<>% min(nrow(object)); 
-        if (is.null(coef)){          object %<>% extract_features_evenly(n) 
-        } else {                     object %<>% extract_top_features(coef = coef, fit = fit, fdr = fdr, n = n)
-                                     idx <- order(as.numeric(fdt(object)[[pvar(object, coef, fit)]]))   # order on significance
-                                     object %<>% extract(idx, )
-                                     object %<>% format_coef_vars(coef = coef, fit = fit) 
+        if (is.null(coefs)){         object %<>% extract_features_evenly(n) 
+        } else {                     object %<>% extract_coef_features(coefs = coefs, fit = fit, p = p, fdr = fdr, n = n)
+                                     object %<>% format_coef_vars(coefs = coefs, fit = fit) 
         }
     }
 # Plot
@@ -938,7 +1088,7 @@ plot_exprs_per_coef <- function(
     grobs <- mapply(
         plot_exprs, 
         x        = x, 
-        coef     = coefs, 
+        coefs     = coefs, 
         title    = title,
         MoreArgs = list(object = object, block = block, n = 1, theme = theme), 
         SIMPLIFY = FALSE)
@@ -1201,7 +1351,7 @@ plot_top_heatmap <- function(
     assert_is_subset(group,  svars(object))
 # Filter: significant features
     object0 <- object
-    object %<>% extract_top_features(
+    object %<>% extract_coef_features(
         fit = fit, coef = coef, effectsize = effectsize, p = p, fdr = fdr, ntop = ntop)
 # Zscore
     assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
