@@ -536,10 +536,11 @@ summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
     fdt %<>% extract(, c('feature_id', cols), with = FALSE)
     
     longdt <- fdt %>% melt.data.table(id.vars = 'feature_id')
-    longdt[, statistic := split_extract_fixed(variable, FITSEP, 1)]
-    longdt[,      contrast := split_extract_fixed(variable, FITSEP, 2)]
-    longdt[,    fit := split_extract_fixed(variable, FITSEP, 3)]
+    longdt[, statistic := split_extract_fixed(variable, FITSEP, 1) %>% factor(unique(.))]
+    longdt[,  contrast := split_extract_fixed(variable, FITSEP, 2) %>% factor(unique(.))]
+    longdt[,       fit := split_extract_fixed(variable, FITSEP, 3) %>% factor(unique(.))]
     longdt[, variable := NULL]
+    
     
     sumdt <- dcast.data.table(longdt, feature_id + contrast + fit ~ statistic, value.var = 'value')
     sumdt <- sumdt[, .(
