@@ -1022,9 +1022,9 @@ plot_exprs <- function(
             xlab          = xlab,              ylab        = ylab,
             theme         = theme
         )
-        if (i < npages) print(p)  # otherwise last page double printed!
+        print(p)  # otherwise last page double printed!
     }
-    p
+    invisible(p)
 }
 
 
