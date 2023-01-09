@@ -40,7 +40,10 @@ plot_exprs(
     "Sample Boxplots"),
   xlab = NULL,
   ylab = "value",
-  theme = ggplot2::theme(plot.title = element_text(hjust = 0.5))
+  theme = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
+  file = NULL,
+  width = 7,
+  height = 7
 )
 
 plot_boxplots(...)
@@ -121,6 +124,12 @@ plot_exprs_per_coef(
 \item{ylab}{string}
 
 \item{theme}{ggplot2::theme(...) or NULL}
+
+\item{file}{NULL or filepath}
+
+\item{width}{inches}
+
+\item{height}{inches}
 }
 \value{
 ggplot object

@@ -925,6 +925,9 @@ facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)
 #' @param xlab          string
 #' @param ylab          string
 #' @param theme         ggplot2::theme(...) or NULL
+#' @param file          NULL or filepath
+#' @param width         inches
+#' @param height        inches
 #' @return ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
@@ -978,7 +981,10 @@ plot_exprs <- function(
     title        = switch(dim, both = coefs, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
     xlab         = NULL, 
     ylab         = 'value', 
-    theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5))
+    theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)), 
+    file         = NULL,
+    width        = 7, 
+    height       = 7
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -1006,6 +1012,7 @@ plot_exprs <- function(
     if (is.null(ncol))  ncol <- ceiling(sqrt(n))
     if (is.null(nrow))  nrow <- ceiling(n/ncol )   # https://stackoverflow.com/a/60110740
     npages <- if (dim == 'samples' ) 1  else  ceiling(nrow(object) / nrow / ncol)
+    if (!is.null(file))   pdf(file, width = width, height = height)
     for (i in seq_len(npages)){
         p <- .plot_exprs(
             object,
@@ -1022,9 +1029,10 @@ plot_exprs <- function(
             xlab          = xlab,              ylab        = ylab,
             theme         = theme
         )
-        print(p)  # otherwise last page double printed!
+        print(p)
     }
-    invisible(p)
+    if (!is.null(file)){ dev.off(); file  
+    } else {             invisible(p) }
 }
 
 
