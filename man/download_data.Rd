@@ -5,7 +5,7 @@
 \title{Download autonomics example data}
 \usage{
 download_data(
-  filename,
+  filename = NULL,
   localdir = file.path(R_user_dir("autonomics", "cache"), "datasets"),
   verbose = TRUE,
   force = FALSE

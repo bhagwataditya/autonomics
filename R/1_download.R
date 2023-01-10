@@ -85,12 +85,13 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #'     download_data('halama18.metabolon.xlsx')          # metabolon intensities
 #' @export
 download_data <- function(
-    filename,
-    localdir  = file.path(R_user_dir('autonomics', 'cache'), 'datasets'),
-    verbose   = TRUE, 
-    force = FALSE
+    filename = NULL,
+    localdir = file.path(R_user_dir('autonomics', 'cache'), 'datasets'),
+    verbose  = TRUE, 
+    force    = FALSE
 ){
     . <- NULL
+    if (is.null(filename))  return(AUTONOMICS_DATASETS)
     assert_is_subset(filename, AUTONOMICS_DATASETS)
     dir.create(localdir, recursive = TRUE, showWarnings = FALSE)
     filepath <- file.path(localdir, filename)
