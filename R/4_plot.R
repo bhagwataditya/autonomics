@@ -788,8 +788,9 @@ extract_coef_features <- function(
 }
 
 
+
 format_coef_vars <- function(
-    object, coefs = setdiff(coefs(object), 'Intercept')[1], fit = fits(object)[1]
+    object, fit = fits(object)[1], coefs = default_coefs(object, fit = fit)[1]
 ){
     effectvars <- effectvar(object, coefs = coefs, fit = fit)
     pvars      <- pvar(     object, coefs = coefs, fit = fit)
@@ -800,6 +801,38 @@ format_coef_vars <- function(
         fdt(object)[[var]] %<>% paste0(split_extract_fixed(var, FITSEP, 2), ' : ',  
                                        split_extract_fixed(var, FITSEP, 1), ' = ', .)
     }
+    object
+}
+
+#' Add facetvars
+#' @param object  SummarizedExperiment
+#' @param fit     string
+#' @param coefs   string vector
+#' @return  SummarizedExperiment
+#' @examples
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' fdt(object)
+#' fdt(add_facetvars(object))
+#' @export
+add_facetvars <- function(
+    object, fit = fits(object)[1], coefs = default_coefs(object, fit = fit)
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(fit, fits(object))
+    assert_is_subset(coefs, autonomics::coefs(object))
+# Add
+    for (i in seq_along(coefs)){
+               pvar <- paste( 'p',      coefs[[i]], fit, sep = FITSEP)
+             fdrvar <- paste( 'fdr',    coefs[[i]], fit, sep = FITSEP)
+           facetvar <- paste0('facet.', coefs[[i]])
+        assertive.sets::assert_are_disjoint_sets(facetvar, fvars(object))
+        pvalues   <- fdt(object)[[  pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
+        fdrvalues <- fdt(object)[[fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
+        fdt(object)[[facetvar]] <- sprintf('%s : %s (%s)', coefs[[i]], fdrvalues, pvalues)
+    }
+# Return
     object
 }
 
@@ -887,15 +920,6 @@ format_coef_vars <- function(
 }
 
 
-facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)){
-    y <- 'feature_id'
-    if (!is.null(coefs(object))){
-        y %<>% c(pvar(  object, fit = fit, coefs = coefs))
-        y %<>% c(fdrvar(object, fit = fit, coefs = coefs))
-    }
-    y
-}
-
 #' Plot exprs
 #' @param object        SummarizedExperiment
 #' @param dim          'samples'   (per-sample distribution across features), \cr
@@ -946,7 +970,7 @@ facets <- function(object, fit = fits(object), coefs = autonomics::coefs(object)
 #' # Limma 
 #'     object %<>% fit_limma()
 #'     plot_exprs(object, block = 'SUB')
-#'     plot_exprs(object, block = 'SUB', coef = 't2')
+#'     plot_exprs(object, block = 'SUB', coefs = c('t1', 't2', 't3'))
 #'     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
 #' # Points
 #'     plot_exprs(object, geom = 'point', block = 'SUB')
@@ -964,10 +988,10 @@ plot_exprs <- function(
     block        = NULL, 
     highlight    = NULL, 
     fit          = fits(object)[1], 
-    coefs         = default_coefs(object, fit = fit)[1], 
+    coefs        = default_coefs(object, fit = fit)[1], 
     p            = 1,
     fdr          = 1, 
-    facet        = if (dim=='both')  facets(object, fit = fit, coefs = coefs) else NULL,
+    facet        = if (dim=='both')  'feature_id' else NULL,
     n            = 4,
     ncol         = NULL,
     nrow         = NULL,
@@ -978,7 +1002,9 @@ plot_exprs <- function(
     fillpalette  = make_var_palette(object, fill), 
     colorpalette = make_var_palette(object, color),
     hlevels      = NULL, 
-    title        = switch(dim, both = coefs, features = 'Feature Boxplots', samples = 'Sample Boxplots'), 
+    title        = switch(dim, both = paste0(coefs, collapse = ', '), 
+                               features = 'Feature Boxplots', 
+                               samples = 'Sample Boxplots'), 
     xlab         = NULL, 
     ylab         = 'value', 
     theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)), 
@@ -1005,7 +1031,9 @@ plot_exprs <- function(
     } else if (dim == 'both'){       n %<>% min(nrow(object)); 
         if (is.null(coefs)){         object %<>% extract_features_evenly(n) 
         } else {                     object %<>% extract_coef_features(coefs = coefs, fit = fit, p = p, fdr = fdr, n = n)
-                                     object %<>% format_coef_vars(coefs = coefs, fit = fit) 
+                                     object %<>% add_facetvars(fit = fit, coefs = coefs)
+                                     facet %<>% c(sprintf('facet.%s', coefs))
+                                     #object %<>% format_coef_vars(coefs = coefs, fit = fit) 
         }
     }
 # Plot

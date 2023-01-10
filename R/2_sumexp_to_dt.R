@@ -184,11 +184,18 @@ fitdt <- function(object){
 
 #' fitcoefs
 #' @param object SummarizedExperiment
+#' @return string vector
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' fitcoefs(object)
+#' default_fitc
 #' @export
 fitcoefs <- function(object){
     fitvars(object)  %>%  split_extract_fixed(FITSEP, 2:3) %>%  unique()
 }
-    
+
+
 extract_contrast_fdt <- function(object, fitcoef){
 # Order on p
        pvar   <- paste0(     'p', FITSEP, fitcoef)

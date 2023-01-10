@@ -25,7 +25,7 @@ plot_exprs(
   coefs = default_coefs(object, fit = fit)[1],
   p = 1,
   fdr = 1,
-  facet = if (dim == "both") facets(object, fit = fit, coefs = coefs) else NULL,
+  facet = if (dim == "both") "feature_id" else NULL,
   n = 4,
   ncol = NULL,
   nrow = NULL,
@@ -36,8 +36,8 @@ plot_exprs(
   fillpalette = make_var_palette(object, fill),
   colorpalette = make_var_palette(object, color),
   hlevels = NULL,
-  title = switch(dim, both = coefs, features = "Feature Boxplots", samples =
-    "Sample Boxplots"),
+  title = switch(dim, both = paste0(coefs, collapse = ", "), features =
+    "Feature Boxplots", samples = "Sample Boxplots"),
   xlab = NULL,
   ylab = "value",
   theme = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
@@ -152,7 +152,7 @@ Plot exprs
 # Limma 
     object \%<>\% fit_limma()
     plot_exprs(object, block = 'SUB')
-    plot_exprs(object, block = 'SUB', coef = 't2')
+    plot_exprs(object, block = 'SUB', coefs = c('t1', 't2', 't3'))
     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
 # Points
     plot_exprs(object, geom = 'point', block = 'SUB')
