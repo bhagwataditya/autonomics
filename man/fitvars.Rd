@@ -2,9 +2,12 @@
 % Please edit documentation in R/2_sumexp_to_dt.R
 \name{fitvars}
 \alias{fitvars}
-\title{Get fitvars}
+\alias{fitdt}
+\title{Get fit vars/dt}
 \usage{
 fitvars(object)
+
+fitdt(object)
 }
 \arguments{
 \item{object}{SummarizedExperimenmt}
@@ -13,8 +16,11 @@ fitvars(object)
 string vector
 }
 \description{
-Get fitvars
+Get fit vars/dt
 }
 \examples{
-file <- download_data('atkin')
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file, fit = 'limma')
+fitvars(object)
+fitdt(object)
 }

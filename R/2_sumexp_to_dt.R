@@ -162,14 +162,24 @@ sumexp_to_tsv <- function(object, assay = assayNames(object)[1], file){
     fwrite(widedt, file, sep = '\t')
 }
 
-#' Get fitvars
+#' Get fit vars/dt
 #' @param object SummarizedExperimenmt
 #' @return string vector
 #' @examples
-#' file <- download_data('atkin')
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' fitvars(object)
+#' fitdt(object)
 #' @export
 fitvars <- function(object){
     fvars(object) %>% extract(stri_detect_fixed(., FITSEP))
+}
+
+#' @rdname fitvars
+#' @export
+fitdt <- function(object){
+    cols <- c('feature_id', fitvars(object))
+    fdt(object)[, cols, with = FALSE]
 }
 
 #' fitcoefs
