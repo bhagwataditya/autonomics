@@ -19,6 +19,7 @@ plot_exprs(
   x = switch(dim, both = "subgroup", features = "feature_id", samples = "sample_id"),
   color = switch(geom, boxplot = NULL, point = x),
   fill = switch(geom, boxplot = x, point = NULL),
+  shape = NULL,
   block = NULL,
   highlight = NULL,
   fit = fits(object)[1],
@@ -138,19 +139,18 @@ ggplot object
 Plot exprs
 }
 \examples{
-# Read
-    require(magrittr)
+# Without limma
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     controlfeatures <- c('biotin','phosphate')
     fdt(object) \%<>\% cbind(control = .$feature_name \%in\% controlfeatures)
-# Plot
     plot_exprs(object)
     plot_exprs(object, block = 'SUB')
     plot_exprs(object, dim = 'samples', highlight = 'control')
     plot_exprs(object, dim = 'features', block = 'sample_id')
-# Limma 
-    object \%<>\% fit_limma()
+# With limma 
+    file <- download_data('atkin18.metabolon.xlsx')
+    object <- read_metabolon(file, fit = 'limma')
     plot_exprs(object, block = 'SUB')
     plot_exprs(object, block = 'SUB', coefs = c('t1', 't2', 't3'))
     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')

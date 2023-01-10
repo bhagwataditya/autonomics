@@ -846,7 +846,7 @@ add_facetvars <- function(
 #==============================================================================
 
 .plot_exprs <- function(
-    object, assay, geom, x, fill, color, block, highlight, 
+    object, assay, geom, x, fill, color, shape, block, highlight, 
     facet, scales, nrow, ncol, page, labeller, 
     pointsize, jitter, colorpalette, fillpalette, hlevels, 
     title, xlab, ylab, theme
@@ -855,6 +855,7 @@ add_facetvars <- function(
     xsym     <- sym(x)
     fillsym  <- if (is.null(fill))   quo(NULL) else  sym(fill)
     colorsym <- if (is.null(color))  quo(NULL) else  sym(color)
+    shapesym <- if (is.null(shape))  quo(NULL) else  sym(shape)
     blocksym <- if (is.null(block))  quo(NULL) else  sym(block)
     plotvars <- 'feature_name'
     if (!is.null(x))          plotvars %<>% c(x)         %>% unique()
@@ -885,7 +886,7 @@ add_facetvars <- function(
                     position = position_jitter(width = jitter, height = 0), size = pointsize, na.rm = TRUE)
         }
     } else {
-        p <- p + geom_point(  aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym), na.rm = TRUE)
+        p <- p + geom_point(  aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym, shape = !!shapesym), na.rm = TRUE)
     }
     p <- add_color_scale(p, color, data = dt, palette = colorpalette)
     p <- add_fill_scale( p, fill,  data = dt, palette = fillpalette)
@@ -984,6 +985,7 @@ plot_exprs <- function(
     x            = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
     color        = switch(geom, boxplot = NULL, point = x),
     fill         = switch(geom, boxplot = x,    point = NULL),
+    shape        = NULL,
     block        = NULL, 
     highlight    = NULL, 
     fit          = fits(object)[1], 
@@ -1045,7 +1047,8 @@ plot_exprs <- function(
             object,
             assay         = assay,             geom        = geom,
             x             = x,                 fill        = fill,
-            color         = color,             block       = block,
+            color         = color,             shape       = shape,
+            block         = block,
             highlight     = highlight,         facet       = facet,     
             scales        = scales,            nrow        = nrow,
             ncol          = ncol,              page        = i,
