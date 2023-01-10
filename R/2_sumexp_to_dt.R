@@ -195,20 +195,21 @@ extract_contrast_fdt <- function(object, fitcoef){
     fdt0
 }
 
-#' Write fdt to xlsx
-#' @param object SummarizedExperiment
-#' @param assay string
+#' Write xl
+#' @param object  SummarizedExperiment
+#' @param xlfile  file
 #' @return filepath
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma')
-#' write_fdt(object)
-#' xlsx <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
+#' xlfile <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
+#' write_xl(object, xlfile)
 #' @export
-write_fdt <- function(object, file){
+write_xl <- function(object, xlfile){
     list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs(object), 
                     MoreArgs = list(object = object), SIMPLIFY = FALSE)
-    writexl::write_xlsx(list0, path = xlsx)
+    writexl::write_xlsx(list0, path = xlfile)
+    return(xlfile)
 }
 
 
