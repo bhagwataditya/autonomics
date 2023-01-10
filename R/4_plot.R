@@ -956,19 +956,18 @@ add_facetvars <- function(
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
 #' @examples 
-#' # Read
-#'     require(magrittr)
+#' # Without limma
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     controlfeatures <- c('biotin','phosphate')
 #'     fdt(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
-#' # Plot
 #'     plot_exprs(object)
 #'     plot_exprs(object, block = 'SUB')
 #'     plot_exprs(object, dim = 'samples', highlight = 'control')
 #'     plot_exprs(object, dim = 'features', block = 'sample_id')
-#' # Limma 
-#'     object %<>% fit_limma()
+#' # With limma 
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file, fit = 'limma')
 #'     plot_exprs(object, block = 'SUB')
 #'     plot_exprs(object, block = 'SUB', coefs = c('t1', 't2', 't3'))
 #'     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
