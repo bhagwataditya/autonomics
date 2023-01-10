@@ -154,13 +154,61 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
 #' @examples 
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
-#' file <- tempdir()
-#' file %<>% file.path('fukuda20.proteingroups.tsv')
-#' sumexp_to_tsv(object, file)
+#' tsv <- file.path(tempdir(), 'fukuda20.proteingroups.tsv')
+#' sumexp_to_tsv(object, tsv)
 #' @export
 sumexp_to_tsv <- function(object, assay = assayNames(object)[1], file){
     widedt <- sumexp_to_widedt(object, assay = assay)
     fwrite(widedt, file, sep = '\t')
+}
+
+#' Get fitvars
+#' @param object SummarizedExperimenmt
+#' @return string vector
+#' @examples
+#' file <- download_data('atkin')
+#' @export
+fitvars <- function(object){
+    fvars(object) %>% extract(stri_detect_fixed(., FITSEP))
+}
+
+#' fitcoefs
+#' @param object SummarizedExperiment
+#' @export
+fitcoefs <- function(object){
+    fitvars(object)  %>%  split_extract_fixed(FITSEP, 2:3) %>%  unique()
+}
+    
+extract_contrast_fdt <- function(object, fitcoef){
+# Order on p
+       pvar   <- paste0(     'p', FITSEP, fitcoef)
+       fdrvar <- paste0(   'fdr', FITSEP, fitcoef)
+    effectvar <- paste0('effect', FITSEP, fitcoef)
+    idx <- order(fdt(object)[[pvar]])
+    object %<>% extract(idx, )
+# Extract results
+    cols <- fvars(object) %>% setdiff('feature_id') %>% setdiff(fitvars(object))
+    cols %<>% c('feature_id', pvar, fdrvar, effectvar, .)
+    
+    fdt0 <- fdt(object)[, cols, with = FALSE]
+    names(fdt0) %<>% stri_replace_first_fixed(paste0(FITSEP, fitcoef), '')
+    fdt0
+}
+
+#' Write fdt to xlsx
+#' @param object SummarizedExperiment
+#' @param assay string
+#' @return filepath
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' write_fdt(object)
+#' xlsx <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
+#' @export
+write_fdt <- function(object, file){
+    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs(object), 
+                    MoreArgs = list(object = object), SIMPLIFY = FALSE)
+    writexl::write_xlsx(list0, path = xlsx)
 }
 
 

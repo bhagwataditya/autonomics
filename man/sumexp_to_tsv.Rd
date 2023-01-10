@@ -19,7 +19,6 @@ Write sumexp to tsv
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file, fit = 'limma')
-file <- tempdir()
-file \%<>\% file.path('fukuda20.proteingroups.tsv')
-sumexp_to_tsv(object, file)
+tsv <- file.path(tempdir(), 'fukuda20.proteingroups.tsv')
+sumexp_to_tsv(object, tsv)
 }
