@@ -2,9 +2,12 @@
 % Please edit documentation in R/2_sumexp_to_dt.R
 \name{write_xl}
 \alias{write_xl}
-\title{Write xl}
+\alias{write_ods}
+\title{Write xl/ods}
 \usage{
 write_xl(object, xlfile)
+
+write_ods(object, odsfile)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -15,11 +18,13 @@ write_xl(object, xlfile)
 filepath
 }
 \description{
-Write xl
+Write xl/ods
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, fit = 'limma')
-xlfile <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
-write_xl(object, xlfile)
+xlfile  <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
+odsfile <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.ods')
+# write_xl(object,  xlfile)
+# write_ods(object, odsfile)
 }

@@ -195,20 +195,55 @@ extract_contrast_fdt <- function(object, fitcoef){
     fdt0
 }
 
-#' Write xl
+
+#' Write xl/ods
 #' @param object  SummarizedExperiment
 #' @param xlfile  file
 #' @return filepath
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma')
-#' xlfile <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
-#' write_xl(object, xlfile)
+#' xlfile  <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
+#' odsfile <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.ods')
+#' # write_xl(object,  xlfile)
+#' # write_ods(object, odsfile)
 #' @export
 write_xl <- function(object, xlfile){
+# Assert
+    if (!requireNamespace('writexl', quietly = TRUE)){
+        message("`BiocManager::install('AnnotationDbi')`. Then re-run.")
+        return(NULL)
+    }
+    assert_is_valid_sumexp(object)
+    assert_all_are_dirs(dirname(xlfile))
+# Write    
     list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs(object), 
                     MoreArgs = list(object = object), SIMPLIFY = FALSE)
     writexl::write_xlsx(list0, path = xlfile)
+# Return
+    return(xlfile)
+}
+
+
+#' @rdname write_xl
+#' @export
+write_ods <- function(object, odsfile){
+# Assert
+    if (!requireNamespace('readODS', quietly = TRUE)){
+        message("`BiocManager::install('readODS')`. Then re-run.")
+        return(NULL)
+    }
+    assert_is_valid_sumexp(object)
+    assert_all_are_dirs(dirname(odsfile))
+# Write    
+    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs(object), 
+                    MoreArgs = list(object = object), SIMPLIFY = FALSE)
+    if (file.exists(odsfile))  unlink(odsfile)
+    mapply(readODS::write_ods, x = list0, sheet = names(list0), 
+           MoreArgs = list(path = odsfile, append = TRUE), 
+           SIMPLIFY = FALSE)
+    
+# Return
     return(xlfile)
 }
 
