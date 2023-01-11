@@ -261,7 +261,7 @@ write_ods <- function(object, odsfile){
            SIMPLIFY = FALSE)
     
 # Return
-    return(xlfile)
+    return(odsfile)
 }
 
 
