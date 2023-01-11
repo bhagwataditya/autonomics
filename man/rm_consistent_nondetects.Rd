@@ -4,10 +4,12 @@
 \alias{rm_consistent_nondetects}
 \title{Rm consistent nondetects}
 \usage{
-rm_consistent_nondetects(object, verbose = TRUE)
+rm_consistent_nondetects(object, by = "subgroup", verbose = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{by}{svar}
 
 \item{verbose}{TRUE or FALSE}
 }

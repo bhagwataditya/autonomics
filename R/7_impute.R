@@ -421,6 +421,7 @@ is_consistent_nondetect <- function(object, by = 'subgroup'){
 
 #' Rm consistent nondetects 
 #' @param object SummarizedExperiment
+#' @param by      svar
 #' @param verbose TRUE or FALSE
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
@@ -428,9 +429,9 @@ is_consistent_nondetect <- function(object, by = 'subgroup'){
 #' rm_consistent_nondetects(object)
 #' @return SummarizedExperiment
 #' @export
-rm_consistent_nondetects <- function(object, verbose = TRUE){
-    idx <- is_consistent_nondetect(object, by = by)
-    if (verbose)  message('Rm ', sum(idx), '/', length(idx), ' consistent nondetects')
+rm_consistent_nondetects <- function(object, by = 'subgroup', verbose = TRUE){
+    idx <- !is_consistent_nondetect(object, by = by)
+    if (verbose)  message('Retain ', sum(idx), '/', length(idx), ' features after removing consistent nondetects')
     object %<>% extract(idx, )
     object
 }
