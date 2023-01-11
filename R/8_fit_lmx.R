@@ -49,18 +49,20 @@
 }
 
 .lme <- function(sd, formula, block, weights){
-    fitres <- stats::coefficients(summary(nlme::lme(
+    fitres <- nlme::lme(
                     fixed     = formula, 
                     random    = block, 
                     data      = sd,
-                    na.action = stats::na.omit)))
+                    na.action = stats::na.omit)
+    suppressWarnings(fitres %<>% nlme:::summary.lme())  # only 2 replicates in a group -> df = 0 -> p = NaN -> warning
+    fitres %<>% stats::coefficients()
     fitres %<>% extract(, c('Value', 'p-value', 't-value'), drop = FALSE)
     colnames(fitres) %<>% stri_replace_first_fixed('Value', 'effect')
     #colnames(fitres) %<>% stri_replace_first_fixed('Std.Error', 'se')
     colnames(fitres) %<>% stri_replace_first_fixed('t-value', 't')
     colnames(fitres) %<>% stri_replace_first_fixed('p-value', 'p')
     #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
-    fitmat <- matrix(fitres, nrow=1)
+    fitmat <- matrix(fitres, nrow = 1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep=FITSEP)
     #fitmat %<>% cbind(F=0, F.p=1)
@@ -129,10 +131,12 @@ fit_lmx <- function(
     formula %<>% addlhs()
     allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
     assnames <- assayNames(object)[1]
-    if (!is.null(weightvar)){   assert_is_character(weightvar)
-                                assert_is_subset(weightvar, assayNames(object)) 
-                                assnames %<>% c(weightvar)
-        message('\t\t\tweights = assays(object)$', weightvar) }
+    if (!is.null(weightvar)){
+        assert_is_character(weightvar)
+        assert_is_subset(weightvar, assayNames(object)) 
+        assnames %<>% c(weightvar)
+        message('\t\t\tweights = assays(object)$', weightvar) 
+    }
     dt <- sumexp_to_longdt(object, svars = allx, assay = assnames)
     fixedx <- setdiff(allx, all.vars(block))
     #for (x in fixedx){          dt[[x]] %<>% factor()
@@ -141,8 +145,7 @@ fit_lmx <- function(
 # fit
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
-    fitres <- dt[, fitmethod(.SD, formula = formula, block = block, 
-            weights = get(weightvar)), by = 'feature_id' ]
+    fitres <- dt[, fitmethod(.SD, formula = formula, block = block, weights = get(weightvar)), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     if (drop)  for (var in all.vars(formula)){               # drop varnames
         names(fitres) %<>% stri_replace_first_fixed(var, '')  }
@@ -222,7 +225,8 @@ fit_lme <- function(
 # Prepare
     if (is_a_string(block)){ 
         if (is_subset(block, svars(object)))  block %<>% sprintf('~1|%s', .)
-        block %<>% as.formula() }
+        block %<>% as.formula()
+    }
 # Fit
     if (verbose)  message('\t\tlme(', formula2str(formula), ', ', 
                         'random = ',  formula2str(block),')')
