@@ -213,8 +213,9 @@ fit_lme <- function(
         message("BiocManager::install('nlme'). Then re-run.")
         return(object) 
     }
-    for (by in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, by))
+    for (by in all.vars(formula)){
+        assert_is_identical_to_false(has_consistent_nondetects(object, by))
+    }
         # cannot be generified into fit_lmx because for lme/lmer block is 
         # integrated in formula and also gets checked for (unnecessarily!)
     assert_is_not_null(block)

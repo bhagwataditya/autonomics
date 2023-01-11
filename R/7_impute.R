@@ -414,8 +414,9 @@ split_by_fvar <- function(object, fvar){
 is_complete_nondetect <- function(object) rowAlls(is.na(values(object)))
 
 is_consistent_nondetect <- function(object, by = 'subgroup'){
-    y <- split_samples(object, by = by)
-    rowAnys(vapply(y, is_complete_nondetect, logical(nrow(object))))
+    x <- split_samples(object, by = by)
+    y <- vapply(x, is_complete_nondetect, logical(nrow(object)))
+    if (nrow(object)==1)  any(y)  else rowAnys(y)
 }
 
 #' Rm consistent nondetects 
