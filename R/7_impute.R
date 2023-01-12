@@ -441,6 +441,81 @@ has_consistent_nondetects <- function(object, by = 'subgroup'){
 }
 
 
+#' Count complete blocks
+#' @param object    numbervector or SummarizedExperiment
+#' @param subgroup  factorvector (numeric object) or svar (sumexp obejct)
+#' @param block     factorvector (numeric object) or svar (sumexp object)
+#' @param verbose   TRUE or FALSE
+#' @examples
+#' # Vector
+#'     blocks    <- factor(c('S1', 'S1', 'S1', 'S2', 'S2', 'S2'))
+#'     subgroups <- factor(c('t0', 't1', 't2', 't0', 't1', 't2'))
+#'     values0   <-        c( NA,    1,    2,   0.1,  1.1,  NA )  # 0 complete blocks
+#'     values1   <-        c(  0,    1,    2,   0.1,  1.1,  NA )  # 1 complete blocks
+#'     values2   <-        c(  0,    1,    2,   0.1,  1.1,  1.2)  # 2 complete blocks
+#'     count_complete_blocks(values0, subgroups, blocks)
+#'     count_complete_blocks(values1, subgroups, blocks)
+#'     count_complete_blocks(values2, subgroups, blocks)
+#' # SumExp    
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     count_complete_blocks(object, subgroup = 'subgroup', block = 'SUB')
+#' @export
+count_complete_blocks <- function(object, subgroup, block){
+    UseMethod('count_complete_blocks')
+}
+
+    
+#' @rdname count_complete_blocks
+#' @export
+count_complete_blocks.numeric <- function(object, subgroup, block){
+    idx <- !is.na(object)
+    block    %<>% extract(idx)
+    subgroup %<>% extract(idx)
+    sum(matrixStats::rowAlls(table(block, subgroup) > 0))
+}
+
+#' @rdname count_complete_blocks
+#' @export
+count_complete_blocks.SummarizedExperiment  <- function(object, subgroup, block){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(subgroup, svars(object))
+    assert_scalar_subset(block,    svars(object))
+# Count
+    dt <- sumexp_to_longdt(object, svars = c('sample_id', subgroup, block))
+    setnames(dt, subgroup, 'subgroup') # when subgroup (variable) == 'subgroup' (value) dt[, get(subgroup)] doesnt work
+    setnames(dt, block,    'block')
+    dt$subgroup %<>% factor()   # important later for all
+    dt$block    %<>% factor()   # levels to be considered
+    
+    dt <- dt[, .(n = count_complete_blocks(value, subgroup, block)), by = 'feature_id']
+# Return
+    assert_is_identical_to_true(all(dt$feature_id == fnames(object)))
+    dt$n
+}
+
+
+#' Extract complete block features
+#' @param object    numbervector or SummarizedExperiment
+#' @param subgroup  factorvector (numeric object) or svar (sumexp obejct)
+#' @param block     factorvector (numeric object) or svar (sumexp object)
+#' @param verbose   TRUE or FALSE
+#' @examples
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' extract_complete_block_features(object, 'subgroup', 'SUB')
+#' @export 
+extract_complete_block_features <- function(object, subgroup, block, verbose = TRUE, ...){
+    idx <- count_complete_blocks(object, subgroup, block) > 0
+    if (verbose)  cmessage(
+        '\t\t\tExtract %d/%d features: (at least) one `%s` spanning all `%s` levels', 
+        sum(idx), length(idx), block, subgroup)
+    object[idx, ]
+}
+
+
+
 #' Is systematic/random/full detect
 #' @param object SummarizedExperiment
 #' @param by svar (string)
