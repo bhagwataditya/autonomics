@@ -31,5 +31,6 @@ is_positive_number( 3)
 is_positive_number(-3)
 is_positive_number( 0)
 is_weakly_positive_number(0)
+
 assert_positive_number(3)
 }

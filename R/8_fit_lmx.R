@@ -114,6 +114,163 @@ addlhs  <- function(formula)  as.formula(paste0('value ', formula2str(formula)))
 droplhs <- function(formula)  as.formula(stri_replace_first_regex(
     formula2str(formula), '^value[ ]*', ''))
 
+#' Switch blockvar format
+#' @param formula  formula
+#' @param block    block: charactervector or formula
+#' @param verbose  TRUE or FALSE
+#' @examples
+#' # lme
+#'    block_formula_lme( block += c('SUB', 'SEX'), formula = ~ GROUP + SUBGROUP)
+#'    block_formula_lme( block = ~1|SUB + 1|SEX,  formula = ~ GROUP + SUBGROUP)
+#'    block_vars(~1|SUB + 1|SEX)
+#' # lmer
+#'    block_formula_lmer(block = c('SUB', 'SEX'), formula = ~ GROUP + SUBGROUP)
+#'    block_formula_lmer(formula = ~GROUP + SUBGROUP + (1|SUB) + (1|SEX))
+#'    block_vars(formula = ~GROUP + SUBGROUP + (1|SUB) + (1|SEX))
+#' @export
+block_formula_lme  <- function(block, formula, verbose = TRUE){
+    if (is_formula(block))  return(block) # already in required format
+    formula %<>% formula2str()
+    block %<>% paste0('1|', .)
+    block %<>% paste0(collapse = ' + ')
+    block %<>% paste0('~ ', .)
+    if (verbose)  cmessage('\t\tlme(%s, random = %s)',  formula, block)
+    block %<>% as.formula()
+    block
+}
+
+#' @rdname block_formula_lme
+#' @export
+block_formula_lmer <- function(formula, block, verbose = TRUE){
+    if (stri_detect_fixed(formula2str(formula), '|'))  return(formula)
+    formula %<>% formula2str()
+    block %<>% paste0('(1|', ., ')')
+    block %<>% paste0(collapse = ' + ')
+    formula %<>% paste0(' + ', block)
+    if (verbose)  cmessage('\t\tlmer(%s)', formula)
+    formula %<>% as.formula()
+    formula
+}
+
+#' @rdname block_formula_lme
+#' @export
+block_vars <- function(formula){
+    formula %<>% formula2str()
+    formula %<>% stri_replace_first_regex('^[~][ ]*', '')
+    formula %<>% stri_split_regex('[ ]*[+][ ]*')
+    formula %<>% extract2(1)
+    formula %<>% extract(stri_detect_fixed(., '|'))
+    formula %<>% stri_replace_first_regex('[ ]*[(][ ]*', '') # lmer
+    formula %<>% stri_replace_first_regex('[ ]*[)][ ]*', '') # lmer
+    formula %<>% split_extract_regex('[ ]*[|][ ]*', 2)
+    formula
+}
+
+
+
+
+#' Extract full block features
+#' 
+#' Extract features with two blocks (or more) spanning all within-factor levels
+#' @param object    SummarizedExperiment
+#' @param formula   formula
+#' @param block     factorvector (numeric object) or svar (sumexp object)
+#' @param n         number of full factor blocks
+#' @param verbose   TRUE or FALSE
+#' @examples
+#' # Read
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     cols <- c('sample_id', 'subgroup', 'SUB', 'SET', 'AGE', 'SEX', 'T2D')
+#'     sdt(object) %<>% extract(, cols, with = FALSE)
+#'     sdt(object)
+#'     object$SUPERSET <- ''
+#'     object$SUPERSET[object$SET == 't0'] <- 'I'
+#'     object$SUPERSET[object$SET == 't1'] <- 'I'
+#'     object$SUPERSET[object$SET == 't2'] <- 'II'
+#'     object$SUPERSET[object$SET == 't3'] <- 'II'
+#'     object$SUBSET <- ''
+#'     object$SUBSET[  object$SET == 't0'] <- 'a'
+#'     object$SUBSET[  object$SET == 't1'] <- 'a'
+#'     object$SUBSET[  object$SET == 't2'] <- 'b'
+#'     object$SUBSET[  object$SET == 't3'] <- 'b'
+#' # Extract
+#'     extract_full_block_features(object, formula = ~ SET,                     block = 'SUB')
+#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET,       block = 'SUB')
+#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET,       block = 'SUB')
+#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET,       block = c('SUB', 'SEX'))
+#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET + AGE, block = c('SUB', 'SEX'))
+#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET + T2D, block = c('SUB', 'SEX'))
+#' @export
+extract_full_block_features <- function(
+    object, formula, block, n = 2, verbose = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_is_subset(all.vars(formula), svars(object))
+    if (is_formula(block))    block %<>% block_vars()
+    assert_is_subset(block, svars(object))
+    assert_is_a_number(n)
+    assert_is_a_bool(verbose)
+# Identify within-block factors
+    sdt0 <- sdt(object)
+    sdt0 %<>% extract(, c(all.vars(formula), block), with = FALSE)                    # design/block
+    sdt0 %<>% extract(, false_names(vapply(., is.numeric, logical(1))), with = FALSE) # factors
+    for (curblock in block){
+        # Identify in-block factors
+            inblockfactors <- sdt0[, lapply(.SD, function(x) length(unique(x))), by = curblock]
+            inblockfactors %<>% extract(, -1, with = FALSE)
+            idx <- colAnys(inblockfactors > 1)
+            inblockfactors %<>% names() %>% extract(idx)
+            inblockfactors %<>% setdiff(block)
+        # Identify features: at least two blocks span across every in-block factor
+            for (inblockfac in inblockfactors){
+                dt <- sumexp_to_longdt(object, svars = c(curblock, inblockfactors), fvars = 'feature_id')
+                dt %<>% extract(!is.na(value))
+                dt %<>% extract(, c('feature_id', curblock, inblockfactors), with = FALSE)
+                nlevel <- length(unique(dt[[inblockfac]]))
+                dt <- dt[, .(alllevels = length(unique(get(inblockfac))) == nlevel), by = c(curblock, 'feature_id')]
+                dt <- dt[, .(completeblocks = sum(alllevels)) , by = 'feature_id']
+                dt <- dt[completeblocks >= n]
+                if (verbose & nrow(dt) < nrow(object)){
+                    cmessage('\t\tRetain %d/%d features with >=%d %s spanning all %ss', 
+                             nrow(dt), nrow(object), n, curblock, inblockfac)
+                    idx <- fdt(object)$feature_id %in% dt$feature_id
+                    object %<>% extract(idx, )
+                }
+            }
+    }
+# Identify completeblock features
+# Extract and Return
+    object
+}
+
+
+
+#' Fit lm, lme, or lmer
+#' @param object       SummarizedExpriment
+#' @param fit         'lm', 'lme', or 'lmer'
+#' @param subgroupvar  svar
+#' @param formula      formula
+#' @param drop         TRUE or FALSE
+#' @param block        NULL or svar
+#' @param weightvar    NULL or svar
+#' @param coefs        NULL or stringvector
+#' @param verbose      TRUE or FALSE
+#' @param plot         TRUE or FALSE
+#' @return SummarizedExperiment
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% extract_full_block_features(formula = ~subgroup, block = 'SUB')
+#' fit_lm(   object, formula = ~subgroup)
+#' fit_limma(object, formula = ~subgroup)
+#' fit_limma(object, formula = ~subgroup, block = 'SUB')
+#' fit_lme(  object, formula = ~subgroup, block = 'SUB')
+#' fit_lmer( object, formula = ~subgroup, block = 'SUB')
+#' fit_lme(  object, formula = ~subgroup, block = ~1|SUB)
+#' fit_lmer( object, formula = ~subgroup + (1|SUB))
+#' @export
 fit_lmx <- function(
     object, 
     fit, 
@@ -126,29 +283,32 @@ fit_lmx <- function(
     verbose     = TRUE, 
     plot        = FALSE
 ){
-# Initialize
-    assert_is_a_string(fit);  assert_is_subset(fit, TESTS)
-    formula %<>% addlhs()
-    allx <- c(setdiff(all.vars(formula), 'value'), all.vars(block))
-    assnames <- assayNames(object)[1]
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(fit, c('lm', 'lme', 'lmer'))
+    assertive.types::assert_is_formula(formula)
+    assert_is_subset(all.vars(formula), svars(object))
+    assert_is_a_bool(drop)
     if (!is.null(weightvar)){
         assert_is_character(weightvar)
         assert_is_subset(weightvar, assayNames(object)) 
         assnames %<>% c(weightvar)
         message('\t\t\tweights = assays(object)$', weightvar) 
     }
-    dt <- sumexp_to_longdt(object, svars = allx, assay = assnames)
-    fixedx <- setdiff(allx, all.vars(block))
-    #for (x in fixedx){          dt[[x]] %<>% factor()
-    #                            n <- length(levels(dt[[x]]))
-    #    if (n>1) stats::contrasts(dt[[x]]) <- MASS::contr.sdif(levels(dt[[x]]))}
-# fit
+# Filter / Customize
+    obj <- object
+    if (fit %in% c('lme', 'lmer')){  
+        obj %<>% extract_full_block_features(formula = formula, block = block)  }
+    if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose)
+    } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block   = block,   verbose = verbose)  }
+# Fit
+    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), all.vars(block)), assay = assayNames(object)[1])
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
+    formula %<>% addlhs()
     fitres <- dt[, fitmethod(.SD, formula = formula, block = block, weights = get(weightvar)), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
-    if (drop)  for (var in all.vars(formula)){               # drop varnames
-        names(fitres) %<>% stri_replace_first_fixed(var, '')  }
+    if (drop)  for (var in all.vars(formula))   names(fitres) %<>% stri_replace_first_fixed(var, '')
     fitres %<>% add_fdr()
     object %<>% reset_fitres(fit)
     object %<>% merge_fitres(fitres, fit = fit)
@@ -166,7 +326,7 @@ fit_lmx <- function(
 }
 
 
-#' @rdname fit_limma
+#' @rdname fit_lmx
 #' @export
 fit_lm <- function(
     object,
@@ -196,7 +356,7 @@ fit_lm <- function(
 }
 
 
-#' @rdname fit_limma
+#' @rdname fit_lmx
 #' @export
 fit_lme <- function(
     object, 
@@ -214,22 +374,8 @@ fit_lme <- function(
     . <- NULL
     if (!requireNamespace('nlme', quietly = TRUE)){
         message("BiocManager::install('nlme'). Then re-run.")
-        return(object) 
-    }
-    for (by in all.vars(formula)){
-        assert_is_identical_to_false(has_consistent_nondetects(object, by))
-    }
-        # cannot be generified into fit_lmx because for lme/lmer block is 
-        # integrated in formula and also gets checked for (unnecessarily!)
-    assert_is_not_null(block)
-# Prepare
-    if (is_a_string(block)){ 
-        if (is_subset(block, svars(object)))  block %<>% sprintf('~1|%s', .)
-        block %<>% as.formula()
-    }
+        return(object)   }
 # Fit
-    if (verbose)  message('\t\tlme(', formula2str(formula), ', ', 
-                        'random = ',  formula2str(block),')')
     fit_lmx(
         object,                     fit          = 'lme', 
         subgroupvar = subgroupvar,  formula      = formula, 
@@ -239,7 +385,7 @@ fit_lme <- function(
 }
 
 
-#' @rdname fit_limma
+#' @rdname fit_lmx
 #' @export
 fit_lmer <- function(
     object, 
@@ -261,25 +407,12 @@ fit_lmer <- function(
     if (!requireNamespace('lmerTest', quietly = TRUE)){
         message("`BiocManager::install('lmerTest')`. Then re-run.")
         return(object) }
-    for (by in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, by))
-        # cannot be generified into fit_lmx because for lme/lmer block is 
-        # integrated in formula and also gets checked for (unnecessarily!)
-# Prepare
-    if (is_formula(block))  block %<>% formula2str()
-    if (is_a_string(block)){ 
-        if (is_subset(block, svars(object)))  block %<>% sprintf('1|%s', .)
-        formula %<>% formula2str()
-        formula %<>% sprintf('%s + (%s)', ., block)
-        formula %<>% as.formula()
-    }
 # Fit
-    if (verbose)  message('\t\tlmer(', formula2str(formula), ')')
     metadata(object)$lmer <- NULL
     fit_lmx(
         object,                     fit          = 'lmer', 
         subgroupvar = subgroupvar,  formula      = formula, 
-        drop        = drop,         block        = NULL, 
+        drop        = drop,         block        = block, 
         weightvar   = weightvar,    coefs        = coefs, 
         verbose     = verbose,      plot         = plot)
 }

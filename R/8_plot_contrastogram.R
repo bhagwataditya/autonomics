@@ -6,7 +6,8 @@
 #=============================================================================
 
 
-true_names <- function(x) names(x[x])
+ true_names <- function(x) names(x)[ x]
+false_names <- function(x) names(x)[!x]
 
 fit_limma_contrastogram <- function(object, subgroupvar, design){
     colcontrasts <- contrast_subgroup_cols(object, subgroupvar)
