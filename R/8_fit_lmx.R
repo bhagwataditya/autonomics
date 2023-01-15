@@ -218,25 +218,32 @@ extract_full_block_features <- function(
     sdt0 %<>% extract(, false_names(vapply(., is.numeric, logical(1))), with = FALSE) # factors
     for (curblock in block){
         # Identify in-block factors
-            inblockfactors <- sdt0[, lapply(.SD, function(x) length(unique(x))), by = curblock]
-            inblockfactors %<>% extract(, -1, with = FALSE)
-            idx <- colAnys(inblockfactors > 1)
-            inblockfactors %<>% names() %>% extract(idx)
-            inblockfactors %<>% setdiff(block)
+            inblockdt <- sdt0[, lapply(.SD, function(x) paste0(unique(x), collapse = ';')), by = curblock]
+            inblockdt %<>% extract(, -1, with = FALSE)
+            inblockdt %<>% unique()
+            idx <- vapply(inblockdt, function(x)  any(stri_detect_fixed(x, ';')), logical(1) )
+            inblockdt %<>% extract(, idx, with = FALSE)
         # Identify features: at least two blocks span across every in-block factor
-            for (inblockfac in inblockfactors){
+            for (inblockfactor in names(inblockdt)){
                 dt <- sumexp_to_longdt(object, svars = c(curblock, inblockfactors), fvars = 'feature_id')
                 dt %<>% extract(!is.na(value))
                 dt %<>% extract(, c('feature_id', curblock, inblockfactors), with = FALSE)
-                nlevel <- length(unique(dt[[inblockfac]]))
-                dt <- dt[, .(alllevels = length(unique(get(inblockfac))) == nlevel), by = c(curblock, 'feature_id')]
-                dt <- dt[, .(completeblocks = sum(alllevels)) , by = 'feature_id']
-                dt <- dt[completeblocks >= n]
-                if (verbose & nrow(dt) < nrow(object)){
-                    cmessage('\t\tRetain %d/%d features with >=%d %s spanning all %ss', 
-                             nrow(dt), nrow(object), n, curblock, inblockfac)
-                    idx <- fdt(object)$feature_id %in% dt$feature_id
-                    object %<>% extract(idx, )
+                
+                inblockfactorgroups <- inblockdt[[inblockfactor]] %>% extract(stri_detect_fixed(., ';'))
+                for (inblocklevels in inblockfactorgroups){
+                    inblocklevels %<>% stri_split_fixed(';') %>% extract2(1)
+                    nlevel <- length(inblocklevels)
+                    idx <- dt[[inblockfactor]] %in% inblocklevels
+                    subdt <- dt[idx]
+                    subdt <- subdt[, .(alllevels = length(unique(get(inblockfac))) == nlevel), by = c(curblock, 'feature_id')]
+                    subdt <- subdt[, .(completeblocks = sum(alllevels)) , by = 'feature_id']
+                    subdt <- subdt[completeblocks >= n]
+                    if (verbose & nrow(subdt) < nrow(object)){
+                        cmessage('\t\tRetain %d/%d features: %d or more %ss span %ss: %s', 
+                                 nrow(subdt), nrow(object), n, curblock, inblockfactor, paste0(inblocklevels, collapse = ', '))
+                        idx <- fdt(object)$feature_id %in% subdt$feature_id
+                        object %<>% extract(idx, )
+                    }
                 }
             }
     }
