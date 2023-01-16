@@ -120,23 +120,23 @@ droplhs <- function(formula)  as.formula(stri_replace_first_regex(
 #' @param verbose  TRUE or FALSE
 #' @examples
 #' # lme
-#'    block_formula_lme( block += c('SUB', 'SEX'), formula = ~ GROUP + SUBGROUP)
-#'    block_formula_lme( block = ~1|SUB + 1|SEX,  formula = ~ GROUP + SUBGROUP)
-#'    block_vars(~1|SUB + 1|SEX)
+#'    block_formula_lme( block = c('subject', 'batch'),           formula = ~ subgroup)
+#'    block_formula_lme( block = list(subject = ~1, batch = ~1),  formula = ~ GROUP + SUBGROUP)
+#'    block_formula_lme( block = ~1|SUB,                          formula = ~ subgroup)
 #' # lmer
 #'    block_formula_lmer(block = c('SUB', 'SEX'), formula = ~ GROUP + SUBGROUP)
 #'    block_formula_lmer(formula = ~GROUP + SUBGROUP + (1|SUB) + (1|SEX))
 #'    block_vars(formula = ~GROUP + SUBGROUP + (1|SUB) + (1|SEX))
 #' @export
 block_formula_lme  <- function(block, formula, verbose = TRUE){
-    if (is_formula(block))  return(block) # already in required format
+    if (is.list(block))     return(block)
+    if (is_formula(block))  return(block)
     formula %<>% formula2str()
-    block %<>% paste0('1|', .)
-    block %<>% paste0(collapse = ' + ')
-    block %<>% paste0('~ ', .)
-    if (verbose)  cmessage('\t\tlme(%s, random = %s)',  formula, block)
-    block %<>% as.formula()
-    block
+    y <- rep('~1', length(block))
+    names(y) <- block
+    y %<>% lapply(as.formula)
+    if (verbose)  cmessage('\t\tlme(%s, random = %s)',  formula, deparse(dput(y)))
+    y
 }
 
 #' @rdname block_formula_lme
@@ -213,16 +213,17 @@ extract_connected_features <- function(
     assert_is_a_number(nconnectedblocks)
     assert_is_a_bool(verbose)
 # Identify within-blockvar factors
-    sdt0 <- sdt(object)
-    sdt0 %<>% extract(, c(all.vars(formula), blockvars), with = FALSE)                # design/block vars
+    fixedvars <- all.vars(formula)
+    sdt0 <- sdt(object)[, c(fixedvars, blockvars), with = FALSE]                      # design/block vars
     sdt0 %<>% extract(, false_names(vapply(., is.numeric, logical(1))), with = FALSE) # factors
     for (blockvar in blockvars){
         # Within blockvar: identify factors with (sets of) connected levels
-            connectedfactorsdt <- sdt0[, lapply(.SD, function(x) paste0(unique(x), collapse = ';')), by = blockvar]
+            connectedfactorsdt <- sdt0[, lapply(.SD, function(x) paste0(unique(x), collapse = ';')), by = blockvar, .SDcols = fixedvars]
             connectedfactorsdt %<>% extract(, -1, with = FALSE)
             connectedfactorsdt %<>% unique()
             idx <- vapply(connectedfactorsdt, function(x)  any(stri_detect_fixed(x, ';')), logical(1) )
             connectedfactorsdt %<>% extract(, idx, with = FALSE)
+            connectedfactorsdt %<>% unique()
         # Identify features: at least two blocks span across every within-blockvar factor
             for (connectedfactor in names(connectedfactorsdt)){
                 dt <- sumexp_to_longdt(object, svars = c(blockvar, names(connectedfactorsdt)), fvars = 'feature_id')
@@ -240,7 +241,7 @@ extract_connected_features <- function(
                     connectedlevelsdt %<>% extract(connectedblocks >= nconnectedblocks)
                     n0 <- nrow(object); n1 <- nrow(connectedlevelsdt)
                     if (verbose & n1<n0){
-                        cmessage('\t\tRetain %d/%d features: %d or more %ss span %ss: %s', 
+                        cmessage('\t\tRetain %d/%d features: %d or more %s span %ss: %s', 
                                  n1, n0, nconnectedblocks, blockvar, connectedfactor, paste0(connectedlevels, collapse = ', '))
                         idx <- fdt(object)$feature_id %in% connectedlevelsdt$feature_id
                         object %<>% extract(idx, )
@@ -308,10 +309,10 @@ fit_lmx <- function(
         obj %<>% extract_connected_features(formula = formula, blockvars = block)
         obj %<>% rm_consistent_nondetects(formula)
     }
-    if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose)
+    if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose);  blockvars <- names(block)
     } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block   = block,   verbose = verbose)  }
 # Fit
-    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), all.vars(block)), assay = assayNames(object)[1])
+    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars), assay = assayNames(object)[1])
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
     formula %<>% addlhs()
@@ -327,7 +328,7 @@ fit_lmx <- function(
                             MoreArgs = list(fitres=fitres), SIMPLIFY = FALSE)
     formula %<>% droplhs() %<>% formula2str()
     if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object), fit = fit))
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object), fit = fit, coefs = coefs))
     if (is.null(coefs)) coefs <- autonomics::coefs(object, fit = fit)
     if (length(coefs) > 1) coefs %<>% setdiff('Intercept')
     if (plot)  print(plot_volcano(object, fit = fit, coefs = coefs))
