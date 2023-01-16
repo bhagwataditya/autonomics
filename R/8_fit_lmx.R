@@ -233,7 +233,7 @@ extract_connected_features <- function(
                 for (connectedlevels in connectedsets){
                     connectedlevels %<>% stri_split_fixed(';') %>% extract2(1)
                     nlevel <- length(connectedlevels)
-                    idx <- dt[[inblockfactor]] %in% connectedlevels
+                    idx <- dt[[connectedfactor]] %in% connectedlevels
                     connectedlevelsdt <- dt[idx]
                     connectedlevelsdt %<>% extract(, .(connected = length(unique(get(connectedfactor))) == nlevel), by = c(blockvar, 'feature_id'))
                     connectedlevelsdt %<>% extract(, .(connectedblocks = sum(connected)) , by = 'feature_id')
@@ -241,7 +241,7 @@ extract_connected_features <- function(
                     n0 <- nrow(object); n1 <- nrow(connectedlevelsdt)
                     if (verbose & n1<n0){
                         cmessage('\t\tRetain %d/%d features: %d or more %ss span %ss: %s', 
-                                 n1, n0, n, blockvar, inblockfactor, paste0(connectedlevels, collapse = ', '))
+                                 n1, n0, n, blockvar, connectedfactor, paste0(connectedlevels, collapse = ', '))
                         idx <- fdt(object)$feature_id %in% connectedlevelsdt$feature_id
                         object %<>% extract(idx, )
                     }

@@ -766,8 +766,8 @@ order_on_p <- function(object, coefs, fit = fits(object)[1]){
 #' @export
 extract_coef_features <- function(
     object, 
-    coefs,
     fit         = fits(object)[1], 
+    coefs       = coefs(object, fit = fit),
     combiner    = '|',
     p           = 1, 
     fdr         = 1, 
