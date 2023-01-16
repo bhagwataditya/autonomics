@@ -4,14 +4,14 @@
 \alias{rm_consistent_nondetects}
 \title{Rm consistent nondetects}
 \usage{
-rm_consistent_nondetects(object, by = "subgroup", verbose = TRUE)
+rm_consistent_nondetects(object, formula, verbose = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{by}{svar}
-
 \item{verbose}{TRUE or FALSE}
+
+\item{by}{svar}
 }
 \value{
 SummarizedExperiment
@@ -22,5 +22,5 @@ Rm consistent nondetects
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
-rm_consistent_nondetects(object)
+rm_consistent_nondetects(object, formula = ~ subgroup)
 }

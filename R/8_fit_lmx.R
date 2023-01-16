@@ -169,14 +169,14 @@ block_vars <- function(formula){
 
 
 
-#' Extract full block features
+#' Extract connected features
 #' 
-#' Extract features with two blocks (or more) spanning all within-factor levels
-#' @param object    SummarizedExperiment
-#' @param formula   formula
-#' @param block     factorvector (numeric object) or svar (sumexp object)
-#' @param n         number of full factor blocks
-#' @param verbose   TRUE or FALSE
+#' Extract features for which connected factor levels are measured in at least two blocks
+#' @param object           SummarizedExperiment
+#' @param formula          formula
+#' @param blockvars        factorvector (numeric object) or svar (sumexp object)
+#' @param nconnectedblocks  minimum number of connected blocks
+#' @param verbose          TRUE or FALSE
 #' @examples
 #' # Read
 #'     file <- download_data('atkin18.metabolon.xlsx')
@@ -195,53 +195,54 @@ block_vars <- function(formula){
 #'     object$SUBSET[  object$SET == 't2'] <- 'b'
 #'     object$SUBSET[  object$SET == 't3'] <- 'b'
 #' # Extract
-#'     extract_full_block_features(object, formula = ~ SET,                     block = 'SUB')
-#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET,       block = 'SUB')
-#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET,       block = 'SUB')
-#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET,       block = c('SUB', 'SEX'))
-#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET + AGE, block = c('SUB', 'SEX'))
-#'     extract_full_block_features(object, formula = ~ SUPERSET + SUBSET + T2D, block = c('SUB', 'SEX'))
+#'     extract_connected_features(object, formula = ~ SET,                     blockvars = 'SUB')
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = 'SUB')
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = 'SUB')
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = c('SUB', 'SEX'))
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + AGE, blockvars = c('SUB', 'SEX'))
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + T2D, blockvars = c('SUB', 'SEX'))
 #' @export
-extract_full_block_features <- function(
-    object, formula, block, n = 2, verbose = TRUE
+extract_connected_features <- function(
+    object, formula, blockvars, nconnectedblocks = 2, verbose = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
     assert_is_subset(all.vars(formula), svars(object))
-    if (is_formula(block))    block %<>% block_vars()
-    assert_is_subset(block, svars(object))
-    assert_is_a_number(n)
+    if (is_formula(blockvars))    blockvars %<>% block_vars()
+    assert_is_subset(blockvars, svars(object))
+    assert_is_a_number(nconnectedblocks)
     assert_is_a_bool(verbose)
-# Identify within-block factors
+# Identify within-blockvar factors
     sdt0 <- sdt(object)
-    sdt0 %<>% extract(, c(all.vars(formula), block), with = FALSE)                    # design/block
+    sdt0 %<>% extract(, c(all.vars(formula), blockvars), with = FALSE)                # design/block vars
     sdt0 %<>% extract(, false_names(vapply(., is.numeric, logical(1))), with = FALSE) # factors
-    for (curblock in block){
-        # Identify in-block factors
-            inblockdt <- sdt0[, lapply(.SD, function(x) paste0(unique(x), collapse = ';')), by = curblock]
-            inblockdt %<>% extract(, -1, with = FALSE)
-            inblockdt %<>% unique()
-            idx <- vapply(inblockdt, function(x)  any(stri_detect_fixed(x, ';')), logical(1) )
-            inblockdt %<>% extract(, idx, with = FALSE)
-        # Identify features: at least two blocks span across every in-block factor
-            for (inblockfactor in names(inblockdt)){
-                dt <- sumexp_to_longdt(object, svars = c(curblock, inblockfactors), fvars = 'feature_id')
+    for (blockvar in blockvars){
+        # Within blockvar: identify factors with (sets of) connected levels
+            connectedfactorsdt <- sdt0[, lapply(.SD, function(x) paste0(unique(x), collapse = ';')), by = blockvar]
+            connectedfactorsdt %<>% extract(, -1, with = FALSE)
+            connectedfactorsdt %<>% unique()
+            idx <- vapply(connectedfactorsdt, function(x)  any(stri_detect_fixed(x, ';')), logical(1) )
+            connectedfactorsdt %<>% extract(, idx, with = FALSE)
+        # Identify features: at least two blocks span across every within-blockvar factor
+            for (connectedfactor in names(connectedfactorsdt)){
+                dt <- sumexp_to_longdt(object, svars = c(blockvar, names(connectedfactorsdt)), fvars = 'feature_id')
                 dt %<>% extract(!is.na(value))
-                dt %<>% extract(, c('feature_id', curblock, inblockfactors), with = FALSE)
-                
-                inblockfactorgroups <- inblockdt[[inblockfactor]] %>% extract(stri_detect_fixed(., ';'))
-                for (inblocklevels in inblockfactorgroups){
-                    inblocklevels %<>% stri_split_fixed(';') %>% extract2(1)
-                    nlevel <- length(inblocklevels)
-                    idx <- dt[[inblockfactor]] %in% inblocklevels
-                    subdt <- dt[idx]
-                    subdt <- subdt[, .(alllevels = length(unique(get(inblockfac))) == nlevel), by = c(curblock, 'feature_id')]
-                    subdt <- subdt[, .(completeblocks = sum(alllevels)) , by = 'feature_id']
-                    subdt <- subdt[completeblocks >= n]
-                    if (verbose & nrow(subdt) < nrow(object)){
+                dt %<>% extract(, c('feature_id', blockvar, names(connectedfactorsdt)), with = FALSE)
+                connectedsets <- connectedfactorsdt[[connectedfactor]] 
+                connectedsets %<>% extract(stri_detect_fixed(., ';'))
+                for (connectedlevels in connectedsets){
+                    connectedlevels %<>% stri_split_fixed(';') %>% extract2(1)
+                    nlevel <- length(connectedlevels)
+                    idx <- dt[[inblockfactor]] %in% connectedlevels
+                    connectedlevelsdt <- dt[idx]
+                    connectedlevelsdt %<>% extract(, .(connected = length(unique(get(connectedfactor))) == nlevel), by = c(blockvar, 'feature_id'))
+                    connectedlevelsdt %<>% extract(, .(connectedblocks = sum(connected)) , by = 'feature_id')
+                    connectedlevelsdt %<>% extract(connectedblocks >= nconnectedblocks)
+                    n0 <- nrow(object); n1 <- nrow(connectedlevelsdt)
+                    if (verbose & n1>n0){
                         cmessage('\t\tRetain %d/%d features: %d or more %ss span %ss: %s', 
-                                 nrow(subdt), nrow(object), n, curblock, inblockfactor, paste0(inblocklevels, collapse = ', '))
-                        idx <- fdt(object)$feature_id %in% subdt$feature_id
+                                 n1, n0, n, blockvar, inblockfactor, paste0(connectedlevels, collapse = ', '))
+                        idx <- fdt(object)$feature_id %in% connectedlevelsdt$feature_id
                         object %<>% extract(idx, )
                     }
                 }
@@ -269,7 +270,6 @@ extract_full_block_features <- function(
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% extract_full_block_features(formula = ~subgroup, block = 'SUB')
 #' fit_lm(   object, formula = ~subgroup)
 #' fit_limma(object, formula = ~subgroup)
 #' fit_limma(object, formula = ~subgroup, block = 'SUB')
@@ -305,7 +305,9 @@ fit_lmx <- function(
 # Filter / Customize
     obj <- object
     if (fit %in% c('lme', 'lmer')){  
-        obj %<>% extract_full_block_features(formula = formula, block = block)  }
+        obj %<>% extract_connected_features(formula = formula, blockvars = block)
+        obj %<>% rm_consistent_nondetects(formula)
+    }
     if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose)
     } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block   = block,   verbose = verbose)  }
 # Fit

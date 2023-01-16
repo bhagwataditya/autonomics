@@ -89,7 +89,6 @@ Fit lm, lme, or lmer
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
-object \%<>\% extract_full_block_features(formula = ~subgroup, block = 'SUB')
 fit_lm(   object, formula = ~subgroup)
 fit_limma(object, formula = ~subgroup)
 fit_limma(object, formula = ~subgroup, block = 'SUB')
