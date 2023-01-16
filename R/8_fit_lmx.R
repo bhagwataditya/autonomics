@@ -239,7 +239,7 @@ extract_connected_features <- function(
                     connectedlevelsdt %<>% extract(, .(connectedblocks = sum(connected)) , by = 'feature_id')
                     connectedlevelsdt %<>% extract(connectedblocks >= nconnectedblocks)
                     n0 <- nrow(object); n1 <- nrow(connectedlevelsdt)
-                    if (verbose & n1>n0){
+                    if (verbose & n1<n0){
                         cmessage('\t\tRetain %d/%d features: %d or more %ss span %ss: %s', 
                                  n1, n0, n, blockvar, inblockfactor, paste0(connectedlevels, collapse = ', '))
                         idx <- fdt(object)$feature_id %in% connectedlevelsdt$feature_id
