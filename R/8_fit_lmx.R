@@ -215,6 +215,7 @@ extract_connected_features <- function(
     fixedvars <- all.vars(formula)
     sdt0 <- sdt(object)[, c(fixedvars, blockvars), with = FALSE]                      # design/block vars
     sdt0 %<>% extract(, false_names(vapply(., is.numeric, logical(1))), with = FALSE) # factors
+    fixedvars %<>% intersect(names(sdt0))                                             # keep only factor fixedvars
     for (blockvar in blockvars){
         # Within blockvar: identify factors with (sets of) connected levels
             connectedfactorsdt <- sdt0[, lapply(.SD, function(x) paste0(unique(x), collapse = ';')), by = blockvar, .SDcols = fixedvars]
