@@ -1353,7 +1353,7 @@ plot_design <- function(object){
 #' @param effectsize   number: effectsize filter
 #' @param p            number: p    filter
 #' @param fdr          number: fdr  filter
-#' @param ntop         number: ntop filter
+#' @param n            number: n filter
 #' @param flabel       string: feature label
 #' @param group        sample groupvar
 #' @examples
@@ -1369,7 +1369,7 @@ plot_top_heatmap <- function(
     effectsize  = 0,
     p           = 1,
     fdr         = 0.05,
-    ntop        = 100,
+    n           = 100,
     flabel      = intersect(c('gene', 'feature_id'), fvars(object))[1], 
     group       = 'subgroup'
 ){
@@ -1390,7 +1390,7 @@ plot_top_heatmap <- function(
 # Filter: significant features
     object0 <- object
     object %<>% extract_coef_features(
-        fit = fit, coef = coef, effectsize = effectsize, p = p, fdr = fdr, ntop = ntop)
+        fit = fit, coef = coef, effectsize = effectsize, p = p, fdr = fdr, n = n)
 # Zscore
     assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
     assays(object)[[assay]] %<>% na_to_zero()

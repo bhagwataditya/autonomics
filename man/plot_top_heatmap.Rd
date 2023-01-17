@@ -12,7 +12,7 @@ plot_top_heatmap(
   effectsize = 0,
   p = 1,
   fdr = 0.05,
-  ntop = 100,
+  n = 100,
   flabel = intersect(c("gene", "feature_id"), fvars(object))[1],
   group = "subgroup"
 )
@@ -32,7 +32,7 @@ plot_top_heatmap(
 
 \item{fdr}{number: fdr  filter}
 
-\item{ntop}{number: ntop filter}
+\item{n}{number: n filter}
 
 \item{flabel}{string: feature label}
 
