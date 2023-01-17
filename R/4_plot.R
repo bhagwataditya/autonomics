@@ -1383,7 +1383,7 @@ plot_top_heatmap <- function(
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
-    assert_is_a_number(ntop)
+    assert_is_a_number(n)
     assert_is_a_string(flabel)
     assert_is_subset(  flabel, fvars(object))
     assert_is_subset(group,  svars(object))
