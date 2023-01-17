@@ -25,10 +25,9 @@ Switch blockvar format
 \examples{
 # lme
    block_formula_lme( block = c('subject', 'batch'),           formula = ~ subgroup)
-   block_formula_lme( block = list(subject = ~1, batch = ~1),  formula = ~ GROUP + SUBGROUP)
+   block_formula_lme( block = list(subject = ~1, batch = ~1),  formula = ~ subgroup)
    block_formula_lme( block = ~1|SUB,                          formula = ~ subgroup)
 # lmer
-   block_formula_lmer(block = c('SUB', 'SEX'), formula = ~ GROUP + SUBGROUP)
-   block_formula_lmer(formula = ~GROUP + SUBGROUP + (1|SUB) + (1|SEX))
-   block_vars(formula = ~GROUP + SUBGROUP + (1|SUB) + (1|SEX))
+   block_formula_lmer( block = c('subject', 'batch'),          formula = ~ subgroup)
+   block_formula_lmer(formula = ~ subgroup + (1|subject) + (1|batch))
 }
