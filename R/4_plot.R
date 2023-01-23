@@ -698,10 +698,33 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     object[idx, ]
 }
 
-
-order_on_p <- function(object, coefs, fit = fits(object)[1]){
-    x <- autonomics::p(object, fit = fit, coefs = coefs)
-    idx <- order(matrixStats::rowMins(x))
+#' Order on p 
+#' @param object   SummarizedExperiment
+#' @param coefs    string vector: subset of `coefs(object)`
+#' @param fit      string vector: subset of `fits(object)`
+#' @param verbose  TRUE or FALSE
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma', coefs = c('t1', 't2', 't3'))
+#' object %<>% order_on_p()
+#' @return SummarizedExperiment
+order_on_p <- function(
+    object, 
+    fit = autonomics::fits(object), 
+    coefs = autonomics::coefs(object, fit = fit), 
+    verbose = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_is_subset(coefs, autonomics::coefs(object))
+    assert_is_subset(fit,   autonomics::fits( object))
+# Order    
+    pmat <- autonomics::p(object, fit = fit, coefs = coefs)
+    if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
+                            paste0( fits(object), collapse = ', '), 
+                            paste0(coefs(object), collapse = ', '))
+    idx <- order(matrixStats::rowMins(pmat))
+# Return
     object[idx, ]
 }
 

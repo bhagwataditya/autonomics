@@ -196,19 +196,17 @@ fitcoefs <- function(object){
 }
 
 
-extract_contrast_fdt <- function(object, fitcoef){
-# Order on p
-       pvar   <- paste0(     'p', FITSEP, fitcoef)
-       fdrvar <- paste0(   'fdr', FITSEP, fitcoef)
-    effectvar <- paste0('effect', FITSEP, fitcoef)
-    idx <- order(fdt(object)[[pvar]])
-    object %<>% extract(idx, )
-# Extract results
-    cols <- fvars(object) %>% setdiff('feature_id') %>% setdiff(fitvars(object))
-    cols %<>% c('feature_id', pvar, fdrvar, effectvar, .)
-    
+extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because not all fit have same coefs
+# Order
+    coef <- split_extract_fixed(fitcoef, FITSEP, 1)
+    fit  <- split_extract_fixed(fitcoef, FITSEP, 2)
+    object %<>% order_on_p(coefs = coef, fit = fit)
+# Extract
+    fitcols <- fitvars(object)
+    annocols <- fvars(object) %>% setdiff('feature_id') %>% setdiff(fitcols)
+    cols <- c('feature_id', fitcols, annocols)
     fdt0 <- fdt(object)[, cols, with = FALSE]
-    names(fdt0) %<>% stri_replace_first_fixed(paste0(FITSEP, fitcoef), '')
+    names(fdt0) %<>% stri_replace_first_fixed(paste0(FITSEP, coef, FITSEP, fit), '')
     fdt0
 }
 
@@ -233,8 +231,9 @@ write_xl <- function(object, xlfile){
     }
     assert_is_valid_sumexp(object)
     assert_all_are_dirs(dirname(xlfile))
-# Write    
-    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs(object), 
+# Write
+    list0 <- mapply(extract_contrast_fdt, 
+                    fitcoef = fitcoefs(object),
                     MoreArgs = list(object = object), SIMPLIFY = FALSE)
     writexl::write_xlsx(list0, path = xlfile)
 # Return

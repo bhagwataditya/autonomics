@@ -386,7 +386,7 @@ split_samples <- function(object, by = 'subgroup'){
 #' @export
 split_features <- function(object, by){
     if (!by %in% fvars(object))  return(list(object))
-    extract_features  <- function(level)  object %>% extract(.[[by]] == level, )
+    extract_features  <- function(level)  object %>% extract(fdt(.)[[by]] == level, )
     Map(extract_features, flevels(object, by))
 }
 

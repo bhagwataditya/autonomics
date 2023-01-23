@@ -75,6 +75,7 @@ Suggests:
   BiocStyle,
   Biostrings,
   diagram,
+  GenomicDataCommons,
   GenomicRanges,
   GEOquery,
   hgu95av2.db,
@@ -99,6 +100,8 @@ Suggests:
   readODS,
   rtracklayer, 
   statmod,
+  survival,
+  survminer,
   testthat,
   UniProt.ws,
   writexl
