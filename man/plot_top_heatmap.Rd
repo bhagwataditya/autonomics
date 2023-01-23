@@ -13,6 +13,7 @@ plot_top_heatmap(
   p = 1,
   fdr = 0.05,
   n = 100,
+  cluster_samples = FALSE,
   flabel = intersect(c("gene", "feature_id"), fvars(object))[1],
   group = "subgroup"
 )
@@ -34,6 +35,8 @@ plot_top_heatmap(
 
 \item{n}{number: n filter}
 
+\item{cluster_samples}{TRUE or FALSE}
+
 \item{flabel}{string: feature label}
 
 \item{group}{sample groupvar}
@@ -45,4 +48,5 @@ Plot top heatmap
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file, fit = 'limma')
 plot_top_heatmap(object)
+plot_top_heatmap(object, cluster_samples = FALSE)
 }

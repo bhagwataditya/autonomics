@@ -721,8 +721,8 @@ order_on_p <- function(
 # Order    
     pmat <- autonomics::p(object, fit = fit, coefs = coefs)
     if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
-                            paste0( fits(object), collapse = ', '), 
-                            paste0(coefs(object), collapse = ', '))
+                            paste0(fit,   collapse = ', '), 
+                            paste0(coefs, collapse = ', '))
     idx <- order(matrixStats::rowMins(pmat))
 # Return
     object[idx, ]
@@ -735,7 +735,7 @@ order_on_p <- function(
     assert_is_valid_sumexp(object)
     assert_positive_number(n)
 # Filter
-    object %<>% order_on_p(coefs = coefs, fit = fit)
+    object %<>% order_on_p(fit = fit, coefs = coefs, verbose = FALSE)
     n %<>% min(nrow(object))
     idx <- c(rep(TRUE, n), rep(FALSE, nrow(object)-n))
     n0 <- length(idx)
@@ -1369,32 +1369,35 @@ plot_design <- function(object){
 }
 
 #' Plot top heatmap
-#' @param object       SummarizedExperiment
-#' @param assay        string: one of assayNames(object)
-#' @param fit         'limma', 'lm', 'lme(r)', 'wilcoxon'
-#' @param coef  string: one of coefs(object)
-#' @param effectsize   number: effectsize filter
-#' @param p            number: p    filter
-#' @param fdr          number: fdr  filter
-#' @param n            number: n filter
-#' @param flabel       string: feature label
-#' @param group        sample groupvar
+#' @param object           SummarizedExperiment
+#' @param assay            string: one of assayNames(object)
+#' @param fit             'limma', 'lm', 'lme(r)', 'wilcoxon'
+#' @param coef             string: one of coefs(object)
+#' @param effectsize       number: effectsize filter
+#' @param p                number: p    filter
+#' @param fdr              number: fdr  filter
+#' @param n                number: n filter
+#' @param cluster_samples  TRUE or FALSE
+#' @param flabel           string: feature label
+#' @param group            sample groupvar
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
 #' plot_top_heatmap(object)
+#' plot_top_heatmap(object, cluster_samples = FALSE)
 #' @export
 plot_top_heatmap <- function(
     object,
-    assay       = assayNames(object)[1],
-    fit         = fits(object)[1],
-    coef        = default_coefs(object, fit = fit)[1],
-    effectsize  = 0,
-    p           = 1,
-    fdr         = 0.05,
-    n           = 100,
-    flabel      = intersect(c('gene', 'feature_id'), fvars(object))[1], 
-    group       = 'subgroup'
+    assay           = assayNames(object)[1],
+    fit             = fits(object)[1],
+    coef            = default_coefs(object, fit = fit)[1],
+    effectsize      = 0,
+    p               = 1,
+    fdr             = 0.05,
+    n               = 100,
+    cluster_samples = FALSE,
+    flabel          = intersect(c('gene', 'feature_id'), fvars(object))[1], 
+    group           = 'subgroup'
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -1413,7 +1416,7 @@ plot_top_heatmap <- function(
 # Filter: significant features
     object0 <- object
     object %<>% extract_coef_features(
-        fit = fit, coef = coef, effectsize = effectsize, p = p, fdr = fdr, n = n)
+        fit = fit, coefs = coef, effectsize = effectsize, p = p, fdr = fdr, n = n)
 # Zscore
     assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
     assays(object)[[assay]] %<>% na_to_zero()
@@ -1429,10 +1432,12 @@ plot_top_heatmap <- function(
     object <- rbind(down, up)                                   # rbind
     fdt(object)[[flabel]] %<>% factor(unique(.))                # fix order
 # Order samples
-    idx <- matrixStats::colSds(assays(object)[[assay]]) > 0
-    object %<>% extract(, idx)
-    idx <- hclust(as.dist(1-cor(assays(object)[[assay]])))$order
-    object %<>% extract(, idx)                              # order samples
+    if (cluster_samples){
+        idx <- matrixStats::colSds(assays(object)[[assay]]) > 0 # this ad-hoc dropping of samples is undesirable
+        object %<>% extract(, idx)
+        idx <- hclust(as.dist(1-cor(assays(object)[[assay]])))$order
+        object %<>% extract(, idx)                              # order samples
+    }
     object %<>% split_samples(group)                            # split by group
     object %<>% Reduce(cbind, .)                                # cbind
     sdt(object)$sample_id %<>% factor(unique(.))                # fix order
