@@ -20,6 +20,7 @@ plot_exprs(
   color = switch(geom, boxplot = NULL, point = x),
   fill = switch(geom, boxplot = x, point = NULL),
   shape = NULL,
+  size = NULL,
   block = NULL,
   linetype = NULL,
   highlight = NULL,
@@ -90,6 +91,8 @@ plot_exprs_per_coef(
 \item{fill}{string:      fill svar}
 
 \item{shape}{string:     shape svar}
+
+\item{size}{string:      size svar}
 
 \item{block}{string:     group svar}
 

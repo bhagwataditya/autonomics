@@ -869,8 +869,8 @@ add_facetvars <- function(
 #==============================================================================
 
 .plot_exprs <- function(
-    object, assay, geom, x, fill, color, shape, block, linetype, highlight, 
-    facet, scales, nrow, ncol, page, labeller, 
+    object, assay, geom, x, fill, color, shape, size, block, linetype, 
+    highlight, facet, scales, nrow, ncol, page, labeller, 
     pointsize, jitter, colorpalette, fillpalette, hlevels, 
     title, xlab, ylab, theme
 ){
@@ -879,6 +879,7 @@ add_facetvars <- function(
     fillsym     <- if (is.null(fill))      quo(NULL) else  sym(fill)
     colorsym    <- if (is.null(color))     quo(NULL) else  sym(color)
     shapesym    <- if (is.null(shape))     quo(NULL) else  sym(shape)
+    sizesym     <- if (is.null(size))      quo(NULL) else  sym(size)
     blocksym    <- if (is.null(block))     quo(NULL) else  sym(block)
     linetypesym <- if (is.null(linetype))  quo(NULL) else  sym(linetype)
     plotvars <- 'feature_name'
@@ -886,6 +887,7 @@ add_facetvars <- function(
     if (!is.null(fill))       plotvars %<>% c(fill)      %>% unique()
     if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
     if (!is.null(shape))      plotvars %<>% c(shape)     %>% unique()
+    if (!is.null(size))       plotvars %<>% c(size)      %>% unique()
     if (!is.null(block))      plotvars %<>% c(block)     %>% unique()
     if (!is.null(linetype))   plotvars %<>% c(linetype)  %>% unique()
     if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
@@ -912,7 +914,8 @@ add_facetvars <- function(
                     position = position_jitter(width = jitter, height = 0), size = pointsize, na.rm = TRUE)
         }
     } else {
-        p <- p + geom_point(  aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym, shape = !!shapesym), na.rm = TRUE)
+        p <- p + geom_point(  aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym, 
+                                  shape = !!shapesym, size = !! sizesym), na.rm = TRUE)
     }
     p <- add_color_scale(p, color, data = dt, palette = colorpalette)
     p <- add_fill_scale( p, fill,  data = dt, palette = fillpalette)
@@ -958,6 +961,7 @@ add_facetvars <- function(
 #' @param color         string:     color svar
 #' @param fill          string:      fill svar
 #' @param shape         string:     shape svar
+#' @param size          string:      size svar
 #' @param block         string:     group svar
 #' @param linetype      string:  linetype svar
 #' @param highlight     string: highlight svar
@@ -1016,6 +1020,7 @@ plot_exprs <- function(
     color        = switch(geom, boxplot = NULL, point = x),
     fill         = switch(geom, boxplot = x,    point = NULL),
     shape        = NULL,
+    size         = NULL,
     block        = NULL, 
     linetype     = NULL,
     highlight    = NULL, 
@@ -1054,6 +1059,7 @@ plot_exprs <- function(
     if (!is.null(color))      assert_scalar_subset(color,     c(svars(object), fvars(object)))
     if (!is.null(fill))       assert_scalar_subset(fill,      c(svars(object), fvars(object)))
     if (!is.null(shape))      assert_scalar_subset(shape,     c(svars(object), fvars(object)))
+    if (!is.null(size))       assert_scalar_subset(size,      c(svars(object), fvars(object)))
     if (!is.null(block))      assert_scalar_subset(block,     c(svars(object), fvars(object)))
     if (!is.null(linetype))   assert_scalar_subset(linetype,  c(svars(object), fvars(object)))
     if (!is.null(highlight))  assert_scalar_subset(highlight, c(svars(object), fvars(object)))
@@ -1083,6 +1089,7 @@ plot_exprs <- function(
             assay         = assay,             geom        = geom,
             x             = x,                 fill        = fill,
             color         = color,             shape       = shape,
+            size          = size,
             block         = block,             linetype    = linetype,
             highlight     = highlight,         facet       = facet,     
             scales        = scales,            nrow        = nrow,
