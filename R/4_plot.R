@@ -869,23 +869,25 @@ add_facetvars <- function(
 #==============================================================================
 
 .plot_exprs <- function(
-    object, assay, geom, x, fill, color, shape, block, highlight, 
+    object, assay, geom, x, fill, color, shape, block, linetype, highlight, 
     facet, scales, nrow, ncol, page, labeller, 
     pointsize, jitter, colorpalette, fillpalette, hlevels, 
     title, xlab, ylab, theme
 ){
 # Prepare
-    xsym     <- sym(x)
-    fillsym  <- if (is.null(fill))   quo(NULL) else  sym(fill)
-    colorsym <- if (is.null(color))  quo(NULL) else  sym(color)
-    shapesym <- if (is.null(shape))  quo(NULL) else  sym(shape)
-    blocksym <- if (is.null(block))  quo(NULL) else  sym(block)
+    xsym        <- sym(x)
+    fillsym     <- if (is.null(fill))      quo(NULL) else  sym(fill)
+    colorsym    <- if (is.null(color))     quo(NULL) else  sym(color)
+    shapesym    <- if (is.null(shape))     quo(NULL) else  sym(shape)
+    blocksym    <- if (is.null(block))     quo(NULL) else  sym(block)
+    linetypesym <- if (is.null(linetype))  quo(NULL) else  sym(linetype)
     plotvars <- 'feature_name'
     if (!is.null(x))          plotvars %<>% c(x)         %>% unique()
     if (!is.null(fill))       plotvars %<>% c(fill)      %>% unique()
     if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
     if (!is.null(shape))      plotvars %<>% c(shape)     %>% unique()
     if (!is.null(block))      plotvars %<>% c(block)     %>% unique()
+    if (!is.null(linetype))   plotvars %<>% c(linetype)  %>% unique()
     if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
     if (!is.null(facet))      plotvars %<>% c(facet)     %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
@@ -919,7 +921,7 @@ add_facetvars <- function(
         byvar <- block
         if (!is.null(facet)) byvar %<>% c(facet)
         #dt[, direction := get(fill)[which.max(value)], by = byvar]
-        p <- p + geom_line(aes(x = !!xsym, y = value, color = !!xsym, group = !!blocksym), na.rm = TRUE) # color = direction
+        p <- p + geom_line(aes(x = !!xsym, y = value, color = !!xsym, group = !!blocksym, linetype = !!linetypesym), na.rm = TRUE) # color = direction
         p <- add_color_scale(p, x, data = dt, palette = fillpalette)    # 'direction'
     }
 # Add highlighted points
@@ -951,10 +953,14 @@ add_facetvars <- function(
 #'                     'features' (per-feature distribution across samples ) or 
 #'                     'both'        (subgroup distribution faceted per feature)
 #' @param assay         string: value in assayNames(object)
-#' @param x             string: svar mapped to x
-#' @param fill          string: svar mapped to fill
-#' @param highlight     string: svar mapped to highlights 
-#' @param block         string: blocking svar (to connect points)
+#' @param geom          'boxplot' or 'point'
+#' @param x             string:         x svar
+#' @param color         string:     color svar
+#' @param fill          string:      fill svar
+#' @param shape         string:     shape svar
+#' @param block         string:     group svar
+#' @param linetype      string:  linetype svar
+#' @param highlight     string: highlight svar
 #' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
 #' @param coefs         subset of coefs(object) to consider in selecting top
 #' @param p             fraction: p   cutoff
@@ -1011,6 +1017,7 @@ plot_exprs <- function(
     fill         = switch(geom, boxplot = x,    point = NULL),
     shape        = NULL,
     block        = NULL, 
+    linetype     = NULL,
     highlight    = NULL, 
     fit          = fits(object)[1], 
     coefs        = default_coefs(object, fit = fit)[1], 
@@ -1040,14 +1047,17 @@ plot_exprs <- function(
 # Assert
     assert_is_valid_sumexp(object)
     if (nrow(object)==0)      return(ggplot())
+    assert_scalar_subset(dim, c('features', 'samples', 'both'))
     assert_scalar_subset(assay, assayNames(object))
+    assert_scalar_subset(geom, c('boxplot', 'point'))
                               assert_scalar_subset(x,         c(svars(object), fvars(object)))
     if (!is.null(color))      assert_scalar_subset(color,     c(svars(object), fvars(object)))
     if (!is.null(fill))       assert_scalar_subset(fill,      c(svars(object), fvars(object)))
     if (!is.null(shape))      assert_scalar_subset(shape,     c(svars(object), fvars(object)))
     if (!is.null(block))      assert_scalar_subset(block,     c(svars(object), fvars(object)))
-    if (!is.null(facet))      assert_is_subset(facet,         c(svars(object), fvars(object)))
+    if (!is.null(linetype))   assert_scalar_subset(linetype,  c(svars(object), fvars(object)))
     if (!is.null(highlight))  assert_scalar_subset(highlight, c(svars(object), fvars(object)))
+    if (!is.null(facet))      assert_is_subset(facet,         c(svars(object), fvars(object)))
     if (!is.null(nrow))       assert_is_a_number(nrow)
     if (!is.null(ncol))       assert_is_a_number(ncol)
     if (!is.null(facet))      assert_is_subset(scales, c('fixed', 'free', 'free_x', 'free_y'))
@@ -1073,7 +1083,7 @@ plot_exprs <- function(
             assay         = assay,             geom        = geom,
             x             = x,                 fill        = fill,
             color         = color,             shape       = shape,
-            block         = block,
+            block         = block,             linetype    = linetype,
             highlight     = highlight,         facet       = facet,     
             scales        = scales,            nrow        = nrow,
             ncol          = ncol,              page        = i,

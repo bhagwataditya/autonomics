@@ -21,6 +21,7 @@ plot_exprs(
   fill = switch(geom, boxplot = x, point = NULL),
   shape = NULL,
   block = NULL,
+  linetype = NULL,
   highlight = NULL,
   fit = fits(object)[1],
   coefs = default_coefs(object, fit = fit)[1],
@@ -80,13 +81,21 @@ plot_exprs_per_coef(
 
 \item{assay}{string: value in assayNames(object)}
 
-\item{x}{string: svar mapped to x}
+\item{geom}{'boxplot' or 'point'}
 
-\item{fill}{string: svar mapped to fill}
+\item{x}{string:         x svar}
 
-\item{block}{string: blocking svar (to connect points)}
+\item{color}{string:     color svar}
 
-\item{highlight}{string: svar mapped to highlights}
+\item{fill}{string:      fill svar}
+
+\item{shape}{string:     shape svar}
+
+\item{block}{string:     group svar}
+
+\item{linetype}{string:  linetype svar}
+
+\item{highlight}{string: highlight svar}
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
