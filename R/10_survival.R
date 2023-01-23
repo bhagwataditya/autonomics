@@ -160,19 +160,28 @@ dichotomize_exprs <- function(dt, percentile){
     
 }
 
-.fit_survival <- function(subdt){
+.fit_survival <- function(subdt, samples = FALSE){
     timetoevent <- event <- NULL
     diff <- survival::survdiff(survival::Surv(timetoevent, event) ~ exprlevel, data = subdt)
     coef <- suppressWarnings(coef(summary( survival::coxph(
                 survival::Surv(subdt$timetoevent, subdt$event)~subdt$value)))[,'coef' ])
     exprlevels <- unique(subdt$exprlevel)
     exprlevels %<>% extract(order(as.numeric(substr(., 1, nchar(.)-1))))
-    
-    resdt <- data.table(
-               `effect~surv~LR` = sign(coef),
-                    `p~surv~LR` = 1 - pchisq(diff$chisq, 1), 
-                   `lo~surv~LR` = unique(subdt[exprlevel == exprlevels[1]])$sample_id %>% commonify_strings(),
-                   `hi~surv~LR` = unique(subdt[exprlevel == exprlevels[2]])$sample_id %>% commonify_strings() )
+    if (samples){
+        lo <- unique(subdt[exprlevel == exprlevels[1]])$sample_id
+        hi <- unique(subdt[exprlevel == exprlevels[2]])$sample_id
+        lo %<>% as.character() %>% commonify_strings()
+        hi %<>% as.character() %>% commonify_strings()
+        return(data.table(
+                   `effect~surv~LR` = sign(coef),
+                        `p~surv~LR` = 1 - pchisq(diff$chisq, 1), 
+                       `lo~surv~LR` = lo,
+                       `hi~surv~LR` = hi ))
+    } else {
+        return(data.table(
+                   `effect~surv~LR` = sign(coef),
+                        `p~surv~LR` = 1 - pchisq(diff$chisq, 1)))
+    }
 }
 
 #' @rdname dot-plot_survival
@@ -181,6 +190,7 @@ fit_survival <- function(
     object, 
     assay      = assayNames(object)[1],
     percentile = 25, 
+    samples    = if (ncol(object) < 50) TRUE else FALSE,
     verbose    = TRUE
 ){
 # Assert
@@ -201,7 +211,7 @@ fit_survival <- function(
     dt <- dt[, .SD[    length(unique(exprlevel))==2], by = c('feature_id')             ]   #    2 exprlevels per feature
     if (verbose)  cmessage('\t\t\tp  =  survdiff(Surv(timetoevent, event) ~ exprlevel)')
     if (verbose)  cmessage('\t\t\teffect = coxph(Surv(timetoevent, event) ~ exprvalue)')
-    dt %<>% extract(, .fit_survival(.SD), by = 'feature_id')                               # Fit survival
+    dt %<>% extract(, .fit_survival(.SD, samples = samples), by = 'feature_id')            # Fit survival
 # Return
     oldnames <- names(dt) %>% extract(stri_detect_regex(., '[~]LR$'))
     newnames <- paste0(oldnames, percentile)

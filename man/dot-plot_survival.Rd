@@ -10,6 +10,7 @@ fit_survival(
   object,
   assay = assayNames(object)[1],
   percentile = 25,
+  samples = if (ncol(object) < 50) TRUE else FALSE,
   verbose = TRUE
 )
 
