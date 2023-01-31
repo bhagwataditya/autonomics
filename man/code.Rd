@@ -47,5 +47,9 @@ This is demonstrated in the examples.
 # SummarizedExperiment context
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
+    object \%<>\% fit_limma()                                  # contr.treatment
+    object$subgroup \%<>\% code(contr.diff)   # contr.diff
+    object \%<>\% fit_limma()
+    object$subgroup \%<>\% code( code_diff)   # code_diff
     object \%<>\% fit_limma()
 }

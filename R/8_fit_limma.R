@@ -168,6 +168,10 @@ create_design.data.table <- function(
 #' # SummarizedExperiment context
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
+#'     object %<>% fit_limma()                                  # contr.treatment
+#'     object$subgroup %<>% code(contr.diff)   # contr.diff
+#'     object %<>% fit_limma()
+#'     object$subgroup %<>% code( code_diff)   # code_diff
 #'     object %<>% fit_limma()
 #' @export
 code <- function(
@@ -326,7 +330,7 @@ reset_fitres <- function(
     pattern <- coefs 
     pattern %<>% paste0(collapse = '|')
     pattern %<>% paste0('~(', ., ')~', fit)
-    coefvars <- fitvars(object) %>% extract(stri_detect_regex(., coefs))
+    coefvars <- fitvars(object) %>% extract(stri_detect_regex(., pattern))
     if (length(coefvars)>0){
         if (verbose)  cmessage('\t\tRm from fdt: (effect|p|fdr)~(%s)~%s', paste0(coefs, collapse = '|'), fit)
         for (coefvar in coefvars){
