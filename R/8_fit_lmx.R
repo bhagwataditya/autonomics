@@ -134,7 +134,7 @@ block_formula_lme  <- function(block, formula, verbose = TRUE){
     y <- rep('~1', length(block))
     names(y) <- block
     y %<>% lapply(as.formula)
-    if (verbose)  cmessage('\t\tlme(%s, random = %s)',  formula, deparse(dput(y)))
+    if (verbose)  cmessage('\t\tlme(%s, random = %s)',  formula, capture.output(dput(y)))
     y
 }
 
