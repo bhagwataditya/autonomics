@@ -45,7 +45,14 @@
   verbose = TRUE
 )
 
-.extract_n_features(object, coefs, n, fit = fits(object)[1], verbose = TRUE)
+.extract_n_features(
+  object,
+  coefs,
+  combiner = "|",
+  n,
+  fit = fits(object)[1],
+  verbose = TRUE
+)
 
 extract_coef_features(
   object,

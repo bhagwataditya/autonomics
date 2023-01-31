@@ -3,7 +3,7 @@
 \name{create_design}
 \alias{create_design}
 \alias{create_design.SummarizedExperiment}
-\alias{create_design.data.frame}
+\alias{create_design.data.table}
 \title{Create design}
 \usage{
 create_design(object, ...)
@@ -17,7 +17,7 @@ create_design(object, ...)
   ...
 )
 
-\method{create_design}{data.frame}(
+\method{create_design}{data.table}(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar),
@@ -46,17 +46,11 @@ design matrix
 Create design matrix  for statistical analysis
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot = FALSE)
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file)
 unique(create_design(object))
-
-object$subgroup <- 'billing19'
-unique(create_design(object, drop = TRUE))
-
-file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file, plot=FALSE)
-unique(create_design(object))
-create_design(object, formula= ~ 0 + SampleGroup + Sex + T2D + age + bmi)
-object$subgroup <- 'atkin18'
-unique(create_design(object))
+unique(create_design(object, formula = ~ subgroup))
+unique(create_design(object, formula = ~ subgroup + T2D))
+unique(create_design(object, formula = ~ subgroup / T2D))
+unique(create_design(object, formula = ~ subgroup * T2D))
 }

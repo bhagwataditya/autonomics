@@ -69,19 +69,13 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' @param ...          required to s3ify
 #' @return design matrix
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot = FALSE)
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
 #' unique(create_design(object))
-#'
-#' object$subgroup <- 'billing19'
-#' unique(create_design(object, drop = TRUE))
-#'
-#' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
-#' unique(create_design(object))
-#' create_design(object, formula= ~ 0 + SampleGroup + Sex + T2D + age + bmi)
-#' object$subgroup <- 'atkin18'
-#' unique(create_design(object))
+#' unique(create_design(object, formula = ~ subgroup))
+#' unique(create_design(object, formula = ~ subgroup + T2D))
+#' unique(create_design(object, formula = ~ subgroup / T2D))
+#' unique(create_design(object, formula = ~ subgroup * T2D))
 #' @export
 create_design <- function(object, ...) UseMethod('create_design')
 
@@ -96,7 +90,7 @@ create_design.SummarizedExperiment <- function(
     verbose     = FALSE, 
     ...
 ){
-    create_design.data.frame(sdata(object), 
+    create_design.data.table(sdt(object), 
                             subgroupvar = subgroupvar, 
                             formula     = formula,
                             drop        = drop,
@@ -105,7 +99,7 @@ create_design.SummarizedExperiment <- function(
 
 #' @rdname create_design
 #' @export
-create_design.data.frame <- function(
+create_design.data.table <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula     = default_formula(object, subgroupvar),
@@ -121,7 +115,8 @@ create_design.data.frame <- function(
         if (is.character(object[[var]])) object[[var]] %<>% factor() }
 # Create design matrix
     if (verbose)   message('\t\tDesign: ', formula2str(formula))
-    myDesign <- model.matrix(formula, data=object)
+    object %<>% data.frame(row.names = .$sample_id)
+    myDesign <- model.matrix(formula, data = object)
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     is_factor_var <- function(x, object) is.factor(object[[x]])
     if (drop){

@@ -58,7 +58,13 @@ fit_wilcoxon(
 
 \item{subgroupvar}{subgroup variable}
 
-\item{contrasts}{NULL or character vector: coefficient contrasts to test
+\item{contrasts}{NULL or character vector: coefficient contrasts to test}
+
+\item{formula}{modeling formula}
+
+\item{design}{design matrix}
+
+\item{coefs}{NULL or character vector: model coefs to test
 \itemize{
 \item{c("t1-t0", "t2-t1", "t3-t2")}
 \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -67,12 +73,6 @@ fit_wilcoxon(
      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
      nrow=1, byrow=TRUE))}}}
-
-\item{formula}{modeling formula}
-
-\item{design}{design matrix}
-
-\item{coefs}{NULL or character vector: model coefs to test}
 
 \item{block}{block svar (or NULL)}
 

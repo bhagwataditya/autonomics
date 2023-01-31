@@ -30,7 +30,7 @@
 #' @importFrom assertive.types        assert_is_character
 #' @importFrom assertive.types        assert_is_data.frame
 #' @importFrom assertive.types        assert_is_data.table
-#' @importFrom assertive.types        assert_is_factor         
+#' @importFrom assertive.types        assert_is_factor       assert_is_formula
 #' @importFrom assertive.types        assert_is_function
 #' @importFrom assertive.types        assert_is_list
 #' @importFrom assertive.types        assert_is_matrix

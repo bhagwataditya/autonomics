@@ -8,6 +8,7 @@ order_on_p(
   object,
   fit = autonomics::fits(object),
   coefs = autonomics::coefs(object, fit = fit),
+  combiner = "|",
   verbose = TRUE
 )
 }

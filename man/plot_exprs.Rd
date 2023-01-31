@@ -26,6 +26,7 @@ plot_exprs(
   highlight = NULL,
   fit = fits(object)[1],
   coefs = default_coefs(object, fit = fit)[1],
+  combiner = "|",
   p = 1,
   fdr = 1,
   facet = if (dim == "both") "feature_id" else NULL,
