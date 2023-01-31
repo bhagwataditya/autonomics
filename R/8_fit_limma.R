@@ -390,36 +390,30 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param subgroupvar  subgroup variable
 #' @param contrasts    NULL or character vector: coefficient contrasts to test
 #' @param formula      modeling formula
+#' @param drop         TRUE or FALSE
 #' @param design       design matrix
 #' @param coefs        NULL or character vector: model coefs to test
-#' \itemize{
-#' \item{c("t1-t0", "t2-t1", "t3-t2")}
-#' \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
-#'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE)}
-#' \item{list(matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
-#'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
-#'      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
-#'      nrow=1, byrow=TRUE))}}
-#' @param block       block svar (or NULL)
-#' @param weightvar   NULL or name of weight matrix in assays(object)
-#' @param statvars  character vector: subset of c('effect', 'p', 'fdr', 't')
-#' @param sep       string: pvar separator  ("~" in "p~t2~limma")
-#' @param suffix    string: pvar suffix ("limma" in "p~t2~limma")
-#' @param verbose   whether to msg
-#' @param plot      whether to plot
+#' @param block        block svar (or NULL)
+#' @param weightvar    NULL or name of weight matrix in assays(object)
+#' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
+#' @param sep          string: pvar separator  ("~" in "p~t2~limma")
+#' @param suffix       string: pvar suffix ("limma" in "p~t2~limma")
+#' @param verbose      whether to msg
+#' @param plot         whether to plot
 #' @return Updated SummarizedExperiment
 #' @examples
 #' # classical: lm & limma
 #'     require(magrittr)
-#'     file <- download_data('atkin18.somascan.adat')
-#'     object <- read_somascan(file, plot = FALSE, fit = NULL)
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     object %<>% rm_consistent_nondetects(formula = ~ subgroup)
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
-#'    #plot_contrast_venn(testmat(object, coef = 't2'))
+#'     plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
 #'     
 #' # blocked: limma, lme, lmer
-#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID')
-#'     object %<>% fit_lme(  subgroupvar = 'subgroup', block = 'Subject_ID')
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'SUB')
+#'     object %<>% fit_lme(  subgroupvar = 'subgroup', block = 'SUB')
 #'    #object %<>% fit_lmer( subgroupvar = 'subgroup', block = 'Subject_ID') # slow
 #'    #plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
 #'     
