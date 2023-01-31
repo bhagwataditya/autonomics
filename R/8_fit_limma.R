@@ -287,10 +287,10 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'
 #' @param object       SummarizedExperiment
 #' @param subgroupvar  subgroup variable
+#' @param contrasts    NULL or character vector: coefficient contrasts to test
 #' @param formula      modeling formula
 #' @param design       design matrix
 #' @param coefs        NULL or character vector: model coefs to test
-#' @param contrasts    NULL or character vector: coefficient contrasts to test
 #' \itemize{
 #' \item{c("t1-t0", "t2-t1", "t3-t2")}
 #' \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
@@ -354,6 +354,7 @@ fit_limma <- function(
     verbose      = TRUE, 
     plot         = FALSE
 ){
+    object %<>% reset_fitres(fit = 'limma', coefs = coefs)
     limmadt <- .fit_limma(
         object       = object,        subgroupvar  = subgroupvar,
         contrasts    = contrasts,     formula      = formula, 
@@ -362,7 +363,6 @@ fit_limma <- function(
         weightvar    = weightvar,     statvars     = statvars,
         sep          = sep,           suffix       = suffix,
         verbose      = verbose)
-    object %<>% reset_fitres('limma')
     object %<>% merge_fdt(limmadt)
         #fdata(object)$F.limma   <- limmares$F
         #fdata(object)$F.p.limma <- limmares$F.p
