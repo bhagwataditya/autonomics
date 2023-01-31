@@ -93,7 +93,7 @@ rm_single_value_columns <- function(df){
 #' @rdname read_somascan
 #' @export
 .read_somascan <- function(
-    file, fidvar = 'SeqId', sidvar = 'SampleId', 
+    file, fidvar = 'Target', sidvar = 'SampleId', 
     sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup', 
     verbose = TRUE
 ){
@@ -164,7 +164,7 @@ rm_single_value_columns <- function(df){
 #' file <- download_data('atkin18.somascan.adat')
 #' read_somascan(file, pca = TRUE, fit = 'limma', block = 'Subject_ID')
 #' @export
-read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
+read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
     sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup', 
     fname_var    = 'EntrezGeneSymbol',
     sample_type = 'Sample', feature_type = 'Protein',
@@ -199,7 +199,7 @@ read_somascan <- function(file, fidvar = 'SeqId', sidvar = 'SampleId',
 # Analyze
     object %<>% analyze(
         pca         = pca,          fit          = fit, 
-        subgroupvar = subgroupvar,  formula      = formula, 
+        formula     = formula, 
         block       = block,        coefs        = coefs, 
         contrasts   = contrasts,    verbose      = verbose, 
         plot=plot)

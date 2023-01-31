@@ -7,7 +7,7 @@
 \usage{
 .read_somascan(
   file,
-  fidvar = "SeqId",
+  fidvar = "Target",
   sidvar = "SampleId",
   sfile = NULL,
   by.x = NULL,
@@ -18,7 +18,7 @@
 
 read_somascan(
   file,
-  fidvar = "SeqId",
+  fidvar = "Target",
   sidvar = "SampleId",
   sfile = NULL,
   by.x = NULL,
