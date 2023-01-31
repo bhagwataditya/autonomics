@@ -139,6 +139,78 @@ create_design.data.frame <- function(
 }
 
 
+#' Code factor
+#'
+#' Code factor for use in General Linear Model
+#' @param x          factor/character vector
+#' @param contr.fun  contrast coding function: contr.treatment, contr.sum, contr.helmert
+#' @param verbose    TRUE or FALSE
+#' @return (explicitly coded) factor vector
+#' @details
+#' In a General Linear Model, each k-leveled factor is coded with k-1 coefficients.
+#' Each of these coefficients represents a contrast (a difference).
+#' Which contrasts are represented depends on the contrast coding function used.
+#' This is demonstrated in the examples.
+#' @examples 
+#' # Contrast to referencelevel
+#'     require(codingMatrices)       # codingMatrices::code_xxx  vs  stats::contr.xxx
+#'     x <- paste0('time', 0:3)
+#'     x %<>% code(contr.treatment)  # Intercept = reflevel
+#'     x %<>% code(code_control)     #             globalmean
+#'
+#' # Contrast to precedinglevel
+#'     x %<>% code(contr.diff)       # Intercept = reflevel
+#'     x %<>% code(code_diff)        #             globalmean
+#' 
+#' # Contrast to globalmean
+#'     x %<>% code(contr.sum)        # Intercept = globalmean. Functions identical.
+#'     x %<>% code(code_deviation)
+#' 
+#' # Contrast to precedingmean       # Intercept = globalmean.
+#'     x %<>% code(code_helmert)     #  code_helmert is  properly scaled: coef = 1 means diff = 1
+#'     x %<>% code(contr.helmert)    # contr.helmert not properly scaled: coef = 1 means diff = a*1
+#' 
+#' # SummarizedExperiment context
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     object %<>% fit_limma()
+#' @export
+code <- function(
+    x, contr.fun = contr.treatment, verbose = TRUE
+){
+# Assert
+    if (is.character(x))  x %<>% factor() 
+    if (!is.factor(x))  return(x)
+    assert_is_function(contr.fun)
+# Code
+    k <- length(levels(x))
+    contrasts(x) <- contr.fun(levels(x))
+    # Contrast to reflevel
+    if (identical(contr.fun, contr.treatment))   colnames(contrasts(x)) %<>% paste0('-', levels(x)[1])
+    if (identical(contr.fun, code_control))      colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[1])   # avoid truncation of long names
+    # Contrast to precedinglevel
+    if (identical(contr.fun, contr.diff))        colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k])  # avoid truncation of long names
+    if (identical(contr.fun,  code_diff))        colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k])  # avoid truncation of long names
+    # Contrast to globalmean
+    if (identical(contr.fun, contr.sum))         colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-globalmean')
+    if (identical(contr.fun, code_deviation))    colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-globalmean')
+    # Contrast to precedingmean
+    if (identical(contr.fun, contr.helmert))     colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-precedingmean')
+    if (identical(contr.fun,  code_helmert))     colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-precedingmean')
+# Return
+    if (verbose){
+        contrastmat <- codingMatrices::mean_contrasts(contrasts(x))
+        colnames(contrastmat) <- levels(x)
+        rownames(contrastmat)[1] <- 'Intercept'
+        names(dimnames(contrastmat)) <- c('coefficient', 'level')
+        message_df('\t\t%s', contrastmat)
+    }
+    x
+}
+
+
+
+
 #=============================================================================
 #
 #               contrast_coefs
