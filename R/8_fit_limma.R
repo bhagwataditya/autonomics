@@ -408,6 +408,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     varlevels_dont_clash.data.table(sdt(object), vars)
 }
 
+
 #' @rdname fit_limma
 #' @export
 .fit_limma <- function(
@@ -426,15 +427,21 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     verbose      = TRUE, 
     plot         = FALSE
 ){
-# Design/contrasts
+# Assert
     assert_is_valid_sumexp(object)
+    assert_is_formula(formula)
+    assert_is_subset(all.vars(formula), svars(object))
+    assert_is_a_bool(drop)
+    assert_is_matrix(design)
+    if (!is.null(block))      assert_is_subset(block, svars(object))
+    if (!is.null(weightvar))  assert_scalar_subset(weightvar, assayNames(object))
     assert_is_subset(statvars, c('effect', 'p', 'fdr', 't'))
+# Design/contrasts/block/weights
     . <- NULL
     if (verbose)  message('\t\tlmFit(', formula2str(formula),
         if(is.null(block))     '' else paste0(' | ',block),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
                                             weightvar), ')')
-# Block
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
         blockvar <- block
@@ -442,9 +449,8 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         if (is.null(metadata(object)$dupcor)){
             if (verbose)  message('\t\t\t\tdupcor `', blockvar, '`')
             metadata(object)$dupcor <- duplicateCorrelation(
-                values(object), design=design, block=block
+                values(object), design = design, block = block
             )$consensus.correlation }}
-# Exprs/Weights
     design %<>% extract(intersect(snames(object), rownames(.)), , drop = FALSE) # required in mae
     exprmat <-  values(object)[, rownames(design)]
     weightmat <- if (is.null(weightvar)){ NULL 
