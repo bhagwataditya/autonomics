@@ -427,15 +427,15 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'         # flexible, but only approximate
 #'         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
 #' 
-#' # alternative coding: 
+#' # alternative contrastcodings:
 #'     object$subgroup %<>% code(codingMatrices::contr.diff)
-#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID') # backward difs
-#'     stats::contrasts(object$subgroup) <-stats::contr.treatment(levels(object$subgroup))
-#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID') # baseline difs
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'SUB') # backward difs
+#'     object$subgroup %<>% code(stats::contr.treatment)
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'SUB') # baseline difs
 #'     
 #' # non-parametric: wilcoxon
-#'     object %<>% fit_limma(   subgroupvar = 'subgroup', block = 'Subject_ID')
-#'     object %<>% fit_wilcoxon(subgroupvar = 'subgroup', block = 'Subject_ID')
+#'     object %<>% fit_limma(   subgroupvar = 'subgroup', block = 'SUB')
+#'     object %<>% fit_wilcoxon(subgroupvar = 'subgroup', block = 'SUB')
 #' @export
 fit_limma <- function(
     object, 
