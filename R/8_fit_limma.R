@@ -248,13 +248,25 @@ add_fdr <- function(fitres){
     fitres
 }
 
-reset_fitres <- function(object, fit){
+reset_fitres <- function(
+    object, fit, coefs = coefs(object, fit = fit), verbose = TRUE
+){
+# Assert
     . <- NULL
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
     assert_is_a_string(fit)
-    fitcols <- fvars(object) %>% extract(stri_detect_fixed(., fit))
-    fdata(object)[fitcols] <- NULL
-    metadata(object)[[fit]] <- NULL
+# Reset
+    pattern <- coefs 
+    pattern %<>% paste0(collapse = '|')
+    pattern %<>% paste0('~(', ., ')~', fit)
+    coefvars <- fitvars(object) %>% extract(stri_detect_regex(., coefs))
+    if (length(coefvars)>0){
+        if (verbose)  cmessage('\t\tRm from fdt: (effect|p|fdr)~(%s)~%s', paste0(coefs, collapse = '|'), fit)
+        for (coefvar in coefvars){
+            fdt(object)[[coefvar]] <- NULL
+        }
+    }
+# Return
     object
 }
 
