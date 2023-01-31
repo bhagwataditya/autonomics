@@ -36,8 +36,10 @@
 #' @importFrom assertive.types        assert_is_matrix
 #' @importFrom assertive.types        assert_is_numeric
 #' @importFrom assertive.types        is_a_number   is_a_string   is_formula  
-#' @importFrom BiocFileCache  BiocFileCache   bfcquery   bfcadd   bfcrpath
-#' @importFrom BiocGenerics   cbind 
+#' @importFrom BiocFileCache          BiocFileCache   bfcquery   bfcadd   bfcrpath
+#' @importFrom BiocGenerics           cbind 
+#' @importFrom codingMatrices         code_control  code_diff   code_deviation
+#' @importFrom codingMatrices         code_helmert  contr.diff
 #' @importFrom colorspace  sequential_hcl
 #' @importFrom data.table  as.data.table   copy  data.table  
 #' @importFrom data.table  dcast  dcast.data.table

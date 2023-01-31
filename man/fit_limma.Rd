@@ -101,17 +101,17 @@ Fit model and test for differential expression
 # blocked: limma, lme, lmer
     object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB')
     object \%<>\% fit_lme(  subgroupvar = 'subgroup', block = 'SUB')
-   #object \%<>\% fit_lmer( subgroupvar = 'subgroup', block = 'Subject_ID') # slow
-   #plot_contrast_venn(testmat(object, coef = 't3', fit = c('limma', 'lme')))
+   #object \%<>\% fit_lmer( subgroupvar = 'subgroup', block = 'SUB') # slow
+   #plot_contrast_venn(is_sig(object, contrast = 't3', fit = c('limma', 'lme')))
     
 # flexible: limma contrasts
-    object \%<>\% fit_limma(formula = ~subgroup,   block = 'Subject_ID', coefs = 't1') 
-    object \%<>\% fit_limma(formula = ~0+subgroup, block = 'Subject_ID', contrasts = 't1-t0')
+    object \%<>\% fit_limma(formula = ~subgroup,   block = 'SUB', coefs = 't1') 
+    object \%<>\% fit_limma(formula = ~0+subgroup, block = 'SUB', contrasts = 't1-t0')
         # flexible, but only approximate
         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
 
 # alternative coding: 
-    stats::contrasts(object$subgroup) <- MASS::contr.sdif(levels(object$subgroup))
+    object$subgroup \%<>\% code(codingMatrices::contr.diff)
     object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID') # backward difs
     stats::contrasts(object$subgroup) <-stats::contr.treatment(levels(object$subgroup))
     object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'Subject_ID') # baseline difs
