@@ -338,7 +338,7 @@ add_fdr <- function(fitres){
 }
 
 reset_fitres <- function(
-    object, fit, coefs = coefs(object, fit = fit), verbose = TRUE
+    object, fit, coefs = autonomics::coefs(object, fit = fit), verbose = TRUE
 ){
 # Assert
     . <- NULL
