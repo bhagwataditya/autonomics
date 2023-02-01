@@ -261,7 +261,9 @@ read_metabolon <- function(file, sheet = 'OrigScale',
         pca          = pca,           fit       = fit, 
         formula      = formula,       block     = block, 
         coefs        = coefs,         contrasts = contrasts, 
-        verbose      = verbose,       plot      = plot)
+        plot         = plot,          feature_id= feature_id,    
+        sample_id    = sample_id,     palette   = palette, 
+        verbose      = verbose)
 # Return
     object
 }

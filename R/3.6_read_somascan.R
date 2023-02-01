@@ -158,6 +158,7 @@ rm_single_value_columns <- function(df){
 #' @param block                 model blockvar
 #' @param coefs                 model coefficients          of interest: string vector or NULL
 #' @param contrasts             model coefficient contrasts of interest: string vector or NULL
+#' @param palette               charactervector or NULL
 #' @param verbose               TRUE/FALSE: message?
 #' @return Summarizedexperiment
 #' @examples
@@ -171,7 +172,8 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, plot = FALSE, 
     pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL, 
-    coefs = NULL, contrasts = NULL, verbose = TRUE
+    coefs = NULL, contrasts = NULL, 
+    feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_somascan(
@@ -201,8 +203,10 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
         pca         = pca,          fit          = fit, 
         formula     = formula, 
         block       = block,        coefs        = coefs, 
-        contrasts   = contrasts,    verbose      = verbose, 
-        plot=plot)
+        contrasts   = contrasts,
+        plot        = plot,         feature_id    = feature_id,    
+        sample_id   = sample_id,    palette       = palette, 
+        verbose     = verbose)
 # Return
     object
 }

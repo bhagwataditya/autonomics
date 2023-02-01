@@ -9,11 +9,11 @@
 #' @param weightvar    NULL or name of weight matrix in assays(object)
 #' @param coefs        model coefficients          of interest: string vector or NULL
 #' @param contrasts    model coefficient contrasts of interest: string vector or NULL
-#' @param verbose      TRUE/FALSE: message?
 #' @param plot         TRUE/FALSE
 #' @param feature_id   string: feature for summary plot
 #' @param sample_id    string: sample  for summary plot
 #' @param palette      color palette : named string vector
+#' @param verbose      TRUE/FALSE: message?
 #' @return SummarizedExperiment
 #' @examples 
 #' require(magrittr)
@@ -32,11 +32,11 @@ analyze <- function(
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
     coefs        = colnames(create_design(object, formula = formula, drop = drop)),
     contrasts    = NULL,
-    verbose      = TRUE,
     plot         = pca & !is.null(fit),
     feature_id   = NULL,
     sample_id    = NULL,
-    palette      = NULL
+    palette      = NULL,
+    verbose      = TRUE
 ){
     # Analyze
     if (is.null(subgroupvar))   subgroupvar <- default_subgroupvar(object)

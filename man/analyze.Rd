@@ -15,11 +15,11 @@ analyze(
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = colnames(create_design(object, formula = formula, drop = drop)),
   contrasts = NULL,
-  verbose = TRUE,
   plot = pca & !is.null(fit),
   feature_id = NULL,
   sample_id = NULL,
-  palette = NULL
+  palette = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -41,8 +41,6 @@ analyze(
 
 \item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
-\item{verbose}{TRUE/FALSE: message?}
-
 \item{plot}{TRUE/FALSE}
 
 \item{feature_id}{string: feature for summary plot}
@@ -50,6 +48,8 @@ analyze(
 \item{sample_id}{string: sample  for summary plot}
 
 \item{palette}{color palette : named string vector}
+
+\item{verbose}{TRUE/FALSE: message?}
 }
 \value{
 SummarizedExperiment

@@ -840,9 +840,9 @@ read_maxquant_proteingroups <- function(
         pca          = pca,           fit       = fit,       
         formula      = formula,       block     = block,       
         coefs        = coefs,         contrasts = contrasts,    
-        verbose      = verbose,       plot      = plot,
-        feature_id   = feature_id,    sample_id = sample_id,   
-        palette      = palette )
+        plot         = plot,          feature_id= feature_id,
+        sample_id    = sample_id,     palette   = palette, 
+        verbose      = verbose )
     object
 }
 
@@ -950,9 +950,9 @@ read_maxquant_phosphosites <- function(
         pca          = pca,           fit       = fit, 
         formula      = formula,       block     = block,   
         coefs        = coefs,         contrasts = contrasts,
-        verbose      = verbose,       plot      = plot,
-        feature_id   = feature_id,    sample_id = sample_id,
-        palette      = palette )
+        plot         = plot,          feature_id= feature_id,    
+        sample_id    = sample_id,     palette   = palette, 
+        verbose      = verbose )
     object
 }
 

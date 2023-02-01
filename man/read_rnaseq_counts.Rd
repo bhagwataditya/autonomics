@@ -45,14 +45,16 @@ read_rnaseq_bams(
   tpm = FALSE,
   cpm = TRUE,
   log2 = TRUE,
-  pca = TRUE,
-  fit = "limma",
+  plot = FALSE,
+  pca = plot,
+  fit = if (plot) "limma" else NULL,
   voom = cpm,
+  coefs = NULL,
   contrasts = NULL,
-  verbose = TRUE,
-  plot = pca & !is.null(fit),
   feature_id = NULL,
-  sample_id = NULL
+  sample_id = NULL,
+  palette = NULL,
+  verbose = TRUE
 )
 
 read_rnaseq_counts(
@@ -75,10 +77,10 @@ read_rnaseq_counts(
   voom = cpm,
   coefs = NULL,
   contrasts = NULL,
-  verbose = TRUE,
   feature_id = NULL,
   sample_id = NULL,
-  palette = NULL
+  palette = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -118,21 +120,21 @@ read_rnaseq_counts(
 
 \item{log2}{TRUE/FALSE : log2 transform ?}
 
+\item{plot}{TRUE/FALSE : plot?}
+
 \item{pca}{TRUE/FALSE : perform and plot pca?}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
 \item{voom}{model weights to be computed?  TRUE/FALSE}
 
-\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
+\item{coefs}{model coefficients          of interest: string vector or NULL}
 
-\item{plot}{TRUE/FALSE : plot?}
+\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
 \item{feature_id}{string: feature for summary plot}
 
 \item{sample_id}{string: sample  for summary plot}
-
-\item{coefs}{model coefficients          of interest: string vector or NULL}
 
 \item{palette}{color palette : named string vector}
 }
@@ -146,8 +148,7 @@ Read rnaseq counts/bams
 # read_rnaseq_bams
     if (requireNamespace('Rsubread')){
        dir <- download_data('billing16.bam.zip')
-        object <- read_rnaseq_bams(
-           dir, paired = TRUE, genome = 'hg38', pca = TRUE, fit = 'limma', plot = TRUE)  
+       object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38')  
     }
 # read_rnaseq_counts
     file <- download_data('billing19.rnacounts.txt')

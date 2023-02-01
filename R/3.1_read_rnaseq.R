@@ -946,9 +946,9 @@ read_rnaseq_bams <- function(
     sfile = NULL, by.y = NULL, subgroupvar = 'subgroup', block = NULL,
     formula = NULL, min_count = 10, pseudo = 0.5, 
     ensdb = NULL, tpm = FALSE, cpm = TRUE, log2 = TRUE, 
-    pca = TRUE, fit = 'limma', voom = cpm, contrasts = NULL, 
-    verbose = TRUE, plot = pca & !is.null(fit), 
-    feature_id = NULL, sample_id = NULL
+    plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL, 
+    voom = cpm, coefs = NULL, contrasts = NULL, 
+    feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_rnaseq_bams(
@@ -1000,17 +1000,16 @@ read_rnaseq_bams <- function(
 #' @param voom          model weights to be computed?  TRUE/FALSE
 #' @param coefs         model coefficients          of interest: string vector or NULL
 #' @param contrasts     model coefficient contrasts of interest: string vector or NULL
-#' @param verbose       TRUE/FALSE : message?
 #' @param feature_id    string: feature for summary plot
 #' @param sample_id     string: sample  for summary plot
 #' @param palette       color palette : named string vector
+#' @param verbose       TRUE/FALSE : message?
 #' @return SummarizedExperiment
 #' @examples
 #' # read_rnaseq_bams
 #'     if (requireNamespace('Rsubread')){
 #'        dir <- download_data('billing16.bam.zip')
-#'         object <- read_rnaseq_bams(
-#'            dir, paired = TRUE, genome = 'hg38', pca = TRUE, fit = 'limma', plot = TRUE)  
+#'        object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38')  
 #'     }
 #' # read_rnaseq_counts
 #'     file <- download_data('billing19.rnacounts.txt')
@@ -1032,8 +1031,8 @@ read_rnaseq_counts <- function(
     subgroupvar = 'subgroup', block = NULL, formula = NULL, min_count = 10, 
     pseudo = 0.5, tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
     plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL, voom = cpm, 
-    coefs = NULL, contrasts = NULL, verbose = TRUE, 
-    feature_id = NULL, sample_id = NULL, palette = NULL
+    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
+    palette = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_rnaseq_counts(
@@ -1051,13 +1050,13 @@ read_rnaseq_counts <- function(
         plot        = FALSE)
 # Analyze
     object %<>% analyze(
-        pca          = pca,           fit       = fit, 
-        subgroupvar  = subgroupvar,   formula   = formula, 
-        block        = block,         weightvar = if (voom) 'weights' else NULL,
-        coefs        = coefs,         contrasts = contrasts, 
-        verbose      = verbose,       plot      = plot, 
-        feature_id   = feature_id,    sample_id = sample_id, 
-        palette      = palette)
+        pca         = pca,           fit        = fit, 
+        subgroupvar = subgroupvar,   formula    = formula, 
+        block       = block,         weightvar  = if (voom) 'weights' else NULL,
+        coefs       = coefs,         contrasts  = contrasts, 
+        plot        = plot,          feature_id = feature_id,    
+        sample_id   = sample_id,     palette    = palette, 
+        verbose     = verbose)
 # Return
     object
 }

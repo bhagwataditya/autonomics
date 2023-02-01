@@ -38,6 +38,9 @@ read_somascan(
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
+  feature_id = NULL,
+  sample_id = NULL,
+  palette = NULL,
   verbose = TRUE
 )
 }
@@ -85,6 +88,8 @@ read_somascan(
 \item{coefs}{model coefficients          of interest: string vector or NULL}
 
 \item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
+
+\item{palette}{charactervector or NULL}
 }
 \value{
 Summarizedexperiment
