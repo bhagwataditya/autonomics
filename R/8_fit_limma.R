@@ -210,7 +210,6 @@ code <- function(
 # Code
     k <- length(levels(x))
     contrasts(x) <- contr.fun(levels(x))
-    if (identical(contr.fun, contr.treatment))   colnames(contrasts(x)) %<>% paste0('-', levels(x)[1])
     if (identical(contr.fun, code_control))      colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[1])
     if (identical(contr.fun, contr.diff))        colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k])
     if (identical(contr.fun, code_diff))         colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k])
@@ -230,6 +229,31 @@ code <- function(
 }
 
 
+#' Control Contrasts
+#' @param n  factor    vector
+#' @return   character vector
+#' @examples 
+#' x <- factor(c('A', 'B', 'C')); contrastcoefs(x)  # contr.treatment
+#' x %<>% code(contr.control);    contrastcoefs(x)  # contr.treatment with explicit names
+#' x %<>% code(code_control);     contrastcoefs(x)  # contr.treatment with explicit names and globalmean intercept
+#' @export
+contr.control <- function(n){
+    y <- contr.treatment(n)
+    colnames(y) %<>% paste0('-', n[1])
+    y
+}
+
+
+#' Get contrastcoefs
+#' @param x  factor vector
+#' @return character vector
+#' @examples 
+#' x <- factor(c('A', 'B', 'C'))
+#' contrastcoefs(x)
+#' x %<>% code(code_control)
+#' contrastcoefs(x)
+#' @export
+contrastcoefs <- function(x)  colnames(contrasts(x))
 
 
 #=============================================================================
