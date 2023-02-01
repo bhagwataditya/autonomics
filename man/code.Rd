@@ -25,12 +25,12 @@ A General Linear Model contains:                                                
   * For each numeric variable: a slope coefficient                                                 \cr
   * For each k-leveled factor: (k-1) Contrast Coefficients.                                        \cr
        Each contrast coefficient represents some difference (between factor levels)                \cr
-       By default coefficient k represents the difference of level k to level 1.                   \cr
+       By default coefficient k represents the difference of level k to the first level            \cr
        This contrast coding is known as 'dummy', 'indicator', or 'treatment' coding.               \cr
        It is implemented in the function contr.treatment (and used by default).                    \cr
        Alternative contrast coding functions are offered in packages `stats` and `codingMatrices`. \cr
        They allow to customize interceptcoef (some average) and contrastcoefs (some difference):   \cr
-       All of these functions except one are unit-scaled (coefvalue = 1 means difference = 1)      \cr
+       All of these functions except contr.helmert are unit-scaled (coefvalue = 1 means difference = 1)  \cr
                                                                                                    \cr
            ContrastCoef             InterceptCoef     ContrastCodingFunction  Scaling              \cr
            ------------             -------------     --------------          -------              \cr
