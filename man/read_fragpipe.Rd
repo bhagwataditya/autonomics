@@ -6,8 +6,7 @@
 \usage{
 read_fragpipe(
   dir = getwd(),
-  file = if (is_file(dir)) dir else file.path(dir, "combined_protein.tsv"),
-  quantity = "MaxLFQ Intensity"
+  file = if (is_file(dir)) dir else file.path(dir, "combined_protein.tsv")
 )
 }
 \arguments{
@@ -24,7 +23,7 @@ SummarizedExperiment
 Read fragpipe
 }
 \examples{
-file <- '../multiorganism.combined_protein.tsv'
+file <- download_data('multiorganism.combined_protein.tsv')
 object <- read_fragpipe(file = file)
 fdt(object)
 biplot(pca(object))

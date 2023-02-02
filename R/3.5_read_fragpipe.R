@@ -40,18 +40,33 @@
 }
 
 .read_fragpipe_mat <- function(file, quantity){
-    # Add a space: 'MaxLFQ Intensity' -> ' MaxLFQ Intensity'
-    # Makes regex stricter and substring dropping easier
-    quantity %<>% paste0(' ', .)
-    
-    dt <- fread(file, integer64 = 'numeric') %>% un_int64()
-    cols <- names(dt) %>% extract(stri_detect_fixed(., quantity))
-    cols %<>% c('Protein', .)
-    dt %<>% extract(, cols, with = FALSE)
-    dt %<>% dt2mat()
-    colnames(dt) %<>% stri_replace_first_fixed(quantity, '')
-    dt
+    select <- cols(file) %>% extract(stri_detect_regex(., quantity))
+    select %<>% c('Protein', .)
+    mat <- fread(file, select = select, integer64 = 'numeric') %>% un_int64()
+    mat %<>% dt2mat()
+    colnames(mat) %<>% stri_replace_first_regex(quantity, '')
+    mat
 }
+
+.stri_any_regex <- function(str, pattern) any(stri_detect_regex(str, pattern))
+
+
+#' Does any string have a regex
+#' @param str      string vector
+#' @param pattern  string
+#' @return TRUE or FALSE
+#' @examples 
+#' str <- c('s1 Spectral Count', 's1 Unique Spectral Count')
+#' patterns <- c('Spectral Count', '(?<!Unique) Spectral Count', 'Intensity')
+#' stri_detect_regex(str, pattern = patterns[1])
+#' stri_detect_regex(str, pattern = patterns[2])
+#' stri_detect_regex(str, pattern = patterns[3])
+#' stri_any_regex(   str, pattern = patterns)
+#' @export
+stri_any_regex <- function(str, pattern){
+    vapply(pattern, function(pat) .stri_any_regex(str, pat), logical(1))
+}
+
 
 
 #' Read fragpipe
@@ -60,33 +75,37 @@
 #' @param  quantity  'MaxLFQ Intensity'
 #' @return SummarizedExperiment
 #' @examples 
-#' file <- '../multiorganism.combined_protein.tsv'
+#' file <- download_data('multiorganism.combined_protein.tsv')
 #' object <- read_fragpipe(file = file)
 #' fdt(object)
 #' biplot(pca(object))
 #' @export
 read_fragpipe <- function(
     dir = getwd(), 
-    file = if (is_file(dir)) dir else file.path(dir, 'combined_protein.tsv'),
-    quantity = 'MaxLFQ Intensity'
+    file = if (is_file(dir)) dir else file.path(dir, 'combined_protein.tsv')
 ){
-# Assert
+# assays
     assert_fragpipe_tsv(file)
-    assert_is_subset(quantity, 'MaxLFQ Intensity')
-# Read
+    quantity <- c(MaxLFQ        = ' MaxLFQ Intensity', 
+                 Intensity      = '(?<!MaxLFQ) Intensity', 
+                 SpectralCounts = '(?<!(Combined|Unique|Total)) Spectral Count',
+                 UniqueCounts   = '(?<!Combined) Unique Spectral Count', 
+                 TotalCounts    = '(?<!Combined) Total Spectral Count')
+    quantity %<>% extract(stri_any_regex(cols(file), .))
+    object <- mapply(.read_fragpipe_mat, quantity = quantity, MoreArgs = list(file = file), SIMPLIFY = FALSE)
+    object %<>% SummarizedExperiment()
+    intensity_assays <- names(quantity)
+    intensity_assays %<>% intersect(c('MaxLFQ', 'Intensity'))
+    for (ass in intensity_assays){  
+        assays(object)[[ass]] %<>% zero_to_na()
+        object %<>% log2transform(assay = ass, verbose = TRUE)
+    }
+# fdt/sdt
     fdt0 <- .read_fragpipe_fdt(file)
-    object <- .read_fragpipe_mat(file, quantity)
     assert_all_are_true(fdt0$fastahdr == rownames(object))
     rownames(object) <- fdt0$feature_id
-# Preprocess
-    object %<>% zero_to_na()
-    object %<>% log2() 
-# Sumexp
-    object %<>% list()
-    names(object) <- quantity %>% paste0('log2 ', .) %>% make.names()
-    object %<>% SummarizedExperiment()
     fdt(object) <- fdt0
     sdt(object) <- data.table(sample_id = colnames(object), subgroup = 'group0')
-# Preprocess
+# return
     object 
 }

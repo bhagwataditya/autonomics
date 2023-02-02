@@ -288,8 +288,11 @@ log2transform <- function(
     . <- NULL
     for (ass in assay){
         i <- match(ass, assayNames(object))
-        if (verbose)  message('\t\tAdd pseudo value ', pseudo) ;  assays(object)[[i]] %<>% add(pseudo) 
-        if (verbose)  message('\t\tLogarithmize (log2) ', ass);      assays(object)[[i]] %<>% log2()
+        if (verbose)  if (pseudo != 0)  message('\t\tAdd pseudo value ', pseudo)
+        assays(object)[[i]] %<>% add(pseudo) 
+         
+        if (verbose)  message('\t\tlog2 ', ass)
+        assays(object)[[i]] %<>% log2()
         assayNames(object)[i] %<>% paste0('log2', .)
     }
     object
