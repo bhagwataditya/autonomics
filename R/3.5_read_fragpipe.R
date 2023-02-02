@@ -110,8 +110,8 @@ read_fragpipe <- function(
     fdt(object) <- fdt0
     if (!contaminants)  object %<>% filter_features(contaminant == '', verbose = verbose)
 # sdt
-    object$subgroup <- infer_subgroup( object$sample_id)
     sdt(object) <- data.table(sample_id = colnames(object), subgroup = 'group0')
+    object$subgroup <- infer_subgroup( object$sample_id)
 # return
     object 
 }
