@@ -150,9 +150,7 @@ add_assay_means <- function(
 # Add
     if (is.null(assay))  return(object)
     for (.assay in assay){
-        if (.assay %in% fvars(object))  fdt(object)[[.assay]] <- NULL
-        fdt(object)$placeholder <- rowMeans(assays(object)[[assay]], na.rm = TRUE)
-        fvars(object) %<>% stri_replace_first_fixed('placeholder', paste0('mean.', assay))
+        fdt(object)[[.assay]] <- rowMeans(assays(object)[[.assay]], na.rm = TRUE)
     }
 # Return
     object

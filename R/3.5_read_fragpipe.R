@@ -103,15 +103,16 @@ read_fragpipe <- function(
         assays(object)[[ass]] %<>% zero_to_na()
         object %<>% log2transform(assay = ass, verbose = TRUE)
     }
+# sdt
+    sdt(object) <- data.table(sample_id = colnames(object), subgroup = 'group0')
+    object$subgroup <- infer_subgroup( object$sample_id)
 # fdt/sdt
     fdt0 <- .read_fragpipe_fdt(file)
     assert_all_are_true(fdt0$fastahdr == rownames(object))
     rownames(object) <- fdt0$feature_id
     fdt(object) <- fdt0
     if (!contaminants)  object %<>% filter_features(contaminant == '', verbose = verbose)
-# sdt
-    sdt(object) <- data.table(sample_id = colnames(object), subgroup = 'group0')
-    object$subgroup <- infer_subgroup( object$sample_id)
+    for (assay in assayNames(object))  object %<>% add_assay_means(assay)
 # return
     object 
 }
