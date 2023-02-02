@@ -6,7 +6,9 @@
 \usage{
 read_fragpipe(
   dir = getwd(),
-  file = if (is_file(dir)) dir else file.path(dir, "combined_protein.tsv")
+  file = if (is_file(dir)) dir else file.path(dir, "combined_protein.tsv"),
+  contaminants = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -14,7 +16,9 @@ read_fragpipe(
 
 \item{file}{'combined_protein.tsv' (full path)}
 
-\item{quantity}{'MaxLFQ Intensity'}
+\item{contaminants}{whether to include contaminants}
+
+\item{verbose}{whether to msg}
 }
 \value{
 SummarizedExperiment

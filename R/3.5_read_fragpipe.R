@@ -70,9 +70,10 @@ stri_any_regex <- function(str, pattern){
 
 
 #' Read fragpipe
-#' @param  dir       directory with 'combined_protein.tsv'
-#' @param  file      'combined_protein.tsv' (full path)
-#' @param  quantity  'MaxLFQ Intensity'
+#' @param dir           directory with 'combined_protein.tsv'
+#' @param file         'combined_protein.tsv' (full path)
+#' @param contaminants  whether to include contaminants
+#' @param verbose       whether to msg
 #' @return SummarizedExperiment
 #' @examples 
 #' file <- download_data('multiorganism.combined_protein.tsv')
@@ -82,7 +83,9 @@ stri_any_regex <- function(str, pattern){
 #' @export
 read_fragpipe <- function(
     dir = getwd(), 
-    file = if (is_file(dir)) dir else file.path(dir, 'combined_protein.tsv')
+    file = if (is_file(dir)) dir else file.path(dir, 'combined_protein.tsv'), 
+    contaminants = FALSE,
+    verbose = TRUE
 ){
 # assays
     assert_fragpipe_tsv(file)
@@ -105,6 +108,9 @@ read_fragpipe <- function(
     assert_all_are_true(fdt0$fastahdr == rownames(object))
     rownames(object) <- fdt0$feature_id
     fdt(object) <- fdt0
+    if (!contaminants)  object %<>% filter_features(contaminant == '', verbose = verbose)
+# sdt
+    object$subgroup <- infer_subgroup( object$sample_id)
     sdt(object) <- data.table(sample_id = colnames(object), subgroup = 'group0')
 # return
     object 
