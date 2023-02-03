@@ -78,6 +78,7 @@ stri_any_regex <- function(str, pattern){
 #' @examples 
 #' file <- download_data('multiorganism.combined_protein.tsv')
 #' object <- read_fragpipe(file = file)
+#' assayNames(object)
 #' fdt(object)
 #' biplot(pca(object))
 #' @export
@@ -89,16 +90,16 @@ read_fragpipe <- function(
 ){
 # assays
     assert_fragpipe_tsv(file)
-    quantity <- c(MaxLFQ        = ' MaxLFQ Intensity', 
-                 Intensity      = '(?<!MaxLFQ) Intensity', 
-                 SpectralCounts = '(?<!(Combined|Unique|Total)) Spectral Count',
-                 UniqueCounts   = '(?<!Combined) Unique Spectral Count', 
-                 TotalCounts    = '(?<!Combined) Total Spectral Count')
+    quantity <- c(maxlfq         = ' MaxLFQ Intensity', 
+                  intensity      = '(?<!MaxLFQ) Intensity', 
+                  spectralcounts = '(?<!(Combined|Unique|Total)) Spectral Count',
+                  uniquecounts   = '(?<!Combined) Unique Spectral Count', 
+                  totalcounts    = '(?<!Combined) Total Spectral Count')
     quantity %<>% extract(stri_any_regex(cols(file), .))
     object <- mapply(.read_fragpipe_mat, quantity = quantity, MoreArgs = list(file = file), SIMPLIFY = FALSE)
     object %<>% SummarizedExperiment()
     intensity_assays <- names(quantity)
-    intensity_assays %<>% intersect(c('MaxLFQ', 'Intensity'))
+    intensity_assays %<>% intersect(c('maxlfq', 'intensity'))
     for (ass in intensity_assays){  
         assays(object)[[ass]] %<>% zero_to_na()
         object %<>% log2transform(assay = ass, verbose = TRUE)
