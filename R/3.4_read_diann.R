@@ -154,25 +154,30 @@ uniprot2isoforms <- function(x){
 #' @rdname read_diann_proteingroups
 #' @export
 .read_diann_precursors <- function(
-    file, precursor_quantity = PRECURSOR_QUANTITY, Lib.PG.Q = 0.01, verbose  = TRUE
+    file, Lib.PG.Q = 0.01, verbose  = TRUE
 ){
 # Assert
     assert_diann_report(file)
-    assert_is_subset(precursor_quantity, c('Precursor.Quantity', 'Precursor.Normalised'))
+    assert_is_fraction(Lib.PG.Q)
+    assert_is_a_bool(verbose)
 # Read
     anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id',
                  'Q.Value', 'Lib.PG.Q.Value', 'Stripped.Sequence')
-    numcols <- c(precursor_quantity, 'PG.Quantity', 'PG.MaxLFQ')
+    numcols <- c('Precursor.Quantity', 'PG.Quantity', 'PG.MaxLFQ')
     cols <- c(anncols, numcols)
     dt <- fread(file, select = cols)                  # 1977.16 but 1,35E+11
     for (col in numcols){   dt[, (col) := stri_replace_first_fixed(get(col), ',', '.') ] 
                             dt[, (col) := as.numeric(get(col))  ] }
-    setnames(dt, 'Genes',             'gene')
-    setnames(dt, 'Protein.Names',     'protein')
-    setnames(dt, 'Protein.Group',     'uniprot')
-    setnames(dt, 'Precursor.Id',      'precursor')
-    setnames(dt, 'Lib.PG.Q.Value',    'Lib.PG.Q')
-    setnames(dt, 'Stripped.Sequence', 'sequence')
+    setnames(dt, 'Run',                'run')
+    setnames(dt, 'Genes',              'gene')
+    setnames(dt, 'Protein.Names',      'protein')
+    setnames(dt, 'Protein.Group',      'uniprot')
+    setnames(dt, 'Precursor.Id',       'precursor')
+    setnames(dt, 'Lib.PG.Q.Value',     'Lib.PG.Q')
+    setnames(dt, 'Stripped.Sequence',  'sequence')
+    setnames(dt, 'PG.MaxLFQ',          'intensitymaxlfq')
+    setnames(dt, 'PG.Quantity',        'intensitydiann')
+    setnames(dt, 'Precursor.Quantity', 'intensityprecursor')
 # Filter
     n0 <- length(unique(dt$uniprot))
     q <- Lib.PG.Q
@@ -180,19 +185,19 @@ uniprot2isoforms <- function(x){
     n1 <- length(unique(dt$uniprot))
     if (verbose)  message('\t\tRetain ', n1, '/', n0, ' proteingroups: Lib.PG.Q < ', Lib.PG.Q)
 # Order precursors
-    dt <- dt[, .SD[rev(order(get(precursor_quantity)))], by = c('uniprot', 'Run')]
-    dt[, iprecursor := seq_len(.N),                      by = c('uniprot', 'Run')]
-    dt[, nprecursor := length(unique(precursor)),        by = c('uniprot', 'Run')]
-    dt[, npeptide   := length(unique(sequence)),         by = c('uniprot', 'Run')]
+    dt <- dt[, .SD[rev(order(intensityprecursor))], by = c('uniprot', 'run')]
+    dt[, iprecursor := seq_len(.N),                      by = c('uniprot', 'run')]
+    dt[, precounts  := length(unique(precursor)),        by = c('uniprot', 'run')]
+    dt[, pepcounts  := length(unique(sequence)),         by = c('uniprot', 'run')]
 # Order proteingroups
-    pgdt <- dt[, .(uniprot, Run, npeptide, nprecursor, PG.MaxLFQ)]
+    pgdt <- dt[, .(uniprot, run, pepcounts, precounts, intensitymaxlfq)]
     pgdt %<>% unique()
-    pgdt %<>% extract(, .(npeptide   = sum(npeptide), 
-                          nprecursor = sum(nprecursor), 
-                     log2.PG.MaxLFQ  = log2(sum(PG.MaxLFQ, na.rm = TRUE))), by = 'uniprot')
-    pgdt %<>% extract(order(-npeptide, -nprecursor, -log2.PG.MaxLFQ))
+    pgdt %<>% extract(, .(pepcounts = sum(pepcounts), 
+                          precounts = sum(precounts), 
+                          log2maxlfq = log2(sum(intensitymaxlfq, na.rm = TRUE))), by = 'uniprot')
+    pgdt %<>% extract(order(-pepcounts, -precounts, -log2maxlfq))
     dt[, uniprot := factor(uniprot, pgdt$uniprot)]
-    dt %<>% extract(order(uniprot, Run, iprecursor))
+    dt %<>% extract(order(uniprot, run, iprecursor))
     dt[, uniprot := as.character(uniprot)]
 # Intuify protein
     pgdt <- unique(dt[, .(uniprot, protein)])
@@ -211,29 +216,28 @@ uniprot2isoforms <- function(x){
     # pgdt[, feature_name := forge_pg_descriptions(uniprot, protein, fastadt)]     #     add feature_name
     dt %<>% .merge(pgdt, by = 'uniprot')
     dt %<>% pull_columns(c('gene', 'protein', 'organism', 'feature_id', 'uniprot', 
-                'Run', 'npeptide', 'nprecursor', 'iprecursor', 'precursor', 'sequence'))
+                'run', 'pepcounts', 'precounts', 'iprecursor', 'precursor', 'sequence'))
 # Summarize
-    dt[, PG.Top1 :=     rev(sort(get(precursor_quantity)))[1],                  by = c('uniprot', 'Run')]
-    dt[, PG.Top3 := sum(rev(sort(get(precursor_quantity)))[1:3], na.rm = TRUE), by = c('uniprot', 'Run')]
-    dt[, PG.Sum  := sum(         get(precursor_quantity),        na.rm = TRUE), by = c('uniprot', 'Run')]
+    dt[, intensitytop1  :=     rev(sort(intensityprecursor))[1],                  by = c('uniprot', 'run')]
+    dt[, intensitytop3  := sum(rev(sort(intensityprecursor))[1:3], na.rm = TRUE), by = c('uniprot', 'run')]
+    dt[, intensitytotal := sum(         intensityprecursor,        na.rm = TRUE), by = c('uniprot', 'run')]
     dt[]
 }
 
 #' @rdname read_diann_proteingroups
 #' @export
 .read_diann_proteingroups <- function(
-    file, precursor_quantity = PRECURSOR_QUANTITY, Lib.PG.Q = 0.01
+    file, Lib.PG.Q = 0.01
 ){
-    dt <- .read_diann_precursors(
-        file, precursor_quantity = precursor_quantity, Lib.PG.Q = Lib.PG.Q)
-    dt[, sequence := sequence[1], by = c('uniprot', 'Run')]
-    cols <- c('gene', 'feature_id', 'protein', 'organism', 'uniprot', 'Run',
-              'npeptide', 'nprecursor', 'sequence',
-              'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 'PG.MaxLFQ', 
+    dt <- .read_diann_precursors(file, Lib.PG.Q = Lib.PG.Q)
+    dt[, sequence := sequence[1], by = c('uniprot', 'run')]
+    cols <- c('gene', 'feature_id', 'protein', 'organism', 'uniprot', 'run',
+              'pepcounts', 'precounts', 'sequence',
+              'intensitydiann', 'intensitytop1', 'intensitytop3', 'intensitytotal', 'intensitymaxlfq', 
               'Lib.PG.Q')
     dt %<>% extract(, cols, with = FALSE )
     dt %<>% unique()
-    assert_is_identical_to_true(all(dt[, .N, by = c('Run', 'feature_id')]$N==1))  # single row per run/protein - yes!
+    assert_is_identical_to_true(all(dt[, .N, by = c('run', 'feature_id')]$N==1))  # single row per run/protein - yes!
     dt
 }
 
@@ -242,7 +246,6 @@ uniprot2isoforms <- function(x){
 #' Read diann
 #'
 #' @param file               'report.tsv' file
-#' @param precursor_quantity 'Precursor.Quantity' or 'Precursor.Normalized'
 #' @param Lib.PG.Q            Lib.PG.Q cutoff
 #' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
 #' @param contaminants        string vector: contaminant uniprots
@@ -268,18 +271,17 @@ uniprot2isoforms <- function(x){
 #' # Compare
 #'     PR <- .read_diann_precursors(file)
 #'     PG <- .read_diann_proteingroups(file)
-#'     PG[PG.Quantity==PG.Top1] # matches      : 26063 (85%) proteingroups
-#'     PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15%) proteingroups
-#'     run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
-#'     PR[uniprot=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
-#'     PR[uniprot=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
-#'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
-#'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
-#'     PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
+#'     PG[intensitydiann==intensitytop1] # matches      : 24975 (85%) proteingroups
+#'     PG[intensitydiann!=intensitytop1] # doesnt match :  4531 (15%) proteingroups
+#'     RUN <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
+#'     PR[uniprot=='Q96JP5;Q96JP5-2' & run == RUN, 1:6] #    match:    8884 ==   8884
+#'     PR[uniprot=='P36578'          & run == RUN, 1:6] # no match:  650887 != 407978
+#'     PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[1]][run == unique(run)[1]][1:2, 1:6]
+#'     PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[2]][run == unique(run)[1]][1:2, 1:6]
+#'     PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[3]][run == unique(run)[1]][1:3, 1:6]
 #' @export
 read_diann_proteingroups <- function(
     file, 
-    precursor_quantity = PRECURSOR_QUANTITY,
     Lib.PG.Q = 0.01,
     simplify_snames = TRUE,
     contaminants = character(0), 
@@ -291,30 +293,27 @@ read_diann_proteingroups <- function(
 # Assert
     if (!is.null(contaminants))  assert_is_character(contaminants)
 # SumExp
-    dt <- .read_diann_proteingroups(
-        file, precursor_quantity = precursor_quantity, Lib.PG.Q = Lib.PG.Q)
+    dt <- .read_diann_proteingroups(file, Lib.PG.Q = Lib.PG.Q)
     object <- SummarizedExperiment(list(
-        log2.MaxLFQ      = dcast_diann(dt, 'PG.MaxLFQ',   fill = NA, log2 = TRUE),
-        log2.Quantity    = dcast_diann(dt, 'PG.Quantity', fill = NA, log2 = TRUE),
-        log2.Top1        = dcast_diann(dt, 'PG.Top1',     fill = NA, log2 = TRUE),
-        log2.Top3        = dcast_diann(dt, 'PG.Top3',     fill = NA, log2 = TRUE),
-        log2.Sum         = dcast_diann(dt, 'PG.Sum',      fill = NA             ),
-        npeptide         = dcast_diann(dt, 'npeptide',    fill = 0              ),
-        nprecursor       = dcast_diann(dt, 'nprecursor',  fill = 0              ), 
-        sequence         = dcast_diann(dt, 'sequence',    fill = '')))
+        log2maxlfq = dcast_diann(dt, 'intensitymaxlfq', fill = NA, log2 = TRUE),
+        log2diann  = dcast_diann(dt, 'intensitydiann',  fill = NA, log2 = TRUE),
+        log2top1   = dcast_diann(dt, 'intensitytop1',   fill = NA, log2 = TRUE),
+        log2top3   = dcast_diann(dt, 'intensitytop3',   fill = NA, log2 = TRUE),
+        log2total  = dcast_diann(dt, 'intensitytotal',  fill = NA             ),
+        pepcounts  = dcast_diann(dt, 'pepcounts',       fill = 0              ),
+        precounts  = dcast_diann(dt, 'precounts',       fill = 0              ), 
+        sequence   = dcast_diann(dt, 'sequence',        fill = '')))
     sdt(object)$sample_id  <- snames(object)
     fdt(object)$feature_id <- fnames(object)
     analysis(object)$nfeatures <- nrow(object)
 # fdt
-    cols <- c('PG.MaxLFQ', 'PG.Quantity', 'PG.Top1', 'PG.Top3', 'PG.Sum', 
-              'sequence', 'Run', 'npeptide', 'nprecursor')
+    cols <- c('intensitymaxlfq', 'intensitydiann', 'intensitytop1', 'intensitytop3', 'intensitytotal', 
+              'sequence', 'run', 'pepcounts', 'precounts')
     dt[, (cols) := NULL]
     dt %<>% unique()
     assert_are_identical(nrow(dt), nrow(object)) # if not more fields need to be NULLed
     object %<>% merge_fdt(dt)
-    fdt(object)$npeptide    <- rowMeans(assays(object)$npeptide)                  %>% round(digits = 1)
-    fdt(object)$nprecursor  <- rowMeans(assays(object)$nprecursor)                %>% round(digits = 1)
-    fdt(object)$log2.MaxLFQ <- rowMeans(assays(object)$log2.MaxLFQ, na.rm = TRUE) %>% round(digits = 1)
+    for (assay in assayNames(object))  object %<>% add_assay_means(assay)
 # sdt
     snames(object) <- colnames(object)
     if (simplify_snames)  snames(object) %<>% simplify_snames()
@@ -348,11 +347,11 @@ read_diann <- function(...){
 # file <- download_data('dilution.report.tsv')
 # dt <- .read_diann_proteingroups(file, sequence = TRUE)
 # dcast_diann(dt, quantity = 'PG.MaxLFQ',  fill = NA, log2 = TRUE )[1:3, 1:3]
-# dcast_diann(dt, quantity = 'nprecursor', fill = 0               )[1:3, 1:3]
-# dcast_diann(dt, quantity = 'npeptide',   fill = 0               )[1:3, 1:3]
+# dcast_diann(dt, quantity = 'precounts', fill = 0               )[1:3, 1:3]
+# dcast_diann(dt, quantity = 'pepcounts',   fill = 0               )[1:3, 1:3]
 # dcast_diann(dt, quantity = 'sequence',   fill = ''              )[1:3, 1:3]
 dcast_diann <- function(dt, quantity, fill, log2 = FALSE){
-    mat <- data.table::dcast(dt, feature_id ~ Run, value.var = quantity, fill = fill)
+    mat <- data.table::dcast(dt, feature_id ~ run, value.var = quantity, fill = fill)
     mat %<>% dt2mat()
     mat %<>% extract(unique(dt$feature_id), ) # preserve original order
     if (is.na(fill))  mat %<>% zero_to_na() %>% nan_to_na()

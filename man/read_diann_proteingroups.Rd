@@ -7,22 +7,12 @@
 \alias{read_diann}
 \title{Read diann}
 \usage{
-.read_diann_precursors(
-  file,
-  precursor_quantity = PRECURSOR_QUANTITY,
-  Lib.PG.Q = 0.01,
-  verbose = TRUE
-)
+.read_diann_precursors(file, Lib.PG.Q = 0.01, verbose = TRUE)
 
-.read_diann_proteingroups(
-  file,
-  precursor_quantity = PRECURSOR_QUANTITY,
-  Lib.PG.Q = 0.01
-)
+.read_diann_proteingroups(file, Lib.PG.Q = 0.01)
 
 read_diann_proteingroups(
   file,
-  precursor_quantity = PRECURSOR_QUANTITY,
   Lib.PG.Q = 0.01,
   simplify_snames = TRUE,
   contaminants = character(0),
@@ -44,8 +34,6 @@ read_diann(...)
 }
 \arguments{
 \item{file}{'report.tsv' file}
-
-\item{precursor_quantity}{'Precursor.Quantity' or 'Precursor.Normalized'}
 
 \item{Lib.PG.Q}{Lib.PG.Q cutoff}
 
@@ -92,12 +80,12 @@ Read diann
 # Compare
     PR <- .read_diann_precursors(file)
     PG <- .read_diann_proteingroups(file)
-    PG[PG.Quantity==PG.Top1] # matches      : 26063 (85\%) proteingroups
-    PG[PG.Quantity!=PG.Top1] # doesnt match :  4534 (15\%) proteingroups
-    run <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
-    PR[uniprot=='Q96JP5;Q96JP5-2' & Run == run, 1:6] #    match:    8884 ==   8884
-    PR[uniprot=='P36578'          & Run == run, 1:6] # no match:  650887 != 407978
-    PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[1]][Run == unique(Run)[1]][1:2, 1:6]
-    PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[2]][Run == unique(Run)[1]][1:2, 1:6]
-    PR[PG.Quantity != PG.Top1][feature_name == unique(feature_name)[3]][Run == unique(Run)[1]][1:3, 1:6]
+    PG[intensitydiann==intensitytop1] # matches      : 24975 (85\%) proteingroups
+    PG[intensitydiann!=intensitytop1] # doesnt match :  4531 (15\%) proteingroups
+    RUN <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
+    PR[uniprot=='Q96JP5;Q96JP5-2' & run == RUN, 1:6] #    match:    8884 ==   8884
+    PR[uniprot=='P36578'          & run == RUN, 1:6] # no match:  650887 != 407978
+    PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[1]][run == unique(run)[1]][1:2, 1:6]
+    PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[2]][run == unique(run)[1]][1:2, 1:6]
+    PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[3]][run == unique(run)[1]][1:3, 1:6]
 }
