@@ -4,7 +4,7 @@
 \alias{code}
 \title{Code factor}
 \usage{
-code(x, contr.fun = contr.treatment, verbose = TRUE)
+code(x, contr.fun = contr.treat.first, verbose = TRUE)
 }
 \arguments{
 \item{x}{factor/character vector}

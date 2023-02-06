@@ -500,19 +500,34 @@ fits <- function(object){
     x
 }
 
-#' Get fit coefs
+#' Get coef names
 #' 
 #' @param object  SummarizedExperiment
-#' @param fit    string: 'limma', 'lm', 'lme', 'lmer'
+#' @param fit     string: 'limma', 'lm', 'lme', 'lmer'
 #' @param svars   NULL/charactervec : retain only coefs relevant for this svar
 #' @return  character vector
-#' @examples 
-#' require(magrittr)
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit='limma', plot=FALSE)
-#' coefs(object)
+#' @examples
+#' # Factor
+#'     x <- factor(c('A', 'B', 'C'))
+#'     coefs(x)
+#'     coefs(code(x, contr.treat.first))
+#'     coefs(code(x, contr.treat.grand))
+#'     
+#' # SummarizedExperiment
+#'     require(magrittr)
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file, fit='limma', plot=FALSE)
+#'     coefs(object)
 #' @export
-coefs <- function(object, fit = fits(object), svars = NULL){
+coefs <- function(x, ...)  UseMethod('coefs')
+
+#' @rdname coefs
+#' @export
+coefs.factor <- function(x)   colnames(contrasts(x))
+
+#' @rdname coefs
+#' @export
+coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL){
     . <- NULL
     coefs0 <- split_extract_fixed(.pvars(object), FITSEP, 2)
     fits0  <- split_extract_fixed(.pvars(object), FITSEP, 3)

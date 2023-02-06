@@ -197,26 +197,15 @@ create_design.data.table <- function(
 #'     object %<>% fit_limma()
 #' @export
 code <- function(
-    x, contr.fun = contr.treatment, verbose = TRUE
+    x, contr.fun = contr.treat.first, verbose = TRUE
 ){
 # Assert
     if (is.character(x))  x %<>% factor() 
     if (!is.factor(x))  return(x)
     assert_is_function(contr.fun)
-    if (!requireNamespace('codingMatrices', quietly = TRUE)){
-        message("install.packages('codingMatrices'). Then re-run.")
-        return(x) 
-    }
 # Code
     k <- length(levels(x))
     contrasts(x) <- contr.fun(levels(x))
-    if (identical(contr.fun, code_control))      colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[1])  # truncates long names
-    if (identical(contr.fun, contr.diff))        colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k]) # truncates long names
-    if (identical(contr.fun, code_diff))         colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k]) # truncates long names
-    if (identical(contr.fun, contr.sum))         colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-globalmean')
-    if (identical(contr.fun, code_deviation))    colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-globalmean')
-    if (identical(contr.fun, contr.helmert))     colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-precedingmean')
-    if (identical(contr.fun, code_helmert))      colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-precedingmean')
 # Return
     if (verbose){
         contrastmat <- codingMatrices::mean_contrasts(contrasts(x))
@@ -229,32 +218,93 @@ code <- function(
 }
 
 
-#' Explicit treatment contrasts
+#' Contrast Code Factor
+#' 
+#' Contrast Code Factor for General Linear Model
+#'
+#' Each factor in a General Linear Model is 'coded' using a 'contrast coding function'.
+#' This leads to a linear model with an intercept and k-1 coefficients per k-leveled factor.
+#' The interpretation of intercept and other coefficients depends on the coding function used.
+#' Several contrast coding functions are provided in 'stats' and 'codingMatrices', but their namings are somewhat confusing.
+#' The functions below have more intuitive namings and serve as an interface to underlying functions in stats and codingMatrices.
+#' `contr.treat.first` : coef(k) = level(k) - level(1),    intercept = level(1)
+#' `contr.treat.grand` : coef(k) = level(k) - level(1),    intercept = grandmean
+#' `contr.sdiff.first`     : coef(k) = level(k) - level(k-1);  intercept = level(1)
+#' `contr.sdiff.grand`     : coef(k) = level(k) - level(k-1);  intercept = grandmean
+#' `contr.sum.grand`       : coef(k) = level(k) - grandmean;   intercept = grandmean
+#' `contr.helmert.grand`   : coef(k) = level(k) - mean(1:k-1); intercept = grandmean
 #' @param n  factor    vector
 #' @return   character vector
 #' @examples 
-#' x <- factor(c('A', 'B', 'C')); contrastcoefs(x)  # treatment contrasts
-#' x %<>% code(contr.treatment);  contrastcoefs(x)  # 
-#' x %<>% code(contr.treat);      contrastcoefs(x)  # treatment contrasts with explicit names
-#' x %<>% code(code_control);     contrastcoefs(x)  # treatment contrasts with explicit names and globalmean intercept
+#' (x <- factor(c('A', 'B', 'C')))
+#' coefs(x)  # treatment contrasts
+#' coefs(code(x, contr.treat.first))  # treatment contrasts, intercept = first level
+#' coefs(code(x, contr.treat.grand))  # treatment contrasts, intercept = grand mean
+#' coefs(code(x, contr.sdiff.first)   # successive diffs,    intercept = first level
+#' coefs(code(x, contr.sdiff.grand)   # successive diffs,    intercept = grand mean
+#' coefs(code(x, contr.sum.first)     # sum contrasts,       intercept = first level
+#' coefs(code(x, contr.helmert)       # helmert contrasts,   intercept = grand mean
 #' @export
-contr.treat <- function(n){
-    y <- contr.treatment(n)
-    colnames(y) %<>% paste0('-', n[1])
+contr.treat.first <- function(x){
+    y <- contr.treatment(x)
+    colnames(y) %<>% paste0('-', x[1])
     y
 }
 
-
-#' Get contrastcoefs
-#' @param x  factor vector
-#' @return character vector
-#' @examples 
-#' x <- factor(c('A', 'B', 'C'))
-#' contrastcoefs(x)
-#' x %<>% code(code_control)
-#' contrastcoefs(x)
+#' @rdname contr.treat.first
 #' @export
-contrastcoefs <- function(x)  colnames(contrasts(x))
+contr.treat.grand <- function(x){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(x) 
+    }
+    y <- codingMatrices::code_control(x)
+    colnames(y) <- paste0(x[-1], '-', x[1])
+    y
+}
+
+#' @rdname contr.treat.first
+#' @export
+contr.sdiff.first <- function(x){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(x) 
+    }
+    y <- codingMatrices::contr.diff(x)
+    colnames(y) <- paste0(x[-1], '-', x[-k])
+    y
+}
+
+#' @rdname contr.treat.first
+#' @export
+contr.sdiff.grand <- function(x){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(x) 
+    }
+    y <- codingMatrices::code_diff(x)
+    colnames(y) <- paste0(x[-1], '-', x[-k])
+    y
+}
+
+#' @rdname contr.treat.first
+#' @export
+contr.sum.grand <- function(x){
+    y <- contr.sum(x)
+    colnames(y) <- paste0(x[-length(x)],  '-grandmean')
+    y
+}
+
+#' @rdname contr.treat.first
+contr.helmert.grand <- function(x){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(x) 
+    }
+    y <- matrixStats::code_helmert(x) # same as contr.helmert but properly scaled!
+    colnames(y) <- colnames(y) <- paste0(x[-length(x)],  '-precedingmean')
+    y
+}
 
 
 #=============================================================================

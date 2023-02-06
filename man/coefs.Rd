@@ -2,9 +2,15 @@
 % Please edit documentation in R/8_fit.R
 \name{coefs}
 \alias{coefs}
-\title{Get fit coefs}
+\alias{coefs.factor}
+\alias{coefs.SummarizedExperiment}
+\title{Get coef names}
 \usage{
-coefs(object, fit = fits(object), svars = NULL)
+coefs(x, ...)
+
+\method{coefs}{factor}(x)
+
+\method{coefs}{SummarizedExperiment}(object, fit = fits(object), svars = NULL)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -17,11 +23,18 @@ coefs(object, fit = fits(object), svars = NULL)
 character vector
 }
 \description{
-Get fit coefs
+Get coef names
 }
 \examples{
-require(magrittr)
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, fit='limma', plot=FALSE)
-coefs(object)
+# Factor
+    x <- factor(c('A', 'B', 'C'))
+    coefs(x)
+    coefs(code(x, contr.treat.first))
+    coefs(code(x, contr.treat.grand))
+    
+# SummarizedExperiment
+    require(magrittr)
+    file <- download_data('atkin18.metabolon.xlsx')
+    object <- read_metabolon(file, fit='limma', plot=FALSE)
+    coefs(object)
 }
