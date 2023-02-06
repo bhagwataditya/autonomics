@@ -10,13 +10,13 @@
 #' MAXQUANT_PATTERNS
 #' @export
 MAXQUANT_PATTERNS <- c(
-    `Ratio normalized`             = '^Ratio ([HM]/[ML]) normalized (.+)$',
-    `Ratio`                        = '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
-    `Reporter intensity corrected` = '^Reporter intensity corrected ([0-9]+) (.+)$',
-    `Reporter intensity`           = '^Reporter intensity ([0-9]+) (.+)$',
-    `LFQ intensity`                = '^LFQ intensity ([HML])? ?(.+)$',
-    `Intensity labeled`            = '^Intensity ([HML]) (.+)$',
-    `Intensity`                    = '^Intensity (.+)$'
+    `normalizedratio`             = '^Ratio ([HM]/[ML]) normalized (.+)$',
+    `ratio`                       = '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
+    `correctedreporterintensity`  = '^Reporter intensity corrected ([0-9]+) (.+)$',
+    `reporterintensity`           = '^Reporter intensity ([0-9]+) (.+)$',
+    `maxlfq`                      = '^LFQ intensity ([HML])? ?(.+)$',
+    `labeledintensity`            = '^Intensity ([HML]) (.+)$',
+    `intensity`                   = '^Intensity (.+)$'
 )
 
 
@@ -757,9 +757,9 @@ is_file <- function(file){
 #' @param dir           proteingroups directory
 #' @param file          proteingroups file
 #' @param fastadt       NULL or data.table
-#' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
-#'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
-#'                     'Intensity' or NULL
+#' @param quantity     'normalizedratio', 'ratio', 'correctedreporterintensity', 
+#'                     'reporterintensity', 'maxlfq', 'labeledintensity', 
+#'                     'intensity' or NULL
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE/FALSE : retain contaminants ?
 #' @param reverse       TRUE/FALSE : include reverse hits ?
@@ -819,8 +819,7 @@ read_maxquant_proteingroups <- function(
     pepdt <- prodt[, pepcols, with = FALSE]
     prodt %<>% extract(, names(prodt) %>% setdiff(colnames(promat)) %>% setdiff(names(pepdt)), with = FALSE)
     object <- list(promat)
-    names(object) <- paste0('log2 ', quantity)
-    names(object) %<>% make.names()
+    names(object) <- paste0('log2', quantity)
     object %<>% SummarizedExperiment(rowData = prodt)
 # Dequantify. Add pepcounts
     object$mqcol <- colnames(object)

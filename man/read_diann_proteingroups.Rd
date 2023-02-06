@@ -80,12 +80,12 @@ Read diann
 # Compare
     PR <- .read_diann_precursors(file)
     PG <- .read_diann_proteingroups(file)
-    PG[intensitydiann==intensitytop1] # matches      : 24975 (85\%) proteingroups
-    PG[intensitydiann!=intensitytop1] # doesnt match :  4531 (15\%) proteingroups
+    PG[intensity==top1] # matches      : 24975 (85\%) proteingroups
+    PG[intensity!=top1] # doesnt match :  4531 (15\%) proteingroups
     RUN <- 'IPT_HeLa_1_DIAstd_Slot1-40_1_9997'
     PR[uniprot=='Q96JP5;Q96JP5-2' & run == RUN, 1:6] #    match:    8884 ==   8884
     PR[uniprot=='P36578'          & run == RUN, 1:6] # no match:  650887 != 407978
-    PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[1]][run == unique(run)[1]][1:2, 1:6]
-    PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[2]][run == unique(run)[1]][1:2, 1:6]
-    PR[intensitydiann != intensitytop1][feature_id == unique(feature_id)[3]][run == unique(run)[1]][1:3, 1:6]
+    PR[intensity != top1][feature_id == unique(feature_id)[1]][run == unique(run)[1]][1:2, 1:6]
+    PR[intensity != top1][feature_id == unique(feature_id)[2]][run == unique(run)[1]][1:2, 1:6]
+    PR[intensity != top1][feature_id == unique(feature_id)[3]][run == unique(run)[1]][1:3, 1:6]
 }
