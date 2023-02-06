@@ -7,7 +7,7 @@
 \alias{contr.sdiff.grand}
 \alias{contr.sum.grand}
 \alias{contr.helmert.grand}
-\title{Contrast Code Factor}
+\title{Contrast Coding Functions}
 \usage{
 contr.treat.first(x)
 
@@ -22,34 +22,33 @@ contr.sum.grand(x)
 contr.helmert.grand(x)
 }
 \arguments{
-\item{n}{factor    vector}
+\item{x}{levels}
 }
 \value{
 character vector
 }
 \description{
-Contrast Code Factor for General Linear Model
+Contrast Coding Functions with intuitive names
 }
 \details{
 Each factor in a General Linear Model is 'coded' using a 'contrast coding function'.
 This leads to a linear model with an intercept and k-1 coefficients per k-leveled factor.
 The interpretation of intercept and other coefficients depends on the coding function used.
-Several contrast coding functions are provided in 'stats' and 'codingMatrices', but their namings are somewhat confusing.
-The functions below have more intuitive namings and serve as an interface to underlying functions in stats and codingMatrices.
-`contr.treat.first` : coef(k) = level(k) - level(1),    intercept = level(1)
-`contr.treat.grand` : coef(k) = level(k) - level(1),    intercept = grandmean
-`contr.sdiff.first`     : coef(k) = level(k) - level(k-1);  intercept = level(1)
-`contr.sdiff.grand`     : coef(k) = level(k) - level(k-1);  intercept = grandmean
-`contr.sum.grand`       : coef(k) = level(k) - grandmean;   intercept = grandmean
-`contr.helmert.grand`   : coef(k) = level(k) - mean(1:k-1); intercept = grandmean
+Several contrast coding functions are provided in 'stats' and 'codingMatrices'
+Because their namings are somewhat confusing, we provide intuitive front-ends to the most used ones:
+`contr.treat.first`   : coef(k) = level(k) - level(1),    intercept = level(1)
+`contr.treat.grand`   : coef(k) = level(k) - level(1),    intercept = grandmean
+`contr.sdiff.first`   : coef(k) = level(k) - level(k-1);  intercept = level(1)
+`contr.sdiff.grand`   : coef(k) = level(k) - level(k-1);  intercept = grandmean
+`contr.sum.grand`     : coef(k) = level(k) - grandmean;   intercept = grandmean
+`contr.helmert.grand` : coef(k) = level(k) - mean(1:k-1); intercept = grandmean
 }
 \examples{
-(x <- factor(c('A', 'B', 'C')))
-coefs(x)  # treatment contrasts
-coefs(code(x, contr.treat.first))  # treatment contrasts, intercept = first level
-coefs(code(x, contr.treat.grand))  # treatment contrasts, intercept = grand mean
-coefs(code(x, contr.sdiff.first)   # successive diffs,    intercept = first level
-coefs(code(x, contr.sdiff.grand)   # successive diffs,    intercept = grand mean
-coefs(code(x, contr.sum.first)     # sum contrasts,       intercept = first level
-coefs(code(x, contr.helmert)       # helmert contrasts,   intercept = grand mean
+(x <- levels(factor(c('A', 'B', 'C'))))
+contr.treat.first(x)    # treatment contrasts, intercept = first level
+contr.treat.grand(x)    # treatment contrasts, intercept = grand mean
+contr.sdiff.first(x)    # successive diffs,    intercept = first level
+contr.sdiff.grand(x)    # successive diffs,    intercept = grand mean
+contr.sum.grand(x)      # sum contrasts,       intercept = first level
+contr.helmert.grand(x)  # helmert contrasts,   intercept = grand mean
 }
