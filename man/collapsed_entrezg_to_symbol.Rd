@@ -11,6 +11,9 @@ collapsed_entrezg_to_symbol(x, sep, orgdb)
 
 \item{orgdb}{OrgDb}
 }
+\value{
+character vector
+}
 \description{
 Collapsed entrezg to genesymbol
 }

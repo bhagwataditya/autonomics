@@ -535,7 +535,7 @@ add_genenames <- function(object, gtffile, verbose = TRUE){
 #' Entrezg to genesymbol
 #' @param x      charactervector
 #' @param orgdb  OrgDb
-#' @return
+#' @return  character vector
 #' @examples
 #' if (requireNamespace('org.Hs.eg.db'), quiet = TRUE){
 #'     orgdb <- org.Hs.eg.db::org.Hs.eg.db
@@ -557,7 +557,7 @@ entrezg_to_symbol <- function(x, orgdb){
 #' Collapsed entrezg to genesymbol
 #' @param x      charactervector
 #' @param orgdb  OrgDb
-#' @return
+#' @return character vector
 #' @examples
 #' if (requireNamespace('org.Hs.eg.db'), quiet = TRUE){
 #'     x <- c('7448/3818/727', '5034/9601/64374')

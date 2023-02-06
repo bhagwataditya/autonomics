@@ -11,6 +11,9 @@ entrezg_to_symbol(x, orgdb)
 
 \item{orgdb}{OrgDb}
 }
+\value{
+character vector
+}
 \description{
 Entrezg to genesymbol
 }
