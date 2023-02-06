@@ -39,12 +39,12 @@
     # fdt1[uniprot %>% stri_detect_fixed(';')]
 }
 
-.read_fragpipe_mat <- function(file, quantity){
-    select <- cols(file) %>% extract(stri_detect_regex(., quantity))
+.read_fragpipe_mat <- function(file, pattern){
+    select <- cols(file) %>% extract(stri_detect_regex(., pattern))
     select %<>% c('Protein', .)
     mat <- fread(file, select = select, integer64 = 'numeric') %>% un_int64()
     mat %<>% dt2mat()
-    colnames(mat) %<>% stri_replace_first_regex(quantity, '')
+    colnames(mat) %<>% stri_replace_first_regex(pattern, '')
     mat
 }
 
@@ -76,7 +76,6 @@ stri_any_regex <- function(str, pattern){
 #' @param verbose       whether to msg
 #' @return SummarizedExperiment
 #' @examples 
-#' file <- download_data('multiorganism.combined_protein.tsv')
 #' object <- read_fragpipe(file = file)
 #' assayNames(object)
 #' fdt(object)
@@ -90,15 +89,15 @@ read_fragpipe <- function(
 ){
 # assays
     assert_fragpipe_tsv(file)
-    quantity <- c(maxlfq         = ' MaxLFQ Intensity', 
-                  intensity      = '(?<!MaxLFQ) Intensity', 
-                  spectralcounts = '(?<!(Combined|Unique|Total)) Spectral Count',
-                  uniquecounts   = '(?<!Combined) Unique Spectral Count', 
-                  totalcounts    = '(?<!Combined) Total Spectral Count')
-    quantity %<>% extract(stri_any_regex(cols(file), .))
-    object <- mapply(.read_fragpipe_mat, quantity = quantity, MoreArgs = list(file = file), SIMPLIFY = FALSE)
+    pattern <- c(maxlfq         = ' MaxLFQ Intensity', 
+                 intensity      = '(?<!MaxLFQ) Intensity', 
+                 spectralcounts = '(?<!(Combined|Unique|Total)) Spectral Count',
+                 uniquecounts   = '(?<!Combined) Unique Spectral Count', 
+                 totalcounts    = '(?<!Combined) Total Spectral Count')
+    pattern %<>% extract(stri_any_regex(cols(file), .))
+    object <- mapply(.read_fragpipe_mat, pattern = pattern, MoreArgs = list(file = file), SIMPLIFY = FALSE)
     object %<>% SummarizedExperiment()
-    intensity_assays <- names(quantity)
+    intensity_assays <- names(pattern)
     intensity_assays %<>% intersect(c('maxlfq', 'intensity'))
     for (ass in intensity_assays){  
         assays(object)[[ass]] %<>% zero_to_na()

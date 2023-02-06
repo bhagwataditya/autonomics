@@ -107,8 +107,7 @@ un_int64 <- function(x) {
     pepcols <- grep('Razor + unique peptides ', names(prodt), fixed = TRUE, value = TRUE)
     prodt %<>% extract(, c(anncols, pepcols, valcols), with = FALSE)
     digits <- ceiling(log10(nrow(prodt)))
-    if (verbose)  message('\t\t', nrow(prodt), 
-                          ' proteins, contaminants, reverse')
+    if (verbose)  message('\t\t', nrow(prodt), ' proteins, contaminants, reverse')
 # Return
     names(prodt) %<>% stri_replace_first_fixed(          'Reverse',     'reverse')
     names(prodt) %<>% stri_replace_first_fixed(          'Contaminant', 'contaminant') # older MaxQuant
