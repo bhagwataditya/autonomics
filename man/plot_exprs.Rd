@@ -17,8 +17,8 @@ plot_exprs(
   assay = assayNames(object)[1],
   geom = "boxplot",
   x = switch(dim, both = "subgroup", features = "feature_id", samples = "sample_id"),
-  color = switch(geom, boxplot = NULL, point = x),
-  fill = switch(geom, boxplot = x, point = NULL),
+  color = x,
+  fill = x,
   shape = NULL,
   size = NULL,
   block = NULL,
@@ -85,21 +85,21 @@ plot_exprs_per_coef(
 
 \item{geom}{'boxplot' or 'point'}
 
-\item{x}{string:         x svar}
+\item{x}{x svar}
 
-\item{color}{string:     color svar}
+\item{color}{color svar: points, lines}
 
-\item{fill}{string:      fill svar}
+\item{fill}{fill svar: boxplots}
 
-\item{shape}{string:     shape svar}
+\item{shape}{shape svar}
 
-\item{size}{string:      size svar}
+\item{size}{size svar}
 
-\item{block}{string:     group svar}
+\item{block}{group svar}
 
-\item{linetype}{string:  linetype svar}
+\item{linetype}{linetype svar}
 
-\item{highlight}{string: highlight svar}
+\item{highlight}{highlight svar}
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 

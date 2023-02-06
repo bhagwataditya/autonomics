@@ -625,6 +625,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     n0 <- length(idx)
     n1 <- sum(idx, na.rm = TRUE)
     if (verbose & n1<n0){
+        combiner <- paste0(' ', combiner, ' ')
         cmessage('\t\t\tRetain %d/%d features: %s(%s) %s %s', 
                 n1, n0, statistic, paste0(coefs, collapse = combiner), 
                 comparer, as.character(threshold))  
@@ -692,6 +693,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     n0 <- length(idx)
     n1 <- sum(idx, na.rm = TRUE)
     if (verbose & n1<n0){
+        combiner <- paste0(' ', combiner, ' ')
         cmessage('\t\t\tRetain %d/%d features: sign(%s) %%in%% c(%s)', 
             n1, n0, paste0(coefs, collapse = combiner), paste0(sign,  collapse = ','))
     }
@@ -712,6 +714,7 @@ order_on_p <- function(
     object, 
     fit = autonomics::fits(object), 
     coefs = autonomics::coefs(object, fit = fit), 
+    combiner = '|',
     verbose = TRUE
 ){
 # Assert
@@ -723,26 +726,28 @@ order_on_p <- function(
     if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
                             paste0(fit,   collapse = ', '), 
                             paste0(coefs, collapse = ', '))
-    idx <- order(matrixStats::rowMins(pmat))
+    if (combiner == '|')  idx <- order(matrixStats::rowMins(pmat))
+    if (combiner == '&')  idx <- order(matrixStats::rowMaxs(pmat))
 # Return
     object[idx, ]
 }
 
 #' @rdname extract_coef_features
 #' @export
-.extract_n_features <- function(object, coefs, n, fit = fits(object)[1], verbose = TRUE){
+.extract_n_features <- function(object, coefs, combiner = '|', n, fit = fits(object)[1], verbose = TRUE){
 # Assert
     assert_is_valid_sumexp(object)
     assert_positive_number(n)
 # Filter
-    object %<>% order_on_p(fit = fit, coefs = coefs, verbose = FALSE)
+    object %<>% order_on_p(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)
     n %<>% min(nrow(object))
     idx <- c(rep(TRUE, n), rep(FALSE, nrow(object)-n))
     n0 <- length(idx)
     n1 <- sum(idx, na.rm = TRUE)
     if (verbose & n1<n0){
+        combiner <- paste0(' ', combiner, ' ')
         cmessage('\t\t\tRetain %d/%d features: p(%s) is in smallest %d', 
-                 n1, n0, paste0(coefs, collapse = '|'), n)
+                 n1, n0, paste0(coefs, collapse = combiner), n)
     }
 # Return
     object[idx, ]
@@ -805,7 +810,7 @@ extract_coef_features <- function(
     object %<>% .extract_fdr_features(       coefs = coefs, fdr = fdr,               fit = fit, combiner = combiner, verbose = verbose)
     object %<>% .extract_effectsize_features(coefs = coefs, effectsize = effectsize, fit = fit, combiner = combiner, verbose = verbose)
     object %<>% .extract_sign_features(      coefs = coefs, sign = sign,             fit = fit, combiner = combiner, verbose = verbose)
-    object %<>% .extract_n_features(         coefs = coefs, n = n,                   fit = fit,                      verbose = verbose)
+    object %<>% .extract_n_features(         coefs = coefs, n = n,                   fit = fit, combiner = combiner, verbose = verbose)
 # Return
     object
 }
@@ -901,51 +906,49 @@ add_facetvars <- function(
         names(dt) %<>% stri_replace_first_fixed(facetvar, make.names(facetvar))
         facet %<>% stri_replace_first_fixed(facetvar, make.names(facetvar))
     } # otherwise facet_wrap_paginate thinks `fdr~coef~limma` is a formula
-# Plot
-    p <- ggplot(dt) + theme_bw()
-    if (!is.null(facet)){
-        p <- p + facet_wrap_paginate(facets = facet, scales = scales, nrow = nrow, ncol = ncol, page = page, labeller = labeller)
-    }
+# Initialization
+    p <- ggplot(dt) + theme_bw() + xlab(xlab) + ylab(ylab) + ggtitle(title)
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    if (!is.null(facet))   p <- p + facet_wrap_paginate(facets = facet, 
+        scales = scales, nrow = nrow, ncol = ncol, page = page, labeller = labeller)
+# Boxplots/Points
     if (geom == 'boxplot'){
         outlier.shape <- if (pointsize==0) NA else 19
-        p <- p + geom_boxplot(aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym), outlier.shape = outlier.shape, na.rm = TRUE)
-        if (pointsize>0){
-            p <- p + geom_jitter(aes(x = !!xsym, y = value),
-                    position = position_jitter(width = jitter, height = 0), size = pointsize, na.rm = TRUE)
+        mapping <- aes(x = !!xsym, y = value, fill = !!fillsym)
+        p <- p + geom_boxplot(mapping = mapping, outlier.shape = outlier.shape, na.rm = TRUE)
+        if (pointsize > 0){
+            mapping <- aes(x = !!xsym, y = value)
+            position <- position_jitter(width = jitter, height = 0)
+            p <- p + geom_jitter(mapping = mapping, position = position, size = pointsize, na.rm = TRUE)
         }
     } else {
-        p <- p + geom_point(  aes(x = !!xsym, y = value, fill = !!fillsym, color = !!colorsym, 
-                                  shape = !!shapesym, size = !! sizesym), na.rm = TRUE)
+        mapping <- aes(x = !!xsym, y = value, color = !!colorsym, shape = !!shapesym, size = !! sizesym)
+        p <- p + geom_point(mapping = mapping, na.rm = TRUE)
     }
     p <- add_color_scale(p, color, data = dt, palette = colorpalette)
     p <- add_fill_scale( p, fill,  data = dt, palette = fillpalette)
-# Connect blocks
-    if (!is.null(block)){
+# Lines
+    if (!is.null(block)){   
         byvar <- block
         if (!is.null(facet)) byvar %<>% c(facet)
-        #dt[, direction := get(fill)[which.max(value)], by = byvar]
-        p <- p + geom_line(aes(x = !!xsym, y = value, color = !!xsym, group = !!blocksym, linetype = !!linetypesym), na.rm = TRUE) # color = direction
-        p <- add_color_scale(p, x, data = dt, palette = fillpalette)    # 'direction'
+        mapping <- aes(x = !!xsym, y = value, color = !!colorsym, group = !!blocksym, linetype = !!linetypesym)
+        p <- p + geom_line(mapping = mapping, na.rm = TRUE)      # color = direction
     }
-# Add highlighted points
+# Highlights (points)
     p %<>% add_highlights(x = x, hl = highlight, geom = geom_point, fixed_color = "darkred")
-# Add hline
+# Hlines
     if (!is.null(hlevels)){
         mediandt <- unique(dt[, unique(c('feature_id', x, 'medianvalue', facet)), with = FALSE])
         mediandt[, present := FALSE]
         mediandt[get(x) %in% hlevels, present := TRUE]
-        p <- p + geom_hline(data = mediandt, 
-                            aes(yintercept = medianvalue, color = !!fill, alpha = present), 
-                            linetype = 'longdash') }
+        mapping <- aes(yintercept = medianvalue, color = !!fill, alpha = present)
+        p <- p + geom_hline(data = mediandt, mapping = mapping, linetype = 'longdash') 
+    }
 # Finish
     breaks <- unique(dt[[x]])
-    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fill][[x]]
-    p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) + 
-        guides(color = 'none', alpha = 'none') +
-        theme_bw() + 
-        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    if (length(breaks)>50)  breaks <- dt[, .SD[1], by = fill][[x]]
+    p <- p + scale_x_discrete(breaks = breaks) + guides(alpha = 'none')
     if (!is.null(theme))  p <- p + theme
-    p <- p + xlab(xlab) + ylab(ylab) + ggtitle(title)
     p
 }
 
@@ -957,14 +960,14 @@ add_facetvars <- function(
 #'                     'both'        (subgroup distribution faceted per feature)
 #' @param assay         string: value in assayNames(object)
 #' @param geom          'boxplot' or 'point'
-#' @param x             string:         x svar
-#' @param color         string:     color svar
-#' @param fill          string:      fill svar
-#' @param shape         string:     shape svar
-#' @param size          string:      size svar
-#' @param block         string:     group svar
-#' @param linetype      string:  linetype svar
-#' @param highlight     string: highlight svar
+#' @param x                     x svar
+#' @param color             color svar: points, lines
+#' @param fill               fill svar: boxplots
+#' @param shape             shape svar
+#' @param size               size svar
+#' @param block             group svar
+#' @param linetype       linetype svar
+#' @param highlight     highlight svar
 #' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
 #' @param coefs         subset of coefs(object) to consider in selecting top
 #' @param p             fraction: p   cutoff
@@ -1017,15 +1020,16 @@ plot_exprs <- function(
     assay        = assayNames(object)[1], 
     geom         = 'boxplot',
     x            = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
-    color        = switch(geom, boxplot = NULL, point = x),
-    fill         = switch(geom, boxplot = x,    point = NULL),
+    color        = x, # points/lines
+    fill         = x, # boxplots
     shape        = NULL,
     size         = NULL,
     block        = NULL, 
     linetype     = NULL,
     highlight    = NULL, 
     fit          = fits(object)[1], 
-    coefs        = default_coefs(object, fit = fit)[1], 
+    coefs        = default_coefs(object, fit = fit)[1],
+    combiner     = '|',
     p            = 1,
     fdr          = 1, 
     facet        = if (dim=='both')  'feature_id' else NULL,
@@ -1041,7 +1045,7 @@ plot_exprs <- function(
     hlevels      = NULL, 
     title        = switch(dim, both = paste0(coefs, collapse = ', '), 
                                features = 'Feature Boxplots', 
-                               samples = 'Sample Boxplots'), 
+                               samples  =  'Sample Boxplots'), 
     xlab         = NULL, 
     ylab         = 'value', 
     theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)), 
@@ -1072,7 +1076,7 @@ plot_exprs <- function(
     } else if (dim == 'features'){   n %<>% min(nrow(object));  object %<>% extract_features_evenly(n)
     } else if (dim == 'both'){       n %<>% min(nrow(object)); 
         if (is.null(coefs)){         object %<>% extract_features_evenly(n) 
-        } else {                     object %<>% extract_coef_features(coefs = coefs, fit = fit, p = p, fdr = fdr, n = n)
+        } else {                     object %<>% extract_coef_features(fit = fit, coefs = coefs, combiner = combiner, p = p, fdr = fdr, n = n)
                                      object %<>% add_facetvars(fit = fit, coefs = coefs)
                                      facet %<>% c(sprintf('facet.%s', coefs))
                                      #object %<>% format_coef_vars(coefs = coefs, fit = fit) 
