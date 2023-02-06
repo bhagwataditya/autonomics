@@ -280,7 +280,7 @@ prodt <- .read_maxquant_proteingroups(proteinfile = proteinfile)
 prodt %<>% curate_annotate()
 prodt %<>% add_feature_id()
 quantity <- guess_maxquant_quantity(proteinfile)
-pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+pattern <- MAXQUANT_PATTERNS[[quantity]]
 mat <- mqdt_to_mat(prodt, pattern = pattern)
 
 dt <- fread(proteinfile, integer64 = 'numeric', colClasses = c(id = 'character'))
@@ -404,7 +404,7 @@ test_that('`demultiplex` works', {
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 quantity <- guess_maxquant_quantity(proteinfile)
-pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+pattern <- MAXQUANT_PATTERNS[[quantity]]
 fos <- read_maxquant_phosphosites(phosphofile, proteinfile, plot = FALSE, impute = FALSE)
 
 str(log2sites(fos))
@@ -434,7 +434,7 @@ test_that('`read_maxquant_phosphosites` preserves phosphosite values', {
 
 proteinfile <- download_data('billing19.proteingroups.txt')
 quantity <- guess_maxquant_quantity(proteinfile)
-pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+pattern <- MAXQUANT_PATTERNS[[quantity]]
 pro <- read_maxquant_proteingroups(proteinfile, plot = FALSE, impute = FALSE)
 mat <- log2proteins(pro)
 rownames(mat) <- fdt(pro)$proId

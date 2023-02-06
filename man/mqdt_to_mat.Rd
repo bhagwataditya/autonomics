@@ -28,6 +28,6 @@ fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinf
 prodt \%<>\% curate_annotate_maxquant()
 prodt \%<>\% add_feature_id()
 quantity <- guess_maxquant_quantity(proteinfile)
-pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+pattern <- MAXQUANT_PATTERNS[[quantity]]
 mqdt_to_mat(prodt, pattern = pattern)[1:2, 1:2]
 }

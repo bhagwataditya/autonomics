@@ -10,7 +10,7 @@ guess_maxquant_quantity(x)
 \item{x}{character vector}
 }
 \value{
-string: value from names(MAXQUANT_PATTERNS_QUANTITY)
+string: value from names(MAXQUANT_PATTERNS)
 }
 \description{
 Guess maxquant quantity from snames

@@ -7,9 +7,9 @@
 
 #' maxquant quantity patterns
 #' @examples
-#' MAXQUANT_PATTERNS_QUANTITY
+#' MAXQUANT_PATTERNS
 #' @export
-MAXQUANT_PATTERNS_QUANTITY <- c(
+MAXQUANT_PATTERNS <- c(
     `Ratio normalized`             = '^Ratio ([HM]/[ML]) normalized (.+)$',
     `Ratio`                        = '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
     `Reporter intensity corrected` = '^Reporter intensity corrected ([0-9]+) (.+)$',
@@ -23,7 +23,7 @@ MAXQUANT_PATTERNS_QUANTITY <- c(
 #' Guess maxquant quantity from snames
 #'
 #' @param x character vector
-#' @return  string: value from names(MAXQUANT_PATTERNS_QUANTITY)
+#' @return  string: value from names(MAXQUANT_PATTERNS)
 #' @examples
 #' # file
 #'     file <- download_data('fukuda20.proteingroups.txt')
@@ -59,8 +59,8 @@ guess_maxquant_quantity <- function(x){
         }
     }
 # guess from character vector
-    for (quantity in names(MAXQUANT_PATTERNS_QUANTITY)){
-        pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+    for (quantity in names(MAXQUANT_PATTERNS)){
+        pattern <- MAXQUANT_PATTERNS[[quantity]]
         if (any(stri_detect_regex(x, pattern)))   return(quantity)
     }
     stop('quantity could not be infered')
@@ -93,13 +93,13 @@ un_int64 <- function(x) {
 .read_maxquant_proteingroups <- function(file, quantity = guess_maxquant_quantity(file), verbose = TRUE){
 # Assert
     assert_maxquant_proteingroups(file)
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
 # Read
     if (verbose)  message('\tRead ', file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
     n0 <- nrow(prodt)
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
     anncols <- c('id', 'Majority protein IDs', 'Reverse', 
                  'Potential contaminant', 'Contaminant', 'Fasta headers')#, 'Phospho (STY) site IDs')
     anncols %<>% intersect(names(prodt))
@@ -127,7 +127,7 @@ un_int64 <- function(x) {
     if (verbose)  message('\tRead ', file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     fosdt %<>% un_int64()
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
     anncols <- c('id', 'Protein group IDs', 'Proteins', 
                  'Positions within proteins', 'Amino acid', 
                  'Reverse', 'Contaminant', 'Potential contaminant', 'Fasta headers')
@@ -631,7 +631,7 @@ add_feature_id <- function(dt){
 #' prodt %<>% curate_annotate_maxquant()
 #' prodt %<>% add_feature_id()
 #' quantity <- guess_maxquant_quantity(proteinfile)
-#' pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+#' pattern <- MAXQUANT_PATTERNS[[quantity]]
 #' mqdt_to_mat(prodt, pattern = pattern)[1:2, 1:2]
 #' @export
 mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
@@ -676,7 +676,7 @@ dequantify <- function(
 ){
 # x = multiplex + channel. Return multiplex if single channel.
 # Decompose multiplex and channel
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
     if (quantity == 'Intensity'){
         multiplex <- stri_replace_first_regex(x, pattern, '$1')
         channel   <- rep('', length(multiplex))
@@ -805,7 +805,7 @@ read_maxquant_proteingroups <- function(
     assert_maxquant_proteingroups(file)
     if (is.null(quantity))  quantity <- guess_maxquant_quantity(file)
     assert_is_a_string(quantity)
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     assert_is_a_bool(verbose)
 # Read/Curate
     prodt <- .read_maxquant_proteingroups(file = file, quantity = quantity, verbose = verbose)
@@ -813,7 +813,7 @@ read_maxquant_proteingroups <- function(
     prodt %<>% add_feature_id()
 # SumExp
     if (verbose)  message('\tCreate SummarizedExperiment')
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
     promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
     pepdt <- prodt[, pepcols, with = FALSE]
@@ -907,7 +907,7 @@ read_maxquant_phosphosites <- function(
     assert_all_are_existing_files(c(phosphofile, proteinfile))
     if (is.null(quantity))  quantity <- guess_maxquant_quantity(file)
     assert_is_a_string(quantity)
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     assert_is_a_bool(verbose)
 # Read
     prodt <- .read_maxquant_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
@@ -918,7 +918,7 @@ read_maxquant_phosphosites <- function(
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp
     if (verbose)  message('\tCreate SummarizedExperiment')
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
     promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
     pepdt <- prodt[, pepcols, with = FALSE]
