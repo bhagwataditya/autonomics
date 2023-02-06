@@ -210,9 +210,9 @@ code <- function(
 # Code
     k <- length(levels(x))
     contrasts(x) <- contr.fun(levels(x))
-    if (identical(contr.fun, code_control))      colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[1])
-    if (identical(contr.fun, contr.diff))        colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k])
-    if (identical(contr.fun, code_diff))         colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k])
+    if (identical(contr.fun, code_control))      colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[1])  # truncates long names
+    if (identical(contr.fun, contr.diff))        colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k]) # truncates long names
+    if (identical(contr.fun, code_diff))         colnames(contrasts(x)) <- paste0(levels(x)[-1], '-', levels(x)[-k]) # truncates long names
     if (identical(contr.fun, contr.sum))         colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-globalmean')
     if (identical(contr.fun, code_deviation))    colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-globalmean')
     if (identical(contr.fun, contr.helmert))     colnames(contrasts(x)) <- paste0(levels(x)[-length(levels(x))],  '-precedingmean')
@@ -229,15 +229,16 @@ code <- function(
 }
 
 
-#' Control Contrasts
+#' Explicit treatment contrasts
 #' @param n  factor    vector
 #' @return   character vector
 #' @examples 
-#' x <- factor(c('A', 'B', 'C')); contrastcoefs(x)  # contr.treatment
-#' x %<>% code(contr.control);    contrastcoefs(x)  # contr.treatment with explicit names
-#' x %<>% code(code_control);     contrastcoefs(x)  # contr.treatment with explicit names and globalmean intercept
+#' x <- factor(c('A', 'B', 'C')); contrastcoefs(x)  # treatment contrasts
+#' x %<>% code(contr.treatment);  contrastcoefs(x)  # 
+#' x %<>% code(contr.treat);      contrastcoefs(x)  # treatment contrasts with explicit names
+#' x %<>% code(code_control);     contrastcoefs(x)  # treatment contrasts with explicit names and globalmean intercept
 #' @export
-contr.control <- function(n){
+contr.treat <- function(n){
     y <- contr.treatment(n)
     colnames(y) %<>% paste0('-', n[1])
     y
