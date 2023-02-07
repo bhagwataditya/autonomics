@@ -194,8 +194,8 @@ create_design.data.table <- function(
 #'     object <- read_metabolon(file)
 #'     object$subgroup %<>% code(contr.treat.first);   object %<>% fit_limma()
 #'     object$subgroup %<>% code(contr.treat.grand);   object %<>% fit_limma()
-#'     object$subgroup %<>% code(contr.sdiff.first);   object %<>% fit_limma()
-#'     object$subgroup %<>% code(contr.sdiff.grand);   object %<>% fit_limma()
+#'     object$subgroup %<>% code(contr.diff.first);    object %<>% fit_limma()
+#'     object$subgroup %<>% code(contr.diff.grand);    object %<>% fit_limma()
 #'     object$subgroup %<>% code(contr.sum.grand);     object %<>% fit_limma()
 #'     object$subgroup %<>% code(contr.helmert.grand); object %<>% fit_limma()
 #' @export
