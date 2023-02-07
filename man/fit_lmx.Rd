@@ -13,6 +13,7 @@ fit_lmx(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
+  contr.fun = contr.treat.first,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
@@ -69,6 +70,8 @@ fit_lmer(
 \item{formula}{formula}
 
 \item{drop}{TRUE or FALSE}
+
+\item{contr.fun}{contrast coding function}
 
 \item{block}{NULL or svar}
 

@@ -255,6 +255,25 @@ extract_connected_features <- function(
 }
 
 
+#' Filter for features with all slevels
+#' @param object SummarizedExperiment
+#' @param svar   svar
+#' @return SummarizedExperiment
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% filter_alllevel_features('subgroup')
+#' @export
+filter_all_slevels <- function(object, svar, verbose = TRUE){
+    tmpdt <- sumexp_to_longdt(obj, svars = svar)
+    tmpdt <- tmpdt[, .(nvalues = sum(!is.na(value))), by = c('feature_id', svar)]
+    tmpdt <- tmpdt[, .(alllevels = all(nvalues>0)), by = 'feature_id']
+    tmpdt %<>% extract(alllevels == TRUE)
+    idx <- as.character(tmpdt$feature_id)
+    if (verbose)  cmessage('\t\t\tRetain %d/%d features with all `%s` levels', length(idx), nrow(obj), svar)
+    obj %<>% extract(idx, )
+}
+
 
 #' Fit lm, lme, or lmer
 #' @param object       SummarizedExpriment
@@ -262,6 +281,7 @@ extract_connected_features <- function(
 #' @param subgroupvar  svar
 #' @param formula      formula
 #' @param drop         TRUE or FALSE
+#' @param contr.fun    contrast coding function
 #' @param block        NULL or svar
 #' @param weightvar    NULL or svar
 #' @param coefs        NULL or stringvector
@@ -285,6 +305,7 @@ fit_lmx <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object, subgroupvar, contrasts = NULL), 
     drop        = varlevels_dont_clash(object, all.vars(formula)),
+    contr.fun   = contr.treat.first,
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs       = NULL, 
@@ -303,8 +324,14 @@ fit_lmx <- function(
         assnames %<>% c(weightvar)
         message('\t\t\tweights = assays(object)$', weightvar) 
     }
-# Filter / Customize
+# Contrast Code Factors
     obj <- object
+    for (var in all.vars(formula)){
+        if (is.character(obj[[var]]))   object[[var]] %<>% factor()
+        if (is.factor(   obj[[var]]))   object[[var]] %<>% code(contr.fun, verbose = FALSE)
+        obj %<>% filter_all_slevels(var, verbose = verbose)
+    }
+# Filter / Customize
     if (fit %in% c('lme', 'lmer')){  
         obj %<>% extract_connected_features(formula = formula, blockvars = block)
         obj %<>% rm_consistent_nondetects(formula)
@@ -352,12 +379,6 @@ fit_lm <- function(
     verbose     = TRUE, 
     plot        = FALSE
 ){
-# Assert
-    for (by in all.vars(formula))  assert_is_identical_to_false(
-                                has_consistent_nondetects(object, by))
-        # cannot be generified into fit_lmx because for lme/lmer block is 
-        # integrated in formula and also gets checked for (unnecessarily!)
-# Fit    
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
     fit_lmx(
         object,                     fit          = 'lm', 
