@@ -2,16 +2,21 @@
 % Please edit documentation in R/8_fit_limma.R
 \name{code}
 \alias{code}
+\alias{contr.treat.first}
 \title{Contrast Code Factor}
 \usage{
 code(x, contr.fun = contr.treat.first, verbose = TRUE)
+
+contr.treat.first(n)
 }
 \arguments{
-\item{x}{factor/character vector}
+\item{x}{factor vector}
 
 \item{contr.fun}{contrast coding function: contr.treatment, contr.sum, contr.helmert}
 
 \item{verbose}{TRUE or FALSE}
+
+\item{n}{factor levels (character) vector}
 }
 \value{
 (explicitly coded) factor vector
@@ -24,34 +29,27 @@ A General Linear Model contains:                                                
   * An Intercept Coefficient: expressing some form of sample average                               \cr
   * For each numeric variable: a slope coefficient                                                 \cr
   * For each k-leveled factor: (k-1) Contrast Coefficients.                                        \cr
-       Their interpretation (and that of the intercept) depends on the coding function used.
-       Several contrast coding functions are provided in 'stats' and 'codingMatrices'
-       Because their namings are somewhat confusing, we provide intuitive front-ends to the most used ones:
-           `contr.treat.first`  : coef(k) = level(k) - level(1),    intercept = level(1)
-           `contr.treat.grand`  : coef(k) = level(k) - level(1),    intercept = grandmean
-           `contr.sdiff.first`  : coef(k) = level(k) - level(k-1);  intercept = level(1)
-           `contr.sdiff.grand`  : coef(k) = level(k) - level(k-1);  intercept = grandmean
-           `contr.sum.grand`    : coef(k) = level(k) - grandmean;   intercept = grandmean
-           `contr.helmert.grand`: coef(k) = level(k) - mean(1:k-1); intercept = grandmean
-}
-\examples{
-# Code alternatively
-    require(codingMatrices)
-    x <- paste0('t', 0:3)
-    x \%<>\% code(contr.treat.first)
-    x \%<>\% code(contr.treat.grand)
-    x \%<>\% code(contr.sdiff.first)
-    x \%<>\% code(contr.sdiff.grand)
-    x \%<>\% code(contr.sum.grand)
-    x \%<>\% code(contr.helmert.grand)
-
-# Effects on Statistics
-    file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file)
-    object$subgroup \%<>\% code(contr.treat.first);   object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.treat.grand);   object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.sdiff.first);   object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.sdiff.grand);   object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.sum.grand);     object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.helmert.grand); object \%<>\% fit_limma()
+       The interpretation of (intercept and contrast) coefficients depends on the contrast coding function used.
+       Several contrast coding functions are available in 'stats' and 'codingMatrices'
+       But their (function and coefficient) namings are a bit confusing and unsystematic.
+       Instead, the functions below offer an intuitive interface (to the otherwise powerful stats/codingMatrices packages).
+       The names of these functions reflect the contrast coding used (treatment, difference, sum, or helmert contrasts).
+       They also reflect the intercept interpretation (either first factor's first level or grand mean).
+       They all produce intuitive coefficient names (e.g. 't1-t0' rather than just 't1').
+       They all have unit scaling (a coefficient of 1 means a difference of 1).
+       
+The following contrast coding functions are available:
+    1) Treatment contrasts:      contrast  coefficient = difference to first level
+           `contr.treat.first`   intercept coefficient = first level of first factor
+           `contr.treat.grand`   intercept coefficient = grand mean
+            
+    2) Difference contrasts:     contrast  coefficient = difference to previous level
+           `contr.diff.first`    intercept coefficient = first level of first factor
+           `contr.diff.grand`    intercept coefficient = grand mean
+           
+    3) Sum contrasts :           contrast  coefficient = difference to grand mean
+           `contr.sum.grand`     intercept coefficient = grand mean
+           
+    4) Helmert contrasts:        contrast  coefficient = difference to helmert mean (i.e. the mean of the previous levels)
+           `contr.helmert.grand` intercept coefficient = grand mean
 }

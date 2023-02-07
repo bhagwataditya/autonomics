@@ -138,7 +138,8 @@ create_design.data.table <- function(
 #' 
 #' Contrast Code Factor for General Linear Model
 #'
-#' @param x          factor/character vector
+#' @param x          factor vector
+#' @param n          factor levels (character) vector
 #' @param contr.fun  contrast coding function: contr.treatment, contr.sum, contr.helmert
 #' @param verbose    TRUE or FALSE
 #' @return (explicitly coded) factor vector
@@ -147,27 +148,48 @@ create_design.data.table <- function(
 #'   * An Intercept Coefficient: expressing some form of sample average                               \cr
 #'   * For each numeric variable: a slope coefficient                                                 \cr
 #'   * For each k-leveled factor: (k-1) Contrast Coefficients.                                        \cr
-#'        Their interpretation (and that of the intercept) depends on the coding function used.
-#'        Several contrast coding functions are provided in 'stats' and 'codingMatrices'
-#'        Because their namings are somewhat confusing, we provide intuitive front-ends to the most used ones:
-#'            `contr.treat.first`  : coef(k) = level(k) - level(1),    intercept = level(1)
-#'            `contr.treat.grand`  : coef(k) = level(k) - level(1),    intercept = grandmean
-#'            `contr.sdiff.first`  : coef(k) = level(k) - level(k-1);  intercept = level(1)
-#'            `contr.sdiff.grand`  : coef(k) = level(k) - level(k-1);  intercept = grandmean
-#'            `contr.sum.grand`    : coef(k) = level(k) - grandmean;   intercept = grandmean
-#'            `contr.helmert.grand`: coef(k) = level(k) - mean(1:k-1); intercept = grandmean
-#' @examples 
-#' # Code alternatively
-#'     require(codingMatrices)
-#'     x <- paste0('t', 0:3)
+#'        The interpretation of (intercept and contrast) coefficients depends on the contrast coding function used.
+#'        Several contrast coding functions are available in 'stats' and 'codingMatrices'
+#'        But their (function and coefficient) namings are a bit confusing and unsystematic.
+#'        Instead, the functions below offer an intuitive interface (to the otherwise powerful stats/codingMatrices packages).
+#'        The names of these functions reflect the contrast coding used (treatment, difference, sum, or helmert contrasts).
+#'        They also reflect the intercept interpretation (either first factor's first level or grand mean).
+#'        They all produce intuitive coefficient names (e.g. 't1-t0' rather than just 't1').
+#'        They all have unit scaling (a coefficient of 1 means a difference of 1).
+#'        
+#' The following contrast coding functions are available:
+#'     1) Treatment contrasts:      contrast  coefficient = difference to first level
+#'            `contr.treat.first`   intercept coefficient = first level of first factor
+#'            `contr.treat.grand`   intercept coefficient = grand mean
+#'             
+#'     2) Difference contrasts:     contrast  coefficient = difference to previous level
+#'            `contr.diff.first`    intercept coefficient = first level of first factor
+#'            `contr.diff.grand`    intercept coefficient = grand mean
+#'            
+#'     3) Sum contrasts :           contrast  coefficient = difference to grand mean
+#'            `contr.sum.grand`     intercept coefficient = grand mean
+#'            
+#'     4) Helmert contrasts:        contrast  coefficient = difference to helmert mean (i.e. the mean of the previous levels)
+#'            `contr.helmert.grand` intercept coefficient = grand mean
+#' @examples
+#' ' Contrast codings
+#'     x <- factor(paste0('t', 0:3))
+#'     contr.treat.first(  levels(x))
+#'     contr.treat.grand(  levels(x))
+#'     contr.diff.first(   levels(x))
+#'     contr.diff.grand(   levels(x))
+#'     contr.sum.grand(    levels(x))
+#'     contr.helmert.grand(levels(x))
+#' 
+#' # Contrast code
 #'     x %<>% code(contr.treat.first)
 #'     x %<>% code(contr.treat.grand)
-#'     x %<>% code(contr.sdiff.first)
-#'     x %<>% code(contr.sdiff.grand)
+#'     x %<>% code(contr.diff.first)
+#'     x %<>% code(contr.diff.grand)
 #'     x %<>% code(contr.sum.grand)
 #'     x %<>% code(contr.helmert.grand)
 #'
-#' # Effects on Statistics
+#' # Code and model
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object$subgroup %<>% code(contr.treat.first);   object %<>% fit_limma()
@@ -193,99 +215,75 @@ code <- function(
         colnames(contrastmat) <- levels(x)
         rownames(contrastmat)[1] <- 'Intercept'
         names(dimnames(contrastmat)) <- c('coefficient', 'level')
-        message_df('\t\t%s', contrastmat)
+        cmessage('\t\tContrast code')
+        message_df('\t\t\t%s', contrastmat)
     }
     x
 }
 
-
-#' Contrast Coding Functions
-#' 
-#' Contrast Coding Functions with intuitive names
-#'
-#' Each factor in a General Linear Model is 'coded' using a 'contrast coding function'.
-#' This leads to a linear model with an intercept and k-1 coefficients per k-leveled factor.
-#' The interpretation of intercept and other coefficients depends on the coding function used.
-#' Several contrast coding functions are provided in 'stats' and 'codingMatrices'
-#' Because their namings are somewhat confusing, we provide intuitive front-ends to the most used ones:
-#' `contr.treat.first`   : coef(k) = level(k) - level(1),    intercept = level(1)
-#' `contr.treat.grand`   : coef(k) = level(k) - level(1),    intercept = grandmean
-#' `contr.sdiff.first`   : coef(k) = level(k) - level(k-1);  intercept = level(1)
-#' `contr.sdiff.grand`   : coef(k) = level(k) - level(k-1);  intercept = grandmean
-#' `contr.sum.grand`     : coef(k) = level(k) - grandmean;   intercept = grandmean
-#' `contr.helmert.grand` : coef(k) = level(k) - mean(1:k-1); intercept = grandmean
-#' @param x  levels 
-#' @return   character vector
-#' @examples 
-#' (x <- levels(factor(c('A', 'B', 'C'))))
-#' contr.treat.first(x)    # treatment contrasts, intercept = first level
-#' contr.treat.grand(x)    # treatment contrasts, intercept = grand mean
-#' contr.sdiff.first(x)    # successive diffs,    intercept = first level
-#' contr.sdiff.grand(x)    # successive diffs,    intercept = grand mean
-#' contr.sum.grand(x)      # sum contrasts,       intercept = first level
-#' contr.helmert.grand(x)  # helmert contrasts,   intercept = grand mean
+#' @rdname code
 #' @export
-contr.treat.first <- function(x){
-    y <- contr.treatment(x)
-    colnames(y) %<>% paste0('-', x[1])
+contr.treat.first <- function(n){
+    y <- contr.treatment(n)
+    colnames(y) %<>% paste0('-', n[1])
     y
 }
 
 #' @rdname contr.treat.first
 #' @export
-contr.treat.grand <- function(x){
+contr.treat.grand <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
-        return(x) 
+        return(n) 
     }
-    y <- codingMatrices::code_control(x)
-    colnames(y) <- paste0(x[-1], '-', x[1])
+    y <- codingMatrices::code_control(n)
+    colnames(y) <- paste0(n[-1], '-', n[1])
     y
 }
 
 #' @rdname contr.treat.first
 #' @export
-contr.sdiff.first <- function(x){
+contr.diff.first <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
-        return(x) 
+        return(n) 
     }
-    k <- length(x)
-    y <- codingMatrices::contr.diff(x)
-    colnames(y) <- paste0(x[-1], '-', x[-k])
+    k <- length(n)
+    y <- codingMatrices::contr.diff(n)
+    colnames(y) <- paste0(n[-1], '-', n[-k])
     y
 }
 
 #' @rdname contr.treat.first
 #' @export
-contr.sdiff.grand <- function(x){
+contr.diff.grand <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
-        return(x) 
+        return(n) 
     }
-    k <- length(x)
-    y <- codingMatrices::code_diff(x)
-    colnames(y) <- paste0(x[-1], '-', x[-k])
+    k <- length(n)
+    y <- codingMatrices::code_diff(n)
+    colnames(y) <- paste0(n[-1], '-', n[-k])
     y
 }
 
 #' @rdname contr.treat.first
 #' @export
-contr.sum.grand <- function(x){
-    y <- contr.sum(x)
-    k <- length(x)
-    colnames(y) <- paste0(x[-k],  '-grandmean')
+contr.sum.grand <- function(n){
+    y <- contr.sum(n)
+    k <- length(n)
+    colnames(y) <- paste0(n[-k],  '-grand')
     y
 }
 
 #' @rdname contr.treat.first
-contr.helmert.grand <- function(x){
+contr.helmert.grand <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
-        return(x) 
+        return(n) 
     }
-    y <- codingMatrices::code_helmert(x) # same as contr.helmert but properly scaled!
-    colnames(y) <- paste0(x[-1],  '-helmertmean')
+    y <- codingMatrices::code_helmert(n) # properly scaled version of stats::contr.helmert
+    colnames(y) <- paste0(n[-1],  '-helmert')
     y
 }
 
@@ -699,24 +697,24 @@ summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
     fdt %<>% extract(, c('feature_id', cols), with = FALSE)
     
     longdt <- fdt %>% melt.data.table(id.vars = 'feature_id')
-    longdt[, statistic := split_extract_fixed(variable, FITSEP, 1) %>% factor(unique(.))]
-    longdt[,  contrast := split_extract_fixed(variable, FITSEP, 2) %>% factor(unique(.))]
-    longdt[,       fit := split_extract_fixed(variable, FITSEP, 3) %>% factor(unique(.))]
+    longdt[, statistic    := split_extract_fixed(variable, FITSEP, 1) %>% factor(unique(.))]
+    longdt[,  coefficient := split_extract_fixed(variable, FITSEP, 2) %>% factor(unique(.))]
+    longdt[,       fit    := split_extract_fixed(variable, FITSEP, 3) %>% factor(unique(.))]
     longdt[, variable := NULL]
     
     
-    sumdt <- dcast.data.table(longdt, feature_id + contrast + fit ~ statistic, value.var = 'value')
+    sumdt <- dcast.data.table(longdt, feature_id + coefficient + fit ~ statistic, value.var = 'value')
     sumdt <- sumdt[, .(
         downfdr = sum(effect < 0  & fdr < 0.05, na.rm = TRUE), 
         upfdr   = sum(effect > 0  & fdr < 0.05, na.rm = TRUE),
         downp   = sum(effect < 0  &   p < 0.05, na.rm = TRUE), 
-        upp     = sum(effect > 0  &   p < 0.05, na.rm = TRUE)), by = c('fit', 'contrast') ]
+        upp     = sum(effect > 0  &   p < 0.05, na.rm = TRUE)), by = c('coefficient', 'fit') ]
     if (!is.null(fit)){
         idx <- sumdt$fit %in% fit
         sumdt %<>% extract(idx)
     }
     if (!is.null(coefs)){
-        sumdt <- sumdt[contrast %in% coefs]
+        sumdt <- sumdt[coefficient %in% coefs]
     }
     sumdt
 }

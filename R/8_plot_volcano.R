@@ -150,7 +150,9 @@ add_assay_means <- function(
 # Add
     if (is.null(assay))  return(object)
     for (.assay in assay){
-        fdt(object)[[.assay]] <- rowMeans(assays(object)[[.assay]], na.rm = TRUE)
+        if (is.numeric(fdt(object)[[.assay]])){
+            fdt(object)[[.assay]] <- rowMeans(assays(object)[[.assay]], na.rm = TRUE)
+        }
     }
 # Return
     object
