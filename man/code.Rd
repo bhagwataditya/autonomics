@@ -3,11 +3,26 @@
 \name{code}
 \alias{code}
 \alias{contr.treat.first}
+\alias{contr.treat.grand}
+\alias{contr.diff.first}
+\alias{contr.diff.grand}
+\alias{contr.sum.grand}
+\alias{contr.helmert.grand}
 \title{Contrast Code Factor}
 \usage{
 code(x, contr.fun = contr.treat.first, verbose = TRUE)
 
 contr.treat.first(n)
+
+contr.treat.grand(n)
+
+contr.diff.first(n)
+
+contr.diff.grand(n)
+
+contr.sum.grand(n)
+
+contr.helmert.grand(n)
 }
 \arguments{
 \item{x}{factor vector}
@@ -52,4 +67,32 @@ The following contrast coding functions are available:
            
     4) Helmert contrasts:        contrast  coefficient = difference to helmert mean (i.e. the mean of the previous levels)
            `contr.helmert.grand` intercept coefficient = grand mean
+}
+\examples{
+# Contrast codings
+    x <- factor(paste0('t', 0:3))
+    contr.treat.first(  levels(x))
+    contr.treat.grand(  levels(x))
+    contr.diff.first(   levels(x))
+    contr.diff.grand(   levels(x))
+    contr.sum.grand(    levels(x))
+    contr.helmert.grand(levels(x))
+
+# Contrast code
+    x \%<>\% code(contr.treat.first)
+    x \%<>\% code(contr.treat.grand)
+    x \%<>\% code(contr.diff.first)
+    x \%<>\% code(contr.diff.grand)
+    x \%<>\% code(contr.sum.grand)
+    x \%<>\% code(contr.helmert.grand)
+
+# Code and model
+    file <- download_data('atkin18.metabolon.xlsx')
+    object <- read_metabolon(file)
+    object$subgroup \%<>\% code(contr.treat.first);   object \%<>\% fit_limma()
+    object$subgroup \%<>\% code(contr.treat.grand);   object \%<>\% fit_limma()
+    object$subgroup \%<>\% code(contr.diff.first);    object \%<>\% fit_limma()
+    object$subgroup \%<>\% code(contr.diff.grand);    object \%<>\% fit_limma()
+    object$subgroup \%<>\% code(contr.sum.grand);     object \%<>\% fit_limma()
+    object$subgroup \%<>\% code(contr.helmert.grand); object \%<>\% fit_limma()
 }

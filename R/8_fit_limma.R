@@ -65,6 +65,7 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' @param subgroupvar  subgroup svar
 #' @param formula      formula with svars
 #' @param drop         whether to drop predictor names
+#' @param contr.fun    contrast coding function
 #' @param verbose      whether to message
 #' @param ...          required to s3ify
 #' @return design matrix
@@ -73,6 +74,8 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' object <- read_metabolon(file)
 #' unique(create_design(object))
 #' unique(create_design(object, formula = ~ subgroup))
+#' unique(create_design(object, formula = ~ subgroup, contr.fun = contr.treat.first))
+#' unique(create_design(object, formula = ~ subgroup, contr.fun = contr.diff.first))
 #' unique(create_design(object, formula = ~ subgroup + T2D))
 #' unique(create_design(object, formula = ~ subgroup / T2D))
 #' unique(create_design(object, formula = ~ subgroup * T2D))
@@ -87,12 +90,14 @@ create_design.SummarizedExperiment <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object, subgroupvar),
     drop        = varlevels_dont_clash(object, all.vars(formula)), 
+    contr.fun   = contr.treat.first,
     verbose     = FALSE, 
     ...
 ){
     create_design.data.table(sdt(object), 
                             subgroupvar = subgroupvar, 
                             formula     = formula,
+                            contr.fun   = contr.fun,
                             drop        = drop,
                             verbose     = verbose)
 }
@@ -104,15 +109,18 @@ create_design.data.table <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula     = default_formula(object, subgroupvar),
     drop        = varlevels_dont_clash(object, all.vars(formula)), 
+    contr.fun   = contr.treat.first,
     verbose     = FALSE, 
     ...
 ){
 # Assert
     assert_is_subset(all.vars(formula), names(object))
     . <- NULL
-# Ensure that subgroup vector is a factor to preserve order of levels
+# Contrast Code Factors
     for (var in all.vars(formula)){
-        if (is.character(object[[var]])) object[[var]] %<>% factor() }
+        if (is.character(object[[var]]))   object[[var]] %<>% factor()
+        if (is.factor(   object[[var]]))   object[[var]] %<>% code(contr.fun, verbose = verbose)
+    }
 # Create design matrix
     if (verbose)   message('\t\tDesign: ', formula2str(formula))
     object %<>% data.frame(row.names = .$sample_id)
@@ -172,7 +180,7 @@ create_design.data.table <- function(
 #'     4) Helmert contrasts:        contrast  coefficient = difference to helmert mean (i.e. the mean of the previous levels)
 #'            `contr.helmert.grand` intercept coefficient = grand mean
 #' @examples
-#' ' Contrast codings
+#' # Contrast codings
 #'     x <- factor(paste0('t', 0:3))
 #'     contr.treat.first(  levels(x))
 #'     contr.treat.grand(  levels(x))
@@ -229,7 +237,7 @@ contr.treat.first <- function(n){
     y
 }
 
-#' @rdname contr.treat.first
+#' @rdname code
 #' @export
 contr.treat.grand <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
@@ -241,7 +249,7 @@ contr.treat.grand <- function(n){
     y
 }
 
-#' @rdname contr.treat.first
+#' @rdname code
 #' @export
 contr.diff.first <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
@@ -254,7 +262,7 @@ contr.diff.first <- function(n){
     y
 }
 
-#' @rdname contr.treat.first
+#' @rdname code
 #' @export
 contr.diff.grand <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
@@ -267,7 +275,7 @@ contr.diff.grand <- function(n){
     y
 }
 
-#' @rdname contr.treat.first
+#' @rdname code
 #' @export
 contr.sum.grand <- function(n){
     y <- contr.sum(n)
@@ -276,7 +284,7 @@ contr.sum.grand <- function(n){
     y
 }
 
-#' @rdname contr.treat.first
+#' @rdname code
 contr.helmert.grand <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")

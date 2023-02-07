@@ -13,6 +13,7 @@ create_design(object, ...)
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar),
   drop = varlevels_dont_clash(object, all.vars(formula)),
+  contr.fun = contr.treat.first,
   verbose = FALSE,
   ...
 )
@@ -22,6 +23,7 @@ create_design(object, ...)
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar),
   drop = varlevels_dont_clash(object, all.vars(formula)),
+  contr.fun = contr.treat.first,
   verbose = FALSE,
   ...
 )
@@ -36,6 +38,8 @@ create_design(object, ...)
 \item{formula}{formula with svars}
 
 \item{drop}{whether to drop predictor names}
+
+\item{contr.fun}{contrast coding function}
 
 \item{verbose}{whether to message}
 }
