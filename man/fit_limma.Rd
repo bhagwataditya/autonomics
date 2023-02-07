@@ -12,7 +12,8 @@ fit_limma(
   contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  design = create_design(object, formula = formula, drop = drop),
+  contr.fun = contr.treat.first,
+  design = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
@@ -29,7 +30,8 @@ fit_limma(
   contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  design = create_design(object, formula = formula, drop = drop),
+  contr.fun = contr.treat.first,
+  design = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
@@ -63,6 +65,8 @@ fit_wilcoxon(
 \item{formula}{modeling formula}
 
 \item{drop}{TRUE or FALSE}
+
+\item{contr.fun}{contrast coding function}
 
 \item{design}{design matrix}
 
@@ -110,11 +114,10 @@ Fit model and test for differential expression
         # flexible, but only approximate
         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
 
-# alternative contrastcodings:
-    object$subgroup \%<>\% code(codingMatrices::contr.diff)
-    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB') # backward difs
-    object$subgroup \%<>\% code(stats::contr.treatment)
-    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB') # baseline difs
+# alternative contrast coding functions:
+    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB')
+    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.treat.first)
+    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.diff.first)
     
 # non-parametric: wilcoxon
     object \%<>\% fit_limma(   subgroupvar = 'subgroup', block = 'SUB')

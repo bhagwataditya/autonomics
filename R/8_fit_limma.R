@@ -459,6 +459,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param contrasts    NULL or character vector: coefficient contrasts to test
 #' @param formula      modeling formula
 #' @param drop         TRUE or FALSE
+#' @param contr.fun    contrast coding function
 #' @param design       design matrix
 #' @param coefs        NULL or character vector: model coefs to test
 #' @param block        block svar (or NULL)
@@ -491,11 +492,10 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'         # flexible, but only approximate
 #'         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
 #' 
-#' # alternative contrastcodings:
-#'     object$subgroup %<>% code(codingMatrices::contr.diff)
-#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'SUB') # backward difs
-#'     object$subgroup %<>% code(stats::contr.treatment)
-#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'SUB') # baseline difs
+#' # alternative contrast coding functions:
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'SUB')
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.treat.first)
+#'     object %<>% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.diff.first)
 #'     
 #' # non-parametric: wilcoxon
 #'     object %<>% fit_limma(   subgroupvar = 'subgroup', block = 'SUB')
@@ -507,7 +507,8 @@ fit_limma <- function(
     contrasts    = NULL,
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
-    design       = create_design(object, formula = formula, drop = drop),
+    contr.fun    = contr.treat.first,
+    design       = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
     coefs        = if (is.null(contrasts))  colnames(design)     else NULL,
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
@@ -521,7 +522,8 @@ fit_limma <- function(
     limmadt <- .fit_limma(
         object       = object,        subgroupvar  = subgroupvar,
         contrasts    = contrasts,     formula      = formula, 
-        drop         = drop,          design       = design, 
+        drop         = drop,          contr.fun    = contr.fun,       
+        design       = design, 
         coefs        = coefs,         block        = block,
         weightvar    = weightvar,     statvars     = statvars,
         sep          = sep,           suffix       = suffix,
@@ -580,7 +582,8 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     contrasts    = NULL,
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
-    design       = create_design(object, formula = formula, drop = drop),
+    contr.fun    = contr.treat.first,
+    design       = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
     coefs        = if (is.null(contrasts))  colnames(design) else NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
