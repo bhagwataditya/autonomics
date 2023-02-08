@@ -265,13 +265,13 @@ extract_connected_features <- function(
 #' object %<>% filter_alllevel_features('subgroup')
 #' @export
 filter_all_slevels <- function(object, svar, verbose = TRUE){
-    tmpdt <- sumexp_to_longdt(obj, svars = svar)
+    tmpdt <- sumexp_to_longdt(object, svars = svar)
     tmpdt <- tmpdt[, .(nvalues = sum(!is.na(value))), by = c('feature_id', svar)]
     tmpdt <- tmpdt[, .(alllevels = all(nvalues>0)), by = 'feature_id']
     tmpdt %<>% extract(alllevels == TRUE)
     idx <- as.character(tmpdt$feature_id)
-    if (verbose)  cmessage('\t\t\tRetain %d/%d features with all `%s` levels', length(idx), nrow(obj), svar)
-    obj %<>% extract(idx, )
+    if (verbose)  cmessage('\t\t\tRetain %d/%d features with all `%s` levels', length(idx), nrow(object), svar)
+    object %<>% extract(idx, )
 }
 
 
@@ -292,6 +292,7 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' fit_lm(   object, formula = ~subgroup)
+#' fit_lm(   object, formula = ~subgroup, contr.fun = contr.treat.first)
 #' fit_limma(object, formula = ~subgroup)
 #' fit_limma(object, formula = ~subgroup, block = 'SUB')
 #' fit_lme(  object, formula = ~subgroup, block = 'SUB')
@@ -328,7 +329,7 @@ fit_lmx <- function(
     obj <- object
     for (var in all.vars(formula)){
         if (is.character(obj[[var]]))   object[[var]] %<>% factor()
-        if (is.factor(   obj[[var]]))   object[[var]] %<>% code(contr.fun, verbose = FALSE)
+        if (is.factor(   obj[[var]]))   object[[var]] %<>% code(contr.fun, verbose = verbose)
         obj %<>% filter_all_slevels(var, verbose = verbose)
     }
 # Filter / Customize

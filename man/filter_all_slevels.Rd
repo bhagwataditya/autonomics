@@ -20,5 +20,5 @@ Filter for features with all slevels
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
-object \%<>\% filter_alllevel_features('subgroup')
+object \%<>\% filter_all_slevels('subgroup')
 }

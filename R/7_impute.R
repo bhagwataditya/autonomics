@@ -267,7 +267,7 @@ impute.SummarizedExperiment <- function(
     object
 }
 n_imputed_features_per_subgroup <- function(object){ 
-    objlist <- split_by_svar(object, 'subgroup')
+    objlist <- split_samples(object, by = 'subgroup')
     n <- vapply(objlist, n_imputed_features, integer(1))
     n[n!=0]
 }
@@ -389,19 +389,6 @@ split_features <- function(object, by){
     extract_features  <- function(level)  object %>% extract(fdt(.)[[by]] == level, )
     Map(extract_features, flevels(object, by))
 }
-
-#' @rdname split_samples
-#' @export
-split_by_svar <- function(object , svar = subgroup){
-    split_samples(object, by = as_name(enquo(svar)))
-}
-
-#' @rdname split_samples
-#' @export
-split_by_fvar <- function(object, fvar){
-    split_features(object, by = as_name(enquo(fvar)))
-}
-
 
 #=============================================================================
 #
