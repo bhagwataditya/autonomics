@@ -334,12 +334,11 @@ fit_lmx <- function(
 # Filter / Customize
     if (fit %in% c('lme', 'lmer')){  
         obj %<>% extract_connected_features(formula = formula, blockvars = block)
-        obj %<>% rm_consistent_nondetects(formula)
+        obj %<>% rm_consistent_nondetects(formula)  
     }
     if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose);   blockvars <- names(block)
     } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block   = block,   verbose = verbose); blockvars <- character(0)
-    } else {                                                                                           blockvars <- block
-    }
+    } else {                                                                                           blockvars <- block }
 # Fit
     dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars), assay = assayNames(object)[1])
     fitmethod <- get(paste0('.', fit))
@@ -370,9 +369,9 @@ fit_lmx <- function(
 fit_lm <- function(
     object,
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    contrasts   = NULL,  # for interface equivalence only
     formula     = default_formula(object, subgroupvar, contrasts = NULL), 
-    drop         = varlevels_dont_clash(object, all.vars(formula)),
+    drop        = varlevels_dont_clash(object, all.vars(formula)),
+    contr.fun   = contr.treat.first,
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs       = NULL, 
@@ -381,11 +380,12 @@ fit_lm <- function(
 ){
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
     fit_lmx(
-        object,                     fit          = 'lm', 
-        subgroupvar = subgroupvar,  formula      = formula, 
-        drop        = drop,         block        = block, 
-        weightvar   = weightvar,    coefs        = coefs, 
-        verbose     = verbose,      plot         = plot)
+        object,                      fit          = 'lm', 
+        subgroupvar  = subgroupvar,  formula      = formula, 
+        drop         = drop,         contr.fun    = contr.fun,
+        block        = block, 
+        weightvar    = weightvar,    coefs        = coefs, 
+        verbose      = verbose,      plot         = plot)
 }
 
 
@@ -394,9 +394,9 @@ fit_lm <- function(
 fit_lme <- function(
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    contrasts    = NULL,  # for interface equivalence only
     formula      = default_formula(object, subgroupvar, contrasts = NULL), 
     drop         = varlevels_dont_clash(object, all.vars(formula)),
+    contr.fun    = contr.treat.first,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs        = NULL, 
@@ -410,11 +410,12 @@ fit_lme <- function(
         return(object)   }
 # Fit
     fit_lmx(
-        object,                     fit          = 'lme', 
-        subgroupvar = subgroupvar,  formula      = formula, 
-        drop        = drop,         block        = block, 
-        weightvar   = weightvar,    coefs        = coefs, 
-        verbose     = verbose,      plot         = plot)
+        object,                      fit          = 'lme', 
+        subgroupvar  = subgroupvar,  formula      = formula, 
+        drop         = drop,         contr.fun    = contr.fun,
+        block        = block, 
+        weightvar    = weightvar,    coefs        = coefs, 
+        verbose      = verbose,      plot         = plot)
 }
 
 
@@ -423,7 +424,6 @@ fit_lme <- function(
 fit_lmer <- function(
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    contrasts    = NULL,  # for function equivalence only
     formula      = default_formula(object, subgroupvar, contrasts = NULL), 
     drop          = varlevels_dont_clash(object, all.vars(formula)),
     block        = NULL, 
@@ -443,9 +443,10 @@ fit_lmer <- function(
 # Fit
     metadata(object)$lmer <- NULL
     fit_lmx(
-        object,                     fit          = 'lmer', 
-        subgroupvar = subgroupvar,  formula      = formula, 
-        drop        = drop,         block        = block, 
-        weightvar   = weightvar,    coefs        = coefs, 
-        verbose     = verbose,      plot         = plot)
+        object,                      fit          = 'lmer', 
+        subgroupvar  = subgroupvar,  formula      = formula, 
+        drop         = drop,         contr.fun    = contr.fun,
+        block        = block, 
+        weightvar    = weightvar,    coefs        = coefs, 
+        verbose      = verbose,      plot         = plot)
 }

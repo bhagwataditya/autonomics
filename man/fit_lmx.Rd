@@ -24,9 +24,9 @@ fit_lmx(
 fit_lm(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
+  contr.fun = contr.treat.first,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
@@ -37,9 +37,9 @@ fit_lm(
 fit_lme(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
+  contr.fun = contr.treat.first,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
@@ -50,7 +50,6 @@ fit_lme(
 fit_lmer(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   block = NULL,
