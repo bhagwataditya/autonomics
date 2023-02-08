@@ -406,11 +406,12 @@ add_fdr <- function(fitres){
 }
 
 reset_fitres <- function(
-    object, fit, coefs = autonomics::coefs(object, fit = fit), verbose = TRUE
+    object, fit = fits(object)[1], coefs = autonomics::coefs(object, fit = fit), verbose = TRUE
 ){
 # Assert
     . <- NULL
     assert_is_valid_sumexp(object)
+    if (is.null(fit))  return(object)
     assert_is_a_string(fit)
 # Reset
     pattern <- coefs 
