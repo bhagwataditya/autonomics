@@ -328,8 +328,8 @@ fit_lmx <- function(
 # Contrast Code Factors
     obj <- object
     for (var in all.vars(formula)){
-        if (is.character(obj[[var]]))   object[[var]] %<>% factor()
-        if (is.factor(   obj[[var]]))   object[[var]] %<>% code(contr.fun, verbose = verbose)
+        if (is.character(obj[[var]]))   obj[[var]] %<>% factor()
+        if (is.factor(   obj[[var]]))   obj[[var]] %<>% code(contr.fun, verbose = verbose)
         obj %<>% filter_all_slevels(var, verbose = verbose)
     }
 # Filter / Customize
@@ -337,11 +337,11 @@ fit_lmx <- function(
         obj %<>% extract_connected_features(formula = formula, blockvars = block)
         obj %<>% rm_consistent_nondetects(formula)  
     }
-    if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose);   blockvars <- names(block)
-    } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block   = block,   verbose = verbose); blockvars <- character(0)
-    } else {                                                                                           blockvars <- block }
+    if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose); blockvars <- names(block)
+    } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block = block,   verbose = verbose); blockvars <- character(0)
+    } else {                                                                                         blockvars <- block }
 # Fit
-    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars), assay = assayNames(object)[1])
+    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars), assay = assayNames(obj)[1])
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
     formula %<>% addlhs()
@@ -349,17 +349,17 @@ fit_lmx <- function(
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     if (drop)  for (var in all.vars(formula))   names(fitres) %<>% stri_replace_first_fixed(var, '')
     fitres %<>% add_fdr()
+# Merge back
     object %<>% reset_fitres(fit)
     object %<>% merge_fitres(fitres, fit = fit)
-# extract
     quantities <- c('effect', 'fdr', 'p', 't')
-    fitres <- mapply(.extractstat, quantity=quantities, 
-                            MoreArgs = list(fitres=fitres), SIMPLIFY = FALSE)
+    fitres <- mapply(.extractstat, quantity = quantities, 
+                    MoreArgs = list(fitres = fitres), SIMPLIFY = FALSE)
     formula %<>% droplhs() %<>% formula2str()
     if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object), fit = fit, coefs = coefs))
-    if (is.null(coefs)) coefs <- autonomics::coefs(object, fit = fit)
-    if (length(coefs) > 1) coefs %<>% setdiff('Intercept')
+    if (is.null(coefs))     coefs <- autonomics::coefs(object, fit = fit)
+    if (length(coefs) > 1)  coefs %<>% setdiff('Intercept')
     if (plot)  print(plot_volcano(object, fit = fit, coefs = coefs))
     object 
 }
