@@ -2,25 +2,23 @@
 #' @export
 sumexp_to_widedt <- function(
     object,
-    fid   = 'feature_id',
-    fvars = autonomics::fvars(object), # intersect('feature_name', autonomics::fvars(object)),
+    fvars = autonomics::fvars(object),
     assay = assayNames(object)[1]
 ){
 
     # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(fid,   fvars(object))
     assert_is_subset(fvars, fvars(object))
 
     # Extract
-    wide1 <- fdt(object)[, unique(c(fid, fvars)), with = FALSE]
+    wide1 <- fdt(object)[, unique(c('feature_id', fvars)), with = FALSE]
     if (is.numeric(assay))  assay <- assayNames(object)[assay]
     for (ass in assay){
         exprs1 <- data.table(assays(object)[[ass]])
         if (length(assay) > 1)  colnames(exprs1) %<>% paste0(ass, '.', .)
         wide1  %<>% cbind(exprs1)
     }
-    wide1[, (fid) := factor(get(fid), unique(fdata(object)[[fid]]))]
+    wide1[, feature_id := factor(feature_id, unique(fdt(object)$feature_id))]
 
     # Return
     wide1[]
@@ -28,23 +26,28 @@ sumexp_to_widedt <- function(
 
 
 
-#' Convert SummarizedExperiment into data.table
+#' SummarizedExperiment to data.table
 #'
 #' @details
 #' \itemize{
-#'    \item \code{sumexp_to_widedt}:   feature          x sample
+#'    \item \code{sumexp_to_widedt}:    feature          x sample
 #'    \item \code{sumexp_to_subrep_dt}: feature.subgroup x replicate
-#'    \item \code{sumexp_to_longdt}:   feature.sample
+#'    \item \code{sumexp_to_longdt}:    feature.sample
 #' }
 #' @param object sumexp
 #' @param subgroup subgroup (sym)
-#' @param fid    fvar carrying feature id
 #' @param fvars  additional fvars to include in table
-#' @param sid    svar carrying sample id
 #' @param svars  additional svars to include in table
 #' @param assay  matrix in assays(object) to be used
 #' @return data.table
 #' @examples
+#' # Atkin Hypoglycemia
+#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    object <- read_metabolon(file)
+#'    sumexp_to_widedt(object)
+#'    sumexp_to_longdt(object)
+#'    sumexp_to_subrep_dt(object)
+#'
 #' # Stem cell comparison
 #'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
@@ -52,13 +55,6 @@ sumexp_to_widedt <- function(
 #'     sumexp_to_widedt(object)
 #'     sumexp_to_longdt(object)
 #'     sumexp_to_subrep_dt(object)
-#'
-#' # Glutaminase
-#'    file <- download_data('atkin18.metabolon.xlsx')
-#'    object <- read_metabolon(file)
-#'    sumexp_to_widedt(object)
-#'    sumexp_to_longdt(object)
-#'    sumexp_to_subrep_dt(object)
 #'
 #' # Fukuda
 #'    file <- download_data('fukuda20.proteingroups.txt')
@@ -70,50 +66,42 @@ sumexp_to_widedt <- function(
 #' @export
 sumexp_to_longdt <- function(
     object,
-    fid   = 'feature_id',
     fvars = intersect('feature_name', autonomics::fvars(object)),
-    sid   = 'sample_id',
-    svars = intersect('subgroup', autonomics::svars(object)),
+    svars = intersect('subgroup',     autonomics::svars(object)),
     assay = assayNames(object) %>% intersect(c(.[1], 'is_imputed'))
 ){
-    # Assert
+# Assert
     . <- NULL
-    assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(fid,   autonomics::fvars(object))
-    assert_is_subset(sid,   autonomics::svars(object))
+    assert_is_valid_sumexp(object)
     assert_is_subset(fvars, autonomics::fvars(object))
     assert_is_subset(svars, autonomics::svars(object))
     common <- intersect(svars, fvars)
     if (length(common) > 0){
-        message('\t\tRemove clashing svars/fvars: ',
-                paste0(common,collapse = ', '))
+        message('\t\tRemove clashing svars/fvars: ', paste0(common,collapse = ', '))
         fvars %<>% setdiff(common) # Avoid name clashes
         svars %<>% setdiff(common)
     }
-    # Melt
+# Melt
     melt <- data.table::melt.data.table
-    dt <- sumexp_to_widedt(object, fid, fvars, assay = assay[1])
-    dt %<>% melt(id.vars = unique(c(fid, fvars)), variable.name = sid,
-                value.name = 'value')
-    # Merge
+    dt <- sumexp_to_widedt(object, fvars = fvars, assay = assay[1])
+    dt %<>% melt(id.vars = unique(c('feature_id', fvars)), variable.name = 'sample_id', value.name = 'value')
+# Merge
     if (length(assay)>1){
         for (ass in assay[-1]){
-            assdt <- sumexp_to_widedt(
-                        object, fid=fid, fvars = character(0), assay = ass)
-            assdt %<>% melt(id.vars = fid, variable.name = sid, value.name=ass)
-            dt %<>% merge(assdt, by = c(fid, sid))
+            assdt <- sumexp_to_widedt(object, fvars = character(0), assay = ass)
+            assdt %<>% melt(id.vars = 'feature_id', variable.name = 'sample_id', value.name = ass)
+            dt %<>% merge(assdt, by = c('feature_id', 'sample_id'))
         }
     }
-    sdata1 <- sdata(object)[, c(sid, svars), drop = FALSE]
-    dt %<>% merge(sdata1, by = sid)
-    cols <- intersect(unique(
-                c(fid, fvars, sid, svars, 'value', assay[-1])), names(dt))
+    sdt1 <- sdt(object)[, c('sample_id', svars), with = FALSE]
+    dt %<>% merge(sdt1, by = 'sample_id')
+    cols <- c('feature_id', fvars, 'sample_id', svars, 'value', assay[-1])
+    cols %<>% unique() # avoid duplication of same fields in fid and fvars
+    cols %<>% intersect(names(dt))
     dt %<>% extract(, cols, with = FALSE)
-        # Note: unique is to avoid duplication of same fields in fid and fvars
-    # Order
-    dt[, (fid) := factor(get(fid), unique(fdata(object)[[fid]]))]
-    dt[, (sid) := factor(get(sid), unique(sdata(object)[[sid]]))]
-    # Return
+# Order and Return
+    dt[, feature_id := factor(feature_id, unique(fdt(object)$feature_id))]
+    dt[, sample_id  := factor(sample_id,  unique(sdt(object)$sample_id ))]
     dt[]
 }
 

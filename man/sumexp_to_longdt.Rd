@@ -4,20 +4,17 @@
 \alias{sumexp_to_widedt}
 \alias{sumexp_to_longdt}
 \alias{sumexp_to_subrep_dt}
-\title{Convert SummarizedExperiment into data.table}
+\title{SummarizedExperiment to data.table}
 \usage{
 sumexp_to_widedt(
   object,
-  fid = "feature_id",
   fvars = autonomics::fvars(object),
   assay = assayNames(object)[1]
 )
 
 sumexp_to_longdt(
   object,
-  fid = "feature_id",
   fvars = intersect("feature_name", autonomics::fvars(object)),
-  sid = "sample_id",
   svars = intersect("subgroup", autonomics::svars(object)),
   assay = assayNames(object) \%>\% intersect(c(.[1], "is_imputed"))
 )
@@ -27,13 +24,9 @@ sumexp_to_subrep_dt(object, subgroup = subgroup)
 \arguments{
 \item{object}{sumexp}
 
-\item{fid}{fvar carrying feature id}
-
 \item{fvars}{additional fvars to include in table}
 
 \item{assay}{matrix in assays(object) to be used}
-
-\item{sid}{svar carrying sample id}
 
 \item{svars}{additional svars to include in table}
 
@@ -43,16 +36,23 @@ sumexp_to_subrep_dt(object, subgroup = subgroup)
 data.table
 }
 \description{
-Convert SummarizedExperiment into data.table
+SummarizedExperiment to data.table
 }
 \details{
 \itemize{
-   \item \code{sumexp_to_widedt}:   feature          x sample
+   \item \code{sumexp_to_widedt}:    feature          x sample
    \item \code{sumexp_to_subrep_dt}: feature.subgroup x replicate
-   \item \code{sumexp_to_longdt}:   feature.sample
+   \item \code{sumexp_to_longdt}:    feature.sample
 }
 }
 \examples{
+# Atkin Hypoglycemia
+   file <- download_data('atkin18.metabolon.xlsx')
+   object <- read_metabolon(file)
+   sumexp_to_widedt(object)
+   sumexp_to_longdt(object)
+   sumexp_to_subrep_dt(object)
+
 # Stem cell comparison
     file <- download_data('billing16.proteingroups.txt')
     invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
@@ -60,13 +60,6 @@ Convert SummarizedExperiment into data.table
     sumexp_to_widedt(object)
     sumexp_to_longdt(object)
     sumexp_to_subrep_dt(object)
-
-# Glutaminase
-   file <- download_data('atkin18.metabolon.xlsx')
-   object <- read_metabolon(file)
-   sumexp_to_widedt(object)
-   sumexp_to_longdt(object)
-   sumexp_to_subrep_dt(object)
 
 # Fukuda
    file <- download_data('fukuda20.proteingroups.txt')
