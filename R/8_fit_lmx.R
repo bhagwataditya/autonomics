@@ -262,7 +262,7 @@ extract_connected_features <- function(
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% filter_alllevel_features('subgroup')
+#' object %<>% filter_all_slevels('subgroup')
 #' @export
 filter_all_slevels <- function(object, svar, verbose = TRUE){
     tmpdt <- sumexp_to_longdt(object, svars = svar)

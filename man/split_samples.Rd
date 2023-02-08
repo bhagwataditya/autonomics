@@ -3,17 +3,11 @@
 \name{split_samples}
 \alias{split_samples}
 \alias{split_features}
-\alias{split_by_svar}
-\alias{split_by_fvar}
 \title{Split samples}
 \usage{
 split_samples(object, by = "subgroup")
 
 split_features(object, by)
-
-split_by_svar(object, svar = subgroup)
-
-split_by_fvar(object, fvar)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
