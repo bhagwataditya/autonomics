@@ -12,13 +12,16 @@ biplot(
   color = "subgroup",
   shape = NULL,
   size = NULL,
+  alpha = NULL,
   group = NULL,
   linetype = NULL,
   label = NULL,
   feature_label = "feature_name",
   fixed = list(shape = 15, size = 3),
   nloadings = 0,
-  palette = make_svar_palette(object, color)
+  colorpalette = make_svar_palette(object, color),
+  alphapalette = make_alpha_palette(object, alpha),
+  title = paste0(x, ":", y)
 )
 
 plot_biplot(...)
@@ -45,6 +48,12 @@ plot_biplot(...)
 \item{fixed}{fixed plot aesthetics}
 
 \item{nloadings}{number of loadings per half-axis to plot}
+
+\item{colorpalette}{character vector}
+
+\item{alphapalette}{character vector}
+
+\item{title}{string}
 }
 \value{
 ggplot object

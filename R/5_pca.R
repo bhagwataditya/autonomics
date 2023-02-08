@@ -425,7 +425,7 @@ num2char <- function(x){
 add_scores <- function(
     p, object, x = 'pca1', y = 'pca2', color = 'subgroup', 
     shape = if ('replicate' %in% svars(object)) 'replicate' else NULL,
-    size = NULL, group = NULL, linetype = NULL,
+    size = NULL, alpha = NULL, group = NULL, linetype = NULL,
     fixed = list(shape = 15, size = 3, na.rm = TRUE)
 ){
 # manual colors require non-numerics
@@ -440,6 +440,7 @@ add_scores <- function(
     colorsym <- if (is.null(color)) quo(NULL) else sym(color)
     shapesym <- if (is.null(shape)) quo(NULL) else sym(shape)
     sizesym  <- if (is.null(size))  quo(NULL) else sym(size )
+    alphasym <- if (is.null(alpha)) quo(NULL) else sym(alpha)
     groupsym <- if (is.null(group)) quo(NULL) else sym(group)
     linetypesym <- if (is.null(linetype)) quo(NULL) else sym(linetype)
 # Points    
@@ -449,7 +450,8 @@ add_scores <- function(
                                y = !!ysym, 
                            color = !!colorsym, 
                            shape = !!shapesym, 
-                           size =  !!sizesym),
+                           size  = !!sizesym, 
+                           alpha = !!alphasym),
                 stat     = "identity", 
                 data     = sdt(object), 
                 params   = fixed,
@@ -517,6 +519,28 @@ add_loadings <- function(
 
 pca1 <- pca2 <- feature_name <- NULL
 
+#' Make alpha palette
+#' @param object SummarizedExperiment
+#' @param alpha string
+#' @return character vector
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' make_alpha_palette(object, 'SET')
+#' @export
+make_alpha_palette <- function(object, alpha){
+# Assert
+    assert_is_valid_sumexp(object)
+    if (is.null(alpha))  return(NULL)
+    assert_scalar_subset(alpha, svars(object))
+# Create
+    levels <- slevels(object, alpha)
+    palette <- seq(1, 0.4, length.out = length(levels))
+    names(palette) <- levels
+# Return
+    palette
+}
+    
 #' Biplot
 #' @param object         SummarizedExperiment
 #' @param x              svar (string)
@@ -529,6 +553,9 @@ pca1 <- pca2 <- feature_name <- NULL
 #' @param feature_label  fvar (string)
 #' @param fixed          fixed plot aesthetics
 #' @param nloadings      number of loadings per half-axis to plot
+#' @param colorpalette   character vector
+#' @param alphapalette   character vector
+#' @param title          string
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -547,13 +574,16 @@ biplot <- function(
     color = 'subgroup', 
     shape = NULL, 
     size  = NULL, 
+    alpha = NULL,
     group = NULL, 
     linetype = NULL,
     label = NULL, 
     feature_label = 'feature_name', 
     fixed = list(shape = 15, size = 3), 
     nloadings = 0,
-    palette =  make_svar_palette(object, color)
+    colorpalette =  make_svar_palette(object, color),
+    alphapalette = make_alpha_palette(object, alpha), 
+    title = paste0(x, ':', y)
 ){
 # Assert / Process
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -580,11 +610,12 @@ biplot <- function(
 # Plot
     p <- ggplot() + theme_bw() + theme(panel.grid = element_blank())
     p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
-    p <- p + ggtitle(paste0(x, ':', y))
+    p <- p + ggtitle(title)
     p %<>% add_loadings(object, x = x, y = y, label = feature_label, nloadings = nloadings)
     p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
-                      size = size, group = group, linetype = linetype, fixed = fixed)
-    if (!is.null(palette))  p <- p + scale_color_manual(values = palette, na.value = 'gray80')
+                      size = size, alpha = alpha, group = group, linetype = linetype, fixed = fixed)
+    if (!is.null(colorpalette))  p <- p + scale_color_manual(values = colorpalette, na.value = 'gray80')
+    if (!is.null(alphapalette))  p <- p + scale_alpha_manual(values = alphapalette)
     if (!is.null(label  ))  p <- p + geom_text_repel(
                     aes(x = !!sym(x), y = !!sym(y), label = !!sym(label)), 
                     data = sdt(object), na.rm = TRUE)
