@@ -14,7 +14,7 @@ create_design(object, ...)
   formula = default_formula(object, subgroupvar),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = contr.treat.first,
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 )
 
@@ -24,7 +24,7 @@ create_design(object, ...)
   formula = default_formula(object, subgroupvar),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = contr.treat.first,
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 )
 }
