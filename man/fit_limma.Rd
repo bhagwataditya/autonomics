@@ -12,7 +12,7 @@ fit_limma(
   contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = contr.treat.first,
+  contr.fun = NULL,
   design = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
@@ -30,7 +30,7 @@ fit_limma(
   contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = contr.treat.first,
+  contr.fun = NULL,
   design = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
@@ -97,8 +97,8 @@ Fit model and test for differential expression
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
-    object \%<>\% rm_consistent_nondetects(formula = ~ subgroup)
     object \%<>\% fit_limma()
+    object \%<>\% fit_limma(contr.fun = contr.treat.first)
     object \%<>\% fit_lm()
     plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
     

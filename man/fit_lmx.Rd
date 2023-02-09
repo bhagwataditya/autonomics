@@ -13,7 +13,7 @@ fit_lmx(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = contr.treat.first,
+  contr.fun = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
@@ -26,7 +26,7 @@ fit_lm(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = contr.treat.first,
+  contr.fun = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
@@ -39,7 +39,7 @@ fit_lme(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = contr.treat.first,
+  contr.fun = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
@@ -52,6 +52,7 @@ fit_lmer(
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
+  contr.fun = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = NULL,
@@ -92,7 +93,6 @@ Fit lm, lme, or lmer
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 fit_lm(   object, formula = ~subgroup)
-fit_lm(   object, formula = ~subgroup, contr.fun = contr.treat.first)
 fit_limma(object, formula = ~subgroup)
 fit_limma(object, formula = ~subgroup, block = 'SUB')
 fit_lme(  object, formula = ~subgroup, block = 'SUB')

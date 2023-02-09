@@ -89,10 +89,11 @@ The following contrast coding functions are available:
 # Code and model
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
-    object$subgroup \%<>\% code(contr.treat.first);   object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.treat.grand);   object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.diff.first);    object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.diff.grand);    object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.sum.grand);     object \%<>\% fit_limma()
-    object$subgroup \%<>\% code(contr.helmert.grand); object \%<>\% fit_limma()
+    object \%<>\% fit_limma()                                         #  default: treatment contrasts, firstlevel intercept, implicit coefnames
+    object$subgroup \%<>\% code(contr.treat.first);   object \%<>\% fit_limma()  #  treatment contrasts, firstlevel intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.treat.grand);   object \%<>\% fit_limma()  #  treatment contrasts,  grandmean intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.diff.first);    object \%<>\% fit_limma()  # difference contrasts, firstlevel intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.diff.grand);    object \%<>\% fit_limma()  # difference contrasts,  grandmean intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.sum.grand);     object \%<>\% fit_limma()  #        sum contrasts,  grandmean intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.helmert.grand); object \%<>\% fit_limma()  #    helmert contrasts,  grandmean intercept, explicit coefnames
 }

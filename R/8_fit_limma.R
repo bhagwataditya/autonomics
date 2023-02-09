@@ -90,7 +90,7 @@ create_design.SummarizedExperiment <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object, subgroupvar),
     drop        = varlevels_dont_clash(object, all.vars(formula)), 
-    contr.fun   = contr.treat.first,
+    contr.fun   = NULL,
     verbose     = TRUE, 
     ...
 ){
@@ -109,7 +109,7 @@ create_design.data.table <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula     = default_formula(object, subgroupvar),
     drop        = varlevels_dont_clash(object, all.vars(formula)), 
-    contr.fun   = contr.treat.first,
+    contr.fun   = NULL,
     verbose     = TRUE, 
     ...
 ){
@@ -118,11 +118,11 @@ create_design.data.table <- function(
     . <- NULL
 # Contrast Code Factors
     for (var in all.vars(formula)){
-        if (is.character(object[[var]]))   object[[var]] %<>% factor()
-        if (is.factor(   object[[var]]))   object[[var]] %<>% code(contr.fun, verbose = verbose)
+        if (is.character(object[[var]]))                      object[[var]] %<>% factor()
+        if (is.factor(object[[var]]) & !is.null(contr.fun))   object[[var]] %<>% code(contr.fun, verbose = verbose)   
     }
 # Create design matrix
-    if (verbose)   message('\t\tDesign: ', formula2str(formula))
+    #if (verbose)   message('\t\tDesign: ', formula2str(formula))
     object %<>% data.frame(row.names = .$sample_id)
     myDesign <- model.matrix(formula, data = object)
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
@@ -200,12 +200,13 @@ create_design.data.table <- function(
 #' # Code and model
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     object$subgroup %<>% code(contr.treat.first);   object %<>% fit_limma()
-#'     object$subgroup %<>% code(contr.treat.grand);   object %<>% fit_limma()
-#'     object$subgroup %<>% code(contr.diff.first);    object %<>% fit_limma()
-#'     object$subgroup %<>% code(contr.diff.grand);    object %<>% fit_limma()
-#'     object$subgroup %<>% code(contr.sum.grand);     object %<>% fit_limma()
-#'     object$subgroup %<>% code(contr.helmert.grand); object %<>% fit_limma()
+#'     object %<>% fit_limma()                                         #  default: treatment contrasts, firstlevel intercept, implicit coefnames
+#'     object$subgroup %<>% code(contr.treat.first);   object %<>% fit_limma()  #  treatment contrasts, firstlevel intercept, explicit coefnames
+#'     object$subgroup %<>% code(contr.treat.grand);   object %<>% fit_limma()  #  treatment contrasts,  grandmean intercept, explicit coefnames
+#'     object$subgroup %<>% code(contr.diff.first);    object %<>% fit_limma()  # difference contrasts, firstlevel intercept, explicit coefnames
+#'     object$subgroup %<>% code(contr.diff.grand);    object %<>% fit_limma()  # difference contrasts,  grandmean intercept, explicit coefnames
+#'     object$subgroup %<>% code(contr.sum.grand);     object %<>% fit_limma()  #        sum contrasts,  grandmean intercept, explicit coefnames
+#'     object$subgroup %<>% code(contr.helmert.grand); object %<>% fit_limma()  #    helmert contrasts,  grandmean intercept, explicit coefnames
 #' @export
 code <- function(
     x, contr.fun = contr.treat.first, verbose = TRUE
@@ -223,7 +224,7 @@ code <- function(
         colnames(contrastmat) <- levels(x)
         rownames(contrastmat)[1] <- 'Intercept'
         names(dimnames(contrastmat)) <- c('coefficient', 'level')
-        cmessage('\t\tContrast code')
+        cmessage('\t\tContrast Code')
         message_df('\t\t\t%s', contrastmat)
     }
     x
@@ -476,8 +477,8 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     object %<>% rm_consistent_nondetects(formula = ~ subgroup)
 #'     object %<>% fit_limma()
+#'     object %<>% fit_limma(contr.fun = contr.treat.first)
 #'     object %<>% fit_lm()
 #'     plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
 #'     
@@ -508,7 +509,7 @@ fit_limma <- function(
     contrasts    = NULL,
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun    = contr.treat.first,
+    contr.fun    = NULL,
     design       = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
     coefs        = if (is.null(contrasts))  colnames(design)     else NULL,
     block        = NULL,
@@ -583,7 +584,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     contrasts    = NULL,
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun    = contr.treat.first,
+    contr.fun    = NULL,
     design       = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
     coefs        = if (is.null(contrasts))  colnames(design) else NULL,
     block        = NULL, 

@@ -13,7 +13,7 @@ create_design(object, ...)
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = contr.treat.first,
+  contr.fun = NULL,
   verbose = TRUE,
   ...
 )
@@ -23,7 +23,7 @@ create_design(object, ...)
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object, subgroupvar),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = contr.treat.first,
+  contr.fun = NULL,
   verbose = TRUE,
   ...
 )

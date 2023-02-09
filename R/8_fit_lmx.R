@@ -241,7 +241,7 @@ extract_connected_features <- function(
                     connectedlevelsdt %<>% extract(connectedblocks >= nconnectedblocks)
                     n0 <- nrow(object); n1 <- nrow(connectedlevelsdt)
                     if (verbose & n1<n0){
-                        cmessage('\t\tRetain %d/%d features: %d or more %s span %ss: %s', 
+                        cmessage('\t\t\tRetain %d/%d features: %d or more %s span %ss: %s', 
                                  n1, n0, nconnectedblocks, blockvar, connectedfactor, paste0(connectedlevels, collapse = ', '))
                         idx <- fdt(object)$feature_id %in% connectedlevelsdt$feature_id
                         object %<>% extract(idx, )
@@ -292,7 +292,6 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' fit_lm(   object, formula = ~subgroup)
-#' fit_lm(   object, formula = ~subgroup, contr.fun = contr.treat.first)
 #' fit_limma(object, formula = ~subgroup)
 #' fit_limma(object, formula = ~subgroup, block = 'SUB')
 #' fit_lme(  object, formula = ~subgroup, block = 'SUB')
@@ -306,7 +305,7 @@ fit_lmx <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object, subgroupvar, contrasts = NULL), 
     drop        = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun   = contr.treat.first,
+    contr.fun   = NULL,
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs       = NULL, 
@@ -326,15 +325,16 @@ fit_lmx <- function(
         message('\t\t\tweights = assays(object)$', weightvar) 
     }
 # Contrast Code Factors
-    obj <- object
     for (var in all.vars(formula)){
-        if (is.character(obj[[var]]))   obj[[var]] %<>% factor()
-        if (is.factor(   obj[[var]]))   obj[[var]] %<>% code(contr.fun, verbose = verbose)
-        obj %<>% filter_all_slevels(var, verbose = verbose)
+        if (is.character(object[[var]]))                         object[[var]] %<>% factor()
+        if (is.factor(   object[[var]]) & !is.null(contr.fun))   object[[var]] %<>% code(contr.fun, verbose = verbose)
     }
 # Filter / Customize
+    if (verbose)  cmessage('\t\tFilter features')
+    obj <- object
+    for (var in all.vars(formula))  obj %<>% filter_all_slevels(var, verbose = verbose)
     if (fit %in% c('lme', 'lmer')){  
-        obj %<>% extract_connected_features(formula = formula, blockvars = block)
+        obj %<>% extract_connected_features(formula = formula, blockvars = block, verbose = verbose)
         obj %<>% rm_consistent_nondetects(formula)  
     }
     if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose); blockvars <- names(block)
@@ -372,7 +372,7 @@ fit_lm <- function(
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object, subgroupvar, contrasts = NULL), 
     drop        = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun   = contr.treat.first,
+    contr.fun   = NULL,
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs       = NULL, 
@@ -397,7 +397,7 @@ fit_lme <- function(
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula      = default_formula(object, subgroupvar, contrasts = NULL), 
     drop         = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun    = contr.treat.first,
+    contr.fun    = NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs        = NULL, 
@@ -426,7 +426,8 @@ fit_lmer <- function(
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula      = default_formula(object, subgroupvar, contrasts = NULL), 
-    drop          = varlevels_dont_clash(object, all.vars(formula)),
+    drop         = varlevels_dont_clash(object, all.vars(formula)),
+    contr.fun    = NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     coefs        = NULL, 
