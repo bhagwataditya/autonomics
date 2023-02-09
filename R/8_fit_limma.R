@@ -117,9 +117,13 @@ create_design.data.table <- function(
     assert_is_subset(all.vars(formula), names(object))
     . <- NULL
 # Contrast Code Factors
-    for (var in all.vars(formula)){
-        if (is.character(object[[var]]))                      object[[var]] %<>% factor()
-        if (is.factor(object[[var]]) & !is.null(contr.fun))   object[[var]] %<>% code(contr.fun, verbose = verbose)   
+    for (var in all.vars(formula))   if (is.character(object[[var]]))  object[[var]] %<>% factor()
+    if (!is.null(contr.fun)){
+        if (verbose)  cmessage('\t\tContrast code')
+        for (var in all.vars(formula)){
+            if (verbose)  cmessage('\t\t\t%s', var)
+            if (is.factor(object[[var]]))  object[[var]] %<>% code(contr.fun, verbose = verbose)
+        }
     }
 # Create design matrix
     #if (verbose)   message('\t\tDesign: ', formula2str(formula))
@@ -224,8 +228,7 @@ code <- function(
         colnames(contrastmat) <- levels(x)
         rownames(contrastmat)[1] <- 'Intercept'
         names(dimnames(contrastmat)) <- c('coefficient', 'level')
-        cmessage('\t\tContrast Code')
-        message_df('\t\t\t%s', contrastmat)
+        message_df('\t\t\t\t%s', contrastmat)
     }
     x
 }

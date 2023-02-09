@@ -328,9 +328,13 @@ fit_lmx <- function(
     }
 # Contrast Code Factors
     obj <- object
-    for (var in all.vars(formula)){
-        if (is.character(obj[[var]]))                         obj[[var]] %<>% factor()
-        if (is.factor(   obj[[var]]) & !is.null(contr.fun))   obj[[var]] %<>% code(contr.fun, verbose = verbose)
+    for (var in all.vars(formula))   if (is.character(obj[[var]]))  obj[[var]] %<>% factor()
+    if (!is.null(contr.fun)){
+        if (verbose)  cmessage('\t\tContrast code')
+        for (var in all.vars(formula)){
+            if (verbose)  cmessage('\t\t\t%s', var)
+            if (is.factor(obj[[var]]))   obj[[var]] %<>% code(contr.fun, verbose = verbose)
+        }
     }
 # Filter / Customize
     if (verbose)  cmessage('\t\tFilter features')
