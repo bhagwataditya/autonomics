@@ -425,7 +425,7 @@ rm_consistent_nondetects <- function(object, formula, verbose = TRUE){
     for (var in all.vars(formula)){
         idx <- !is_consistent_nondetect(object, by = var)
         if (verbose)  cmessage(
-            '\t\tRetain %d/%d features after removing consistent `%s` nondetects', 
+            '\t\t\tRetain %d/%d features after removing consistent `%s` nondetects', 
             sum(idx), length(idx), var)
         object %<>% extract(idx, )
     }
