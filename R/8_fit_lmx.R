@@ -327,13 +327,13 @@ fit_lmx <- function(
         message('\t\t\tweights = assays(object)$', weightvar) 
     }
 # Contrast Code Factors
+    obj <- object
     for (var in all.vars(formula)){
-        if (is.character(object[[var]]))                         object[[var]] %<>% factor()
-        if (is.factor(   object[[var]]) & !is.null(contr.fun))   object[[var]] %<>% code(contr.fun, verbose = verbose)
+        if (is.character(obj[[var]]))                         obj[[var]] %<>% factor()
+        if (is.factor(   obj[[var]]) & !is.null(contr.fun))   obj[[var]] %<>% code(contr.fun, verbose = verbose)
     }
 # Filter / Customize
     if (verbose)  cmessage('\t\tFilter features')
-    obj <- object
     for (var in all.vars(formula))  obj %<>% filter_all_slevels(var, verbose = verbose)
     if (fit %in% c('lme', 'lmer')){  
         obj %<>% extract_connected_features(formula = formula, blockvars = block, verbose = verbose)
