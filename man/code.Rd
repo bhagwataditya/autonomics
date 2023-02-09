@@ -2,6 +2,8 @@
 % Please edit documentation in R/8_fit_limma.R
 \name{code}
 \alias{code}
+\alias{code.factor}
+\alias{code.data.table}
 \alias{contr.treat.first}
 \alias{contr.treat.grand}
 \alias{contr.diff.first}
@@ -10,7 +12,11 @@
 \alias{contr.helmert.grand}
 \title{Contrast Code Factor}
 \usage{
-code(x, contr.fun = contr.treat.first, verbose = TRUE)
+code(object, ...)
+
+\method{code}{factor}(object, contr.fun, verbose = TRUE, ...)
+
+\method{code}{data.table}(object, contr.fun, vars = names(object), verbose = TRUE, ...)
 
 contr.treat.first(n)
 
@@ -25,13 +31,13 @@ contr.sum.grand(n)
 contr.helmert.grand(n)
 }
 \arguments{
-\item{x}{factor vector}
-
 \item{contr.fun}{contrast coding function: contr.treatment, contr.sum, contr.helmert}
 
 \item{verbose}{TRUE or FALSE}
 
 \item{n}{factor levels (character) vector}
+
+\item{x}{factor vector}
 }
 \value{
 (explicitly coded) factor vector

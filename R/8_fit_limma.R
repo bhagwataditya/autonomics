@@ -117,14 +117,7 @@ create_design.data.table <- function(
     assert_is_subset(all.vars(formula), names(object))
     . <- NULL
 # Contrast Code Factors
-    for (var in all.vars(formula))   if (is.character(object[[var]]))  object[[var]] %<>% factor()
-    if (!is.null(contr.fun)){
-        if (verbose)  cmessage('\t\tContrast code')
-        for (var in all.vars(formula)){
-            if (verbose)  cmessage('\t\t\t%s', var)
-            if (is.factor(object[[var]]))  object[[var]] %<>% code(contr.fun, verbose = verbose)
-        }
-    }
+    object %<>% code(contr.fun = contr.fun, vars = all.vars(formula), verbose = verbose)
 # Create design matrix
     #if (verbose)   message('\t\tDesign: ', formula2str(formula))
     object %<>% data.frame(row.names = .$sample_id)
@@ -212,25 +205,38 @@ create_design.data.table <- function(
 #'     object$subgroup %<>% code(contr.sum.grand);     object %<>% fit_limma()  #        sum contrasts,  grandmean intercept, explicit coefnames
 #'     object$subgroup %<>% code(contr.helmert.grand); object %<>% fit_limma()  #    helmert contrasts,  grandmean intercept, explicit coefnames
 #' @export
-code <- function(
-    x, contr.fun = contr.treat.first, verbose = TRUE
-){
-# Assert
-    if (is.character(x))  x %<>% factor() 
-    if (!is.factor(x))  return(x)
+code <- function(object, ...)  UseMethod('code')
+
+#' @rdname code
+#' @export
+code.factor <- function(object, contr.fun, verbose = TRUE, ...){
+    if (is.null(contr.fun))  return(object)
     assert_is_function(contr.fun)
-# Code
-    k <- length(levels(x))
-    contrasts(x) <- contr.fun(levels(x))
-# Return
+    k <- length(levels(object))
+    contrasts(object) <- contr.fun(levels(object))
     if (verbose){
-        contrastmat <- codingMatrices::mean_contrasts(contrasts(x))
-        colnames(contrastmat) <- levels(x)
+        contrastmat <- codingMatrices::mean_contrasts(contrasts(object))
+        colnames(contrastmat) <- levels(object)
         rownames(contrastmat)[1] <- 'Intercept'
         names(dimnames(contrastmat)) <- c('coefficient', 'level')
         message_df('\t\t\t\t%s', contrastmat)
     }
-    x
+    object
+}
+
+#' @rdname code
+#' @export
+code.data.table <- function(object, contr.fun, vars = names(object), verbose = TRUE, ...){
+    if (is.null(contr.fun))  return(object)
+    if (verbose)  cmessage('\t\tContrast code')
+    for (var in vars){
+        if (is.character(object[[var]]))  object[[var]] %<>% factor()
+        if (is.factor(object[[var]])){
+            if (verbose)  cmessage('\t\t\t%s', var)
+            object[[var]] %<>% code.factor(contr.fun, verbose = verbose)
+        }
+    }
+    object
 }
 
 #' @rdname code
