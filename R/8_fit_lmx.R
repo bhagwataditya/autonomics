@@ -356,8 +356,8 @@ fit_lmx <- function(
     fitres <- fitres[, .SD, .SDcols = patterns(pattern2) ]
     fitres %<>% add_fdr()
 # Merge back
-    object %<>% reset_fitres(fit)
-    object %<>% merge_fitres(fitres, fit = fit)
+    object %<>% reset_fit(fit)
+    object %<>% merge_fit(fitres, fit = fit)
     formula %<>% droplhs() %<>% formula2str()
     if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object), fit = fit, coefs = coefs))

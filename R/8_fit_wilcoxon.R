@@ -103,8 +103,8 @@ fit_wilcoxon <- function(
     fitres %<>% merge(data.table(fdata(object))[, 'feature_id', drop = FALSE], 
                         ., by = 'feature_id', all.x = TRUE)
     fitres %<>% add_fdr()
-    object %<>% reset_fitres('wilcoxon')
-    object %<>% merge_fitres(fitres, fit = 'wilcoxon')
+    object %<>% reset_fit('wilcoxon')
+    object %<>% merge_fit(fitres, fit = 'wilcoxon')
 # extract
     extract_quantity <- function(quantity, fitres){
         quantitydot <- paste0(quantity, FITSEP)

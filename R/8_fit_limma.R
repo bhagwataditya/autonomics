@@ -406,24 +406,41 @@ add_fdr <- function(fitres){
     fitres
 }
 
-reset_fitres <- function(
-    object, fit = fits(object)[1], coefs = autonomics::coefs(object, fit = fit), verbose = TRUE
+#' Reset fit
+#' @param object  SummarizedExperiment
+#' @param fit     character vector
+#' @param coefs   character vector
+#' @param verbose TRUE or FALSE
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' (object <- read_metabolon(file))
+#' object %<>% reset_fit()
+#' object %<>% fit_limma() %>% reset_fit()
+#' object %<>% fit_limma() %>% fit_lm() %>% reset_fit()
+#' object %<>% fit_limma() %>% fit_lm() %>% reset_fit('limma')
+#' @export
+reset_fit <- function(
+    object, 
+    fit     = fits(object), 
+    coefs   = autonomics::coefs(object, fit = fit), 
+    verbose = TRUE
 ){
 # Assert
     . <- NULL
     assert_is_valid_sumexp(object)
-    if (is.null(fit))  return(object)
-    assert_is_a_string(fit)
+    if (is.null(fits(object)))  return(object)
+    assert_is_a_bool(verbose)
 # Reset
-    pattern <- coefs 
-    pattern %<>% paste0(collapse = '|')
-    pattern %<>% paste0('~(', ., ')~', fit)
-    coefvars <- fitvars(object) %>% extract(stri_detect_regex(., pattern))
-    if (length(coefvars)>0){
-        if (verbose)  cmessage('\t\tRm from fdt: (effect|p|fdr)~(%s)~%s', paste0(coefs, collapse = '|'), fit)
-        for (coefvar in coefvars){
-            fdt(object)[[coefvar]] <- NULL
-        }
+    vars <- c('effect', 'p', 'fdr', 't')
+    varpat  <- paste0(vars,  collapse = '|')
+    coefpat <- paste0(coefs, collapse = '|')
+    fitpat  <- paste0(fit,   collapse = '|')
+        
+    pattern <- sprintf('^(%s)%s(%s)%s(%s)$', varpat, FITSEP, coefpat, FITSEP, fitpat)
+    cols <- grep(pattern, fvars(object), value = TRUE)
+    if (length(cols)>0){
+        if (verbose)  cmessage('\t\tRm from fdt: %s', pattern)
+        for (col in cols)  fdt(object)[[col]] <- NULL
     }
 # Return
     object
@@ -439,7 +456,7 @@ FITSEP <- '~'
 # fitres: data.table(p.contr1, p.contr2, effect.contr1, effect.contr2)
 # stat:  'p', 'effect', 'fdr', 't'
 # fit:   'limma', 'wilcoxon'
-merge_fitres <- function(object, fitres, fit, statistic=NULL){
+merge_fit <- function(object, fitres, fit, statistic=NULL){
     . <- NULL
     fitresdt <- data.table::copy(fitres)   # dont change in original
     firstcols <- intersect(c('feature_id', 'Intercept'), names(fitresdt))
@@ -520,7 +537,7 @@ fit_limma <- function(
     verbose      = TRUE, 
     plot         = FALSE
 ){
-    object %<>% reset_fitres(fit = 'limma', coefs = coefs)
+    object %<>% reset_fit(fit = 'limma', coefs = coefs)
     limmadt <- .fit_limma(
         object       = object,        subgroupvar  = subgroupvar,
         contrasts    = contrasts,     formula      = formula, 
