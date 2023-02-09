@@ -282,9 +282,10 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 #' @param formula      formula
 #' @param drop         TRUE or FALSE
 #' @param contr.fun    contrast coding function
+#' @param coefs        NULL or stringvector
 #' @param block        NULL or svar
 #' @param weightvar    NULL or svar
-#' @param coefs        NULL or stringvector
+#' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
 #' @param verbose      TRUE or FALSE
 #' @param plot         TRUE or FALSE
 #' @return SummarizedExperiment
@@ -306,9 +307,10 @@ fit_lmx <- function(
     formula     = default_formula(object, subgroupvar, contrasts = NULL), 
     drop        = varlevels_dont_clash(object, all.vars(formula)),
     contr.fun   = NULL,
+    coefs       = colnames(create_design(object, formula = formula, drop = drop, contr.fun = contr.fun)), 
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    coefs       = NULL, 
+    statvars     = c('effect', 'p', 'fdr'),
     verbose     = TRUE, 
     plot        = FALSE
 ){
@@ -348,17 +350,17 @@ fit_lmx <- function(
     fitres <- dt[, fitmethod(.SD, formula = formula, block = block, weights = get(weightvar)), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     if (drop)  for (var in all.vars(formula))   names(fitres) %<>% stri_replace_first_fixed(var, '')
+    pattern1 <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
+    pattern2 <- sprintf( '(feature_id|%s)$', paste0(coefs,    collapse = '|'))   # select coefs
+    fitres <- fitres[, .SD, .SDcols = patterns(pattern1) ]
+    fitres <- fitres[, .SD, .SDcols = patterns(pattern2) ]
     fitres %<>% add_fdr()
 # Merge back
     object %<>% reset_fitres(fit)
     object %<>% merge_fitres(fitres, fit = fit)
-    quantities <- c('effect', 'fdr', 'p', 't')
-    fitres <- mapply(.extractstat, quantity = quantities, 
-                    MoreArgs = list(fitres = fitres), SIMPLIFY = FALSE)
     formula %<>% droplhs() %<>% formula2str()
     if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object), fit = fit, coefs = coefs))
-    if (is.null(coefs))     coefs <- autonomics::coefs(object, fit = fit)
     if (length(coefs) > 1)  coefs %<>% setdiff('Intercept')
     if (plot)  print(plot_volcano(object, fit = fit, coefs = coefs))
     object 

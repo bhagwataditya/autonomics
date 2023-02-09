@@ -14,9 +14,11 @@ fit_lmx(
   formula = default_formula(object, subgroupvar, contrasts = NULL),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
+  coefs = colnames(create_design(object, formula = formula, drop = drop, contr.fun =
+    contr.fun)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefs = NULL,
+  statvars = c("effect", "p", "fdr"),
   verbose = TRUE,
   plot = FALSE
 )
@@ -73,11 +75,13 @@ fit_lmer(
 
 \item{contr.fun}{contrast coding function}
 
+\item{coefs}{NULL or stringvector}
+
 \item{block}{NULL or svar}
 
 \item{weightvar}{NULL or svar}
 
-\item{coefs}{NULL or stringvector}
+\item{statvars}{character vector: subset of c('effect', 'p', 'fdr', 't')}
 
 \item{verbose}{TRUE or FALSE}
 
