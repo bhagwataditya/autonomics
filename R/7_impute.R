@@ -368,19 +368,31 @@ is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 #' @param by     svar to split by (string)
 #' @return  SummarizedExperiment list
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
-#' sdt(object)
-#' split_samples(object, by = 'subgroup')  # 
-#' split_samples(object, by = 'age')       # not in svars! 
-#' fdt(object)
-#' split_features(object, by = 'isoform')
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' objlist <- split_features(object, by = 'PLATFORM')
+#' objlist <- split_samples(object, 'T2D')
+#' objlist %<>% Map(impute, .)
+#' object <- cbind_imputed(objlist)
 #' @export
 split_samples <- function(object, by = 'subgroup'){
     if (!by %in% svars(object))  return(list(object))
     extract_samples  <- function(level){  object %>% extract(, .[[by]] == level)  }
     Map(extract_samples, slevels(object, by))
 }
+
+
+#' @rdname split_samples
+#' @export
+cbind_imputed <- function(objlist){
+    imputed <- objlist %>% lapply(fdt)
+    imputed %<>% lapply(extract2, 'imputed') 
+    imputed %<>% Reduce(`|`, .)
+    objlist %<>% Map(function(obj){ fdt(obj)$imputed <- imputed; obj }, .)
+    object <- Reduce(SummarizedExperiment::cbind, objlist)
+    object
+}
+
 
 #' @rdname split_samples
 #' @export

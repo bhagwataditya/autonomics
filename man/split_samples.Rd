@@ -2,10 +2,13 @@
 % Please edit documentation in R/7_impute.R
 \name{split_samples}
 \alias{split_samples}
+\alias{cbind_imputed}
 \alias{split_features}
 \title{Split samples}
 \usage{
 split_samples(object, by = "subgroup")
+
+cbind_imputed(objlist)
 
 split_features(object, by)
 }
@@ -21,11 +24,10 @@ SummarizedExperiment list
 Split samples by svar
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
-sdt(object)
-split_samples(object, by = 'subgroup')  # 
-split_samples(object, by = 'age')       # not in svars! 
-fdt(object)
-split_features(object, by = 'isoform')
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file)
+objlist <- split_features(object, by = 'PLATFORM')
+objlist <- split_samples(object, 'T2D')
+objlist \%<>\% Map(impute, .)
+object <- cbind_imputed(objlist)
 }
