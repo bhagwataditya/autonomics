@@ -7,10 +7,8 @@
 \alias{sdt}
 \alias{fdata,SummarizedExperiment-method}
 \alias{sdata,SummarizedExperiment-method}
-\alias{sdata,MultiAssayExperiment-method}
 \alias{fdt,SummarizedExperiment-method}
 \alias{sdt,SummarizedExperiment-method}
-\alias{sdt,MultiAssayExperiment-method}
 \alias{fdata<-}
 \alias{sdata<-}
 \alias{fdt<-}
@@ -18,11 +16,8 @@
 \alias{fdata<-,SummarizedExperiment,data.frame-method}
 \alias{sdata<-,SummarizedExperiment,data.frame-method}
 \alias{sdata<-,SummarizedExperiment,DataFrame-method}
-\alias{sdata<-,MultiAssayExperiment,data.frame-method}
-\alias{sdata<-,MultiAssayExperiment,DataFrame-method}
 \alias{fdt<-,SummarizedExperiment,data.table-method}
 \alias{sdt<-,SummarizedExperiment,data.table-method}
-\alias{sdt<-,MultiAssayExperiment,data.table-method}
 \title{Get/Set sample/feature data}
 \usage{
 fdata(object)
@@ -37,13 +32,9 @@ sdt(object)
 
 \S4method{sdata}{SummarizedExperiment}(object)
 
-\S4method{sdata}{MultiAssayExperiment}(object)
-
 \S4method{fdt}{SummarizedExperiment}(object)
 
 \S4method{sdt}{SummarizedExperiment}(object)
-
-\S4method{sdt}{MultiAssayExperiment}(object)
 
 fdata(object) <- value
 
@@ -59,18 +50,12 @@ sdt(object) <- value
 
 \S4method{sdata}{SummarizedExperiment,DataFrame}(object) <- value
 
-\S4method{sdata}{MultiAssayExperiment,data.frame}(object) <- value
-
-\S4method{sdata}{MultiAssayExperiment,DataFrame}(object) <- value
-
 \S4method{fdt}{SummarizedExperiment,data.table}(object) <- value
 
 \S4method{sdt}{SummarizedExperiment,data.table}(object) <- value
-
-\S4method{sdt}{MultiAssayExperiment,data.table}(object) <- value
 }
 \arguments{
-\item{object}{SummarizedExperiment/MultiAssayExperiment}
+\item{object}{SummarizedExperiment}
 
 \item{value}{data.frame/data.table}
 }

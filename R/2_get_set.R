@@ -204,8 +204,8 @@ function(object, value){ names(rowData(object)) <- value
 #==============================================================================
 
 #' Get/Set sample/feature data
-#' @param object SummarizedExperiment/MultiAssayExperiment
-#' @param value data.frame/data.table
+#' @param object  SummarizedExperiment
+#' @param value   data.frame/data.table
 #' @return data.frame/data.table (get) or updated object (set)
 #' @examples
 #' # Read data
@@ -253,20 +253,12 @@ function(object)  as(colData(object), "data.frame"))
     # !! as.data.frame somehow somewhere performs a check.names
 
 #' @rdname fdata
-setMethod('sdata', signature('MultiAssayExperiment'),                          # sdata mae
-function(object)  as(colData(object), "data.frame"))
-
-#' @rdname fdata
 setMethod('fdt',  signature('SummarizedExperiment'),                           # fdt se
 function(object)  data.table(data.frame(rowData(object), check.names = FALSE)))
 
 #' @rdname fdata
 setMethod('sdt',  signature('SummarizedExperiment'),                           # sdt se
 function(object)  data.table(data.frame(colData(object), check.names = FALSE)))
-
-#' @rdname fdata
-setMethod('sdt', signature('MultiAssayExperiment'),                            # sdt mae
-function(object)  data.table(data.frame(colData(object))))
 
 #' @rdname fdata
 #' @export
@@ -303,18 +295,6 @@ function(object, value){
     object })
 
 #' @rdname fdata
-setReplaceMethod('sdata', signature('MultiAssayExperiment', 'data.frame'),     # sdata<- mae df
-function(object, value){
-    colData(object) <- DataFrame(value, check.names = FALSE)
-    object })
-
-#' @rdname fdata
-setReplaceMethod('sdata', signature('MultiAssayExperiment', 'DataFrame'),      # sdata<- mae DF
-function(object, value){
-    colData(object) <- value
-    object })
-
-#' @rdname fdata
 setReplaceMethod('fdt', signature('SummarizedExperiment', 'data.table'),       # fdt<- se dt
 function(object, value){
     rowData(object) <- DataFrame(value, check.names = FALSE, row.names = value$feature_id)
@@ -322,12 +302,6 @@ function(object, value){
 
 #' @rdname fdata
 setReplaceMethod('sdt', signature('SummarizedExperiment', 'data.table'),       # sdt<- se dt
-function(object, value){
-    colData(object) <- DataFrame(value, check.names = FALSE, row.names = value$sample_id)
-    object })
-
-#' @rdname fdata
-setReplaceMethod('sdt', signature('MultiAssayExperiment', 'data.table'),       # sdt<- mae dt
 function(object, value){
     colData(object) <- DataFrame(value, check.names = FALSE, row.names = value$sample_id)
     object })
