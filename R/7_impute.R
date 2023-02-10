@@ -132,15 +132,18 @@ na_to_string <- function(x){
 #' @param palette  color vector
 #' @return numeric vector, matrix or SumExp
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file)
-#' impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
-#' impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
-#' impute(object, plot = TRUE)                         # sumexp
-#' 
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' impute(object, plot = TRUE)
+#' # Simple Design
+#'    file <- download_data('fukuda20.proteingroups.txt')
+#'    object <- read_maxquant_proteingroups(file)
+#'    impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
+#'    impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
+#'    impute(object, plot = TRUE)                         # sumexp
+#' # Complex Design
+#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    object <- read_metabolon(file)
+#'    invisible(impute(values(object)[1:3, 1   ]))                                    # vector
+#'    invisible(impute(values(object)[1:3, 1:5 ]))                                    # matrix
+#'    object %>%  filter_samples(T2D == 'Control') %>% impute()                       # sumexp
 #' @export
 impute <- function(object, ...) UseMethod('impute')
 
@@ -266,6 +269,35 @@ impute.SummarizedExperiment <- function(
     }
     object
 }
+
+# # @rdname impute
+# # @export
+# impute.list <- function(
+#     object,
+#     assay = assayNames(object[[1]])[1],
+#     by = 'subgroup',
+#     shift    = 2.5, 
+#     width    = 0.3, 
+#     frac     = 0.5,
+#     verbose  = TRUE, 
+#     plot     = FALSE, 
+#     palette  = make_colors(colnames(object)), 
+#     n        = min(9, ncol(object))
+# ){
+# # Assert
+#     assert_is_list(object)                                            # is it a list
+#     assert_all_are_true(vapply(object, is_valid_sumexp, logical(1)))  # of valid sumexps
+#     assert_all_are_true(Reduce(identical, lapply(object, fdt)))       # with identical fdt
+# # Impute then Align
+#     object %<>% Map(impute.SummarizedExperiment, .) 
+#     imputed <- object %>% lapply(fdt)
+#     imputed %<>% lapply(extract2, 'imputed') 
+#     imputed %<>% Reduce(`|`, .)
+#     object %<>% Map(function(obj){ fdt(obj)$imputed <- imputed; obj }, .)
+# # Return
+#     object
+# }
+
 n_imputed_features_per_subgroup <- function(object){ 
     objlist <- split_samples(object, by = 'subgroup')
     n <- vapply(objlist, n_imputed_features, integer(1))
