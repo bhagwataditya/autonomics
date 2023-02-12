@@ -75,6 +75,8 @@ sumexp_to_longdt <- function(
     assert_is_valid_sumexp(object)
     assert_is_subset(fvars, autonomics::fvars(object))
     assert_is_subset(svars, autonomics::svars(object))
+    svars %<>% setdiff('sample_id')
+    fvars %<>% setdiff('feature_id')
     common <- intersect(svars, fvars)
     if (length(common) > 0){
         message('\t\tRemove clashing svars/fvars: ', paste0(common,collapse = ', '))
