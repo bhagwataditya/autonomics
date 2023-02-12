@@ -241,8 +241,8 @@ sma <- function(
 # Add
     samples  %<>% cbind( sample_id = rownames(.), .)
     features %<>% cbind(feature_id = rownames(.), .)
-    object %<>% merge_sdt(samples, 'sample_id')
-    object %<>% merge_fdt(features, 'feature_id')
+    object %<>% merge_sdt(data.table(samples), 'sample_id')
+    object %<>% merge_fdt(data.table(features), 'feature_id')
     metadata(object)$sma <- variances
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
