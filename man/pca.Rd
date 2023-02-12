@@ -14,7 +14,7 @@ pca(
   minvar = 0,
   verbose = TRUE,
   plot = FALSE,
-  doublecenter = TRUE,
+  center_samples = TRUE,
   ...
 )
 
@@ -63,11 +63,13 @@ lda(
 
 \item{plot}{TRUE/FALSE}
 
-\item{doublecenter}{whether to double center data prior to pca}
+\item{center_samples}{whether to center samples prior to pca}
 
 \item{...}{passed to biplot}
 
 \item{by}{string}
+
+\item{scale}{whether to scale prior to pca}
 }
 \value{
 SummarizedExperiment
@@ -80,11 +82,11 @@ Add sample scores, feature loadings, and dimension variances to object.
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
 pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
-pls(object, by = 'Group')  # Partial Least Squares
-lda(object, by = 'Group')  # Linear Discriminant Analysis
-sma(object)  # Spectral Map Analysis
-pca(object, ndim=3)
-pca(object, ndim=Inf, minvar=5)
+pls(object, by = 'Group')              # Partial Least Squares
+lda(object, by = 'Group')              # Linear Discriminant Analysis
+sma(object)                            # Spectral Map Analysis
+pca(object, ndim = 3)
+pca(object, ndim = Inf, minvar = 5)
 }
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)

@@ -83,29 +83,30 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' Add sample scores, feature loadings, and dimension variances to object.
 #'
 #' @param object  SummarizedExperiment
-#' @param by            string 
-#' @param assay         string
-#' @param ndim          number
-#' @param minvar        number
-#' @param doublecenter  whether to double center data prior to pca
-#' @param verbose       TRUE (default) or FALSE
-#' @param plot          TRUE/FALSE
-#' @param ...           passed to biplot
-#' @return              SummarizedExperiment
+#' @param by              string 
+#' @param assay           string
+#' @param ndim            number
+#' @param minvar          number
+#' @param center_samples  whether to center samples prior to pca
+#' @param scale           whether to scale prior to pca
+#' @param verbose         TRUE (default) or FALSE
+#' @param plot            TRUE/FALSE
+#' @param ...             passed to biplot
+#' @return                SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
 #' pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
-#' pls(object, by = 'Group')  # Partial Least Squares
-#' lda(object, by = 'Group')  # Linear Discriminant Analysis
-#' sma(object)  # Spectral Map Analysis
-#' pca(object, ndim=3)
-#' pca(object, ndim=Inf, minvar=5)
+#' pls(object, by = 'Group')              # Partial Least Squares
+#' lda(object, by = 'Group')              # Linear Discriminant Analysis
+#' sma(object)                            # Spectral Map Analysis
+#' pca(object, ndim = 3)
+#' pca(object, ndim = Inf, minvar = 5)
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
     object, assay = assayNames(object)[1], ndim = 2, minvar = 0, verbose = TRUE, 
-    plot = FALSE, doublecenter = TRUE, ...
+    plot = FALSE, center_samples = TRUE, ...
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -123,15 +124,13 @@ pca <- function(
     assays(tmpobj)[[assay]] %<>% nan_to_na(verbose=verbose)
     tmpobj %<>% rm_missing_in_all_samples(verbose = verbose)
 # (Double) center and (global) normalize
-    if (doublecenter){
-        row_means <- rowMeans(        assays(tmpobj)[[assay]], na.rm=TRUE)
-        col_means <- colWeightedMeans(assays(tmpobj)[[assay]], abs(row_means), na.rm = TRUE)
-        global_mean <- mean(col_means)
-        assays(tmpobj)[[assay]] %<>% apply(1, '-', col_means)  %>%   # Center columns
-                                     apply(1, '-', row_means)  %>%   # Center rows
-                                     add(global_mean)          %>%   # Add doubly subtracted
-                                     divide_by(sd(., na.rm=TRUE))    # Normalize
-    }
+    row_means <- rowMeans(        assays(tmpobj)[[assay]], na.rm = TRUE)
+    col_means <- colWeightedMeans(assays(tmpobj)[[assay]], abs(row_means), na.rm = TRUE)
+    global_mean <- mean(col_means)
+    if (center_samples)  assays(tmpobj)[[assay]] %<>% apply(1, '-', col_means)  %>% t()  # Center columns (samples)
+                         assays(tmpobj)[[assay]] %<>% apply(2, '-', row_means)           # Center rows (features)
+    if (center_samples)  assays(tmpobj)[[assay]] %<>% add(global_mean)                   # Add doubly subtracted
+                         assays(tmpobj)[[assay]] %<>% divide_by(sd(., na.rm=TRUE))       # Normalize
 # Perform PCA
     pca_res  <- pcaMethods::pca(t(assays(tmpobj)[[assay]]),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
@@ -148,8 +147,7 @@ pca <- function(
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
-    pca1 <- pca2 <- NULL
-    if (plot)  print(biplot(object, pca1, pca2, ...))
+    if (plot)  print(biplot(object, 'pca1', 'pca2', ...))
     object
 }
 
@@ -190,8 +188,7 @@ pls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
-    pls1 <- pls2 <- NULL
-    if (plot)  print(biplot(object, pls1, pls2, ...))
+    if (plot)  print(biplot(object, 'pls1', 'pls2', ...))
     object
 }
 
@@ -247,8 +244,7 @@ sma <- function(
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
-    sma1 <- sma2 <- NULL
-    if (plot)  print(biplot(object, sma1, sma2, ...))
+    if (plot)  print(biplot(object, 'sma1', 'sma2', ...))
     object
 }
 
@@ -303,8 +299,7 @@ lda <- function(
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
     metadata(object)$lda <- variances
     object %<>% .filter_minvar('lda', minvar)
-    lda1 <- lda2 <- NULL
-    if (plot)  print(biplot(object, lda1, lda2, ...))
+    if (plot)  print(biplot(object, 'lda1', 'lda2', ...))
     object
 }
 
@@ -353,8 +348,7 @@ spls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
-    spls1 <- spls2 <- NULL
-    if (plot)  print(biplot(object, spls1, spls2, ...))
+    if (plot)  print(biplot(object, 'spls1', 'spls2', ...))
     object
 }
 
@@ -401,8 +395,7 @@ opls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
-    opls1 <- opls2 <- NULL
-    if (plot)  print(biplot(object, opls1, opls2, ...))
+    if (plot)  print(biplot(object, 'opls1', 'opls2', ...))
     object
 }
 
