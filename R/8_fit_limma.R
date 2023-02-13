@@ -224,13 +224,17 @@ code.factor <- function(object, contr.fun, verbose = TRUE, ...){
     object
 }
 
+
 #' @rdname code
 #' @export
 code.data.table <- function(object, contr.fun, vars = names(object), verbose = TRUE, ...){
-    if (is.null(contr.fun))  return(object)
     if (verbose)  cmessage('\t\tContrast code')
     for (var in vars){
         if (is.character(object[[var]]))  object[[var]] %<>% factor()
+        if (is.logical(  object[[var]]))  object[[var]] %<>% factor()
+    }
+    if (is.null(contr.fun)) return(object)
+    for (var in vars){
         if (is.factor(object[[var]])){
             if (verbose)  cmessage('\t\t\t%s', var)
             object[[var]] %<>% code.factor(contr.fun, verbose = verbose)
