@@ -823,7 +823,7 @@ read_maxquant_proteingroups <- function(
     object %<>% SummarizedExperiment(rowData = prodt)
 # Dequantify. Add pepcounts
     object$mqcol <- colnames(object)
-    colnames(object) %<>% dequantify()
+    colnames(object) %<>% dequantify(quantity = quantity, verbose = verbose)
     pepcols <- paste0('Razor + unique peptides ', gsub('\\{.+\\}', '', colnames(object)))
     pepmat <- pepdt[, pepcols, with = FALSE ]
     pepmat %<>% data.matrix()
