@@ -37,9 +37,9 @@ read_proteingroups(...)
 
 \item{fastadt}{NULL or data.table}
 
-\item{quantity}{'normalizedratio', 'ratio', 'correctedreporterintensity', 
-'reporterintensity', 'maxlfq', 'labeledintensity', 
-'intensity' or NULL}
+\item{quantity}{'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
+'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
+'Intensity' or NULL}
 
 \item{subgroups}{NULL or string vector : subgroups to retain}
 
