@@ -10,13 +10,13 @@
 #' MAXQUANT_PATTERNS
 #' @export
 MAXQUANT_PATTERNS <- c(
-    `Ratio normalized`             = '^Ratio ([HM]/[ML]) normalized (.+)$',
-    `Ratio`                        = '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
-    `Reporter intensity corrected` = '^Reporter intensity corrected ([0-9]+) (.+)$',
-    `Reporter intensity`           = '^Reporter intensity ([0-9]+) (.+)$',
-    `LFQ intensity`                = '^LFQ intensity ([HML])? ?(.+)$',
-    `Intensity labeled`            = '^Intensity ([HML]) (.+)$',
-    `Intensity`                    = '^Intensity (.+)$'
+    `normalizedratio`            = '^Ratio ([HM]/[ML]) normalized (.+)$',
+    `ratio`                      = '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
+    `correctedreporterintensity` = '^Reporter intensity corrected ([0-9]+) (.+)$',
+    `reporterintensity`          = '^Reporter intensity ([0-9]+) (.+)$',
+    `maxlfq`                     = '^LFQ intensity ([HML])? ?(.+)$',
+    `labeledintensity`           = '^Intensity ([HML]) (.+)$',
+    `intensity`                  = '^Intensity (.+)$'
 )
 
 
@@ -654,10 +654,10 @@ mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
 #' `                    LFQ intensity WT.R1  ->  WT.R1`
 #' `Reporter intensity 0 WT(126).KD(127).R1  ->  WT(1).KD(2).R1{1}`
 #' @param x        `character`
-#' @param quantity `'Ratio',              'Ratio normalized'`,  \cr
+#' @param quantity `'ratio',              'normalizedratio'`,  \cr
 #'                 `'LFQ intensity'`, \cr
-#'                 `'Intensity',          'Intensity labeled'`
-#'                 `'Reporter intensity', 'Reporter intensity corrected'`
+#'                 `'intensity',          'labeledintensity'`
+#'                 `'reporterintensity', 'correctedreporterintensity'`
 #' @param verbose  `TRUE` or `FALSE`
 #' @return `character`
 #' @examples
@@ -677,7 +677,7 @@ dequantify <- function(
 # x = multiplex + channel. Return multiplex if single channel.
 # Decompose multiplex and channel
     pattern <- MAXQUANT_PATTERNS[[quantity]]
-    if (quantity == 'Intensity'){
+    if (quantity == 'intensity'){
         multiplex <- stri_replace_first_regex(x, pattern, '$1')
         channel   <- rep('', length(multiplex))
     } else {
@@ -685,7 +685,7 @@ dequantify <- function(
         channel   <- stri_replace_first_regex(x, pattern, '$1')
     }
 # Reporter intensity
-    if (quantity %in% c('Reporter intensity', 'Reporter intensity corrected')){
+    if (quantity %in% c('reporterintensity', 'correctedreporterintensity')){
         multiplex %<>% lapply(label2index)
         channel %<>% as.numeric()
         if (0 %in% channel){                           # pre-2018 mq is 0-based
@@ -757,9 +757,9 @@ is_file <- function(file){
 #' @param dir           proteingroups directory
 #' @param file          proteingroups file
 #' @param fastadt       NULL or data.table
-#' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
-#'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
-#'                     'Intensity' or NULL
+#' @param quantity     'normalizedratio', 'ratio', 'correctedreporterintensity', 
+#'                     'reporterintensity', 'maxlfq', 'labeledintensity', 
+#'                     'intensity' or NULL
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE/FALSE : retain contaminants ?
 #' @param reverse       TRUE/FALSE : include reverse hits ?
@@ -858,9 +858,9 @@ read_proteingroups <- function(...){
 #' @param phosphofile   phosphosites  file
 #' @param proteinfile   proteingroups file
 #' @param fastadt       NULL or data.table
-#' @param quantity     'Ratio normalized', 'Ratio', 'Reporter intensity corrected', 
-#'                     'Reporter intensity', 'LFQ intensity', 'Intensity labeled', 
-#'                     'Intensity' or NULL
+#' @param quantity     'normalizedratio', 'ratio', 'correctedreporterintensity', 
+#'                     'reporterintensity', 'maxlfq', 'labeledintensity', 
+#'                     'intensity' or NULL
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE/FALSE : retain contaminants ?
 #' @param reverse       TRUE/FALSE : include reverse hits ?

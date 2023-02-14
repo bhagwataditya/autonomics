@@ -9,10 +9,10 @@ dequantify(x, quantity = guess_maxquant_quantity(x), verbose = FALSE)
 \arguments{
 \item{x}{\code{character}}
 
-\item{quantity}{\verb{'Ratio',              'Ratio normalized'},  \cr
+\item{quantity}{\verb{'ratio',              'normalizedratio'},  \cr
 \code{'LFQ intensity'}, \cr
-\verb{'Intensity',          'Intensity labeled'}
-\verb{'Reporter intensity', 'Reporter intensity corrected'}}
+\verb{'intensity',          'labeledintensity'}
+\verb{'reporterintensity', 'correctedreporterintensity'}}
 
 \item{verbose}{\code{TRUE} or \code{FALSE}}
 }
