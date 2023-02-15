@@ -581,7 +581,8 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
 
 add_feature_id <- function(dt){
     dt %<>% copy()
-    dt[contaminant=='NA', contaminant := '']        # because if present lines will crash
+    dt[, contaminant := as.character(contaminant)]   # one dataset had NA_logical values
+    dt[is.na(contaminant), contaminant := '']        # which made all features being filtered out in the next lines
     dt1 <- dt[reverse ==''  & contaminant == '']
     dt2 <- dt[reverse =='+' & contaminant == '' ]
     dt3 <- dt[reverse ==''  & contaminant == '+']
