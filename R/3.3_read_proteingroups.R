@@ -581,7 +581,7 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
 
 add_feature_id <- function(dt){
     dt %<>% copy()
-    
+    dt[contaminant=='NA', contaminant := '']        # because if present lines will crash
     dt1 <- dt[reverse ==''  & contaminant == '']
     dt2 <- dt[reverse =='+' & contaminant == '' ]
     dt3 <- dt[reverse ==''  & contaminant == '+']
