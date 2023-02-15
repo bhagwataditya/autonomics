@@ -14,7 +14,7 @@ MAXQUANT_PATTERNS <- c(
     `ratio`                      = '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
     `correctedreporterintensity` = '^Reporter intensity corrected ([0-9]+) (.+)$',
     `reporterintensity`          = '^Reporter intensity ([0-9]+) (.+)$',
-    `maxlfq`                     = '^LFQ intensity ([HML])? ?(.+)$',
+    `maxlfq`                     = '^LFQ intensity ([HML] )? ?(.+)$',
     `labeledintensity`           = '^Intensity ([HML]) (.+)$',
     `intensity`                  = '^Intensity (.+)$'
 )
@@ -683,6 +683,7 @@ dequantify <- function(
     } else {
         multiplex <- stri_replace_first_regex(x, pattern, '$2')
         channel   <- stri_replace_first_regex(x, pattern, '$1')
+        channel %<>% stri_replace_first_fixed(' ', '')
     }
 # Reporter intensity
     if (quantity %in% c('reporterintensity', 'correctedreporterintensity')){
