@@ -29,8 +29,8 @@ Get coef names
 # Factor
     x <- factor(c('A', 'B', 'C'))
     coefs(x)
-    coefs(code(x, contr.treat.first))
-    coefs(code(x, contr.treat.grand))
+    coefs(code(x, contr.ref))
+    coefs(code(x, contr.ref.grand))
     
 # SummarizedExperiment
     require(magrittr)

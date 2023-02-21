@@ -4,10 +4,10 @@
 \alias{code}
 \alias{code.factor}
 \alias{code.data.table}
-\alias{contr.treat.first}
-\alias{contr.treat.grand}
-\alias{contr.diff.first}
-\alias{contr.diff.grand}
+\alias{contr.ref}
+\alias{contr.ref.grand}
+\alias{contr.dif}
+\alias{contr.dif.grand}
 \alias{contr.sum.grand}
 \alias{contr.helmert.grand}
 \title{Contrast Code Factor}
@@ -18,13 +18,13 @@ code(object, ...)
 
 \method{code}{data.table}(object, contr.fun, vars = names(object), verbose = TRUE, ...)
 
-contr.treat.first(n)
+contr.ref(n)
 
-contr.treat.grand(n)
+contr.ref.grand(n)
 
-contr.diff.first(n)
+contr.dif(n)
 
-contr.diff.grand(n)
+contr.dif.grand(n)
 
 contr.sum.grand(n)
 
@@ -61,12 +61,12 @@ A General Linear Model contains:                                                
        
 The following contrast coding functions are available:
     1) Treatment contrasts:      contrast  coefficient = difference to first level
-           `contr.treat.first`   intercept coefficient = first level of first factor
-           `contr.treat.grand`   intercept coefficient = grand mean
+           `contr.ref`   intercept coefficient = first level of first factor
+           `contr.ref.grand`   intercept coefficient = grand mean
             
     2) Difference contrasts:     contrast  coefficient = difference to previous level
-           `contr.diff.first`    intercept coefficient = first level of first factor
-           `contr.diff.grand`    intercept coefficient = grand mean
+           `contr.dif`    intercept coefficient = first level of first factor
+           `contr.dif.grand`    intercept coefficient = grand mean
            
     3) Sum contrasts :           contrast  coefficient = difference to grand mean
            `contr.sum.grand`     intercept coefficient = grand mean
@@ -77,18 +77,18 @@ The following contrast coding functions are available:
 \examples{
 # Contrast codings
     x <- factor(paste0('t', 0:3))
-    contr.treat.first(  levels(x))
-    contr.treat.grand(  levels(x))
-    contr.diff.first(   levels(x))
-    contr.diff.grand(   levels(x))
+    contr.ref(  levels(x))
+    contr.ref.grand(  levels(x))
+    contr.dif(   levels(x))
+    contr.dif.grand(   levels(x))
     contr.sum.grand(    levels(x))
     contr.helmert.grand(levels(x))
 
 # Contrast code
-    x \%<>\% code(contr.treat.first)
-    x \%<>\% code(contr.treat.grand)
-    x \%<>\% code(contr.diff.first)
-    x \%<>\% code(contr.diff.grand)
+    x \%<>\% code(contr.ref)
+    x \%<>\% code(contr.ref.grand)
+    x \%<>\% code(contr.dif)
+    x \%<>\% code(contr.dif.grand)
     x \%<>\% code(contr.sum.grand)
     x \%<>\% code(contr.helmert.grand)
 
@@ -96,10 +96,10 @@ The following contrast coding functions are available:
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()                                         #  default: treatment contrasts, firstlevel intercept, implicit coefnames
-    object$subgroup \%<>\% code(contr.treat.first);   object \%<>\% fit_limma()  #  treatment contrasts, firstlevel intercept, explicit coefnames
-    object$subgroup \%<>\% code(contr.treat.grand);   object \%<>\% fit_limma()  #  treatment contrasts,  grandmean intercept, explicit coefnames
-    object$subgroup \%<>\% code(contr.diff.first);    object \%<>\% fit_limma()  # difference contrasts, firstlevel intercept, explicit coefnames
-    object$subgroup \%<>\% code(contr.diff.grand);    object \%<>\% fit_limma()  # difference contrasts,  grandmean intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.ref);   object \%<>\% fit_limma()  #  treatment contrasts, firstlevel intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.ref.grand);   object \%<>\% fit_limma()  #  treatment contrasts,  grandmean intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.dif);    object \%<>\% fit_limma()  # difference contrasts, firstlevel intercept, explicit coefnames
+    object$subgroup \%<>\% code(contr.dif.grand);    object \%<>\% fit_limma()  # difference contrasts,  grandmean intercept, explicit coefnames
     object$subgroup \%<>\% code(contr.sum.grand);     object \%<>\% fit_limma()  #        sum contrasts,  grandmean intercept, explicit coefnames
     object$subgroup \%<>\% code(contr.helmert.grand); object \%<>\% fit_limma()  #    helmert contrasts,  grandmean intercept, explicit coefnames
 }

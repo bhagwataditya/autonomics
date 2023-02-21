@@ -98,7 +98,7 @@ Fit model and test for differential expression
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()
-    object \%<>\% fit_limma(contr.fun = contr.treat.first)
+    object \%<>\% fit_limma(contr.fun = contr.ref)
     object \%<>\% fit_lm()
     plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
     
@@ -116,8 +116,8 @@ Fit model and test for differential expression
 
 # alternative contrast coding functions:
     object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB')
-    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.treat.first)
-    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.diff.first)
+    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.ref)
+    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.dif)
     
 # non-parametric: wilcoxon
     object \%<>\% fit_limma(   subgroupvar = 'subgroup', block = 'SUB')
