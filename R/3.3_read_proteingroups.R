@@ -482,8 +482,9 @@ CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism
 curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     dt %<>% copy()
-    dt[, protein := NA_character_]
     dt %<>% curate_annotate_fastafile(fastadt, verbose = verbose)
+    dt[, contaminant := as.character(contaminant)]  # deal with 'all contaminants NA' case
+    dt[is.na(contaminant), contaminant := '']
     idx <- dt$reverse == '' & dt$contaminant == '' & is.na(dt$protein)
     dt1 <- dt[ idx] %>% curate_annotate_maxquant(verbose = verbose)
     dt  <- dt[!idx]
