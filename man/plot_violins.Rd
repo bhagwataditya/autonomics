@@ -86,11 +86,23 @@ plot_subgroup_violins(
 
 \item{facet}{svar (character vector)}
 
+\item{nrow}{NULL or number}
+
+\item{ncol}{NULL or number}
+
+\item{dir}{'h' or 'v' : are facets filled horizontally or vertically ?}
+
+\item{scales}{'free', 'free_x', 'free_y', or 'fixed'}
+
+\item{labeller}{label_both or label_value}
+
 \item{highlight}{fvar expressing which feature should be highlighted (string)}
 
 \item{palette}{named color vector (character vector)}
 
 \item{fixed}{fixed aesthetics}
+
+\item{n}{number}
 
 \item{subgroup}{subgroup svar}
 }
@@ -115,6 +127,6 @@ Plot sample/feature violins
     plot_subgroup_violins(object[1:4, ], subgroup = 'subgroup')
 }
 \seealso{
-\code{\link{plot_sample_densities}},
+\code{\link{plot_exprs}},
          \code{\link{boxplot_samples}}
 }

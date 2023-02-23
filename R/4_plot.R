@@ -435,13 +435,19 @@ plot_feature_densities <- function(
 #' @param x           svar (string)
 #' @param fill        svar (string)
 #' @param color       svar (string)
+#' @param n           number
 #' @param group       svar (string)
 #' @param facet       svar (character vector)
+#' @param nrow        NULL or number
+#' @param ncol        NULL or number
+#' @param dir         'h' or 'v' : are facets filled horizontally or vertically ?
+#' @param scales      'free', 'free_x', 'free_y', or 'fixed'
+#' @param labeller    label_both or label_value
 #' @param highlight   fvar expressing which feature should be highlighted (string)
 #' @param palette     named color vector (character vector)
 #' @param fixed       fixed aesthetics
 #' @return  ggplot object
-#' @seealso \code{\link{plot_sample_densities}},
+#' @seealso \code{\link{plot_exprs}},
 #'          \code{\link{boxplot_samples}}
 #' @examples
 #' # data
