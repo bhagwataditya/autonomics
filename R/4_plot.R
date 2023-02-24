@@ -911,7 +911,7 @@ add_facetvars <- function(
     if (!is.null(facet))      plotvars %<>% c(facet)     %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
-    if (!is.null(x))   object[[x]] %<>% num2char()
+    # if (!is.null(x))   object[[x]] %<>% num2char()
     dt <- sumexp_to_longdt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
     dt[, medianvalue := median(value, na.rm = TRUE), by = c('feature_id', x)]
     for (facetvar in facet){ 
@@ -920,7 +920,7 @@ add_facetvars <- function(
     } # otherwise facet_wrap_paginate thinks `fdr~coef~limma` is a formula
 # Initialization
     p <- ggplot(dt) + theme_bw() + xlab(xlab) + ylab(ylab) + ggtitle(title)
-    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    if (!is.numeric(dt[[x]]))  p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
     if (!is.null(facet))   p <- p + facet_wrap_paginate(facets = facet, 
         scales = scales, nrow = nrow, ncol = ncol, page = page, labeller = labeller)
 # Boxplots/Points
@@ -957,9 +957,11 @@ add_facetvars <- function(
         p <- p + geom_hline(data = mediandt, mapping = mapping, linetype = 'longdash') 
     }
 # Finish
-    breaks <- unique(dt[[x]])
-    if (length(breaks)>50)  breaks <- dt[, .SD[1], by = fill][[x]]
-    p <- p + scale_x_discrete(breaks = breaks) + guides(alpha = 'none')
+    if (!is.numeric(dt[[x]])){
+        breaks <- unique(dt[[x]])
+        if (length(breaks)>50)  breaks <- dt[, .SD[1], by = fill][[x]]
+        p <- p + scale_x_discrete(breaks = breaks) + guides(alpha = 'none')
+    }
     if (!is.null(theme))  p <- p + theme
     p
 }
