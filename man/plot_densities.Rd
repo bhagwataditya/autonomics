@@ -8,6 +8,7 @@
 \usage{
 plot_densities(
   object,
+  assay = assayNames(object)[1],
   group,
   fill,
   color = NULL,
@@ -23,6 +24,7 @@ plot_densities(
 
 plot_sample_densities(
   object,
+  assay = assayNames(object)[1],
   group = "sample_id",
   fill = "sample_id",
   color = NULL,
@@ -39,6 +41,7 @@ plot_sample_densities(
 
 plot_feature_densities(
   object,
+  assay = assayNames(object)[1],
   group = "feature_id",
   fill = "feature_id",
   color = NULL,
@@ -55,6 +58,8 @@ plot_feature_densities(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{assay}{string}
 
 \item{group}{svar (string)}
 

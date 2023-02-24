@@ -289,6 +289,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' Plot sample/feature distributions
 #'
 #' @param object      SummarizedExperiment
+#' @param assay       string
 #' @param group       svar (string)
 #' @param fill        svar (string)
 #' @param color       svar (string)
@@ -320,13 +321,14 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #'     plot_feature_boxplots( object)
 #' @export
 plot_densities <- function(
-    object, group, fill, color = NULL, 
+    object, assay = assayNames(object)[1], group, fill, color = NULL, 
     facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free_y', 
     labeller = label_value, 
     palette = NULL, fixed = list(alpha = 0.8, na.rm = TRUE)
 ){
 # Assert / Process
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(assay, assayNames(object))
                             assert_is_a_string(group)
     if (!is.null(fill))     assert_is_a_string(fill)
     if (!is.null(color))    assert_is_a_string(color)
@@ -349,7 +351,7 @@ plot_densities <- function(
     plottedfvars <- intersect(plotvars, fvars(object))
     assert_is_identical_to_true(is_uniquely_empty(plottedsvars, plottedfvars))
     if (!is.null(fill))  object[[fill]] %<>% num2char()
-    dt <- sumexp_to_longdt(object, svars = plottedsvars, fvars = plottedfvars)
+    dt <- sumexp_to_longdt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
 # Plot
     groupsym <- if (is.null(group))  quo(NULL) else sym(group)
     fillsym  <- if (is.null(fill ))  quo(NULL) else sym(fill)
@@ -371,6 +373,7 @@ is_uniquely_empty <- function(x, y){
 #' @export
 plot_sample_densities <- function(
     object,
+    assay    = assayNames(object)[1],
     group    = 'sample_id',
     fill     = 'sample_id',
     color    = NULL, 
@@ -383,6 +386,7 @@ plot_sample_densities <- function(
     object %<>% extract_samples_evenly(n)
     plot_densities(
         object,
+        asssay   = assay,
         group    = group,
         fill     = fill,
         color    = color,
@@ -398,6 +402,7 @@ feature_id <- NULL
 #' @export
 plot_feature_densities <- function(
     object,
+    assay = assayNames(object)[1],
     group   = 'feature_id',
     fill    = 'feature_id',
     color   = NULL,
@@ -409,6 +414,7 @@ plot_feature_densities <- function(
     object %<>% extract_features_evenly(n)
     plot_densities( 
         object,
+        assay    = assay,
         group    = group,
         fill     = fill,
         color    = color,
