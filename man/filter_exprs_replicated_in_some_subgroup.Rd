@@ -7,6 +7,7 @@
 filter_exprs_replicated_in_some_subgroup(
   object,
   subgroupvar = "subgroup",
+  assay = assayNames(object)[1],
   comparator = if (contains_ratios(object)) "!=" else ">",
   lod = 0,
   verbose = TRUE
@@ -32,7 +33,7 @@ Filter features with replicated expression in some subgroup
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
+object <- read_metabolon(file)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 filter_exprs_replicated_in_some_subgroup(object, character(0))
 filter_exprs_replicated_in_some_subgroup(object, NULL)

@@ -109,13 +109,13 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
 #' filter_exprs_replicated_in_some_subgroup(object, character(0))
 #' filter_exprs_replicated_in_some_subgroup(object, NULL)
 #' @export
 filter_exprs_replicated_in_some_subgroup <- function(
-    object, subgroupvar = 'subgroup',
+    object, subgroupvar = 'subgroup', assay = assayNames(object)[1],
     comparator = if (contains_ratios(object)) '!=' else '>',
     lod = 0, verbose = TRUE
 ){
@@ -123,7 +123,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
     assert_is_subset(subgroupvar, svars(object))
 # Datatablify
     replicated_in_its_subgroup <- replicated_in_any_subgroup <- value <- NULL
-    dt <- sumexp_to_longdt(object, svars = subgroupvar)
+    dt <- sumexp_to_longdt(object, svars = subgroupvar, assay = assay)
 # Find replicated features
     exceeds_lod <- if (comparator == '>'){ function(value, lod) value >  lod
             } else if (comparator == '!=') function(value, lod) value != lod
