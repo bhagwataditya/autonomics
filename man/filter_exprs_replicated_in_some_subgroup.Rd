@@ -10,6 +10,8 @@ filter_exprs_replicated_in_some_subgroup(
   assay = assayNames(object)[1],
   comparator = if (contains_ratios(object)) "!=" else ">",
   lod = 0,
+  nsample = 2,
+  nsubgroup = 1,
   verbose = TRUE
 )
 }
