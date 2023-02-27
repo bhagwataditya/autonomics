@@ -192,9 +192,10 @@ extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because n
     fit  <- split_extract_fixed(fitcoef, FITSEP, 2)
     object %<>% order_on_p(coefs = coef, fit = fit)
 # Extract
-    fitcols <- fitvars(object)
-    annocols <- fvars(object) %>% setdiff('feature_id') %>% setdiff(fitcols)
-    cols <- c('feature_id', fitcols, annocols)
+    allfitcols <- fvars(object) %>% extract(stri_detect_fixed(., FITSEP))
+    curfitcols <- allfitcols %>% extract(stri_detect_fixed(., fitcoef))
+    annocols <- fvars(object) %>% setdiff('feature_id') %>% setdiff(allfitcols)
+    cols <- c('feature_id', curfitcols, annocols)
     fdt0 <- fdt(object)[, cols, with = FALSE]
     names(fdt0) %<>% stri_replace_first_fixed(paste0(FITSEP, coef, FITSEP, fit), '')
     fdt0
