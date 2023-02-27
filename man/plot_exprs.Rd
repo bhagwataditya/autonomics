@@ -155,12 +155,13 @@ Plot exprs
 # Without limma
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
+    plot_exprs(object, block = 'SUB', title = 'Subgroup Boxplots')
+    plot_exprs(object, dim = 'samples')
+    plot_exprs(object, dim = 'features', block = 'sample_id')
+# Add highlights
     controlfeatures <- c('biotin','phosphate')
     fdt(object) \%<>\% cbind(control = .$feature_name \%in\% controlfeatures)
-    plot_exprs(object)
-    plot_exprs(object, block = 'SUB')
     plot_exprs(object, dim = 'samples', highlight = 'control')
-    plot_exprs(object, dim = 'features', block = 'sample_id')
 # With limma 
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, fit = 'limma')
