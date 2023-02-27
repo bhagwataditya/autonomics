@@ -158,18 +158,17 @@ Plot exprs
     plot_exprs(object, block = 'SUB', title = 'Subgroup Boxplots')
     plot_exprs(object, dim = 'samples')
     plot_exprs(object, dim = 'features', block = 'sample_id')
-# Add highlights
-    controlfeatures <- c('biotin','phosphate')
-    fdt(object) \%<>\% cbind(control = .$feature_name \%in\% controlfeatures)
-    plot_exprs(object, dim = 'samples', highlight = 'control')
 # With limma 
-    file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, fit = 'limma')
+    object \%<>\% fit_limma(block = 'SUB')
     plot_exprs(object, block = 'SUB')
     plot_exprs(object, block = 'SUB', coefs = c('t1', 't2', 't3'))
     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
 # Points
     plot_exprs(object, geom = 'point', block = 'SUB')
+# Add highlights
+    controlfeatures <- c('biotin','phosphate')
+    fdt(object) \%<>\% cbind(control = .$feature_name \%in\% controlfeatures)
+    plot_exprs(object, dim = 'samples', highlight = 'control')
 # Multiple pages
     plot_exprs(object, block = 'SUB', n = 4, nrow = 1, ncol = 2)
 }
