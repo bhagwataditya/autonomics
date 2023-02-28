@@ -1425,16 +1425,17 @@ plot_design <- function(object){
 #' @export
 plot_top_heatmap <- function(
     object,
-    assay           = assayNames(object)[1],
-    fit             = fits(object)[1],
-    coef            = default_coefs(object, fit = fit)[1],
-    effectsize      = 0,
-    p               = 1,
-    fdr             = 0.05,
-    n               = 100,
-    cluster_samples = FALSE,
-    flabel          = intersect(c('gene', 'feature_id'), fvars(object))[1], 
-    group           = 'subgroup'
+    assay            = assayNames(object)[1],
+    fit              = fits(object)[1],
+    coef             = default_coefs(object, fit = fit)[1],
+    effectsize       = 0,
+    p                = 1,
+    fdr              = 0.05,
+    n                = 100,
+    cluster_features = FALSE,
+    cluster_samples  = FALSE,
+    flabel           = intersect(c('gene', 'feature_id'), fvars(object))[1], 
+    group            = 'subgroup'
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -1452,21 +1453,26 @@ plot_top_heatmap <- function(
     assert_is_subset(group,  svars(object))
 # Filter: significant features
     object0 <- object
-    object %<>% extract_coef_features(
-        fit = fit, coefs = coef, effectsize = effectsize, p = p, fdr = fdr, n = n)
+    object %<>% extract_coef_features(fit = fit, coefs = coef, effectsize = effectsize, p = p, fdr = fdr, n = n)
 # Zscore
     assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
     assays(object)[[assay]] %<>% na_to_zero()
 # Order features                                # in an edge case one of the groups had no obs
     idx <- rowSds(assays(object)[[assay]]) > 0  # still limma::lmFit produced a p value - limma bug ?
     object %<>% extract(idx, )                  # leads to a 0 variance error in the next line
-    idx <- hclust(as.dist(1-cor(t(assays(object)[[assay]]))))$order
-    object  %<>% extract(  idx , )                          # order features
-    idx <- effect(object, fit = fit, coef = coef)[, 1] < 0      # split down/up
-    down <- object[idx, ]
-    idx <- effect(object, fit = fit, coef = coef)[, 1] > 0
-    up <- object[idx, ]
-    object <- rbind(down, up)                                   # rbind
+    if (cluster_features){
+        idx <- hclust(as.dist(1-cor(t(assays(object)[[assay]]))))$order
+        object  %<>% extract(  idx , )                          # order features
+    }
+    idx <- effect(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
+    idx <- effect(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
+    object <- rbind(down, rev(up))
+# Add pvalues
+    pvar   <- paste('p',   coef, fit, sep = FITSEP)
+    fdrvar <- paste('fdr', coef, fit, sep = FITSEP)
+    pvalues   <- fdt(object)[[  pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
+    fdrvalues <- fdt(object)[[fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
+    fdt(object)[[flabel]] %<>% paste0('  ', pvalues, '  ', fdrvalues)
     fdt(object)[[flabel]] %<>% factor(unique(.))                # fix order
 # Order samples
     if (cluster_samples){
