@@ -13,7 +13,7 @@ plot_top_heatmap(
   p = 1,
   fdr = 0.05,
   n = 100,
-  cluster_features = FALSE,
+  cluster_features = is.null(coef),
   cluster_samples = FALSE,
   flabel = intersect(c("gene", "feature_id"), fvars(object))[1],
   group = "subgroup"

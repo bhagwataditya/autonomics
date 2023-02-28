@@ -1432,7 +1432,7 @@ plot_top_heatmap <- function(
     p                = 1,
     fdr              = 0.05,
     n                = 100,
-    cluster_features = FALSE,
+    cluster_features = is.null(coef),
     cluster_samples  = FALSE,
     flabel           = intersect(c('gene', 'feature_id'), fvars(object))[1], 
     group            = 'subgroup'
@@ -1442,8 +1442,8 @@ plot_top_heatmap <- function(
     assert_is_subset(assay,         assayNames(object))
     assert_is_a_string(fit)
     assert_is_subset(  fit, fits(object))
-    assert_is_a_string(coef)
-    assert_is_subset(  coef, coefs(object))
+    if (!is.null(coef))  assert_is_a_string(coef)
+    if (!is.null(coef))  assert_is_subset(  coef, coefs(object))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
@@ -1453,7 +1453,9 @@ plot_top_heatmap <- function(
     assert_is_subset(group,  svars(object))
 # Filter: significant features
     object0 <- object
-    object %<>% extract_coef_features(fit = fit, coefs = coef, effectsize = effectsize, p = p, fdr = fdr, n = n)
+    if (is.null(coef)){   object %<>% extract_features_evenly(n)
+    } else {              object %<>% extract_coef_features(
+                            fit = fit, coefs = coef, effectsize = effectsize, p = p, fdr = fdr, n = n) }
 # Zscore
     assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
     assays(object)[[assay]] %<>% na_to_zero()
@@ -1464,15 +1466,19 @@ plot_top_heatmap <- function(
         idx <- hclust(as.dist(1-cor(t(assays(object)[[assay]]))))$order
         object  %<>% extract(  idx , )                          # order features
     }
-    idx <- effect(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
-    idx <- effect(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
-    object <- rbind(down, rev(up))
+    if (!is.null(coef)){
+        idx <- effect(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
+        idx <- effect(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
+        object <- rbind(down, rev(up))
+    }
 # Add pvalues
-    pvar   <- paste('p',   coef, fit, sep = FITSEP)
-    fdrvar <- paste('fdr', coef, fit, sep = FITSEP)
-    pvalues   <- fdt(object)[[  pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
-    fdrvalues <- fdt(object)[[fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
-    fdt(object)[[flabel]] %<>% paste0('  ', pvalues, '  ', fdrvalues)
+    if (!is.null(coef)){
+        pvar   <- paste('p',   coef, fit, sep = FITSEP)
+        fdrvar <- paste('fdr', coef, fit, sep = FITSEP)
+        pvalues   <- fdt(object)[[  pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
+        fdrvalues <- fdt(object)[[fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
+        fdt(object)[[flabel]] %<>% paste0('  ', pvalues, '  ', fdrvalues)
+    }
     fdt(object)[[flabel]] %<>% factor(unique(.))                # fix order
 # Order samples
     if (cluster_samples){
@@ -1488,14 +1494,19 @@ plot_top_heatmap <- function(
     dt <- sumexp_to_longdt(object, assay = assay, fvars = flabel)
     setnames(dt, 'value', 'z-score')
     vlines <- 0.5 + c(0, cumsum(table(object[[group]])))
-    hlines <- 0.5 + c(0, sum(effect(object, fit = fit, coef = coef)[, 1] < 0), nrow(object))
+    if (!is.null(coef)){
+        hlines <- 0.5 + c(0, sum(effect(object, fit = fit, coef = coef)[, 1] < 0), nrow(object))
+    }
 # Plot
-    ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +
-    geom_tile() +
-    theme_minimal() + xlab(NULL) + ylab(NULL) + 
-    scale_x_discrete(position = 'top') + 
-    theme(axis.text.x = element_text(angle = 90, hjust = 0)) + 
-    scale_fill_gradient2(low = '#ff5050', high = '#009933', na.value = 'white') + 
-    geom_vline(xintercept = vlines) + 
-    geom_hline(yintercept = hlines)
+    p <- ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +
+        geom_tile() +
+        theme_minimal() + xlab(NULL) + ylab(NULL) + 
+        scale_x_discrete(position = 'top') + 
+        theme(axis.text.x = element_text(angle = 90, hjust = 0)) + 
+        scale_fill_gradient2(low = '#ff5050', high = '#009933', na.value = 'white') + 
+        geom_vline(xintercept = vlines)
+    if (!is.null(coef)){
+        p <- p + geom_hline(yintercept = hlines)
+    }
+    p
 }
