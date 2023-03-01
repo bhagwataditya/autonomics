@@ -96,7 +96,7 @@ plot_summary <- function(
         theme(plot.title = element_text(hjust = 0.5))
 
     pcaplot <- biplot(
-        object, color = 'subgroup', x = 'pca1', y = 'pca2', palette = palette) + 
+        object, color = 'subgroup', x = 'pca1', y = 'pca2', colorpalette = palette) + 
         guides(color = 'none') + ggtitle(NULL) +
         theme(axis.text.x  = element_blank(), 
               axis.text.y  = element_blank(), 
