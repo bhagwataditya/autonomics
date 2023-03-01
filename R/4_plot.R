@@ -1119,7 +1119,7 @@ plot_exprs <- function(
             xlab          = xlab,              ylab        = ylab,
             theme         = theme
         )
-        print(p)
+        if (npages>1)  print(p)
     }
     if (!is.null(file)){ dev.off(); file  
     } else {             invisible(p) }
