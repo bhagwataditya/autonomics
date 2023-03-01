@@ -386,7 +386,7 @@ plot_sample_densities <- function(
     object %<>% extract_samples_evenly(n)
     plot_densities(
         object,
-        asssay   = assay,
+        assay    = assay,
         group    = group,
         fill     = fill,
         color    = color,
