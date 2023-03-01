@@ -776,15 +776,15 @@ summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
 plot_fit_summary <- function(sumdt, nrow = NULL, ncol = NULL, order = FALSE){
     if (order){
         sumdt <- sumdt[order(downfdr+upfdr, downp+upp)]
-        sumdt[, contrast := factor(contrast, unique(contrast))]
+        sumdt[, coefficient := factor(coefficient, unique(coefficient))]
     }
     ggplot(sumdt) + facet_wrap(vars(fit), nrow = nrow, ncol = ncol) + 
-    geom_col(aes(y = contrast, x = -downp),   fill = 'firebrick',   alpha = 0.3) +
-    geom_col(aes(y = contrast, x =    upp),   fill = 'forestgreen', alpha = 0.3) + 
-    geom_col(aes(y = contrast, x = -downfdr), fill = 'firebrick',   alpha = 1) +
-    geom_col(aes(y = contrast, x =    upfdr), fill = 'forestgreen', alpha = 1) + 
-    geom_text(data = sumdt[  downp>0], aes(y = contrast, x = -max(downp), label = paste0(downp, ' | ', downfdr) ), hjust = +1) + 
-    geom_text(data = sumdt[    upp>0], aes(y = contrast, x =    max(upp), label = paste0(upfdr, ' | ', upp) ), hjust = 0) + 
+    geom_col(aes(y = coefficient, x = -downp),   fill = 'firebrick',   alpha = 0.3) +
+    geom_col(aes(y = coefficient, x =    upp),   fill = 'forestgreen', alpha = 0.3) + 
+    geom_col(aes(y = coefficient, x = -downfdr), fill = 'firebrick',   alpha = 1) +
+    geom_col(aes(y = coefficient, x =    upfdr), fill = 'forestgreen', alpha = 1) + 
+    geom_text(data = sumdt[  downp>0], aes(y = coefficient, x = -max(downp), label = paste0(downp, ' | ', downfdr) ), hjust = +1) + 
+    geom_text(data = sumdt[    upp>0], aes(y = coefficient, x =    max(upp), label = paste0(upfdr, ' | ', upp) ), hjust = 0) + 
     xlab('count') + 
     ylab(NULL) + 
     xlim(c(-max(sumdt$downp)-100, max(sumdt$upp)+100)) + 
