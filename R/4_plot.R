@@ -1122,7 +1122,7 @@ plot_exprs <- function(
         if (npages>1)  print(p)
     }
     if (!is.null(file)){ dev.off(); file  
-    } else {             invisible(p) }
+    } else {             p }
 }
 
 
