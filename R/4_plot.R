@@ -1469,7 +1469,7 @@ plot_top_heatmap <- function(
     if (!is.null(coef)){
         idx <- effect(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
         idx <- effect(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
-        object <- rbind(down, rev(up))
+        object <- rbind(rev(down), rev(up))
     }
 # Add pvalues
     if (!is.null(coef)){
