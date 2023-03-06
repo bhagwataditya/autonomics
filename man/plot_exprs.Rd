@@ -15,8 +15,8 @@ plot_exprs(
   object,
   dim = "both",
   assay = assayNames(object)[1],
-  geom = "boxplot",
   x = switch(dim, both = "subgroup", features = "feature_id", samples = "sample_id"),
+  geom = if (is.numeric(object[[x]])) "point" else "boxplot",
   color = x,
   fill = x,
   shape = NULL,
@@ -83,9 +83,9 @@ plot_exprs_per_coef(
 
 \item{assay}{string: value in assayNames(object)}
 
-\item{geom}{'boxplot' or 'point'}
-
 \item{x}{x svar}
+
+\item{geom}{'boxplot' or 'point'}
 
 \item{color}{color svar: points, lines}
 

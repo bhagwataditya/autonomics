@@ -1032,8 +1032,8 @@ plot_exprs <- function(
     object, 
     dim          = 'both', 
     assay        = assayNames(object)[1], 
-    geom         = 'boxplot',
     x            = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
+    geom         = if (is.numeric(object[[x]])) 'point' else 'boxplot',
     color        = x, # points/lines
     fill         = x, # boxplots
     shape        = NULL,
