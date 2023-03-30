@@ -67,6 +67,7 @@ plot_exprs_per_coef(
   x = "subgroup",
   block = NULL,
   coefs = default_coefs(object),
+  orderbyp = TRUE,
   title = coefs,
   nrow = 1,
   ncol = NULL,

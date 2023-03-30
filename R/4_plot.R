@@ -1174,7 +1174,8 @@ plot_exprs_per_coef <- function(
     object, 
     x     = 'subgroup',
     block = NULL,
-    coefs = default_coefs(object), 
+    coefs = default_coefs(object),
+    orderbyp = TRUE,
     title = coefs, 
     nrow  = 1, 
     ncol  = NULL, 
@@ -1183,6 +1184,10 @@ plot_exprs_per_coef <- function(
                            plot.title      = element_text(hjust = 0.5))
 ){
     assert_is_valid_sumexp(object)
+    if (orderbyp){
+        idx <- order(vapply(coefs, function(x)  min(p(object, coefs = x)), numeric(1)))
+        coefs %<>% extract(idx)
+    }
     grobs <- mapply(
         plot_exprs, 
         x        = x, 
