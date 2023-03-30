@@ -1215,7 +1215,7 @@ default_geom <- function(object, x){
     sdt0 <- sdt(object)[, x, with = FALSE]
     y <- vapply(sdt0, class, character(1))
     y %<>% unname()
-    y <- c(numeric = 'boxplot', factor = 'point', character = 'point')[y]
+    y <- c(numeric = 'point', factor = 'boxplot', character = 'boxplot')[y]
     y %<>% unname()
     y
 }
