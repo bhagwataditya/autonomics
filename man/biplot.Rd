@@ -7,8 +7,9 @@
 \usage{
 biplot(
   object,
-  x = intersect(c("pca1", "pls1", "lda1"), svars(object))[1],
-  y = intersect(c("pca2", "pls2", "lda2"), svars(object))[1],
+  method = biplot_methods(object)[1],
+  x = paste0("x1~", method),
+  y = paste0("x2~", method),
   color = "subgroup",
   shape = NULL,
   size = NULL,
@@ -21,7 +22,9 @@ biplot(
   nloadings = 0,
   colorpalette = make_svar_palette(object, color),
   alphapalette = make_alpha_palette(object, alpha),
-  title = paste0(x, ":", y)
+  title = method,
+  theme = ggplot2::theme(plot.title = element_text(hjust = 0.5), panel.grid =
+    element_blank())
 )
 
 plot_biplot(...)

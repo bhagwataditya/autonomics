@@ -137,9 +137,9 @@ pca <- function(
     samples   <- pca_res@scores
     features  <- pca_res@loadings
     variances <- round(100*pca_res@R2)
-    colnames(samples)  <- sprintf('pca%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('x%d~pca', seq_len(ncol(samples)))
+    colnames(features) <- sprintf('x%d~pca', seq_len(ncol(features)))
+    names(variances)   <- sprintf('x%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
@@ -178,13 +178,13 @@ pls <- function(
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('pls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('x%d~pls~%s', seq_len(  ncol(samples)),   by)
+    colnames(features) <- sprintf('x%d~pls~%s', seq_len(  ncol(features)),  by)
+    names(variances)   <- sprintf('x%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)$pls <- variances
+    metadata(object)[[sprintf('pls~%s', by)]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
@@ -534,6 +534,10 @@ make_alpha_palette <- function(object, alpha){
     palette
 }
     
+biplot_methods <- function(object){
+    unique(gsub('x[0-9]+[~]', '', grep('(pca|pls)', svars(object), value = TRUE)))
+}
+
 #' Biplot
 #' @param object         SummarizedExperiment
 #' @param x              svar (string)
@@ -562,8 +566,9 @@ make_alpha_palette <- function(object, alpha){
 #' @export
 biplot <- function(
     object, 
-    x = intersect(c('pca1', 'pls1', 'lda1'), svars(object))[1], 
-    y = intersect(c('pca2', 'pls2', 'lda2'), svars(object))[1], 
+    method = biplot_methods(object)[1],
+    x     = paste0('x1~', method), 
+    y     = paste0('x2~', method),
     color = 'subgroup', 
     shape = NULL, 
     size  = NULL, 
@@ -576,7 +581,9 @@ biplot <- function(
     nloadings = 0,
     colorpalette =  make_svar_palette(object, color),
     alphapalette = make_alpha_palette(object, alpha), 
-    title = paste0(x, ':', y)
+    title = method, 
+    theme = ggplot2::theme(plot.title = element_text(hjust = 0.5), 
+                           panel.grid = element_blank())
 ){
 # Assert / Process
     assert_is_all_of(object, 'SummarizedExperiment')
@@ -594,14 +601,12 @@ biplot <- function(
     if (!is.null(size)){  assert_is_a_string(size)
                           assert_is_subset(size,  svars(object)) 
                           fixed %<>% extract(names(.) %>% setdiff('size'))}
-    methodx <- gsub('[0-9]+', '', x)
-    methody <- gsub('[0-9]+', '', y)
-    xvar <- round(metadata(object)[[methodx]][[x]], 1)
-    yvar <- round(metadata(object)[[methody]][[y]], 1)
-    xlab  <- paste0(x, ' : ', xvar,'% ')
-    ylab  <- paste0(y, ' : ', yvar,'% ')
+    xvar <- round(metadata(object)[[method]][[split_extract_fixed(x, '~', 1)]], 1)
+    yvar <- round(metadata(object)[[method]][[split_extract_fixed(y, '~', 1)]], 1)
+    xlab  <- paste0(split_extract_fixed(x, '~', 1), ' : ', xvar,'% ')
+    ylab  <- paste0(split_extract_fixed(y, '~', 1), ' : ', yvar,'% ')
 # Plot
-    p <- ggplot() + theme_bw() + theme(panel.grid = element_blank())
+    p <- ggplot() + theme_bw() + theme
     p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
     p <- p + ggtitle(title)
     p %<>% add_loadings(object, x = x, y = y, label = feature_label, nloadings = nloadings)
