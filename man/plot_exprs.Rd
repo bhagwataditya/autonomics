@@ -65,6 +65,7 @@ boxplot_features(...)
 plot_exprs_per_coef(
   object,
   x = "subgroup",
+  geom = default_geom(object, x),
   block = NULL,
   coefs = default_coefs(object),
   orderbyp = TRUE,

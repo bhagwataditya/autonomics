@@ -1173,6 +1173,7 @@ boxplot_features <- function(...){
 plot_exprs_per_coef <- function(
     object, 
     x     = 'subgroup',
+    geom  = default_geom(object, x),
     block = NULL,
     coefs = default_coefs(object),
     orderbyp = TRUE,
@@ -1191,11 +1192,32 @@ plot_exprs_per_coef <- function(
     grobs <- mapply(
         plot_exprs, 
         x        = x, 
-        coefs     = coefs, 
+        geom     = geom,
+        coefs    = coefs, 
         title    = title,
         MoreArgs = list(object = object, block = block, n = 1, theme = theme), 
         SIMPLIFY = FALSE)
     gridExtra::grid.arrange(grobs = grobs, nrow = nrow)
+}
+
+#' Default geom
+#' @param object SummarizedExperiment
+#' @param x      svar
+#' @return character vector
+#' @examples
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' svars(object)
+#' default_geom(object, x = c('AGE', 'T2D'))
+#' default_geom(object, x = 'AGE')
+#' @export
+default_geom <- function(object, x){
+    sdt0 <- sdt(object)[, x, with = FALSE]
+    y <- vapply(sdt0, class, character(1))
+    y %<>% unname()
+    y <- c(numeric = 'boxplot', factor = 'point', character = 'point')[y]
+    y %<>% unname()
+    y
 }
 
 
