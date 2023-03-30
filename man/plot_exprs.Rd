@@ -42,6 +42,7 @@ plot_exprs(
   hlevels = NULL,
   title = switch(dim, both = paste0(coefs, collapse = ", "), features =
     "Feature Boxplots", samples = "Sample Boxplots"),
+  subtitle = coefs,
   xlab = NULL,
   ylab = "value",
   theme = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
@@ -69,11 +70,12 @@ plot_exprs_per_coef(
   block = NULL,
   coefs = default_coefs(object),
   orderbyp = TRUE,
-  title = coefs,
+  title = x,
+  subtitle = coefs,
   nrow = 1,
   ncol = NULL,
   theme = ggplot2::theme(legend.position = "bottom", legend.title = element_blank(),
-    plot.title = element_text(hjust = 0.5))
+    plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
 )
 }
 \arguments{
@@ -134,6 +136,8 @@ plot_exprs_per_coef(
 \item{hlevels}{xlevels for which to plot hlines}
 
 \item{title}{string}
+
+\item{subtitle}{string}
 
 \item{xlab}{string}
 

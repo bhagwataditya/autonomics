@@ -889,7 +889,7 @@ add_facetvars <- function(
     object, assay, geom, x, fill, color, shape, size, block, linetype, 
     highlight, facet, scales, nrow, ncol, page, labeller, 
     pointsize, jitter, colorpalette, fillpalette, hlevels, 
-    title, xlab, ylab, theme
+    title, subtitle, xlab, ylab, theme
 ){
 # Prepare
     xsym        <- sym(x)
@@ -919,7 +919,7 @@ add_facetvars <- function(
         facet %<>% stri_replace_first_fixed(facetvar, make.names(facetvar))
     } # otherwise facet_wrap_paginate thinks `fdr~coef~limma` is a formula
 # Initialization
-    p <- ggplot(dt) + theme_bw() + xlab(xlab) + ylab(ylab) + ggtitle(title)
+    p <- ggplot(dt) + theme_bw() + xlab(xlab) + ylab(ylab) + ggtitle(title, subtitle = subtitle)
     if (!is.numeric(dt[[x]]))  p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
     if (!is.null(facet))   p <- p + facet_wrap_paginate(facets = facet, 
         scales = scales, nrow = nrow, ncol = ncol, page = page, labeller = labeller)
@@ -998,6 +998,7 @@ add_facetvars <- function(
 #' @param colorpalette  named character vector: color palette
 #' @param hlevels       xlevels for which to plot hlines
 #' @param title         string
+#' @param subtitle      string
 #' @param xlab          string
 #' @param ylab          string
 #' @param theme         ggplot2::theme(...) or NULL
@@ -1060,6 +1061,7 @@ plot_exprs <- function(
     title        = switch(dim, both = paste0(coefs, collapse = ', '), 
                                features = 'Feature Boxplots', 
                                samples  =  'Sample Boxplots'), 
+    subtitle     = coefs,
     xlab         = NULL, 
     ylab         = 'value', 
     theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)), 
@@ -1116,6 +1118,7 @@ plot_exprs <- function(
             jitter        = jitter, 
             colorpalette  = colorpalette,      fillpalette = fillpalette, 
             hlevels       = hlevels,           title       = title,
+            subtitle      = subtitle,
             xlab          = xlab,              ylab        = ylab,
             theme         = theme
         )
@@ -1172,17 +1175,19 @@ boxplot_features <- function(...){
 #' @export
 plot_exprs_per_coef <- function(
     object, 
-    x     = 'subgroup',
-    geom  = default_geom(object, x),
-    block = NULL,
-    coefs = default_coefs(object),
+    x        = 'subgroup',
+    geom     = default_geom(object, x),
+    block    = NULL,
+    coefs    = default_coefs(object),
     orderbyp = TRUE,
-    title = coefs, 
-    nrow  = 1, 
-    ncol  = NULL, 
-    theme = ggplot2::theme(legend.position = 'bottom', 
-                           legend.title    = element_blank(), 
-                           plot.title      = element_text(hjust = 0.5))
+    title    = x,
+    subtitle = coefs,
+    nrow     = 1, 
+    ncol     = NULL, 
+    theme    = ggplot2::theme(legend.position = 'bottom', 
+                              legend.title    = element_blank(), 
+                              plot.title      = element_text(hjust = 0.5), 
+                              plot.subtitle   = element_text(hjust = 0.5))
 ){
     assert_is_valid_sumexp(object)
     if (orderbyp){
