@@ -1188,8 +1188,9 @@ plot_exprs_per_coef <- function(
     if (orderbyp){
         idx <- order(vapply(coefs, function(x)  min(p(object, coefs = x)), numeric(1)))
         coefs %<>% extract(idx)
-        if (length(x)    > 1)     x %<>% extract(idx)
-        if (length(geom) > 1)  geom %<>% extract(idx)
+        if (length(x)    > 1)      x %<>% extract(idx)
+        if (length(geom) > 1)   geom %<>% extract(idx)
+        if (length(title)> 1)  title %<>% extract(idx)
     }
     grobs <- mapply(
         plot_exprs, 
