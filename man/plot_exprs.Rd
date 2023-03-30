@@ -16,7 +16,7 @@ plot_exprs(
   dim = "both",
   assay = assayNames(object)[1],
   x = switch(dim, both = "subgroup", features = "feature_id", samples = "sample_id"),
-  geom = if (is.numeric(object[[x]])) "point" else "boxplot",
+  geom = default_geom(object, x = x),
   color = x,
   fill = x,
   shape = NULL,
