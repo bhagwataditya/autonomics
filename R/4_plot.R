@@ -1188,6 +1188,7 @@ plot_exprs_per_coef <- function(
     if (orderbyp){
         idx <- order(vapply(coefs, function(x)  min(p(object, coefs = x)), numeric(1)))
         coefs %<>% extract(idx)
+        if (length(x)    > 1)     x %<>% extract(idx)
         if (length(geom) > 1)  geom %<>% extract(idx)
     }
     grobs <- mapply(
@@ -1217,7 +1218,7 @@ default_geom <- function(object, x){
     y <- vapply(sdt0, class, character(1))
     y %<>% unname()
     y <- c(numeric = 'point', factor = 'boxplot', character = 'boxplot')[y]
-    y %<>% unname()
+    names(y) <- x
     y
 }
 
