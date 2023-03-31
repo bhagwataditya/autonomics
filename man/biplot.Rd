@@ -8,8 +8,8 @@
 biplot(
   object,
   method = biplot_methods(object)[1],
-  x = paste0("x1~", method),
-  y = paste0("x2~", method),
+  by = biplot_by(object, method)[1],
+  dims = biplot_dims(object, method, by)[1:2],
   color = "subgroup",
   shape = NULL,
   size = NULL,
@@ -22,7 +22,7 @@ biplot(
   nloadings = 0,
   colorpalette = make_svar_palette(object, color),
   alphapalette = make_alpha_palette(object, alpha),
-  title = method,
+  title = sprintf("\%s~\%s", by, method),
   theme = ggplot2::theme(plot.title = element_text(hjust = 0.5), panel.grid =
     element_blank())
 )
@@ -31,10 +31,6 @@ plot_biplot(...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{x}{svar (string)}
-
-\item{y}{svar (string)}
 
 \item{color}{svar (string)}
 
@@ -57,6 +53,10 @@ plot_biplot(...)
 \item{alphapalette}{character vector}
 
 \item{title}{string}
+
+\item{x}{svar (string)}
+
+\item{y}{svar (string)}
 }
 \value{
 ggplot object
@@ -67,7 +67,7 @@ Biplot
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
+object <- read_metabolon(file)
 object \%<>\% pca(ndim = 4)
 biplot(object)
 biplot(object, color = 'SUB', group = 'SUB')

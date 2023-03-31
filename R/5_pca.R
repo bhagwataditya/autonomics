@@ -137,13 +137,13 @@ pca <- function(
     samples   <- pca_res@scores
     features  <- pca_res@loadings
     variances <- round(100*pca_res@R2)
-    colnames(samples)  <- sprintf('x%d~pca', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('x%d~pca', seq_len(ncol(features)))
-    names(variances)   <- sprintf('x%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('t~samples~pca%d', seq_len(ncol(samples)))
+    colnames(features) <- sprintf('t~samples~pca%d', seq_len(ncol(features)))
+    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)$pca <- variances
+    metadata(object)$`samples~pca` <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
@@ -178,13 +178,13 @@ pls <- function(
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('x%d~pls~%s', seq_len(  ncol(samples)),   by)
-    colnames(features) <- sprintf('x%d~pls~%s', seq_len(  ncol(features)),  by)
-    names(variances)   <- sprintf('x%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('t~%s~pls%d', by, seq_len(  ncol(samples )))
+    colnames(features) <- sprintf('t~%s~pls%d', by, seq_len(  ncol(features)))
+    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)[[sprintf('pls~%s', by)]] <- variances
+    metadata(object)[[sprintf('%s~pls', by)]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
@@ -227,9 +227,9 @@ sma <- function(
     samples   <- mpm_out$Columns
     features  <- mpm_out$Rows
     variances <- round(100*mpm_tmp$contrib[seq_len(ncomponents)])
-    names(samples)   <- sprintf('sma%d', seq_len(ncol(samples)))
-    names(features)  <- sprintf('sma%d', seq_len(ncol(features)))
-    names(variances) <- sprintf('sma%d', seq_len(length(variances)))
+    names(samples)   <- sprintf('t~samples~sma%d', seq_len(ncol(samples)))
+    names(features)  <- sprintf('t~samples~sma%d', seq_len(ncol(features)))
+    names(variances) <- sprintf('t%d', seq_len(length(variances)))
 # Restrict
     if (is.infinite(ndim)) ndim <- ncol(samples)
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
@@ -240,7 +240,7 @@ sma <- function(
     features %<>% cbind(feature_id = rownames(.), .)
     object %<>% merge_sdt(data.table(samples), 'sample_id')
     object %<>% merge_fdt(data.table(features), 'feature_id')
-    metadata(object)$sma <- variances
+    metadata(object)$`samples~sma` <- variances
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
@@ -287,9 +287,9 @@ lda <- function(
     variances <- round((lda_out$svd^2)/sum(lda_out$svd^2)*100)
     if (length(variances)==1) variances <- c(LD1 = variances, LD2 = 0)
 # Rename
-    colnames(samples)  <- sprintf('lda%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('lda%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('lda%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('t~%s~lda%d', by, seq_len(ncol(samples)))
+    colnames(features) <- sprintf('t~%s~lda%d', by, seq_len(ncol(features)))
+    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
 # Restrict
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
@@ -297,7 +297,7 @@ lda <- function(
 # Merge - Filter - Return
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)$lda <- variances
+    metadata(object)[[sprintf('%s~lda', by)]] <- variances
     object %<>% .filter_minvar('lda', minvar)
     if (plot)  print(biplot(object, 'lda1', 'lda2', ...))
     object
@@ -338,13 +338,13 @@ spls <- function(
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('spls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('spls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('spls%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('t~%s~spls%d', by, seq_len(ncol(samples)))
+    colnames(features) <- sprintf('t~%s~spls%d', by, seq_len(ncol(features)))
+    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
     object %<>% merge_fdt(mat2dt(features,'feature_id'))
-    metadata(object)$spls <- variances
+    metadata(object)[[sprintf('%s~spls', by)]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
@@ -385,13 +385,13 @@ opls <- function(
     samples   <- pls_out@scoreMN
     features  <- pls_out@loadingMN
     variances <- round(pls_out@modelDF$R2X*100)
-    colnames(samples)  <- sprintf('opls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('opls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('opls%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('t~samples~opls%d', seq_len(ncol(samples)))
+    colnames(features) <- sprintf('t~samples~opls%d', seq_len(ncol(features)))
+    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)$opls <- variances
+    metadata(object)$`samples~opls` <- variances
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
@@ -535,7 +535,25 @@ make_alpha_palette <- function(object, alpha){
 }
     
 biplot_methods <- function(object){
-    unique(gsub('x[0-9]+[~]', '', grep('(pca|pls)', svars(object), value = TRUE)))
+    y <- grep('(pca|pls)', svars(object), value = TRUE)
+    y %<>% split_extract_fixed('~', 3)
+    y <- gsub('[0-9]+', '', y)
+    y %<>% unique()
+    y
+}
+
+biplot_by <- function(object, method){
+    y <- grep(method, svars(object), value = TRUE, fixed = TRUE)
+    y %<>% split_extract_fixed('~', 2)
+    y %<>% unique()
+}
+
+biplot_dims <- function(object, method, by){
+    x <- sprintf('t~%s~%s', by, method)
+    y <- grep(x, svars(object), value = TRUE, fixed = TRUE)
+    y <- gsub(x, '', y)
+    y %<>% as.numeric()
+    y
 }
 
 #' Biplot
@@ -557,7 +575,7 @@ biplot_methods <- function(object){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file)
 #' object %<>% pca(ndim = 4)
 #' biplot(object)
 #' biplot(object, color = 'SUB', group = 'SUB')
@@ -566,31 +584,27 @@ biplot_methods <- function(object){
 #' @export
 biplot <- function(
     object, 
-    method = biplot_methods(object)[1],
-    x     = paste0('x1~', method), 
-    y     = paste0('x2~', method),
-    color = 'subgroup', 
-    shape = NULL, 
-    size  = NULL, 
-    alpha = NULL,
-    group = NULL, 
-    linetype = NULL,
-    label = NULL, 
+    method        = biplot_methods(object)[1],
+    by            = biplot_by(object, method)[1], 
+    dims          = biplot_dims(object, method, by)[1:2],
+    color         = 'subgroup', 
+    shape         = NULL, 
+    size          = NULL, 
+    alpha         = NULL,
+    group         = NULL, 
+    linetype      = NULL,
+    label         = NULL, 
     feature_label = 'feature_name', 
-    fixed = list(shape = 15, size = 3), 
-    nloadings = 0,
-    colorpalette =  make_svar_palette(object, color),
-    alphapalette = make_alpha_palette(object, alpha), 
-    title = method, 
-    theme = ggplot2::theme(plot.title = element_text(hjust = 0.5), 
-                           panel.grid = element_blank())
+    fixed         = list(shape = 15, size = 3), 
+    nloadings     = 0,
+    colorpalette  =  make_svar_palette(object, color),
+    alphapalette  = make_alpha_palette(object, alpha), 
+    title         = sprintf('%s~%s', by, method), 
+    theme         = ggplot2::theme(plot.title = element_text(hjust = 0.5), 
+                                   panel.grid = element_blank())
 ){
 # Assert / Process
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_a_string(x)
-    assert_is_subset(x, svars(object))
-    assert_is_a_string(y)
-    assert_is_subset(y, svars(object))
     if (!is.null(color)){ assert_is_a_string(color)
                           assert_is_subset(color, svars(object)) }
     if (!is.null(group)){ assert_is_a_string(group)
@@ -601,10 +615,13 @@ biplot <- function(
     if (!is.null(size)){  assert_is_a_string(size)
                           assert_is_subset(size,  svars(object)) 
                           fixed %<>% extract(names(.) %>% setdiff('size'))}
-    xvar <- round(metadata(object)[[method]][[split_extract_fixed(x, '~', 1)]], 1)
-    yvar <- round(metadata(object)[[method]][[split_extract_fixed(y, '~', 1)]], 1)
-    xlab  <- paste0(split_extract_fixed(x, '~', 1), ' : ', xvar,'% ')
-    ylab  <- paste0(split_extract_fixed(y, '~', 1), ' : ', yvar,'% ')
+    
+    x <- sprintf('t~%s~%s%d', by, method, dims[1])
+    y <- sprintf('t~%s~%s%d', by, method, dims[2])
+    xvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('t%d', dims[1])]])
+    yvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('t%d', dims[2])]])
+    xlab <- sprintf('x%d : %d%%', dims[1],  xvar)
+    ylab <- sprintf('x%d : %d%%', dims[2],  yvar)
 # Plot
     p <- ggplot() + theme_bw() + theme
     p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
