@@ -137,9 +137,9 @@ pca <- function(
     samples   <- pca_res@scores
     features  <- pca_res@loadings
     variances <- round(100*pca_res@R2)
-    colnames(samples)  <- sprintf('t~samples~pca%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('t~samples~pca%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('effect~samples~pca%d', seq_len(ncol(samples)))
+    colnames(features) <- sprintf('effect~samples~pca%d', seq_len(ncol(features)))
+    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
@@ -178,9 +178,9 @@ pls <- function(
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('t~%s~pls%d', by, seq_len(  ncol(samples )))
-    colnames(features) <- sprintf('t~%s~pls%d', by, seq_len(  ncol(features)))
-    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('effect~%s~pls%d', by, seq_len(  ncol(samples )))
+    colnames(features) <- sprintf('effect~%s~pls%d', by, seq_len(  ncol(features)))
+    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
@@ -227,9 +227,9 @@ sma <- function(
     samples   <- mpm_out$Columns
     features  <- mpm_out$Rows
     variances <- round(100*mpm_tmp$contrib[seq_len(ncomponents)])
-    names(samples)   <- sprintf('t~samples~sma%d', seq_len(ncol(samples)))
-    names(features)  <- sprintf('t~samples~sma%d', seq_len(ncol(features)))
-    names(variances) <- sprintf('t%d', seq_len(length(variances)))
+    names(samples)   <- sprintf('effect~samples~sma%d', seq_len(ncol(samples)))
+    names(features)  <- sprintf('effect~samples~sma%d', seq_len(ncol(features)))
+    names(variances) <- sprintf('effect%d', seq_len(length(variances)))
 # Restrict
     if (is.infinite(ndim)) ndim <- ncol(samples)
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
@@ -287,9 +287,9 @@ lda <- function(
     variances <- round((lda_out$svd^2)/sum(lda_out$svd^2)*100)
     if (length(variances)==1) variances <- c(LD1 = variances, LD2 = 0)
 # Rename
-    colnames(samples)  <- sprintf('t~%s~lda%d', by, seq_len(ncol(samples)))
-    colnames(features) <- sprintf('t~%s~lda%d', by, seq_len(ncol(features)))
-    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('effect~%s~lda%d', by, seq_len(ncol(samples)))
+    colnames(features) <- sprintf('effect~%s~lda%d', by, seq_len(ncol(features)))
+    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
 # Restrict
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
@@ -338,9 +338,9 @@ spls <- function(
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('t~%s~spls%d', by, seq_len(ncol(samples)))
-    colnames(features) <- sprintf('t~%s~spls%d', by, seq_len(ncol(features)))
-    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('effect~%s~spls%d', by, seq_len(ncol(samples)))
+    colnames(features) <- sprintf('effect~%s~spls%d', by, seq_len(ncol(features)))
+    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
     object %<>% merge_fdt(mat2dt(features,'feature_id'))
@@ -385,9 +385,9 @@ opls <- function(
     samples   <- pls_out@scoreMN
     features  <- pls_out@loadingMN
     variances <- round(pls_out@modelDF$R2X*100)
-    colnames(samples)  <- sprintf('t~samples~opls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('t~samples~opls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('t%d', seq_len(length(variances)))
+    colnames(samples)  <- sprintf('effect~samples~opls%d', seq_len(ncol(samples)))
+    colnames(features) <- sprintf('effect~samples~opls%d', seq_len(ncol(features)))
+    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
 # Add
     object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
@@ -549,7 +549,7 @@ biplot_by <- function(object, method){
 }
 
 biplot_dims <- function(object, method, by){
-    x <- sprintf('t~%s~%s', by, method)
+    x <- sprintf('effect~%s~%s', by, method)
     y <- grep(x, svars(object), value = TRUE, fixed = TRUE)
     y <- gsub(x, '', y)
     y %<>% as.numeric()
@@ -616,10 +616,10 @@ biplot <- function(
                           assert_is_subset(size,  svars(object)) 
                           fixed %<>% extract(names(.) %>% setdiff('size'))}
     
-    x <- sprintf('t~%s~%s%d', by, method, dims[1])
-    y <- sprintf('t~%s~%s%d', by, method, dims[2])
-    xvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('t%d', dims[1])]])
-    yvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('t%d', dims[2])]])
+    x <- sprintf('effect~%s~%s%d', by, method, dims[1])
+    y <- sprintf('effect~%s~%s%d', by, method, dims[2])
+    xvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[1])]])
+    yvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[2])]])
     xlab <- sprintf('x%d : %d%%', dims[1],  xvar)
     ylab <- sprintf('x%d : %d%%', dims[2],  yvar)
 # Plot

@@ -383,6 +383,7 @@ pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 #' @export
 pmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     var <- pvar(object, coefs = coefs, fit = fit)
+    if (is.null(var))  return(NULL)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
     mat <- as.matrix(dt)
@@ -411,6 +412,7 @@ effectvar <- function(object, coefs = autonomics::coefs(object), fit = fits(obje
 #' @export
 effectmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     var <- effectvar(object, coef = coefs, fit = fit)
+    if (is.null(var))  return(NULL)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
     mat <- as.matrix(dt)
@@ -428,9 +430,18 @@ effect <- function(...){
 
 #' @rdname pmat
 #' @export
-effectsize <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
-    abs(effectmat(object, coefs = coefs, fit = fit))
+effectsizemat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    mat <- effectmat(object, coefs = coefs, fit = fit)
+    if (is.null(mat))  return(NULL)  else  abs(mat)
 }
+
+#' @rdname pmat
+#' @export
+effectsize <- function(...){
+    .Deprecated('effectsizemat')
+    effectsizemat(...)
+}
+
 
 #' @rdname pmat
 #' @export
@@ -446,6 +457,7 @@ fdrvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
 #' @export
 fdrmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     var <- fdrvar(object, coef = coefs, fit = fit)
+    if (is.null(var))  return(NULL)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
     mat <- as.matrix(dt)
@@ -539,9 +551,9 @@ sign.SummarizedExperimentz <- function(...){
 
 
 # dont rm - its the lower-level function used by fits() and coefs() !
-.tvars <- function(object){
+.effectvars <- function(object){
     . <- NULL
-    fvars(object) %>% extract(stri_startswith_fixed(., paste0('t', FITSEP)))
+    fvars(object) %>% extract(stri_startswith_fixed(., paste0('effect', FITSEP)))
 }
 
 #' Get fit models
@@ -555,7 +567,7 @@ sign.SummarizedExperimentz <- function(...){
 #' fits(object)
 #' @export
 fits <- function(object){
-    x <- .tvars(object)
+    x <- .effectvars(object)
     x %<>% split_extract_fixed(FITSEP, 3)
     x %<>% unique()
     if (length(x)==0)  x <- NULL
@@ -591,8 +603,8 @@ coefs.factor <- function(x)   colnames(contrasts(x))
 #' @export
 coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL){
     . <- NULL
-    coefs0 <- split_extract_fixed(.tvars(object), FITSEP, 2)
-    fits0  <- split_extract_fixed(.tvars(object), FITSEP, 3)
+    coefs0 <- split_extract_fixed(.effectvars(object), FITSEP, 2)
+    fits0  <- split_extract_fixed(.effectvars(object), FITSEP, 3)
     coefs0 %<>% extract(fits0 %in% fit)
     coefs0 %<>% unique()
     if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))

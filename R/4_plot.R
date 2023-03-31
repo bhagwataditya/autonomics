@@ -626,8 +626,9 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool(verbose)
 # Filter
-    fun <- getFromNamespace(statistic, 'autonomics')
+    fun <- getFromNamespace(sprintf('%smat', statistic), 'autonomics')
     x <- fun(object, fit = fit, coefs = coefs)
+    if (is.null(x))  return(object)
     idx <- get(comparer)(x, threshold)
     idx[is.na(idx)] <- FALSE
     fun <- function(y) Reduce(get(combiner), y)
@@ -747,6 +748,7 @@ order_on_p <- function(
     assert_is_a_bool(verbose)
 # Order    
     pmat <- autonomics::pmat(object, fit = fit, coefs = coefs)
+    if (is.null(pmat))  return(object)
     if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
                             paste0(fit,   collapse = ', '), 
                             paste0(coefs, collapse = ', '))
@@ -759,7 +761,7 @@ order_on_p <- function(
 
 #' @rdname order_on_p
 #' @export
-order_on_t <- function(
+order_on_effect <- function(
     object, 
     fit = autonomics::fits(object),
     coefs = autonomics::coefs(object, fit = fit),
@@ -774,12 +776,12 @@ order_on_t <- function(
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool((verbose))
 # Order
-    tmat <- autonomics::tmat(object, fit = fit, coefs = coefs)
+    effectmat <- autonomics::effectmat(object, fit = fit, coefs = coefs)
     if (verbose)   cmessage("\t\tt-order features on: %s (%s)", 
                             paste0(fit,   collapse = ', '), 
                             paste0(coefs, collapse = ', '))
-    if (combiner == '|')  idx <- order(matrixStats::rowMaxs(abs(tmat)), decreasing = TRUE)
-    if (combiner == '&')  idx <- order(matrixStats::rowMins(abs(tmat)), decreasing = TRUE)
+    if (combiner == '|')  idx <- order(matrixStats::rowMaxs(abs(effectmat)), decreasing = TRUE)
+    if (combiner == '&')  idx <- order(matrixStats::rowMins(abs(effectmat)), decreasing = TRUE)
 # Return
     object[idx, ]
 }
@@ -792,16 +794,17 @@ order_on_t <- function(
     assert_is_valid_sumexp(object)
     assert_positive_number(n)
 # Filter
-    object %<>% order_on_t(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # t and p: order similar but not identical because d.o.f can differ
-    object %<>% order_on_p(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # t is universal (glm and pls), but p the thing of interest (if glm)
+    object %<>% order_on_effect(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # pls
+    object %<>% order_on_p(     fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # glm
     n %<>% min(nrow(object))
     idx <- c(rep(TRUE, n), rep(FALSE, nrow(object)-n))
     n0 <- length(idx)
     n1 <- sum(idx, na.rm = TRUE)
     if (verbose & n1<n0){
         combiner <- paste0(' ', combiner, ' ')
-        cmessage('\t\t\tRetain %d/%d features: p(%s) is in smallest %d', 
-                 n1, n0, paste0(coefs, collapse = combiner), n)
+        y <- paste0(coefs, collapse = combiner)
+        cmessage('\t\t\tRetain %d/%d features: p(%s) or effect(%s) in best %d', 
+                 n1, n0, y, y, n)
     }
 # Return
     object[idx, ]
@@ -849,7 +852,7 @@ order_on_t <- function(
 extract_coef_features <- function(
     object, 
     fit         = fits(object)[1], 
-    coefs       = coefs(object, fit = fit),
+    coefs       = default_coefs(object, fit = fit),
     combiner    = '|',
     p           = 1, 
     fdr         = 1, 

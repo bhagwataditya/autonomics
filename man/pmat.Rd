@@ -9,6 +9,7 @@
 \alias{effectvar}
 \alias{effectmat}
 \alias{effect}
+\alias{effectsizemat}
 \alias{effectsize}
 \alias{fdrvar}
 \alias{fdrmat}
@@ -36,7 +37,9 @@ effectmat(object, coefs = autonomics::coefs(object), fit = fits(object))
 
 effect(...)
 
-effectsize(object, coefs = autonomics::coefs(object), fit = fits(object))
+effectsizemat(object, coefs = autonomics::coefs(object), fit = fits(object))
+
+effectsize(...)
 
 fdrvar(object, coefs = autonomics::coefs(object), fit = fits(object))
 

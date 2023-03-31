@@ -2,7 +2,7 @@
 % Please edit documentation in R/4_plot.R
 \name{order_on_p}
 \alias{order_on_p}
-\alias{order_on_t}
+\alias{order_on_effect}
 \title{Order on p}
 \usage{
 order_on_p(
@@ -13,7 +13,7 @@ order_on_p(
   verbose = TRUE
 )
 
-order_on_t(
+order_on_effect(
   object,
   fit = autonomics::fits(object),
   coefs = autonomics::coefs(object, fit = fit),
