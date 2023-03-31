@@ -13,8 +13,11 @@
 \alias{fdrvar}
 \alias{fdrmat}
 \alias{fdr}
+\alias{upmat}
 \alias{up}
+\alias{downmat}
 \alias{down}
+\alias{sign.SummarizedExperimentz}
 \title{Get p/fdr/effect/down/up/sign matrix}
 \usage{
 tvar(object, coefs = autonomics::coefs(object), fit = fits(object))
@@ -41,7 +44,7 @@ fdrmat(object, coefs = autonomics::coefs(object), fit = fits(object))
 
 fdr(...)
 
-up(
+upmat(
   object,
   coefs = autonomics::coefs(object),
   fit = fits(object),
@@ -49,13 +52,19 @@ up(
   cutoff = 0.05
 )
 
-down(
+up(...)
+
+downmat(
   object,
   coefs = autonomics::coefs(object),
   fit = fits(object),
   var = "fdrmat",
   cutoff = 0.05
 )
+
+down(...)
+
+\method{sign}{SummarizedExperimentz}(...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -86,7 +95,7 @@ Get p/fdr/effect/down/up/sign matrix
     pmat(     object)[1:3, ]
     fdrmat(   object)[1:3, ]
     effectmat(object)[1:3, ]
-    down(     object)[1:3, ]
-    up(       object)[1:3, ]
-    sign(     object)[1:3, ]
+    downmat(  object)[1:3, ]
+    upmat(    object)[1:3, ]
+    signmat(  object)[1:3, ]
 }

@@ -697,11 +697,11 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 
 old_summarize_fit <- function(object, fit = fits(object)){
     . <- NULL
-    downdt <- colSums(down(object, fit = fit)) %>% data.table(coef = names(.), ndown = .)
+    downdt <- colSums(downmat(object, fit = fit)) %>% data.table(coef = names(.), ndown = .)
     downdt %<>% tidyr::separate(
                     col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
     
-    updt <- colSums(up(object)) %>% data.table(coef = names(.), nup = .)
+    updt <- colSums(upmat(object)) %>% data.table(coef = names(.), nup = .)
     updt %<>% tidyr::separate(
                     col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
     

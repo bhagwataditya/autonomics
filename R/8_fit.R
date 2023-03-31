@@ -377,9 +377,9 @@ pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 #'     pmat(     object)[1:3, ]
 #'     fdrmat(   object)[1:3, ]
 #'     effectmat(object)[1:3, ]
-#'     down(     object)[1:3, ]
-#'     up(       object)[1:3, ]
-#'     sign(     object)[1:3, ]
+#'     downmat(  object)[1:3, ]
+#'     upmat(    object)[1:3, ]
+#'     signmat(  object)[1:3, ]
 #' @export
 pmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     var <- pvar(object, coefs = coefs, fit = fit)
@@ -470,7 +470,7 @@ bonvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
 
 #' @rdname pmat
 #' @export
-up <- function(
+upmat <- function(
     object, 
     coefs  = autonomics::coefs(object),
     fit    = fits(object),
@@ -487,7 +487,14 @@ up <- function(
 
 #' @rdname pmat
 #' @export
-down <- function(
+up <- function(...){
+    .Deprecated('upmat')
+    upmat(...)
+}
+
+#' @rdname pmat
+#' @export
+downmat <- function(
     object, 
     coefs   = autonomics::coefs(object), 
     fit     = fits(object), 
@@ -502,10 +509,16 @@ down <- function(
     y
 }
 
+#' @rdname pmat
+#' @export
+down <- function(...){
+    .Deprecated('downmat')
+    downmat(...)
+}
 
 #' Get sign
 #' @export
-sign.SummarizedExperiment <- function(
+signmat <- function(
     object, 
     coefs  = autonomics::coefs(object),
     fit    = fits(object),
@@ -516,6 +529,14 @@ sign.SummarizedExperiment <- function(
     up(   object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)  -
     down( object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)
 }
+
+#' @rdname pmat
+#' @export
+sign.SummarizedExperimentz <- function(...){
+    .Deprecated('signmat')
+    signmat(...)
+}
+
 
 # dont rm - its the lower-level function used by fits() and coefs() !
 .pvars <- function(object){
