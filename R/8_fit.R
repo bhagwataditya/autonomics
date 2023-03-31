@@ -318,11 +318,33 @@ subgroup_matrix <- function(object, subgroupvar){
 
 #==============================================================================
 #
-#                   pvars /  fdrvars  / effectvars
-#                 pvalues / fdrvalues / effectvalues
-#                             fits
+#                   tvar / pvar / fdrvar / effectvar
+#                   tmat / pmat / fdrmat / effectmat
 #
 #==============================================================================
+
+
+#' @rdname pmat
+#' @export
+tvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 't', fit = fit, coefs = coefs)
+    x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
+}
+
+#' @rdname pmat
+#' @export
+tmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    var <- pvar(object, coefs = coefs, fit = fit)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('t', FITSEP), '')
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
+}
+
 
 #' @rdname pmat
 #' @export
@@ -342,20 +364,22 @@ pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 #' @examples 
 #' # Read
 #'     file <- download_data('atkin18.metabolon.xlsx')
-#'     object <- read_metabolon(file, subgroupvar = 'SET', impute = TRUE, plot = FALSE)
+#'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
-#' # Values
-#'     effectmat(object)[1:3, ]
-#'          pmat(object)[1:3, ]
-#'        fdrmat(object)[1:3, ]
-#'       down(object)[1:3, ]
-#'         up(object)[1:3, ]
-#'       sign(object)[1:3, ]
 #' # Variables
+#'     tvar(     object)
+#'     pvar(     object)
+#'     fdrvar(   object)
 #'     effectvar(object)
-#'          pvar(object)
-#'        fdrvar(object)
+#' # Matrix
+#'     tmat(     object)[1:3, ]
+#'     pmat(     object)[1:3, ]
+#'     fdrmat(   object)[1:3, ]
+#'     effectmat(object)[1:3, ]
+#'     down(     object)[1:3, ]
+#'     up(       object)[1:3, ]
+#'     sign(     object)[1:3, ]
 #' @export
 pmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     var <- pvar(object, coefs = coefs, fit = fit)
@@ -450,7 +474,7 @@ up <- function(
     object, 
     coefs  = autonomics::coefs(object),
     fit    = fits(object),
-    var    = 'fdr', 
+    var    = 'fdrmat', 
     cutoff = 0.05
 ){
     fdrmat  <- get(var)(object, coefs = coefs, fit = fit)
@@ -467,7 +491,7 @@ down <- function(
     object, 
     coefs   = autonomics::coefs(object), 
     fit     = fits(object), 
-    var     = 'fdr', 
+    var     = 'fdrmat', 
     cutoff  = 0.05
 ){
     fdrmat  <- get(var)(object, coefs = coefs, fit = fit)
@@ -485,7 +509,7 @@ sign.SummarizedExperiment <- function(
     object, 
     coefs  = autonomics::coefs(object),
     fit    = fits(object),
-    var    = 'fdr',
+    var    = 'fdrmat',
     cutoff = 0.05
 ){ 
     if (length(coefs)==0) return(matrix(0, nrow = nrow(object), ncol = ncol(object), dimnames = dimnames(object)))

@@ -8,7 +8,7 @@
   object,
   coefs = autonomics::coefs(object),
   fit = fits(object),
-  var = "fdr",
+  var = "fdrmat",
   cutoff = 0.05
 )
 }
