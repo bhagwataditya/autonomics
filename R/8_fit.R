@@ -539,9 +539,9 @@ sign.SummarizedExperimentz <- function(...){
 
 
 # dont rm - its the lower-level function used by fits() and coefs() !
-.pvars <- function(object){
+.tvars <- function(object){
     . <- NULL
-    fvars(object) %>% extract(stri_startswith_fixed(., paste0('p', FITSEP)))
+    fvars(object) %>% extract(stri_startswith_fixed(., paste0('t', FITSEP)))
 }
 
 #' Get fit models
@@ -555,7 +555,7 @@ sign.SummarizedExperimentz <- function(...){
 #' fits(object)
 #' @export
 fits <- function(object){
-    x <- .pvars(object)
+    x <- .tvars(object)
     x %<>% split_extract_fixed(FITSEP, 3)
     x %<>% unique()
     if (length(x)==0)  x <- NULL
@@ -591,8 +591,8 @@ coefs.factor <- function(x)   colnames(contrasts(x))
 #' @export
 coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL){
     . <- NULL
-    coefs0 <- split_extract_fixed(.pvars(object), FITSEP, 2)
-    fits0  <- split_extract_fixed(.pvars(object), FITSEP, 3)
+    coefs0 <- split_extract_fixed(.tvars(object), FITSEP, 2)
+    fits0  <- split_extract_fixed(.tvars(object), FITSEP, 3)
     coefs0 %<>% extract(fits0 %in% fit)
     coefs0 %<>% unique()
     if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))
