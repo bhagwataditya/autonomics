@@ -310,7 +310,7 @@ fit_lmx <- function(
     coefs       = colnames(create_design(object, formula = formula, drop = drop, contr.fun = contr.fun)), 
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars     = c('effect', 'p', 'fdr'),
+    statvars     = c('effect', 'p', 'fdr', 't'),
     verbose     = TRUE, 
     plot        = FALSE
 ){
@@ -374,6 +374,7 @@ fit_lm <- function(
     contr.fun   = NULL,
     block       = NULL, 
     weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars    = c('effect', 'p', 'fdr', 't'),
     coefs       = NULL, 
     verbose     = TRUE, 
     plot        = FALSE
@@ -383,8 +384,8 @@ fit_lm <- function(
         object,                      fit          = 'lm', 
         subgroupvar  = subgroupvar,  formula      = formula, 
         drop         = drop,         contr.fun    = contr.fun,
-        block        = block, 
-        weightvar    = weightvar,    coefs        = coefs, 
+        block        = block,        weightvar    = weightvar,    
+        statvars     = statvars,     coefs        = coefs, 
         verbose      = verbose,      plot         = plot)
 }
 
@@ -399,6 +400,7 @@ fit_lme <- function(
     contr.fun    = NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars     = c('effect', 'p', 'fdr', 't'),
     coefs        = NULL, 
     verbose      = TRUE, 
     plot         = FALSE
@@ -429,6 +431,7 @@ fit_lmer <- function(
     contr.fun    = NULL,
     block        = NULL, 
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars     = c('effect', 'p', 'fdr', 't'),
     coefs        = NULL, 
     verbose      = TRUE, 
     plot         = FALSE

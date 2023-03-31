@@ -18,7 +18,7 @@ fit_lmx(
     contr.fun)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  statvars = c("effect", "p", "fdr"),
+  statvars = c("effect", "p", "fdr", "t"),
   verbose = TRUE,
   plot = FALSE
 )
@@ -31,6 +31,7 @@ fit_lm(
   contr.fun = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
+  statvars = c("effect", "p", "fdr", "t"),
   coefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -44,6 +45,7 @@ fit_lme(
   contr.fun = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
+  statvars = c("effect", "p", "fdr", "t"),
   coefs = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -57,6 +59,7 @@ fit_lmer(
   contr.fun = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
+  statvars = c("effect", "p", "fdr", "t"),
   coefs = NULL,
   verbose = TRUE,
   plot = FALSE
