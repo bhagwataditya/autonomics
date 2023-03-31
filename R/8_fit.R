@@ -324,6 +324,16 @@ subgroup_matrix <- function(object, subgroupvar){
 #
 #==============================================================================
 
+#' @rdname pmat
+#' @export
+pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    x <- expand.grid(var = 'p', fit = fit, coefs = coefs)
+    x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
+}
+
 #' Get p/fdr/effect/down/up/sign matrix
 #' @param object    SummarizedExperiment
 #' @param fit       string
@@ -336,9 +346,9 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
 #' # Values
-#'     effect(object)[1:3, ]
-#'          p(object)[1:3, ]
-#'        fdr(object)[1:3, ]
+#'     effectmat(object)[1:3, ]
+#'          pmat(object)[1:3, ]
+#'        fdrmat(object)[1:3, ]
 #'       down(object)[1:3, ]
 #'         up(object)[1:3, ]
 #'       sign(object)[1:3, ]
@@ -347,7 +357,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #'          pvar(object)
 #'        fdrvar(object)
 #' @export
-p <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+pmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     var <- pvar(object, coefs = coefs, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
@@ -356,39 +366,14 @@ p <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     mat
 }
 
-
-#' @rdname p
+#' @rdname pmat
 #' @export
-pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
-    x <- expand.grid(var = 'p', fit = fit, coefs = coefs)
-    x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
-    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
-    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
-    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
+p <- function(...){
+    .Deprecated('pmat')
+    pmat(...)
 }
 
-
-#' @rdname p
-#' @export
-effect <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
-    var <- effectvar(object, coef = coefs, fit = fit)
-    dt <- fdt(object)[, var, with = FALSE]
-    names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
-    mat <- as.matrix(dt)
-    rownames(mat) <- rownames(object)
-    mat
-}
-
-
-#' @rdname p
-#' @export
-effectsize <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
-    abs(effect(object, coefs = coefs, fit = fit))
-}
-
-
-
-#' @rdname p
+#' @rdname pmat
 #' @export
 effectvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'effect', fit = fit, coef = coefs)
@@ -398,18 +383,32 @@ effectvar <- function(object, coefs = autonomics::coefs(object), fit = fits(obje
     x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
 }
 
-#' @rdname p
+#' @rdname pmat
 #' @export
-fdr <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
-    var <- fdrvar(object, coef = coefs, fit = fit)
+effectmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    var <- effectvar(object, coef = coefs, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
-    names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
+    names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
     mat <- as.matrix(dt)
     rownames(mat) <- rownames(object)
     mat
 }
 
-#' @rdname p
+#' @rdname pmat
+#' @export
+effect <- function(...){
+    .Deprecated('effectmat')
+    effectmat(...)
+}
+
+
+#' @rdname pmat
+#' @export
+effectsize <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    abs(effectmat(object, coefs = coefs, fit = fit))
+}
+
+#' @rdname pmat
 #' @export
 fdrvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'fdr', fit = fit, coef = coefs)
@@ -419,6 +418,24 @@ fdrvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
     x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
 }                   
 
+#' @rdname pmat
+#' @export
+fdrmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+    var <- fdrvar(object, coef = coefs, fit = fit)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
+}
+
+#' @rdname pmat
+#' @export
+fdr <- function(...){
+    .Deprecated('fdrmat')
+    fdr(...)
+}
+
 bonvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
     x <- expand.grid(var = 'bonferroni', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
@@ -427,7 +444,7 @@ bonvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
     x   # NULL[1] and c('a', NULL) work!   # `lm(coefs = .)`mostly with intercept
 }                   
 
-#' @rdname p
+#' @rdname pmat
 #' @export
 up <- function(
     object, 
@@ -437,14 +454,14 @@ up <- function(
     cutoff = 0.05
 ){
     fdrmat  <- get(var)(object, coefs = coefs, fit = fit)
-    effectmat <- effect(object, coefs = coefs, fit = fit)
+    effectmat <- autonomics::effectmat(object, coefs = coefs, fit = fit)
     y <- fdrmat < cutoff  &  effectmat > 0
     y[is.na(y)] <- FALSE
     mode(y) <- 'numeric'
     y
 }
 
-#' @rdname p
+#' @rdname pmat
 #' @export
 down <- function(
     object, 
@@ -454,7 +471,7 @@ down <- function(
     cutoff  = 0.05
 ){
     fdrmat  <- get(var)(object, coefs = coefs, fit = fit)
-    effectmat <- effect(object, coefs = coefs, fit = fit)
+    effectmat <- autonomics::effectmat(object, coefs = coefs, fit = fit)
     y <- fdrmat < cutoff  &  effectmat < 0
     y[is.na(y)] <- FALSE
     mode(y) <- 'numeric'
@@ -546,8 +563,8 @@ coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL)
 
 .is_sig <- function(object, fit, contrast, quantity = 'fdr'){
     issig  <- get(quantity)(object) < 0.05
-    isdown <- issig & effect(object) < 0
-    isup   <- issig & effect(object) > 0
+    isdown <- issig & effectmat(object) < 0
+    isup   <- issig & effectmat(object) > 0
     isdown[is.na(isdown)] <- FALSE
     isup[  is.na(isup)  ] <- FALSE
     testmat <- matrix(0, nrow(issig), ncol(issig), dimnames=dimnames(issig))

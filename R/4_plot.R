@@ -701,7 +701,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     if (is.null(fit))    return(object)
     if (is.null(coefs))  return(object)
 # Filter
-    x <- autonomics::effect(object, fit = fit, coefs = coefs)
+    x <- autonomics::effectmat(object, fit = fit, coefs = coefs)
     idx <- unname(apply(sign(x), 1, function(y)  Reduce(get(combiner), sign(y) %in% sign) ))
 # Return
     n0 <- length(idx)
@@ -736,7 +736,7 @@ order_on_p <- function(
     assert_is_subset(coefs, autonomics::coefs(object))
     assert_is_subset(fit,   autonomics::fits( object))
 # Order    
-    pmat <- autonomics::p(object, fit = fit, coefs = coefs)
+    pmat <- autonomics::pmat(object, fit = fit, coefs = coefs)
     if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
                             paste0(fit,   collapse = ', '), 
                             paste0(coefs, collapse = ', '))
@@ -1193,7 +1193,7 @@ plot_exprs_per_coef <- function(
 ){
     assert_is_valid_sumexp(object)
     if (orderbyp){
-        idx <- order(vapply(coefs, function(x)  min(p(object, coefs = x)), numeric(1)))
+        idx <- order(vapply(coefs, function(x)  min(pmat(object, coefs = x)), numeric(1)))
         coefs %<>% extract(idx)
         if (length(x)        > 1)         x %<>% extract(idx)
         if (length(geom)     > 1)      geom %<>% extract(idx)
@@ -1505,8 +1505,8 @@ plot_top_heatmap <- function(
         object  %<>% extract(  idx , )                          # order features
     }
     if (!is.null(coef)){
-        idx <- effect(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
-        idx <- effect(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
+        idx <- effectmat(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
+        idx <- effectmat(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
         object <- rbind(rev(down), rev(up))
     }
 # Add pvalues
@@ -1533,7 +1533,7 @@ plot_top_heatmap <- function(
     setnames(dt, 'value', 'z-score')
     vlines <- 0.5 + c(0, cumsum(table(object[[group]])))
     if (!is.null(coef)){
-        hlines <- 0.5 + c(0, sum(effect(object, fit = fit, coef = coef)[, 1] < 0), nrow(object))
+        hlines <- 0.5 + c(0, sum(effectmat(object, fit = fit, coef = coef)[, 1] < 0), nrow(object))
     }
 # Plot
     p <- ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +
