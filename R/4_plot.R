@@ -909,13 +909,18 @@ add_facetvars <- function(
     assert_is_subset(coefs, autonomics::coefs(object))
 # Add
     for (i in seq_along(coefs)){
-               pvar <- paste( 'p',      coefs[[i]], fit, sep = FITSEP)
-             fdrvar <- paste( 'fdr',    coefs[[i]], fit, sep = FITSEP)
+               pvar <- autonomics::pvar(     object, fit = fit, coefs = coefs)
+             fdrvar <- autonomics::fdrvar(   object, fit = fit, coefs = coefs)
+          effectvar <- autonomics::effectvar(object, fit = fit, coefs = coefs)
            facetvar <- paste0('facet.', coefs[[i]])
         assertive.sets::assert_are_disjoint_sets(facetvar, fvars(object))
-        pvalues   <- fdt(object)[[  pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
-        fdrvalues <- fdt(object)[[fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
-        fdt(object)[[facetvar]] <- sprintf('%s : %s (%s)', coefs[[i]], fdrvalues, pvalues)
+        if (!is.null(pvar))            pvalues <- fdt(object)[[     pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
+        if (!is.null(fdrvar))        fdrvalues <- fdt(object)[[   fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
+        if (!is.null(effectvar))  effectvalues <- fdt(object)[[effectvar]] %>% round(3)  %>% as.character()
+        fdt(object)[[facetvar]] <- 
+            if (is.null(pvar)){ sprintf('%s : %s', coefs[[i]], effectvalues)
+            } else {            sprintf('%s : %s (%s)', coefs[[i]], fdrvalues, pvalues) 
+            }
     }
 # Return
     object
@@ -1103,7 +1108,7 @@ plot_exprs <- function(
     fillpalette  = make_var_palette(object, fill), 
     colorpalette = make_var_palette(object, color),
     hlevels      = NULL, 
-    title        = switch(dim, both = paste0(coefs, collapse = ', '), 
+    title        = switch(dim, both = sprintf('%s~%s', paste0(coefs, collapse = ', '), fit), 
                                features = 'Feature Boxplots', 
                                samples  =  'Sample Boxplots'), 
     subtitle     = coefs,

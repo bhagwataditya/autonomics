@@ -40,8 +40,8 @@ plot_exprs(
   fillpalette = make_var_palette(object, fill),
   colorpalette = make_var_palette(object, color),
   hlevels = NULL,
-  title = switch(dim, both = paste0(coefs, collapse = ", "), features =
-    "Feature Boxplots", samples = "Sample Boxplots"),
+  title = switch(dim, both = sprintf("\%s~\%s", paste0(coefs, collapse = ", "), fit),
+    features = "Feature Boxplots", samples = "Sample Boxplots"),
   subtitle = coefs,
   xlab = NULL,
   ylab = "value",
