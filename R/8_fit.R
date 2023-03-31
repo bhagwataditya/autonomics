@@ -337,7 +337,7 @@ tvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 #' @rdname pmat
 #' @export
 tmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
-    var <- pvar(object, coefs = coefs, fit = fit)
+    var <- tvar(object, coefs = coefs, fit = fit)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('t', FITSEP), '')
     mat <- as.matrix(dt)

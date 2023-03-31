@@ -720,9 +720,16 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
 #' @param fit      string vector: subset of `fits(object)`
 #' @param verbose  TRUE or FALSE
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit = 'limma', coefs = c('t1', 't2', 't3'))
-#' object %<>% order_on_p()
+#' # Read
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#' # no limma
+#'     object %<>% order_on_p()  # unchanged
+#'     object %<>% order_on_t()
+#' # with limma
+#'     object %<>% fit_limma(coefs = c('t1', 't2', 't3'))
+#'     (assays(order_on_p(object))[[1]] == assays(order_on_t(object))[[1]])
+#'     identical(order_on_p(object) , order_on_t(object))
 #' @return SummarizedExperiment
 order_on_p <- function(
     object, 
@@ -733,8 +740,11 @@ order_on_p <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_is_subset(coefs, autonomics::coefs(object))
+    if (is.null(fit))  return(object)
     assert_is_subset(fit,   autonomics::fits( object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_scalar_subset(combiner, c('|', '&'))
+    assert_is_a_bool(verbose)
 # Order    
     pmat <- autonomics::pmat(object, fit = fit, coefs = coefs)
     if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
@@ -746,6 +756,35 @@ order_on_p <- function(
     object[idx, ]
 }
 
+
+#' @rdname order_on_p
+#' @export
+order_on_t <- function(
+    object, 
+    fit = autonomics::fits(object),
+    coefs = autonomics::coefs(object, fit = fit),
+    combiner = '|', 
+    verbose = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    if (is.null(fit))  return(object)
+    assert_is_subset(fit,   autonomics::fits( object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_scalar_subset(combiner, c('|', '&'))
+    assert_is_a_bool((verbose))
+# Order
+    tmat <- autonomics::tmat(object, fit = fit, coefs = coefs)
+    if (verbose)   cmessage("\t\tt-order features on: %s (%s)", 
+                            paste0(fit,   collapse = ', '), 
+                            paste0(coefs, collapse = ', '))
+    if (combiner == '|')  idx <- order(matrixStats::rowMaxs(abs(tmat)), decreasing = TRUE)
+    if (combiner == '&')  idx <- order(matrixStats::rowMins(abs(tmat)), decreasing = TRUE)
+# Return
+    object[idx, ]
+}
+
+
 #' @rdname extract_coef_features
 #' @export
 .extract_n_features <- function(object, coefs, combiner = '|', n, fit = fits(object)[1], verbose = TRUE){
@@ -753,7 +792,8 @@ order_on_p <- function(
     assert_is_valid_sumexp(object)
     assert_positive_number(n)
 # Filter
-    object %<>% order_on_p(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)
+    object %<>% order_on_t(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # t and p: order similar but not identical because d.o.f can differ
+    object %<>% order_on_p(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # t is universal (glm and pls), but p the thing of interest (if glm)
     n %<>% min(nrow(object))
     idx <- c(rep(TRUE, n), rep(FALSE, nrow(object)-n))
     n0 <- length(idx)
