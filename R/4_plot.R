@@ -698,6 +698,8 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
 # Assert
     assert_is_valid_sumexp(object)
     assert_is_subset(sign, c(-1, +1))
+    if (is.null(fit))    return(object)
+    if (is.null(coefs))  return(object)
 # Filter
     x <- autonomics::effect(object, fit = fit, coefs = coefs)
     idx <- unname(apply(sign(x), 1, function(y)  Reduce(get(combiner), sign(y) %in% sign) ))
