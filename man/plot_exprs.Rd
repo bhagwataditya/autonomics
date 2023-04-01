@@ -14,7 +14,10 @@ plot_exprs(
   object,
   dim = "both",
   assay = assayNames(object)[1],
-  x = switch(dim, both = "subgroup", features = "feature_id", samples = "sample_id"),
+  fit = fits(object)[1],
+  coefs = default_coefs(object, fit = fit)[1],
+  x = switch(dim, both = default_x(fit = fit, coefs = coefs), features = "feature_id",
+    samples = "sample_id"),
   geom = default_geom(object, x = x),
   color = x,
   fill = x,
@@ -23,8 +26,6 @@ plot_exprs(
   block = NULL,
   linetype = NULL,
   highlight = NULL,
-  fit = fits(object)[1],
-  coefs = default_coefs(object, fit = fit)[1],
   combiner = "|",
   p = 1,
   fdr = 1,
@@ -39,9 +40,9 @@ plot_exprs(
   fillpalette = make_var_palette(object, fill),
   colorpalette = make_var_palette(object, color),
   hlevels = NULL,
-  title = switch(dim, both = sprintf("\%s~\%s", paste0(coefs, collapse = ", "), fit),
-    features = "Feature Boxplots", samples = "Sample Boxplots"),
-  subtitle = coefs,
+  title = switch(dim, both = x, features = "Feature Boxplots", samples =
+    "Sample Boxplots"),
+  subtitle = if (grepl("(limma|lm|lme|lmer|wilcoxon)", fit)) coefs else "",
   xlab = NULL,
   ylab = "value",
   theme = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
@@ -71,6 +72,10 @@ boxplot_features(...)
 
 \item{assay}{string: value in assayNames(object)}
 
+\item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
+
+\item{coefs}{subset of coefs(object) to consider in selecting top}
+
 \item{x}{x svar}
 
 \item{geom}{'boxplot' or 'point'}
@@ -88,10 +93,6 @@ boxplot_features(...)
 \item{linetype}{linetype svar}
 
 \item{highlight}{highlight svar}
-
-\item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
-
-\item{coefs}{subset of coefs(object) to consider in selecting top}
 
 \item{p}{fraction: p   cutoff}
 

@@ -8,12 +8,13 @@ plot_exprs_per_coef(
   object,
   fit = fits(object)[1],
   coefs = default_coefs(object, fit = fit),
-  x = if (fit \%in\% c("pca", "pls")) coefs else "subgroup",
+  x = default_x(fit, coefs),
   geom = default_geom(object, x),
   block = NULL,
   orderbyp = FALSE,
-  title = sprintf(x),
-  subtitle = coefs,
+  title = x,
+  subtitle = default_subtitle(fit, x, coefs),
+  n = 1,
   nrow = 1,
   ncol = NULL,
   theme = ggplot2::theme(legend.position = "bottom", legend.title = element_blank(),
@@ -60,7 +61,7 @@ object \%<>\% pls(by = 'T2D')
 object \%<>\% pls(by = 'SUB')
 plot_exprs_per_coef(object)
 plot_exprs_per_coef(object, orderbyp = TRUE)
-plot_exprs_per_coef(object, fit = 'pls1', x = c('subgroup', 'T2D', 'SUB'), coefs = c('subgroup', 'T2D', 'SUB'), block = 'SUB')
+plot_exprs_per_coef(object, fit = 'pls1', block = 'SUB')
 }
 \seealso{
 \code{\link{plot_sample_densities}},

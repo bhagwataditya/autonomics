@@ -1083,7 +1083,9 @@ plot_exprs <- function(
     object, 
     dim          = 'both', 
     assay        = assayNames(object)[1], 
-    x            = switch(dim, both = 'subgroup', features = 'feature_id', samples = 'sample_id'),  
+    fit          = fits(object)[1], 
+    coefs        = default_coefs(object, fit = fit)[1],
+    x            = switch(dim, both = default_x(fit = fit, coefs = coefs), features = 'feature_id', samples  = 'sample_id'),  
     geom         = default_geom(object, x = x),
     color        = x, # points/lines
     fill         = x, # boxplots
@@ -1092,8 +1094,6 @@ plot_exprs <- function(
     block        = NULL, 
     linetype     = NULL,
     highlight    = NULL, 
-    fit          = fits(object)[1], 
-    coefs        = default_coefs(object, fit = fit)[1],
     combiner     = '|',
     p            = 1,
     fdr          = 1, 
@@ -1108,10 +1108,8 @@ plot_exprs <- function(
     fillpalette  = make_var_palette(object, fill), 
     colorpalette = make_var_palette(object, color),
     hlevels      = NULL, 
-    title        = switch(dim, both = sprintf('%s~%s', paste0(coefs, collapse = ', '), fit), 
-                               features = 'Feature Boxplots', 
-                               samples  =  'Sample Boxplots'), 
-    subtitle     = coefs,
+    title        = switch(dim, both = x, features = 'Feature Boxplots', samples  =  'Sample Boxplots'), 
+    subtitle     = if (grepl('(limma|lm|lme|lmer|wilcoxon)', fit)) coefs else '',
     xlab         = NULL, 
     ylab         = 'value', 
     theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)), 
@@ -1149,8 +1147,9 @@ plot_exprs <- function(
         }
     }
 # Plot
-    if (is.null(ncol))  ncol <- ceiling(sqrt(n))
-    if (is.null(nrow))  nrow <- ceiling(n/ncol )   # https://stackoverflow.com/a/60110740
+    if ( is.null(ncol) &  is.null(nrow)){ ncol <- ceiling(sqrt(n)) }  # https://stackoverflow.com/a/60110740
+    if ( is.null(nrow)                 ){ nrow <- ceiling(n/ncol)  }
+    if ( is.null(ncol)                 ){ ncol <- ceiling(n/nrow)  }
     npages <- if (dim == 'samples' ) 1  else  ceiling(nrow(object) / nrow / ncol)
     if (!is.null(file))   pdf(file, width = width, height = height)
     for (i in seq_len(npages)){
@@ -1246,18 +1245,19 @@ boxplot_features <- function(...){
 #' object %<>% pls(by = 'SUB')
 #' plot_exprs_per_coef(object)
 #' plot_exprs_per_coef(object, orderbyp = TRUE)
-#' plot_exprs_per_coef(object, fit = 'pls1', x = c('subgroup', 'T2D', 'SUB'), coefs = c('subgroup', 'T2D', 'SUB'), block = 'SUB')
+#' plot_exprs_per_coef(object, fit = 'pls1', block = 'SUB')
 #' @export
 plot_exprs_per_coef <- function(
     object, 
     fit      = fits(object)[1],
     coefs    = default_coefs(object, fit = fit),
-    x        = if (fit %in% c('pca', 'pls')) coefs else 'subgroup',
+    x        = default_x(fit, coefs),
     geom     = default_geom(object, x),
     block    = NULL,
     orderbyp = FALSE,
-    title    = sprintf(x),
-    subtitle = coefs,
+    title    = x,
+    subtitle = default_subtitle(fit, x, coefs),
+    n        = 1,
     nrow     = 1, 
     ncol     = NULL, 
     theme    = ggplot2::theme(legend.position = 'bottom', 
@@ -1281,10 +1281,27 @@ plot_exprs_per_coef <- function(
         fit      = fit,
         coefs    = coefs, 
         title    = title,
-        MoreArgs = list(object = object, block = block, n = 1, theme = theme), 
+        subtitle = subtitle,
+        MoreArgs = list(object = object, block = block, n = n, nrow = n, theme = theme), 
         SIMPLIFY = FALSE)
     gridExtra::grid.arrange(grobs = grobs, nrow = nrow)
 }
+
+
+default_x <- function(fit, coefs){
+    y <- coefs
+    idx <- grepl('(limma|lm|lme|lmer|wilcoxon)', fit)
+    y[idx] <- 'subgroup'
+    y
+}
+
+default_subtitle <- function(fit, x, coefs){
+    y <- coefs
+    idx <- !grepl('(limma|lm|lme|lmer|wilcoxon)', fit)
+    y[idx] <- fit[idx]
+    y
+}
+
 
 #' Default geom
 #' @param object SummarizedExperiment
