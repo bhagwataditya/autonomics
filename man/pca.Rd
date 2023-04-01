@@ -79,14 +79,14 @@ Perform a dimension reduction.
 Add sample scores, feature loadings, and dimension variances to object.
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
-pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
-pls(object, by = 'Group')              # Partial Least Squares
-lda(object, by = 'Group')              # Linear Discriminant Analysis
-sma(object)                            # Spectral Map Analysis
-pca(object, ndim = 3)
-pca(object, ndim = Inf, minvar = 5)
+ file <- download_data('atkin18.metabolon.xlsx')
+ object <- read_metabolon(file, plot = FALSE)
+ pca(object, plot = TRUE)  # Principal Component Analysis
+ pls(object, plot = TRUE)  # Partial Least Squares
+ lda(object, plot = TRUE)  # Linear Discriminant Analysis
+ sma(object, plot = TRUE)  # Spectral Map Analysis
+spls(object, plot = TRUE)  # Sparse PLS
+opls(object, plot = TRUE)  # OPLS
 }
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)

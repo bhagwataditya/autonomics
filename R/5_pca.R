@@ -94,14 +94,14 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' @param ...             passed to biplot
 #' @return                SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
-#' pls(object, by = 'Group')              # Partial Least Squares
-#' lda(object, by = 'Group')              # Linear Discriminant Analysis
-#' sma(object)                            # Spectral Map Analysis
-#' pca(object, ndim = 3)
-#' pca(object, ndim = Inf, minvar = 5)
+#'  file <- download_data('atkin18.metabolon.xlsx')
+#'  object <- read_metabolon(file, plot = FALSE)
+#'  pca(object, plot = TRUE)  # Principal Component Analysis
+#'  pls(object, plot = TRUE)  # Partial Least Squares
+#'  lda(object, plot = TRUE)  # Linear Discriminant Analysis
+#'  sma(object, plot = TRUE)  # Spectral Map Analysis
+#' spls(object, plot = TRUE)  # Sparse PLS
+#' opls(object, plot = TRUE)  # OPLS
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
@@ -147,7 +147,7 @@ pca <- function(
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
-    if (plot)  print(biplot(object, 'pca1', 'pca2', ...))
+    if (plot)  print(biplot(object, method = 'pca', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -188,7 +188,7 @@ pls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
-    if (plot)  print(biplot(object, 'pls1', 'pls2', ...))
+    if (plot)  if (plot)  print(biplot(object, method = 'pls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -244,7 +244,7 @@ sma <- function(
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
-    if (plot)  print(biplot(object, 'sma1', 'sma2', ...))
+    if (plot)  print(biplot(object, method = 'sma', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -299,7 +299,7 @@ lda <- function(
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
     metadata(object)[[sprintf('%s~lda', by)]] <- variances
     object %<>% .filter_minvar('lda', minvar)
-    if (plot)  print(biplot(object, 'lda1', 'lda2', ...))
+    if (plot)  if (plot)  print(biplot(object, method = 'lda', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -348,7 +348,7 @@ spls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
-    if (plot)  print(biplot(object, 'spls1', 'spls2', ...))
+    if (plot)  print(biplot(object, method = 'spls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -395,7 +395,7 @@ opls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
-    if (plot)  print(biplot(object, 'opls1', 'opls2', ...))
+    if (plot)  print(biplot(object, method = 'opls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
