@@ -577,10 +577,12 @@ biplot_dims <- function(object, method, by){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% pca(ndim = 4)
+#' object %<>% pls(ndim = 4)
 #' biplot(object)
-#' biplot(object, color = 'SUB', group = 'SUB')
-#' biplot(object, color = 'SUB', nloadings = 1)
-#' biplot(object, x = 'pca3', y = 'pca4', color = 'SUB', nloadings = 1)
+#' biplot(object, method = 'pls')
+#' biplot(object, method = 'pls', dims = 3:4)
+#' biplot(object, method = 'pls', dims = 3:4, group = 'SUB')
+#' biplot(object, method = 'pls', dims = 3:4, nloadings = 1)
 #' @export
 biplot <- function(
     object, 
