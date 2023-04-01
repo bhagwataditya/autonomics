@@ -647,15 +647,6 @@ biplot <- function(
     p
 }
 
-#' @rdname biplot
-#' @export
-plot_biplot <- function(...){
-    .Deprecated('biplot')
-    biplot(...)
-}
-
-
-
 
 #=============================================================================
 #

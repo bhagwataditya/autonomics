@@ -2,7 +2,6 @@
 % Please edit documentation in R/5_pca.R
 \name{biplot}
 \alias{biplot}
-\alias{plot_biplot}
 \title{Biplot}
 \usage{
 biplot(
@@ -26,8 +25,6 @@ biplot(
   theme = ggplot2::theme(plot.title = element_text(hjust = 0.5), panel.grid =
     element_blank())
 )
-
-plot_biplot(...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
