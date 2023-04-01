@@ -8,8 +8,7 @@
 \alias{boxplot_samples}
 \alias{plot_feature_boxplots}
 \alias{boxplot_features}
-\alias{plot_exprs_per_coef}
-\title{Plot exprs}
+\title{Plot exprs for coef}
 \usage{
 plot_exprs(
   object,
@@ -62,21 +61,6 @@ boxplot_samples(...)
 plot_feature_boxplots(...)
 
 boxplot_features(...)
-
-plot_exprs_per_coef(
-  object,
-  x = "subgroup",
-  geom = default_geom(object, x),
-  block = NULL,
-  coefs = default_coefs(object),
-  orderbyp = TRUE,
-  title = x,
-  subtitle = coefs,
-  nrow = 1,
-  ncol = NULL,
-  theme = ggplot2::theme(legend.position = "bottom", legend.title = element_blank(),
-    plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
-)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -155,7 +139,7 @@ plot_exprs_per_coef(
 ggplot object
 }
 \description{
-Plot exprs
+Plot exprs for coef
 }
 \examples{
 # Without limma

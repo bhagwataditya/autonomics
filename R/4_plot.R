@@ -1017,14 +1017,14 @@ add_facetvars <- function(
 }
 
 
-#' Plot exprs
+#' Plot exprs for coef
 #' @param object        SummarizedExperiment
 #' @param dim          'samples'   (per-sample distribution across features), \cr
 #'                     'features' (per-feature distribution across samples ) or 
 #'                     'both'        (subgroup distribution faceted per feature)
 #' @param assay         string: value in assayNames(object)
-#' @param geom          'boxplot' or 'point'
 #' @param x                     x svar
+#' @param geom          'boxplot' or 'point'
 #' @param color             color svar: points, lines
 #' @param fill               fill svar: boxplots
 #' @param shape             shape svar
@@ -1221,16 +1221,42 @@ boxplot_features <- function(...){
     plot_exprs(..., dim = 'features')
 }
 
-#' @rdname plot_exprs
+#' Plot exprs per coef
+#' @param object        SummarizedExperiment
+#' @param x                     x svar
+#' @param geom          'boxplot' or 'point'
+#' @param block             group svar
+#' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
+#' @param coefs         subset of coefs(object) to consider in selecting top
+#' @param orderbyp      TRUE or FALSE
+#' @param title         string
+#' @param subtitle      string
+#' @param nrow          number of rows in faceted plot
+#' @param ncol          number of cols in faceted plot
+#' @param theme         ggplot2::theme(...) or NULL
+#' @return ggplot object
+#' @seealso \code{\link{plot_sample_densities}},
+#'          \code{\link{plot_sample_violins}}
+#' @examples 
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% fit_limma()
+#' object %<>% pls(by = 'subgroup')
+#' object %<>% pls(by = 'T2D')
+#' object %<>% pls(by = 'SUB')
+#' plot_exprs_per_coef(object)
+#' plot_exprs_per_coef(object, orderbyp = TRUE)
+#' plot_exprs_per_coef(object, fit = 'pls1', x = c('subgroup', 'T2D', 'SUB'), coefs = c('subgroup', 'T2D', 'SUB'), block = 'SUB')
 #' @export
 plot_exprs_per_coef <- function(
     object, 
-    x        = 'subgroup',
+    fit      = fits(object)[1],
+    coefs    = default_coefs(object, fit = fit),
+    x        = if (fit %in% c('pca', 'pls')) coefs else 'subgroup',
     geom     = default_geom(object, x),
     block    = NULL,
-    coefs    = default_coefs(object),
-    orderbyp = TRUE,
-    title    = x,
+    orderbyp = FALSE,
+    title    = sprintf(x),
     subtitle = coefs,
     nrow     = 1, 
     ncol     = NULL, 
@@ -1241,7 +1267,7 @@ plot_exprs_per_coef <- function(
 ){
     assert_is_valid_sumexp(object)
     if (orderbyp){
-        idx <- order(vapply(coefs, function(x)  min(pmat(object, coefs = x)), numeric(1)))
+        idx <- order(vapply(coefs, function(x)  min(pmat(object, fit = fit, coefs = x)), numeric(1)))
         coefs %<>% extract(idx)
         if (length(x)        > 1)         x %<>% extract(idx)
         if (length(geom)     > 1)      geom %<>% extract(idx)
@@ -1252,6 +1278,7 @@ plot_exprs_per_coef <- function(
         plot_exprs, 
         x        = x, 
         geom     = geom,
+        fit      = fit,
         coefs    = coefs, 
         title    = title,
         MoreArgs = list(object = object, block = block, n = 1, theme = theme), 
