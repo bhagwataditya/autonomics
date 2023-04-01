@@ -1608,6 +1608,7 @@ plot_top_heatmap <- function(
         pvalues   <- fdt(object)[[  pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
         fdrvalues <- fdt(object)[[fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
         fdt(object)[[flabel]] %<>% paste0('  ', pvalues, '  ', fdrvalues)
+        if (flabel == 'feature_id')  fnames(object) <- as.character(fdt(object)$feature_id)
     }
     fdt(object)[[flabel]] %<>% factor(unique(.))                # fix order
 # Order samples

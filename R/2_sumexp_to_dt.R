@@ -217,7 +217,7 @@ extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because n
 write_xl <- function(object, xlfile){
 # Assert
     if (!requireNamespace('writexl', quietly = TRUE)){
-        message("`BiocManager::install('AnnotationDbi')`. Then re-run.")
+        message("`BiocManager::install('readxl')`. Then re-run.")
         return(NULL)
     }
     assert_is_valid_sumexp(object)
