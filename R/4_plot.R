@@ -909,9 +909,9 @@ add_facetvars <- function(
     assert_is_subset(coefs, autonomics::coefs(object))
 # Add
     for (i in seq_along(coefs)){
-               pvar <- autonomics::pvar(     object, fit = fit, coefs = coefs)
-             fdrvar <- autonomics::fdrvar(   object, fit = fit, coefs = coefs)
-          effectvar <- autonomics::effectvar(object, fit = fit, coefs = coefs)
+               pvar <- autonomics::pvar(     object, fit = fit, coefs = coefs[i])
+             fdrvar <- autonomics::fdrvar(   object, fit = fit, coefs = coefs[i])
+          effectvar <- autonomics::effectvar(object, fit = fit, coefs = coefs[i])
            facetvar <- paste0('facet.', coefs[[i]])
         assertive.sets::assert_are_disjoint_sets(facetvar, fvars(object))
         if (!is.null(pvar))            pvalues <- fdt(object)[[     pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
@@ -1084,7 +1084,7 @@ plot_exprs <- function(
     dim          = 'both', 
     assay        = assayNames(object)[1], 
     fit          = fits(object)[1], 
-    coefs        = default_coefs(object, fit = fit)[1],
+    coefs        = default_coefs(object, fit = fit),
     x            = switch(dim, both = default_x(fit = fit, coefs = coefs), features = 'feature_id', samples  = 'sample_id'),  
     geom         = default_geom(object, x = x),
     color        = x, # points/lines
