@@ -4,30 +4,16 @@
 \alias{read_olink}
 \title{Read olink file}
 \usage{
-read_olink(
-  file,
-  sample_excel = NULL,
-  by.x.excel = "sample_id",
-  by.y.excel = NULL,
-  sample_tsv = NULL,
-  by.x.tsv = "sample_id",
-  by.y.tsv = NULL
-)
+read_olink(file, sample_excel = NULL, sample_tsv = NULL, by.y = "SampleID")
 }
 \arguments{
 \item{file}{olinkfile}
 
 \item{sample_excel}{sample excel}
 
-\item{by.x.excel}{sample excel mergeby column}
-
-\item{by.y.excel}{sample excel mergeby column}
-
 \item{sample_tsv}{sample tsv}
 
-\item{by.x.tsv}{sample tsv   mergeby column}
-
-\item{by.y.tsv}{sample tsv   mergeby column}
+\item{by.y}{sample tsv   mergeby column}
 }
 \value{
 SummarizedExperiment
@@ -36,8 +22,17 @@ SummarizedExperiment
 Read olink file
 }
 \examples{
-npxdt <- OlinkAnalyze::npx_data1
-file <- paste0(tempfile(), '.olink.csv')
-fwrite(npxdt, file)
-object <- read_olink(file)
+# Example data
+    nnpxdt    <- data.table(OlinkAnalyze::npx_data1)[, c(1:11, 17)]
+    sampledt <- data.table(OlinkAnalyze::npx_data1)[, c(1, 12:15)]
+    sampledt \%<>\% extract(!grepl('CONTROL', SampleID))
+    sampledt \%<>\% unique()
+# Write to file
+    file <- paste0(tempfile(), '.olink.csv')
+    samplefile <- paste0(tempfile(), '.samples.xlsx')
+    fwrite(npxdt, file)
+    writexl::write_xlsx(sampledt, samplefile)
+# Read
+    object <- read_olink(file, sample_excel = samplefile)
+    biplot(pca(object), color = 'Time', group = 'Subject', shape = 'Treatment')
 }

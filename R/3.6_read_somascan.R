@@ -215,24 +215,28 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
 
 
 #' Read olink file
-#' @param file             olinkfile
-#' @param sample_excel     sample excel
-#' @param sample_tsv       sample tsv
-#' @param by.x.excel       sample excel mergeby column
-#' @param by.y.excel       sample excel mergeby column
-#' @param by.x.tsv         sample tsv   mergeby column
-#' @param by.y.tsv         sample tsv   mergeby column
+#' @param file          olinkfile
+#' @param sample_excel  sample excel
+#' @param sample_tsv    sample tsv
+#' @param by.y          sample tsv   mergeby column
 #' @return SummarizedExperiment
-#' @examples 
-#' npxdt <- OlinkAnalyze::npx_data1
-#' file <- paste0(tempfile(), '.olink.csv')
-#' fwrite(npxdt, file)
-#' object <- read_olink(file)
+#' @examples
+#' # Example data
+#'     nnpxdt    <- data.table(OlinkAnalyze::npx_data1)[, c(1:11, 17)]
+#'     sampledt <- data.table(OlinkAnalyze::npx_data1)[, c(1, 12:15)]
+#'     sampledt %<>% extract(!grepl('CONTROL', SampleID))
+#'     sampledt %<>% unique()
+#' # Write to file
+#'     file <- paste0(tempfile(), '.olink.csv')
+#'     samplefile <- paste0(tempfile(), '.samples.xlsx')
+#'     fwrite(npxdt, file)
+#'     writexl::write_xlsx(sampledt, samplefile)
+#' # Read
+#'     object <- read_olink(file, sample_excel = samplefile)
+#'     biplot(pca(object), color = 'Time', group = 'Subject', shape = 'Treatment')
 #' @export
 read_olink <- function(
-    file, 
-    sample_excel = NULL,  by.x.excel = 'sample_id', by.y.excel = NULL,
-    sample_tsv   = NULL,  by.x.tsv   = 'sample_id', by.y.tsv   = NULL
+    file, sample_excel = NULL,  sample_tsv = NULL, by.y = 'SampleID'
 ){
 # Assert
     if (!requireNamespace('OlinkAnalyze', quietly = TRUE)){
@@ -255,37 +259,9 @@ read_olink <- function(
     object %<>% merge_sdt(sdt0)
     object %<>% merge_fdt(fdt0)
 # Merge
-    if (!is.null(sample_excel))  object %<>% merge_sample_excel(sample_excel, by.x = by.x.excel, by.y = by.y.excel)
-    if (!is.null(sample_tsv  ))  object %<>% merge_sample_tsv(  sample_tsv,   by.x = by.x.tsv,   by.y = by.y.tsv  )
+    if (!is.null(sample_excel))  object %<>% merge_sample_excel(sample_excel, by.x = 'sample_id', by.y = by.y)
+    if (!is.null(sample_tsv  ))  object %<>% merge_sample_tsv(  sample_tsv,   by.x = 'sample_id', by.y = by.y  )
 # Return
     object
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
