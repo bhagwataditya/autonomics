@@ -23,7 +23,7 @@ biocViews: DataImport, DimensionReduction, GeneExpression, MassSpectrometry,
             Preprocessing, PrincipalComponent, RNASeq, Software, Transcription
 BugReports: https://bitbucket.org/graumannlabtools/autonomics 
 URL: https://github.com/bhagwataditya/autonomics
-RoxygenNote: 7.2.3
+RoxygenNote: 7.2.4
 Depends:
     R (>= 4.0)
 Imports: 
@@ -31,8 +31,10 @@ Imports:
   assertive, 
   BiocFileCache,
   BiocGenerics,
+  bit64,
   colorspace,
   data.table,
+  dplyr,
   edgeR,
   ggplot2,
   ggrepel,

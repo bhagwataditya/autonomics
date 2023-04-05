@@ -1242,7 +1242,7 @@ add_pepcounts <- function(object, file, pepcountpattern, quantity){
 }
 
 un_int64 <- function(x) {
-    dplyr::mutate(x, dplyr::across(where(bit64::is.integer64), as.numeric))
+    dplyr::mutate(x, dplyr::across(dplyr::where(bit64::is.integer64), as.numeric))
 }
 
 #' Read/Analyze proteingroups/phosphosites
