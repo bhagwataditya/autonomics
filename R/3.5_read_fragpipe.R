@@ -75,11 +75,11 @@ stri_any_regex <- function(str, pattern){
 #' @param contaminants  whether to include contaminants
 #' @param verbose       whether to msg
 #' @return SummarizedExperiment
-#' @examples 
+#' @examples
+#' file <- download_data('multiorganism.combined_protein.tsv')
 #' object <- read_fragpipe(file = file)
 #' assayNames(object)
 #' fdt(object)
-#' biplot(pca(object))
 #' @export
 read_fragpipe <- function(
     dir = getwd(), 

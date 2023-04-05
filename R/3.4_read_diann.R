@@ -45,14 +45,13 @@ pg_to_isoforms <- function(x, unique = TRUE){
 #' @param b second string
 #' @return  string
 #' @examples
-#' # Sequences
-#'   a <- "heart-specific Fatty acid binding protein"
-#'   b <- "Fatty acid binding protein, isoform 3"
-#'   extract_common_substr(a, b)
+#' a <- "heart-specific Fatty acid binding protein"
+#' b <- "Fatty acid binding protein, isoform 3"
+#' extract_common_substr(a, b)
 #'
-#'   a <- "Small nuclear ribonucleoprotein-associated proteins B and B'"
-#'   b <- "Small nuclear ribonucleoprotein-associated protein N"
-#'   extract_common_substr(a, b)
+#' a <- "Small nuclear ribonucleoprotein-associated proteins B and B'"
+#' b <- "Small nuclear ribonucleoprotein-associated protein N"
+#' extract_common_substr(a, b)
 #' @references https://stackoverflow.com/questions/28261825
 #' @noRd
 extract_common_substr <- function(a, b){
@@ -345,11 +344,11 @@ read_diann <- function(...){
 }
 
 # file <- download_data('dilution.report.tsv')
-# dt <- .read_diann_proteingroups(file, sequence = TRUE)
-# dcast_diann(dt, quantity = 'PG.MaxLFQ',  fill = NA, log2 = TRUE )[1:3, 1:3]
+# dt <- .read_diann_proteingroups(file)
+# dcast_diann(dt, quantity = 'maxlfq',    fill = NA, log2 = TRUE )[1:3, 1:3]
 # dcast_diann(dt, quantity = 'precounts', fill = 0               )[1:3, 1:3]
-# dcast_diann(dt, quantity = 'pepcounts',   fill = 0               )[1:3, 1:3]
-# dcast_diann(dt, quantity = 'sequence',   fill = ''              )[1:3, 1:3]
+# dcast_diann(dt, quantity = 'pepcounts', fill = 0               )[1:3, 1:3]
+# dcast_diann(dt, quantity = 'sequence',  fill = ''              )[1:3, 1:3]
 dcast_diann <- function(dt, quantity, fill, log2 = FALSE){
     mat <- data.table::dcast(dt, feature_id ~ run, value.var = quantity, fill = fill)
     mat %<>% dt2mat()
@@ -374,9 +373,8 @@ CONTAMINANTSURL <- paste0(
 #' @param overwrite TRUE or FALSE: overwrite existiung download?
 #' @return filename (string)
 #' @examples
-#' download_contaminants('www.doesntexist.de', overwrite = TRUE) # msg
-#' # download_contaminants()                  # download first time
-#' # download_contaminants(overwrite = TRUE)  # download each  time
+#' download_contaminants()                  # download first time
+#' download_contaminants(overwrite = TRUE)  # download each  time
 #' @export
 download_contaminants <-  function(url = CONTAMINANTSURL, overwrite = FALSE){
     destdir <- file.path(R_user_dir("autonomics", "cache"), "maxquant")
@@ -424,7 +422,7 @@ read_contaminants <-  function(file = download_contaminants()){
 #' @examples
 #' file <- download_data('dilution.report.tsv')
 #' object <- read_diann_proteingroups(file)
-#' # object %<>% rm_diann_contaminants()
+#' object %<>% rm_diann_contaminants()
 #' @export
 rm_diann_contaminants <- function(
     object, contaminants = read_contaminants(), verbose = TRUE

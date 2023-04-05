@@ -18,7 +18,6 @@ filename (string)
 Downloads contaminants
 }
 \examples{
-download_contaminants('www.doesntexist.de', overwrite = TRUE) # msg
-# download_contaminants()                  # download first time
-# download_contaminants(overwrite = TRUE)  # download each  time
+download_contaminants()                  # download first time
+download_contaminants(overwrite = TRUE)  # download each  time
 }

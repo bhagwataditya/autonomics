@@ -27,8 +27,8 @@ SummarizedExperiment
 Read fragpipe
 }
 \examples{
+file <- download_data('multiorganism.combined_protein.tsv')
 object <- read_fragpipe(file = file)
 assayNames(object)
 fdt(object)
-biplot(pca(object))
 }
