@@ -20,8 +20,12 @@ plot_sample_densities(
   color = NULL,
   group = sample_id,
   fixed = list(alpha = 0.5, na.rm = TRUE),
-  subsetter = if (ncol(object) < 100) {     seq_len(ncol(object)) } else {    
-    sample(ncol(object), 9) }
+  subsetter = if (ncol(object) < 100) {
+     seq_len(ncol(object))
+ } else {
+    
+    sample(ncol(object), 9)
+ }
 )
 
 plot_feature_densities(
@@ -30,8 +34,12 @@ plot_feature_densities(
   color = NULL,
   group = feature_id,
   fixed = list(alpha = 0.5, na.rm = TRUE),
-  subsetter = if (nrow(object) < 100) {     seq_len(nrow(object)) } else {    
-    sample(nrow(object), 9) }
+  subsetter = if (nrow(object) < 100) {
+     seq_len(nrow(object))
+ } else {
+    
+    sample(nrow(object), 9)
+ }
 )
 }
 \arguments{

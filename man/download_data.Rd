@@ -6,8 +6,7 @@
 \usage{
 download_data(
   filename,
-  url = paste0("https://bitbucket.org/graumannlabtools/autonomics/downloads/",
-    filename),
+  url = paste0("https://bitbucket.org/graumannlabtools/autonomics/downloads/", filename),
   verbose = TRUE
 )
 }
