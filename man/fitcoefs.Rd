@@ -19,5 +19,4 @@ fitcoefs
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, fit = 'limma')
 fitcoefs(object)
-default_fitc
 }

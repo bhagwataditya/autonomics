@@ -145,7 +145,7 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
 #' tsv <- file.path(tempdir(), 'fukuda20.proteingroups.tsv')
-#' sumexp_to_tsv(object, tsv)
+#' sumexp_to_tsv(object, file = tsv)
 #' @export
 sumexp_to_tsv <- function(object, assay = assayNames(object)[1], file){
     widedt <- sumexp_to_widedt(object, assay = assay)
@@ -179,7 +179,6 @@ fitdt <- function(object){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma')
 #' fitcoefs(object)
-#' default_fitc
 #' @export
 fitcoefs <- function(object){
     fitvars(object)  %>%  split_extract_fixed(FITSEP, 2:3) %>%  unique()
@@ -311,7 +310,7 @@ dt2sumexp  <- function(
 #' x <- values(read_metabolon(file))
 #' object <- matrix2sumexp(x)
 #' object %<>% pca()
-#' biplot(object, color = subgroup)
+#' biplot(object, color = 'subgroup')
 #' @export
 matrix2sumexp <- function(x, verbose = TRUE){
     object <- SummarizedExperiment(list(exprs = x))

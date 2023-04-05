@@ -23,5 +23,5 @@ file <- download_data('atkin18.metabolon.xlsx')
 x <- values(read_metabolon(file))
 object <- matrix2sumexp(x)
 object \%<>\% pca()
-biplot(object, color = subgroup)
+biplot(object, color = 'subgroup')
 }
