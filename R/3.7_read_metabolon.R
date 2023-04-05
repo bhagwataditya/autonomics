@@ -14,7 +14,7 @@
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% add_kegg_pathways()
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
 #' @noRd
@@ -90,7 +90,7 @@ kegg_entry_to_pathways <- function(x){
 #' @return character/factor vector
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file, plot = FALSE)
 #' add_smiles(object[1:10, ])
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
 #' @export
@@ -229,7 +229,7 @@ pubchem_to_smiles <- function(x){
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' read_metabolon(file, pca = TRUE, fit = 'limma', block='SUB')
+#' read_metabolon(file, pca = TRUE, fit = 'limma', block = 'SUB')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
     fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
