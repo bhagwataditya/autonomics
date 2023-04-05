@@ -30,7 +30,7 @@ plot_summary(
 Plot summary
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot = FALSE)
-plot_summary(object, fit = 'limma')
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file)
+object \%<>\% fit_limma()
 }

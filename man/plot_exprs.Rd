@@ -16,7 +16,7 @@ plot_exprs(
   assay = assayNames(object)[1],
   fit = fits(object)[1],
   coefs = default_coefs(object, fit = fit),
-  x = switch(dim, both = default_x(fit = fit, coefs = coefs), features = "feature_id",
+  x = switch(dim, both = default_x(fit = fit, coefs = coefs[1]), features = "feature_id",
     samples = "sample_id"),
   geom = default_geom(object, x = x),
   color = x,

@@ -9,12 +9,12 @@ analyze(
   pca = TRUE,
   fit = "limma",
   subgroupvar = default_subgroupvar(object),
+  contrasts = NULL,
   formula = default_formula(object, subgroupvar, contrasts),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   coefs = colnames(create_design(object, formula = formula, drop = drop)),
-  contrasts = NULL,
   plot = pca & !is.null(fit),
   feature_id = NULL,
   sample_id = NULL,
@@ -31,6 +31,8 @@ analyze(
 
 \item{subgroupvar}{subgroup svar}
 
+\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
+
 \item{formula}{model formula}
 
 \item{block}{model blockvar}
@@ -38,8 +40,6 @@ analyze(
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
 
 \item{coefs}{model coefficients          of interest: string vector or NULL}
-
-\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
 \item{plot}{TRUE/FALSE}
 

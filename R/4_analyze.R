@@ -26,12 +26,12 @@ analyze <- function(
     pca          = TRUE,
     fit          = 'limma',
     subgroupvar  = default_subgroupvar(object),
+    contrasts    = NULL,
     formula      = default_formula(object, subgroupvar, contrasts),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
     coefs        = colnames(create_design(object, formula = formula, drop = drop)),
-    contrasts    = NULL,
     plot         = pca & !is.null(fit),
     feature_id   = NULL,
     sample_id    = NULL,
@@ -67,9 +67,9 @@ analyze <- function(
 #' @param sample_id    NULL or string
 #' @param palette      NULL or color vector
 #' @examples 
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot = FALSE)
-#' plot_summary(object, fit = 'limma')
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% fit_limma()
 #' @export
 plot_summary <- function(
     object, 
@@ -81,7 +81,8 @@ plot_summary <- function(
 ){
 # Initialize
     if (is.null(sample_id)){  # most avg sample
-        sample_id  <- snames(object)[which.min(abs(object$pca1))] 
+        object %<>% pca()
+        sample_id  <- snames(object)[which.min(abs(object$`effect~samples~pca1`))] 
     }
     if (is.null(feature_id)){
         #idx <- which.max(abs(fdata(object)$pca1))
@@ -96,7 +97,7 @@ plot_summary <- function(
         theme(plot.title = element_text(hjust = 0.5))
 
     pcaplot <- biplot(
-        object, color = 'subgroup', x = 'pca1', y = 'pca2', colorpalette = palette) + 
+        object, color = 'subgroup', method = 'pca', colorpalette = palette) + 
         guides(color = 'none') + ggtitle(NULL) +
         theme(axis.text.x  = element_blank(), 
               axis.text.y  = element_blank(), 
@@ -107,7 +108,7 @@ plot_summary <- function(
         theme(plot.title = element_text(hjust = 0.5))
 
     sample  <- plot_top_sample(object[, sample_id],  palette = palette)
-    feature <- plot_top_feature(object[feature_id,], palette = palette)
+    feature <- plot_exprs(object[feature_id,])
     volcano <- plot_top_volcano(object, fit = fit, coef = coef)
     # Layout
     layout_matrix <- matrix(c(1,2,3,4,5,3), nrow = 2, byrow = TRUE)
@@ -151,7 +152,7 @@ top_coef <- function(object, fit){
 
 plot_top_volcano <- function(object, fit, coef){
     summarydt <- summarize_fit(fdt(object), fit = fit)
-    summarydt %<>% extract(contrast==coef)  # nup favours intercept !
+    summarydt %<>% extract(coefficient == coef)  # nup favours intercept !
     
     plot_volcano(object, coef = coef) + 
     guides(color = 'none') + 
