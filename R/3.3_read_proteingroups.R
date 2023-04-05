@@ -896,7 +896,7 @@ read_proteingroups <- function(...){
 read_maxquant_phosphosites <- function(
     dir = getwd(), 
     phosphofile = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
-    proteinfile = file.path(dirname(file), 'proteinGroups.txt'), 
+    proteinfile = file.path(dirname(phosphofile), 'proteinGroups.txt'), 
     fastadt = NULL, 
     quantity = NULL, 
     subgroups = NULL, invert = character(0), 
@@ -907,7 +907,7 @@ read_maxquant_phosphosites <- function(
 ){
 # Assert
     assert_all_are_existing_files(c(phosphofile, proteinfile))
-    if (is.null(quantity))  quantity <- guess_maxquant_quantity(file)
+    if (is.null(quantity))  quantity <- guess_maxquant_quantity(phosphofile)
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     assert_is_a_bool(verbose)
@@ -991,7 +991,7 @@ read_phosphosites <- function(...){
 #' @return character vector or SummarizedExperiment
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' invert_subgroups(object)
 #' @export
 #' @export
@@ -1184,7 +1184,7 @@ process_maxquant <- function(
 #' @examples 
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' proteinfile <- download_data('billing19.proteingroups.txt')
-#' object <- read_maxquant_phosphosites(phosphofile, proteinfile)
+#' object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
 #' fdt(object)
 #' object %<>% add_psp()
 #' fdt(object)
@@ -1238,12 +1238,12 @@ paste_unique <- function(x, collapse) paste0(unique(x), collapse=collapse)
     # Map uniprot -> columns
         resdt <- data.table(UniProt.ws::select(upws, fdt$uniprot, columns))
     # Trim whitespace
-        resdt <- resdt[, lapply(.SD, trimws),                          by = 'UNIPROTKB']
+        resdt <- resdt[, lapply(.SD, trimws),                          by = 'From']
     # Collapse per uniprot
-        resdt <- resdt[, lapply(.SD, paste_unique, collapse=collapse), by = 'UNIPROTKB']
+        resdt <- resdt[, lapply(.SD, paste_unique, collapse=collapse), by = 'From']
     # Ensure original order
         merge.data.table(
-            fdt, resdt, by.x='uniprot', by.y='UNIPROTKB', all.x = TRUE, sort = FALSE)
+            fdt, resdt, by.x = 'uniprot', by.y = 'From', all.x = TRUE, sort = FALSE)
 }
 
 #' Annotate uniprotids using UniProt.ws
@@ -1271,11 +1271,11 @@ paste_unique <- function(x, collapse) paste0(unique(x), collapse=collapse)
 #' # SummarizedExperiment
 #'     require(magrittr)
 #'     file <- download_data('fukuda20.proteingroups.txt')
-#'     x <- read_maxquant_proteingroups(file, plot=FALSE)
+#'     x <- read_maxquant_proteingroups(file, plot = FALSE)
 #'     x %<>% extract(1:10, )
-#'     fdata(x)[1:3, ]
+#'     fdt(x)[1:3, ]
 #'     # x %<>% annotate_uniprot_ws(upws)
-#'     # fdata(x)[1:3, ]
+#'     # fdt(x)[1:3, ]
 #' @export
 annotate_uniprot_ws <- function(x, ...)  UseMethod('annotate_uniprot_ws')
 
@@ -1283,7 +1283,7 @@ annotate_uniprot_ws <- function(x, ...)  UseMethod('annotate_uniprot_ws')
 #' @rdname annotate_uniprot_ws
 #' @export
 annotate_uniprot_ws.data.table <- function(
-    x, upws, columns=c('ENSEMBL'), collapse=';', ...
+    x, upws, columns=c('xref_ensembl'), collapse=';', ...
 ){
     # Assert valid inputs
         if (!requireNamespace('UniProt.ws', quietly = TRUE)){
@@ -1305,7 +1305,7 @@ annotate_uniprot_ws.data.table <- function(
         chunk <- NULL
         x[, chunk := chunks]
     # Call backend for each chunk
-        x <- x[, .annotate_uniprot_ws(.SD, upws, columns=columns, collapse=collapse), by='chunk']
+        x <- x[, .annotate_uniprot_ws(.SD, upws, columns = columns, collapse = collapse), by = 'chunk']
     # Return
         x$chunk <- NULL
         x[]
@@ -1346,7 +1346,7 @@ annotate_uniprot_ws.SummarizedExperiment <- function(
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' log2proteins(object)[1:3, 1:3]
 #' @rdname log2proteins
 #' @export
@@ -1388,7 +1388,7 @@ function(object, value){
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' log2sites(object)[1:3, 1:3]
 #' @rdname log2sites
 #' @export

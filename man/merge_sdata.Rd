@@ -66,6 +66,6 @@ Merge sample/feature dt
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% merge_sdt(   data.table(sample_id = object$sample_id,
-                                    number = seq_along(object$sample_id)))
+                                       number = seq_along(object$sample_id)))
 sdt(object)
 }

@@ -28,14 +28,14 @@ SummarizedExperiment list to long data.table
 RNA
     require(magrittr)
     rnafile <- download_data('billing19.rnacounts.txt')
-    rna <- read_rnaseq_counts(rnafile, plot=FALSE)
+    rna <- read_rnaseq_counts(rnafile, plot = FALSE)
 PRO/FOS
     fdt(rna)$feature_name <- fdt(rna)$gene_name
-    profile <- download_data('billing19.proteingroups.txt')
-    fosfile <- download_data('billing19.phosphosites.txt')
+    proteinfile <- download_data('billing19.proteingroups.txt')
+    phosphofile <- download_data('billing19.phosphosites.txt')
     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-    pro <- read_maxquant_proteingroups(profile, plot = FALSE, subgroups = subgroups)
-    fos <- read_maxquant_phosphosites(fosfile, profile, subgroups = subgroups, plot = FALSE)
+    pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
+    fos <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
     pro$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
     fos$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
 sumexplist to longdt

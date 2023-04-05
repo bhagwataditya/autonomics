@@ -87,19 +87,18 @@ is_fixed_col_file <- function(file){
 #'    extract_rectangle(x, rows = 2, cols = 15:86, sheet = 2)      %>%
 #'    extract(,1:3)
 #'
-#' # fdata
+#' # fdt
 #'    extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) %>%
 #'    extract(1:3, 1:3)
 #'
-#' # sdata
+#' # sdt
 #'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
 #'    transpose = TRUE) %>% extract(1:3, 1:3)
 #'
 #' # FROM MATRIX: extract_rectangle.matrix
 #' #======================================
 #' # exprs
-#'    x <-download_data('halama18.metabolon.xlsx') %>%
-#'        extract_rectangle(sheet = 2)
+#'    x <- download_data('halama18.metabolon.xlsx') %>% extract_rectangle(sheet = 2)
 #'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
 #'    extract(1:3, 1:3)
 #'
@@ -111,13 +110,13 @@ is_fixed_col_file <- function(file){
 #'    extract_rectangle(x, rows = 2,      cols = 15:86, sheet = 2) %>%
 #'    extract(,1:3)
 #'
-#' # fdata
+#' # fdt
 #'    extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) %>%
 #'    extract(1:3, 1:3)
 #'
-#' # sdata
-#'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
-#'    transpose = TRUE) %>% extract(1:3, 1:3)
+#' # sdt
+#'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2, transpose = TRUE) %>% 
+#'    extract(1:3, 1:3)
 #' @export
 extract_rectangle <- function(x, ...){
     UseMethod('extract_rectangle')
@@ -442,7 +441,7 @@ split_values <- function(x){
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% merge_sdt(   data.table(sample_id = object$sample_id,
-#'                                     number = seq_along(object$sample_id)))
+#'                                        number = seq_along(object$sample_id)))
 #' sdt(object)
 #'@export
 merge_sdata <- function(
@@ -666,10 +665,10 @@ add_affy_fdata <- function(object){
 #'     untar(localfile, exdir = path.expand(localdir))
 #' }
 #' localfile %<>% substr(1, nchar(.)-4)
-#' if (!requireNamespace("BiocManager", quietly = TRUE))  install.packages(
-#'                                                             'BiocManager')
-#' if (!requireNamespace("hgu95av2.db", quietly = TRUE))  BiocManager::install(
-#'                                                             'hgu95av2.db')
+#' if (!requireNamespace("BiocManager", quietly = TRUE)){
+#'     install.packages('BiocManager') }
+#' if (!requireNamespace("hgu95av2.db", quietly = TRUE)){
+#'     BiocManager::install('hgu95av2.db') }
 #' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 #' @export
 read_affymetrix <- function(celfiles){
@@ -731,14 +730,14 @@ read_genex <- function(file){
 #' RNA
 #'     require(magrittr)
 #'     rnafile <- download_data('billing19.rnacounts.txt')
-#'     rna <- read_rnaseq_counts(rnafile, plot=FALSE)
+#'     rna <- read_rnaseq_counts(rnafile, plot = FALSE)
 #' PRO/FOS
 #'     fdt(rna)$feature_name <- fdt(rna)$gene_name
-#'     profile <- download_data('billing19.proteingroups.txt')
-#'     fosfile <- download_data('billing19.phosphosites.txt')
+#'     proteinfile <- download_data('billing19.proteingroups.txt')
+#'     phosphofile <- download_data('billing19.phosphosites.txt')
 #'     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-#'     pro <- read_maxquant_proteingroups(profile, plot = FALSE, subgroups = subgroups)
-#'     fos <- read_maxquant_phosphosites(fosfile, profile, subgroups = subgroups, plot = FALSE)
+#'     pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
+#'     fos <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
 #'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #' sumexplist to longdt

@@ -30,7 +30,7 @@ Save into: file.path(R_user_dir('autonomics','cache'),'phosphositeplus')
 \examples{
 phosphofile <- download_data('billing19.phosphosites.txt')
 proteinfile <- download_data('billing19.proteingroups.txt')
-object <- read_maxquant_phosphosites(phosphofile, proteinfile)
+object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
 fdt(object)
 object \%<>\% add_psp()
 fdt(object)

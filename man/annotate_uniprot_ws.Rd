@@ -8,7 +8,7 @@
 \usage{
 annotate_uniprot_ws(x, ...)
 
-\method{annotate_uniprot_ws}{data.table}(x, upws, columns = c("ENSEMBL"), collapse = ";", ...)
+\method{annotate_uniprot_ws}{data.table}(x, upws, columns = c("xref_ensembl"), collapse = ";", ...)
 
 \method{annotate_uniprot_ws}{SummarizedExperiment}(x, upws, columns = c("ENSEMBL"), collapse = ";", ...)
 }
@@ -46,9 +46,9 @@ On these the mapping is performed. 1:many mappings are collapsed and only then r
 # SummarizedExperiment
     require(magrittr)
     file <- download_data('fukuda20.proteingroups.txt')
-    x <- read_maxquant_proteingroups(file, plot=FALSE)
+    x <- read_maxquant_proteingroups(file, plot = FALSE)
     x \%<>\% extract(1:10, )
-    fdata(x)[1:3, ]
+    fdt(x)[1:3, ]
     # x \%<>\% annotate_uniprot_ws(upws)
-    # fdata(x)[1:3, ]
+    # fdt(x)[1:3, ]
 }

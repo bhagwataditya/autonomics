@@ -25,6 +25,6 @@ Invert expressions , subgroups, and sample ids
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, plot=FALSE)
+object <- read_maxquant_proteingroups(file, plot = FALSE)
 invert_subgroups(object)
 }

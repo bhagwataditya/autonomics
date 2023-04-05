@@ -8,7 +8,7 @@
 read_maxquant_phosphosites(
   dir = getwd(),
   phosphofile = if (is_file(dir)) dir else file.path(dir, "phospho (STY)Sites.txt"),
-  proteinfile = file.path(dirname(file), "proteinGroups.txt"),
+  proteinfile = file.path(dirname(phosphofile), "proteinGroups.txt"),
   fastadt = NULL,
   quantity = NULL,
   subgroups = NULL,
