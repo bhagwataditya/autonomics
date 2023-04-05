@@ -224,9 +224,10 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
 #' @param by.y.tsv         sample tsv   mergeby column
 #' @return SummarizedExperiment
 #' @examples 
-#' file  <- '../olink_example_NPX.csv'
-#' sample_excel <- '../olink_example_clinical.xlsx'
-#' object <- read_olink(file, sample_excel = sample_excel, by.y.excel = 'SampleID')
+#' npxdt <- OlinkAnalyze::npx_data1
+#' file <- paste0(tempfile(), '.olink.csv')
+#' fwrite(npxdt, file)
+#' object <- read_olink(file)
 #' @export
 read_olink <- function(
     file, 
@@ -240,6 +241,8 @@ read_olink <- function(
     }
 # Read    
     dt <- OlinkAnalyze::read_NPX(file) %>% data.table()
+    dt[, N := .N, by = c('OlinkID', 'SampleID')]
+    dt[N>1, SampleID := sprintf('%s(%s)', SampleID, Index)] # ensure that following line is unique
     mat <- dcast.data.table(dt, OlinkID ~ SampleID, value.var = 'NPX')
     mat %<>% dt2mat()
     fdt0 <- unique(dt[, .(feature_id = Assay, OlinkID)])

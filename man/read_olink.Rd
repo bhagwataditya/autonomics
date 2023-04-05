@@ -36,7 +36,8 @@ SummarizedExperiment
 Read olink file
 }
 \examples{
-file  <- '../olink_example_NPX.csv'
-sample_excel <- '../olink_example_clinical.xlsx'
-object <- read_olink(file, sample_excel = sample_excel, by.y.excel = 'SampleID')
+npxdt <- OlinkAnalyze::npx_data1
+file <- paste0(tempfile(), '.olink.csv')
+fwrite(npxdt, file)
+object <- read_olink(file)
 }
