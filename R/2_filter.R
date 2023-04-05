@@ -47,10 +47,7 @@ function(object, condition, verbose = TRUE){
     object
 })
 
-#' Rm features missing in all samples
-#' @param object  SummarizedExperiment
-#' @param verbose TRUE (default) or FALSE
-#' @return  filtered SummarizedExperiment
+#' @rdname rm_missing_in_some_samples
 #' @export
 rm_missing_in_all_samples <- function(object, verbose = TRUE){
     # . != 0 needed due to stupid behaviour of rowAnys
@@ -71,15 +68,16 @@ rm_missing_in_all_samples <- function(object, verbose = TRUE){
 is_available_in_all_samples <- function(object)  rowAlls(!is.na(values(object)))
 
 
-#' Keep features that are available in all samples
+#' Rm features missing in some samples
 #' @param object SummarizedExperiment
 #' @param verbose TRUE (default) or FALSE
 #' @return updated object
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
+#' rm_missing_in_all_samples( object)
 #' rm_missing_in_some_samples(object)
-#' @noRd
+#' @export
 rm_missing_in_some_samples <- function(object, verbose = TRUE){
 
     # Restrict to available values

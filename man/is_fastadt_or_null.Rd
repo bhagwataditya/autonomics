@@ -20,5 +20,5 @@ Is fastadt or NULL
 \examples{
 fastafile <- download_data('uniprot_hsa_20140515.fasta')    
 x <- read_fastahdrs(fastafile)
-is_fastadt_or_null(x)
+# is_fastadt_or_null(x)  # slow
 }
