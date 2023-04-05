@@ -219,14 +219,14 @@ make_twofactor_colors <- function(
 #' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% pca()
 #' data <- sdata(object)
-#' plot_data(data, x = pca1, y = pca2)
-#' plot_data(data, x = pca1, y = pca2, color = TIME_POINT)
+#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`)
+#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = TIME_POINT)
 #' data$TIME <- as.numeric(substr(data$TIME_POINT, 2, 3))
-#' plot_data(data, x = pca1, y = pca2, color = TIME)
-#' plot_data(data, x = pca1, y = pca2, color = NULL)
+#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = TIME)
+#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = NULL)
 #'
 #' fixed <- list(shape = 15, size = 3)
-#' plot_data(data, x = pca1, y = pca2, fixed=fixed)
+#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, fixed = fixed)
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
