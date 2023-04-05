@@ -38,7 +38,7 @@ cduplicated <- function(x){
 #' @param first_cols character vector: columns to be pulled to the front
 #' @param verbose    TRUE (default) or FALSE
 #' @return dataframe with re-ordered columns
-#' @examples0
+#' @examples
 #' df <- data.frame(
 #'    symbol = c('A1BG', 'A2M'),
 #'    id     = c('1',    '2'),

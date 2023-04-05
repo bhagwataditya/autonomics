@@ -9,7 +9,7 @@
 #' @return logical
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file, plot = FALSE)
 #' has_some_svalues(object, 'Group')
 #' @noRd
 has_some_svalues <- function(object, svar){
@@ -34,11 +34,7 @@ has_some_svalues <- function(object, svar){
 #' object <- read_metabolon(file, plot = FALSE)
 #' contains_ratios(object)
 #' @noRd
-contains_ratios <- function(object){
-    quantity <- metadata(object)$quantity
-    if (is.null(quantity)) return(FALSE)
-    return(stri_detect_fixed(quantity, 'Ratio'))
-}
+contains_ratios <- function(object)  any(grepl('[Rr]atio', assayNames(object)))
 
 
 #==============================================================================
