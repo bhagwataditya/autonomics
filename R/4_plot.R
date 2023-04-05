@@ -15,13 +15,13 @@
 #' # STEMCELL RATIOS
 #'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
-#'     object <- read_maxquant_proteingroups(file, invert_subgroups = invert_subgroups, plot = FALSE)
+#'     object <- read_maxquant_proteingroups(file, invert = invert_subgroups)
 #'     p <- plot_sample_densities(object)
 #'     add_color_scale(p, color = 'subgroup', data = sdt(object))
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('billing16.proteingroups.txt')
-#'    object <- read_maxquant_proteingroups(file, quantity = 'Intensity labeled', plot = FALSE)
-#'     p <- plot_sample_densities(object)
+#'    object <- read_maxquant_proteingroups(file, quantity = 'labeledintensity')
+#'    p <- plot_sample_densities(object)
 #'    add_color_scale(p, color = 'subgroup', data = sdt(object))
 #' @noRd
 add_color_scale <- function(p, color, data, palette = NULL){
