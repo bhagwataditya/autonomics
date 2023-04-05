@@ -154,7 +154,7 @@ make_onefactor_colors <- function(
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' varlevels <- slevels(object, 'Group')
+#' varlevels <- slevels(object, 'subgroup')
 #' make_twofactor_colors(varlevels, show = TRUE)
 #' @noRd
 make_twofactor_colors <- function(
