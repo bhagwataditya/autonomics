@@ -21,7 +21,6 @@ Use place holder '%s' for data.frame.
 \examples{
 x <- data.frame(feature_id = c('F001', 'F002'), symbol = c('FEAT1', 'FEAT2'))
 message_df('\t\%s', x)
-
 x <- c(rep('PASS', 25), rep('FAIL', 25))
 message_df(format_string = '\%s', table(x))
 }

@@ -19,12 +19,3 @@ dataframe with re-ordered columns
 \description{
 Pull columns in a dataframe to the front
 }
-\examples{
-df <- data.frame(
-   symbol = c('A1BG', 'A2M'),
-   id     = c('1',    '2'),
-   name   = c('alpha-1-B glycoprotein', 'alpha-2-macroglobulin'),
-   type   = c('proteincoding', 'proteincoding'))
-first_cols <- c('id', 'symbol', 'location', 'uniprot')
-pull_columns(df, first_cols)
-}

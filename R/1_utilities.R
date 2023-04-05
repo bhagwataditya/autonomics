@@ -10,7 +10,6 @@
 #' @examples
 #' x <- data.frame(feature_id = c('F001', 'F002'), symbol = c('FEAT1', 'FEAT2'))
 #' message_df('\t%s', x)
-#'
 #' x <- c(rep('PASS', 25), rep('FAIL', 25))
 #' message_df(format_string = '%s', table(x))
 #' @export
@@ -27,8 +26,7 @@ message_df <- function(format_string, x){
 #' @param x vector
 #' @return logical vector
 #' @examples
-#' require(magrittr)
-#' c(1,2,3,4,5,2) %>% cduplicated()
+#' cduplicated(c(1,2,3,4,5,2))
 #' @noRd
 cduplicated <- function(x){
     duplicated(x) | duplicated(x, fromLast = TRUE)
@@ -40,7 +38,7 @@ cduplicated <- function(x){
 #' @param first_cols character vector: columns to be pulled to the front
 #' @param verbose    TRUE (default) or FALSE
 #' @return dataframe with re-ordered columns
-#' @examples
+#' @examples0
 #' df <- data.frame(
 #'    symbol = c('A1BG', 'A2M'),
 #'    id     = c('1',    '2'),
@@ -67,25 +65,6 @@ pull_columns <- function(df, first_cols, verbose = TRUE){
     } else {
         df[, c(first_cols, setdiff(names(df), first_cols)), drop = FALSE]
     }
-}
-
-
-
-# note: earlier name was 'order_pres_factor'
-#' Create factor with levels in order of appearance
-#'
-#' Creates a factor from a vector, where the levels are in (possibly reverse)
-#' order of appearance in the vector, rather than being alphabetically sorted.
-#' @param avector An atomic vector.
-#' @param reverse FALSE (default) or TRUE: reverse order factor levels?
-#' @return factor vector
-#' @examples
-#' factorify(c('x', 'z', 'a'))
-#' @noRd
-factorify <- function(avector, reverse = FALSE){
-    myLevels <- unique(avector)
-    if(reverse){myLevels <- rev(myLevels)}
-    factor(avector, myLevels)
 }
 
 
