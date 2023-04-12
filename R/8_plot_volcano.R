@@ -30,40 +30,6 @@ nmin <- function(x, n){
     sort(x) %>% extract(min(length(.), n))
 }
 
-top_down <- function(effect, fdr, mlp, ntop){
-    fdr_ok   <- fdr  < 0.05
-    coef_ok  <- effect < -1
-    coef_top <- if (any(fdr_ok)) {  effect < nmin(effect[fdr_ok], ntop + 1)
-                } else {           rep(FALSE, length(effect))            }
-    mlp_top  <- if (any(coef_ok)) { mlp  > nmax(mlp[coef_ok], ntop + 1)
-                } else {           rep(FALSE, length(effect))            }
-    fdr_ok & coef_ok & (coef_top | mlp_top)
-}
-
-#' @examples
-#' file <- download_data("billing16.proteingroups.txt")
-#' invert <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_maxquant_proteingroups(
-#'     file, invert = invert_subgroups, fit = 'limma', formula = 0 + subroup, plot = FALSE)
-#' effect <-      limma(object)[,1,'effect']
-#' fdr    <-      limma(object)[,1,'fdr']
-#' mlp    <- -log(limma(object)[,1,'p'])
-#' ntop   <- 3
-#' table(top_up(effect, fdr, mlp, ntop))
-#' table(top_down(effect, fdr, mlp, ntop))
-#' @noRd
-top_up <- function(effect, fdr, mlp, ntop){
-    fdr_ok   <- fdr  < 0.05
-    coef_ok  <- effect >  0 # currently no filter
-    
-    coef_top <- if (any(fdr_ok)) {  effect > nmax(effect[fdr_ok], ntop + 1)
-                } else {          rep(FALSE, length(effect)) }
-    mlp_top  <- if (any(coef_ok)) { mlp > nmax(mlp[coef_ok], ntop + 1)
-                } else {           rep(FALSE, length(effect)) }
-    fdr_ok & coef_ok & (coef_top | mlp_top)
-}
-
-
 melt_contrastdefs <- function(contrastdefmat){
     facetrow <- NULL
     contrastdefdt <- data.table(contrastdefmat, facetrow = "")
