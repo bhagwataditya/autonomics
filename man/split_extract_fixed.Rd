@@ -16,28 +16,28 @@ split_extract_regex(x, sep, i)
 split_extract(x, i, sep = guess_sep(x))
 }
 \arguments{
-\item{x}{string}
+\item{x}{character vector}
 
 \item{sep}{string}
 
 \item{i}{integer}
 }
 \value{
-character
+character vector
 }
 \description{
 stri_split and extract
 }
 \examples{
-require(magrittr)
-file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
-x <- object$sample_id[1:5]
-nfactors(x)
-split_extract_fixed(x, '_', 1:2)
-split_extract_fixed(x, '_', seq_len(nfactors(x)-1))
-split_extract_fixed(x, '_', nfactors(x))
-
-# With NA values
-split_extract_fixed(fdt(object)$PUBCHEM, ';', 1)
+# Read
+    require(magrittr)
+    file <- download_data('halama18.metabolon.xlsx')
+    object <- read_metabolon(file)
+    x <- object$sample_id[1:5]
+    nfactors(x)
+# Split
+    split_extract_fixed(x, '_', 1:2)
+    split_extract_fixed(x, '_', seq_len(nfactors(x)-1))
+    split_extract_fixed(x, '_', nfactors(x))
+    split_extract_fixed(fdt(object)$PUBCHEM, ';', 1) # with NA values
 }
