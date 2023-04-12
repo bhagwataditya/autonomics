@@ -32,7 +32,7 @@ Plot contrastogram
 \examples{
 if (requireNamespace('diagram', quietly = TRUE)){
    file <- download_data('halama18.metabolon.xlsx')
-   object <- read_metabolon(file, fit='limma', plot=FALSE)
-   plot_contrastogram(object, subgroupvar = 'Group')
+   object <- read_metabolon(file)
+   plot_contrastogram(object, subgroupvar = 'subgroup')
 }
 }

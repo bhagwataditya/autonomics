@@ -28,8 +28,8 @@ compute_connections <- function(
     colnames(effects) %<>% split_extract_fixed(FITSEP, 1)
     nsignif <- apply(fdrvalues < 0.05, 2, sum, na.rm=TRUE)
                 #colSums( fdrvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
-    nup     <- apply(fdrvalues < 0.05 & effects>0, 2, sum, na.rm=TRUE)
-    ndown   <- apply(fdrvalues < 0.05 & effects<0, 2, sum, na.rm=TRUE)
+    nup     <- apply(fdrvalues < 0.05 & effects > 0, 2, sum, na.rm = TRUE)
+    ndown   <- apply(fdrvalues < 0.05 & effects < 0, 2, sum, na.rm = TRUE)
 # Create diagram
     sep <- guess_sep(object)
     subgroupmatrix <- subgroup_matrix(object, subgroupvar = subgroupvar)
@@ -75,16 +75,16 @@ compute_connections <- function(
 #' @examples
 #' if (requireNamespace('diagram', quietly = TRUE)){
 #'    file <- download_data('halama18.metabolon.xlsx')
-#'    object <- read_metabolon(file, fit='limma', plot=FALSE)
-#'    plot_contrastogram(object, subgroupvar = 'Group')
+#'    object <- read_metabolon(file)
+#'    plot_contrastogram(object, subgroupvar = 'subgroup')
 #' }
 #' @export
 plot_contrastogram <- function(
     object, 
     subgroupvar,
     formula = as.formula(paste0('~ 0 +', subgroupvar)),
-    colors = make_colors(slevels(object, subgroupvar), guess_sep(object)),
-    curve  = 0.1
+    colors  = make_colors(slevels(object, subgroupvar), guess_sep(object)),
+    curve   = 0.1
 ){
 # Initialize
     V2 <- N <- NULL
@@ -94,8 +94,7 @@ plot_contrastogram <- function(
     formula <- as.formula(paste0('~ 0 + ', subgroupvar))
     design <- create_design(object, formula = formula)
     colnames(design) %<>% stri_replace_first_regex(subgroupvar, '')
-    object %<>% fit_limma_contrastogram(
-        subgroupvar = subgroupvar, design = design)
+    object %<>% fit_limma_contrastogram(subgroupvar = subgroupvar, design = design)
 # Compute connections
     contrastogram_matrices <- compute_connections(
         object, design = design, subgroupvar = subgroupvar, colors = colors)
