@@ -17,6 +17,7 @@ default_coefs <- function(object, fit = fits(object)){
 #' @param object numeric or SummarizedExperiment
 #' @param fvar   string or NULL
 #' @param probs  numeric
+#' @param ... (S3 dispatch)
 #' @return  factor vector
 #' @examples 
 #' # Numeric vector
@@ -25,7 +26,6 @@ default_coefs <- function(object, fit = fits(object)){
 #' # SummarizedExperiment
 #'     file <- download_data('fukuda20.proteingroups.txt')
 #'     fdt(object <- read_maxquant_proteingroups(file))
-#'     fdt(object %<>% add_assay_means('pepcounts'))
 #'     fdt(bin(object, 'pepcounts'))
 #' @export
 bin <- function(object, ...) UseMethod('bin')
@@ -58,7 +58,8 @@ bin.SummarizedExperiment <- function(object, fvar, probs = c(0, 0.33, 0.66, 1)){
 
 #' Add assay means
 #' @param object SummarizedExperiment or NULL
-#' @param assay string
+#' @param assay  string
+#' @param bin    TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples 
 #' file <- download_data('fukuda20.proteingroups.txt')

@@ -18,6 +18,8 @@ bin(object, ...)
 \arguments{
 \item{object}{numeric or SummarizedExperiment}
 
+\item{...}{(S3 dispatch)}
+
 \item{probs}{numeric}
 
 \item{fvar}{string or NULL}
@@ -35,6 +37,5 @@ Bin continuous variable
 # SummarizedExperiment
     file <- download_data('fukuda20.proteingroups.txt')
     fdt(object <- read_maxquant_proteingroups(file))
-    fdt(object \%<>\% add_assay_means('pepcounts'))
     fdt(bin(object, 'pepcounts'))
 }
