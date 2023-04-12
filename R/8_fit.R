@@ -604,7 +604,8 @@ coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL)
 #============================================================================
 
 .is_sig <- function(object, fit, contrast, quantity = 'fdr'){
-    issig  <- get(quantity)(object) < 0.05
+    sigfun <- get(paste0(quantity, 'mat'))
+    issig  <- sigfun(object) < 0.05
     isdown <- issig & effectmat(object) < 0
     isup   <- issig & effectmat(object) > 0
     isdown[is.na(isdown)] <- FALSE
@@ -625,7 +626,7 @@ coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL)
 #' @examples
 #' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
 #' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
@@ -643,7 +644,7 @@ is_sig <- function(
     assert_is_character(fit)
     assert_is_subset(fit, fits(object))
     if (is.character(contrast))  for (fi in fit){
-        assert_is_subset(contrast, coefs(object, fit=fi)) }
+        assert_is_subset(contrast, coefs(object, fit = fi)) }
 # Run across models
     res <-  mapply(.is_sig, fit, 
                     MoreArgs = list(object = object, contrast = contrast, quantity = quantity),
