@@ -115,24 +115,33 @@ save_opentargets_targets <- function(){
 }
 
 #' Add opentargets annotations
-#' @param object SummarizedExperiment
+#' @param object   SummarizedExperiment
+#' @param cols     character vector
+#' @param verbose  TRUE or FALSE
 #' @return  SummarizedExperiment
 #' @examples 
 #' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% add_opentargets_by_uniprot()
 #' @export
-add_opentargets_by_uniprot <- function(object){
-    
+add_opentargets_by_uniprot <- function(
+    object, cols = c('genesymbol', 'genename', 'function'), verbose = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+# Read
     file <- file.path(OPENTARGETSDIR, 'targets.tsv')
-    targetsdt <- fread(file, select = c('uniprot', 'genesymbol', 'genename', 'function'))
+    if (verbose)  cmessage('\tAdd opentargets annotations')
+    if (verbose)  cmessage('\t\tRead %s', file)
+    if (verbose)  cmessage('\t\tAdd %s', paste0(cols, collapse = '/'))
+    targetsdt <- fread(file, select = c('uniprot', cols))
     targetsdt %<>% unique()
     targetsdt %<>% separate_rows(uniprot)
     targetsdt %<>% data.table()
     targetsdt %<>% extract(uniprot != '')
     targetsdt %<>% unique()
     targetsdt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = 'uniprot')
-
+# Add
     idvar <- if ('fosId' %in% fvars(object)) 'fosId' else 'proId'
     fdt0 <- fdt(object)[, c(idvar, 'canonical'), with = FALSE]
     fdt0 %<>% separate_rows(canonical)
@@ -141,6 +150,7 @@ add_opentargets_by_uniprot <- function(object){
     fdt0[, canonical := NULL]
     fdt0 %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idvar)
     object %<>% merge_fdt(fdt0, by.x = idvar, by.y = idvar)
+# Return
     object    
 }
 

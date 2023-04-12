@@ -4,10 +4,18 @@
 \alias{add_opentargets_by_uniprot}
 \title{Add opentargets annotations}
 \usage{
-add_opentargets_by_uniprot(object)
+add_opentargets_by_uniprot(
+  object,
+  cols = c("genesymbol", "genename", "function"),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{cols}{character vector}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 SummarizedExperiment
