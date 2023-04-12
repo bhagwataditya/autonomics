@@ -5,19 +5,6 @@
 #
 #==============================================================================
 
-melt_contrastdefs <- function(contrastdefmat){
-    facetrow <- NULL
-    contrastdefdt <- data.table(contrastdefmat, facetrow = "")
-    if (!is.null(rownames(contrastdefmat))) contrastdefdt[,
-                                        facetrow := rownames(contrastdefmat)]
-    melt.data.table(
-        contrastdefdt,
-        id.vars       = 'facetrow',
-        variable.name = 'facetcol',
-        value.name    = 'contrast', by = 'contrast')
-}
-
-
 default_coefs <- function(object, fit = fits(object)){
     if (length(fit)==0) return(NULL)    # none
     y <- autonomics::coefs(object, fit = fit)   # intercept
