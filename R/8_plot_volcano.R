@@ -5,8 +5,6 @@
 #
 #==============================================================================
 
-invwhich <- function(indices, totlength) is.element(seq_len(totlength), indices)
-
 melt_contrastdefs <- function(contrastdefmat){
     facetrow <- NULL
     contrastdefdt <- data.table(contrastdefmat, facetrow = "")
