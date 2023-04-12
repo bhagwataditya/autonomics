@@ -104,13 +104,16 @@ add_assay_means <- function(
 #' @return SummarizedExperiment
 #' @export
 add_adjusted_pvalues <- function(
-    object, method, fit = fits(object)[1], coefs = default_coefs(object, fit)[1]
+    object, 
+    method, 
+    fit   = fits(object)[1], 
+    coefs = default_coefs(object, fit)[1]
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(fit, fits(object))
-    assert_is_subset(coefs, autonomics::coefs(object, fit))
     assert_is_subset(method, stats::p.adjust.methods)
+    assert_is_subset(fit,   fits(object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
 # Compute
     for (.fit  in fit){
     for (.coef in coefs){

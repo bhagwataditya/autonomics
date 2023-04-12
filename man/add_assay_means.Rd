@@ -10,6 +10,8 @@ add_assay_means(object, assay = assayNames(object)[1], bin = TRUE)
 \item{object}{SummarizedExperiment or NULL}
 
 \item{assay}{string}
+
+\item{bin}{TRUE or FALSE}
 }
 \value{
 SummarizedExperiment
