@@ -18,9 +18,8 @@ plot_volcano(
   nrow = length(fit),
   p = 0.05,
   fdr = 0.05,
-  xlabel = 0,
-  xdown = NULL,
-  xup = NULL,
+  xndown = NULL,
+  xnup = NULL,
   title = NULL
 )
 }
@@ -51,11 +50,9 @@ plot_volcano(
 
 \item{fdr}{number: fdr cutoff for labeling}
 
-\item{xlabel}{x axis position of label}
+\item{xndown}{x position of ndown labels}
 
-\item{xdown}{x axis position of downregulations}
-
-\item{xup}{x axis position of upregulations}
+\item{xnup}{x position of nup labels}
 
 \item{title}{string or NULL}
 }

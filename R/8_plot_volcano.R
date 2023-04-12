@@ -194,23 +194,22 @@ make_volcano_dt <- function(
     
 
 #' Plot volcano
-#' @param object    SummarizedExperiment
-#' @param fit      'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coefs     character vector
-#' @param facet     character vector
-#' @param shape     fvar  (string)
-#' @param size      fvar  (string)
-#' @param alpha     fvar  (string)
-#' @param label     fvar  (string)
-#' @param max.overlaps  number: passed to ggrepel
-#' @param features  feature ids (character vector): features to encircle 
-#' @param nrow      number: no of rows in plot
-#' @param p         number: p cutoff for labeling
-#' @param fdr       number: fdr cutoff for labeling
-#' @param xlabel    x axis position of label
-#' @param xdown     x axis position of downregulations
-#' @param xup       x axis position of upregulations
-#' @param title     string or NULL
+#' @param object         SummarizedExperiment
+#' @param fit           'limma', 'lme', 'lm', 'wilcoxon'
+#' @param coefs          character vector
+#' @param facet          character vector
+#' @param shape          fvar  (string)
+#' @param size           fvar  (string)
+#' @param alpha          fvar  (string)
+#' @param label          fvar  (string)
+#' @param max.overlaps   number: passed to ggrepel
+#' @param features       feature ids (character vector): features to encircle 
+#' @param nrow           number: no of rows in plot
+#' @param p              number: p cutoff for labeling
+#' @param fdr            number: fdr cutoff for labeling
+#' @param xndown         x position of ndown labels
+#' @param xnup           x position of nup labels
+#' @param title          string or NULL
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -233,22 +232,22 @@ make_volcano_dt <- function(
 #' @export
 plot_volcano <- function(
     object,
-    fit          = fits(object)[1], 
-    coefs        = default_coefs(object, fit)[1],
-    facet        = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
-    shape        = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
-    size         = NULL,
-    alpha        = NULL,
-    label        = if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
-    max.overlaps = 10,
-    features     = NULL,
-    nrow         = length(fit),
-    p            = 0.05, 
-    fdr          = 0.05,
-    xlabel       = 0,
-    xdown        = NULL,
-    xup          = NULL,
-    title        = NULL
+    fit           = fits(object)[1], 
+    coefs         = default_coefs(object, fit)[1],
+    facet         = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
+    shape         = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
+    size          = NULL,
+    alpha         = NULL,
+    label         = if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
+    max.overlaps  = 10,
+    features      = NULL,
+    nrow          = length(fit),
+    p             = 0.05, 
+    fdr           = 0.05,
+  # xsignificance = 0,
+    xndown        = NULL,
+    xnup          = NULL,
+    title         = NULL
 ){
 # Assert
     assert_is_a_number(nrow)
@@ -274,19 +273,20 @@ plot_volcano <- function(
     if (!is.null(size))   g <- g + scale_size_manual( values = 1:3)
     if (!is.null(alpha))  g <- g + scale_alpha_manual(values = c(0.3, 0.5, 1))
 # Significance lines
-    if (is.null(xdown))  xdown <- min(plotdt$effect)
-    if (is.null(xup  ))  xup   <- max(plotdt$effect)
+    if (is.null(xndown))  xndown <- min(plotdt$effect)
+    if (is.null(xnup  ))  xnup   <- max(plotdt$effect)
     dy <- 0.03*(max(plotdt$mlp) - min(plotdt$mlp))
     minn <- function(x) if (length(x)==0) return(Inf) else min(x, na.rm = TRUE) 
         # Avoid warning 'no non-missing arguments to min; returning Inf'
     summarydt <- plotdt[, 
-        .(  label      = c('p = 0.05',                 'fdr = 0.05',                 'bon = 0.05'),
-            yintercept = c( minn(mlp[p<0.05]),          minn(mlp[fdr<0.05]),          minn(mlp[bon<0.05])),
-            down       = c( sum(p <0.05 & effect < 0),  sum(fdr <0.05 & effect < 0),  sum(bon <0.05 & effect < 0)),
-            up         = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))),
+        .(  significance = c('p = 0.05',                 'fdr = 0.05',                 'bon = 0.05'),
+            yintercept   = c( minn(mlp[p<0.05]),          minn(mlp[fdr<0.05]),          minn(mlp[bon<0.05])),
+            ndown        = c( sum(p <0.05 & effect < 0),  sum(fdr <0.05 & effect < 0),  sum(bon <0.05 & effect < 0)),
+            nup          = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))),
         by = c('fit', 'coef')  ]
     summarydt %<>% extract(!is.infinite(yintercept))
-    g <- g + geom_hline(data = summarydt, mapping = aes(yintercept = yintercept), color = 'gray30', linetype = 'longdash')
+    g <- g + geom_hline(data = summarydt, mapping = aes(yintercept = yintercept, linetype = significance), color = 'gray30')
+    g <- g + ggplot2::scale_linetype_manual(values = c(`p = 0.05` = 1, `fdr = 0.05` = 2, `bon = 0.05` = 3))
     do_geom_label <- function(mapping, label.size){  
                         geom_label(data       = summarydt, 
                                    mapping    = mapping, 
@@ -294,9 +294,9 @@ plot_volcano <- function(
                                    hjust      = 0.5, 
                                    fill       = alpha(c('white'), 0.6), 
                                    color      = 'gray30')  }
-    g <- g + do_geom_label(mapping = aes(x = xlabel,  y = yintercept,      label = label), label.size = 0.5)
-    g <- g + do_geom_label(mapping = aes(x = xdown,   y = yintercept + dy, label = down ), label.size = NA)
-    g <- g + do_geom_label(mapping = aes(x = xup,     y = yintercept + dy, label = up   ), label.size = NA)
+  # g <- g + do_geom_label(mapping = aes(x = xsignificance, y = yintercept,      label = significance), label.size = 0.5)
+    g <- g + do_geom_label(mapping = aes(x = xndown,        y = yintercept + dy, label = ndown       ), label.size = NA)
+    g <- g + do_geom_label(mapping = aes(x = xnup,          y = yintercept + dy, label = nup         ), label.size = NA)
     g <- g + guides(color = 'none')
 # Labels
     if (!is.null(label)){
