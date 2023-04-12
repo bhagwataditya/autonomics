@@ -336,7 +336,7 @@ plot_volcano <- function(
 #' object <- read_maxquant_proteingroups(file)
 #' x <- fdt(object)$uniprot
 #' patterns <- c('A0A2R8Q0N1', 'Q5PQZ7')
-#' stri_detect_fixed_in_collapsed(x = x, patterns = patterns, sep = ';')
+#' table(stri_detect_fixed_in_collapsed(x = x, patterns = patterns, sep = ';'))
 #' @export
 stri_detect_fixed_in_collapsed <- function(x, patterns, sep){
 # Assert
@@ -366,7 +366,12 @@ stri_detect_fixed_in_collapsed <- function(x, patterns, sep){
 #' object <- read_maxquant_proteingroups(file)
 #' map_fvalues(object, c('A0A2R8Q0N1', 'Q5PQZ7'), from = 'uniprot', to = 'feature_id', sep = ';')
 #' @export
-map_fvalues <- function(object, fvalues = c('A0A2R8Q0N1', 'Q5PQZ7'), from = 'uniprot', to = 'feature_id', sep = ';'){
+map_fvalues <- function(
+    object, 
+    fvalues, 
+    from    = 'uniprot', 
+    to      = 'feature_id', 
+    sep     = ';'){
 # Assert 
     assert_is_valid_sumexp(object)
     assert_is_character(fvalues)

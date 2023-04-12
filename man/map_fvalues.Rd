@@ -4,13 +4,7 @@
 \alias{map_fvalues}
 \title{Map fvalues}
 \usage{
-map_fvalues(
-  object,
-  fvalues = c("A0A2R8Q0N1", "Q5PQZ7"),
-  from = "uniprot",
-  to = "feature_id",
-  sep = ";"
-)
+map_fvalues(object, fvalues, from = "uniprot", to = "feature_id", sep = ";")
 }
 \arguments{
 \item{object}{SummarizedExperiment}
