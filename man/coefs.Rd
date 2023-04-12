@@ -4,7 +4,7 @@
 \alias{coefs}
 \alias{coefs.factor}
 \alias{coefs.SummarizedExperiment}
-\title{Get coef names}
+\title{Get coefs}
 \usage{
 coefs(x, ...)
 
@@ -17,13 +17,13 @@ coefs(x, ...)
 
 \item{fit}{string: 'limma', 'lm', 'lme', 'lmer'}
 
-\item{svars}{NULL/charactervec : retain only coefs relevant for this svar}
+\item{svars}{NULL or charactervector (svar for which to return coefs)}
 }
 \value{
 character vector
 }
 \description{
-Get coef names
+Get coefs
 }
 \examples{
 # Factor
@@ -35,6 +35,6 @@ Get coef names
 # SummarizedExperiment
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, fit='limma', plot=FALSE)
+    object <- read_metabolon(file, fit = 'limma')
     coefs(object)
 }

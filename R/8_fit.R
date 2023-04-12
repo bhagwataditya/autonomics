@@ -436,7 +436,7 @@ fdrvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
     if (length(x) == 0)  x <- NULL         # `limma(contrasts)` mostly without intercept
-    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
+    x   # NULL[1] and c('a', NULL) work!   #        `lm(coefs)` mostly with    intercept
 }                   
 
 #' @rdname pmat
@@ -462,8 +462,8 @@ bonvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
     x <- expand.grid(var = 'bonferroni', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
-    if (length(x)==0)  x <-NULL            # `limma(contrasts)` mostly without intercept
-    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs = .)`mostly with intercept
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `   lm(coefs)`     mostly with    intercept
 }                   
 
 #' @rdname pmat
@@ -547,9 +547,8 @@ sign.SummarizedExperimentz <- function(...){
 #' @param object SummarizedExperiment
 #' @return  character vector
 #' @examples 
-#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit='limma', plot=FALSE)
+#' object <- read_metabolon(file, fit = 'limma')
 #' fits(object)
 #' @export
 fits <- function(object){
@@ -560,11 +559,11 @@ fits <- function(object){
     x
 }
 
-#' Get coef names
+#' Get coefs
 #' 
 #' @param object  SummarizedExperiment
 #' @param fit     string: 'limma', 'lm', 'lme', 'lmer'
-#' @param svars   NULL/charactervec : retain only coefs relevant for this svar
+#' @param svars   NULL or charactervector (svar for which to return coefs)
 #' @return  character vector
 #' @examples
 #' # Factor
@@ -576,7 +575,7 @@ fits <- function(object){
 #' # SummarizedExperiment
 #'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
-#'     object <- read_metabolon(file, fit='limma', plot=FALSE)
+#'     object <- read_metabolon(file, fit = 'limma')
 #'     coefs(object)
 #' @export
 coefs <- function(x, ...)  UseMethod('coefs')
