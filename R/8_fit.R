@@ -274,19 +274,23 @@ subgroup_array <- function(object, subgroupvar){
 #' @return matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' subgroup_matrix(object, 'Group')
+#' object <- read_metabolon(file)
+#' subgroup_matrix(object, 'subgroup')
 #' @export
 subgroup_matrix <- function(object, subgroupvar){
     . <- NULL
     subgroup_array <- subgroup_array(object, subgroupvar)
-    if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
-        byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
+    if (length(dim(subgroup_array)) == 1){
+        return(matrix(subgroup_array, 
+                      byrow = TRUE, 
+                      nrow = 1, 
+                      dimnames = list(NULL, subgroup_array)))  
+    }
     otherdims <- names(dim(subgroup_array)) %>% setdiff('V1')
     ncol1   <- Reduce('*', dim(subgroup_array)[otherdims])
     colnames1 <- dimnames(subgroup_array)[otherdims] %>%
-                expand.grid()                        %>%
-                apply(1, paste0, collapse='.')
+                 expand.grid()                       %>%
+                 apply(1, paste0, collapse = '.')
     subgroupmat <- matrix(subgroup_array,
                         nrow = nrow(subgroup_array), ncol = ncol1,
                         dimnames=list(rownames(subgroup_array), colnames1))
