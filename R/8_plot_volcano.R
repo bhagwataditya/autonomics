@@ -2,33 +2,10 @@
 #
 #          plot_volcano
 #              make_volcano_dt
-#                  top_down/top_up
-#                      nmax/nmin
 #
 #==============================================================================
 
 invwhich <- function(indices, totlength) is.element(seq_len(totlength), indices)
-
-#' Return nth max (min) value in vector
-#'
-#' Orders a vector and returns n'th ordered value.
-#' When vector length is smaller than n, returns last value.
-#'
-#' @param x numeric vector
-#' @param n integer
-#' @return value
-#' @examples
-#' nmax(c(1,2,3,4,5), 2)
-#' nmin(c(1,2,3,4,5), 2)
-#' @noRd
-nmax <- function(x, n){
-    . <- NULL
-    sort(x, decreasing = TRUE) %>% extract(min(length(.), n))
-}
-nmin <- function(x, n){
-    . <- NULL
-    sort(x) %>% extract(min(length(.), n))
-}
 
 melt_contrastdefs <- function(contrastdefmat){
     facetrow <- NULL
