@@ -12,7 +12,7 @@ plot_volcano(
   shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
   size = NULL,
   alpha = NULL,
-  label = "feature_id",
+  label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
   max.overlaps = 10,
   features = NULL,
   nrow = length(fit),
@@ -20,7 +20,8 @@ plot_volcano(
   fdr = 0.05,
   xlabel = 0,
   xdown = NULL,
-  xup = NULL
+  xup = NULL,
+  title = NULL
 )
 }
 \arguments{
@@ -30,25 +31,33 @@ plot_volcano(
 
 \item{coefs}{character vector}
 
-\item{facet}{svars mapped to facet}
+\item{facet}{character vector}
 
-\item{shape}{shape fvar (string)}
+\item{shape}{fvar  (string)}
 
-\item{size}{size  fvar (string)}
+\item{size}{fvar  (string)}
 
-\item{alpha}{alpha fvar (string)}
+\item{alpha}{fvar  (string)}
 
-\item{label}{label fvar (string)}
+\item{label}{fvar  (string)}
 
 \item{max.overlaps}{number: passed to ggrepel}
 
-\item{features}{character vector: features to plot}
+\item{features}{feature ids (character vector): features to encircle}
 
 \item{nrow}{number: no of rows in plot}
 
 \item{p}{number: p cutoff for labeling}
 
 \item{fdr}{number: fdr cutoff for labeling}
+
+\item{xlabel}{x axis position of label}
+
+\item{xdown}{x axis position of downregulations}
+
+\item{xup}{x axis position of upregulations}
+
+\item{title}{string or NULL}
 }
 \value{
 ggplot object
@@ -72,6 +81,6 @@ file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, impute = TRUE, fit = 'limma')
 plot_volcano(object, coefs = c('t1', 't2', 't3'))
 object \%<>\% fit_lm(subgroupvar = 'SET')
-plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
-plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
+plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow = 2)
+plot_volcano(object, coefs = c('t1', 't2', 't3'), fit = 'lm')
 }

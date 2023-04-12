@@ -131,16 +131,24 @@ add_adjusted_pvalues <- function(
 #' Create volcano datatable
 #' @param object  SummarizedExperiment
 #' @param fit    'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coefs    character vector: coefs for which to plot volcanoes
+#' @param coefs   character vector: coefs for which to plot volcanoes
+#' @param shape   fvar or NULL
+#' @param size    fvar or NULL
+#' @param alpha   fvar or NULL
+#' @param label   fvar or NULL
 #' @return data.table
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
+#' object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma')
 #' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 #' @export
 make_volcano_dt <- function(
-    object, fit = fits(object)[1], coefs = default_coefs(object, fit = fit)[1],
-    shape = 'imputed', size = NULL, alpha = NULL,
+    object, 
+    fit   = fits(object)[1], 
+    coefs = default_coefs(object, fit = fit)[1],
+    shape = 'imputed', 
+    size  = NULL, 
+    alpha = NULL,
     label = 'feature_id'
 ){
 # Assert    
@@ -180,6 +188,7 @@ make_volcano_dt <- function(
     dt[p>0.05, direction := 'unchanged']
     dt[p<=0.05 & effect>0, direction := 'up']
     dt[p<=0.05 & effect<0, direction := 'down']
+    dt[]
 }
 
     
@@ -187,17 +196,21 @@ make_volcano_dt <- function(
 #' Plot volcano
 #' @param object    SummarizedExperiment
 #' @param fit      'limma', 'lme', 'lm', 'wilcoxon'
-#' @param coefs      character vector
-#' @param facet     svars mapped to facet
-#' @param label     label fvar (string)
-#' @param shape     shape fvar (string)
-#' @param size      size  fvar (string)
-#' @param alpha     alpha fvar (string)
+#' @param coefs     character vector
+#' @param facet     character vector
+#' @param shape     fvar  (string)
+#' @param size      fvar  (string)
+#' @param alpha     fvar  (string)
+#' @param label     fvar  (string)
 #' @param max.overlaps  number: passed to ggrepel
-#' @param features  character vector: features to plot 
+#' @param features  feature ids (character vector): features to encircle 
 #' @param nrow      number: no of rows in plot
 #' @param p         number: p cutoff for labeling
 #' @param fdr       number: fdr cutoff for labeling
+#' @param xlabel    x axis position of label
+#' @param xdown     x axis position of downregulations
+#' @param xup       x axis position of upregulations
+#' @param title     string or NULL
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -215,26 +228,27 @@ make_volcano_dt <- function(
 #' object <- read_metabolon(file, impute = TRUE, fit = 'limma')
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'))
 #' object %<>% fit_lm(subgroupvar = 'SET')
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow=2)
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit='lm')
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow = 2)
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit = 'lm')
 #' @export
 plot_volcano <- function(
     object,
-    fit   = fits(object)[1], 
-    coefs = default_coefs(object, fit)[1],
-    facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
-    shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
-    size  = NULL,
-    alpha = NULL,
-    label = 'feature_id', 
+    fit          = fits(object)[1], 
+    coefs        = default_coefs(object, fit)[1],
+    facet        = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
+    shape        = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
+    size         = NULL,
+    alpha        = NULL,
+    label        = if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
     max.overlaps = 10,
-    features  = NULL,
-    nrow  = length(fit),
-    p   = 0.05, 
-    fdr = 0.05,
-    xlabel = 0,
-    xdown  = NULL,
-    xup    = NULL
+    features     = NULL,
+    nrow         = length(fit),
+    p            = 0.05, 
+    fdr          = 0.05,
+    xlabel       = 0,
+    xdown        = NULL,
+    xup          = NULL,
+    title        = NULL
 ){
 # Assert
     assert_is_a_number(nrow)
@@ -246,7 +260,7 @@ plot_volcano <- function(
                   label = label, shape = shape, size = size, alpha = alpha)
     g <- ggplot(plotdt) + facet_wrap(facet, nrow = nrow)
     g <- g + theme_bw() + theme(panel.grid = element_blank())
-    g <- g + xlab('log2(FC)') + ylab('-log10(p)') + ggtitle('volcano')
+    g <- g + xlab('log2(FC)') + ylab('-log10(p)') + ggtitle(title)
     shapesym <- if (is.null(shape))  quo(NULL) else sym(shape)
     sizesym  <- if (is.null(size))   quo(NULL) else sym(size)
     alphasym <- if (is.null(alpha))  quo(NULL) else sym(alpha)

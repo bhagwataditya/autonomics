@@ -20,6 +20,14 @@ make_volcano_dt(
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
 \item{coefs}{character vector: coefs for which to plot volcanoes}
+
+\item{shape}{fvar or NULL}
+
+\item{size}{fvar or NULL}
+
+\item{alpha}{fvar or NULL}
+
+\item{label}{fvar or NULL}
 }
 \value{
 data.table
@@ -29,6 +37,6 @@ Create volcano datatable
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma', plot = FALSE)
+object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma')
 make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 }
