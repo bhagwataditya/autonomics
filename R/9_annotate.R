@@ -39,7 +39,7 @@ tag_hdlproteins <- function(object, verbose = TRUE){
     fdt0$hdl %<>% as.numeric()
     object %<>% merge_fdt(fdt0)
     if (verbose)  message(sprintf(
-        '%d/%d HDL groups, %d/%d HDLProteomeWatch proteins', 
+        '\tAdd fdt(object)$hdl : %d/%d HDL proteingroups, %d/%d HDLProteomeWatch proteins', 
         sum(fdt(object)$hdl), 
         nrow(object), 
         length(intersect(fdt(object)[hdl==1, protein], hdlproteins)),
