@@ -313,7 +313,8 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' # Sample distributions
 #'     plot_sample_densities(object)
 #'     plot_sample_violins(  object, facet = 'SET')
-#'     boxplot_samples( object, facet = 'SET')
+#'     plot_exprs(object)
+#'     plot_exprs(object, dim = 'samples', x = 'subgroup', facet = 'SET')
 #'     
 #' # Feature distributions
 #'     plot_feature_densities(object)
@@ -1289,6 +1290,7 @@ plot_exprs_per_coef <- function(
 
 
 default_x <- function(fit, coefs){
+    if (is.null(fit))  return('subgroup')
     y <- coefs
     idx <- grepl('(limma|lm|lme|lmer|wilcoxon)', fit)
     y[idx] <- 'subgroup'

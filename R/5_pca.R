@@ -601,7 +601,7 @@ biplot <- function(
     nloadings     = 0,
     colorpalette  =  make_svar_palette(object, color),
     alphapalette  = make_alpha_palette(object, alpha), 
-    title         = sprintf('%s~%s', by, method), 
+    title         = sprintf('%s~%s', method, by), 
     theme         = ggplot2::theme(plot.title = element_text(hjust = 0.5), 
                                    panel.grid = element_blank())
 ){

@@ -97,7 +97,8 @@ Plot sample/feature distributions
 # Sample distributions
     plot_sample_densities(object)
     plot_sample_violins(  object, facet = 'SET')
-    boxplot_samples( object, facet = 'SET')
+    plot_exprs(object)
+    plot_exprs(object, dim = 'samples', x = 'subgroup', facet = 'SET')
     
 # Feature distributions
     plot_feature_densities(object)
