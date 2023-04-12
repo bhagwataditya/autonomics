@@ -17,7 +17,7 @@
 #' @param y numeric scalar
 #' @return logical vector
 #' @examples
-#' x <- c(A=1,B=3,C=2,D=3, E=NA)
+#' x <- c(A = 1, B = 3, C = 2, D = 3, E = NA)
 #' y <- 3
 #' cequals(x, y)
 #' @noRd
@@ -38,7 +38,7 @@ cequals <- function(x,y){
 #' @param x numeric vector
 #' @return logical vector
 #' @examples
-#' x <- c(A=1,B=3,C=2,D=3, E=NA)
+#' x <- c(A = 1,B = 3,C = 2,D = 3, E = NA)
 #' is_max(x)
 #' @noRd
 is_max <- function(x) cequals(x, max(x, na.rm = TRUE))
@@ -62,23 +62,13 @@ has_identical_values <- function(x) length(unique(x))==1
 #' @return separator (string) or NULL (if no separator could be identified)
 #' @examples
 #' # charactervector
-#'    x <- c('PERM_NON.R1[H/L]', 'PERM_NON.R2[H/L]', 'PERM_NON.R3[H/L]')
-#'    guess_sep(x)
-#'
-#'    x <- c('WT untreated 1', 'WT untreated 2', 'WT treated 1')
-#'    guess_sep(x)
-#'
-#'    x <- c('group1', 'group2', 'group3.R1')
-#'    guess_sep(x)
-#'
+#'    guess_sep(c('PERM_NON.R1[H/L]', 'PERM_NON.R2[H/L]'))
+#'    guess_sep(c('WT_untreated_1', 'WT_untreated_2'))
+#'    guess_sep(c('group1', 'group2.R1'))
 #' # SummarizedExperiment
-#'    # file <- download_data('halama18.metabolon.xlsx')
-#'    # object <- read_metabolon(file, plot=FALSE)
-#'    # guess_sep(object)
-#'
-#'    # file <- download_data('billing16.proteingroups.txt')
-#'    # object <- read_maxquant_proteingroups(file, plot = FALSE)
-#'    # guess_sep(object)
+#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    object <- read_metabolon(file)
+#'    guess_sep(object)
 #' @export
 guess_sep <- function (x, ...)  UseMethod("guess_sep", x)
 

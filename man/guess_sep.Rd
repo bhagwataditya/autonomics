@@ -37,21 +37,11 @@ Guess separator
 }
 \examples{
 # charactervector
-   x <- c('PERM_NON.R1[H/L]', 'PERM_NON.R2[H/L]', 'PERM_NON.R3[H/L]')
-   guess_sep(x)
-
-   x <- c('WT untreated 1', 'WT untreated 2', 'WT treated 1')
-   guess_sep(x)
-
-   x <- c('group1', 'group2', 'group3.R1')
-   guess_sep(x)
-
+   guess_sep(c('PERM_NON.R1[H/L]', 'PERM_NON.R2[H/L]'))
+   guess_sep(c('WT_untreated_1', 'WT_untreated_2'))
+   guess_sep(c('group1', 'group2.R1'))
 # SummarizedExperiment
-   # file <- download_data('halama18.metabolon.xlsx')
-   # object <- read_metabolon(file, plot=FALSE)
-   # guess_sep(object)
-
-   # file <- download_data('billing16.proteingroups.txt')
-   # object <- read_maxquant_proteingroups(file, plot = FALSE)
-   # guess_sep(object)
+   file <- download_data('atkin18.metabolon.xlsx')
+   object <- read_metabolon(file)
+   guess_sep(object)
 }
