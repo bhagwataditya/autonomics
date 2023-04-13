@@ -10,8 +10,8 @@ fit_limma(
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = NULL,
-  design = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
+  coding = "treatment",
+  design = create_design(object, formula = formula, drop = drop, coding = coding),
   contrasts = NULL,
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
@@ -25,11 +25,11 @@ fit_limma(
 
 .fit_limma(
   object,
-  contrasts = NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = NULL,
-  design = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
+  coding = "treatment",
+  design = create_design(object, formula = formula, drop = drop, coding = coding),
+  contrasts = NULL,
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
@@ -43,12 +43,13 @@ fit_limma(
 fit_wilcoxon(
   object,
   formula = default_formula(object),
-  subgroupvar = all_vars(x)[1],
+  subgroupvar = all_vars(formula)[1],
   contrasts = sprintf("\%s-\%s", slevels(object, subgroupvar)[-1], slevels(object,
     subgroupvar)[1]),
   coefs = NULL,
   block = NULL,
   weightvar = NULL,
+  statvars = c("effect", "p", "fdr"),
   verbose = TRUE,
   plot = FALSE
 )
@@ -60,7 +61,8 @@ fit_wilcoxon(
 
 \item{drop}{TRUE or FALSE}
 
-\item{contr.fun}{contrast coding function}
+\item{coding}{factor coding system: 'treatment', 'reference', 'difference', 
+'grandref',  'granddiff', 'sum', 'helmert'}
 
 \item{design}{design matrix}
 
@@ -104,9 +106,9 @@ Fit model and test for differential expression
     object \%<>\% fit_lmer(      ~ subgroup, block = 'SUB')  # more powerful random effects
     
 # Intuitive : alternative coding
-    object \%<>\% fit_lme(       ~ subgroup, block = 'SUB', contr.fun = contr.ref)
-    object \%<>\% fit_lmer(      ~ subgroup, block = 'SUB', contr.fun = contr.ref)
-    object \%<>\% fit_limma(     ~ subgroup, block = 'SUB', contr.fun = contr.ref)
+    object \%<>\% fit_lme(       ~ subgroup, block = 'SUB', coding = 'reference')
+    object \%<>\% fit_lmer(      ~ subgroup, block = 'SUB', coding = 'reference')
+    object \%<>\% fit_limma(     ~ subgroup, block = 'SUB', coding = 'reference')
     
 # Flexible : limma contrasts
     object \%<>\% fit_limma( ~ 0 + subgroup, block = 'SUB', contrasts = c('t1-t0'))

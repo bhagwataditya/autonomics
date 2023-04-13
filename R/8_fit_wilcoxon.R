@@ -86,28 +86,33 @@ all_vars <- function(x){
 #' @rdname fit_limma
 fit_wilcoxon <- function(
     object,
-    formula      =  default_formula(object), 
-    subgroupvar  = all_vars(x)[1],
-    contrasts    = sprintf('%s-%s', slevels(object, subgroupvar)[-1], 
-                                    slevels(object, subgroupvar)[ 1]),
-    coefs        = NULL, 
-    block        = NULL, 
-    weightvar    = NULL, 
-    verbose      = TRUE, 
-    plot         = FALSE
+    formula     = default_formula(object), 
+    subgroupvar = all_vars(formula)[1],
+    contrasts   = sprintf('%s-%s', slevels(object, subgroupvar)[-1], 
+                                   slevels(object, subgroupvar)[ 1]),
+    coefs       = NULL, 
+    block       = NULL, 
+    weightvar   = NULL, 
+    statvars    = c('effect', 'p', 'fdr'),
+    verbose     = TRUE, 
+    plot        = FALSE
 ){
 # assert
-    assert_is_identical_to_false(
-        has_consistent_nondetects(object, subgroupvar))
+    assert_is_valid_sumexp(object)
+    assert_is_formula(formula)
+    assert_scalar_subset(all.vars(formula), svars(object))
+    assert_is_character(contrasts)
+    if (!is.null(block))      assert_is_subset(block, svars(object))
+    obj <- object
+    obj %<>% rm_consistent_nondetects(formula, verbose = verbose)
 # fit
     . <- NULL
-    dt <- sumexp_to_longdt(object, svars = c(subgroupvar, block))
+    dt <- sumexp_to_longdt(obj, svars = c(subgroupvar, block))
     if (verbose)  message('\t\tWilcoxon')
-    fitres <- lapply(vectorize_contrasts(contrasts), .wilcoxon, 
-                    dt, subgroupvar, block, verbose)
-    fitres %<>% Reduce(function(x,y)  merge(x,y, by = 'feature_id', all = TRUE), .)
-    fitres %<>% merge(data.table(fdata(object))[, 'feature_id', drop = FALSE], 
-                        ., by = 'feature_id', all.x = TRUE)
+    fitres <- lapply(vectorize_contrasts(contrasts), .wilcoxon, dt, subgroupvar, block, verbose)
+    fitres %<>% Reduce(function(x, y)  merge(x, y, by = 'feature_id', all = TRUE), .)
+    pattern <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
+    fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
     fitres %<>% add_fdr()
     object %<>% reset_fit('wilcoxon')
     object %<>% merge_fit(fitres, fit = 'wilcoxon')

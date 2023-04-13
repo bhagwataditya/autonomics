@@ -499,12 +499,12 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
     # Rm duplicate cols: https://stackoverflow.com/questions/9202413
         duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
         for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
-    # Ensure character class for merge column
-        for (byx in by.x)  objectdt[[byx]] %<>% as.character()  # having one of these as a factor
-        for (byy in by.y)        dt[[byy]] %<>% as.character()  # leads to a horrible bug!
+    # Ensure character class for merge column - one being factor means horrible bug!
+    # Dont use dt[[byy]] : class not updated properly resulting in many NA when merging!
+        for (byx in by.x)  objectdt[, (byx) := as.character(get(byx)) ]
+        for (byy in by.y)        dt[, (byy) := as.character(get(byy)) ]
 # Merge
-    objectdt %<>% merge.data.table(
-                   dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
+    objectdt %<>% merge.data.table(dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
     objectdt
 }
 

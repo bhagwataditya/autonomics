@@ -4,34 +4,41 @@
 \alias{code}
 \alias{code.factor}
 \alias{code.data.table}
-\alias{contr.ref}
-\alias{contr.ref.grand}
-\alias{contr.dif}
-\alias{contr.dif.grand}
-\alias{contr.sum.grand}
-\alias{contr.helmert.grand}
+\alias{code_reference}
+\alias{code_grandref}
+\alias{code_difference}
+\alias{code_granddiff}
+\alias{code_sum}
+\alias{code_helmert}
 \title{Contrast Code Factor}
 \usage{
 code(object, ...)
 
-\method{code}{factor}(object, contr.fun, verbose = TRUE, ...)
+\method{code}{factor}(object, coding, verbose = TRUE, ...)
 
-\method{code}{data.table}(object, contr.fun, vars = names(object), verbose = TRUE, ...)
+\method{code}{data.table}(object, coding, vars = names(object), verbose = TRUE, ...)
 
-contr.ref(n)
+code_reference(n)
 
-contr.ref.grand(n)
+code_grandref(n)
 
-contr.dif(n)
+code_difference(n)
 
-contr.dif.grand(n)
+code_granddiff(n)
 
-contr.sum.grand(n)
+code_sum(n)
 
-contr.helmert.grand(n)
+code_helmert(n)
 }
 \arguments{
-\item{contr.fun}{contrast coding function: contr.treatment, contr.sum, contr.helmert}
+\item{coding}{coding system \cr
+'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
+'reference'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
+'difference' :  coef = level -  prevlevel, intercept = firstlevel, epxlicit coefnames (t2-t1) \cr
+'grandref'   :  coef = level - firstlevel, intercept = grandmean   \cr
+'granddiff'  :  coef = level -  prevlevel, intercept = grandmean   \cr
+'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
+'helmert'    :  coef = level - prevlevels, intercept = grandmean   \cr}
 
 \item{verbose}{TRUE or FALSE}
 
@@ -58,48 +65,34 @@ A General Linear Model contains:                                                
        They also reflect the intercept interpretation (either first factor's first level or grand mean).
        They all produce intuitive coefficient names (e.g. 't1-t0' rather than just 't1').
        They all have unit scaling (a coefficient of 1 means a difference of 1).
-       
-The following contrast coding functions are available:
-    1) Treatment contrasts:      contrast  coefficient = difference to first level
-           `contr.ref`   intercept coefficient = first level of first factor
-           `contr.ref.grand`   intercept coefficient = grand mean
-            
-    2) Difference contrasts:     contrast  coefficient = difference to previous level
-           `contr.dif`    intercept coefficient = first level of first factor
-           `contr.dif.grand`    intercept coefficient = grand mean
-           
-    3) Sum contrasts :           contrast  coefficient = difference to grand mean
-           `contr.sum.grand`     intercept coefficient = grand mean
-           
-    4) Helmert contrasts:        contrast  coefficient = difference to helmert mean (i.e. the mean of the previous levels)
-           `contr.helmert.grand` intercept coefficient = grand mean
 }
 \examples{
-# Contrast codings
+# Coding functions
     x <- factor(paste0('t', 0:3))
-    contr.ref(  levels(x))
-    contr.ref.grand(  levels(x))
-    contr.dif(   levels(x))
-    contr.dif.grand(   levels(x))
-    contr.sum.grand(    levels(x))
-    contr.helmert.grand(levels(x))
+    code_reference( levels(x))
+    code_grandref(  levels(x))
+    code_difference(levels(x))
+    code_granddiff( levels(x))
+    code_sum(       levels(x))
+    code_helmert(   levels(x))
 
-# Contrast code
-    x \%<>\% code(contr.ref)
-    x \%<>\% code(contr.ref.grand)
-    x \%<>\% code(contr.dif)
-    x \%<>\% code(contr.dif.grand)
-    x \%<>\% code(contr.sum.grand)
-    x \%<>\% code(contr.helmert.grand)
+# Code
+    x \%<>\% code('treatment')
+    x \%<>\% code('reference')
+    x \%<>\% code('grandref')
+    x \%<>\% code('difference')
+    x \%<>\% code('granddiff')
+    x \%<>\% code('sum')
+    x \%<>\% code('helmert')
 
-# Code and model
+# Model
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
-    object \%<>\% fit_limma()                                         #  default: treatment contrasts, firstlevel intercept, implicit coefnames
-    object$subgroup \%<>\% code(contr.ref);   object \%<>\% fit_limma()  #  treatment contrasts, firstlevel intercept, explicit coefnames
-    object$subgroup \%<>\% code(contr.ref.grand);   object \%<>\% fit_limma()  #  treatment contrasts,  grandmean intercept, explicit coefnames
-    object$subgroup \%<>\% code(contr.dif);    object \%<>\% fit_limma()  # difference contrasts, firstlevel intercept, explicit coefnames
-    object$subgroup \%<>\% code(contr.dif.grand);    object \%<>\% fit_limma()  # difference contrasts,  grandmean intercept, explicit coefnames
-    object$subgroup \%<>\% code(contr.sum.grand);     object \%<>\% fit_limma()  #        sum contrasts,  grandmean intercept, explicit coefnames
-    object$subgroup \%<>\% code(contr.helmert.grand); object \%<>\% fit_limma()  #    helmert contrasts,  grandmean intercept, explicit coefnames
+    object \%<>\% fit_limma(coding = 'treatment') # default
+    object \%<>\% fit_limma(coding = 'reference')
+    object \%<>\% fit_limma(coding = 'grandref')
+    object \%<>\% fit_limma(coding = 'difference')
+    object \%<>\% fit_limma(coding = 'granddiff')
+    object \%<>\% fit_limma(coding = 'sum')
+    object \%<>\% fit_limma(coding = 'helmert')
 }

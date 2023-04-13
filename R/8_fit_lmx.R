@@ -281,7 +281,8 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 #' @param subgroupvar  svar
 #' @param formula      formula
 #' @param drop         TRUE or FALSE
-#' @param contr.fun    contrast coding function
+#' @param coding       factor coding system: 'treatment' (default), 'reference', 
+#'                      'difference', 'grandref', 'granddiff', 'sum', 'helmert'
 #' @param coefs        NULL or stringvector
 #' @param block        NULL or svar
 #' @param weightvar    NULL or svar
@@ -303,20 +304,20 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 fit_lmx <- function(
     object, 
     fit, 
-    formula     = default_formula(object), 
-    drop        = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun   = NULL,
-    coefs       = colnames(create_design(object, formula = formula, drop = drop, contr.fun = contr.fun)), 
-    block       = NULL, 
-    weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars     = c('effect', 'p', 'fdr'),
-    verbose     = TRUE, 
-    plot        = FALSE
+    formula   = default_formula(object), 
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    coding    = 'treatment',
+    coefs     = colnames(create_design(object, formula = formula, drop = drop, coding = coding)), 
+    block     = NULL, 
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars  = c('effect', 'p', 'fdr'),
+    verbose   = TRUE, 
+    plot      = FALSE
 ){
 # Assert
     assert_is_valid_sumexp(object)
     assert_scalar_subset(fit, c('lm', 'lme', 'lmer'))
-    assertive.types::assert_is_formula(formula)
+    assert_is_formula(formula)
     assert_is_subset(all.vars(formula), svars(object))
     assert_is_a_bool(drop)
     if (!is.null(weightvar)){
@@ -327,7 +328,7 @@ fit_lmx <- function(
     }
 # Contrast Code Factors
     obj <- object
-    sdt(obj) %<>% code(contr.fun = contr.fun, vars = all.vars(formula), verbose = verbose)
+    sdt(obj) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
 # Filter / Customize
     if (verbose)  cmessage('\t\tFilter features')
     for (var in all.vars(formula))  obj %<>% filter_all_slevels(var, verbose = verbose)
@@ -367,21 +368,21 @@ fit_lmx <- function(
 #' @export
 fit_lm <- function(
     object,
-    formula     = default_formula(object), 
-    drop        = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun   = NULL,
-    block       = NULL, 
-    weightvar   = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars    = c('effect', 'p', 'fdr'),
-    coefs       = NULL, 
-    verbose     = TRUE, 
-    plot        = FALSE
+    formula   = default_formula(object), 
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    coding    = 'treatment',
+    block     = NULL, 
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars  = c('effect', 'p', 'fdr'),
+    coefs     = NULL, 
+    verbose   = TRUE, 
+    plot      = FALSE
 ){
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
     fit_lmx(
         object,                      fit          = 'lm', 
         formula      = formula,      drop         = drop,
-        contr.fun    = contr.fun,    block        = block,
+        coding       = coding,       block        = block,
         weightvar    = weightvar,    statvars     = statvars,
         coefs        = coefs,        verbose      = verbose,
         plot         = plot)
@@ -392,15 +393,15 @@ fit_lm <- function(
 #' @export
 fit_lme <- function(
     object, 
-    formula      = default_formula(object), 
-    drop         = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun    = NULL,
-    block        = NULL, 
-    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars     = c('effect', 'p', 'fdr'),
-    coefs        = NULL, 
-    verbose      = TRUE, 
-    plot         = FALSE
+    formula   = default_formula(object), 
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    coding    = 'treatment',
+    block     = NULL, 
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars  = c('effect', 'p', 'fdr'),
+    coefs     = NULL, 
+    verbose   = TRUE, 
+    plot      = FALSE
 ){
 # Assert
     . <- NULL
@@ -411,7 +412,7 @@ fit_lme <- function(
     fit_lmx(
         object,                      fit          = 'lme', 
         formula      = formula,      drop         = drop,
-        contr.fun    = contr.fun,    block        = block, 
+        coding       = coding,       block        = block, 
         weightvar    = weightvar,    coefs        = coefs, 
         verbose      = verbose,      plot         = plot)
 }
@@ -421,15 +422,15 @@ fit_lme <- function(
 #' @export
 fit_lmer <- function(
     object, 
-    formula      = default_formula(object), 
-    drop         = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun    = NULL,
-    block        = NULL, 
-    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars     = c('effect', 'p', 'fdr'),
-    coefs        = NULL, 
-    verbose      = TRUE, 
-    plot         = FALSE
+    formula   = default_formula(object), 
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    coding    = 'treatment',
+    block     = NULL, 
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars  = c('effect', 'p', 'fdr'),
+    coefs     = NULL, 
+    verbose   = TRUE, 
+    plot      = FALSE
 ){
 # Assert
     . <- NULL
@@ -444,7 +445,7 @@ fit_lmer <- function(
     fit_lmx(
         object,                    fit        = 'lmer', 
         formula    = formula,      drop       = drop,
-        contr.fun  = contr.fun,    block      = block, 
+        coding     = coding,       block      = block, 
         weightvar  = weightvar,    coefs      = coefs, 
         verbose    = verbose,      plot       = plot)
 }

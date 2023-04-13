@@ -12,9 +12,9 @@ fit_lmx(
   fit,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = NULL,
-  coefs = colnames(create_design(object, formula = formula, drop = drop, contr.fun =
-    contr.fun)),
+  coding = "treatment",
+  coefs = colnames(create_design(object, formula = formula, drop = drop, coding =
+    coding)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
@@ -26,7 +26,7 @@ fit_lm(
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = NULL,
+  coding = "treatment",
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
@@ -39,7 +39,7 @@ fit_lme(
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = NULL,
+  coding = "treatment",
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
@@ -52,7 +52,7 @@ fit_lmer(
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = NULL,
+  coding = "treatment",
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
@@ -70,7 +70,8 @@ fit_lmer(
 
 \item{drop}{TRUE or FALSE}
 
-\item{contr.fun}{contrast coding function}
+\item{coding}{factor coding system: 'treatment' (default), 'reference', 
+'difference', 'grandref', 'granddiff', 'sum', 'helmert'}
 
 \item{coefs}{NULL or stringvector}
 

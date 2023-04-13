@@ -29,8 +29,8 @@ Get coefs
 # Factor
     x <- factor(c('A', 'B', 'C'))
     coefs(x)
-    coefs(code(x, contr.ref))
-    coefs(code(x, contr.ref.grand))
+    coefs(code(x, 'reference'))
+    coefs(code(x, 'grandref'))
     
 # SummarizedExperiment
     require(magrittr)

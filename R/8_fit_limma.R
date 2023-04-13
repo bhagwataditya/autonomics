@@ -66,7 +66,7 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' @param object       SummarizedExperiment or data.frame
 #' @param formula      formula with svars
 #' @param drop         whether to drop predictor names
-#' @param contr.fun    contrast coding function
+#' @param coding    contrast coding function
 #' @param verbose      whether to message
 #' @param ...          required to s3ify
 #' @return design matrix
@@ -75,8 +75,8 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' object <- read_metabolon(file)
 #' unique(create_design(object))
 #' unique(create_design(object, ~ subgroup))
-#' unique(create_design(object, ~ subgroup, contr.fun = contr.ref))
-#' unique(create_design(object, ~ subgroup, contr.fun = contr.dif))
+#' unique(create_design(object, ~ subgroup, coding = 'reference' ))
+#' unique(create_design(object, ~ subgroup, coding = 'difference'))
 #' unique(create_design(object, ~ subgroup + T2D))
 #' unique(create_design(object, ~ subgroup / T2D))
 #' unique(create_design(object, ~ subgroup * T2D))
@@ -88,34 +88,34 @@ create_design <- function(object, ...) UseMethod('create_design')
 #' @export
 create_design.SummarizedExperiment <- function(
     object, 
-    formula     = default_formula(object),
-    drop        = varlevels_dont_clash(object, all.vars(formula)), 
-    contr.fun   = NULL,
-    verbose     = TRUE, 
+    formula = default_formula(object),
+    drop    = varlevels_dont_clash(object, all.vars(formula)), 
+    coding  = 'treatment',
+    verbose = TRUE, 
     ...
 ){
     create_design.data.table(sdt(object), 
-                            formula     = formula,
-                            contr.fun   = contr.fun,
-                            drop        = drop,
-                            verbose     = verbose)
+                            formula = formula,
+                            coding  = coding,
+                            drop    = drop,
+                            verbose = verbose)
 }
 
 #' @rdname create_design
 #' @export
 create_design.data.table <- function(
     object, 
-    formula     = default_formula(object),
-    drop        = varlevels_dont_clash(object, all.vars(formula)), 
-    contr.fun   = NULL,
-    verbose     = TRUE, 
+    formula = default_formula(object),
+    drop    = varlevels_dont_clash(object, all.vars(formula)), 
+    coding  = 'treatment',
+    verbose = TRUE, 
     ...
 ){
 # Assert
     assert_is_subset(all.vars(formula), names(object))
     . <- NULL
 # Contrast Code Factors
-    object %<>% code(contr.fun = contr.fun, vars = all.vars(formula), verbose = verbose)
+    object %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
 # Create design matrix
     #if (verbose)   message('\t\tDesign: ', formula2str(formula))
     object %<>% data.frame(row.names = .$sample_id)
@@ -141,10 +141,17 @@ create_design.data.table <- function(
 #' 
 #' Contrast Code Factor for General Linear Model
 #'
-#' @param x          factor vector
-#' @param n          factor levels (character) vector
-#' @param contr.fun  contrast coding function: contr.treatment, contr.sum, contr.helmert
-#' @param verbose    TRUE or FALSE
+#' @param x       factor vector
+#' @param n       factor levels (character) vector
+#' @param coding  coding system \cr
+#'    'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
+#'    'reference'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
+#'    'difference' :  coef = level -  prevlevel, intercept = firstlevel, epxlicit coefnames (t2-t1) \cr
+#'    'grandref'   :  coef = level - firstlevel, intercept = grandmean   \cr
+#'    'granddiff'  :  coef = level -  prevlevel, intercept = grandmean   \cr
+#'    'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
+#'    'helmert'    :  coef = level - prevlevels, intercept = grandmean   \cr
+#' @param verbose TRUE or FALSE
 #' @return (explicitly coded) factor vector
 #' @details
 #' A General Linear Model contains:                                                                   \cr
@@ -159,59 +166,56 @@ create_design.data.table <- function(
 #'        They also reflect the intercept interpretation (either first factor's first level or grand mean).
 #'        They all produce intuitive coefficient names (e.g. 't1-t0' rather than just 't1').
 #'        They all have unit scaling (a coefficient of 1 means a difference of 1).
-#'        
-#' The following contrast coding functions are available:
-#'     1) Treatment contrasts:      contrast  coefficient = difference to first level
-#'            `contr.ref`   intercept coefficient = first level of first factor
-#'            `contr.ref.grand`   intercept coefficient = grand mean
-#'             
-#'     2) Difference contrasts:     contrast  coefficient = difference to previous level
-#'            `contr.dif`    intercept coefficient = first level of first factor
-#'            `contr.dif.grand`    intercept coefficient = grand mean
-#'            
-#'     3) Sum contrasts :           contrast  coefficient = difference to grand mean
-#'            `contr.sum.grand`     intercept coefficient = grand mean
-#'            
-#'     4) Helmert contrasts:        contrast  coefficient = difference to helmert mean (i.e. the mean of the previous levels)
-#'            `contr.helmert.grand` intercept coefficient = grand mean
 #' @examples
-#' # Contrast codings
+#' # Coding functions
 #'     x <- factor(paste0('t', 0:3))
-#'     contr.ref(  levels(x))
-#'     contr.ref.grand(  levels(x))
-#'     contr.dif(   levels(x))
-#'     contr.dif.grand(   levels(x))
-#'     contr.sum.grand(    levels(x))
-#'     contr.helmert.grand(levels(x))
+#'     code_reference( levels(x))
+#'     code_grandref(  levels(x))
+#'     code_difference(levels(x))
+#'     code_granddiff( levels(x))
+#'     code_sum(       levels(x))
+#'     code_helmert(   levels(x))
 #' 
-#' # Contrast code
-#'     x %<>% code(contr.ref)
-#'     x %<>% code(contr.ref.grand)
-#'     x %<>% code(contr.dif)
-#'     x %<>% code(contr.dif.grand)
-#'     x %<>% code(contr.sum.grand)
-#'     x %<>% code(contr.helmert.grand)
+#' # Code
+#'     x %<>% code('treatment')
+#'     x %<>% code('reference')
+#'     x %<>% code('grandref')
+#'     x %<>% code('difference')
+#'     x %<>% code('granddiff')
+#'     x %<>% code('sum')
+#'     x %<>% code('helmert')
 #'
-#' # Code and model
+#' # Model
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     object %<>% fit_limma()                                         #  default: treatment contrasts, firstlevel intercept, implicit coefnames
-#'     object$subgroup %<>% code(contr.ref);   object %<>% fit_limma()  #  treatment contrasts, firstlevel intercept, explicit coefnames
-#'     object$subgroup %<>% code(contr.ref.grand);   object %<>% fit_limma()  #  treatment contrasts,  grandmean intercept, explicit coefnames
-#'     object$subgroup %<>% code(contr.dif);    object %<>% fit_limma()  # difference contrasts, firstlevel intercept, explicit coefnames
-#'     object$subgroup %<>% code(contr.dif.grand);    object %<>% fit_limma()  # difference contrasts,  grandmean intercept, explicit coefnames
-#'     object$subgroup %<>% code(contr.sum.grand);     object %<>% fit_limma()  #        sum contrasts,  grandmean intercept, explicit coefnames
-#'     object$subgroup %<>% code(contr.helmert.grand); object %<>% fit_limma()  #    helmert contrasts,  grandmean intercept, explicit coefnames
+#'     object %<>% fit_limma(coding = 'treatment') # default
+#'     object %<>% fit_limma(coding = 'reference')
+#'     object %<>% fit_limma(coding = 'grandref')
+#'     object %<>% fit_limma(coding = 'difference')
+#'     object %<>% fit_limma(coding = 'granddiff')
+#'     object %<>% fit_limma(coding = 'sum')
+#'     object %<>% fit_limma(coding = 'helmert')
 #' @export
 code <- function(object, ...)  UseMethod('code')
 
 #' @rdname code
 #' @export
-code.factor <- function(object, contr.fun, verbose = TRUE, ...){
-    if (is.null(contr.fun))  return(object)
-    assert_is_function(contr.fun)
+code.factor <- function(object, coding, verbose = TRUE, ...){
+    
+    assert_scalar_subset(coding, c('treatment', 'reference', 'difference', 
+                                   'grandref', 'granddiff', 'sum', 'helmert'))
+    codingfun <- switch(coding, treatment  = contr.treatment, 
+                                reference  =  code_reference, 
+                                difference =  code_difference, 
+                                grandref   =  code_grandref, 
+                                granddiff  =  code_granddiff, 
+                                sum        =  code_sum,
+                                helmert    =  code_helmert)
+    
+    
+    if (is.null(coding))  return(object)
     k <- length(levels(object))
-    contrasts(object) <- contr.fun(levels(object))
+    contrasts(object) <- codingfun(levels(object))
     if (verbose){
         contrastmat <- codingMatrices::mean_contrasts(contrasts(object))
         colnames(contrastmat) <- levels(object)
@@ -225,17 +229,17 @@ code.factor <- function(object, contr.fun, verbose = TRUE, ...){
 
 #' @rdname code
 #' @export
-code.data.table <- function(object, contr.fun, vars = names(object), verbose = TRUE, ...){
-    if (verbose)  cmessage('\t\tContrast code')
+code.data.table <- function(object, coding, vars = names(object), verbose = TRUE, ...){
+    if (verbose)  cmessage('\t\t%s code factors', stringr::str_to_title(coding))
     for (var in vars){
         if (is.character(object[[var]]))  object[[var]] %<>% factor()
         if (is.logical(  object[[var]]))  object[[var]] %<>% factor()
     }
-    if (is.null(contr.fun)) return(object)
+    if (is.null(coding)) return(object)
     for (var in vars){
         if (is.factor(object[[var]])){
             if (verbose)  cmessage('\t\t\t%s', var)
-            object[[var]] %<>% code.factor(contr.fun, verbose = verbose)
+            object[[var]] %<>% code.factor(coding, verbose = verbose)
         }
     }
     object
@@ -243,7 +247,7 @@ code.data.table <- function(object, contr.fun, vars = names(object), verbose = T
 
 #' @rdname code
 #' @export
-contr.ref <- function(n){
+code_reference <- function(n){
     y <- contr.treatment(n)
     colnames(y) %<>% paste0('-', n[1])
     y
@@ -251,7 +255,7 @@ contr.ref <- function(n){
 
 #' @rdname code
 #' @export
-contr.ref.grand <- function(n){
+code_grandref <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
@@ -263,7 +267,7 @@ contr.ref.grand <- function(n){
 
 #' @rdname code
 #' @export
-contr.dif <- function(n){
+code_difference <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
@@ -276,7 +280,7 @@ contr.dif <- function(n){
 
 #' @rdname code
 #' @export
-contr.dif.grand <- function(n){
+code_granddiff <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
@@ -289,7 +293,7 @@ contr.dif.grand <- function(n){
 
 #' @rdname code
 #' @export
-contr.sum.grand <- function(n){
+code_sum <- function(n){
     y <- contr.sum(n)
     k <- length(n)
     colnames(y) <- paste0(n[-k],  '-grand')
@@ -297,7 +301,7 @@ contr.sum.grand <- function(n){
 }
 
 #' @rdname code
-contr.helmert.grand <- function(n){
+code_helmert <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
@@ -467,12 +471,11 @@ FITSEP <- '~'
 # fitres: data.table(p.contr1, p.contr2, effect.contr1, effect.contr2)
 # stat:  'p', 'effect', 'fdr', 't'
 # fit:   'limma', 'wilcoxon'
-merge_fit <- function(object, fitres, fit, statistic=NULL){
+merge_fit <- function(object, fitres, fit, statistic = NULL){
     . <- NULL
     fitresdt <- data.table::copy(fitres)   # dont change in original
     firstcols <- intersect(c('feature_id', 'Intercept'), names(fitresdt))
-    fitresdt %<>% extract(,c(firstcols, 
-                            sort(setdiff(names(.), firstcols))), with = FALSE)
+    fitresdt %<>% extract(,c(firstcols, sort(setdiff(names(.), firstcols))), with = FALSE)
     if (!is.null(statistic)) names(fitresdt)[-1] %<>% paste0(statistic,FITSEP,.)
     names(fitresdt)[-1] %<>% paste0(FITSEP, fit)
     object %<>% merge_fdt(fitresdt)
@@ -487,7 +490,8 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param object       SummarizedExperiment
 #' @param formula      modeling formula
 #' @param drop         TRUE or FALSE
-#' @param contr.fun    contrast coding function
+#' @param coding       factor coding system: 'treatment', 'reference', 'difference', 
+#'                                           'grandref',  'granddiff', 'sum', 'helmert'
 #' @param design       design matrix
 #' @param contrasts    NULL or character vector: coefficient contrasts to test
 #' @param coefs        NULL or character vector: model coefs to test
@@ -515,9 +519,9 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     object %<>% fit_lmer(      ~ subgroup, block = 'SUB')  # more powerful random effects
 #'     
 #' # Intuitive : alternative coding
-#'     object %<>% fit_lme(       ~ subgroup, block = 'SUB', contr.fun = contr.ref)
-#'     object %<>% fit_lmer(      ~ subgroup, block = 'SUB', contr.fun = contr.ref)
-#'     object %<>% fit_limma(     ~ subgroup, block = 'SUB', contr.fun = contr.ref)
+#'     object %<>% fit_lme(       ~ subgroup, block = 'SUB', coding = 'reference')
+#'     object %<>% fit_lmer(      ~ subgroup, block = 'SUB', coding = 'reference')
+#'     object %<>% fit_limma(     ~ subgroup, block = 'SUB', coding = 'reference')
 #'     
 #' # Flexible : limma contrasts
 #'     object %<>% fit_limma( ~ 0 + subgroup, block = 'SUB', contrasts = c('t1-t0'))
@@ -533,30 +537,29 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @export
 fit_limma <- function(
     object, 
-    formula      = default_formula(object),
-    drop         = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun    = NULL,
-    design       = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
-    contrasts    = NULL,
-    coefs        = if (is.null(contrasts))  colnames(design)     else NULL,
-    block        = NULL,
-    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    statvars     = c('effect', 'p', 'fdr'),
-    sep          = FITSEP,
-    suffix       = paste0(sep, 'limma'),
-    verbose      = TRUE, 
-    plot         = FALSE
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    coding    = 'treatment',
+    design    = create_design(object, formula = formula, drop = drop, coding = coding),
+    contrasts = NULL,
+    coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
+    block     = NULL,
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+    statvars  = c('effect', 'p', 'fdr'),
+    sep       = FITSEP,
+    suffix    = paste0(sep, 'limma'),
+    verbose   = TRUE, 
+    plot      = FALSE
 ){
     object %<>% reset_fit(fit = 'limma', coefs = coefs)
     limmadt <- .fit_limma(
         object       = object,
         contrasts    = contrasts,     formula      = formula, 
-        drop         = drop,          contr.fun    = contr.fun,       
-        design       = design, 
-        coefs        = coefs,         block        = block,
-        weightvar    = weightvar,     statvars     = statvars,
-        sep          = sep,           suffix       = suffix,
-        verbose      = verbose)
+        drop         = drop,          coding       = coding,       
+        design       = design,        coefs        = coefs,
+        block        = block,         weightvar    = weightvar,
+        statvars     = statvars,      sep          = sep,
+        suffix       = suffix,        verbose      = verbose)
     object %<>% merge_fdt(limmadt)
         #fdata(object)$F.limma   <- limmares$F
         #fdata(object)$F.p.limma <- limmares$F.p
@@ -607,19 +610,19 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 #' @export
 .fit_limma <- function(
     object, 
-    contrasts    = NULL,
-    formula      = default_formula(object),
-    drop         = varlevels_dont_clash(object, all.vars(formula)),
-    contr.fun    = NULL,
-    design       = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
-    coefs        = if (is.null(contrasts))  colnames(design) else NULL,
-    block        = NULL, 
-    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars     = c('effect', 'p', 'fdr'),
-    sep          = FITSEP,
-    suffix       = paste0(sep, 'limma'),
-    verbose      = TRUE, 
-    plot         = FALSE
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    coding    = 'treatment',
+    design    = create_design(object, formula = formula, drop = drop, coding = coding),
+    contrasts = NULL,
+    coefs     = if (is.null(contrasts))  colnames(design) else NULL,
+    block     = NULL, 
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars  = c('effect', 'p', 'fdr'),
+    sep       = FITSEP,
+    suffix    = paste0(sep, 'limma'),
+    verbose   = TRUE, 
+    plot      = FALSE
 ){
 # Assert
     assert_is_valid_sumexp(object)

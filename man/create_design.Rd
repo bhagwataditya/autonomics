@@ -12,7 +12,7 @@ create_design(object, ...)
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = NULL,
+  coding = "treatment",
   verbose = TRUE,
   ...
 )
@@ -21,7 +21,7 @@ create_design(object, ...)
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  contr.fun = NULL,
+  coding = "treatment",
   verbose = TRUE,
   ...
 )
@@ -35,7 +35,7 @@ create_design(object, ...)
 
 \item{drop}{whether to drop predictor names}
 
-\item{contr.fun}{contrast coding function}
+\item{coding}{contrast coding function}
 
 \item{verbose}{whether to message}
 }
@@ -50,8 +50,8 @@ file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 unique(create_design(object))
 unique(create_design(object, ~ subgroup))
-unique(create_design(object, ~ subgroup, contr.fun = contr.ref))
-unique(create_design(object, ~ subgroup, contr.fun = contr.dif))
+unique(create_design(object, ~ subgroup, coding = 'reference' ))
+unique(create_design(object, ~ subgroup, coding = 'difference'))
 unique(create_design(object, ~ subgroup + T2D))
 unique(create_design(object, ~ subgroup / T2D))
 unique(create_design(object, ~ subgroup * T2D))

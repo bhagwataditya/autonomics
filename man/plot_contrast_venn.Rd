@@ -20,7 +20,7 @@ require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% fit_wilcoxon(subgroupvar = 'subgroup', block = 'SUB')
-object \%<>\% fit_limma(   subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.ref)
+object \%<>\% fit_limma(   subgroupvar = 'subgroup', block = 'SUB', coding = 'reference')
 isfdr <- is_sig(object, contrast = 't3-t0')
 plot_contrast_venn(isfdr)
 }
