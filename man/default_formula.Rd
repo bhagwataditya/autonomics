@@ -7,11 +7,7 @@
 \usage{
 default_subgroupvar(object)
 
-default_formula(
-  object,
-  subgroupvar = default_subgroupvar(object),
-  contrasts = NULL
-)
+default_formula(object)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -27,8 +23,11 @@ formula
 Create default formula
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
-object <-.read_metabolon(file)
-default_subgroupvar(object)
-default_formula(object)
+# Abundances
+    file <- download_data('atkin18.metabolon.xlsx')
+    object <- read_metabolon(file)
+    default_formula(object)
+    file <- download_data('billing16.proteingroups.txt')
+    object <- read_maxquant_proteingroups(file)
+    default_formula(object)
 }

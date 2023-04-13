@@ -17,10 +17,10 @@ Plot contrast venn
 }
 \examples{
 require(magrittr)
-file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file, plot=FALSE)
-object \%<>\% fit_wilcoxon(subgroupvar='SampleGroup', block = 'Subject_ID')
-object \%<>\% fit_limma(   subgroupvar='SampleGroup', block = 'Subject_ID')
-isfdr <- is_sig(object, contrast = 't3-t2')
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file)
+object \%<>\% fit_wilcoxon(subgroupvar = 'subgroup', block = 'SUB')
+object \%<>\% fit_limma(   subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.ref)
+isfdr <- is_sig(object, contrast = 't3-t0')
 plot_contrast_venn(isfdr)
 }

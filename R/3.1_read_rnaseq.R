@@ -775,7 +775,7 @@ explicitly_compute_voom_weights <- function(
 #' @export
 preprocess_rnaseq_counts <- function(object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar), block = NULL,
+    formula = default_formula(object), block = NULL,
     min_count = 10, pseudo = 0.5, tpm  = FALSE, 
     cpm = TRUE, voom = TRUE, log2 = TRUE,
     verbose = TRUE, plot = TRUE
@@ -783,7 +783,7 @@ preprocess_rnaseq_counts <- function(object,
 # Initialize
     . <- NULL
     if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
-    if (is.null(formula))      formula <- default_formula(object, subgroupvar)
+    if (is.null(formula))      formula <- default_formula(object)
 # tpm
     if (verbose) message('\t\tPreprocess')
     if (tpm){   assert_is_subset('genesize', fvars(object))

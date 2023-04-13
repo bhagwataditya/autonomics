@@ -11,7 +11,7 @@ create_design(object, ...)
 \method{create_design}{SummarizedExperiment}(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar),
+  formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
   verbose = TRUE,
@@ -21,7 +21,7 @@ create_design(object, ...)
 \method{create_design}{data.table}(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar),
+  formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
   verbose = TRUE,

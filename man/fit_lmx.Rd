@@ -11,7 +11,7 @@ fit_lmx(
   object,
   fit,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, contrasts = NULL),
+  formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
   coefs = colnames(create_design(object, formula = formula, drop = drop, contr.fun =
@@ -26,7 +26,7 @@ fit_lmx(
 fit_lm(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, contrasts = NULL),
+  formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
   block = NULL,
@@ -40,7 +40,7 @@ fit_lm(
 fit_lme(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, contrasts = NULL),
+  formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
   block = NULL,
@@ -54,7 +54,7 @@ fit_lme(
 fit_lmer(
   object,
   subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, contrasts = NULL),
+  formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
   block = NULL,

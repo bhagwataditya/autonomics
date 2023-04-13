@@ -38,21 +38,23 @@ default_subgroupvar <- function(object){
 #' @param fit 'limma', 'lm', 'lme', 'lmer'
 #' @return formula
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <-.read_metabolon(file)
-#' default_subgroupvar(object)
-#' default_formula(object)
+#' # Abundances
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     default_formula(object)
+# # Ratios
+#'     file <- download_data('billing16.proteingroups.txt')
+#'     object <- read_maxquant_proteingroups(file)
+#'     default_formula(object)
 #' @export 
-default_formula <- function(
-    object, subgroupvar = default_subgroupvar(object), contrasts = NULL
-){
-    formula <- if (is.null(subgroupvar))               '~1'
-          else if (!subgroupvar %in% svars(object))    '~1'
-          else if (singlelevel(object, subgroupvar))   '~1'
-          else if (!is.null(contrasts))                sprintf('~0 + %s', subgroupvar)
-          else                                         sprintf(   '~ %s', subgroupvar)
-    formula %<>% as.formula()
-    formula
+default_formula <- function(object){
+    if ('subgroup' %in% svars(object)){
+        if (singlelevel(object, 'subgroup')){    return(~1)
+        } else if (contains_ratios(object)){      return(~0+subgroup)
+        } else {                                  return(~subgroup)
+        }
+    } else {                                      return(~1)
+    }
 }
 
 character2factor <- function(x)  if (is.character(x)) factor(x) else x
@@ -88,7 +90,7 @@ create_design <- function(object, ...) UseMethod('create_design')
 create_design.SummarizedExperiment <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula     = default_formula(object, subgroupvar),
+    formula     = default_formula(object),
     drop        = varlevels_dont_clash(object, all.vars(formula)), 
     contr.fun   = NULL,
     verbose     = TRUE, 
@@ -107,7 +109,7 @@ create_design.SummarizedExperiment <- function(
 create_design.data.table <- function(
     object, 
     subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    formula     = default_formula(object, subgroupvar),
+    formula     = default_formula(object),
     drop        = varlevels_dont_clash(object, all.vars(formula)), 
     contr.fun   = NULL,
     verbose     = TRUE, 
@@ -537,7 +539,7 @@ fit_limma <- function(
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object))  'subgroup' else NULL,
     contrasts    = NULL,
-    formula      = default_formula(object, subgroupvar, contrasts),
+    formula      = default_formula(object),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     contr.fun    = NULL,
     design       = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
@@ -612,7 +614,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     object, 
     subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup'  else  NULL,
     contrasts    = NULL,
-    formula      = default_formula(object, subgroupvar, contrasts),
+    formula      = default_formula(object),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     contr.fun    = NULL,
     design       = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),

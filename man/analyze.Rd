@@ -10,7 +10,7 @@ analyze(
   fit = "limma",
   subgroupvar = default_subgroupvar(object),
   contrasts = NULL,
-  formula = default_formula(object, subgroupvar, contrasts),
+  formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
