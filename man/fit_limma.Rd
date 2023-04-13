@@ -8,12 +8,11 @@
 \usage{
 fit_limma(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  contrasts = NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
   design = create_design(object, formula = formula, drop = drop, contr.fun = contr.fun),
+  contrasts = NULL,
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
@@ -26,7 +25,6 @@ fit_limma(
 
 .fit_limma(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   contrasts = NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
@@ -44,10 +42,10 @@ fit_limma(
 
 fit_wilcoxon(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
+  formula = default_formula(object),
+  subgroupvar = all_vars(x)[1],
   contrasts = sprintf("\%s-\%s", slevels(object, subgroupvar)[-1], slevels(object,
     subgroupvar)[1]),
-  formula = NULL,
   coefs = NULL,
   block = NULL,
   weightvar = NULL,
@@ -58,10 +56,6 @@ fit_wilcoxon(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroupvar}{subgroup variable}
-
-\item{contrasts}{NULL or character vector: coefficient contrasts to test}
-
 \item{formula}{modeling formula}
 
 \item{drop}{TRUE or FALSE}
@@ -69,6 +63,8 @@ fit_wilcoxon(
 \item{contr.fun}{contrast coding function}
 
 \item{design}{design matrix}
+
+\item{contrasts}{NULL or character vector: coefficient contrasts to test}
 
 \item{coefs}{NULL or character vector: model coefs to test}
 
@@ -93,33 +89,34 @@ Updated SummarizedExperiment
 Fit model and test for differential expression
 }
 \examples{
-# classical: lm & limma
+# Read
     require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
-    object \%<>\% fit_limma()
-    object \%<>\% fit_limma(contr.fun = contr.ref)
-    object \%<>\% fit_lm()
-    plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
     
-# blocked: limma, lme, lmer
-    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB')
-    object \%<>\% fit_lme(  subgroupvar = 'subgroup', block = 'SUB')
-   #object \%<>\% fit_lmer( subgroupvar = 'subgroup', block = 'SUB') # slow
-   #plot_contrast_venn(is_sig(object, contrast = 't3', fit = c('limma', 'lme')))
+# Standard
+    object \%<>\% fit_lm(        ~ subgroup)                 #     statistics default
+    object \%<>\% fit_limma(     ~ subgroup)                 # bioinformatics default
+
+# Blocked
+    object \%<>\% fit_limma(     ~ subgroup, block = 'SUB')  #        simple random effects
+    object \%<>\% fit_lme(       ~ subgroup, block = 'SUB')  #      powerful random effects
+    object \%<>\% fit_lmer(      ~ subgroup, block = 'SUB')  # more powerful random effects
     
-# flexible: limma contrasts
-    object \%<>\% fit_limma(formula = ~subgroup,   block = 'SUB', coefs = 't1') 
-    object \%<>\% fit_limma(formula = ~0+subgroup, block = 'SUB', contrasts = 't1-t0')
+# Intuitive : alternative coding
+    object \%<>\% fit_lme(       ~ subgroup, block = 'SUB', contr.fun = contr.ref)
+    object \%<>\% fit_lmer(      ~ subgroup, block = 'SUB', contr.fun = contr.ref)
+    object \%<>\% fit_limma(     ~ subgroup, block = 'SUB', contr.fun = contr.ref)
+    
+# Flexible : limma contrasts
+    object \%<>\% fit_limma( ~ 0 + subgroup, block = 'SUB', contrasts = c('t1-t0'))
         # flexible, but only approximate
         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
-
-# alternative contrast coding functions:
-    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB')
-    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.ref)
-    object \%<>\% fit_limma(subgroupvar = 'subgroup', block = 'SUB', contr.fun = contr.dif)
     
-# non-parametric: wilcoxon
-    object \%<>\% fit_limma(   subgroupvar = 'subgroup', block = 'SUB')
-    object \%<>\% fit_wilcoxon(subgroupvar = 'subgroup', block = 'SUB')
+# Non-parametric: wilcoxon
+    object \%<>\% fit_wilcoxon( ~ subgroup)                # unpaired
+    object \%<>\% fit_wilcoxon( ~ subgroup, block = 'SUB') # paired
+    plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
+   #plot_contrast_venn(is_sig(object, contrast = 't3', fit = c('limma', 'lme')))
+    
 }

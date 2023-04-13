@@ -10,7 +10,6 @@
 fit_lmx(
   object,
   fit,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
@@ -25,7 +24,6 @@ fit_lmx(
 
 fit_lm(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
@@ -39,7 +37,6 @@ fit_lm(
 
 fit_lme(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
@@ -53,7 +50,6 @@ fit_lme(
 
 fit_lmer(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
@@ -69,8 +65,6 @@ fit_lmer(
 \item{object}{SummarizedExpriment}
 
 \item{fit}{'lm', 'lme', or 'lmer'}
-
-\item{subgroupvar}{svar}
 
 \item{formula}{formula}
 
@@ -89,6 +83,8 @@ fit_lmer(
 \item{verbose}{TRUE or FALSE}
 
 \item{plot}{TRUE or FALSE}
+
+\item{subgroupvar}{svar}
 }
 \value{
 SummarizedExperiment

@@ -303,7 +303,6 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 fit_lmx <- function(
     object, 
     fit, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object), 
     drop        = varlevels_dont_clash(object, all.vars(formula)),
     contr.fun   = NULL,
@@ -368,7 +367,6 @@ fit_lmx <- function(
 #' @export
 fit_lm <- function(
     object,
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object), 
     drop        = varlevels_dont_clash(object, all.vars(formula)),
     contr.fun   = NULL,
@@ -382,11 +380,11 @@ fit_lm <- function(
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
     fit_lmx(
         object,                      fit          = 'lm', 
-        subgroupvar  = subgroupvar,  formula      = formula, 
-        drop         = drop,         contr.fun    = contr.fun,
-        block        = block,        weightvar    = weightvar,    
-        statvars     = statvars,     coefs        = coefs, 
-        verbose      = verbose,      plot         = plot)
+        formula      = formula,      drop         = drop,
+        contr.fun    = contr.fun,    block        = block,
+        weightvar    = weightvar,    statvars     = statvars,
+        coefs        = coefs,        verbose      = verbose,
+        plot         = plot)
 }
 
 
@@ -394,7 +392,6 @@ fit_lm <- function(
 #' @export
 fit_lme <- function(
     object, 
-    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula      = default_formula(object), 
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     contr.fun    = NULL,
@@ -413,9 +410,8 @@ fit_lme <- function(
 # Fit
     fit_lmx(
         object,                      fit          = 'lme', 
-        subgroupvar  = subgroupvar,  formula      = formula, 
-        drop         = drop,         contr.fun    = contr.fun,
-        block        = block, 
+        formula      = formula,      drop         = drop,
+        contr.fun    = contr.fun,    block        = block, 
         weightvar    = weightvar,    coefs        = coefs, 
         verbose      = verbose,      plot         = plot)
 }
@@ -425,7 +421,6 @@ fit_lme <- function(
 #' @export
 fit_lmer <- function(
     object, 
-    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula      = default_formula(object), 
     drop         = varlevels_dont_clash(object, all.vars(formula)),
     contr.fun    = NULL,
@@ -447,10 +442,9 @@ fit_lmer <- function(
 # Fit
     metadata(object)$lmer <- NULL
     fit_lmx(
-        object,                      fit          = 'lmer', 
-        subgroupvar  = subgroupvar,  formula      = formula, 
-        drop         = drop,         contr.fun    = contr.fun,
-        block        = block, 
-        weightvar    = weightvar,    coefs        = coefs, 
-        verbose      = verbose,      plot         = plot)
+        object,                    fit        = 'lmer', 
+        formula    = formula,      drop       = drop,
+        contr.fun  = contr.fun,    block      = block, 
+        weightvar  = weightvar,    coefs      = coefs, 
+        verbose    = verbose,      plot       = plot)
 }

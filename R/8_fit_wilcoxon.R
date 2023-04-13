@@ -76,14 +76,20 @@
     resdt
 }
 
+all_vars <- function(x){
+    y <- all.vars(x)
+    if (length(y)==0)  y <- NULL
+    y
+}
+    
 #' @export
 #' @rdname fit_limma
 fit_wilcoxon <- function(
     object,
-    subgroupvar  = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
+    formula      =  default_formula(object), 
+    subgroupvar  = all_vars(x)[1],
     contrasts    = sprintf('%s-%s', slevels(object, subgroupvar)[-1], 
                                     slevels(object, subgroupvar)[ 1]),
-    formula      = NULL,
     coefs        = NULL, 
     block        = NULL, 
     weightvar    = NULL, 
