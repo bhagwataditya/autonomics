@@ -64,7 +64,6 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #'
 #'  Create design matrix  for statistical analysis
 #' @param object       SummarizedExperiment or data.frame
-#' @param subgroupvar  subgroup svar
 #' @param formula      formula with svars
 #' @param drop         whether to drop predictor names
 #' @param contr.fun    contrast coding function
@@ -75,12 +74,12 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' unique(create_design(object))
-#' unique(create_design(object, formula = ~ subgroup))
-#' unique(create_design(object, formula = ~ subgroup, contr.fun = contr.ref))
-#' unique(create_design(object, formula = ~ subgroup, contr.fun = contr.dif))
-#' unique(create_design(object, formula = ~ subgroup + T2D))
-#' unique(create_design(object, formula = ~ subgroup / T2D))
-#' unique(create_design(object, formula = ~ subgroup * T2D))
+#' unique(create_design(object, ~ subgroup))
+#' unique(create_design(object, ~ subgroup, contr.fun = contr.ref))
+#' unique(create_design(object, ~ subgroup, contr.fun = contr.dif))
+#' unique(create_design(object, ~ subgroup + T2D))
+#' unique(create_design(object, ~ subgroup / T2D))
+#' unique(create_design(object, ~ subgroup * T2D))
 #' @export
 create_design <- function(object, ...) UseMethod('create_design')
 
@@ -89,7 +88,6 @@ create_design <- function(object, ...) UseMethod('create_design')
 #' @export
 create_design.SummarizedExperiment <- function(
     object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
     formula     = default_formula(object),
     drop        = varlevels_dont_clash(object, all.vars(formula)), 
     contr.fun   = NULL,
@@ -97,7 +95,6 @@ create_design.SummarizedExperiment <- function(
     ...
 ){
     create_design.data.table(sdt(object), 
-                            subgroupvar = subgroupvar, 
                             formula     = formula,
                             contr.fun   = contr.fun,
                             drop        = drop,
@@ -108,7 +105,6 @@ create_design.SummarizedExperiment <- function(
 #' @export
 create_design.data.table <- function(
     object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
     formula     = default_formula(object),
     drop        = varlevels_dont_clash(object, all.vars(formula)), 
     contr.fun   = NULL,

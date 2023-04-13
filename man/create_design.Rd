@@ -10,7 +10,6 @@ create_design(object, ...)
 
 \method{create_design}{SummarizedExperiment}(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
@@ -20,7 +19,6 @@ create_design(object, ...)
 
 \method{create_design}{data.table}(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   contr.fun = NULL,
@@ -32,8 +30,6 @@ create_design(object, ...)
 \item{object}{SummarizedExperiment or data.frame}
 
 \item{...}{required to s3ify}
-
-\item{subgroupvar}{subgroup svar}
 
 \item{formula}{formula with svars}
 
@@ -53,10 +49,10 @@ Create design matrix  for statistical analysis
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 unique(create_design(object))
-unique(create_design(object, formula = ~ subgroup))
-unique(create_design(object, formula = ~ subgroup, contr.fun = contr.ref))
-unique(create_design(object, formula = ~ subgroup, contr.fun = contr.dif))
-unique(create_design(object, formula = ~ subgroup + T2D))
-unique(create_design(object, formula = ~ subgroup / T2D))
-unique(create_design(object, formula = ~ subgroup * T2D))
+unique(create_design(object, ~ subgroup))
+unique(create_design(object, ~ subgroup, contr.fun = contr.ref))
+unique(create_design(object, ~ subgroup, contr.fun = contr.dif))
+unique(create_design(object, ~ subgroup + T2D))
+unique(create_design(object, ~ subgroup / T2D))
+unique(create_design(object, ~ subgroup * T2D))
 }
