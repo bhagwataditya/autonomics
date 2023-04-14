@@ -34,18 +34,18 @@ Change nondetect representation
 }
 \examples{
 require(magrittr)
-matrix(c(0, 7), nrow=1)
-matrix(c(0, 7), nrow=1)    \%>\% zero_to_na(verbose=TRUE)
+matrix(c(0, 7), nrow = 1)
+matrix(c(0, 7), nrow = 1)  \%>\% zero_to_na(verbose = TRUE)
 
-matrix(c(NA, 7), nrow=1)
-matrix(c(NA, 7), nrow=1)   \%>\% na_to_zero(verbose=TRUE)
+matrix(c(NA, 7), nrow = 1)
+matrix(c(NA, 7), nrow = 1) \%>\% na_to_zero(verbose = TRUE)
 
-matrix(c(NaN, 7), nrow=1)
-matrix(c(NaN, 7), nrow=1)  \%>\% nan_to_na(verbose=TRUE)
+matrix(c(NaN, 7), nrow = 1)
+matrix(c(NaN, 7), nrow = 1)  \%>\% nan_to_na(verbose = TRUE)
 
-matrix(c(Inf, 7), nrow=1)
-matrix(c(Inf, 7), nrow=1)  \%>\% inf_to_na(verbose=TRUE)
+matrix(c(Inf, 7), nrow = 1)
+matrix(c(Inf, 7), nrow = 1)  \%>\% inf_to_na(verbose = TRUE)
 
-matrix(c(-Inf, 7), nrow=1)
-matrix(c(-Inf, 7), nrow=1) \%>\% minusinf_to_na(verbose=TRUE)
+matrix(c(-Inf, 7), nrow = 1)
+matrix(c(-Inf, 7), nrow = 1) \%>\% minusinf_to_na(verbose = TRUE)
 }

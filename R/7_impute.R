@@ -11,20 +11,20 @@
 #' @return Updated matrix
 #' @examples
 #' require(magrittr)
-#' matrix(c(0, 7), nrow=1)
-#' matrix(c(0, 7), nrow=1)    %>% zero_to_na(verbose=TRUE)
+#' matrix(c(0, 7), nrow = 1)
+#' matrix(c(0, 7), nrow = 1)  %>% zero_to_na(verbose = TRUE)
 #' 
-#' matrix(c(NA, 7), nrow=1)
-#' matrix(c(NA, 7), nrow=1)   %>% na_to_zero(verbose=TRUE)
+#' matrix(c(NA, 7), nrow = 1)
+#' matrix(c(NA, 7), nrow = 1) %>% na_to_zero(verbose = TRUE)
 #' 
-#' matrix(c(NaN, 7), nrow=1)
-#' matrix(c(NaN, 7), nrow=1)  %>% nan_to_na(verbose=TRUE)
+#' matrix(c(NaN, 7), nrow = 1)
+#' matrix(c(NaN, 7), nrow = 1)  %>% nan_to_na(verbose = TRUE)
 #' 
-#' matrix(c(Inf, 7), nrow=1)
-#' matrix(c(Inf, 7), nrow=1)  %>% inf_to_na(verbose=TRUE)
+#' matrix(c(Inf, 7), nrow = 1)
+#' matrix(c(Inf, 7), nrow = 1)  %>% inf_to_na(verbose = TRUE)
 #' 
-#' matrix(c(-Inf, 7), nrow=1)
-#' matrix(c(-Inf, 7), nrow=1) %>% minusinf_to_na(verbose=TRUE)
+#' matrix(c(-Inf, 7), nrow = 1)
+#' matrix(c(-Inf, 7), nrow = 1) %>% minusinf_to_na(verbose = TRUE)
 #' @export
 zero_to_na <- function(x, verbose = FALSE){
     selector <- x == 0
@@ -135,15 +135,15 @@ na_to_string <- function(x){
 #' # Simple Design
 #'    file <- download_data('fukuda20.proteingroups.txt')
 #'    object <- read_maxquant_proteingroups(file)
-#'    impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
-#'    impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
-#'    impute(object, plot = TRUE)                         # sumexp
+#'    impute(values(object)[, 1], plot = TRUE)[1:3]              # vector
+#'    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
+#'    impute(object, plot = TRUE)                                # sumexp
 #' # Complex Design
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    object <- read_metabolon(file)
-#'    invisible(impute(values(object)[1:3, 1   ]))                                    # vector
-#'    invisible(impute(values(object)[1:3, 1:5 ]))                                    # matrix
-#'    object %>%  filter_samples(T2D == 'Control') %>% impute()                       # sumexp
+#'    invisible(impute(values(object)[1:3, 1   ]))               # vector
+#'    invisible(impute(values(object)[1:3, 1:5 ]))               # matrix
+#'    object %>%  filter_samples(T2D == 'Control') %>% impute()  # sumexp
 #' @export
 impute <- function(object, ...) UseMethod('impute')
 
@@ -170,7 +170,7 @@ impute.numeric <- function(
     if (plot){
         dt <- data.table(x = object, imputed = idx)
         p <- ggplot(dt) + 
-             geom_density(aes(x = x, y = stat(count), fill = imputed))
+             geom_density(aes(x = x, y = after_stat(count), fill = imputed))
         print(p)
     }
     object
@@ -201,7 +201,7 @@ impute.matrix <- function(
         dt2 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
         dt <- merge(dt1, dt2, by = c('feature_id', 'sample_id'))
         p <- ggplot(dt) + 
-             geom_density(aes(x = value, y = stat(count), fill = sample_id, 
+             geom_density(aes(x = value, y = after_stat(count), fill = sample_id, 
                               group = interaction(sample_id, imputed))) +
             scale_fill_manual(values = palette)
         print(p)
