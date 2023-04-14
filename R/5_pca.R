@@ -756,26 +756,35 @@ plot_covariates <- function(...){
 #' @return  ggplot object
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca = TRUE, plot = FALSE)
-#' biplot_covariates(object, covariates = 'Group', ndim = 12, dimcols = 3)
+#' object <- read_metabolon(file, pca = TRUE)
+#' biplot_covariates(object, covariates = 'subgroup', ndim = 12, dimcols = 3)
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 #' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
-#' biplot_covariates(object, covariates = c('Group'), dimcols = 3)
+#' biplot_covariates(object, covariates = c('subgroup'), dimcols = 3)
 #' @seealso biplot_corrections
 #' @export
 biplot_covariates <- function(
-    object, method = 'pca', covariates = 'subgroup', ndim = 6,
-    dimcols = 1, varcols = length(covariates), plot = TRUE
+    object, method = 'pca', by = 'sample_id', block = NULL, 
+    covariates = 'subgroup', ndim = 6, dimcols = 1, varcols = length(covariates), plot = TRUE
 ){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(method, c('pca', 'sma', 'pls', 'spls', 'opls', 'lda'))
+    assert_is_subset(covariates, svars(object))
+    blocksym <- if (is.null(block))  quo(NULL) else sym(block)
+
+# Plot
     x <- y <- NULL
-    plotdt <- prep_covariates(object, method = method, ndim=ndim)
+    plotdt <- prep_covariates(object, method = method, by = by, ndim = ndim)
     plotlist <- list()
     for (covar in covariates){
-        p <- plot_data(plotdt, geom = geom_point, x=x, y=y, color=!!sym(covar),
-                        fixed = list(shape=15, size=3))
-        p <- p + facet_wrap(~dims, ncol = dimcols, scales = 'free')
+        p <- ggplot(plotdt, aes(x = x, y = y, color = !!sym(covar), group = !!blocksym))
+        p <- p + theme_bw()
+        p <- p + facet_wrap(vars(dims), ncol = dimcols, scales = 'free')
+        p <- p + geom_point(shape = 15, size = 3)
+        if (!is.null(block))  p <- p + geom_line()
         p <- p + xlab(NULL) + ylab(NULL) + ggtitle(covar)
-        p <- p + theme(legend.position = 'bottom', legend.title=element_blank())
+        p <- p + theme(legend.position = 'bottom', legend.title = element_blank())
         plotlist %<>% c(list(p))
     }
     pp <- gridExtra::arrangeGrob(grobs = plotlist, ncol = varcols)
@@ -783,28 +792,32 @@ biplot_covariates <- function(
     invisible(pp)
 }
 
-prep_covariates <- function(object, method='pca', ndim=6){
-    . <- NULL
-    plotdt <- cbind(sdata(object)[FALSE,], x= character(0), y = character(0))
-    projdt <- sdt(get(method)(object, ndim=ndim, verbose=FALSE))
-    alldims <- names(projdt) %>% extract(stri_detect_fixed(., method)) %>%
-                stri_replace_first_fixed(method, '') %>% as.numeric()
-    ndim <- min(c(max(alldims), ndim))
-    npairs <- ndim %/% 2
-    for (idim in seq_len(npairs)){
-        dim1 <- idim*2-1
-        dim2 <- idim*2
-        xvar <- paste0(method, dim1)
-        yvar <- paste0(method, dim2)
-        tmpdt <- data.table::copy(projdt)
-        setnames(tmpdt, c(xvar, yvar), c('x', 'y'))
-        tmpdt %<>% extract(, stri_detect_fixed(
-                                names(.), method, negate = TRUE), with = FALSE)
-        tmpdt$dims <- paste0(dim1, ':', dim2)
-        plotdt %<>% rbind(tmpdt)
-    }
-    plotdt$dims %<>% factor(unique(.))
-    plotdt
+prep_covariates <- function(object, method = 'pca', by = 'sample_id', ndim = 6){
+    # Dimred
+        for (var in svars(object))  if (grepl(paste0('~', method), var))  sdt(object)[[var]] <- NULL
+        for (var in fvars(object))  if (grepl(paste0('~', method), var))  fdt(object)[[var]] <- NULL
+        object %<>% get(method)(by = by, ndim = ndim)
+    # Initialize plotdt
+        plotdt <- sdt(object)
+        plotdt %<>% extract(, !stri_detect_fixed(names(.), '~'), with = FALSE)
+        plotdt %<>% extract(FALSE, )
+        plotdt %<>% cbind(x = numeric(0), y = numeric(0), dims = character(0))
+    # Add pairs
+        sampledt <- sdt(object)
+        idx <- stri_detect_fixed(names(sampledt), '~')
+        scoredt <- sampledt[, idx, with = FALSE]
+        sampledt %<>% extract(, !idx, with = FALSE)
+        npairs <- ndim %/% 2
+        for (idim in seq_len(npairs)){
+            xdim <- idim*2-1
+            ydim <- idim*2
+            xvar <- scorenames(method, by = by, dims = xdim)
+            yvar <- scorenames(method, by = by, dims = ydim)
+            tmpdt <- cbind(sampledt, x = scoredt[[xvar]], y = scoredt[[yvar]], dims = sprintf('%d:%d', xdim, ydim))
+            plotdt %<>% rbind(tmpdt)
+        }
+        plotdt$dims %<>% factor(unique(.))
+        plotdt
 }
 
 

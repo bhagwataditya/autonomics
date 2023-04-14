@@ -10,6 +10,8 @@ plot_covariates(...)
 biplot_covariates(
   object,
   method = "pca",
+  by = "sample_id",
+  block = NULL,
   covariates = "subgroup",
   ndim = 6,
   dimcols = 1,
@@ -42,11 +44,11 @@ Biplot covariates
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, pca = TRUE, plot = FALSE)
-biplot_covariates(object, covariates = 'Group', ndim = 12, dimcols = 3)
+object <- read_metabolon(file, pca = TRUE)
+biplot_covariates(object, covariates = 'subgroup', ndim = 12, dimcols = 3)
 biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
 biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
-biplot_covariates(object, covariates = c('Group'), dimcols = 3)
+biplot_covariates(object, covariates = c('subgroup'), dimcols = 3)
 }
 \seealso{
 biplot_corrections
