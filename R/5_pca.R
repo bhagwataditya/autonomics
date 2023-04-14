@@ -77,25 +77,35 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 }
 
 
-#' Add PCA, SMA, LDA, PLS
+scorenames    <- function(method, by, dims)  sprintf('effect~%s~%s%d', by, method, dims)
+loadingnames  <- function(method, by, dims)  sprintf('effect~%s~%s%d', by, method, dims)
+methodname    <- function(method, by)        sprintf('%s~%s',          by, method)
+variancenames <- function(dims)              sprintf('effect%d',       dims)
+variances     <- function(object, method, by, dims){
+                    y <- metadata(object)
+                    y %<>% extract2(methodname(method, by))
+                    y %<>% extract(variancenames(dims))
+                    y
+                }
+
+#' PCA, SMA, LDA, PLS, SPLS, OPLS
 #'
 #' Perform a dimension reduction.
-#' Add sample scores, feature loadings, and dimension variances to object.
+#' Store sample scores, feature loadings, and dimension variances.
 #'
-#' @param object  SummarizedExperiment
-#' @param by              string 
+#' @param object          SummarizedExperiment
+#' @param by              svar or NULL
 #' @param assay           string
 #' @param ndim            number
 #' @param minvar          number
-#' @param center_samples  whether to center samples prior to pca
-#' @param scale           whether to scale prior to pca
-#' @param verbose         TRUE (default) or FALSE
-#' @param plot            TRUE/FALSE
+#' @param center_samples  TRUE/FALSE: center samples prior to pca ?
+#' @param verbose         TRUE/FALSE: message ?
+#' @param plot            TRUE/FALSE: plot ?
 #' @param ...             passed to biplot
 #' @return                SummarizedExperiment
 #' @examples
 #'  file <- download_data('atkin18.metabolon.xlsx')
-#'  object <- read_metabolon(file, plot = FALSE)
+#'  object <- read_metabolon(file)
 #'  pca(object, plot = TRUE)  # Principal Component Analysis
 #'  pls(object, plot = TRUE)  # Partial Least Squares
 #'  lda(object, plot = TRUE)  # Linear Discriminant Analysis
@@ -105,8 +115,8 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
-    object, assay = assayNames(object)[1], ndim = 2, minvar = 0, verbose = TRUE, 
-    plot = FALSE, center_samples = TRUE, ...
+    object, by = 'sample_id', assay = assayNames(object)[1], ndim = 2, minvar = 0, 
+    center_samples = TRUE, verbose = TRUE, plot = FALSE, ...
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -116,8 +126,11 @@ pca <- function(
     assert_all_are_less_than_or_equal_to(ndim, ncol(object))
     assert_is_a_number(minvar)
     assert_all_are_in_range(minvar, 0, 100)
-    . <- NULL
+    assert_is_a_bool(center_samples)
+    assert_is_a_bool(verbose)
+    assert_is_a_bool(plot)
     if (verbose)  message('\t\tAdd PCA')
+    . <- NULL
 # Prepare
     tmpobj <- object
     assays(tmpobj)[[assay]] %<>% inf_to_na(verbose=verbose)
@@ -137,13 +150,14 @@ pca <- function(
     samples   <- pca_res@scores
     features  <- pca_res@loadings
     variances <- round(100*pca_res@R2)
-    colnames(samples)  <- sprintf('effect~samples~pca%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('effect~samples~pca%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'pca', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'pca', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(seq_len(ndim))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)$`samples~pca` <- variances
+    metavar <- methodname(method = 'pca', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
@@ -178,17 +192,18 @@ pls <- function(
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('effect~%s~pls%d', by, seq_len(  ncol(samples )))
-    colnames(features) <- sprintf('effect~%s~pls%d', by, seq_len(  ncol(features)))
-    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'pls', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'pls', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(seq_len(ndim))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)[[sprintf('%s~pls', by)]] <- variances
+    metavar <- methodname(method = 'pls', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
-    if (plot)  if (plot)  print(biplot(object, method = 'pls', dims = seq(1,ndim)[1:2], ...))
+    if (plot)  print(biplot(object, method = 'pls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -196,8 +211,8 @@ pls <- function(
 #' @rdname pca
 #' @export
 sma <- function(
-    object, assay = assayNames(object)[1], ndim = 2, minvar = 0, verbose = TRUE, 
-    plot = FALSE, ...
+    object, by = 'sample_id', assay = assayNames(object)[1], ndim = 2, minvar = 0,
+    verbose = TRUE, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
@@ -222,14 +237,14 @@ sma <- function(
                 df, logtrans = FALSE, closure = 'none', center = 'double',
                 normal = 'global', row.weight = 'mean', col.weight = 'constant')
     ncomponents <- length(mpm_tmp$contrib)
-    mpm_out <- mpm::plot.mpm(mpm_tmp, do.plot=FALSE, dim = seq_len(ncomponents))
+    mpm_out <- mpm::plot.mpm(mpm_tmp, do.plot = FALSE, dim = seq_len(ncomponents))
 # Extract
     samples   <- mpm_out$Columns
     features  <- mpm_out$Rows
     variances <- round(100*mpm_tmp$contrib[seq_len(ncomponents)])
-    names(samples)   <- sprintf('effect~samples~sma%d', seq_len(ncol(samples)))
-    names(features)  <- sprintf('effect~samples~sma%d', seq_len(ncol(features)))
-    names(variances) <- sprintf('effect%d', seq_len(length(variances)))
+    names(samples)   <-    scorenames(method = 'sma', by = by, dims = seq_len(ndim))
+    names(features)  <-  loadingnames(method = 'sma', by = by, dims = seq_len(ndim))
+    names(variances) <- variancenames(dims = seq_len(ndim))
 # Restrict
     if (is.infinite(ndim)) ndim <- ncol(samples)
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
@@ -238,9 +253,10 @@ sma <- function(
 # Add
     samples  %<>% cbind( sample_id = rownames(.), .)
     features %<>% cbind(feature_id = rownames(.), .)
-    object %<>% merge_sdt(data.table(samples), 'sample_id')
+    object %<>% merge_sdt(data.table(samples),  'sample_id')
     object %<>% merge_fdt(data.table(features), 'feature_id')
-    metadata(object)$`samples~sma` <- variances
+    metavar <- methodname(method = 'sma', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
@@ -278,18 +294,20 @@ lda <- function(
     tmpobj %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
     exprs_t  <- t(assays(tmpobj)[[assay]])
-    lda_out  <- suppressWarnings(
-                    MASS::lda( exprs_t,grouping = object[[by]]))
+    lda_out  <- suppressWarnings(MASS::lda( exprs_t,grouping = object[[by]]))
     features <- lda_out$scaling
     if (ncol(features)==1) features %<>% cbind(LD2 = 0)
     exprs_t %<>% scale(center = colMeans(lda_out$means), scale = FALSE)
     samples  <- exprs_t %*% features
     variances <- round((lda_out$svd^2)/sum(lda_out$svd^2)*100)
+    features  %<>% extract(, seq_len(ndim))
+    samples   %<>% extract(, seq_len(ndim))
+    variances %<>% extract(  seq_len(ndim))
     if (length(variances)==1) variances <- c(LD1 = variances, LD2 = 0)
 # Rename
-    colnames(samples)  <- sprintf('effect~%s~lda%d', by, seq_len(ncol(samples)))
-    colnames(features) <- sprintf('effect~%s~lda%d', by, seq_len(ncol(features)))
-    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'lda', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'lda', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(ndim)
 # Restrict
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
@@ -297,7 +315,8 @@ lda <- function(
 # Merge - Filter - Return
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)[[sprintf('%s~lda', by)]] <- variances
+    metavar <- methodname(method = 'lda', by = by)
+    metadata(object)[[metavar]] <- variances
     object %<>% .filter_minvar('lda', minvar)
     if (plot)  if (plot)  print(biplot(object, method = 'lda', dims = seq(1,ndim)[1:2], ...))
     object
@@ -338,13 +357,14 @@ spls <- function(
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('effect~%s~spls%d', by, seq_len(ncol(samples)))
-    colnames(features) <- sprintf('effect~%s~spls%d', by, seq_len(ncol(features)))
-    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'spls', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'spls', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(seq_len(ndim))
 # Add
     object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
     object %<>% merge_fdt(mat2dt(features,'feature_id'))
-    metadata(object)[[sprintf('%s~spls', by)]] <- variances
+    metavar <- methodname(method = 'spls', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
@@ -358,11 +378,11 @@ spls <- function(
 #' @return        SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' object <- read_metabolon(file)
 #' opls(object)
 #' @noRd
 opls <- function(
-    object, assay = assayNames(object)[1], ndim = 2, minvar = 0, 
+    object, by = 'subgroup', assay = assayNames(object)[1], ndim = 2, minvar = 0, 
     verbose = FALSE, plot = FALSE, ...
 ){
 # Assert
@@ -380,18 +400,19 @@ opls <- function(
     . <- NULL
 # Transform
     x <- t(assays(object)[[assay]])
-    y <- subgroup_values(object)
+    y <- svalues(object, by)
     pls_out <- ropls::opls(x, y, predI = ndim, permI = 0, fig.pdfC = FALSE)
     samples   <- pls_out@scoreMN
     features  <- pls_out@loadingMN
     variances <- round(pls_out@modelDF$R2X*100)
-    colnames(samples)  <- sprintf('effect~samples~opls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('effect~samples~opls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('effect%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'opls', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'opls', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(dims = seq_len(ndim))
 # Add
     object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
-    metadata(object)$`samples~opls` <- variances
+    metavar <- methodname(method = 'opls', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
@@ -618,12 +639,12 @@ biplot <- function(
                           assert_is_subset(size,  svars(object)) 
                           fixed %<>% extract(names(.) %>% setdiff('size'))}
     
-    x <- sprintf('effect~%s~%s%d', by, method, dims[1])
-    y <- sprintf('effect~%s~%s%d', by, method, dims[2])
-    xvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[1])]])
-    yvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[2])]])
-    xlab <- sprintf('x%d : %d%%', dims[1],  xvar)
-    ylab <- sprintf('x%d : %d%%', dims[2],  yvar)
+    ndim <- max(dims)
+    x <- scorenames(method, by = by, dims = dims[[1]])
+    y <- scorenames(method, by = by, dims = dims[[2]])
+    vars <- round(variances(object, method = method, by = by, dims = dims))
+    xlab <- sprintf('X%d : %d%%', dims[[1]], vars[[1]])
+    ylab <- sprintf('X%d : %d%%', dims[[2]], vars[[2]])
 # Plot
     p <- ggplot() + theme_bw() + theme
     p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 

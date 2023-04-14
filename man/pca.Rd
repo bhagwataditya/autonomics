@@ -5,16 +5,17 @@
 \alias{pls}
 \alias{sma}
 \alias{lda}
-\title{Add PCA, SMA, LDA, PLS}
+\title{PCA, SMA, LDA, PLS, SPLS, OPLS}
 \usage{
 pca(
   object,
+  by = "sample_id",
   assay = assayNames(object)[1],
   ndim = 2,
   minvar = 0,
+  center_samples = TRUE,
   verbose = TRUE,
   plot = FALSE,
-  center_samples = TRUE,
   ...
 )
 
@@ -31,6 +32,7 @@ pls(
 
 sma(
   object,
+  by = "sample_id",
   assay = assayNames(object)[1],
   ndim = 2,
   minvar = 0,
@@ -53,34 +55,32 @@ lda(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{by}{svar or NULL}
+
 \item{assay}{string}
 
 \item{ndim}{number}
 
 \item{minvar}{number}
 
-\item{verbose}{TRUE (default) or FALSE}
+\item{center_samples}{TRUE/FALSE: center samples prior to pca ?}
 
-\item{plot}{TRUE/FALSE}
+\item{verbose}{TRUE/FALSE: message ?}
 
-\item{center_samples}{whether to center samples prior to pca}
+\item{plot}{TRUE/FALSE: plot ?}
 
 \item{...}{passed to biplot}
-
-\item{by}{string}
-
-\item{scale}{whether to scale prior to pca}
 }
 \value{
 SummarizedExperiment
 }
 \description{
 Perform a dimension reduction.
-Add sample scores, feature loadings, and dimension variances to object.
+Store sample scores, feature loadings, and dimension variances.
 }
 \examples{
  file <- download_data('atkin18.metabolon.xlsx')
- object <- read_metabolon(file, plot = FALSE)
+ object <- read_metabolon(file)
  pca(object, plot = TRUE)  # Principal Component Analysis
  pls(object, plot = TRUE)  # Partial Least Squares
  lda(object, plot = TRUE)  # Linear Discriminant Analysis
