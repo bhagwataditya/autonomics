@@ -531,13 +531,13 @@ no_nas <- function(object){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
-#' venn_detects(object, subgroup)
+#' venn_detects(object, 'subgroup')
 #' @export
 venn_detects <- function(object, by = 'subgroup'){
     limma::vennDiagram(as.matrix(cbind(
         consistent = systematic_nas(object, by),
         random     = random_nas(    object, by),
-        full       = no_nas(      object))))
+        full       = no_nas(        object))))
 }
 
 #=============================================================================

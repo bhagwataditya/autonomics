@@ -65,13 +65,13 @@ Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
 # Simple Design
    file <- download_data('fukuda20.proteingroups.txt')
    object <- read_maxquant_proteingroups(file)
-   impute(values(object)[, 1], plot = TRUE)[1:3]       # vector
-   impute(values(object),      plot = TRUE)[1:3, 1:3]  # matrix
-   impute(object, plot = TRUE)                         # sumexp
+   impute(values(object)[, 1], plot = TRUE)[1:3]              # vector
+   impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
+   impute(object, plot = TRUE)                                # sumexp
 # Complex Design
    file <- download_data('atkin18.metabolon.xlsx')
    object <- read_metabolon(file)
-   invisible(impute(values(object)[1:3, 1   ]))                                    # vector
-   invisible(impute(values(object)[1:3, 1:5 ]))                                    # matrix
-   object \%>\%  filter_samples(T2D == 'Control') \%>\% impute()                       # sumexp
+   invisible(impute(values(object)[1:3, 1   ]))               # vector
+   invisible(impute(values(object)[1:3, 1:5 ]))               # matrix
+   object \%>\%  filter_samples(T2D == 'Control') \%>\% impute()  # sumexp
 }
