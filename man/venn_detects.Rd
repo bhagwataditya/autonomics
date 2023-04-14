@@ -20,5 +20,5 @@ Venn diagram full/consistent/random detects
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
-venn_detects(object, subgroup)
+venn_detects(object, 'subgroup')
 }

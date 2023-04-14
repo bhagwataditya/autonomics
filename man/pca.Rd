@@ -5,6 +5,8 @@
 \alias{pls}
 \alias{sma}
 \alias{lda}
+\alias{spls}
+\alias{opls}
 \title{PCA, SMA, LDA, PLS, SPLS, OPLS}
 \usage{
 pca(
@@ -48,6 +50,27 @@ lda(
   ndim = 2,
   minvar = 0,
   verbose = TRUE,
+  plot = FALSE,
+  ...
+)
+
+spls(
+  object,
+  assay = assayNames(object)[1],
+  by = "subgroup",
+  ndim = 2,
+  minvar = 0,
+  plot = FALSE,
+  ...
+)
+
+opls(
+  object,
+  by = "subgroup",
+  assay = assayNames(object)[1],
+  ndim = 2,
+  minvar = 0,
+  verbose = FALSE,
   plot = FALSE,
   ...
 )

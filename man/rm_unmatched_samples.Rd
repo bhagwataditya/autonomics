@@ -35,8 +35,8 @@ rm unmatched/singleton samples
 \examples{
 require(magrittr)
 file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file, plot=FALSE)
-object \%<>\% filter_samples(SampleGroup \%in\% c('t1', 't2'), verbose = TRUE)
+object <- read_somascan(file, plot = FALSE)
+object \%<>\% filter_samples(subgroup \%in\% c('t1', 't2'), verbose = TRUE)
 rm_singleton_samples(object, svar = 'Subject_ID')
-rm_unmatched_samples(object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
+rm_unmatched_samples(object, subgroupvar = 'subgroup', block = 'Subject_ID')
 }

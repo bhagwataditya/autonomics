@@ -6,7 +6,7 @@
 \usage{
 explore_transformations(
   object,
-  subgroup = subgroup,
+  subgroupvar = "subgroup",
   transformations = c("quantnorm", "vsn", "zscore", "invnorm"),
   method = "pca",
   xdim = 1,
@@ -17,8 +17,6 @@ explore_transformations(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroup}{subgroup (sym)}
-
 \item{transformations}{vector}
 
 \item{method}{'pca', 'pls', 'sma', or 'lda'}
@@ -28,6 +26,8 @@ explore_transformations(
 \item{ydim}{number (default 2)}
 
 \item{...}{passed to plot_data}
+
+\item{subgroup}{subgroup (sym)}
 }
 \value{
 grid object
@@ -38,6 +38,6 @@ Explore transformations
 \examples{
 file <- download_data('billing16.proteingroups.txt')
 invert <- c('EM_E', 'EM_BM', 'BM_E')
-object <- read_maxquant_proteingroups(file, invert_subgroups = invert, plot = FALSE)
+object <- read_maxquant_proteingroups(file, invert = invert, plot = FALSE)
 explore_transformations(object)
 }

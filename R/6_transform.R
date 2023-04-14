@@ -16,10 +16,10 @@
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
-#' object %<>% filter_samples(SampleGroup %in% c('t1', 't2'), verbose = TRUE)
+#' object <- read_somascan(file, plot = FALSE)
+#' object %<>% filter_samples(subgroup %in% c('t1', 't2'), verbose = TRUE)
 #' rm_singleton_samples(object, svar = 'Subject_ID')
-#' rm_unmatched_samples(object, subgroupvar = 'SampleGroup', block = 'Subject_ID')
+#' rm_unmatched_samples(object, subgroupvar = 'subgroup', block = 'Subject_ID')
 #' @export
 rm_unmatched_samples <- function(
     object,
@@ -131,21 +131,21 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #' @examples
 #' # read 
 #'     file <- download_data('atkin18.metabolon.xlsx') 
-#'     object0 <- read_metabolon(file, plot = FALSE)
-#'     pca(object0, plot = TRUE, color = SET)
+#'     object0 <- read_metabolon(file)
+#'     pca(object0, plot = TRUE, color = 'SET')
 #' 
 #' # subtract_baseline: takes medoid of baseline samples if multiple
 #'     object <- subtract_baseline(object0, block = 'SUB', subgroupvar = 'SET')
-#'     pca(object, plot = TRUE, color = SET)
+#'     pca(object, plot = TRUE, color = 'SET')
 #' 
 #' # subtract_pairs: optimized for many blocks
-#'     object <- subtract_pairs(   object0, block = 'SUB', subgroupvar = 'SET')
-#'     pca(object, plot = TRUE, color = SET)
+#'     object <- subtract_pairs(object0, block = 'SUB', subgroupvar = 'SET')
+#'     pca(object, plot = TRUE, color = 'SET')
 #' 
 #' # subtract differences
 #'     object <- subtract_differences(object0, block = 'SUB', subgroupvar = 'SET')
 #'     values(object) %<>% na_to_zero()
-#'     pca(object, plot = TRUE, color = SET)
+#'     pca(object, plot = TRUE, color = 'SET')
 #' @export 
 subtract_baseline <- function(
     object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], 
@@ -341,7 +341,7 @@ center <- function(object, selector = rep(TRUE, nrow(object))==TRUE,
 ){
     selector <- enexpr(selector)
     selector <- rlang::eval_tidy(selector, data = fdata(object))
-    if (verbose)  message(fun, ' center samples on ', 
+    if (verbose)  message('\t\t', fun, ' center samples on ', 
                             nrow(object[selector, ]), ' features')
     correction_factors <- apply(values(object[selector, ]), 2, fun, na.rm=TRUE)
     correction_factors[is.na(correction_factors)] <- 0
@@ -438,90 +438,83 @@ gglegend<-function(p){
 
 plot_transformation_densities <- function(
     object,
-    subgroup = subgroup,
-    transformations = c('quantnorm', 'vns' , 'zscore', 'invnorm'),
+    subgroupvar = 'subgroup',
+    transformations = c('quantnorm', 'vsn' , 'zscore', 'invnorm'),
     ...,
-    fixed = list(na.rm=TRUE, alpha=0.3)
+    fixed = list(na.rm = TRUE, alpha = 0.3)
 ){
     value <- sample_id <- NULL
-    subgroup <- enquo(subgroup); subgroupvar <- as_name(subgroup)
     assert_is_subset(subgroupvar, svars(object))
     dt <- sumexp_to_longdt(object, svars = c(subgroupvar))
     dt$transfo <- 'input'
     for (transfo in transformations){
-        dt1 <- sumexp_to_longdt(
-                get(transfo)(object), svars = c(subgroupvar))
+        dt1 <- sumexp_to_longdt(get(transfo)(object), svars = c(subgroupvar))
         dt1$transfo <- transfo
         dt %<>% rbind(dt1)
     }
     dt$transfo %<>% factor(c('input', transformations))
     plot_data(dt, geom_density, x = value, group = sample_id,
-            color = NULL, fill = !!subgroup, ..., fixed = fixed) +
-    facet_wrap(~transfo, scales = "free", nrow=1)
+            color = NULL, fill = !!sym(subgroupvar), ..., fixed = fixed) +
+    facet_wrap(vars(transfo), scales = "free", nrow=1)
 }
 
 
 plot_transformation_violins <- function(
     object,
-    subgroup = subgroup,
+    subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
     ...,
     fixed = list(na.rm=TRUE)
 ){
     value <- sample_id <- NULL
-    subgroupvar <- as_name(subgroup); subgroup <- enquo(subgroup)
     assert_is_subset(subgroupvar, svars(object))
     dt <- sumexp_to_longdt(object, svars = subgroupvar)
     dt$transfo <- 'input'
     for (transfo in transformations){
-        dt1 <- sumexp_to_longdt(
-                get(transfo)(object), svars = subgroupvar)
+        dt1 <- sumexp_to_longdt(get(transfo)(object), svars = subgroupvar)
         dt1$transfo <- transfo
         dt %<>% rbind(dt1)
     }
     dt$transfo %<>% factor(c('input', transformations))
     plot_data(dt, geom_violin, x = sample_id, y = value, group = sample_id, 
-                color = NULL, fill = !!subgroup, ..., fixed = fixed) +
-    facet_grid(rows = vars(!!subgroup), cols = vars(transfo), scales = "free") +
+                color = NULL, fill = !!sym(subgroupvar), ..., fixed = fixed) +
+    facet_grid(rows = vars(!!sym(subgroupvar)), cols = vars(transfo), scales = "free") +
     coord_flip()
 }
 
 
 plot_transformation_biplots <- function(
     object,
-    subgroup = subgroup,
+    subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
-    method = 'pca', xdim = 1, ydim = 2, color = !!enquo(subgroup), ...,
-    fixed = list(shape=15, size=3)
+    method = 'pca', by = biplot_by(get(method)(object, by = by), method),
+    dims = 1:2, color = subgroupvar, ...,
+    fixed = list(shape = 15, size = 3)
 ){
     . <- NULL
-    subgroup <- enquo(subgroup)
-    subgroupvar <- as_name(subgroup)
     assert_is_subset(subgroupvar, svars(object))
-    color <- enquo(color)
-    xstr <- paste0(method, xdim)
-    ystr <- paste0(method, ydim)
-
-    object %<>% get(method)(ndim=max(xdim, ydim), verbose = FALSE)
-    scoredt <- sdata(object) %>% cbind(transfo = 'input')
-    var1 <- metadata(object)[[method]][[xstr]]
-    var2 <- metadata(object)[[method]][[ystr]]
-    scoredt$transfo <- sprintf('input : %d + %d %%', var1, var2)
+    x <- sprintf('effect~%s~%s%d', by, method, dims[1])
+    y <- sprintf('effect~%s~%s%d', by, method, dims[2])
+    
+    object %<>% get(method)(ndim = max(dims), verbose = FALSE)
+    scoredt <- sdt(object) %>% cbind(transfo = 'input')
+    xvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[1])]])
+    yvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[2])]])
+    scoredt$transfo <- sprintf('input : %d + %d %%', xvar, yvar)
     for (transfo in transformations){
-        tmpobj <- get(transfo)(object) %>%
-                get(method)(ndim=max(xdim, ydim), verbose=FALSE)
-        var1 <- metadata(tmpobj)[[method]][[xstr]]
-        var2 <- metadata(tmpobj)[[method]][[ystr]]
-        tmpdt <- sdata(tmpobj)
-        tmpdt$transfo <- sprintf('%s : %d + %d %%', transfo, var1, var2)
+        tmpobj <- get(transfo)(object)
+        tmpobj %<>% get(method)(dims = dims, verbose = FALSE)
+        xvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[1])]])
+        yvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[2])]])
+        tmpdt <- sdt(tmpobj)
+        tmpdt$transfo <- sprintf('%s : %d + %d %%', transfo, xvar, yvar)
         scoredt %<>% rbind(tmpdt)
     }
     scoredt$transfo %<>% factor(unique(.))
-    p <- plot_data( scoredt, x=!!sym(xstr), y=!!sym(ystr), color=!!color, ...,
+    p <- plot_data( scoredt, x = !!sym(x), y = !!sym(y), color = !!sym(color), ...,
                     fixed = fixed)
-    p + facet_wrap(~transfo, nrow=1, scales = "free")
+    p + facet_wrap(vars(transfo), nrow = 1, scales = "free")
 }
-
 
 #==============================================================================
 #
@@ -541,28 +534,23 @@ plot_transformation_biplots <- function(
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
 #' invert <- c('EM_E', 'EM_BM', 'BM_E')
-#' object <- read_maxquant_proteingroups(file, invert_subgroups = invert, plot = FALSE)
+#' object <- read_maxquant_proteingroups(file, invert = invert, plot = FALSE)
 #' explore_transformations(object)
 #' @export
 explore_transformations <- function(
     object, 
-    subgroup = subgroup,
+    subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
-    method='pca', xdim=1, ydim=2, ...
+    method = 'pca', xdim = 1, ydim = 2, ...
 ){
-    subgroup <- enquo(subgroup)
-    subgroupvar <- as_name(subgroup)
     assert_is_subset(subgroupvar, svars(object))
     p1 <- plot_transformation_densities(
-            object, subgroup=!!subgroup, transformations, ...)
+            object, subgroupvar = subgroupvar, transformations, ...)
     p2 <- plot_transformation_biplots(
-            object, subgroup=!!subgroup, transformations, method, 
-            xdim1 = xdim, ydim = ydim, ...)
-
-    p3 <- arrangeGrob(
-        p1 + theme(legend.position='none'),
-        p2  + theme(legend.position='none'),
-        nrow=2, right = gglegend(p2))
+            object, subgroupvar = subgroupvar, transformations, method, 
+            xdim = xdim, ydim = ydim, ...)
+    p3 <- arrangeGrob(p1 + theme(legend.position='none'),
+                      p2 + theme(legend.position='none'), nrow=2, right = gglegend(p2))
     grid.draw(p3)
     invisible(p3)
 }
