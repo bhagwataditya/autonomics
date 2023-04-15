@@ -32,13 +32,12 @@ read_metabolon(
   impute = TRUE,
   plot = FALSE,
   pca = plot,
+  pls = plot,
   fit = if (plot) "limma" else NULL,
-  formula = NULL,
+  formula = ~subgroup,
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
-  feature_id = NULL,
-  sample_id = NULL,
   palette = NULL,
   verbose = TRUE
 )
@@ -60,19 +59,19 @@ read_metabolon(
 
 \item{subgroupvar}{subgroup var}
 
-\item{verbose}{TRUE/FALSE : message?}
+\item{verbose}{TRUE or FALSE}
 
 \item{fnamevar}{featurename fvar}
 
-\item{kegg_pathways}{TRUE/FALSE: add kegg pathways?}
+\item{kegg_pathways}{TRUE or FALSE: add kegg pathways?}
 
-\item{smiles}{TRUE/FALSE: add smiles?}
+\item{smiles}{TRUE or FALSE: add smiles?}
 
-\item{impute}{TRUE/FALSE: impute group-specific NA values?}
+\item{impute}{TRUE or FALSE: impute group-specific NA values?}
 
-\item{plot}{TRUE/FALSE}
+\item{plot}{TRUE or FALSE}
 
-\item{pca}{TRUE/FALSE: compute and plot pca?}
+\item{pca}{TRUE or FALSE: compute and plot pca?}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
@@ -80,15 +79,11 @@ read_metabolon(
 
 \item{block}{model blockvar: string or NULL}
 
-\item{coefs}{model coefficients of interest:          string vector or NULL}
+\item{coefs}{model coefficients of interest:    character vector or NULL}
 
-\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
+\item{contrasts}{coefficient contrasts of interest: character vector or NULL}
 
-\item{feature_id}{string: feature for summary plot}
-
-\item{sample_id}{string: sample  for summary plot}
-
-\item{palette}{color palette : named string vector}
+\item{palette}{NULL or colorvector}
 }
 \value{
 SummarizedExperiment
@@ -98,5 +93,5 @@ Read metabolon xlsxfile
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-read_metabolon(file, pca = TRUE, fit = 'limma', block = 'SUB')
+read_metabolon(file, plot = TRUE, block = 'SUB')
 }

@@ -17,13 +17,12 @@ read_maxquant_proteingroups(
   impute = FALSE,
   plot = FALSE,
   pca = plot,
+  pls = plot,
   fit = if (plot) "limma" else NULL,
-  formula = NULL,
+  formula = ~subgroup,
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
-  feature_id = NULL,
-  sample_id = NULL,
   palette = NULL,
   verbose = TRUE
 )
@@ -45,15 +44,17 @@ read_proteingroups(...)
 
 \item{invert}{string vector : subgroups which require inversion}
 
-\item{contaminants}{TRUE/FALSE : retain contaminants ?}
+\item{contaminants}{TRUE or FALSE : retain contaminants ?}
 
-\item{reverse}{TRUE/FALSE : include reverse hits ?}
+\item{reverse}{TRUE or FALSE : include reverse hits ?}
 
-\item{impute}{TRUE/FALSE: impute group-specific NA values?}
+\item{impute}{TRUE or FALSE: impute group-specific NA values?}
 
-\item{plot}{TRUE/FALSE}
+\item{plot}{TRUE or FALSE: plot ?}
 
-\item{pca}{TRUE/FALSE: compute and plot pca?}
+\item{pca}{TRUE or FALSE: run pca ?}
+
+\item{pls}{TRUE or FALSE: run pls ?}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
@@ -61,17 +62,13 @@ read_proteingroups(...)
 
 \item{block}{model blockvar: string or NULL}
 
-\item{coefs}{model coefficients          of interest: string vector or NULL}
+\item{coefs}{model coefficients    of interest: character vector or NULL}
 
-\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
+\item{contrasts}{coefficient contrasts of interest: character vector or NULL}
 
-\item{feature_id}{string: feature for summary plot}
+\item{palette}{color palette : named character vector}
 
-\item{sample_id}{string: sample  for summary plot}
-
-\item{palette}{color palette : named string vector}
-
-\item{verbose}{TRUE/FALSE : message ?}
+\item{verbose}{TRUE or FALSE : message ?}
 
 \item{localization}{number: min localization probability (for phosphosites)}
 }
@@ -92,5 +89,4 @@ Read maxquant proteingroups
     fastadt <- read_fastahdrs(fastafile)
     subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
-    pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
 }

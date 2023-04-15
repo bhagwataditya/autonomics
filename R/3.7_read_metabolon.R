@@ -212,34 +212,31 @@ pubchem_to_smiles <- function(x){
 #' @param by.y          `sfile` mergeby column
 #' @param subgroupvar   subgroup var
 #' @param fnamevar      featurename fvar
-#' @param kegg_pathways TRUE/FALSE: add kegg pathways?
-#' @param smiles        TRUE/FALSE: add smiles?
-#' @param impute        TRUE/FALSE: impute group-specific NA values?
-#' @param plot          TRUE/FALSE
-#' @param pca           TRUE/FALSE: compute and plot pca?
+#' @param kegg_pathways TRUE or FALSE: add kegg pathways?
+#' @param smiles        TRUE or FALSE: add smiles?
+#' @param impute        TRUE or FALSE: impute group-specific NA values?
+#' @param plot          TRUE or FALSE
+#' @param pca           TRUE or FALSE: compute and plot pca?
 #' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
 #' @param formula       model formula
 #' @param block         model blockvar: string or NULL
-#' @param coefs         model coefficients of interest:          string vector or NULL
-#' @param contrasts     model coefficient contrasts of interest: string vector or NULL
-#' @param feature_id    string: feature for summary plot
-#' @param sample_id     string: sample  for summary plot
-#' @param palette       color palette : named string vector
-#' @param verbose       TRUE/FALSE : message?
+#' @param coefs         model coefficients of interest:    character vector or NULL
+#' @param contrasts     coefficient contrasts of interest: character vector or NULL
+#' @param palette       NULL or colorvector
+#' @param verbose       TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' read_metabolon(file, pca = TRUE, fit = 'limma', block = 'SUB')
+#' read_metabolon(file, plot = TRUE, block = 'SUB')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
     fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
     sidvar = '(CLIENT_IDENTIFIER|Client ID)',
     sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group',
     fnamevar = 'BIOCHEMICAL', kegg_pathways = FALSE, smiles = FALSE,
-    impute  = TRUE, plot = FALSE, pca = plot, 
-    fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL, 
-    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL,
-    palette = NULL, verbose = TRUE
+    impute  = TRUE, plot = FALSE, pca = plot, pls = plot,
+    fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL, 
+    coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_metabolon(
@@ -258,12 +255,11 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze
     object %<>% analyze(
-        pca          = pca,           fit       = fit, 
-        formula      = formula,       block     = block, 
-        coefs        = coefs,         contrasts = contrasts, 
-        plot         = plot,          feature_id= feature_id,    
-        sample_id    = sample_id,     palette   = palette, 
-        verbose      = verbose)
+        pca        = pca,           pls        = pls,
+        fit        = fit,           formula    = formula,
+        block      = block,         coefs      = coefs,
+        contrasts  = contrasts,     plot       = plot,
+        palette    = palette,       verbose    = verbose)
 # Return
     object
 }

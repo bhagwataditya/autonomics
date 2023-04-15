@@ -14,7 +14,6 @@
   nthreads = detectCores(),
   sfile = NULL,
   by.y = NULL,
-  subgroupvar = "subgroup",
   ensdb = NULL,
   verbose = TRUE
 )
@@ -24,7 +23,6 @@
   fid_col = 1,
   sfile = NULL,
   by.y = NULL,
-  subgroupvar = "subgroup",
   ensdb = NULL,
   verbose = TRUE
 )
@@ -36,9 +34,8 @@ read_rnaseq_bams(
   nthreads = detectCores(),
   sfile = NULL,
   by.y = NULL,
-  subgroupvar = "subgroup",
   block = NULL,
-  formula = NULL,
+  formula = ~subgroup,
   min_count = 10,
   pseudo = 0.5,
   ensdb = NULL,
@@ -47,12 +44,11 @@ read_rnaseq_bams(
   log2 = TRUE,
   plot = FALSE,
   pca = plot,
+  pls = plot,
   fit = if (plot) "limma" else NULL,
   voom = cpm,
   coefs = NULL,
   contrasts = NULL,
-  feature_id = NULL,
-  sample_id = NULL,
   palette = NULL,
   verbose = TRUE
 )
@@ -62,9 +58,8 @@ read_rnaseq_counts(
   fid_col = 1,
   sfile = NULL,
   by.y = NULL,
-  subgroupvar = "subgroup",
+  formula = ~subgroup,
   block = NULL,
-  formula = NULL,
   min_count = 10,
   pseudo = 0.5,
   tpm = FALSE,
@@ -73,6 +68,7 @@ read_rnaseq_counts(
   log2 = TRUE,
   plot = FALSE,
   pca = plot,
+  pls = plot,
   fit = if (plot) "limma" else NULL,
   voom = cpm,
   coefs = NULL,
@@ -96,11 +92,9 @@ read_rnaseq_counts(
 
 \item{by.y}{sample file mergeby column}
 
-\item{subgroupvar}{subgroup svar}
-
 \item{ensdb}{EnsDb with genesizes : e.g. AnnotationHub::AnnotationHub[['AH64923']]}
 
-\item{verbose}{TRUE/FALSE : message?}
+\item{verbose}{TRUE or FALSE: message?}
 
 \item{file}{count file}
 
@@ -114,15 +108,17 @@ read_rnaseq_counts(
 
 \item{pseudo}{pseudocount added to prevent -Inf log2 values}
 
-\item{tpm}{TRUE/FALSE : add tpm to assays ( counts / libsize / genelength ) ?}
+\item{tpm}{TRUE or FALSE : add tpm to assays ( counts / libsize / genelength ) ?}
 
-\item{cpm}{TRUE/FALSE : add cpm to assays ( counts / effectivelibsize ) ?}
+\item{cpm}{TRUE or FALSE: add cpm to assays ( counts / effectivelibsize ) ?}
 
-\item{log2}{TRUE/FALSE : log2 transform ?}
+\item{log2}{TRUE or FALSE: log2 transform ?}
 
-\item{plot}{TRUE/FALSE : plot?}
+\item{plot}{TRUE or FALSE: plot?}
 
-\item{pca}{TRUE/FALSE : perform and plot pca?}
+\item{pca}{TRUE or FALSE: perform and plot pca?}
+
+\item{pls}{TRUE or FALSE: run pls ?}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
@@ -131,10 +127,6 @@ read_rnaseq_counts(
 \item{coefs}{model coefficients          of interest: string vector or NULL}
 
 \item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
-
-\item{feature_id}{string: feature for summary plot}
-
-\item{sample_id}{string: sample  for summary plot}
 
 \item{palette}{color palette : named string vector}
 }
@@ -149,6 +141,7 @@ Read rnaseq counts/bams
     if (requireNamespace('Rsubread')){
        dir <- download_data('billing16.bam.zip')
        object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38')  
+       object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38', plot = TRUE)  
     }
 # read_rnaseq_counts
     file <- download_data('billing19.rnacounts.txt')
@@ -156,6 +149,7 @@ Read rnaseq counts/bams
     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
+    object <- read_rnaseq_counts(file, plot = TRUE)
     
 # read_rnaseq_counts(tpm = TRUE)
     \dontrun{

@@ -764,22 +764,21 @@ is_file <- function(file){
 #'                     'reporterintensity', 'maxlfq', 'labeledintensity', 
 #'                     'intensity' or NULL
 #' @param subgroups     NULL or string vector : subgroups to retain
-#' @param contaminants  TRUE/FALSE : retain contaminants ?
-#' @param reverse       TRUE/FALSE : include reverse hits ?
+#' @param contaminants  TRUE or FALSE : retain contaminants ?
+#' @param reverse       TRUE or FALSE : include reverse hits ?
 #' @param localization  number: min localization probability (for phosphosites)
 #' @param invert        string vector : subgroups which require inversion
-#' @param impute        TRUE/FALSE: impute group-specific NA values?
-#' @param plot          TRUE/FALSE
-#' @param pca           TRUE/FALSE: compute and plot pca?
+#' @param impute        TRUE or FALSE: impute group-specific NA values?
+#' @param plot          TRUE or FALSE: plot ?
+#' @param pca           TRUE or FALSE: run pca ?
+#' @param pls           TRUE or FALSE: run pls ?
 #' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
 #' @param formula       model formula
 #' @param block         model blockvar: string or NULL
-#' @param coefs         model coefficients          of interest: string vector or NULL
-#' @param contrasts     model coefficient contrasts of interest: string vector or NULL
-#' @param feature_id    string: feature for summary plot
-#' @param sample_id     string: sample  for summary plot
-#' @param palette       color palette : named string vector
-#' @param verbose       TRUE/FALSE : message ?
+#' @param coefs         model coefficients    of interest: character vector or NULL
+#' @param contrasts     coefficient contrasts of interest: character vector or NULL
+#' @param palette       color palette : named character vector
+#' @param verbose       TRUE or FALSE : message ?
 #' @return SummarizedExperiment
 #' @examples
 #' # fukuda20 - LFQ
@@ -792,7 +791,6 @@ is_file <- function(file){
 #'     fastadt <- read_fastahdrs(fastafile)
 #'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
-#'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
 #' @export
 read_maxquant_proteingroups <- function(
     dir = getwd(), 
@@ -800,9 +798,9 @@ read_maxquant_proteingroups <- function(
     fastadt = NULL, quantity = NULL, 
     subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = FALSE,
-    plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,
-    formula = NULL, block = NULL, coefs = NULL, contrasts = NULL,
-    feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
+    plot = FALSE, pca = plot, pls = plot, fit = if (plot) 'limma' else NULL,
+    formula = ~ subgroup, block = NULL, coefs = NULL, contrasts = NULL,
+    palette = NULL, verbose = TRUE
 ){
 # Assert
     assert_maxquant_proteingroups(file)
@@ -838,12 +836,11 @@ read_maxquant_proteingroups <- function(
     assays <- c(assayNames(object)[1], 'pepcounts')
     for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
-        pca          = pca,           fit       = fit,       
-        formula      = formula,       block     = block,       
-        coefs        = coefs,         contrasts = contrasts,    
-        plot         = plot,          feature_id= feature_id,
-        sample_id    = sample_id,     palette   = palette, 
-        verbose      = verbose )
+        pca          = pca,           pls       = pls,
+        fit          = fit,           formula   = formula,
+        block        = block,         coefs     = coefs,
+        contrasts    = contrasts,     plot      = plot,
+        palette      = palette,       verbose   = verbose )
     object
 }
 
@@ -865,22 +862,21 @@ read_proteingroups <- function(...){
 #'                     'reporterintensity', 'maxlfq', 'labeledintensity', 
 #'                     'intensity' or NULL
 #' @param subgroups     NULL or string vector : subgroups to retain
-#' @param contaminants  TRUE/FALSE : retain contaminants ?
-#' @param reverse       TRUE/FALSE : include reverse hits ?
+#' @param contaminants  TRUE or FALSE: retain contaminants ?
+#' @param reverse       TRUE or FALSE: include reverse hits ?
 #' @param localization  number: min localization probability (for phosphosites)
-#' @param invert        string vector : subgroups which require inversion
-#' @param impute        TRUE/FALSE: impute group-specific NA values?
-#' @param plot          TRUE/FALSE
-#' @param pca           TRUE/FALSE: compute and plot pca?
+#' @param invert        string vector: subgroups which require inversion
+#' @param impute        TRUE or FALSE: impute group-specific NA values?
+#' @param plot          TRUE or FALSE
+#' @param pca           TRUE or FALSE: run pca ?
+#' @param pls           TRUE or FALSE: run pls ?
 #' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
 #' @param formula       model formula
 #' @param block         model blockvar: string or NULL
 #' @param coefs         model coefficients          of interest: string vector or NULL
 #' @param contrasts     model coefficient contrasts of interest: string vector or NULL
-#' @param feature_id    string: feature for summary plot
-#' @param sample_id     string: sample  for summary plot
-#' @param palette       color palette : named string vector
-#' @param verbose       TRUE/FALSE : message ?
+#' @param palette       color palette: named string vector
+#' @param verbose       TRUE or FALSE: message ?
 #' @return SummarizedExperiment
 #' @examples
 #' proteinfile <- download_data('billing19.proteingroups.txt')
@@ -901,9 +897,10 @@ read_maxquant_phosphosites <- function(
     quantity = NULL, 
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
-    impute = FALSE, plot = FALSE, pca = plot, fit = if (plot) 'limma' else NULL,  
+    impute = FALSE, plot = FALSE, pca = plot, pls = plot, 
+    fit = if (plot) 'limma' else NULL,  
     formula = NULL, block = NULL, coefs = NULL, contrasts = NULL, 
-    feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
+    palette = NULL, verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(c(phosphofile, proteinfile))
@@ -948,12 +945,11 @@ read_maxquant_phosphosites <- function(
     assays <- c('log2sites', 'pepcounts')
     for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
-        pca          = pca,           fit       = fit, 
-        formula      = formula,       block     = block,   
-        coefs        = coefs,         contrasts = contrasts,
-        plot         = plot,          feature_id= feature_id,    
-        sample_id    = sample_id,     palette   = palette, 
-        verbose      = verbose )
+        pca       = pca,           pls       = pls,
+        fit       = fit,           formula   = formula,
+        block     = block,         coefs     = coefs,
+        contrasts = contrasts,     plot      = plot,
+        palette   = palette,       verbose   = verbose )
     object
 }
 

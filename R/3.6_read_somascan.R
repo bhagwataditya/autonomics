@@ -149,21 +149,22 @@ rm_single_value_columns <- function(df){
 #' @param feature_type          subset of c('Protein', 'Hybridization Control Elution','Rat Protein')
 #' @param sample_quality        subset of c('PASS', 'FLAG', 'FAIL')
 #' @param feature_quality       subset of c('PASS', 'FLAG', 'FAIL')
-#' @param rm_na_svars           TRUE/FALSE: rm NA svars?
-#' @param rm_single_value_svars TRUE/FALSE: rm single value svars?
-#' @param plot                  TRUE/FALSE
-#' @param pca                   TRUE/FALSE: run pca?
+#' @param rm_na_svars           TRUE or FALSE: rm NA svars?
+#' @param rm_single_value_svars TRUE or FALSE: rm single value svars?
+#' @param plot                  TRUE or FALSE: plot ?
+#' @param pca                   TRUE or FALSE: run pca?
+#' @param pls                   TRUE or FALSE: run pls?
 #' @param fit                   model engine: 'limma', 'lm', 'lme(r)','wilcoxon' or NULL
 #' @param formula               model formula
 #' @param block                 model blockvar
-#' @param coefs                 model coefficients          of interest: string vector or NULL
-#' @param contrasts             model coefficient contrasts of interest: string vector or NULL
-#' @param palette               charactervector or NULL
-#' @param verbose               TRUE/FALSE: message?
+#' @param coefs                 model coefficients    of interest: character vector or NULL
+#' @param contrasts             coefficient contrasts of interest: character vector or NULL
+#' @param palette               character vector or NULL
+#' @param verbose               TRUE or FALSE: message?
 #' @return Summarizedexperiment
 #' @examples
 #' file <- download_data('atkin18.somascan.adat')
-#' read_somascan(file, pca = TRUE, fit = 'limma', block = 'Subject_ID')
+#' read_somascan(file, plot = TRUE, block = 'Subject_ID')
 #' @export
 read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
     sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup', 
@@ -171,9 +172,8 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, plot = FALSE, 
-    pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL, 
-    coefs = NULL, contrasts = NULL, 
-    feature_id = NULL, sample_id = NULL, palette = NULL, verbose = TRUE
+    pca = plot, pls = plot,fit = if (plot) 'limma' else NULL, formula = ~ subgroup, 
+    block = NULL, coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_somascan(
@@ -200,13 +200,11 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
     object %<>% log2transform(verbose = verbose)
 # Analyze
     object %<>% analyze(
-        pca         = pca,          fit          = fit, 
-        formula     = formula, 
-        block       = block,        coefs        = coefs, 
-        contrasts   = contrasts,
-        plot        = plot,         feature_id    = feature_id,    
-        sample_id   = sample_id,    palette       = palette, 
-        verbose     = verbose)
+        pca         = pca,          pls         = pls,
+        fit         = fit,          formula     = formula, 
+        block       = block,        coefs       = coefs, 
+        contrasts   = contrasts,    plot        = plot,
+        palette     = palette,      verbose     = verbose)
 # Return
     object
 }

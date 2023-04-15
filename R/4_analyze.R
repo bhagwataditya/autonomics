@@ -39,7 +39,6 @@ analyze <- function(
     verbose      = TRUE
 ){
     # Analyze
-    if (is.null(subgroupvar))   subgroupvar <- default_subgroupvar(object)
     if (is.null(palette))       palette <- make_subgroup_palette(object)
     if (pca)  object %<>% pca(verbose = verbose, plot = FALSE)
     if (pls)  object %<>% pls(by = all.vars(formula)[1], verbose = FALSE)
@@ -55,7 +54,7 @@ analyze <- function(
             plot         = FALSE) 
     }
     # Plot/Return
-    if (plot)  plot_summary(object, fit = fit, palette = palette)
+    if (plot)  plot_summary(object, fit = fit, block = block, palette = palette)
     object
 }
 
@@ -98,14 +97,18 @@ plot_summary <- function(
                      axis.ticks.x = element_blank(), axis.ticks.y = element_blank(), 
                      plot.title   = element_text(hjust = 0.5))
     samples  <- plot_top_samples(object, palette = palette)
-    features <- plot_top_features(object)
-    pca1exprs <- plot_exprs(object, fit = 'pca1',  block = block, n = 1, subtitle = 'X1', title = NULL) + guides(color = 'none') + ylab(NULL)
-    pca2exprs <- plot_exprs(object, fit = 'pca2',  block = block, n = 1, subtitle = 'X2', title = NULL) + guides(color = 'none') + ylab(NULL)
-    pls1exprs <- plot_exprs(object, fit = 'pls1',  block = block, n = 1, subtitle = 'X1', title = NULL) + guides(color = 'none') + ylab(NULL)
-    pls2exprs <- plot_exprs(object, fit = 'pls2',  block = block, n = 1, subtitle = 'X2', title = NULL) + guides(color = 'none') + ylab(NULL)
+    features <- plot_top_features(object, fit = fit)
+    pca1exprs <- plot_exprs(object, fit = 'pca1',  block = block, n = 1, subtitle = 'X1', title = NULL)
+    pca2exprs <- plot_exprs(object, fit = 'pca2',  block = block, n = 1, subtitle = 'X2', title = NULL)
+    pls1exprs <- plot_exprs(object, fit = 'pls1',  block = block, n = 1, subtitle = 'X1', title = NULL)
+    pls2exprs <- plot_exprs(object, fit = 'pls2',  block = block, n = 1, subtitle = 'X2', title = NULL)
     coefs <- default_coefs(object, fit = fit)
-    glm1exprs <- plot_exprs(object, fit = fit, coefs = coefs[1], block = block, n = 1, nrow = 1, subtitle = coefs[1], title = NULL) + 
-                 guides(color = 'none') + ylab(NULL)
+    glm1exprs <- plot_exprs(object, fit = fit, coefs = coefs[1], block = block, n = 1, nrow = 1, subtitle = coefs[1], title = NULL)
+    pca1exprs <- pca1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
+    pca2exprs <- pca2exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
+    pls1exprs <- pls1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
+    pls2exprs <- pls2exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
+    glm1exprs <- glm1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
     glm1volcano <- plot_top_volcano(object, fit = fit, coef = coefs[1]) + guides(shape = 'none', linetype = 'none')
 # Arrange
     layout_matrix <- matrix(c(1, 2, 3, 
@@ -121,7 +124,7 @@ plot_summary <- function(
 
 
 plot_top_samples <- function(object, palette = make_subgroup_palette(object)){
-    plot_sample_densities( object, n = 5, fill = 'subgroup', palette = palette) + 
+    plot_sample_densities( object, n = 4, fill = 'subgroup', palette = palette) + 
         ggtitle('Samples') + theme_void() + coord_flip() + 
         theme(plot.title       = element_text(hjust = 0.5), 
               legend.position  = 'left', 
@@ -131,12 +134,13 @@ plot_top_samples <- function(object, palette = make_subgroup_palette(object)){
 
 plot_top_features <- function(object, fit){
     idx1 <- order(abs(fdt(object)$`effect~sample_id~pca1`), decreasing = TRUE)[1]
-    idx2 <- order(abs(fdt(object)$`effect~sample_id~pca2`), decreasing = TRUE)[1]
+    #idx2 <- order(abs(fdt(object)$`effect~sample_id~pca2`), decreasing = TRUE)[1]
     idx3 <- order(abs(fdt(object)$`effect~subgroup~pls1` ), decreasing = TRUE)[1]
-    idx4 <- order(abs(fdt(object)$`effect~subgroup~pls2` ), decreasing = TRUE)[1]
+    #idx4 <- order(abs(fdt(object)$`effect~subgroup~pls2` ), decreasing = TRUE)[1]
     pvr <- pvar(object, fit = fit, coef = default_coefs(object, fit = fit))[1]
     idx5 <- order(abs(fdt(object)[[pvr]]))[1]
-    idx  <- unique(c(idx1,idx2,idx3,idx4,idx5))
+    idx  <- unique(c(idx1,idx3,idx5))
+    #idx  <- unique(c(idx1,idx2,idx3,idx4,idx5))
     
     plot_feature_densities(
         object[idx, ], n = length(idx)) + 

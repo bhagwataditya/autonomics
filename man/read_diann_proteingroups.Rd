@@ -19,8 +19,9 @@ read_diann_proteingroups(
   impute = FALSE,
   plot = FALSE,
   pca = plot,
+  pls = plot,
   fit = if (plot) "limma" else NULL,
-  formula = NULL,
+  formula = ~subgroup,
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
@@ -37,17 +38,19 @@ read_diann(...)
 
 \item{Lib.PG.Q}{Lib.PG.Q cutoff}
 
-\item{verbose}{TRUE/FALSE}
+\item{verbose}{TRUE or FALSE}
 
-\item{simplify_snames}{TRUE/FALSE : simplify (drop common parts in) samplenames ?}
+\item{simplify_snames}{TRUE or FALSE: simplify (drop common parts in) samplenames ?}
 
-\item{contaminants}{string vector: contaminant uniprots}
+\item{contaminants}{character vector: contaminant uniprots}
 
-\item{impute}{TRUE / FALSE : impute group-specific NA values?}
+\item{impute}{TRUE or FALSE: impute group-specific NA values?}
 
-\item{plot}{TRUE / FALSE}
+\item{plot}{TRUE or FALSE}
 
-\item{pca}{TRUE / FALSE : compute and plot pca ?}
+\item{pca}{TRUE or FALSE: run pca ?}
+
+\item{pls}{TRUE or FALSE: run pls ?}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
@@ -55,18 +58,14 @@ read_diann(...)
 
 \item{block}{model blockvar: string or NULL}
 
-\item{coefs}{model coefficients          of interest: string vector or NULL}
+\item{coefs}{model coefficients    of interest: character vector or NULL}
 
-\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
-
-\item{feature_id}{string: feature for summary plot}
-
-\item{sample_id}{string: sample  for summary plot}
+\item{contrasts}{coefficient contrasts of interest: character vector or NULL}
 
 \item{palette}{color palette: named string vector}
 }
 \value{
-data.table / SummarizedExperiment
+data.table or SummarizedExperiment
 }
 \description{
 Read diann

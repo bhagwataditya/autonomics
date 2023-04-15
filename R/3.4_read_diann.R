@@ -246,21 +246,20 @@ uniprot2isoforms <- function(x){
 #'
 #' @param file               'report.tsv' file
 #' @param Lib.PG.Q            Lib.PG.Q cutoff
-#' @param simplify_snames     TRUE/FALSE : simplify (drop common parts in) samplenames ?
-#' @param contaminants        string vector: contaminant uniprots
-#' @param impute              TRUE / FALSE : impute group-specific NA values?
-#' @param plot                TRUE / FALSE
-#' @param pca                 TRUE / FALSE : compute and plot pca ?
+#' @param simplify_snames     TRUE or FALSE: simplify (drop common parts in) samplenames ?
+#' @param contaminants        character vector: contaminant uniprots
+#' @param impute              TRUE or FALSE: impute group-specific NA values?
+#' @param plot                TRUE or FALSE
+#' @param pca                 TRUE or FALSE: run pca ?
+#' @param pls                 TRUE or FALSE: run pls ?
 #' @param fit                 model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
 #' @param formula             model formula
 #' @param block               model blockvar: string or NULL
-#' @param coefs               model coefficients          of interest: string vector or NULL
-#' @param contrasts           model coefficient contrasts of interest: string vector or NULL
-#' @param feature_id          string: feature for summary plot
-#' @param sample_id           string: sample  for summary plot
+#' @param coefs               model coefficients    of interest: character vector or NULL
+#' @param contrasts           coefficient contrasts of interest: character vector or NULL
 #' @param palette             color palette: named string vector
-#' @param verbose             TRUE/FALSE
-#' @return  data.table / SummarizedExperiment
+#' @param verbose             TRUE or FALSE
+#' @return  data.table or SummarizedExperiment
 #' @examples
 #' # Read
 #'    file <- download_data('dilution.report.tsv')
@@ -285,7 +284,7 @@ read_diann_proteingroups <- function(
     simplify_snames = TRUE,
     contaminants = character(0), 
     impute = FALSE, plot = FALSE, 
-    pca = plot, fit = if (plot) 'limma' else NULL, formula = NULL, block = NULL,
+    pca = plot, pls = plot, fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL,
     coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
     palette = NULL, verbose = TRUE
 ){
@@ -326,12 +325,11 @@ read_diann_proteingroups <- function(
     object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
     if ({{impute}})   object %<>% impute()
     object %<>% analyze(
-        pca          = pca,           fit       = fit,
-        formula      = formula,       block     = block,      
-        coefs        = coefs,         contrasts = contrasts,   
-        verbose      = verbose,       plot      = plot,
-        feature_id   = feature_id,    sample_id = sample_id,  
-        palette      = palette)
+        pca         = pca,           pls         = pls,
+        fit         = fit,           formula     = formula,
+        block       = block,         coefs       = coefs,
+        contrasts   = contrasts,     verbose     = verbose,
+        plot        = plot,          palette     = palette)
     object
 }
 

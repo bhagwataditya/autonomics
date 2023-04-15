@@ -19,13 +19,12 @@ read_maxquant_phosphosites(
   impute = FALSE,
   plot = FALSE,
   pca = plot,
+  pls = plot,
   fit = if (plot) "limma" else NULL,
   formula = NULL,
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
-  feature_id = NULL,
-  sample_id = NULL,
   palette = NULL,
   verbose = TRUE
 )
@@ -47,19 +46,21 @@ read_phosphosites(...)
 
 \item{subgroups}{NULL or string vector : subgroups to retain}
 
-\item{invert}{string vector : subgroups which require inversion}
+\item{invert}{string vector: subgroups which require inversion}
 
-\item{contaminants}{TRUE/FALSE : retain contaminants ?}
+\item{contaminants}{TRUE or FALSE: retain contaminants ?}
 
-\item{reverse}{TRUE/FALSE : include reverse hits ?}
+\item{reverse}{TRUE or FALSE: include reverse hits ?}
 
 \item{localization}{number: min localization probability (for phosphosites)}
 
-\item{impute}{TRUE/FALSE: impute group-specific NA values?}
+\item{impute}{TRUE or FALSE: impute group-specific NA values?}
 
-\item{plot}{TRUE/FALSE}
+\item{plot}{TRUE or FALSE}
 
-\item{pca}{TRUE/FALSE: compute and plot pca?}
+\item{pca}{TRUE or FALSE: run pca ?}
+
+\item{pls}{TRUE or FALSE: run pls ?}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
@@ -71,13 +72,9 @@ read_phosphosites(...)
 
 \item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
-\item{feature_id}{string: feature for summary plot}
+\item{palette}{color palette: named string vector}
 
-\item{sample_id}{string: sample  for summary plot}
-
-\item{palette}{color palette : named string vector}
-
-\item{verbose}{TRUE/FALSE : message ?}
+\item{verbose}{TRUE or FALSE: message ?}
 }
 \value{
 SummarizedExperiment

@@ -33,13 +33,12 @@ read_somascan(
   rm_single_value_svars = FALSE,
   plot = FALSE,
   pca = plot,
+  pls = plot,
   fit = if (plot) "limma" else NULL,
-  formula = NULL,
+  formula = ~subgroup,
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
-  feature_id = NULL,
-  sample_id = NULL,
   palette = NULL,
   verbose = TRUE
 )
@@ -59,7 +58,7 @@ read_somascan(
 
 \item{subgroupvar}{subgroup var: string}
 
-\item{verbose}{TRUE/FALSE: message?}
+\item{verbose}{TRUE or FALSE: message?}
 
 \item{fname_var}{featurename var: string}
 
@@ -71,13 +70,15 @@ read_somascan(
 
 \item{feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
-\item{rm_na_svars}{TRUE/FALSE: rm NA svars?}
+\item{rm_na_svars}{TRUE or FALSE: rm NA svars?}
 
-\item{rm_single_value_svars}{TRUE/FALSE: rm single value svars?}
+\item{rm_single_value_svars}{TRUE or FALSE: rm single value svars?}
 
-\item{plot}{TRUE/FALSE}
+\item{plot}{TRUE or FALSE: plot ?}
 
-\item{pca}{TRUE/FALSE: run pca?}
+\item{pca}{TRUE or FALSE: run pca?}
+
+\item{pls}{TRUE or FALSE: run pls?}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)','wilcoxon' or NULL}
 
@@ -85,11 +86,11 @@ read_somascan(
 
 \item{block}{model blockvar}
 
-\item{coefs}{model coefficients          of interest: string vector or NULL}
+\item{coefs}{model coefficients    of interest: character vector or NULL}
 
-\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
+\item{contrasts}{coefficient contrasts of interest: character vector or NULL}
 
-\item{palette}{charactervector or NULL}
+\item{palette}{character vector or NULL}
 }
 \value{
 Summarizedexperiment
@@ -99,5 +100,5 @@ Read somascan adatfile
 }
 \examples{
 file <- download_data('atkin18.somascan.adat')
-read_somascan(file, pca = TRUE, fit = 'limma', block = 'Subject_ID')
+read_somascan(file, plot = TRUE, block = 'Subject_ID')
 }

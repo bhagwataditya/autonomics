@@ -626,7 +626,7 @@ biplot <- function(
     group         = NULL, 
     linetype      = NULL,
     label         = NULL, 
-    feature_label = 'feature_name', 
+    feature_label = 'feature_id', 
     fixed         = list(shape = 15, size = 3), 
     nfeatures     = 1,
     colorpalette  =  make_svar_palette(object, color),

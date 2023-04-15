@@ -6,8 +6,7 @@
 \usage{
 preprocess_rnaseq_counts(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object),
+  formula = ~subgroup,
   block = NULL,
   min_count = 10,
   pseudo = 0.5,
@@ -22,8 +21,6 @@ preprocess_rnaseq_counts(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroupvar}{subgroup svar}
-
 \item{formula}{designmat formula}
 
 \item{block}{blocK svar}
@@ -32,17 +29,17 @@ preprocess_rnaseq_counts(
 
 \item{pseudo}{added pseudocount to avoid log(x)=-Inf}
 
-\item{tpm}{TRUE/FALSE : tpm normalize?}
+\item{tpm}{TRUE or FALSE : tpm normalize?}
 
-\item{cpm}{TRUE/FALSE : cpm normalize? (counts per million (scaled) reads)}
+\item{cpm}{TRUE or FALSE : cpm normalize? (counts per million (scaled) reads)}
 
-\item{voom}{TRUE/FALSE : voom weight?}
+\item{voom}{TRUE or FALSE : voom weight?}
 
-\item{log2}{TRUE/FALSE : log2 transform?}
+\item{log2}{TRUE or FALSE : log2 transform?}
 
-\item{verbose}{TRUE/FALSE : msg?}
+\item{verbose}{TRUE or FALSE : msg?}
 
-\item{plot}{TRUE/FALSE : plot?}
+\item{plot}{TRUE or FALSE : plot?}
 
 \item{genesizevar}{string     : tpm normalization genesize fvar}
 }
