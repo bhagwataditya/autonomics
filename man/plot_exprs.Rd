@@ -16,14 +16,13 @@ plot_exprs(
   assay = assayNames(object)[1],
   fit = fits(object)[1],
   coefs = default_coefs(object, fit = fit),
-  x = switch(dim, both = default_x(fit = fit, coefs = coefs[1]), features = "feature_id",
-    samples = "sample_id"),
-  geom = default_geom(object, x = x),
+  block = NULL,
+  x = default_x(object, dim),
+  geom = default_geom(object, x = x, block = block),
   color = x,
   fill = x,
   shape = NULL,
   size = NULL,
-  block = NULL,
   linetype = NULL,
   highlight = NULL,
   combiner = "|",
@@ -76,6 +75,8 @@ boxplot_features(...)
 
 \item{coefs}{subset of coefs(object) to consider in selecting top}
 
+\item{block}{group svar}
+
 \item{x}{x svar}
 
 \item{geom}{'boxplot' or 'point'}
@@ -87,8 +88,6 @@ boxplot_features(...)
 \item{shape}{shape svar}
 
 \item{size}{size svar}
-
-\item{block}{group svar}
 
 \item{linetype}{linetype svar}
 

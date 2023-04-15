@@ -1093,13 +1093,13 @@ plot_exprs <- function(
     assay        = assayNames(object)[1], 
     fit          = fits(object)[1], 
     coefs        = default_coefs(object, fit = fit),
-    x            = switch(dim, both = default_x(fit = fit, coefs = coefs[1]), features = 'feature_id', samples  = 'sample_id'),  
-    geom         = default_geom(object, x = x),
+    block        = NULL, 
+    x            = default_x(object, dim),  
+    geom         = default_geom(object, x = x, block = block),
     color        = x, # points/lines
     fill         = x, # boxplots
     shape        = NULL,
     size         = NULL,
-    block        = NULL, 
     linetype     = NULL,
     highlight    = NULL, 
     combiner     = '|',
@@ -1259,7 +1259,7 @@ plot_exprs_per_coef <- function(
     object, 
     fit      = fits(object)[1],
     coefs    = default_coefs(object, fit = fit),
-    x        = default_x(fit, coefs),
+    x        = default_x(object),
     geom     = default_geom(object, x),
     block    = NULL,
     orderbyp = FALSE,
@@ -1296,12 +1296,11 @@ plot_exprs_per_coef <- function(
 }
 
 
-default_x <- function(fit, coefs){
-    if (is.null(fit))  return('subgroup')
-    y <- coefs
-    idx <- grepl('(limma|lm|lme|lmer|wilcoxon)', fit)
-    y[idx] <- 'subgroup'
-    y
+default_x <- function(object, dim = 'both'){
+    if (dim == 'features')                              return('feature_id')
+    if (dim == 'samples')                               return('sample_id')
+    if (dim == 'both' & 'subgroup' %in% svars(object))  return('subgroup')
+                                                        return('sample_id')
 }
 
 default_subtitle <- function(fit, x, coefs){
@@ -1320,15 +1319,21 @@ default_subtitle <- function(fit, x, coefs){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' svars(object)
-#' default_geom(object, x = c('AGE', 'T2D'))
 #' default_geom(object, x = 'AGE')
+#' default_geom(object, x = c('AGE', 'T2D'))
+#' default_geom(object, x = c('AGE', 'T2D'), block = 'SUB')
 #' @export
-default_geom <- function(object, x){
-    sdt0 <- sdt(object)[, x, with = FALSE]
-    y <- vapply(sdt0, class, character(1))
-    y %<>% unname()
-    y <- c(numeric = 'point', factor = 'boxplot', character = 'boxplot')[y]
-    names(y) <- x
+default_geom <- function(object, x, block = NULL){
+    if (!is.null(block)){
+        y <- rep('point', length(x))
+        names(y) <- x
+    } else {
+        sdt0 <- sdt(object)[, x, with = FALSE]
+        y <- vapply(sdt0, class, character(1))
+        y %<>% unname()
+        y <- c(numeric = 'point', factor = 'boxplot', character = 'boxplot')[y]
+        names(y) <- x
+    }
     y
 }
 

@@ -4,7 +4,7 @@
 \alias{default_geom}
 \title{Default geom}
 \usage{
-default_geom(object, x)
+default_geom(object, x, block = NULL)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -21,6 +21,7 @@ Default geom
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 svars(object)
-default_geom(object, x = c('AGE', 'T2D'))
 default_geom(object, x = 'AGE')
+default_geom(object, x = c('AGE', 'T2D'))
+default_geom(object, x = c('AGE', 'T2D'), block = 'SUB')
 }
