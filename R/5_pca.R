@@ -98,7 +98,7 @@ scoremat <- function(object, method, by, dims){
 
 loadingmat <- function(object, method, by, dims){
     vars <- 'feature_id'
-    vars %<>% c(scorenames(method, by, dims))
+    vars %<>% c(loadingnames(method, by, dims))
     mat <- fdt(object)[, vars, with = FALSE]
     mat %<>% dt2mat()
     mat
@@ -509,10 +509,10 @@ add_loadings <- function(
     maxscore <- min(abs(min(c(xscores, yscores, na.rm = TRUE))),
                     abs(max(c(xscores, yscores, na.rm = TRUE))), na.rm = TRUE)
     scorefactor <- maxscore/max(abs(c(xloadings, yloadings)),  na.rm = TRUE)
-    #idx1 <- order(abs(xloadings), decreasing = TRUE)[nfeatures] 
-    #idx2 <- order(abs(yloadings), decreasing = TRUE)[nfeatures]
-    idx1 <- headtail(order(xloadings, na.last = NA), nfeatures)
-    idx2 <- headtail(order(yloadings, na.last = NA), nfeatures)
+    idx1 <- order(abs(xloadings), decreasing = TRUE)[nfeatures] 
+    idx2 <- order(abs(yloadings), decreasing = TRUE)[nfeatures]
+    #idx1 <- headtail(order(xloadings, na.last = NA), nfeatures)
+    #idx2 <- headtail(order(yloadings, na.last = NA), nfeatures)
     #idx <- unique(c(idx1, idx2))
     idx <- c(idx1, idx2)
     loadingdt1 <- fdt(object)[idx1, c(label, x, y), with = FALSE]
@@ -531,11 +531,11 @@ add_loadings <- function(
 # Plot
     p <- p + geom_segment(
                 data = loadingdt, 
-                aes(x = 0, xend = !!sym(x), y = 0, yend = !!sym(y), linetype = axis), color = 'gray60')
+                aes(x = 0, xend = !!sym(x), y = 0, yend = !!sym(y), linetype = axis), color = 'gray80')
     p <- p + geom_text(
                 data = loadingdt, 
                 aes(x = !!sym(x), y = !!sym(y), label = !!sym(label), angle = angle), 
-                hjust = 'inward', color = 'gray60')
+                hjust = 'inward', color = 'gray80')
     p
 }
 
@@ -660,9 +660,9 @@ biplot <- function(
     p <- ggplot() + theme_bw() + theme
     p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
     p <- p + ggtitle(title)
+    p %<>% add_loadings(object, x = x, y = y, label = feature_label, nfeatures = nfeatures)
     p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
                       size = size, alpha = alpha, group = group, linetype = linetype, fixed = fixed)
-    p %<>% add_loadings(object, x = x, y = y, label = feature_label, nfeatures = nfeatures)
     if (!is.null(colorpalette))  p <- p + scale_color_manual(values = colorpalette, na.value = 'gray80')
     if (!is.null(alphapalette))  p <- p + scale_alpha_manual(values = alphapalette)
     if (!is.null(label  ))  p <- p + geom_text_repel(
