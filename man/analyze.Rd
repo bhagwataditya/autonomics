@@ -9,12 +9,13 @@ analyze(
   pca = TRUE,
   fit = "limma",
   subgroupvar = default_subgroupvar(object),
-  contrasts = NULL,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
+  coding = "treatment",
+  contrasts = NULL,
+  coefs = colnames(create_design(object, formula = formula, drop = drop)),
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
-  coefs = colnames(create_design(object, formula = formula, drop = drop)),
   plot = pca & !is.null(fit),
   feature_id = NULL,
   sample_id = NULL,
@@ -31,15 +32,15 @@ analyze(
 
 \item{subgroupvar}{subgroup svar}
 
+\item{formula}{model formula}
+
 \item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
-\item{formula}{model formula}
+\item{coefs}{model coefficients          of interest: string vector or NULL}
 
 \item{block}{model blockvar}
 
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
-
-\item{coefs}{model coefficients          of interest: string vector or NULL}
 
 \item{plot}{TRUE/FALSE}
 
@@ -60,6 +61,6 @@ Analyze
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
+object <- read_metabolon(file)
 object \%<>\% analyze(pca = TRUE, fit = 'limma')
 }

@@ -18,7 +18,7 @@
 #' @examples 
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file)
 #' object %<>% analyze(pca = TRUE, fit = 'limma')
 #' @export
 analyze <- function(
@@ -26,12 +26,13 @@ analyze <- function(
     pca          = TRUE,
     fit          = 'limma',
     subgroupvar  = default_subgroupvar(object),
-    contrasts    = NULL,
     formula      = default_formula(object),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
+    coding       = 'treatment', 
+    contrasts    = NULL,
+    coefs        = colnames(create_design(object, formula = formula, drop = drop)),
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    coefs        = colnames(create_design(object, formula = formula, drop = drop)),
     plot         = pca & !is.null(fit),
     feature_id   = NULL,
     sample_id    = NULL,
@@ -47,8 +48,9 @@ analyze <- function(
         if (is.null(formula)) formula <- default_formula(object)
         if (is.null(coefs))   coefs <- colnames(create_design(object, formula = formula, drop = drop))
         object %<>% fitfun(
-            subgroupvar  = subgroupvar,   formula      = formula,
-            coefs        = coefs,         contrasts    = contrasts,
+            formula      = formula,       drop         = drop,
+            coding       = coding,        contrasts    = contrasts,
+            coefs        = coefs,
             block        = block,         weightvar    = weightvar,
             verbose      = verbose,       plot         = FALSE) 
     }

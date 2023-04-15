@@ -553,13 +553,13 @@ fit_limma <- function(
 ){
     object %<>% reset_fit(fit = 'limma', coefs = coefs)
     limmadt <- .fit_limma(
-        object       = object,
-        contrasts    = contrasts,     formula      = formula, 
-        drop         = drop,          coding       = coding,       
-        design       = design,        coefs        = coefs,
-        block        = block,         weightvar    = weightvar,
-        statvars     = statvars,      sep          = sep,
-        suffix       = suffix,        verbose      = verbose)
+        object       = object,        formula      = formula,
+        drop         = drop,          coding       = coding,
+        design       = design,        contrasts    = contrasts, 
+        coefs        = coefs,         block        = block,
+        weightvar    = weightvar,     statvars     = statvars,
+        sep          = sep,           suffix       = suffix,
+        verbose      = verbose)
     object %<>% merge_fdt(limmadt)
         #fdata(object)$F.limma   <- limmares$F
         #fdata(object)$F.p.limma <- limmares$F.p
