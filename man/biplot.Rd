@@ -18,7 +18,7 @@ biplot(
   label = NULL,
   feature_label = "feature_name",
   fixed = list(shape = 15, size = 3),
-  nloadings = 0,
+  nfeatures = 1,
   colorpalette = make_svar_palette(object, color),
   alphapalette = make_alpha_palette(object, alpha),
   title = sprintf("\%s~\%s", method, by),
@@ -43,7 +43,7 @@ biplot(
 
 \item{fixed}{fixed plot aesthetics}
 
-\item{nloadings}{number of loadings per half-axis to plot}
+\item{nfeatures}{number of loadings per half-axis to plot}
 
 \item{colorpalette}{character vector}
 
@@ -68,8 +68,9 @@ object <- read_metabolon(file)
 object \%<>\% pca(ndim = 4)
 object \%<>\% pls(ndim = 4)
 biplot(object)
+biplot(object, nfeatures = 1)
+biplot(object, dims = 3:4, nfeatures = 1)
 biplot(object, method = 'pls')
 biplot(object, method = 'pls', dims = 3:4)
 biplot(object, method = 'pls', dims = 3:4, group = 'SUB')
-biplot(object, method = 'pls', dims = 3:4, nloadings = 1)
 }

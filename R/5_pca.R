@@ -77,16 +77,33 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 }
 
 
-scorenames    <- function(method, by, dims)  sprintf('effect~%s~%s%d', by, method, dims)
-loadingnames  <- function(method, by, dims)  sprintf('effect~%s~%s%d', by, method, dims)
-methodname    <- function(method, by)        sprintf('%s~%s',          by, method)
+   scorenames <- function(method, by, dims)  sprintf('effect~%s~%s%d', by, method, dims)
+ loadingnames <- function(method, by, dims)  sprintf('effect~%s~%s%d', by, method, dims)
+   methodname <- function(method, by)        sprintf('%s~%s',          by, method)
 variancenames <- function(dims)              sprintf('effect%d',       dims)
-variances     <- function(object, method, by, dims){
-                    y <- metadata(object)
-                    y %<>% extract2(methodname(method, by))
-                    y %<>% extract(variancenames(dims))
-                    y
-                }
+
+variances <- function(object, method, by, dims){
+                y <- metadata(object)
+                y %<>% extract2(methodname(method, by))
+                y %<>% extract(variancenames(dims))
+                y
+}
+scoremat <- function(object, method, by, dims){
+    vars <- 'sample_id'
+    vars %<>% c(scorenames(method, by, dims))
+    mat <- sdt(object)[, vars, with = FALSE]
+    mat %<>% dt2mat()
+    mat
+}
+
+loadingmat <- function(object, method, by, dims){
+    vars <- 'feature_id'
+    vars %<>% c(scorenames(method, by, dims))
+    mat <- fdt(object)[, vars, with = FALSE]
+    mat %<>% dt2mat()
+    mat
+}
+
 
 #' PCA, SMA, LDA, PLS, SPLS, OPLS
 #'
@@ -478,44 +495,48 @@ headtail <- function(x, n){
 
 pca1 <- pca2 <- NULL
 add_loadings <- function(
-    p, object, x = 'pca1', y = 'pca2', label = 'feature_name', nloadings = 1
+    p, object, x = 'pca1', y = 'pca2', label = 'feature_name', nfeatures = 1
 ){
 # Process args
-    if (nloadings==0) return(p)
+    if (nfeatures==0) return(p)
     assert_is_subset(c(x, y), fvars(object))
     assert_is_subset(c(x, y), svars(object))
 # Loadings
     xloadings <- fdt(object)[[x]]
     yloadings <- fdt(object)[[y]]
-    idx <- unique(c(headtail(order(xloadings, na.last = NA), nloadings),
-                    headtail(order(yloadings, na.last = NA), nloadings)))
-# Scale loadings to scoreplot
-    xscores <- object[[x]]
-    yscores <- object[[y]]
+    xscores   <- sdt(object)[[x]]
+    yscores   <- sdt(object)[[y]]
     maxscore <- min(abs(min(c(xscores, yscores, na.rm = TRUE))),
                     abs(max(c(xscores, yscores, na.rm = TRUE))), na.rm = TRUE)
     scorefactor <- maxscore/max(abs(c(xloadings, yloadings)),  na.rm = TRUE)
-    plotdt <- fdt(object)
-    plotdt[[x]] %<>% multiply_by(scorefactor)
-    plotdt[[y]] %<>% multiply_by(scorefactor)
-    plotdt %<>% extract(idx, )
+    #idx1 <- order(abs(xloadings), decreasing = TRUE)[nfeatures] 
+    #idx2 <- order(abs(yloadings), decreasing = TRUE)[nfeatures]
+    idx1 <- headtail(order(xloadings, na.last = NA), nfeatures)
+    idx2 <- headtail(order(yloadings, na.last = NA), nfeatures)
+    #idx <- unique(c(idx1, idx2))
+    idx <- c(idx1, idx2)
+    loadingdt1 <- fdt(object)[idx1, c(label, x, y), with = FALSE]
+    loadingdt2 <- fdt(object)[idx2, c(label, x, y), with = FALSE]
+    loadingdt1[, axis := split_extract_fixed(x, '~', 3)]
+    loadingdt2[, axis := split_extract_fixed(y, '~', 3)]
+    loadingdt <- rbind(loadingdt1, loadingdt2)
+    loadingdt[[x]] %<>% multiply_by(scorefactor) # bring them on same scale
+    loadingdt[[y]] %<>% multiply_by(scorefactor)
+    loadingdt[[x]] %<>% multiply_by(1.5)         # bring them somewhat outside
+    loadingdt[[y]] %<>% multiply_by(1.5)
+    loadingdt$angle <- loadingdt[[y]] / loadingdt[[x]]
+    loadingdt$angle %<>% atan()
+    loadingdt$angle %<>% multiply_by(180/pi)
 
 # Plot
-    feature_name <- NULL
-    if (!'feature_name' %in% names(plotdt)){
-        setnames(plotdt, 'feature_id', 'feature_name')}
-    p + layer(  geom     = 'segment',
-                mapping  = aes(x = 0, y = 0, xend = !!sym(x), yend = !!sym(y)),
-                stat     = "identity",
-                data     = plotdt, # list(alpha = 0.05, size = 3),
-                params   = list(alpha = 0.1, size = 1, na.rm = TRUE),
-                position = "identity") +
-        layer(  geom     = "text",
-                mapping  = aes(x = !!sym(x), y = !!sym(y), label = !!sym(label)),
-                stat     = "identity",
-                data     = plotdt,
-                params   = list(alpha = 0.5, na.rm = TRUE),
-                position = 'identity')
+    p <- p + geom_segment(
+                data = loadingdt, 
+                aes(x = 0, xend = !!sym(x), y = 0, yend = !!sym(y), linetype = axis), color = 'gray60')
+    p <- p + geom_text(
+                data = loadingdt, 
+                aes(x = !!sym(x), y = !!sym(y), label = !!sym(label), angle = angle), 
+                hjust = 'inward', color = 'gray60')
+    p
 }
 
 pca1 <- pca2 <- feature_name <- NULL
@@ -575,7 +596,7 @@ biplot_dims <- function(object, method, by){
 #' @param linetype       svar (string)
 #' @param feature_label  fvar (string)
 #' @param fixed          fixed plot aesthetics
-#' @param nloadings      number of loadings per half-axis to plot
+#' @param nfeatures      number of loadings per half-axis to plot
 #' @param colorpalette   character vector
 #' @param alphapalette   character vector
 #' @param title          string
@@ -587,10 +608,11 @@ biplot_dims <- function(object, method, by){
 #' object %<>% pca(ndim = 4)
 #' object %<>% pls(ndim = 4)
 #' biplot(object)
+#' biplot(object, nfeatures = 1)
+#' biplot(object, dims = 3:4, nfeatures = 1)
 #' biplot(object, method = 'pls')
 #' biplot(object, method = 'pls', dims = 3:4)
 #' biplot(object, method = 'pls', dims = 3:4, group = 'SUB')
-#' biplot(object, method = 'pls', dims = 3:4, nloadings = 1)
 #' @export
 biplot <- function(
     object, 
@@ -606,7 +628,7 @@ biplot <- function(
     label         = NULL, 
     feature_label = 'feature_name', 
     fixed         = list(shape = 15, size = 3), 
-    nloadings     = 0,
+    nfeatures     = 1,
     colorpalette  =  make_svar_palette(object, color),
     alphapalette  = make_alpha_palette(object, alpha), 
     title         = sprintf('%s~%s', method, by), 
@@ -632,13 +654,15 @@ biplot <- function(
     vars <- round(variances(object, method = method, by = by, dims = dims))
     xlab <- sprintf('X%d : %d%%', dims[[1]], vars[[1]])
     ylab <- sprintf('X%d : %d%%', dims[[2]], vars[[2]])
+
+# Loadings
 # Plot
     p <- ggplot() + theme_bw() + theme
     p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
     p <- p + ggtitle(title)
-    p %<>% add_loadings(object, x = x, y = y, label = feature_label, nloadings = nloadings)
     p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
                       size = size, alpha = alpha, group = group, linetype = linetype, fixed = fixed)
+    p %<>% add_loadings(object, x = x, y = y, label = feature_label, nfeatures = nfeatures)
     if (!is.null(colorpalette))  p <- p + scale_color_manual(values = colorpalette, na.value = 'gray80')
     if (!is.null(alphapalette))  p <- p + scale_alpha_manual(values = alphapalette)
     if (!is.null(label  ))  p <- p + geom_text_repel(
@@ -685,7 +709,7 @@ biplot_corrections <- function(
 ){
     x <- scorenames(method, by = by, dims = 1)
     y <- scorenames(method, by = by, dims = 2)
-    p <- biplot(object, method = method, by = by, dims = 1:2, color = color, nloadings = 0)
+    p <- biplot(object, method = method, by = by, dims = 1:2, color = color, nfeatures = 0)
     p <- p + ggtitle('INPUT')
     legend  <- gglegend(p + theme(legend.position = 'bottom', legend.title = element_blank()))
     p <- p + guides(color = 'none', fill = 'none')
@@ -698,7 +722,7 @@ biplot_corrections <- function(
         }
         values(tmp_object) %<>% removeBatchEffect(batch = tmp_b)
         tmp_object <- get(method)(tmp_object, ndim=2, verbose=FALSE)
-        p <- biplot(tmp_object, method = method, by = by, dims = dims, color = color, nloadings = 0)
+        p <- biplot(tmp_object, method = method, by = by, dims = dims, color = color, nfeatures = 0)
         p <- p + ggtitle(paste0(' - ', ibatch))
         p <- p + guides(color = 'none', fill = 'none')
         plotlist %<>% c(list(p))
