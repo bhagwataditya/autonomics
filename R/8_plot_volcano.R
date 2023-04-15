@@ -286,7 +286,7 @@ plot_volcano <- function(
         by = c('fit', 'coef')  ]
     summarydt %<>% extract(!is.infinite(yintercept))
     g <- g + geom_hline(data = summarydt, mapping = aes(yintercept = yintercept, linetype = significance), color = 'gray30')
-    g <- g + ggplot2::scale_linetype_manual(values = c(`p = 0.05` = 1, `fdr = 0.05` = 2, `bon = 0.05` = 3))
+    g <- g + ggplot2::scale_linetype_manual(values = c(`p = 0.05` = 3, `fdr = 0.05` = 2, `bon = 0.05` = 1))
     do_geom_label <- function(mapping, label.size){  
                         geom_label(data       = summarydt, 
                                    mapping    = mapping, 
