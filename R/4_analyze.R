@@ -45,7 +45,7 @@ analyze <- function(
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
         if (is.null(formula)) formula <- default_formula(object)
-        if (is.null(coefs))   coefs <- colnames(create_design(object, formula = formula, drop = drop))
+        if (is.null(coefs))   coefs <- colnames(create_design(object, formula = formula, drop = drop, verbose = FALSE))
         object %<>% fitfun(
             formula      = formula,       drop         = drop,
             coding       = coding,        contrasts    = contrasts,
@@ -81,7 +81,7 @@ plot_summary <- function(
     assert_is_subset(c('effect~sample_id~pca1', 'effect~sample_id~pca2'), fvars(object))
     assert_is_subset(c('effect~subgroup~pls1',  'effect~subgroup~pls2'), svars(object))
     assert_is_subset(c('effect~subgroup~pls1',  'effect~subgroup~pls2'), fvars(object))
-    assertive::assert_any_are_matching_regex(fvars(object), 'limma')
+    assertive::assert_any_are_matching_regex(fvars(object), fit)
 # Plot
     detections <- plot_subgroup_nas(object, 
                     palette  = palette) + ggtitle('Detections') + xlab(NULL) + 
@@ -98,12 +98,12 @@ plot_summary <- function(
                      plot.title   = element_text(hjust = 0.5))
     samples  <- plot_top_samples(object, palette = palette)
     features <- plot_top_features(object, fit = fit)
-    pca1exprs <- plot_exprs(object, fit = 'pca1',  block = block, n = 1, subtitle = 'X1', title = NULL)
-    pca2exprs <- plot_exprs(object, fit = 'pca2',  block = block, n = 1, subtitle = 'X2', title = NULL)
-    pls1exprs <- plot_exprs(object, fit = 'pls1',  block = block, n = 1, subtitle = 'X1', title = NULL)
-    pls2exprs <- plot_exprs(object, fit = 'pls2',  block = block, n = 1, subtitle = 'X2', title = NULL)
+    pca1exprs <- plot_exprs(object, fit = 'pca1',  block = block, n = 1, subtitle = 'X1', title = NULL, verbose = FALSE)
+    pca2exprs <- plot_exprs(object, fit = 'pca2',  block = block, n = 1, subtitle = 'X2', title = NULL, verbose = FALSE)
+    pls1exprs <- plot_exprs(object, fit = 'pls1',  block = block, n = 1, subtitle = 'X1', title = NULL, verbose = FALSE)
+    pls2exprs <- plot_exprs(object, fit = 'pls2',  block = block, n = 1, subtitle = 'X2', title = NULL, verbose = FALSE)
     coefs <- default_coefs(object, fit = fit)
-    glm1exprs <- plot_exprs(object, fit = fit, coefs = coefs[1], block = block, n = 1, nrow = 1, subtitle = coefs[1], title = NULL)
+    glm1exprs <- plot_exprs(object, fit = fit, coefs = coefs[1], block = block, n = 1, nrow = 1, subtitle = coefs[1], title = NULL, verbose = FALSE)
     pca1exprs <- pca1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
     pca2exprs <- pca2exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
     pls1exprs <- pls1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)

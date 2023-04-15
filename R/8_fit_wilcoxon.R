@@ -87,9 +87,9 @@ all_vars <- function(x){
 fit_wilcoxon <- function(
     object,
     formula     = default_formula(object), 
-    subgroupvar = all_vars(formula)[1],
-    contrasts   = sprintf('%s-%s', slevels(object, subgroupvar)[-1], 
-                                   slevels(object, subgroupvar)[ 1]),
+    drop        = NULL,
+    coding      = 'reference', 
+    contrasts   = NULL,
     coefs       = NULL, 
     block       = NULL, 
     weightvar   = NULL, 
@@ -101,6 +101,11 @@ fit_wilcoxon <- function(
     assert_is_valid_sumexp(object)
     assert_is_formula(formula)
     assert_scalar_subset(all.vars(formula), svars(object))
+    if (is.null(contrasts)){
+        if (coding == 'treatment')  coding <- 'reference' # passed on from the readers - wilcox is the only one where that doesnt work
+        subgroupvar <- all_vars(formula)[1]
+        contrasts <- colnames(create_design(object, formula = formula, drop = TRUE, coding = coding))[-1]
+    }
     assert_is_character(contrasts)
     if (!is.null(block))      assert_is_subset(block, svars(object))
     obj <- object

@@ -43,9 +43,9 @@ fit_limma(
 fit_wilcoxon(
   object,
   formula = default_formula(object),
-  subgroupvar = all_vars(formula)[1],
-  contrasts = sprintf("\%s-\%s", slevels(object, subgroupvar)[-1], slevels(object,
-    subgroupvar)[1]),
+  drop = NULL,
+  coding = "reference",
+  contrasts = NULL,
   coefs = NULL,
   block = NULL,
   weightvar = NULL,

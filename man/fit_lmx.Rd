@@ -31,6 +31,7 @@ fit_lm(
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
   coefs = NULL,
+  contrasts = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -44,6 +45,7 @@ fit_lme(
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
   coefs = NULL,
+  contrasts = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -57,6 +59,7 @@ fit_lmer(
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
   coefs = NULL,
+  contrasts = NULL,
   verbose = TRUE,
   plot = FALSE
 )
@@ -84,6 +87,8 @@ fit_lmer(
 \item{verbose}{TRUE or FALSE}
 
 \item{plot}{TRUE or FALSE}
+
+\item{contrasts}{unused. only to allow generic get(fitfun)(contrasts)}
 
 \item{subgroupvar}{svar}
 }

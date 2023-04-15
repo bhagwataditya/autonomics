@@ -8,10 +8,11 @@
 context('.read_maxquant_proteingroups/.read_maxquant_phosphosites')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
+quantity <- guess_maxquant_quantity(phosphofile)
 pro <- .read_maxquant_proteingroups(proteinfile, verbose = TRUE)
-fos <- .read_maxquant_phosphosites(phosphofile, proteinfile, verbose = TRUE)
-prodt <- fread(proteinfile, colClasses = c(id='character'))
-fosdt <- fread(phosphofile, colClasses = c(id='character'), integer64='numeric')
+fos <- .read_maxquant_phosphosites(phosphofile, proteinfile, quantity = quantity, verbose = TRUE)
+prodt <- fread(proteinfile, colClasses = c(id = 'character'))
+fosdt <- fread(phosphofile, colClasses = c(id = 'character'), integer64 = 'numeric')
 fosdt %<>% extract(fos$fosId, on = 'id')
 
 test_that('id values match', {
@@ -48,9 +49,9 @@ test_that('normalized ratios match', {
 context('`drop_differing_uniprots`')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
-prodt <- .read_maxquant_proteingroups(proteinfile,              verbose = TRUE)
-fosdt <- .read_maxquant_phosphosites( phosphofile, proteinfile, verbose = TRUE)
-fosdt1 <- drop_differing_uniprots(fosdt, prodt,        verbose = TRUE)
+prodt <- .read_maxquant_proteingroups(proteinfile)
+fosdt <- .read_maxquant_phosphosites( phosphofile, proteinfile, quantity = quantity)
+fosdt1 <- drop_differing_uniprots(fosdt, prodt, verbose = TRUE)
 
 test_that('`drop_differing_uniprots` preserves colnames', {
     expect_setequal(names(fosdt), names(fosdt1))
@@ -106,56 +107,60 @@ test_that('`read_fastahdrs` reads first protein',
         fastadt['P31946', on = 'uniprot'],
         data.table(
             reviewed    = 1,
-            protein      = '1433B', 
-            genesymbol  = 'YWHAB',
+            protein     = '1433B_HUMAN', 
+            gene        = 'YWHAB',
             uniprot     = 'P31946', 
             canonical   = 'P31946', 
             isoform     = 0,
-            proteinname = '14-3-3 protein beta/alpha',
             fragment    = 0,
-            existence   = 1)))
+            existence   = 1, 
+            organism    = 'HUMAN'))
+)
 
 test_that('`read_fastahdrs` reads intermediate swissprot protein',
     expect_equal(
         fastadt['Q9BUJ2-4', on = 'uniprot'],
         data.table(
             reviewed    = 1,
-            protein     = 'HNRL1', 
-            genesymbol  = 'HNRNPUL1',
+            protein     = 'HNRL1_HUMAN', 
+            gene        = 'HNRNPUL1',
             uniprot     = 'Q9BUJ2-4', 
             canonical   = 'Q9BUJ2', 
             isoform     = 4,
-            proteinname = 'Isoform 4 of Heterogeneous nuclear ribonucleoprotein U-like protein 1', 
             fragment    = 0,
-            existence   = 1)))
+            existence   = 1, 
+            organism    = 'HUMAN'))
+)
 
 test_that('`read_fastahdrs` reads intermediate trembl protein',
     expect_equal(
         fastadt['G5E9N3', on = 'uniprot'],
         data.table(
             reviewed    = 0,
-            protein     = 'G5E9N3', 
-            genesymbol  = 'RETSAT',
+            protein     = 'G5E9N3_HUMAN', 
+            gene        = 'RETSAT',
             uniprot     = 'G5E9N3', 
             canonical   = 'G5E9N3', 
             isoform     = 0,
-            proteinname = 'All-trans-13,14-dihydroretinol saturase, isoform CRA_c', 
             fragment    = 0,
-            existence   = 4)))
+            existence   = 4, 
+            organism    = 'HUMAN'))
+)
 
 test_that('`read_fastahdrs` reads last trembl protein',
     expect_equal(
         fastadt['R4GMM2', on = 'uniprot'],
         data.table(
             reviewed    = 0,
-            protein     = 'R4GMM2', 
-            genesymbol  = 'PARD6A',
+            protein     = 'R4GMM2_HUMAN', 
+            gene        = 'PARD6A',
             uniprot     = 'R4GMM2', 
             canonical   = 'R4GMM2', 
             isoform     = 0,
-            proteinname = 'Partitioning defective 6 homolog alpha',
             fragment    = 0,
-            existence   = 4)))
+            existence   = 4, 
+            organism    = 'HUMAN'))
+)
 
 
 #============================================================================
@@ -168,13 +173,13 @@ test_that('`read_fastahdrs` reads last trembl protein',
 context('`curate_annotate_maxquant/curate_annotate_fastafile`')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
-pro <- .read_maxquant_proteingroups(proteinfile, verbose = TRUE)
-fos <- .read_maxquant_phosphosites(phosphofile, proteinfile, verbose = TRUE)
+pro <- .read_maxquant_proteingroups(proteinfile)
+fos <- .read_maxquant_phosphosites(phosphofile, proteinfile, quantity = quantity)
 pro1 <- curate_annotate_maxquant(pro)
 fos1 <- curate_annotate_maxquant(fos)
 pro2 <- curate_annotate_fastafile(pro, fastadt)
 fos2 <- curate_annotate_fastafile(fos, fastadt)
-anncols <- c('protein', 'genesymbol','canonical', 'isoform', 'proteinname')
+anncols <- c('protein', 'gene','canonical', 'isoform', 'organism')
 
 test_that('`curate` preserves rows',     {
     expect_equal( nrow(pro1), nrow(pro))  # pro maxquant
@@ -209,12 +214,12 @@ test_that('`curate` preserves contents', {
 test_that('Curated uniprots are a subset', {
     expect_true(
         all(is_collapsed_subset(
-                  pro1[Reverse=='' & contaminant == '']$uniprot, 
-                  pro[ Reverse=='' & contaminant == '']$uniprot)))
+                  pro1[reverse=='' & contaminant == '']$uniprot, 
+                  pro[ reverse=='' & contaminant == '']$uniprot)))
     expect_true(
         all(is_collapsed_subset( 
-                  fos1[Reverse=='' & contaminant == '']$uniprot, 
-                  fos[ Reverse=='' & contaminant == '']$uniprot)))
+                  fos1[reverse=='' & contaminant == '']$uniprot, 
+                  fos[ reverse=='' & contaminant == '']$uniprot)))
 })
 
 
@@ -229,8 +234,8 @@ proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 pro1 <- .read_maxquant_proteingroups(proteinfile) %>% curate_annotate()
 pro2 <- .read_maxquant_proteingroups(proteinfile) %>% curate_annotate(fastadt)
-fos1 <- .read_maxquant_phosphosites( phosphofile, proteinfile) %>% curate_annotate()
-fos2 <- .read_maxquant_phosphosites( phosphofile, proteinfile) %>% curate_annotate(fastadt)
+fos1 <- .read_maxquant_phosphosites( phosphofile, proteinfile, quantity = quantity) %>% curate_annotate()
+fos2 <- .read_maxquant_phosphosites( phosphofile, proteinfile, quantity = quantity) %>% curate_annotate(fastadt)
 
 pro1b <- add_feature_id(pro1)
 pro2b <- add_feature_id(pro2)
@@ -276,19 +281,17 @@ context('mqdt_to_mat')
 
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
-prodt <- .read_maxquant_proteingroups(proteinfile = proteinfile)
+prodt <- .read_maxquant_proteingroups(proteinfile)
 prodt %<>% curate_annotate()
 prodt %<>% add_feature_id()
 quantity <- guess_maxquant_quantity(proteinfile)
 pattern <- MAXQUANT_PATTERNS[[quantity]]
-mat <- mqdt_to_mat(prodt, pattern = pattern)
+mat <- 2^mqdt_to_mat(prodt, pattern = pattern)
 
-dt <- fread(proteinfile, integer64 = 'numeric', colClasses = c(id = 'character'))
-dt %<>% extract(, colnames(mat), with = FALSE)
-dt %<>% data.matrix()
-mat <- 2^mat - 1
-rownames(mat) <- NULL
-test_that('`mqdt_to_mat` preserves contents', expect_equal(dt, mat))
+prodt %<>% extract(, c('feature_id', colnames(mat)), with = FALSE)
+prodt %<>% dt2mat()
+prodt[is.nan(prodt)] <- NA
+test_that('`mqdt_to_mat` preserves contents', expect_equal(prodt, mat))
 
 
 #============================================================================
@@ -405,7 +408,8 @@ proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 quantity <- guess_maxquant_quantity(proteinfile)
 pattern <- MAXQUANT_PATTERNS[[quantity]]
-fos <- read_maxquant_phosphosites(phosphofile, proteinfile, plot = FALSE, impute = FALSE)
+fos <- read_maxquant_phosphosites(
+    phosphofile = phosphofile, proteinfile = proteinfile, plot = FALSE, impute = FALSE)
 
 str(log2sites(fos))
 dt <- fread(phosphofile, integer64 = 'numeric', colClasses = c(id = 'character'))
@@ -435,8 +439,8 @@ test_that('`read_maxquant_phosphosites` preserves phosphosite values', {
 proteinfile <- download_data('billing19.proteingroups.txt')
 quantity <- guess_maxquant_quantity(proteinfile)
 pattern <- MAXQUANT_PATTERNS[[quantity]]
-pro <- read_maxquant_proteingroups(proteinfile, plot = FALSE, impute = FALSE)
-mat <- log2proteins(pro)
+pro <- read_maxquant_proteingroups(file = proteinfile)
+mat <- values(pro)
 rownames(mat) <- fdt(pro)$proId
 
 test_that('`read_maxquant_proteingroups(billing19)` returns SummarizedExperiment', {
@@ -465,47 +469,55 @@ metadata <- S4Vectors::metadata
 
 test_that("read_maxquant_proteingroups(file)", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file, plot = FALSE)
+    object <- read_maxquant_proteingroups(file)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true( 'subgroup'    %in% svars(object)) })
+    expect_true( 'subgroup'    %in% svars(object)) 
+})
 
 test_that(".read_maxquant_proteingroups(file) handles `data.table` integer64 issue", {
-  file <- download_data('integer64.proteinGroups.txt')
-  object <- .read_maxquant_proteingroups(file)
-  expect_false( 'integer64' %in% sapply(object, class))
+    file <- download_data('integer64.proteinGroups.txt')
+    object <- .read_maxquant_proteingroups(file)
+    expect_false( 'integer64' %in% sapply(object, class))
 })
 
-test_that(  "read_maxquant_proteingroups(file, pca=TRUE)", {
+test_that(  "read_maxquant_proteingroups(file, pca = TRUE)", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file, pca = TRUE, plot = FALSE)
+    object <- read_maxquant_proteingroups(file, pca = TRUE)
     expect_s4_class(object, 'SummarizedExperiment')
-    expect_true(all(c('pca1', 'pca2') %in% svars(object)))
-    expect_true(all(c('pca1', 'pca2') %in% fvars(object)))
-    expect_true('pca' %in% names(metadata(object)))
+    expect_true(all(c('effect~sample_id~pca1', 'effect~sample_id~pca2') %in% svars(object)))
+    expect_true(all(c('effect~sample_id~pca1', 'effect~sample_id~pca2') %in% fvars(object)))
+    expect_true('sample_id~pca' %in% names(metadata(object)))
 })
 
-test_that(  "read_maxquant_proteingroups(file, fit='limma')", {
+test_that(  "read_maxquant_proteingroups(file, fit = 'limma')", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file, fit = 'limma', plot = FALSE)
+    object <- read_maxquant_proteingroups(file, fit = 'limma')
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
     expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })
 
-test_that(  "read_maxquant_proteingroups(file, fit='lm')", {
+test_that(  "read_maxquant_proteingroups(file, fit = 'lm')", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'lm', plot = FALSE)
-        # systematic nondetects not allowed for lm!
+    object <- read_maxquant_proteingroups(file, fit = 'lm')
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP,  'lm'))))
     expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })
 
-test_that(  "read_maxquant_proteingroups(file, fit='wilcoxon')", {
+test_that(  "read_maxquant_proteingroups(file, fit = 'lm', plot = TRUE)", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'wilcoxon', plot = FALSE)
-        # systematic nondetects no allowed for wilcoxon!
+    object <- read_maxquant_proteingroups(file, fit = 'lm', plot = TRUE)
+    expect_s4_class(object, 'SummarizedExperiment')
+    expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP,  'lm'))))
+    expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
+})
+
+test_that(  "read_maxquant_proteingroups(file, fit = 'wilcoxon')", {
+    file <- download_data('fukuda20.proteingroups.txt')
+    object <- read_maxquant_proteingroups(file, fit = 'wilcoxon')
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'wilcoxon'))))
     expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })
+

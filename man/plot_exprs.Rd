@@ -47,7 +47,8 @@ plot_exprs(
   theme = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
   file = NULL,
   width = 7,
-  height = 7
+  height = 7,
+  verbose = TRUE
 )
 
 plot_boxplots(...)
@@ -134,6 +135,8 @@ boxplot_features(...)
 \item{width}{inches}
 
 \item{height}{inches}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 ggplot object

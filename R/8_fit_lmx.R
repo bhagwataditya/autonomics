@@ -270,8 +270,11 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
     tmpdt <- tmpdt[, .(alllevels = all(nvalues>0)), by = 'feature_id']
     tmpdt %<>% extract(alllevels == TRUE)
     idx <- as.character(tmpdt$feature_id)
-    if (verbose)  cmessage('\t\t\tRetain %d/%d features with all `%s` levels', length(idx), nrow(object), svar)
-    object %<>% extract(idx, )
+    if (verbose & length(idx)<nrow(object)){
+        cmessage('\t\t\tRetain %d/%d features with all `%s` levels', length(idx), nrow(object), svar)
+        object %<>% extract(idx, )
+    }
+    object
 }
 
 
@@ -284,6 +287,7 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 #' @param coding       factor coding system: 'treatment' (default), 'reference', 
 #'                      'difference', 'grandref', 'granddiff', 'sum', 'helmert'
 #' @param coefs        NULL or stringvector
+#' @param contrasts    unused. only to allow generic get(fitfun)(contrasts)
 #' @param block        NULL or svar
 #' @param weightvar    NULL or svar
 #' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
@@ -331,16 +335,38 @@ fit_lmx <- function(
     sdt(obj) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
 # Filter / Customize
     if (verbose)  cmessage('\t\tFilter features')
-    for (var in all.vars(formula))  obj %<>% filter_all_slevels(var, verbose = verbose)
-    if (fit %in% c('lme', 'lmer')){  
-        obj %<>% extract_connected_features(formula = formula, blockvars = block, verbose = verbose)
-        obj %<>% rm_consistent_nondetects(formula)  
-    }
+        # Feature: cover each slevel
+            for (var in all.vars(formula))  obj %<>% filter_all_slevels(var, verbose = verbose)
+        # Feature: 2+ obs per level
+            dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), block), assay = assayNames(obj)[1])
+            dt %<>% extract(!is.na(value))
+            datarich_features <- dt[, .(N = .N), by = c('feature_id', all.vars(formula))][, .(N = min(N)), by = 'feature_id'][N>=3]$feature_id
+            if (verbose & length(datarich_features) < nrow(obj)){
+                cmessage('\t\t\tRetain %d/%d features : 2+ obs per subgroup', length(datarich_features), nrow(obj))
+                dt %<>% extract(feature_id %in% datarich_features) #obj %<>% rm_consistent_nondetects(formula)  
+            }
+        # Rm blocks which lack an across-block level for all features
+        # Example: C01 in atkin18.somascan (misses t1)
+        # This is asking for problems: nlminb problem (convergence error code = 1')
+        if (fit %in% c('lme', 'lmer')){  
+            full_blocks <- sdt(obj)[, .N, by = block][N==max(N)][[block]]
+            dt %<>% extract(dt[[block]] %in% full_blocks)
+        }
+        # Feature : at least two connected blocks
+        if (fit %in% c('lme', 'lmer')){  
+            connected_features <- dt[, .N, by = c('feature_id', block)][, length(unique(Subject_ID[N==max(N)])), by = 'feature_id'][V1>2]$feature_id
+            if (verbose & length(connected_features) < length(unique(dt$feature_id))){
+                cmessage('\t\t\tRetain %d/%d features: 2+ fully connected blocks')
+                dt %<>% extract(feature_id %in% connected_features)
+            }
+            # This earlier approach fails in ~ subgroup / T2D
+            # Because a subject cannot be both diabetic AND control
+            # obj %<>% extract_connected_features(formula = formula, blockvars = block, verbose = verbose) # doesnt work for complex models
+        }
+# Fit
     if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose); blockvars <- names(block)
     } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block = block,   verbose = verbose); blockvars <- character(0)
     } else {                                                                                         blockvars <- block }
-# Fit
-    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars), assay = assayNames(obj)[1])
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
     formula %<>% addlhs()
@@ -375,6 +401,7 @@ fit_lm <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p', 'fdr'),
     coefs     = NULL, 
+    contrasts = NULL,
     verbose   = TRUE, 
     plot      = FALSE
 ){
@@ -400,6 +427,7 @@ fit_lme <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p', 'fdr'),
     coefs     = NULL, 
+    contrasts = NULL,
     verbose   = TRUE, 
     plot      = FALSE
 ){
@@ -429,6 +457,7 @@ fit_lmer <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p', 'fdr'),
     coefs     = NULL, 
+    contrasts = NULL,
     verbose   = TRUE, 
     plot      = FALSE
 ){

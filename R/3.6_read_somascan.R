@@ -130,7 +130,6 @@ rm_single_value_columns <- function(df){
 # Add metadata/subgroup
     assayNames(object) <- 'somascan'
     object %<>% merge_sample_file(sfile = sfile, by.x = by.x, by.y = by.y)
-    if (is.null(subgroupvar))  subgroupvar <- 'SampleGroup'
     object %<>% add_subgroup(subgroupvar)
     object
 }
