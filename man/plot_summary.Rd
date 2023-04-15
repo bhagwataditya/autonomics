@@ -6,25 +6,19 @@
 \usage{
 plot_summary(
   object,
-  fit = fits(object)[1],
-  coef = c(setdiff(coefs(object), "Intercept"), "Intercept")[1],
-  feature_id = NULL,
-  sample_id = NULL,
+  fit = "limma",
+  block = NULL,
   palette = make_subgroup_palette(object)
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{fit}{string}
+\item{fit}{glm engine : 'limma', 'lm', 'lme', 'lmer' or 'wilcoxon'}
 
-\item{coef}{string}
+\item{block}{NULL or svar}
 
-\item{feature_id}{NULL or string}
-
-\item{sample_id}{NULL or string}
-
-\item{palette}{NULL or color vector}
+\item{palette}{NULL or colorvector}
 }
 \description{
 Plot summary
@@ -32,5 +26,8 @@ Plot summary
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
+object \%<>\% pca()
+object \%<>\% pls(by = 'subgroup')
 object \%<>\% fit_limma()
+plot_summary(object, block = 'SUB')
 }

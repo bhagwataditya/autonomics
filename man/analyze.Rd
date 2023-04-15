@@ -7,8 +7,8 @@
 analyze(
   object,
   pca = TRUE,
+  pls = TRUE,
   fit = "limma",
-  subgroupvar = default_subgroupvar(object),
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   coding = "treatment",
@@ -17,8 +17,6 @@ analyze(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   plot = pca & !is.null(fit),
-  feature_id = NULL,
-  sample_id = NULL,
   palette = NULL,
   verbose = TRUE
 )
@@ -26,13 +24,18 @@ analyze(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{pca}{TRUE/FALSE: perform pca?}
+\item{pca}{TRUE / FALSE: perform pca ?}
 
-\item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'}
+\item{pls}{TRUE / FALSE: perform pls ?}
 
-\item{subgroupvar}{subgroup svar}
+\item{fit}{glm engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'}
 
 \item{formula}{model formula}
+
+\item{drop}{TRUE / FALSE : drop varname in designmat ?}
+
+\item{coding}{factor coding system : 'treatment', 'reference', difference', 
+'grandref', 'granddiff', 'sum', 'helmert'}
 
 \item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 
@@ -42,15 +45,11 @@ analyze(
 
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
 
-\item{plot}{TRUE/FALSE}
+\item{plot}{TRUE / FALSE}
 
-\item{feature_id}{string: feature for summary plot}
+\item{palette}{NULL or colorvector}
 
-\item{sample_id}{string: sample  for summary plot}
-
-\item{palette}{color palette : named string vector}
-
-\item{verbose}{TRUE/FALSE: message?}
+\item{verbose}{TRUE / FALSE: message?}
 }
 \value{
 SummarizedExperiment
@@ -62,5 +61,5 @@ Analyze
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
-object \%<>\% analyze(pca = TRUE, fit = 'limma')
+object \%<>\% analyze()
 }
