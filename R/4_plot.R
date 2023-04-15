@@ -230,17 +230,19 @@ make_twofactor_colors <- function(
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
-    data, geom = geom_point, color = NULL, fill = NULL, 
+    data, geom = geom_point, color = NULL, fill = NULL, linetype = NULL,
     ..., palette = NULL, fixed = list(), theme = list()
 ){
     color <- enquo(color)
     fill  <- enquo(fill)
+    linetype <- enquo(linetype)
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
 
     p <- ggplot(data    = data,  # https://stackoverflow.com/a/55816211
-                mapping = eval(expr(aes(color = !!color, 
-                                        fill  = !!fill, 
+                mapping = eval(expr(aes(color    = !!color, 
+                                        fill     = !!fill, 
+                                        linetype = !!linetype,
                                         !!!dots))))
     p <- p + do.call(geom, fixed)
     p <- p + theme_bw()
@@ -322,7 +324,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #'     plot_feature_boxplots( object)
 #' @export
 plot_densities <- function(
-    object, assay = assayNames(object)[1], group, fill, color = NULL, 
+    object, assay = assayNames(object)[1], group, fill, color = NULL, linetype = NULL,
     facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free_y', 
     labeller = label_value, 
     palette = NULL, fixed = list(alpha = 0.8, na.rm = TRUE)
@@ -354,11 +356,12 @@ plot_densities <- function(
     if (!is.null(fill))  object[[fill]] %<>% num2char()
     dt <- sumexp_to_longdt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
 # Plot
-    groupsym <- if (is.null(group))  quo(NULL) else sym(group)
-    fillsym  <- if (is.null(fill ))  quo(NULL) else sym(fill)
-    colorsym <- if (is.null(color))  quo(NULL) else sym(color)
+    groupsym    <- if (is.null(group))    quo(NULL) else sym(group)
+    fillsym     <- if (is.null(fill ))    quo(NULL) else sym(fill)
+    colorsym    <- if (is.null(color))    quo(NULL) else sym(color)
+    linetypesym <- if (is.null(linetype)) quo(NULL) else sym(linetype)
     p <- plot_data(dt, geom = geom_density, x = value, fill = !!fillsym,
-            color = !!colorsym, group = !!groupsym, palette = palette, fixed = fixed)
+            color = !!colorsym, linetype = !!linetypesym, group = !!groupsym, palette = palette, fixed = fixed)
     if (!is.null(facet))  p <- p + facet_wrap(
             facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller, 
             scales = scales)
@@ -378,6 +381,7 @@ plot_sample_densities <- function(
     group    = 'sample_id',
     fill     = 'sample_id',
     color    = NULL, 
+    linetype = NULL,
     n        = 100,
     facet    = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free_y',
     labeller = label_value,
@@ -391,6 +395,7 @@ plot_sample_densities <- function(
         group    = group,
         fill     = fill,
         color    = color,
+        linetype = linetype,
         facet    = facet, nrow = nrow, ncol = ncol, dir = dir, scales = scales,
         labeller = labeller, 
         palette  = palette, 
@@ -403,14 +408,15 @@ feature_id <- NULL
 #' @export
 plot_feature_densities <- function(
     object,
-    assay = assayNames(object)[1],
-    group   = 'feature_id',
-    fill    = 'feature_id',
-    color   = NULL,
-    n       = 9,
-    facet   = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free', 
+    assay    = assayNames(object)[1],
+    fill     = 'feature_id',
+    group    = fill,
+    color    = NULL,
+    linetype = NULL,
+    n        = 9,
+    facet    = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free', 
     labeller = label_value, palette = NULL, 
-    fixed = list(alpha = 0.8, na.rm = TRUE)
+    fixed    = list(alpha = 0.8, na.rm = TRUE)
 ){
     object %<>% extract_features_evenly(n)
     plot_densities( 
@@ -419,10 +425,11 @@ plot_feature_densities <- function(
         group    = group,
         fill     = fill,
         color    = color,
+        linetype = linetype,
         facet    = facet,  nrow = nrow, ncol = ncol, dir = dir, scales = scales, 
         labeller = labeller, 
         palette  = palette, 
-        fixed    = fixed) +
+        fixed    = fixed ) +
     ggtitle("Feature Densities")
 }
 

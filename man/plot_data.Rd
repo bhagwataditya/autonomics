@@ -9,6 +9,7 @@ plot_data(
   geom = geom_point,
   color = NULL,
   fill = NULL,
+  linetype = NULL,
   ...,
   palette = NULL,
   fixed = list(),
