@@ -46,7 +46,7 @@ plot_sample_violins(
   object,
   assay = assayNames(object)[1],
   x = "sample_id",
-  fill = "sample_id",
+  fill = if ("subgroup" \%in\% svars(object)) "subgroup" else "sample_id",
   color = NULL,
   n = 100,
   facet = NULL,

@@ -379,7 +379,7 @@ plot_sample_densities <- function(
     object,
     assay    = assayNames(object)[1],
     group    = 'sample_id',
-    fill     = 'sample_id',
+    fill     = if ('subgroup' %in% svars(object)) 'subgroup' else  'sample_id',
     color    = NULL, 
     linetype = NULL,
     n        = 100,
@@ -514,7 +514,7 @@ plot_violins <- function(object, assay = assayNames(object)[1], x, fill,
     xsym         <- sym(x)
     fillsym      <- sym(fill)
     groupsym     <- if (is.null(group))  quo(NULL)  else  sym(group)
-    colorsym     <- if (is.null(color))  quo(NULL)  else  sym(highlight)
+    colorsym     <- if (is.null(color))  quo(NULL)  else  sym(color)
     p <- plot_data(dt, geom = geom_violin, x = !!xsym, y = value,
                 fill = !!fillsym, color = !!colorsym, group = !!groupsym, 
                 palette = palette, fixed = fixed)
@@ -557,7 +557,10 @@ plot_feature_violins <- function(
 #' @rdname plot_violins
 #' @export
 plot_sample_violins <- function(
-    object, assay = assayNames(object)[1], x = 'sample_id', fill = 'sample_id', 
+    object,
+    assay = assayNames(object)[1],
+    x     = 'sample_id', 
+    fill  = if ('subgroup' %in% svars(object)) 'subgroup'  else  'sample_id', 
     color = NULL, n = 100, facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', 
     scales = 'free', labeller = label_value, highlight = NULL, fixed = list(na.rm = TRUE)
 ){
@@ -582,6 +585,7 @@ extract_samples_evenly <- function(object, n){
 
 extract_features_evenly <- function(object, n){
     if (n < nrow(object)){
+        object %<>% extract(rowSums(!is.na(values(object))) > 2, )
         object %<>% extract(extract_evenly(nrow(object), n), )
     }
     object
@@ -1118,7 +1122,7 @@ plot_exprs <- function(
     colorpalette = make_var_palette(object, color),
     hlevels      = NULL, 
     title        = switch(dim, both = x, features = 'Feature Boxplots', samples  =  'Sample Boxplots'), 
-    subtitle     = if (grepl('(limma|lm|lme|lmer|wilcoxon)', fit)) coefs else '',
+    subtitle     = if (!is.null(fit)) coefs else '',
     xlab         = NULL, 
     ylab         = 'value', 
     theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)), 
@@ -1205,30 +1209,19 @@ boxplot_subgroups <- function(...){
 
 #' @rdname plot_exprs
 #' @export
-plot_sample_boxplots <- function(...){
-    .Deprecated('plot_exprs(object, dim = "samples")')
-    plot_exprs(..., dim = 'samples')
+plot_sample_boxplots <- function(
+    object, 
+    fill = if ('subgroup' %in% svars(object)) 'subgroup' else 'sample_id', 
+    n = min(ncol(object), 16),
+    ...
+){
+    plot_exprs(object, dim = 'samples', fill = fill, n = n, ...)
 }
 
 #' @rdname plot_exprs
 #' @export
-boxplot_samples <- function(...){
-    .Deprecated('plot_exprs(object, dim = "samples")')
-    plot_exprs(..., dim = 'samples')
-}
-
-#' @rdname plot_exprs
-#' @export
-plot_feature_boxplots <- function(...){
-    .Deprecated('plot_exprs(object, dim = "features")')
-    plot_exprs(..., dim = 'features')
-}
-
-#' @rdname plot_exprs
-#' @export
-boxplot_features <- function(...){
-    .Deprecated('plot_exprs(object, dim = "features")')
-    plot_exprs(..., dim = 'features')
+plot_feature_boxplots <- function(object, ...){
+    plot_exprs(object, dim = 'features', ...)
 }
 
 #' Plot exprs per coef
@@ -1327,16 +1320,13 @@ default_subtitle <- function(fit, x, coefs){
 #' default_geom(object, x = c('AGE', 'T2D'), block = 'SUB')
 #' @export
 default_geom <- function(object, x, block = NULL){
-    if (!is.null(block)){
-        y <- rep('point', length(x))
-        names(y) <- x
-    } else {
-        sdt0 <- sdt(object)[, x, with = FALSE]
-        y <- vapply(sdt0, class, character(1))
-        y %<>% unname()
-        y <- c(numeric = 'point', factor = 'boxplot', character = 'boxplot')[y]
-        names(y) <- x
-    }
+    if (all(x %in% fvars(object)))  return(set_names(rep('boxplot', length(x)), names(x)))
+    if (!is.null(block))            return(set_names(rep('point',   length(x)), names(x)))
+    sdt0 <- sdt(object)[, x, with = FALSE]
+    y <- vapply(sdt0, class, character(1))
+    y %<>% unname()
+    y <- c(numeric = 'point', factor = 'boxplot', character = 'boxplot')[y]
+    names(y) <- x
     y
 }
 
@@ -1521,8 +1511,8 @@ plot_matrix <- function(mat){
 #' object$subgroup %<>% substr(1,3)
 #' plot_design(object)
 #' @export
-plot_design <- function(object){
-    designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE)
+plot_design <- function(object, coding = 'treatment'){
+    designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE, coding = coding)
     rownames(designmat) <- object$subgroup
     designmat %<>% unique()
     subgroups <- subgroup_levels(object)
@@ -1552,7 +1542,12 @@ plot_design <- function(object){
     #       panel.grid.minor.x = element_blank())
 }
 
-#' Plot top heatmap
+plot_top_heatmap <- function(...){
+    .Deprecated('plot_heatmap')
+    plot_heatmap(...)
+}
+
+#' Plot heatmap
 #' @param object           SummarizedExperiment
 #' @param assay            string: one of assayNames(object)
 #' @param fit             'limma', 'lm', 'lme(r)', 'wilcoxon'
@@ -1570,7 +1565,7 @@ plot_design <- function(object){
 #' plot_top_heatmap(object)
 #' plot_top_heatmap(object, cluster_samples = FALSE)
 #' @export
-plot_top_heatmap <- function(
+plot_heatmap <- function(
     object,
     assay            = assayNames(object)[1],
     fit              = fits(object)[1],

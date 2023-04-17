@@ -12,7 +12,7 @@ plot_volcano(
   shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
   size = NULL,
   alpha = NULL,
-  label = "feature_id",
+  label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
   max.overlaps = 10,
   features = NULL,
   nrow = length(fit),

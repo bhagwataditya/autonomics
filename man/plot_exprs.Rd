@@ -5,9 +5,7 @@
 \alias{plot_boxplots}
 \alias{boxplot_subgroups}
 \alias{plot_sample_boxplots}
-\alias{boxplot_samples}
 \alias{plot_feature_boxplots}
-\alias{boxplot_features}
 \title{Plot exprs for coef}
 \usage{
 plot_exprs(
@@ -41,7 +39,7 @@ plot_exprs(
   hlevels = NULL,
   title = switch(dim, both = x, features = "Feature Boxplots", samples =
     "Sample Boxplots"),
-  subtitle = if (grepl("(limma|lm|lme|lmer|wilcoxon)", fit)) coefs else "",
+  subtitle = if (!is.null(fit)) coefs else "",
   xlab = NULL,
   ylab = "value",
   theme = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
@@ -55,13 +53,14 @@ plot_boxplots(...)
 
 boxplot_subgroups(...)
 
-plot_sample_boxplots(...)
+plot_sample_boxplots(
+  object,
+  fill = if ("subgroup" \%in\% svars(object)) "subgroup" else "sample_id",
+  n = min(ncol(object), 16),
+  ...
+)
 
-boxplot_samples(...)
-
-plot_feature_boxplots(...)
-
-boxplot_features(...)
+plot_feature_boxplots(object, ...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

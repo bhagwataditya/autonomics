@@ -219,7 +219,7 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
 #' @return SummarizedExperiment
 #' @examples
 #' # Example data
-#'     nnpxdt    <- data.table(OlinkAnalyze::npx_data1)[, c(1:11, 17)]
+#'     nnpxdt   <- data.table(OlinkAnalyze::npx_data1)[, c(1:11, 17)]
 #'     sampledt <- data.table(OlinkAnalyze::npx_data1)[, c(1, 12:15)]
 #'     sampledt %<>% extract(!grepl('CONTROL', SampleID))
 #'     sampledt %<>% unique()

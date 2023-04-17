@@ -16,9 +16,10 @@ biplot(
   group = NULL,
   linetype = NULL,
   label = NULL,
-  feature_label = "feature_id",
+  feature_label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
   fixed = list(shape = 15, size = 3),
-  nfeatures = 1,
+  nx = 0,
+  ny = 0,
   colorpalette = make_svar_palette(object, color),
   alphapalette = make_alpha_palette(object, alpha),
   title = sprintf("\%s~\%s", method, by),
@@ -43,7 +44,9 @@ biplot(
 
 \item{fixed}{fixed plot aesthetics}
 
-\item{nfeatures}{number of loadings per half-axis to plot}
+\item{nx}{number of x features to plot}
+
+\item{ny}{number of y features to plot}
 
 \item{colorpalette}{character vector}
 
@@ -68,8 +71,8 @@ object <- read_metabolon(file)
 object \%<>\% pca(ndim = 4)
 object \%<>\% pls(ndim = 4)
 biplot(object)
-biplot(object, nfeatures = 1)
-biplot(object, dims = 3:4, nfeatures = 1)
+biplot(object, nx = 1)
+biplot(object, dims = 3:4, nx = 1)
 biplot(object, method = 'pls')
 biplot(object, method = 'pls', dims = 3:4)
 biplot(object, method = 'pls', dims = 3:4, group = 'SUB')

@@ -114,7 +114,7 @@ download_tcga_example <- function(){
     rna %<>% filter_features(!is.na(genesize))
     rna$case_id <- rna$sample_id
     rna$case_id %<>% split_extract_fixed('.', 1)
-    rna %<>% preprocess_rnaseq_counts(subgroupvar = 'sample_type', block = 'case_id', tpm = TRUE, cpm = TRUE, voom = TRUE)
+    rna %<>% preprocess_rnaseq_counts(formula = ~ sample_type, block = 'case_id', tpm = TRUE, cpm = TRUE, voom = TRUE)
     saveRDS(rna, file = file)
 }
 

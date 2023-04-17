@@ -27,7 +27,7 @@ plot_sample_densities(
   object,
   assay = assayNames(object)[1],
   group = "sample_id",
-  fill = "sample_id",
+  fill = if ("subgroup" \%in\% svars(object)) "subgroup" else "sample_id",
   color = NULL,
   linetype = NULL,
   n = 100,
