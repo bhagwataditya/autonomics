@@ -41,7 +41,6 @@ Imports:
   data.table,
   dplyr,
   edgeR,
-  fs,
   ggforce,
   ggplot2,
   ggrepel,
@@ -73,15 +72,18 @@ Imports:
 Suggests: 
   affy,
   AnnotationDbi,
+  AnnotationHub,
   BiocManager,
   BiocStyle,
   Biostrings,
   diagram,
+  ensembldb,
   GenomicDataCommons,
   GenomicRanges,
   GEOquery,
   hgu95av2.db,
   ICSNP,
+  jsonlite,
   knitr,
   lme4, 
   lmerTest,
@@ -106,4 +108,5 @@ Suggests:
   survminer,
   testthat,
   UniProt.ws,
-  writexl
+  writexl,
+  XML

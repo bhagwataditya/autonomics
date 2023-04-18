@@ -9,6 +9,7 @@
 #' @importFrom assertive.files        assert_all_are_dirs   
 #' @importFrom assertive.files        assert_all_are_existing_files
 #' @importFrom assertive.files        is_existing_file
+#' @importFrom assertive.numbers      assert_all_are_in_left_open_range
 #' @importFrom assertive.numbers      assert_all_are_in_range
 #' @importFrom assertive.numbers      assert_all_are_less_than_or_equal_to
 #' @importFrom assertive.numbers      is_in_closed_range
@@ -16,6 +17,7 @@
 #' @importFrom assertive.properties   assert_are_same_length
 #' @importFrom assertive.properties   assert_has_names
 #' @importFrom assertive.properties   assert_has_no_duplicates
+#' @importFrom assertive.properties   assert_is_of_length
 #' @importFrom assertive.properties   assert_is_not_null
 #' @importFrom assertive.properties   assert_is_scalar
 #' @importFrom assertive.properties   has_names   has_no_duplicates
@@ -23,6 +25,8 @@
 #' @importFrom assertive.sets         assert_are_disjoint_sets
 #' @importFrom assertive.sets         assert_is_subset   is_subset
 #' @importFrom assertive.strings      assert_all_are_non_missing_nor_empty_character
+#' @importFrom assertive.strings      assert_any_are_matching_regex
+#' @importFrom assertive.strings      is_numeric_string
 #' @importFrom assertive.types        assert_is_all_of
 #' @importFrom assertive.types        assert_is_a_bool
 #' @importFrom assertive.types        assert_is_a_number
@@ -52,11 +56,11 @@
 #' @importFrom ggforce     facet_wrap_paginate
 #' @importFrom ggrepel     geom_text_repel
 #' @importFrom graphics    lines    pie    title
-#' @importFrom grDevices   hcl
+#' @importFrom grDevices   hcl    dev.off   pdf
 #' @importFrom limma       contrasts.fit    duplicateCorrelation   eBayes
 #' @importFrom limma       lmFit    makeContrasts   removeBatchEffect    
 #' @importFrom limma       voom   vennDiagram
-#' @importFrom graphics    layout
+#' @importFrom graphics    abline   axis   box   image   layout   par
 #' @importFrom grid        grid.layout  grid.draw   grid.newpage
 #' @importFrom gridExtra   arrangeGrob   grid.arrange
 #' @importFrom magrittr    %>%   %<>%   add   and   equals
@@ -75,10 +79,16 @@
 #' @importFrom rlang         as_string   enquo   eval_tidy   enexpr
 #' @importFrom rlang         expr_text   quo_name   as_name   quo_is_null
 #' @importFrom R.utils       gunzip
-#' @importFrom S4Vectors     DataFrame   metadata   metadata<-
-#' @importFrom stats         aggregate    approxfun   as.formula   dist   hclust
-#' @importFrom stats         lowess   lm  median   model.matrix   wilcox.test
-#' @importFrom stats         na.exclude   p.adjust qnorm   rnorm   sd
+#' @importFrom S4Vectors     DataFrame         metadata           metadata<-
+#' @importFrom stats         aggregate         approxfun          as.formula   
+#' @importFrom stats         as.dist           contrasts          contrasts<-
+#' @importFrom stats         cor               dist
+#' @importFrom stats         contr.sum         contr.treatment
+#' @importFrom stats         hclust            IQR                lowess
+#' @importFrom stats         lm                median             model.matrix
+#' @importFrom stats         wilcox.test       na.exclude         p.adjust
+#' @importFrom stats         pchisq            qnorm              quantile
+#' @importFrom stats         rnorm             sd
 #' @import     stringi
 #' @importFrom tidyr         separate_rows
 #' @importFrom tools         file_ext   file_path_sans_ext   R_user_dir
