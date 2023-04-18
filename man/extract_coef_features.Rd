@@ -96,6 +96,7 @@ Extract coefficient features
 }
 \examples{
 # Read and Fit
+    require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()
