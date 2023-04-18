@@ -263,6 +263,7 @@ extract_connected_features <- function(
 #' @param verbose TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples 
+#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% filter_all_slevels('subgroup')

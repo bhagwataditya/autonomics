@@ -142,6 +142,7 @@ na_to_string <- function(x){
 #'    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
 #'    impute(object, plot = TRUE)                                # sumexp
 #' # Complex Design
+#'    require(magrittr)
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    invisible(impute(values(object)[1:3, 1   ]))               # vector

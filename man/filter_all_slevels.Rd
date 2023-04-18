@@ -20,6 +20,7 @@ SummarizedExperiment
 Filter for features with all slevels
 }
 \examples{
+require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% filter_all_slevels('subgroup')
