@@ -1367,12 +1367,12 @@ default_geom <- function(object, x, block = NULL){
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit = 'limma', plot = FALSE)
-#' idx <- order(fdata(object)$F.p.limma)[1:9]
+#' object <- read_metabolon(file, fit = 'limma')
+#' idx <- order(fdata(object)$`p~t1~limma`)[1:9]
 #' object %<>% extract(idx, )
 #' plot_sample_boxplots(  object)
 #' plot_feature_boxplots( object)
-#' plot_subgroup_boxplots(object, subgroup = 'SET')
+#' plot_sample_boxplots(object, x = 'SET')
 #' plot_subgroup_points(  object, subgroup = 'SET')
 #' plot_subgroup_points(  object, subgroup = 'SET', block = 'SUB')
 #' @export
@@ -1490,10 +1490,10 @@ plot_contrast_venn <- function(issig, colors = NULL){
 #' @param mat matrix
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' mat <- sdt(object)[, .(replicate, Group)]
+#' object <- read_metabolon(file)
+#' mat <- sdt(object)[, .(replicate, subgroup)]
 #' mat$present <- 1
-#' mat %<>% data.table::dcast(replicate ~ Group, value.var  = 'present', fill = 0)
+#' mat %<>% data.table::dcast(replicate ~ subgroup, value.var  = 'present', fill = 0)
 #' mat %<>% dt2mat()
 #' plot_matrix(mat)
 #' @return no return (base R plot)
@@ -1558,6 +1558,8 @@ plot_design <- function(object, coding = 'treatment'){
     #       panel.grid.minor.x = element_blank())
 }
 
+#' @rdname plot_heatmap
+#' @export
 plot_top_heatmap <- function(...){
     .Deprecated('plot_heatmap')
     plot_heatmap(...)
@@ -1579,8 +1581,8 @@ plot_top_heatmap <- function(...){
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
-#' plot_top_heatmap(object)
-#' plot_top_heatmap(object, cluster_samples = FALSE)
+#' plot_heatmap(object)
+#' plot_heatmap(object, cluster_samples = FALSE)
 #' @export
 plot_heatmap <- function(
     object,

@@ -56,12 +56,12 @@ Plot features
 \examples{
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, fit = 'limma', plot = FALSE)
-idx <- order(fdata(object)$F.p.limma)[1:9]
+object <- read_metabolon(file, fit = 'limma')
+idx <- order(fdata(object)$`p~t1~limma`)[1:9]
 object \%<>\% extract(idx, )
 plot_sample_boxplots(  object)
 plot_feature_boxplots( object)
-plot_subgroup_boxplots(object, subgroup = 'SET')
+plot_sample_boxplots(object, x = 'SET')
 plot_subgroup_points(  object, subgroup = 'SET')
 plot_subgroup_points(  object, subgroup = 'SET', block = 'SUB')
 }

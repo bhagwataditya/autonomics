@@ -572,13 +572,16 @@ biplot_methods <- function(object){
     y
 }
 
-biplot_by <- function(object, method){
+biplot_by <- function(object, method = 'pca'){
     y <- grep(method, svars(object), value = TRUE, fixed = TRUE)
     y %<>% split_extract_fixed('~', 2)
     y %<>% unique()
+    y
 }
 
-biplot_dims <- function(object, method, by){
+biplot_dims <- function(
+    object, method = 'pca', by = biplot_by(object, method)
+){
     x <- sprintf('effect~%s~%s', by, method)
     y <- grep(x, svars(object), value = TRUE, fixed = TRUE)
     y <- gsub(x, '', y)

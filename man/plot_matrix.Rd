@@ -17,10 +17,10 @@ Plot binary matrix
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
-mat <- sdt(object)[, .(replicate, Group)]
+object <- read_metabolon(file)
+mat <- sdt(object)[, .(replicate, subgroup)]
 mat$present <- 1
-mat \%<>\% data.table::dcast(replicate ~ Group, value.var  = 'present', fill = 0)
+mat \%<>\% data.table::dcast(replicate ~ subgroup, value.var  = 'present', fill = 0)
 mat \%<>\% dt2mat()
 plot_matrix(mat)
 }
