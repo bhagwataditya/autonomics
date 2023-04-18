@@ -20,8 +20,8 @@ Does any string have a regex
 \examples{
 str <- c('s1 Spectral Count', 's1 Unique Spectral Count')
 patterns <- c('Spectral Count', '(?<!Unique) Spectral Count', 'Intensity')
-stri_detect_regex(str, pattern = patterns[1])
-stri_detect_regex(str, pattern = patterns[2])
-stri_detect_regex(str, pattern = patterns[3])
+stringi::stri_detect_regex(str, pattern = patterns[1])
+stringi::stri_detect_regex(str, pattern = patterns[2])
+stringi::stri_detect_regex(str, pattern = patterns[3])
 stri_any_regex(   str, pattern = patterns)
 }

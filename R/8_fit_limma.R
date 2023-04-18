@@ -177,6 +177,7 @@ create_design.data.table <- function(
 #'     code_helmert(   levels(x))
 #' 
 #' # Code
+#'     require(magrittr)
 #'     x %<>% code('treatment')
 #'     x %<>% code('reference')
 #'     x %<>% code('grandref')

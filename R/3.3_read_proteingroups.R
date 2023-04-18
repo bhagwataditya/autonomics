@@ -81,8 +81,9 @@ un_int64 <- function(x) {
 
 #' Read proteingroups/phosphosites as-is
 #' @param file         proteingroups / phosphosites file
-#' @param quantity string
-#' @param verbose  TRUE / FALSE
+#' @param proteinfile  proteingroups file
+#' @param quantity     string
+#' @param verbose      TRUE / FALSE
 #' @return data.table
 #' @examples 
 #' proteinfile <- download_data('billing19.proteingroups.txt')

@@ -1578,6 +1578,7 @@ plot_top_heatmap <- function(...){
 #' @param cluster_samples  TRUE or FALSE
 #' @param flabel           string: feature label
 #' @param group            sample groupvar
+#' @param ...              used to maintain deprecated functionality
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
