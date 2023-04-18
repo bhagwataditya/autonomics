@@ -40,12 +40,12 @@ rm_unmatched_samples <- function(
 
 #' @rdname rm_unmatched_samples
 #' @export
-rm_singleton_samples <- function(object, svar = 'subgroup', verbose = TRUE){
-    selectedsamples <- sdt(object)[, .SD[.N>1], by = svar][['sample_id']]
+rm_singleton_samples <- function(object, subgroupvar = 'subgroup', verbose = TRUE){
+    selectedsamples <- sdt(object)[, .SD[.N>1], by = subgroupvar][['sample_id']]
     n <- length(selectedsamples)
     if (verbose & n < ncol(object)){
         message('\t\tRetain ', length(selectedsamples), '/',
-                ncol(object), ' samples with replicated ', svar) }
+                ncol(object), ' samples with replicated ', subgroupvar) }
     object[, selectedsamples]
 }
 
@@ -253,7 +253,8 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' @param  object   SummarizedExperiment
 #' @param  assay    character vector : assays for which to perform transformation
 #' @param  pseudo   number           : pseudo value to be added prior to transformation
-#' @param  verbose  TRUE/FALSE       : whether to msg
+#' @param  verbose  TRUE or FALSE    : whether to msg
+#' @param  delog    TRUE or FALSE (vsn)
 #' @return Transformed sumexp
 #' @examples
 #' require(magrittr)
@@ -487,7 +488,7 @@ plot_transformation_biplots <- function(
     object,
     subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
-    method = 'pca', by = biplot_by(get(method)(object, by = by), method),
+    method = 'pca', by = 'sample_id',
     dims = 1:2, color = subgroupvar, ...,
     fixed = list(shape = 15, size = 3)
 ){
@@ -523,13 +524,13 @@ plot_transformation_biplots <- function(
 #==============================================================================
 
 #' Explore transformations
-#' @param object          SummarizedExperiment
-#' @param subgroup        subgroup (sym)
-#' @param transformations vector
+#' @param object           SummarizedExperiment
+#' @param subgroupvar      string
+#' @param transformations  vector
 #' @param method          'pca', 'pls', 'sma', or 'lda'
-#' @param xdim            number (default 1)
-#' @param ydim            number (default 2)
-#' @param ...             passed to plot_data
+#' @param xdim             number (default 1)
+#' @param ydim             number (default 2)
+#' @param ...              passed to plot_data
 #' @return grid object
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')

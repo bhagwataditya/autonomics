@@ -122,6 +122,8 @@ na_to_string <- function(x){
 #'
 #' Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
 #' @param object   numeric vector, SumExp
+#' @param assay    string
+#' @param by       svar
 #' @param shift    number: sd units
 #' @param width    number: sd units
 #' @param frac     fraction: fraction of available samples should be greater 
@@ -130,6 +132,7 @@ na_to_string <- function(x){
 #' @param plot     TRUE or FALSE
 #' @param n        number of samples to plot
 #' @param palette  color vector
+#' @param ...      required for s3 dispatch
 #' @return numeric vector, matrix or SumExp
 #' @examples
 #' # Simple Design
@@ -150,13 +153,10 @@ impute <- function(object, ...) UseMethod('impute')
 #' @rdname impute
 #' @export
 impute.numeric <- function(
-    object, 
-    shift   = 2.5, 
-    width   = 0.3, 
-    verbose = TRUE, 
-    plot    = FALSE
+    object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, ...
 ){
 # Original
+    count <- imputed <- NULL
     sd1    <- sd(object, na.rm = TRUE)
     mean1  <- mean(object, na.rm = TRUE)
 # Imputed
@@ -184,9 +184,11 @@ impute.matrix <- function(
     width   = 0.3, 
     verbose = TRUE, 
     plot    = FALSE, 
-    n       = min(9, ncol(object)), 
-    palette = make_colors(colnames(object))
+    n       = min(9, ncol(object)),  
+    palette = make_colors(colnames(object)), 
+    ...
 ){
+    count <- imputed <- sample_id <- value <- NULL
     idx <- is.na(object)
     if (verbose){
         message(sprintf('\tImpute (out of %d) features per sample: ', nrow(object)))
@@ -221,7 +223,8 @@ impute.SummarizedExperiment <- function(
     verbose  = TRUE, 
     plot     = FALSE, 
     palette  = make_colors(colnames(object)), 
-    n        = min(9, ncol(object))
+    n        = min(9, ncol(object)), 
+    ...
 ){
 # Assert
     assert_is_scalar(assay); assert_is_subset(assay, assayNames(object))
@@ -232,6 +235,8 @@ impute.SummarizedExperiment <- function(
     assert_is_character(palette)
     assert_has_names(palette)
     assert_is_a_number(n)
+    consistent.na <- imputed <- isNa <- isValue <- na.group <- value <- NULL
+    value.group <- NULL
 # Impute systematic NAs
     dt <- sumexp_to_longdt(object, assay = assay, svars = by)
     dt[, imputed := impute(value, shift = shift, width = width, 
@@ -396,7 +401,8 @@ is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 #' Split samples
 #'
 #' Split samples by svar
-#' @param object SummarizedExperiment
+#' @param object  SummarizedExperiment
+#' @param objlist SummarizedExperiment list
 #' @param by     svar to split by (string)
 #' @return  SummarizedExperiment list
 #' @examples
@@ -451,9 +457,9 @@ is_consistent_nondetect <- function(object, by = 'subgroup'){
 }
 
 #' Rm consistent nondetects 
-#' @param object SummarizedExperiment
-#' @param by      svar
-#' @param verbose TRUE or FALSE
+#' @param object   SummarizedExperiment
+#' @param formula  formula
+#' @param verbose  TRUE or FALSE
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
@@ -463,7 +469,7 @@ is_consistent_nondetect <- function(object, by = 'subgroup'){
 rm_consistent_nondetects <- function(object, formula, verbose = TRUE){
 # Assert
     assert_is_valid_sumexp(object)
-    assertive::assert_is_formula(formula)
+    assert_is_formula(formula)
     assert_is_a_bool(verbose)
 # Remove
     for (var in all.vars(formula)){
@@ -689,6 +695,8 @@ plot_summarized_detections <- function(...){
 #' @param fill         svar (string)
 #' @param palette      color vector (names = levels, values = colors)
 #' @param axis.text.y  passed to ggplot2::theme
+#' @param na_imputes   TRUE or FALSE
+#' @param ...          used to maintain deprecated functions
 #' @return ggplot object
 #' @examples
 #' require(magrittr)

@@ -537,7 +537,7 @@ add_genenames <- function(object, gtffile, verbose = TRUE){
 #' @param orgdb  OrgDb
 #' @return  character vector
 #' @examples
-#' if (requireNamespace('org.Hs.eg.db'), quiet = TRUE){
+#' if (requireNamespace('org.Hs.eg.db', quiet = TRUE)){
 #'     orgdb <- org.Hs.eg.db::org.Hs.eg.db
 #'     entrezg_to_symbol(x = c('7448', '3818', '727'), orgdb)
 #' }
@@ -556,10 +556,11 @@ entrezg_to_symbol <- function(x, orgdb){
 
 #' Collapsed entrezg to genesymbol
 #' @param x      charactervector
+#' @param sep    string
 #' @param orgdb  OrgDb
 #' @return character vector
 #' @examples
-#' if (requireNamespace('org.Hs.eg.db'), quiet = TRUE){
+#' if (requireNamespace('org.Hs.eg.db', quiet = TRUE)){
 #'     x <- c('7448/3818/727', '5034/9601/64374')
 #'     orgdb <- org.Hs.eg.db::org.Hs.eg.db
 #'     collapsed_entrezg_to_symbol(x, sep = '/', orgdb = orgdb)
@@ -577,7 +578,7 @@ collapsed_entrezg_to_symbol <- function(x, sep, orgdb){
 #' @param genome 'hg38', 'hg19', 'mm10', or 'mm9'
 #' @return OrgDb
 #' @examples 
-#' if (requireNamespace('org.Hs.eg.db'), quiet = TRUE){
+#' if (requireNamespace('org.Hs.eg.db', quiet = TRUE)){
 #'     class(genome_to_orgdb('hg38'))
 #' }
 #' @export
@@ -758,7 +759,6 @@ explicitly_compute_voom_weights <- function(
 #' @param min_count    min count required in some samples
 #' @param pseudo       added pseudocount to avoid log(x)=-Inf
 #' @param tpm          TRUE or FALSE : tpm normalize?
-#' @param genesizevar  string     : tpm normalization genesize fvar 
 #' @param cpm          TRUE or FALSE : cpm normalize? (counts per million (scaled) reads)
 #' @param voom         TRUE or FALSE : voom weight?
 #' @param log2         TRUE or FALSE : log2 transform?
@@ -885,6 +885,9 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
 # Assert
     if (is.null(ensdb)) return(object)
     if (!stri_startswith_fixed(fdt(object)$feature_id[1],'ENS'))  return(object)
+    if (!requireNamespace('ensembldb', quietly = TRUE)){
+        message("BiocManager::install('ensembldb'). Then re-run.")
+        return(object) }
 # Genesize
     genesize <- ensembldb::lengthOf(
         ensdb, filter = ensembldb::GeneidFilter(fdt(object)$feature_id))
@@ -950,7 +953,7 @@ is_numeric_character <- function(x)  all(!is.na(suppressWarnings(as.numeric(x)))
     if (stri_startswith_fixed(fdt0[[fid_col]][1], 'ENS')){
         fdt0[[fid_col]] %<>% split_extract_fixed('.', 1)  # drop ensemblid version
     }
-    assertive::assert_has_no_duplicates(fdt0[[fid_col]])
+    assert_has_no_duplicates(fdt0[[fid_col]])
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdt0[[fid_col]]
     object <- matrix2sumexp(counts1, verbose = verbose)
@@ -980,9 +983,9 @@ read_rnaseq_bams <- function(
     sfile = NULL, by.y = NULL, block = NULL,
     formula = ~ subgroup, min_count = 10, pseudo = 0.5, 
     ensdb = NULL, tpm = FALSE, cpm = TRUE, log2 = TRUE, 
-    plot = FALSE, pca = plot, pls = plot, fit = if (plot) 'limma' else NULL, 
-    voom = cpm, coefs = NULL, contrasts = NULL, 
-    palette = NULL, verbose = TRUE
+    plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
+    fit = if (plot) 'limma' else NULL, voom = cpm, coefs = NULL, 
+    contrasts = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_rnaseq_bams(
@@ -1004,7 +1007,8 @@ read_rnaseq_bams <- function(
         fit         = fit,          formula     = formula, 
         block       = block,        weightvar   = if (voom) 'weights' else NULL,
         coefs       = coefs,        contrasts   = contrasts, 
-        plot        = plot,         verbose     = verbose)
+        plot        = plot,         label       = label,
+        verbose     = verbose)
 # Return
     object
 }
@@ -1028,6 +1032,7 @@ read_rnaseq_bams <- function(
 #' @param cpm           TRUE or FALSE: add cpm to assays ( counts / effectivelibsize ) ?
 #' @param log2          TRUE or FALSE: log2 transform ?
 #' @param plot          TRUE or FALSE: plot?
+#' @param label         fvar
 #' @param pca           TRUE or FALSE: perform and plot pca?
 #' @param pls           TRUE or FALSE: run pls ?
 #' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
@@ -1064,9 +1069,9 @@ read_rnaseq_counts <- function(
     file, fid_col = 1, sfile = NULL, by.y = NULL, 
     formula = ~ subgroup, block = NULL, min_count = 10, 
     pseudo = 0.5, tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
-    plot = FALSE, pca = plot, pls = plot, fit = if (plot) 'limma' else NULL, voom = cpm, 
-    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
-    palette = NULL, verbose = TRUE
+    plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
+    fit = if (plot) 'limma' else NULL, voom = cpm, 
+    coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
     object <- .read_rnaseq_counts(
@@ -1086,14 +1091,15 @@ read_rnaseq_counts <- function(
         fit         = fit,           formula    = formula, 
         block       = block,         weightvar  = if (voom) 'weights' else NULL,
         coefs       = coefs,         contrasts  = contrasts, 
-        plot        = plot,          palette    = palette, 
-        verbose     = verbose)
+        plot        = plot,          label      = label,
+        palette     = palette,       verbose    = verbose)
 # Return
     object
 }
 
 
 .read_salmon_sample <- function(sampledir){
+    Name <- TPM <- NULL
     file <- sprintf('%s/quant.sf', sampledir)
     dt <- fread(file)[, .(Name, TPM)]
     setnames(dt, 'TPM', basename(sampledir))
@@ -1119,7 +1125,10 @@ read_salmon <- function(
     dir, sfile = NULL, by = NULL, ensdb = NULL
 ){
 # Assert
-    assertive.files::assert_all_are_dirs(dir)
+    if (!requireNamespace('ensembldb', quietly = TRUE)){
+        message("BiocManager::install('ensembldb'). Then re-run.")
+        return(object) }
+    assert_all_are_dirs(dir)
     if (!is.null(ensdb))   assert_is_all_of(ensdb, 'EnsDb')
     if (!is.null(sfile))   assert_all_are_existing_files(sfile)
     if (!is.null(by)) assert_is_subset(by, names(fread(sfile)))

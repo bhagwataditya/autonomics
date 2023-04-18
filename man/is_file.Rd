@@ -6,6 +6,9 @@
 \usage{
 is_file(file)
 }
+\arguments{
+\item{file}{filepath}
+}
 \description{
 Is a file (and not a dir)
 }

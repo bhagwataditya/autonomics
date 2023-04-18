@@ -11,10 +11,6 @@ default_formula(object)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{subgroupvar}{string}
-
-\item{fit}{'limma', 'lm', 'lme', 'lmer'}
 }
 \value{
 formula

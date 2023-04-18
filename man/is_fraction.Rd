@@ -11,6 +11,8 @@ assert_is_fraction(x, .xname = get_name_in_parent(x))
 }
 \arguments{
 \item{x}{number}
+
+\item{.xname}{string}
 }
 \value{
 TRUE or false

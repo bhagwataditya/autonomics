@@ -28,6 +28,8 @@ order_on_effect(
 
 \item{coefs}{string vector: subset of `coefs(object)`}
 
+\item{combiner}{'|' or '&'}
+
 \item{verbose}{TRUE or FALSE}
 }
 \value{
@@ -42,9 +44,7 @@ Order on p
     object <- read_metabolon(file)
 # no limma
     object \%<>\% order_on_p()  # unchanged
-    object \%<>\% order_on_t()
 # with limma
     object \%<>\% fit_limma(coefs = c('t1', 't2', 't3'))
-    (assays(order_on_p(object))[[1]] == assays(order_on_t(object))[[1]])
-    identical(order_on_p(object) , order_on_t(object))
+    object \%<>\% order_on_p()
 }

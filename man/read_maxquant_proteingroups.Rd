@@ -16,6 +16,7 @@ read_maxquant_proteingroups(
   reverse = FALSE,
   impute = FALSE,
   plot = FALSE,
+  label = "feature_id",
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
@@ -52,6 +53,8 @@ read_proteingroups(...)
 
 \item{plot}{TRUE or FALSE: plot ?}
 
+\item{label}{fvar}
+
 \item{pca}{TRUE or FALSE: run pca ?}
 
 \item{pls}{TRUE or FALSE: run pls ?}
@@ -70,7 +73,7 @@ read_proteingroups(...)
 
 \item{verbose}{TRUE or FALSE : message ?}
 
-\item{localization}{number: min localization probability (for phosphosites)}
+\item{...}{maintain deprecated functions}
 }
 \value{
 SummarizedExperiment

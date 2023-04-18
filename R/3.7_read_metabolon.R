@@ -216,7 +216,9 @@ pubchem_to_smiles <- function(x){
 #' @param smiles        TRUE or FALSE: add smiles?
 #' @param impute        TRUE or FALSE: impute group-specific NA values?
 #' @param plot          TRUE or FALSE
-#' @param pca           TRUE or FALSE: compute and plot pca?
+#' @param label         fvar
+#' @param pca           TRUE or FALSE
+#' @param pls           TRUE or FALSE
 #' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
 #' @param formula       model formula
 #' @param block         model blockvar: string or NULL
@@ -234,7 +236,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
     sidvar = '(CLIENT_IDENTIFIER|Client ID)',
     sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group',
     fnamevar = 'BIOCHEMICAL', kegg_pathways = FALSE, smiles = FALSE,
-    impute  = TRUE, plot = FALSE, pca = plot, pls = plot,
+    impute  = TRUE, plot = FALSE, pca = plot, pls = plot, label = 'feature_id',
     fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL, 
     coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
 ){
@@ -259,6 +261,7 @@ read_metabolon <- function(file, sheet = 'OrigScale',
         fit        = fit,           formula    = formula,
         block      = block,         coefs      = coefs,
         contrasts  = contrasts,     plot       = plot,
+        label      = label,
         palette    = palette,       verbose    = verbose)
 # Return
     object

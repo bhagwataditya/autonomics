@@ -11,6 +11,7 @@
 #'  pg_to_canonical(x, unique = FALSE)
 #' # .pg_to_isoforms(x[1])   # unexported dot functions
 #' # .pg_to_canonical(x[1])  # operate on scalars
+#' @export
 pg_to_canonical <- function(x, unique = TRUE){
     assert_is_character(x)
     unname(vapply(x, .pg_to_canonical, character(1), unique = unique))
@@ -23,7 +24,7 @@ pg_to_canonical <- function(x, unique = TRUE){
     paste0(z, collapse = ';')
 }
 
-#' rdname pg_to_canonical
+#' @rdname pg_to_canonical
 #' @export
 pg_to_isoforms <- function(x, unique = TRUE){
     assert_is_character(x)
@@ -132,7 +133,7 @@ commonify_strings <- function(x){
 PRECURSOR_QUANTITY <- 'Precursor.Quantity'
 
 excelcols <- function(file, range) colnames(read_excel(file, range = range, n_max = 0))
-cols <- function(file)  names(fread(file, nrow = 0))
+cols <- function(file)  names(fread(file, nrows = 0))
 col1 <- function(file)  cols(file)[1]
 col2 <- function(file)  cols(file)[2]
 col3 <- function(file)  cols(file)[3]
@@ -159,6 +160,11 @@ uniprot2isoforms <- function(x){
     assert_diann_report(file)
     assert_is_fraction(Lib.PG.Q)
     assert_is_a_bool(verbose)
+    iprecursor <- isoform    <- NULL
+    log2maxlfq <- maxlfq     <- organism     <- pepcounts <- NULL
+    precounts  <- precursor  <- preintensity <- protein   <- NULL
+    run        <- top1       <- top3         <- total     <- NULL
+    uniprot    <- NULL
 # Read
     anncols <- c('Run', 'Genes', 'Protein.Names', 'Protein.Group', 'Precursor.Id',
                  'Q.Value', 'Lib.PG.Q.Value', 'Stripped.Sequence')
@@ -259,6 +265,7 @@ uniprot2isoforms <- function(x){
 #' @param contrasts           coefficient contrasts of interest: character vector or NULL
 #' @param palette             color palette: named string vector
 #' @param verbose             TRUE or FALSE
+#' @param ...                 used to maintain deprecated functions
 #' @return  data.table or SummarizedExperiment
 #' @examples
 #' # Read
@@ -285,8 +292,7 @@ read_diann_proteingroups <- function(
     contaminants = character(0), 
     impute = FALSE, plot = FALSE, 
     pca = plot, pls = plot, fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL,
-    coefs = NULL, contrasts = NULL, feature_id = NULL, sample_id = NULL, 
-    palette = NULL, verbose = TRUE
+    coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
 ){
 # Assert
     if (!is.null(contaminants))  assert_is_character(contaminants)
@@ -425,6 +431,7 @@ read_contaminants <-  function(file = download_contaminants()){
 rm_diann_contaminants <- function(
     object, contaminants = read_contaminants(), verbose = TRUE
 ){
+    contaminant <- uniprot <- NULL
     fdt0 <- fdt(object)
     fdt0 %<>% separate_rows(uniprot, sep = ';') %>% data.table()
     fdt0[, contaminant := FALSE]

@@ -151,6 +151,7 @@ rm_single_value_columns <- function(df){
 #' @param rm_na_svars           TRUE or FALSE: rm NA svars?
 #' @param rm_single_value_svars TRUE or FALSE: rm single value svars?
 #' @param plot                  TRUE or FALSE: plot ?
+#' @param label                 fvar
 #' @param pca                   TRUE or FALSE: run pca?
 #' @param pls                   TRUE or FALSE: run pls?
 #' @param fit                   model engine: 'limma', 'lm', 'lme(r)','wilcoxon' or NULL
@@ -171,7 +172,8 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
     sample_type = 'Sample', feature_type = 'Protein',
     sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
     rm_na_svars = FALSE, rm_single_value_svars = FALSE, plot = FALSE, 
-    pca = plot, pls = plot,fit = if (plot) 'limma' else NULL, formula = ~ subgroup, 
+    label = 'feature_id', pca = plot, pls = plot,
+    fit = if (plot) 'limma' else NULL, formula = ~ subgroup, 
     block = NULL, coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
@@ -203,6 +205,7 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
         fit         = fit,          formula     = formula, 
         block       = block,        coefs       = coefs, 
         contrasts   = contrasts,    plot        = plot,
+        label       = label,
         palette     = palette,      verbose     = verbose)
 # Return
     object
@@ -240,6 +243,7 @@ read_olink <- function(
         message("BiocManager::install('OlinkAnalyze'). Then re-run.")
         return(NULL) 
     }
+    Assay <- Index <- N <- OlinkID <- SampleID <- NULL
 # Read    
     dt <- OlinkAnalyze::read_NPX(file) %>% data.table()
     dt[, N := .N, by = c('OlinkID', 'SampleID')]
@@ -257,7 +261,7 @@ read_olink <- function(
     object %<>% merge_fdt(fdt0)
 # Merge
     if (!is.null(sample_excel))  object %<>% merge_sample_excel(sample_excel, by.x = 'sample_id', by.y = by.y)
-    if (!is.null(sample_tsv  ))  object %<>% merge_sample_tsv(  sample_tsv,   by.x = 'sample_id', by.y = by.y  )
+    if (!is.null(sample_tsv  ))  object %<>% merge_sample_file( sample_tsv,   by.x = 'sample_id', by.y = by.y  )
 # Return
     object
 }

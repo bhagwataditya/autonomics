@@ -81,7 +81,7 @@ un_int64 <- function(x) {
 
 #' Read proteingroups/phosphosites as-is
 #' @param file         proteingroups / phosphosites file
-#' @param proteinfile  proteingroups file
+#' @param quantity string
 #' @param verbose  TRUE / FALSE
 #' @return data.table
 #' @examples 
@@ -119,10 +119,15 @@ un_int64 <- function(x) {
 }
 
 
-.read_maxquant_phosphosites <- function(file, proteinfile, quantity, verbose = TRUE){
+#' @rdname dot-read_maxquant_proteingroups
+#' @export
+.read_maxquant_phosphosites <- function(
+    file, proteinfile, quantity = guess_maxquant_quantity(file), verbose = TRUE
+){
 # Assert
     assert_maxquant_proteingroups(proteinfile)
     assert_maxquant_phosphosites(file)
+    `Protein group IDs` <- NULL
 # Read    
     if (verbose)  message('\tRead ', file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
@@ -166,6 +171,9 @@ un_int64 <- function(x) {
 
 
 drop_differing_uniprots <- function(fosdt, prodt, verbose){
+# Assert
+    contaminant <- fosId <- `Positions within proteins` <- proId <- NULL
+    reverse <- uniprot <- NULL
 # Avoid changing the global env
     prodt %<>% copy()
     fosdt %<>% copy()
@@ -302,6 +310,7 @@ extract_existence <- function(fastahdrs){
 }
 
 parse_fastahdrs <- function(fastahdrs){
+    existence <- organism <- protein <- NULL
     dt <- data.table(                                  # reviewed
         reviewed    = extract_reviewed(   fastahdrs),  #   0 tr
         protein     = extract_protein(    fastahdrs),  #   1 sp
@@ -323,7 +332,6 @@ parse_fastahdrs <- function(fastahdrs){
 #' Read headers from uniprot fastafile
 #'
 #' @param fastafile    string (or character vector)
-#' @param fastafields  character vector
 #' @param verbose      bool
 #' @examples
 #' # Single fastafile
@@ -369,6 +377,9 @@ read_fastahdrs <- function(fastafile, verbose = TRUE){
 #-----------------------------------------------------------------------------
 
 drop_inferior <- function(anndt, verbose = TRUE){
+    # Assert
+    canonical <- existence <- fragment <- isoform <- protein <- reviewed <- NULL
+    
     anndt %<>% copy()
     idcol <- if ('fosId' %in% names(anndt)) 'fosId' else 'proId'
     
@@ -393,7 +404,7 @@ drop_inferior <- function(anndt, verbose = TRUE){
     
     #if (verbose)  message("\t\t\tDrop '(Fragment)'    in Protein names")
     #anndt$proteinname %<>% stri_replace_first_fixed(' (Fragment)', '')
-    if (assertive::is_numeric_string(anndt[[idcol]][1])){
+    if (is_numeric_string(anndt[[idcol]][1])){
         anndt[order(as.integer(get(idcol)), canonical, isoform)]
     } else {
         anndt[order(get(idcol), canonical, isoform)]
@@ -406,6 +417,7 @@ drop_inferior <- function(anndt, verbose = TRUE){
 #' @param dt2 data.table
 #' @param by string
 #' @examples
+#' require(data.table)
 #' dt1 <- data.table(feature_id = c('PG1', 'PG2'), gene    = c('G1', 'G2'))
 #' dt2 <- data.table(feature_id = c('PG1', 'PG2'), protein = c('P1', 'P2'))
 #' dt1 %<>% .merge(dt2, by = 'feature_id')
@@ -480,6 +492,7 @@ CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism
 #' @md
 #' @export
 curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
+    contaminant <- fastahdrs <- NULL
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
     dt %<>% copy()
     dt %<>% curate_annotate_fastafile(fastadt, verbose = verbose)
@@ -507,6 +520,7 @@ curate_annotate_fastafile <- function(dt, fastadt, verbose = TRUE){
         dt %<>% pull_columns(c(idcol, CURATEDCOLS))
         return(dt[])
     }
+    uniprot <- Original <- NULL
 # Drop Curated / contaminants / reverse
     idxdrop <- dt$contaminant=='+'  |  dt$reverse=='+'
     if (sum(idxdrop)==length(idxdrop))  return(dt)
@@ -543,6 +557,7 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
     if (sum(idxdrop)==length(idxdrop))  return(dt)
     dropdt <- dt[ idxdrop]
     dt     <- dt[!idxdrop]
+    fastahdrs <- ok <- Original <- uniprot <- NULL
 # Curate
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'           # Maxquant doesnt provide protein entries
     if (verbose)  message('\t\tMaxQuant Fastahdrs')                     # They can be inferred from the fastahdrs
@@ -580,7 +595,22 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
 #
 #---------------------------------------------------------------------------
 
+#' Add feature_id
+#' @param dt       data.table
+#' @return data.table
+#' @examples 
+#' require(magrittr)
+#' file <- download_data('billing19.proteingroups.txt')
+#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' prodt <- .read_maxquant_proteingroups(file = file)
+#' prodt %<>% curate_annotate_maxquant()
+#' prodt %<>% add_feature_id()
+#' @export
 add_feature_id <- function(dt){
+# Initialize
+    `Amino acid`                <- contaminant <- isoform <- protein <- NULL
+    `Positions within proteins` <- reverse     <- NULL
+# Add
     dt %<>% copy()
     dt[, contaminant := as.character(contaminant)]   # one dataset had NA_logical values
     dt[is.na(contaminant), contaminant := '']        # which made all features being filtered out in the next lines
@@ -603,8 +633,8 @@ add_feature_id <- function(dt){
         # Contaminants and actual proteins get mixed up. For naming: make sure to use contaminant.
     dt <- dt1 %>% rbind(dt2) %>% rbind(dt3) %>% rbind(dt4)
     dt %<>% pull_columns(c(idcol, 'feature_id'))
-    assertive::assert_all_are_non_missing_nor_empty_character(dt$feature_id)
-    assertive::assert_has_no_duplicates(dt$feature_id)
+    assert_all_are_non_missing_nor_empty_character(dt$feature_id)
+    assert_has_no_duplicates(dt$feature_id)
     dt[]
 }
 
@@ -625,6 +655,7 @@ add_feature_id <- function(dt){
 #' @param verbose  TRUE / FALSE
 #' @return matrix
 #' @examples 
+#' require(magrittr)
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
@@ -745,6 +776,7 @@ label2index <- function(x){
 #'
 #' This function distinguishies between dir and file.
 #' Others dont: is.file, fs::file_exists, assertive::is_existing_file
+#' @param file filepath
 #' @examples
 #' dir  <- tempdir();  dir.create(dir, showWarnings = FALSE)
 #' file <- tempfile(); invisible(file.create(file))
@@ -766,10 +798,10 @@ is_file <- function(file){
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE or FALSE : retain contaminants ?
 #' @param reverse       TRUE or FALSE : include reverse hits ?
-#' @param localization  number: min localization probability (for phosphosites)
 #' @param invert        string vector : subgroups which require inversion
 #' @param impute        TRUE or FALSE: impute group-specific NA values?
 #' @param plot          TRUE or FALSE: plot ?
+#' @param label         fvar
 #' @param pca           TRUE or FALSE: run pca ?
 #' @param pls           TRUE or FALSE: run pls ?
 #' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
@@ -779,6 +811,7 @@ is_file <- function(file){
 #' @param contrasts     coefficient contrasts of interest: character vector or NULL
 #' @param palette       color palette : named character vector
 #' @param verbose       TRUE or FALSE : message ?
+#' @param ...           maintain deprecated functions
 #' @return SummarizedExperiment
 #' @examples
 #' # fukuda20 - LFQ
@@ -798,8 +831,9 @@ read_maxquant_proteingroups <- function(
     fastadt = NULL, quantity = NULL, 
     subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = FALSE,
-    plot = FALSE, pca = plot, pls = plot, fit = if (plot) 'limma' else NULL,
-    formula = ~ subgroup, block = NULL, coefs = NULL, contrasts = NULL,
+    plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
+    fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL, 
+    coefs = NULL, contrasts = NULL,
     palette = NULL, verbose = TRUE
 ){
 # Assert
@@ -840,6 +874,7 @@ read_maxquant_proteingroups <- function(
         fit          = fit,           formula   = formula,
         block        = block,         coefs     = coefs,
         contrasts    = contrasts,     plot      = plot,
+        label        = label,
         palette      = palette,       verbose   = verbose )
     object
 }
@@ -868,6 +903,7 @@ read_proteingroups <- function(...){
 #' @param invert        string vector: subgroups which require inversion
 #' @param impute        TRUE or FALSE: impute group-specific NA values?
 #' @param plot          TRUE or FALSE
+#' @param label         fvar
 #' @param pca           TRUE or FALSE: run pca ?
 #' @param pls           TRUE or FALSE: run pls ?
 #' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
@@ -877,6 +913,7 @@ read_proteingroups <- function(...){
 #' @param contrasts     model coefficient contrasts of interest: string vector or NULL
 #' @param palette       color palette: named string vector
 #' @param verbose       TRUE or FALSE: message ?
+#' @param ...           maintain deprecated functions
 #' @return SummarizedExperiment
 #' @examples
 #' proteinfile <- download_data('billing19.proteingroups.txt')
@@ -897,7 +934,7 @@ read_maxquant_phosphosites <- function(
     quantity = NULL, 
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
-    impute = FALSE, plot = FALSE, pca = plot, pls = plot, 
+    impute = FALSE, plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
     fit = if (plot) 'limma' else NULL,  
     formula = NULL, block = NULL, coefs = NULL, contrasts = NULL, 
     palette = NULL, verbose = TRUE
@@ -949,6 +986,7 @@ read_maxquant_phosphosites <- function(
         fit       = fit,           formula   = formula,
         block     = block,         coefs     = coefs,
         contrasts = contrasts,     plot      = plot,
+        label     = label,
         palette   = palette,       verbose   = verbose )
     object
 }
@@ -1055,7 +1093,8 @@ arrange_samples_ <- function(object, svars){
 #' `WT(L).KD(H).R1{H/L}  -> KD_WT.R1`
 #' `WT(1).KD(2).R1{1}    -> WT.R1`
 #' `         WT.R1       -> WT.R1`
-#' @param x character vector
+#' @param x       character vector
+#' @param verbose TRUE or FALSE
 #' @return character
 #' @examples
 #' # uniplexed / intensity / ratio
@@ -1093,14 +1132,14 @@ demultiplex <- function(x, verbose = FALSE){
                  n_open > 0                    &  
                  n_open == n_closed)
 # All channels defined (TMT) ? 
-    if (all(assertive::is_numeric_string(channel))){
+    if (all(is_numeric_string(channel))){
         channel %<>% as.numeric()
         y %<>% and(all(as.numeric(channel) <= n_open))
     }
     y
 }
 
-
+utils::globalVariables('.')
 .demultiplex <- function(y){
     y0 <- y
     channel <- split_extract_fixed(y, '{', 2) %>% substr(1, nchar(.)-1)
@@ -1110,7 +1149,7 @@ demultiplex <- function(x, verbose = FALSE){
     run        <- y %>% stri_split_regex('\\([^[()]]+\\)')     %>% unlist() %>% extract(length(.))
     biosamples <- y %>% stri_split_regex('\\([^[()]]+\\)')     %>% unlist() %>% extract(-length(.))
     biosamples %<>% stri_replace_first_regex('^[._ ]', '')
-    assertive::assert_are_same_length(biosamples, labels)
+    assert_are_same_length(biosamples, labels)
     names(biosamples) <- labels
     channel %<>% stri_split_fixed('/') %>% unlist()
     
@@ -1133,6 +1172,7 @@ process_maxquant <- function(
     impute, verbose
 ){
 # Demultiplex. Infer Subgroup
+    contaminant <- `Localization prob` <- NULL
     colnames(object) %<>% demultiplex(verbose = verbose)
     object$sample_id <- colnames(object)
     object %<>% add_subgroup(verbose = verbose)
@@ -1178,6 +1218,7 @@ process_maxquant <- function(
 #' @param pspfile    phosphositeplus file
 #' @return  SummarizedExperiment
 #' @examples 
+#' require(magrittr)
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
@@ -1190,6 +1231,8 @@ add_psp <- function(
     pspfile = file.path(R_user_dir('autonomics', 'cache'), 
             'phosphositeplus', 'Phosphorylation_site_dataset.gz')
 ){
+# Initialize
+    AA <- ACC_ID <- `Amino acid` <- LT_LIT <- MOD_RSD <- MS_CST <- MS_LIT <- psp <- NULL
 # Read
     assert_is_all_of(object, 'SummarizedExperiment')
     if (!file.exists(pspfile))  return(object)

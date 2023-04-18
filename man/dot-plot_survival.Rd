@@ -45,11 +45,27 @@ plot_survival(
 
 \item{percentile}{percentage (not greater than 50)}
 
+\item{samples}{TRUE or FALSE : record which samples in which stratum ?}
+
+\item{verbose}{TRUE or FALSE}
+
 \item{title}{string}
 
 \item{subtitle}{string}
 
 \item{palette}{color vector}
+
+\item{n}{number}
+
+\item{ncol}{number}
+
+\item{nrow}{number}
+
+\item{file}{filepath}
+
+\item{width}{number}
+
+\item{height}{number}
 }
 \value{
 ggsurvplot
@@ -58,6 +74,7 @@ ggsurvplot
 Plot survival
 }
 \examples{
+require(magrittr)
 file <- download_tcga_example()
 if (!is.null(file) & requireNamespace('survminer')){
 # Read

@@ -1,6 +1,9 @@
 
 
 .read_fragpipe_fdt <- function(file){
+# Initialize
+    contaminant <- existence    <- fastahdr <- gene    <- organism <- NULL
+    protein     <- proteingroup <- reviewed <- uniprot <- NULL
 # Read
     fdt0 <- fread(file, select = c('Protein', 'Indistinguishable Proteins', 'Protein Existence', 'Gene'))
     names(fdt0) <- c('fastahdr', 'proteingroup', 'existence', 'gene')
@@ -104,6 +107,7 @@ read_fragpipe <- function(
         object %<>% log2transform(assay = ass, verbose = TRUE)
     }
 # sdt
+    contaminant <- NULL
     sdt(object) <- data.table(sample_id = colnames(object), subgroup = 'group0')
     object$subgroup <- infer_subgroup( object$sample_id)
 # fdt/sdt

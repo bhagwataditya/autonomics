@@ -8,14 +8,19 @@ plot_fit_summary(sumdt, nrow = NULL, ncol = NULL, order = FALSE)
 }
 \arguments{
 \item{sumdt}{data.table}
+
+\item{nrow}{number}
+
+\item{ncol}{number}
+
+\item{order}{TRUE or FALSE}
 }
 \description{
 Plot fit summary
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, impute = TRUE, plot = FALSE)
-object \%<>\% extract(!is_consistent_nondetect(.), )
+object <- read_metabolon(file)
 object \%<>\% fit_lm()
 object \%<>\% fit_limma(block = 'SUB')
 sumdt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))

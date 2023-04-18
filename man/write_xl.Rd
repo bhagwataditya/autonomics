@@ -13,6 +13,8 @@ write_ods(object, odsfile)
 \item{object}{SummarizedExperiment}
 
 \item{xlfile}{file}
+
+\item{odsfile}{file}
 }
 \value{
 filepath

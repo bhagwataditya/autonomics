@@ -128,5 +128,5 @@ Plot sample/feature violins
 }
 \seealso{
 \code{\link{plot_exprs}},
-         \code{\link{boxplot_samples}}
+         \code{\link{plot_densities}}
 }

@@ -33,7 +33,9 @@ vsn(object, verbose = FALSE, delog = TRUE)
 
 \item{pseudo}{number           : pseudo value to be added prior to transformation}
 
-\item{verbose}{TRUE/FALSE       : whether to msg}
+\item{verbose}{TRUE or FALSE    : whether to msg}
+
+\item{delog}{TRUE or FALSE (vsn)}
 }
 \value{
 Transformed sumexp

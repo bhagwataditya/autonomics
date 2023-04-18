@@ -34,8 +34,6 @@ default_subgroupvar <- function(object){
 
 #' Create default formula
 #' @param object SummarizedExperiment
-#' @param subgroupvar string
-#' @param fit 'limma', 'lm', 'lme', 'lmer'
 #' @return formula
 #' @examples 
 #' # Abundances
@@ -141,9 +139,9 @@ create_design.data.table <- function(
 #' 
 #' Contrast Code Factor for General Linear Model
 #'
-#' @param x       factor vector
-#' @param n       factor levels (character) vector
+#' @param object  factor vector
 #' @param coding  coding system \cr
+#' @param vars    character vector
 #'    'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
 #'    'reference'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
 #'    'difference' :  coef = level -  prevlevel, intercept = firstlevel, epxlicit coefnames (t2-t1) \cr
@@ -152,6 +150,8 @@ create_design.data.table <- function(
 #'    'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
 #'    'helmert'    :  coef = level - prevlevels, intercept = grandmean   \cr
 #' @param verbose TRUE or FALSE
+#' @param n character vector
+#' @param ... used for s3 dispatch
 #' @return (explicitly coded) factor vector
 #' @details
 #' A General Linear Model contains:                                                                   \cr
@@ -301,6 +301,7 @@ code_sum <- function(n){
 }
 
 #' @rdname code
+#' @export
 code_helmert <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
@@ -327,10 +328,10 @@ code_helmert <- function(n){
 #' @return  matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' subgroup_matrix(object, subgroupvar = 'Group')
-#' contrast_subgroup_cols(object, subgroupvar = 'Group')
-#' contrast_subgroup_rows(object, subgroupvar = 'Group')
+#' object <- read_metabolon(file)
+#' subgroup_matrix(object, subgroupvar = 'subgroup')
+#' contrast_subgroup_cols(object, subgroupvar = 'subgroup')
+#' contrast_subgroup_rows(object, subgroupvar = 'subgroup')
 #' @export
 contrast_subgroup_cols <- function(object, subgroupvar){
     subgroupmat <- subgroup_matrix(object, subgroupvar)
@@ -572,6 +573,8 @@ fit_limma <- function(
 #' Are varlevels unique
 #' 
 #' @param object SummarizedExperiment or data.table
+#' @param vars character vector
+#' @param ... required for s3 dispatch
 #' @return TRUE or FALSE
 #' @examples 
 #' require(magrittr)
@@ -585,7 +588,7 @@ varlevels_dont_clash <- function(object, ...)  UseMethod('varlevels_dont_clash')
 #' @rdname varlevels_dont_clash
 #' @export
 varlevels_dont_clash.data.table <- function(
-    object, vars = names(object)
+    object, vars = names(object), ...
 ){
     object                         %>% 
     extract(, vars, with = FALSE)  %>%
@@ -600,7 +603,7 @@ varlevels_dont_clash.data.table <- function(
 #' @rdname varlevels_dont_clash
 #' @export
 varlevels_dont_clash.SummarizedExperiment <- function(
-    object, vars = svars(object)
+    object, vars = svars(object), ...
 ){
     varlevels_dont_clash.data.table(sdt(object), vars)
 }
@@ -727,14 +730,14 @@ pull_level <- function(x, lev){
 #' @return data.table(contrast, nup, ndown)
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, impute = TRUE, plot = FALSE)
-#' object %<>% extract(!is_consistent_nondetect(.), )
+#' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' object %<>% fit_lm()
 #' summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 #' @export
 summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
     assert_is_data.table(fdt)
+    statistic <- coefficient <- fit <- variable <- NULL
     cols <- names(fdt) %>% extract(stri_detect_fixed(., FITSEP))
     fdt %<>% extract(, c('feature_id', cols), with = FALSE)
     
@@ -763,16 +766,19 @@ summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
 
 #' Plot fit summary
 #' @param sumdt data.table
+#' @param nrow number
+#' @param ncol number
+#' @param order TRUE or FALSE
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, impute = TRUE, plot = FALSE)
-#' object %<>% extract(!is_consistent_nondetect(.), )
+#' object <- read_metabolon(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma(block = 'SUB')
 #' sumdt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 #' plot_fit_summary(sumdt)
 #' @export
 plot_fit_summary <- function(sumdt, nrow = NULL, ncol = NULL, order = FALSE){
+    coefficient <- downfdr <- downp <- fit <- upfdr <- upp <- NULL
     if (order){
         sumdt <- sumdt[order(downfdr+upfdr, downp+upp)]
         sumdt[, coefficient := factor(coefficient, unique(coefficient))]

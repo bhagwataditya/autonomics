@@ -211,6 +211,7 @@ extract_connected_features <- function(
     assert_is_subset(blockvars, svars(object))
     assert_is_a_number(nconnectedblocks)
     assert_is_a_bool(verbose)
+    connected <- connectedblocks <- value <- NULL
 # Identify within-blockvar factors
     fixedvars <- all.vars(formula)
     sdt0 <- sdt(object)[, c(fixedvars, blockvars), with = FALSE]                      # design/block vars
@@ -256,8 +257,9 @@ extract_connected_features <- function(
 
 
 #' Filter for features with all slevels
-#' @param object SummarizedExperiment
-#' @param svar   svar
+#' @param object  SummarizedExperiment
+#' @param svar    svar
+#' @param verbose TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
@@ -265,6 +267,7 @@ extract_connected_features <- function(
 #' object %<>% filter_all_slevels('subgroup')
 #' @export
 filter_all_slevels <- function(object, svar, verbose = TRUE){
+    alllevels <- nvalues <- value <- NULL
     tmpdt <- sumexp_to_longdt(object, svars = svar)
     tmpdt <- tmpdt[, .(nvalues = sum(!is.na(value))), by = c('feature_id', svar)]
     tmpdt <- tmpdt[, .(alllevels = all(nvalues>0)), by = 'feature_id']
@@ -281,7 +284,6 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 #' Fit lm, lme, or lmer
 #' @param object       SummarizedExpriment
 #' @param fit         'lm', 'lme', or 'lmer'
-#' @param subgroupvar  svar
 #' @param formula      formula
 #' @param drop         TRUE or FALSE
 #' @param coding       factor coding system: 'treatment' (default), 'reference', 
@@ -302,8 +304,8 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 #' fit_limma(object, formula = ~subgroup, block = 'SUB')
 #' fit_lme(  object, formula = ~subgroup, block = 'SUB')
 #' fit_lmer( object, formula = ~subgroup, block = 'SUB')
-#' fit_lme(  object, formula = ~subgroup, block = ~1|SUB)
-#' fit_lmer( object, formula = ~subgroup + (1|SUB))
+#' # fit_lme(  object, formula = ~subgroup, block = ~1|SUB) # needs fine-tuning
+#' # fit_lmer( object, formula = ~subgroup + (1|SUB))       # needs fine-tuning
 #' @export
 fit_lmx <- function(
     object, 
@@ -327,9 +329,9 @@ fit_lmx <- function(
     if (!is.null(weightvar)){
         assert_is_character(weightvar)
         assert_is_subset(weightvar, assayNames(object)) 
-        assnames %<>% c(weightvar)
         message('\t\t\tweights = assays(object)$', weightvar) 
     }
+    N <- Subject_ID <- value <- V1 <- NULL
 # Contrast Code Factors
     obj <- object
     sdt(obj) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
@@ -342,7 +344,7 @@ fit_lmx <- function(
             dt %<>% extract(!is.na(value))
             datarich_features <- dt[, .(N = .N), by = c('feature_id', all.vars(formula))][, .(N = min(N)), by = 'feature_id'][N>=3]$feature_id
             if (verbose & length(datarich_features) < nrow(obj)){
-                cmessage('\t\t\tRetain %d/%d features : 2+ obs per subgroup', length(datarich_features), nrow(obj))
+                cmessage('\t\t\tRetain %d/%d features: 2+ obs per subgroup', length(datarich_features), nrow(obj))
                 dt %<>% extract(feature_id %in% datarich_features) #obj %<>% rm_consistent_nondetects(formula)  
             }
         # Rm blocks which lack an across-block level for all features
@@ -354,9 +356,14 @@ fit_lmx <- function(
         }
         # Feature : at least two connected blocks
         if (fit %in% c('lme', 'lmer')){  
-            connected_features <- dt[, .N, by = c('feature_id', block)][, length(unique(Subject_ID[N==max(N)])), by = 'feature_id'][V1>2]$feature_id
+            n0 <- length(unique(dt$feature_id))
+            connected_features <- dt[, .N, by = c('feature_id', block)]                  # n per feature per block
+            connected_features %<>% extract(, .(N = sum(N==max(N))), by = 'feature_id')  # n completeblocks per feature 
+            connected_features %<>% extract(N>1)                                         # two completeblocks per feature
+            connected_features %<>% extract(, feature_id)
             if (verbose & length(connected_features) < length(unique(dt$feature_id))){
-                cmessage('\t\t\tRetain %d/%d features: 2+ fully connected blocks')
+                cmessage('\t\t\tRetain %d/%d features: 2+ fully connected blocks', 
+                         length(connected_features), length(unique(dt$feature_id)))
                 dt %<>% extract(feature_id %in% connected_features)
             }
             # This earlier approach fails in ~ subgroup / T2D

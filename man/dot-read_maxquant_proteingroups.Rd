@@ -2,6 +2,7 @@
 % Please edit documentation in R/3.3_read_proteingroups.R
 \name{.read_maxquant_proteingroups}
 \alias{.read_maxquant_proteingroups}
+\alias{.read_maxquant_phosphosites}
 \title{Read proteingroups/phosphosites as-is}
 \usage{
 .read_maxquant_proteingroups(
@@ -9,13 +10,20 @@
   quantity = guess_maxquant_quantity(file),
   verbose = TRUE
 )
+
+.read_maxquant_phosphosites(
+  file,
+  proteinfile,
+  quantity = guess_maxquant_quantity(file),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{file}{proteingroups / phosphosites file}
 
-\item{verbose}{TRUE / FALSE}
+\item{quantity}{string}
 
-\item{proteinfile}{proteingroups file}
+\item{verbose}{TRUE / FALSE}
 }
 \value{
 data.table

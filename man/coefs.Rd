@@ -6,14 +6,16 @@
 \alias{coefs.SummarizedExperiment}
 \title{Get coefs}
 \usage{
-coefs(x, ...)
+coefs(object, ...)
 
-\method{coefs}{factor}(x)
+\method{coefs}{factor}(object, ...)
 
-\method{coefs}{SummarizedExperiment}(object, fit = fits(object), svars = NULL)
+\method{coefs}{SummarizedExperiment}(object, fit = fits(object), svars = NULL, ...)
 }
 \arguments{
-\item{object}{SummarizedExperiment}
+\item{object}{SummarizedExperiment or factor}
+
+\item{...}{required for s3 dispatch}
 
 \item{fit}{string: 'limma', 'lm', 'lme', 'lmer'}
 
@@ -27,10 +29,10 @@ Get coefs
 }
 \examples{
 # Factor
-    x <- factor(c('A', 'B', 'C'))
-    coefs(x)
-    coefs(code(x, 'reference'))
-    coefs(code(x, 'grandref'))
+    object <- factor(c('A', 'B', 'C'))
+    coefs(object)
+    coefs(code(object, 'reference'))
+    coefs(code(object, 'grandref'))
     
 # SummarizedExperiment
     require(magrittr)

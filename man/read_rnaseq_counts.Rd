@@ -43,6 +43,7 @@ read_rnaseq_bams(
   cpm = TRUE,
   log2 = TRUE,
   plot = FALSE,
+  label = "feature_id",
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
@@ -67,14 +68,13 @@ read_rnaseq_counts(
   cpm = !tpm,
   log2 = TRUE,
   plot = FALSE,
+  label = "feature_id",
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
   voom = cpm,
   coefs = NULL,
   contrasts = NULL,
-  feature_id = NULL,
-  sample_id = NULL,
   palette = NULL,
   verbose = TRUE
 )
@@ -115,6 +115,8 @@ read_rnaseq_counts(
 \item{log2}{TRUE or FALSE: log2 transform ?}
 
 \item{plot}{TRUE or FALSE: plot?}
+
+\item{label}{fvar}
 
 \item{pca}{TRUE or FALSE: perform and plot pca?}
 

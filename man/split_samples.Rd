@@ -16,6 +16,8 @@ split_features(object, by)
 \item{object}{SummarizedExperiment}
 
 \item{by}{svar to split by (string)}
+
+\item{objlist}{SummarizedExperiment list}
 }
 \value{
 SummarizedExperiment list

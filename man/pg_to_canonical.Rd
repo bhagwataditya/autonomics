@@ -2,9 +2,12 @@
 % Please edit documentation in R/3.4_read_diann.R
 \name{pg_to_canonical}
 \alias{pg_to_canonical}
+\alias{pg_to_isoforms}
 \title{proteingroup to isoforms}
 \usage{
 pg_to_canonical(x, unique = TRUE)
+
+pg_to_isoforms(x, unique = TRUE)
 }
 \arguments{
 \item{x}{proteingroups string vector}

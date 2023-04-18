@@ -550,6 +550,9 @@ merge_sample_file <- function(
 #' Merge sample excel
 #' @param object SummarizedExperiment
 #' @param sfile  sample file
+#' @param range  string
+#' @param by.x   string
+#' @param by.y   string
 #' @return SummarizedExperiment
 #' @export
 merge_sample_excel <- function(
@@ -725,13 +728,14 @@ read_genex <- function(file){
 #' @param sumexplist  list of SummarizedExperiments
 #' @param svars       character vector
 #' @param fvars       character vector
+#' @param setvarname  string
 #' @return data.table
 #' @examples
-#' RNA
+#' # RNA
 #'     require(magrittr)
 #'     rnafile <- download_data('billing19.rnacounts.txt')
 #'     rna <- read_rnaseq_counts(rnafile, plot = FALSE)
-#' PRO/FOS
+#' # PRO/FOS
 #'     fdt(rna)$feature_name <- fdt(rna)$gene_name
 #'     proteinfile <- download_data('billing19.proteingroups.txt')
 #'     phosphofile <- download_data('billing19.phosphosites.txt')
@@ -740,7 +744,7 @@ read_genex <- function(file){
 #'     fos <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
 #'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
-#' sumexplist to longdt
+#' # sumexplist to longdt
 #'     sumexplist <- list(rna = rna, pro = pro, fos = fos)
 #'     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
 #'     dt %<>% extract(feature_name %in% c('TNMD', 'TSPAN6'))

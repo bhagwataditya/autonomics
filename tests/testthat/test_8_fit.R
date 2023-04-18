@@ -55,6 +55,9 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
     
 # METABOLON
     test_that(  "fit: atkin18.metabolon", {
+        # read
+        file <- download_data('atkin18.metabolon.xlsx')
+        object <- read_metabolon(file)
         
         # limma
         object %<>% fit_limma(formula = ~ subgroup + T2D, block = 'SUB', coding = 'reference')

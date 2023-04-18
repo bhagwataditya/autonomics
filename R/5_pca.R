@@ -501,6 +501,7 @@ add_loadings <- function(
     if (nx==0 & ny==0) return(p)
     assert_is_subset(c(x, y), fvars(object))
     assert_is_subset(c(x, y), svars(object))
+    axis <- angle <- NULL
 # Loadings
     xloadings <- fdt(object)[[x]]
     yloadings <- fdt(object)[[y]]
@@ -587,20 +588,24 @@ biplot_dims <- function(object, method, by){
 
 #' Biplot
 #' @param object         SummarizedExperiment
-#' @param x              svar (string)
-#' @param y              svar (string)
-#' @param color          svar (string)
-#' @param shape          svar (string)
-#' @param label          svar (string)
-#' @param group          svar (string)
-#' @param linetype       svar (string)
-#' @param feature_label  fvar (string)
+#' @param method         'pca', 'pls', 'lda', 'spls', 'opls', 'sma'
+#' @param by             svar
+#' @param dims           numeric vector: e.g. 1:2
+#' @param alpha          svar
+#' @param color          svar
+#' @param shape          svar
+#' @param size           svar
+#' @param label          svar
+#' @param group          svar
+#' @param linetype       svar
+#' @param feature_label  fvar
 #' @param fixed          fixed plot aesthetics
 #' @param nx     number of x features to plot
 #' @param ny     number of y features to plot
 #' @param colorpalette   character vector
 #' @param alphapalette   character vector
 #' @param title          string
+#' @param theme          ggplot2::theme output
 #' @return ggplot object
 #' @examples
 #' require(magrittr)
@@ -694,6 +699,7 @@ biplot <- function(
 #'
 #' @param object      SummarizedExperiment
 #' @param method      'pca', 'pls', 'lda', or 'sma'
+#' @param by          svar
 #' @param color       variable mapped to color (symbol)
 #' @param covariates  covariates to be batch-corrected
 #' @param varcols     number of covariate columns
@@ -724,7 +730,7 @@ biplot_corrections <- function(
         }
         values(tmp_object) %<>% removeBatchEffect(batch = tmp_b)
         tmp_object <- get(method)(tmp_object, ndim=2, verbose=FALSE)
-        p <- biplot(tmp_object, method = method, by = by, dims = dims, color = color)
+        p <- biplot(tmp_object, method = method, by = by, dims = 1:2, color = color)
         p <- p + ggtitle(paste0(' - ', ibatch))
         p <- p + guides(color = 'none', fill = 'none')
         plotlist %<>% c(list(p))
@@ -739,12 +745,13 @@ biplot_corrections <- function(
 #'
 #' @param object     SummarizedExperiment
 #' @param method     'pca', 'pls', 'lda', or 'sma'
+#' @param by          svar
+#' @param block       svar
 #' @param covariates  covariates: mapped to color or batch-corrected
 #' @param ndim        number of dimensions to plot
 #' @param dimcols     number of dimension columns
 #' @param varcols     number of covariate columns
 #' @param plot        TRUE or FALSE: whether to plot
-#' @param ...         used to maintain deprecated functions
 #' @return  ggplot object
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
@@ -764,7 +771,7 @@ biplot_covariates <- function(
     assert_scalar_subset(method, c('pca', 'sma', 'pls', 'spls', 'opls', 'lda'))
     assert_is_subset(covariates, svars(object))
     blocksym <- if (is.null(block))  quo(NULL) else sym(block)
-
+    dims <- NULL
 # Plot
     x <- y <- NULL
     plotdt <- prep_covariates(object, method = method, by = by, ndim = ndim)

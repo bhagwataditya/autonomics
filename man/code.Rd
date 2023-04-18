@@ -31,7 +31,15 @@ code_sum(n)
 code_helmert(n)
 }
 \arguments{
-\item{coding}{coding system \cr
+\item{object}{factor vector}
+
+\item{...}{used for s3 dispatch}
+
+\item{coding}{coding system \cr}
+
+\item{verbose}{TRUE or FALSE}
+
+\item{vars}{character vector
 'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
 'reference'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
 'difference' :  coef = level -  prevlevel, intercept = firstlevel, epxlicit coefnames (t2-t1) \cr
@@ -40,11 +48,7 @@ code_helmert(n)
 'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
 'helmert'    :  coef = level - prevlevels, intercept = grandmean   \cr}
 
-\item{verbose}{TRUE or FALSE}
-
-\item{n}{factor levels (character) vector}
-
-\item{x}{factor vector}
+\item{n}{character vector}
 }
 \value{
 (explicitly coded) factor vector

@@ -7,7 +7,9 @@
 plot_contrast_venn(issig, colors = NULL)
 }
 \arguments{
-\item{isfdr}{matrix(nrow, ncontrast): -1 (down), +1 (up)}
+\item{issig}{matrix(nrow, ncontrast): -1 (down), +1 (up)}
+
+\item{colors}{NULL or colorvector}
 }
 \value{
 nothing returned
@@ -19,8 +21,8 @@ Plot contrast venn
 require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
-object \%<>\% fit_wilcoxon(subgroupvar = 'subgroup', block = 'SUB')
-object \%<>\% fit_limma(   subgroupvar = 'subgroup', block = 'SUB', coding = 'reference')
+object \%<>\% fit_wilcoxon(~ subgroup, block = 'SUB')
+object \%<>\% fit_limma(   ~ subgroup, block = 'SUB', coding = 'reference')
 isfdr <- is_sig(object, contrast = 't3-t0')
 plot_contrast_venn(isfdr)
 }

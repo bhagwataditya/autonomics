@@ -5,7 +5,7 @@
 \alias{assert_fastadt_or_null}
 \title{Is fastadt or NULL}
 \usage{
-is_fastadt_or_null(x, .xname = get_name_im_parent(x))
+is_fastadt_or_null(x, .xname = get_name_in_parent(x))
 
 assert_fastadt_or_null(x, .xname = get_name_in_parent(x))
 }

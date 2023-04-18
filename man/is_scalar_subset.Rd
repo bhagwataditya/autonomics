@@ -24,7 +24,9 @@ assert_scalar_subset(
 
 \item{y}{SummarizedExperiment}
 
-\item{name}{of y}
+\item{.xname}{name of x}
+
+\item{.yname}{name of y}
 }
 \description{
 Is scalar subset

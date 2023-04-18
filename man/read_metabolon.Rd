@@ -33,6 +33,7 @@ read_metabolon(
   plot = FALSE,
   pca = plot,
   pls = plot,
+  label = "feature_id",
   fit = if (plot) "limma" else NULL,
   formula = ~subgroup,
   block = NULL,
@@ -71,7 +72,11 @@ read_metabolon(
 
 \item{plot}{TRUE or FALSE}
 
-\item{pca}{TRUE or FALSE: compute and plot pca?}
+\item{pca}{TRUE or FALSE}
+
+\item{pls}{TRUE or FALSE}
+
+\item{label}{fvar}
 
 \item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 

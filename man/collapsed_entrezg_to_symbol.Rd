@@ -9,6 +9,8 @@ collapsed_entrezg_to_symbol(x, sep, orgdb)
 \arguments{
 \item{x}{charactervector}
 
+\item{sep}{string}
+
 \item{orgdb}{OrgDb}
 }
 \value{
@@ -18,7 +20,7 @@ character vector
 Collapsed entrezg to genesymbol
 }
 \examples{
-if (requireNamespace('org.Hs.eg.db'), quiet = TRUE){
+if (requireNamespace('org.Hs.eg.db', quiet = TRUE)){
     x <- c('7448/3818/727', '5034/9601/64374')
     orgdb <- org.Hs.eg.db::org.Hs.eg.db
     collapsed_entrezg_to_symbol(x, sep = '/', orgdb = orgdb)

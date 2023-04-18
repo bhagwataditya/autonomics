@@ -491,7 +491,7 @@ test_that(  "read_maxquant_proteingroups(file, pca = TRUE)", {
 
 test_that(  "read_maxquant_proteingroups(file, fit = 'limma')", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file, fit = 'limma')
+    object <- read_maxquant_proteingroups(file, fit = 'limma', plot = TRUE, label = NULL)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
     expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
@@ -499,15 +499,7 @@ test_that(  "read_maxquant_proteingroups(file, fit = 'limma')", {
 
 test_that(  "read_maxquant_proteingroups(file, fit = 'lm')", {
     file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file, fit = 'lm')
-    expect_s4_class(object, 'SummarizedExperiment')
-    expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP,  'lm'))))
-    expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
-})
-
-test_that(  "read_maxquant_proteingroups(file, fit = 'lm', plot = TRUE)", {
-    file <- download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file, fit = 'lm', plot = TRUE)
+    object <- read_maxquant_proteingroups(file, fit = 'lm', plot = TRUE, label = NULL)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP,  'lm'))))
     expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))

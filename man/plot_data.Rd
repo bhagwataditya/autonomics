@@ -25,6 +25,8 @@ plot_data(
 
 \item{fill}{variable mapped to fill (symbol)}
 
+\item{linetype}{variable mapped to linetype (symbol)}
+
 \item{...}{mapped aesthetics}
 
 \item{palette}{color palette (named character vector)}
@@ -42,17 +44,16 @@ Plot data
 \examples{
 require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
+object <- read_metabolon(file)
 object \%<>\% pca()
-data <- sdata(object)
-plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`)
-plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = TIME_POINT)
+data <- sdt(object)
+plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`)
+plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME_POINT)
 data$TIME <- as.numeric(substr(data$TIME_POINT, 2, 3))
-plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = TIME)
-plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = NULL)
-
+plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME)
+plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = NULL)
 fixed <- list(shape = 15, size = 3)
-plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, fixed = fixed)
+plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, fixed = fixed)
 }
 \author{
 Aditya Bhagwat, Johannes Graumann

@@ -75,7 +75,7 @@ guess_sep <- function (x, ...)  UseMethod("guess_sep", x)
 
 #' @rdname guess_sep
 #' @export
-guess_sep.numeric <- function(x) NULL
+guess_sep.numeric <- function(x, ...) NULL
 
 
 #' @rdname guess_sep
@@ -311,7 +311,9 @@ subgroup_matrix <- function(object, subgroupvar){
 
 #' @rdname pmat
 #' @export
-tvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+tvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
     x <- expand.grid(var = 't', fit = fit, coefs = coefs)
     x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
@@ -321,7 +323,9 @@ tvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 
 #' @rdname pmat
 #' @export
-tmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+tmat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
     var <- tvar(object, coefs = coefs, fit = fit)
     if (is.null(var))  return(NULL)
     dt <- fdt(object)[, var, with = FALSE]
@@ -334,7 +338,9 @@ tmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 
 #' @rdname pmat
 #' @export
-pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+pvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
     x <- expand.grid(var = 'p', fit = fit, coefs = coefs)
     x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
@@ -345,10 +351,14 @@ pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 #' Get p/fdr/effect/down/up/sign matrix
 #' @param object    SummarizedExperiment
 #' @param fit       string
-#' @param coef      string
+#' @param coefs     string
+#' @param cutoff    cutoff pvalue
+#' @param var       'fdrmat' etc.
+#' @param ...       maintain deprecated functions
 #' @return matrix (feature x coef)
 #' @examples 
 #' # Read
+#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
@@ -367,7 +377,9 @@ pvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
 #'     upmat(    object)[1:3, ]
 #'     signmat(  object)[1:3, ]
 #' @export
-pmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+pmat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
     var <- pvar(object, coefs = coefs, fit = fit)
     if (is.null(var))  return(NULL)
     dt <- fdt(object)[, var, with = FALSE]
@@ -386,7 +398,9 @@ p <- function(...){
 
 #' @rdname pmat
 #' @export
-effectvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+effectvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
     x <- expand.grid(var = 'effect', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
@@ -396,8 +410,10 @@ effectvar <- function(object, coefs = autonomics::coefs(object), fit = fits(obje
 
 #' @rdname pmat
 #' @export
-effectmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
-    var <- effectvar(object, coef = coefs, fit = fit)
+effectmat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    var <- effectvar(object, coefs = coefs, fit = fit)
     if (is.null(var))  return(NULL)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
@@ -416,7 +432,9 @@ effect <- function(...){
 
 #' @rdname pmat
 #' @export
-effectsizemat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+effectsizemat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
     mat <- effectmat(object, coefs = coefs, fit = fit)
     if (is.null(mat))  return(NULL)  else  abs(mat)
 }
@@ -431,7 +449,9 @@ effectsize <- function(...){
 
 #' @rdname pmat
 #' @export
-fdrvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+fdrvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
     x <- expand.grid(var = 'fdr', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
@@ -441,8 +461,10 @@ fdrvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
 
 #' @rdname pmat
 #' @export
-fdrmat <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
-    var <- fdrvar(object, coef = coefs, fit = fit)
+fdrmat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    var <- fdrvar(object, coefs = coefs, fit = fit)
     if (is.null(var))  return(NULL)
     dt <- fdt(object)[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
@@ -458,7 +480,9 @@ fdr <- function(...){
     fdr(...)
 }
 
-bonvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)){
+bonvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
     x <- expand.grid(var = 'bonferroni', fit = fit, coef = coefs)
     x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
@@ -470,8 +494,8 @@ bonvar <- function(object, coefs = autonomics::coefs(object), fit = fits(object)
 #' @export
 upmat <- function(
     object, 
-    coefs  = autonomics::coefs(object),
     fit    = fits(object),
+    coefs  = autonomics::coefs(object, fit = fit),
     var    = 'fdrmat', 
     cutoff = 0.05
 ){
@@ -494,8 +518,8 @@ up <- function(...){
 #' @export
 downmat <- function(
     object, 
-    coefs   = autonomics::coefs(object), 
     fit     = fits(object), 
+    coefs   = autonomics::coefs(object, fit = fit), 
     var     = 'fdrmat', 
     cutoff  = 0.05
 ){
@@ -515,11 +539,16 @@ down <- function(...){
 }
 
 #' Get sign
+#' @param object SummarizedExperiment
+#' @param fit   'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
+#' @param coefs  character vector
+#' @param var    functionname
+#' @param cutoff pvalue
 #' @export
 signmat <- function(
     object, 
-    coefs  = autonomics::coefs(object),
     fit    = fits(object),
+    coefs  = autonomics::coefs(object, fit = fit),
     var    = 'fdrmat',
     cutoff = 0.05
 ){ 
@@ -561,16 +590,17 @@ fits <- function(object){
 
 #' Get coefs
 #' 
-#' @param object  SummarizedExperiment
+#' @param object  SummarizedExperiment or factor
 #' @param fit     string: 'limma', 'lm', 'lme', 'lmer'
 #' @param svars   NULL or charactervector (svar for which to return coefs)
+#' @param ...     required for s3 dispatch
 #' @return  character vector
 #' @examples
 #' # Factor
-#'     x <- factor(c('A', 'B', 'C'))
-#'     coefs(x)
-#'     coefs(code(x, 'reference'))
-#'     coefs(code(x, 'grandref'))
+#'     object <- factor(c('A', 'B', 'C'))
+#'     coefs(object)
+#'     coefs(code(object, 'reference'))
+#'     coefs(code(object, 'grandref'))
 #'     
 #' # SummarizedExperiment
 #'     require(magrittr)
@@ -578,15 +608,15 @@ fits <- function(object){
 #'     object <- read_metabolon(file, fit = 'limma')
 #'     coefs(object)
 #' @export
-coefs <- function(x, ...)  UseMethod('coefs')
+coefs <- function(object, ...)  UseMethod('coefs')
 
 #' @rdname coefs
 #' @export
-coefs.factor <- function(x)   colnames(contrasts(x))
+coefs.factor <- function(object, ...)   colnames(contrasts(object))
 
 #' @rdname coefs
 #' @export
-coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL){
+coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL, ...){
     . <- NULL
     coefs0 <- split_extract_fixed(.effectvars(object), FITSEP, 2)
     fits0  <- split_extract_fixed(.effectvars(object), FITSEP, 3)

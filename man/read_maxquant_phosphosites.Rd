@@ -18,6 +18,7 @@ read_maxquant_phosphosites(
   localization = 0.75,
   impute = FALSE,
   plot = FALSE,
+  label = "feature_id",
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
@@ -58,6 +59,8 @@ read_phosphosites(...)
 
 \item{plot}{TRUE or FALSE}
 
+\item{label}{fvar}
+
 \item{pca}{TRUE or FALSE: run pca ?}
 
 \item{pls}{TRUE or FALSE: run pls ?}
@@ -75,6 +78,8 @@ read_phosphosites(...)
 \item{palette}{color palette: named string vector}
 
 \item{verbose}{TRUE or FALSE: message ?}
+
+\item{...}{maintain deprecated functions}
 }
 \value{
 SummarizedExperiment

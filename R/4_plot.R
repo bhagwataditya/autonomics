@@ -188,7 +188,7 @@ make_twofactor_colors <- function(
     colors <- character(0)
     for (i in seq_along(hues)){  # https://stackoverflow.com/a/5738083
         basecolor  <- hcl(h = hues[[i]], c = 100, l = 50)
-        newcolors <- colorRampPalette(c('white', basecolor))(n2+1)[-1]
+        newcolors <- grDevices::colorRampPalette(c('white', basecolor))(n2+1)[-1]
         names(newcolors) <- paste0(V1levels[[i]], sep, V2levels)
         colors %<>% c(newcolors)
     }
@@ -208,6 +208,7 @@ make_twofactor_colors <- function(
 #' @param geom        geom_point, etc.
 #' @param color       variable mapped to color (symbol)
 #' @param fill        variable mapped to fill (symbol)
+#' @param linetype    variable mapped to linetype (symbol)
 #' @param ...         mapped aesthetics
 #' @param palette     color palette (named character vector)
 #' @param fixed       fixed  aesthetics (list)
@@ -216,17 +217,16 @@ make_twofactor_colors <- function(
 #' @examples
 #' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file)
 #' object %<>% pca()
-#' data <- sdata(object)
-#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`)
-#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = TIME_POINT)
+#' data <- sdt(object)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME_POINT)
 #' data$TIME <- as.numeric(substr(data$TIME_POINT, 2, 3))
-#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = TIME)
-#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, color = NULL)
-#'
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = NULL)
 #' fixed <- list(shape = 15, size = 3)
-#' plot_data(data, x = `effect~samples~pca1`, y = `effect~samples~pca2`, fixed = fixed)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, fixed = fixed)
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
@@ -295,15 +295,18 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' @param group       svar (string)
 #' @param fill        svar (string)
 #' @param color       svar (string)
+#' @param linetype    svar (string)
 #' @param facet       svar (character vector)
+#' @param n           number
 #' @param nrow        number of facet rows
 #' @param ncol        number of facet cols
 #' @param dir         'h' (horizontal) or 'v' (vertical)
+#' @param scales      'free', 'fixed', 'free_y'
 #' @param labeller    e.g. label_value
 #' @param palette     named character vector
 #' @param fixed       fixed aesthetics
 #' @seealso \code{\link{plot_sample_violins}},
-#'          \code{\link{boxplot_samples}}
+#'          \code{\link{plot_sample_boxplots}}
 #' @return  ggplot object
 #' @examples
 #' # Data
@@ -315,6 +318,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' # Sample distributions
 #'     plot_sample_densities(object)
 #'     plot_sample_violins(  object, facet = 'SET')
+#'     plot_sample_boxplots(object)
 #'     plot_exprs(object)
 #'     plot_exprs(object, dim = 'samples', x = 'subgroup', facet = 'SET')
 #'     
@@ -345,6 +349,7 @@ plot_densities <- function(
     if (!is.null(color))    assert_is_subset(color, c(svars(object), fvars(object)))
     if (!is.null(facet))    assert_is_subset(facet, c(svars(object), fvars(object)))
                             assert_is_subset(dir, c('h', 'v'))
+    value <- NULL
 # Prepare
     plotvars <- group
     if (!is.null(fill))   plotvars %<>% c(fill)  %>% unique()
@@ -369,7 +374,7 @@ plot_densities <- function(
 }
 
 is_uniquely_empty <- function(x, y){
-    is_empty <- assertive::is_empty
+    is_empty <- assertive.properties::is_empty
     ( is_empty(x) | !is_empty(y)) | (!is_empty(x) |  is_empty(y))
 }
 
@@ -462,7 +467,7 @@ plot_feature_densities <- function(
 #' @param fixed       fixed aesthetics
 #' @return  ggplot object
 #' @seealso \code{\link{plot_exprs}},
-#'          \code{\link{boxplot_samples}}
+#'          \code{\link{plot_densities}}
 #' @examples
 #' # data
 #'     require(magrittr)
@@ -498,6 +503,7 @@ plot_violins <- function(object, assay = assayNames(object)[1], x, fill,
     if (!is.null(facet))      assert_is_subset(facet,     c(svars(object), fvars(object)))
     if (!is.null(highlight))  assert_is_subset(highlight, c(svars(object), fvars(object)))
     assert_is_list(fixed)
+    value <- NULL
 # Prepare
     plotvars <- c('feature_name')
                               plotvars %<>% c(x)         %>% unique()
@@ -729,8 +735,9 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
 
 #' Order on p 
 #' @param object   SummarizedExperiment
-#' @param coefs    string vector: subset of `coefs(object)`
 #' @param fit      string vector: subset of `fits(object)`
+#' @param coefs    string vector: subset of `coefs(object)`
+#' @param combiner '|' or '&'
 #' @param verbose  TRUE or FALSE
 #' @examples 
 #' # Read
@@ -738,12 +745,11 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
 #'     object <- read_metabolon(file)
 #' # no limma
 #'     object %<>% order_on_p()  # unchanged
-#'     object %<>% order_on_t()
 #' # with limma
 #'     object %<>% fit_limma(coefs = c('t1', 't2', 't3'))
-#'     (assays(order_on_p(object))[[1]] == assays(order_on_t(object))[[1]])
-#'     identical(order_on_p(object) , order_on_t(object))
+#'     object %<>% order_on_p()
 #' @return SummarizedExperiment
+#' @export
 order_on_p <- function(
     object, 
     fit = autonomics::fits(object), 
@@ -925,7 +931,7 @@ add_facetvars <- function(
              fdrvar <- autonomics::fdrvar(   object, fit = fit, coefs = coefs[i])
           effectvar <- autonomics::effectvar(object, fit = fit, coefs = coefs[i])
            facetvar <- paste0('facet.', coefs[[i]])
-        assertive.sets::assert_are_disjoint_sets(facetvar, fvars(object))
+        assert_are_disjoint_sets(facetvar, fvars(object))
         if (!is.null(pvar))            pvalues <- fdt(object)[[     pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
         if (!is.null(fdrvar))        fdrvalues <- fdt(object)[[   fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
         if (!is.null(effectvar))  effectvalues <- fdt(object)[[effectvar]] %>% round(3)  %>% as.character()
@@ -953,6 +959,8 @@ add_facetvars <- function(
     pointsize, jitter, colorpalette, fillpalette, hlevels, 
     title, subtitle, xlab, ylab, theme
 ){
+# Initialize
+    medianvalue <- value <- present <- NULL
 # Prepare
     xsym        <- sym(x)
     fillsym     <- if (is.null(fill))      quo(NULL) else  sym(fill)
@@ -1044,6 +1052,7 @@ add_facetvars <- function(
 #' @param block             group svar
 #' @param linetype       linetype svar
 #' @param highlight     highlight svar
+#' @param combiner     '&' or '|'
 #' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
 #' @param coefs         subset of coefs(object) to consider in selecting top
 #' @param p             fraction: p   cutoff
@@ -1068,6 +1077,7 @@ add_facetvars <- function(
 #' @param width         inches
 #' @param height        inches
 #' @param verbose       TRUE or FALSE
+#' @param ...           used to maintain depreceated functions
 #' @return ggplot object
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
@@ -1234,6 +1244,7 @@ plot_feature_boxplots <- function(object, ...){
 #' @param orderbyp      TRUE or FALSE
 #' @param title         string
 #' @param subtitle      string
+#' @param n             number
 #' @param nrow          number of rows in faceted plot
 #' @param ncol          number of cols in faceted plot
 #' @param theme         ggplot2::theme(...) or NULL
@@ -1310,6 +1321,7 @@ default_subtitle <- function(fit, x, coefs){
 #' Default geom
 #' @param object SummarizedExperiment
 #' @param x      svar
+#' @param block  svar or NULL
 #' @return character vector
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
@@ -1416,6 +1428,7 @@ list2mat <- function(x){
 
 
 #' Plot venn heatmap
+#' @param x list
 #' @examples
 #' x <- list(roundfruit = c('apple', 'orange'), redfruit = c('apple', 'strawberry'))
 #' plot_venn_heatmap(x)
@@ -1454,14 +1467,15 @@ plot_venn <- function(x){
 
 
 #' Plot contrast venn
-#' @param isfdr matrix(nrow, ncontrast): -1 (down), +1 (up)
+#' @param issig  matrix(nrow, ncontrast): -1 (down), +1 (up)
+#' @param colors NULL or colorvector
 #' @return nothing returned
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% fit_wilcoxon(subgroupvar = 'subgroup', block = 'SUB')
-#' object %<>% fit_limma(   subgroupvar = 'subgroup', block = 'SUB', coding = 'reference')
+#' object %<>% fit_wilcoxon(~ subgroup, block = 'SUB')
+#' object %<>% fit_limma(   ~ subgroup, block = 'SUB', coding = 'reference')
 #' isfdr <- is_sig(object, contrast = 't3-t0')
 #' plot_contrast_venn(isfdr)
 #' @export
@@ -1473,7 +1487,7 @@ plot_contrast_venn <- function(issig, colors = NULL){
 }
 
 #' Plot binary matrix
-#' @param mat 
+#' @param mat matrix
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
@@ -1502,6 +1516,7 @@ plot_matrix <- function(mat){
 
 #' Plot model 
 #' @param object ´SummarizedExperiment
+#' @param coding 'treatment', 'reference', 'difference', 'sum', 'helmert'
 #' @return ggplot
 #' @examples
 #' require(magrittr)
@@ -1512,6 +1527,7 @@ plot_matrix <- function(mat){
 #' plot_design(object)
 #' @export
 plot_design <- function(object, coding = 'treatment'){
+    coef <- y <- yend <- NULL
     designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE, coding = coding)
     rownames(designmat) <- object$subgroup
     designmat %<>% unique()
@@ -1556,6 +1572,7 @@ plot_top_heatmap <- function(...){
 #' @param p                number: p    filter
 #' @param fdr              number: fdr  filter
 #' @param n                number: n filter
+#' @param cluster_features TRUE or FALSE
 #' @param cluster_samples  TRUE or FALSE
 #' @param flabel           string: feature label
 #' @param group            sample groupvar
@@ -1593,6 +1610,7 @@ plot_heatmap <- function(
     assert_is_a_string(flabel)
     assert_is_subset(  flabel, fvars(object))
     assert_is_subset(group,  svars(object))
+    sample_id <- `z-score` <- NULL
 # Filter: significant features
     object0 <- object
     if (is.null(coef)){   object %<>% extract_features_evenly(n)
@@ -1609,8 +1627,8 @@ plot_heatmap <- function(
         object  %<>% extract(  idx , )                          # order features
     }
     if (!is.null(coef)){
-        idx <- effectmat(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
-        idx <- effectmat(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
+        idx <- effectmat(object, fit = fit, coefs = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
+        idx <- effectmat(object, fit = fit, coefs = coef)[, 1] > 0;   up <- object[idx, ]
         object <- rbind(rev(down), rev(up))
     }
 # Add pvalues

@@ -27,6 +27,7 @@ SummarizedExperiment
 Add adjusted pvalues
 }
 \examples{
+require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file)
 object \%<>\% fit_limma()

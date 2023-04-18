@@ -20,9 +20,15 @@ filter_exprs_replicated_in_some_subgroup(
 
 \item{subgroupvar}{subgroup svar}
 
+\item{assay}{string}
+
 \item{comparator}{'>' or '!='}
 
 \item{lod}{number: limit of detection}
+
+\item{nsample}{number}
+
+\item{nsubgroup}{number}
 
 \item{verbose}{TRUE or FALSE}
 }

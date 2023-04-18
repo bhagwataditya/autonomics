@@ -13,7 +13,7 @@ rm_unmatched_samples(
   verbose = TRUE
 )
 
-rm_singleton_samples(object, svar = "subgroup", verbose = TRUE)
+rm_singleton_samples(object, subgroupvar = "subgroup", verbose = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

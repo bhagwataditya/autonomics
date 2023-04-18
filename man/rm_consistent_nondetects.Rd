@@ -9,9 +9,9 @@ rm_consistent_nondetects(object, formula, verbose = TRUE)
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{verbose}{TRUE or FALSE}
+\item{formula}{formula}
 
-\item{by}{svar}
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 SummarizedExperiment

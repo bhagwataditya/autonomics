@@ -40,7 +40,7 @@ file <- NULL
 is_diann_report(file)
 is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)
-is_phosphosites(file)
+is_maxquant_phosphosites(file)
 
 file <- 3
 is_diann_report(file)

@@ -70,6 +70,8 @@ plot_feature_densities(
 
 \item{color}{svar (string)}
 
+\item{linetype}{svar (string)}
+
 \item{facet}{svar (character vector)}
 
 \item{nrow}{number of facet rows}
@@ -78,11 +80,15 @@ plot_feature_densities(
 
 \item{dir}{'h' (horizontal) or 'v' (vertical)}
 
+\item{scales}{'free', 'fixed', 'free_y'}
+
 \item{labeller}{e.g. label_value}
 
 \item{palette}{named character vector}
 
 \item{fixed}{fixed aesthetics}
+
+\item{n}{number}
 }
 \value{
 ggplot object
@@ -100,6 +106,7 @@ Plot sample/feature distributions
 # Sample distributions
     plot_sample_densities(object)
     plot_sample_violins(  object, facet = 'SET')
+    plot_sample_boxplots(object)
     plot_exprs(object)
     plot_exprs(object, dim = 'samples', x = 'subgroup', facet = 'SET')
     
@@ -110,5 +117,5 @@ Plot sample/feature distributions
 }
 \seealso{
 \code{\link{plot_sample_violins}},
-         \code{\link{boxplot_samples}}
+         \code{\link{plot_sample_boxplots}}
 }

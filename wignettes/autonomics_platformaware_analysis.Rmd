@@ -49,8 +49,8 @@ Autonomics provides ready-to-use importers for both **count** as well as **BAM**
 
 ```{r}
 require(autonomics, quietly = TRUE)
-object <-  read_rnaseq_counts(file = download_data('billing19.rnacounts.txt'), 
-                              pca = TRUE, fit = 'limma', plot = TRUE)
+file <- download_data('billing19.rnacounts.txt')
+object <-  read_rnaseq_counts(file = file, fit = 'limma', plot = TRUE, label = 'gene_name')
 ```
 
 ## read_rnaseq_counts(sfile) {-}
@@ -65,13 +65,12 @@ if (!dir.exists(file.path(basedir, 'GSE161731'))){
     GEOquery::getGEOSuppFiles("GSE161731", baseDir=basedir)
 }
 object <- read_rnaseq_counts(
-  file  = file.path(basedir, 'GSE161731/GSE161731_counts.csv.gz'), 
-  sfile = file.path(basedir, 'GSE161731/GSE161731_counts_key.csv.gz'), 
-  sfileby = 'rna_id', 
-  subgroupvar = 'gender', 
-  pca = TRUE, 
-  fit = 'limma', 
-  plot = TRUE)
+  file    = file.path(basedir, 'GSE161731/GSE161731_counts.csv.gz'), 
+  sfile   = file.path(basedir, 'GSE161731/GSE161731_counts_key.csv.gz'), 
+  by.y    = 'rna_id', 
+  formula = ~ gender, 
+  fit     = 'limma', 
+  plot    = TRUE)
 ```
 
 ## read_rnaseq_counts(block) {-}

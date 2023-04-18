@@ -71,7 +71,7 @@ sumexp_to_longdt <- function(
     assay = assayNames(object) %>% intersect(c(.[1], 'is_imputed'))
 ){
 # Assert
-    . <- NULL
+    . <- sample_id <- NULL
     assert_is_valid_sumexp(object)
     assert_is_subset(fvars, autonomics::fvars(object))
     assert_is_subset(svars, autonomics::svars(object))
@@ -204,6 +204,7 @@ extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because n
 #' Write xl/ods
 #' @param object  SummarizedExperiment
 #' @param xlfile  file
+#' @param odsfile file
 #' @return filepath
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')

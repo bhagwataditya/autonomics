@@ -30,17 +30,27 @@ biplot(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{color}{svar (string)}
+\item{method}{'pca', 'pls', 'lda', 'spls', 'opls', 'sma'}
 
-\item{shape}{svar (string)}
+\item{by}{svar}
 
-\item{group}{svar (string)}
+\item{dims}{numeric vector: e.g. 1:2}
 
-\item{linetype}{svar (string)}
+\item{color}{svar}
 
-\item{label}{svar (string)}
+\item{shape}{svar}
 
-\item{feature_label}{fvar (string)}
+\item{size}{svar}
+
+\item{alpha}{svar}
+
+\item{group}{svar}
+
+\item{linetype}{svar}
+
+\item{label}{svar}
+
+\item{feature_label}{fvar}
 
 \item{fixed}{fixed plot aesthetics}
 
@@ -54,9 +64,7 @@ biplot(
 
 \item{title}{string}
 
-\item{x}{svar (string)}
-
-\item{y}{svar (string)}
+\item{theme}{ggplot2::theme output}
 }
 \value{
 ggplot object

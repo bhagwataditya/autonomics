@@ -74,13 +74,15 @@ pull_columns <- function(df, first_cols, verbose = TRUE){
 }
 
 #' Is collapsed subset
-#' @param x character vector
-#' @param y character vector
+#' @param x    character vector
+#' @param y    character vector
+#' @param sep  string
 #' @return  character vector
 #' @examples
 #' x <- c(              'H3BNX8;H3BRM5', 'G5E9Y3')
 #' y <- c('P20674;H3BNX8;H3BV69;H3BRM5', 'G5E9Y3;Q8WWN8;B4DIT1')
 #' is_collapsed_subset(x, y)
+#' @export
 is_collapsed_subset <- function(x, y, sep = ';'){
     mapply(.is_collapsed_subset, x, y, MoreArgs = list(sep = sep))
 }

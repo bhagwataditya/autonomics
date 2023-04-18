@@ -25,12 +25,14 @@ hdlproteins <- function(){
 #' @param verbose TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples 
+#' require(magittr)
 #' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% tag_hdlproteins()
 #' fdt(object)
 #' @export
 tag_hdlproteins <- function(object, verbose = TRUE){
+    hdl <- protein <- NULL
     hdlproteins <- autonomics::hdlproteins()
     fdt0 <- fdt(object)[, c('feature_id', 'protein')]
     fdt0 %<>% uncollapse(protein, sep = ';')
@@ -59,6 +61,9 @@ tag_hdlproteins <- function(object, verbose = TRUE){
 OPENTARGETSDIR <- file.path(tools::R_user_dir('autonomics', 'cache'), 'opentargets', '22.04')
 
 download_opentargets_targets <- function(){
+    if (!requireNamespace('XML', quietly = TRUE)){
+        message("BiocManager::install('XML'). Then re-run.")
+    }
     if (!dir.exists(file.path(OPENTARGETSDIR, 'targets'))){
         ftpdir <- 'http://ftp.ebi.ac.uk/pub/databases/opentargets/platform/22.04/output/etl/json/targets/'
         ftpfiles <- XML::getHTMLLinks(ftpdir) %>% setdiff(c('../', '_SUCCESS'))
@@ -94,6 +99,9 @@ extract_functiondescriptions <- function(x){
 # file <- list.files(file.path(OPENTARGETSDIR, 'targets'))[1]
 # read_opentargets_targets(file) 
 .read_opentargets_targets <- function(file){
+    if (!requireNamespace('jsonlite', quietly = TRUE)){
+        message("BiocManager::install('jsonlite'). Then re-run.")
+    }
     lines <- readLines(file.path(OPENTARGETSDIR, 'targets', file))
     lines %<>% lapply(jsonlite::fromJSON)
     lines %<>% lapply( function(x){ data.table(
@@ -120,6 +128,7 @@ save_opentargets_targets <- function(){
 #' @param verbose  TRUE or FALSE
 #' @return  SummarizedExperiment
 #' @examples 
+#' require(magrittr)
 #' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% add_opentargets_by_uniprot()
@@ -129,6 +138,7 @@ add_opentargets_by_uniprot <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
+    canonical <- uniprot <- NULL
 # Read
     file <- file.path(OPENTARGETSDIR, 'targets.tsv')
     if (verbose)  cmessage('\tAdd opentargets annotations')

@@ -16,6 +16,12 @@ merge_sample_excel(
 \item{object}{SummarizedExperiment}
 
 \item{sfile}{sample file}
+
+\item{range}{string}
+
+\item{by.x}{string}
+
+\item{by.y}{string}
 }
 \value{
 SummarizedExperiment

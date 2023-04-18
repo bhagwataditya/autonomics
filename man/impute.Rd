@@ -9,7 +9,7 @@
 \usage{
 impute(object, ...)
 
-\method{impute}{numeric}(object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE)
+\method{impute}{numeric}(object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, ...)
 
 \method{impute}{matrix}(
   object,
@@ -18,7 +18,8 @@ impute(object, ...)
   verbose = TRUE,
   plot = FALSE,
   n = min(9, ncol(object)),
-  palette = make_colors(colnames(object))
+  palette = make_colors(colnames(object)),
+  ...
 )
 
 \method{impute}{SummarizedExperiment}(
@@ -31,11 +32,14 @@ impute(object, ...)
   verbose = TRUE,
   plot = FALSE,
   palette = make_colors(colnames(object)),
-  n = min(9, ncol(object))
+  n = min(9, ncol(object)),
+  ...
 )
 }
 \arguments{
 \item{object}{numeric vector, SumExp}
+
+\item{...}{required for s3 dispatch}
 
 \item{shift}{number: sd units}
 
@@ -48,6 +52,10 @@ impute(object, ...)
 \item{n}{number of samples to plot}
 
 \item{palette}{color vector}
+
+\item{assay}{string}
+
+\item{by}{svar}
 
 \item{frac}{fraction: fraction of available samples should be greater 
 than this value for a subgroup to be called available}

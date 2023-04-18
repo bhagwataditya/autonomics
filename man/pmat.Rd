@@ -21,36 +21,56 @@
 \alias{sign.SummarizedExperimentz}
 \title{Get p/fdr/effect/down/up/sign matrix}
 \usage{
-tvar(object, coefs = autonomics::coefs(object), fit = fits(object))
+tvar(object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit))
 
-tmat(object, coefs = autonomics::coefs(object), fit = fits(object))
+tmat(object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit))
 
-pvar(object, coefs = autonomics::coefs(object), fit = fits(object))
+pvar(object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit))
 
-pmat(object, coefs = autonomics::coefs(object), fit = fits(object))
+pmat(object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit))
 
 p(...)
 
-effectvar(object, coefs = autonomics::coefs(object), fit = fits(object))
+effectvar(
+  object,
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit)
+)
 
-effectmat(object, coefs = autonomics::coefs(object), fit = fits(object))
+effectmat(
+  object,
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit)
+)
 
 effect(...)
 
-effectsizemat(object, coefs = autonomics::coefs(object), fit = fits(object))
+effectsizemat(
+  object,
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit)
+)
 
 effectsize(...)
 
-fdrvar(object, coefs = autonomics::coefs(object), fit = fits(object))
+fdrvar(
+  object,
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit)
+)
 
-fdrmat(object, coefs = autonomics::coefs(object), fit = fits(object))
+fdrmat(
+  object,
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit)
+)
 
 fdr(...)
 
 upmat(
   object,
-  coefs = autonomics::coefs(object),
   fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit),
   var = "fdrmat",
   cutoff = 0.05
 )
@@ -59,8 +79,8 @@ up(...)
 
 downmat(
   object,
-  coefs = autonomics::coefs(object),
   fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit),
   var = "fdrmat",
   cutoff = 0.05
 )
@@ -74,7 +94,13 @@ down(...)
 
 \item{fit}{string}
 
-\item{coef}{string}
+\item{coefs}{string}
+
+\item{...}{maintain deprecated functions}
+
+\item{var}{'fdrmat' etc.}
+
+\item{cutoff}{cutoff pvalue}
 }
 \value{
 matrix (feature x coef)
@@ -84,6 +110,7 @@ Get p/fdr/effect/down/up/sign matrix
 }
 \examples{
 # Read
+    require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()

@@ -10,6 +10,8 @@ filter_all_slevels(object, svar, verbose = TRUE)
 \item{object}{SummarizedExperiment}
 
 \item{svar}{svar}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 SummarizedExperiment

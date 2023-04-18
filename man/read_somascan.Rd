@@ -32,6 +32,7 @@ read_somascan(
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
   plot = FALSE,
+  label = "feature_id",
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
@@ -75,6 +76,8 @@ read_somascan(
 \item{rm_single_value_svars}{TRUE or FALSE: rm single value svars?}
 
 \item{plot}{TRUE or FALSE: plot ?}
+
+\item{label}{fvar}
 
 \item{pca}{TRUE or FALSE: run pca?}
 

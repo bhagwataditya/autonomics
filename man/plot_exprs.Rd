@@ -93,6 +93,8 @@ plot_feature_boxplots(object, ...)
 
 \item{highlight}{highlight svar}
 
+\item{combiner}{'&' or '|'}
+
 \item{p}{fraction: p   cutoff}
 
 \item{fdr}{fraction: fdr cutoff}
@@ -136,6 +138,8 @@ plot_feature_boxplots(object, ...)
 \item{height}{inches}
 
 \item{verbose}{TRUE or FALSE}
+
+\item{...}{used to maintain depreceated functions}
 }
 \value{
 ggplot object

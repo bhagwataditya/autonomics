@@ -17,6 +17,8 @@ sumexplist_to_long_dt(
 \item{svars}{character vector}
 
 \item{fvars}{character vector}
+
+\item{setvarname}{string}
 }
 \value{
 data.table
@@ -25,11 +27,11 @@ data.table
 SummarizedExperiment list to long data.table
 }
 \examples{
-RNA
+# RNA
     require(magrittr)
     rnafile <- download_data('billing19.rnacounts.txt')
     rna <- read_rnaseq_counts(rnafile, plot = FALSE)
-PRO/FOS
+# PRO/FOS
     fdt(rna)$feature_name <- fdt(rna)$gene_name
     proteinfile <- download_data('billing19.proteingroups.txt')
     phosphofile <- download_data('billing19.phosphosites.txt')
@@ -38,7 +40,7 @@ PRO/FOS
     fos <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
     pro$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
     fos$subgroup \%<>\% stringi::stri_replace_first_fixed('_STD', '')
-sumexplist to longdt
+# sumexplist to longdt
     sumexplist <- list(rna = rna, pro = pro, fos = fos)
     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
     dt \%<>\% extract(feature_name \%in\% c('TNMD', 'TSPAN6'))

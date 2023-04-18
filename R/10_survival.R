@@ -7,14 +7,26 @@ download_tcga_example <- function(){
     # https://seandavi.github.io/post/2018-03-25-extracting-clinical-information-using-the-genomicdatacommons-package/
     if (!requireNamespace('GenomicDataCommons', quietly = TRUE)){
         message("BiocManager::install('GenomicDataCommons'). Then re-run.")
-        return(object) 
+    }
+    if (!requireNamespace('AnnotationHub', quietly = TRUE)){
+        message("BiocManager::install('AnnotationHub'). Then re-run.")
+    }
+    if (!requireNamespace('ensembldb', quietly = TRUE)){
+        message("BiocManager::install('AnnotationHub'). Then re-run.")
     }
     file <- tools::R_user_dir('autonomics', 'cache')
     file %<>% file.path('datasets', 'tcga.rna.rds')
     if (file.exists(file)){ return(file)
-    } else {                message('Run the code in this function manually'); 
-                            return(invisible(NULL))
+    } else {
+        message('Run the code in this function manually'); 
+        return(invisible(NULL))
     }
+    access <- ajcc_pathologic_stage <- age_at_index <- NULL
+    analysis.workflow_type <- case_id <- cases.project.project_id  <- NULL
+    cases.samples.sample_type <- days_to_death <- days_to_last_follow_up <- NULL
+    event <- gender <- gene_id <- gene_name <- gene_type <- genesize <- NULL
+    icd_10_code <- N <- sample_id <- sample_type <- timetoevent <- type <- NULL
+    unstranded <- vital_status <- NULL
 # sdt
     sdtTN  <-  GenomicDataCommons::files()
     sdtTN %<>% GenomicDataCommons::filter( cases.project.project_id == 'TCGA-BRCA')
@@ -108,7 +120,7 @@ download_tcga_example <- function(){
     ah <- AnnotationHub::AnnotationHub()
     # AnnotationHub::query(ah, 'Homo sapiens', 'Ensembl', 'hg38')
     ensdb <- ah[['AH109336']]
-    genesizedt <- ensembldb::lengthOf(ensdb, filter = GeneIdFilter(fdt(rna)$ensg))
+    genesizedt <- ensembldb::lengthOf(ensdb, filter = ensembldb::GeneIdFilter(fdt(rna)$ensg))
     genesizedt <- data.table(ensg = names(genesizedt), genesize = genesizedt)
     rna %<>% merge_fdt(genesizedt, by.x = 'ensg', by.y = 'ensg')
     rna %<>% filter_features(!is.na(genesize))
@@ -161,7 +173,7 @@ dichotomize_exprs <- function(dt, percentile){
 }
 
 .fit_survival <- function(subdt, samples = FALSE){
-    timetoevent <- event <- NULL
+    timetoevent <- event <- exprlevel <- NULL
     diff <- survival::survdiff(survival::Surv(timetoevent, event) ~ exprlevel, data = subdt)
     coef <- suppressWarnings(coef(summary( survival::coxph(
                 survival::Surv(subdt$timetoevent, subdt$event)~subdt$value)))[,'coef' ])
@@ -197,8 +209,8 @@ fit_survival <- function(
     assert_is_valid_sumexp(object)
     assert_scalar_subset(assay, assayNames(object))
     assert_is_a_number(percentile)
-    assertive::assert_all_are_in_left_open_range(percentile, 0, 50)
-    event <- value <- exprlevel <- NULL
+    assert_all_are_in_left_open_range(percentile, 0, 50)
+    event <- exprlevel <- timetoevent <- value <- NULL
 # Fit
     if (verbose)  cmessage('\t\tsurvival ~ exprlevel')                                     # Filter across
     object %<>% filter_samples(!is.na(event) & !is.na(timetoevent))
@@ -227,11 +239,20 @@ fit_survival <- function(
 #' @param object      SummarizedExperiment
 #' @param assay       string
 #' @param percentile  percentage (not greater than 50)
+#' @param samples     TRUE or FALSE : record which samples in which stratum ?
+#' @param verbose     TRUE or FALSE
 #' @param title       string
 #' @param subtitle    string
 #' @param palette     color vector
+#' @param n           number
+#' @param ncol        number
+#' @param nrow        number
+#' @param file        filepath
+#' @param width       number
+#' @param height      number
 #' @return ggsurvplot
 #' @examples 
+#' require(magrittr)
 #' file <- download_tcga_example()
 #' if (!is.null(file) & requireNamespace('survminer')){
 #' # Read

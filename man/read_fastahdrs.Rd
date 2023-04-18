@@ -10,8 +10,6 @@ read_fastahdrs(fastafile, verbose = TRUE)
 \item{fastafile}{string (or character vector)}
 
 \item{verbose}{bool}
-
-\item{fastafields}{character vector}
 }
 \value{
 data.table(uniprot, protein, gene, uniprot, reviewed, existence)

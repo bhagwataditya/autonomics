@@ -89,8 +89,6 @@ fit_lmer(
 \item{plot}{TRUE or FALSE}
 
 \item{contrasts}{unused. only to allow generic get(fitfun)(contrasts)}
-
-\item{subgroupvar}{svar}
 }
 \value{
 SummarizedExperiment
@@ -106,6 +104,6 @@ fit_limma(object, formula = ~subgroup)
 fit_limma(object, formula = ~subgroup, block = 'SUB')
 fit_lme(  object, formula = ~subgroup, block = 'SUB')
 fit_lmer( object, formula = ~subgroup, block = 'SUB')
-fit_lme(  object, formula = ~subgroup, block = ~1|SUB)
-fit_lmer( object, formula = ~subgroup + (1|SUB))
+# fit_lme(  object, formula = ~subgroup, block = ~1|SUB) # needs fine-tuning
+# fit_lmer( object, formula = ~subgroup + (1|SUB))       # needs fine-tuning
 }

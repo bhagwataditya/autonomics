@@ -40,6 +40,8 @@ plot_exprs_per_coef(
 
 \item{subtitle}{string}
 
+\item{n}{number}
+
 \item{nrow}{number of rows in faceted plot}
 
 \item{ncol}{number of cols in faceted plot}

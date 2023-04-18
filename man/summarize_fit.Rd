@@ -21,8 +21,7 @@ Summarize fit
 }
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, impute = TRUE, plot = FALSE)
-object \%<>\% extract(!is_consistent_nondetect(.), )
+object <- read_metabolon(file)
 object \%<>\% fit_limma()
 object \%<>\% fit_lm()
 summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))

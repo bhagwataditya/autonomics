@@ -21,6 +21,10 @@ biplot_covariates(
 
 \item{method}{'pca', 'pls', 'lda', or 'sma'}
 
+\item{by}{svar}
+
+\item{block}{svar}
+
 \item{covariates}{covariates: mapped to color or batch-corrected}
 
 \item{ndim}{number of dimensions to plot}
@@ -30,8 +34,6 @@ biplot_covariates(
 \item{varcols}{number of covariate columns}
 
 \item{plot}{TRUE or FALSE: whether to plot}
-
-\item{...}{used to maintain deprecated functions}
 }
 \value{
 ggplot object

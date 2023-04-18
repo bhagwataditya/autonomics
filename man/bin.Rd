@@ -9,11 +9,11 @@
 \usage{
 bin(object, ...)
 
-\method{bin}{logical}(object)
+\method{bin}{logical}(object, ...)
 
-\method{bin}{numeric}(object, probs = c(0, 0.33, 0.66, 1))
+\method{bin}{numeric}(object, probs = c(0, 0.33, 0.66, 1), ...)
 
-\method{bin}{SummarizedExperiment}(object, fvar, probs = c(0, 0.33, 0.66, 1))
+\method{bin}{SummarizedExperiment}(object, fvar, probs = c(0, 0.33, 0.66, 1), ...)
 }
 \arguments{
 \item{object}{numeric or SummarizedExperiment}

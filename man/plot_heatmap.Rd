@@ -36,6 +36,8 @@ plot_heatmap(
 
 \item{n}{number: n filter}
 
+\item{cluster_features}{TRUE or FALSE}
+
 \item{cluster_samples}{TRUE or FALSE}
 
 \item{flabel}{string: feature label}

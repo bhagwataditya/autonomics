@@ -17,6 +17,7 @@
 Clean Merge
 }
 \examples{
+require(data.table)
 dt1 <- data.table(feature_id = c('PG1', 'PG2'), gene    = c('G1', 'G2'))
 dt2 <- data.table(feature_id = c('PG1', 'PG2'), protein = c('P1', 'P2'))
 dt1 \%<>\% .merge(dt2, by = 'feature_id')

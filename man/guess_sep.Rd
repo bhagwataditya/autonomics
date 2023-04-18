@@ -10,7 +10,7 @@
 \usage{
 guess_sep(x, ...)
 
-\method{guess_sep}{numeric}(x)
+\method{guess_sep}{numeric}(x, ...)
 
 \method{guess_sep}{character}(x, separators = c(".", "_"), verbose = FALSE, ...)
 

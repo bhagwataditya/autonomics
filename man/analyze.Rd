@@ -17,6 +17,7 @@ analyze(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   plot = pca & !is.null(fit),
+  label = "feature_id",
   palette = NULL,
   verbose = TRUE
 )
@@ -28,7 +29,7 @@ analyze(
 
 \item{pls}{TRUE / FALSE: perform pls ?}
 
-\item{fit}{glm engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'}
+\item{fit}{linmod engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'}
 
 \item{formula}{model formula}
 
@@ -46,6 +47,8 @@ analyze(
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
 
 \item{plot}{TRUE / FALSE}
+
+\item{label}{fvar}
 
 \item{palette}{NULL or colorvector}
 

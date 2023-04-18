@@ -28,6 +28,8 @@ plot_subgroup_nas(
 )
 }
 \arguments{
+\item{...}{used to maintain deprecated functions}
+
 \item{object}{SummarizedExperiment}
 
 \item{by}{svar (string)}
@@ -37,6 +39,8 @@ plot_subgroup_nas(
 \item{palette}{color vector (names = levels, values = colors)}
 
 \item{axis.text.y}{passed to ggplot2::theme}
+
+\item{na_imputes}{TRUE or FALSE}
 }
 \value{
 ggplot object

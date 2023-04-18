@@ -8,12 +8,16 @@
 \usage{
 varlevels_dont_clash(object, ...)
 
-\method{varlevels_dont_clash}{data.table}(object, vars = names(object))
+\method{varlevels_dont_clash}{data.table}(object, vars = names(object), ...)
 
-\method{varlevels_dont_clash}{SummarizedExperiment}(object, vars = svars(object))
+\method{varlevels_dont_clash}{SummarizedExperiment}(object, vars = svars(object), ...)
 }
 \arguments{
 \item{object}{SummarizedExperiment or data.table}
+
+\item{...}{required for s3 dispatch}
+
+\item{vars}{character vector}
 }
 \value{
 TRUE or FALSE

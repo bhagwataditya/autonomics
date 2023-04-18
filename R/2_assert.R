@@ -88,7 +88,7 @@ has_valid_snames <- function(x, .xname = get_name_in_parent(x)){
 #' @return TRUE or FALSE
 #' @noRd
 is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
-    if (!(ok <- assertive::is2(x, "SummarizedExperiment")))  return(ok)
+    if (!(ok <- assertive.base::is2(x, "SummarizedExperiment")))  return(ok)
     if (!(ok <- has_valid_fnames(x, .xname = .xname)))       return(ok)
     if (!(ok <- has_valid_snames(x, .xname = .xname)))       return(ok)
     TRUE
@@ -122,7 +122,7 @@ assert_is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
 #' is_diann_report(file)
 #' is_fragpipe_tsv(file)
 #' is_maxquant_proteingroups(file)
-#' is_phosphosites(file)
+#' is_maxquant_phosphosites(file)
 #' 
 #' file <- 3
 #' is_diann_report(file)
@@ -244,7 +244,7 @@ assert_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
 #' x <- read_fastahdrs(fastafile)
 #' # is_fastadt_or_null(x)  # slow
 #' @export
-is_fastadt_or_null <- function(x, .xname = get_name_im_parent(x)){
+is_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
     if (is.null(x))                  return(TRUE)
     if (!is.data.table(x))           return(false('%s is not a data.table', .xname))
     if (names(x)[1] != 'reviewed')   return(false('col1(%s) != "reviewed"', .xname))
@@ -264,8 +264,8 @@ assert_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
 #' Is scalar subset
 #' @param x scalar
 #' @param y SummarizedExperiment
-#' @param name of x
-#' @param name of y
+#' @param .xname name of x
+#' @param .yname name of y
 #' @examples 
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
@@ -290,7 +290,7 @@ assert_scalar_subset <- function(x, y, .xname = get_name_in_parent(x), .yname = 
 #' Is positive number
 #' @param x number
 #' @param .xname name of x
-#' @return TRUE or assertiVe::false
+#' @return TRUE or assertive.base::false
 #' @examples 
 #' is_positive_number( 3)
 #' is_positive_number(-3)
@@ -328,7 +328,8 @@ assert_weakly_positive_number <- function(x, .xname = get_name_in_parent(x)){
 #---------------------
 
 #' Is fraction
-#' @param x number
+#' @param  x      number
+#' @param .xname  string
 #' @return TRUE or false
 #' @examples
 #' is_fraction(0.1)          # YES

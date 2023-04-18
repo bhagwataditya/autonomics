@@ -10,6 +10,8 @@ default_geom(object, x, block = NULL)
 \item{object}{SummarizedExperiment}
 
 \item{x}{svar}
+
+\item{block}{svar or NULL}
 }
 \value{
 character vector

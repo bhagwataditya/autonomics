@@ -8,6 +8,8 @@ demultiplex(x, verbose = FALSE)
 }
 \arguments{
 \item{x}{character vector}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 character

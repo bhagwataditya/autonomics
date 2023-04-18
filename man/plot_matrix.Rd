@@ -7,7 +7,7 @@
 plot_matrix(mat)
 }
 \arguments{
-\item{mat}{}
+\item{mat}{matrix}
 }
 \value{
 no return (base R plot)

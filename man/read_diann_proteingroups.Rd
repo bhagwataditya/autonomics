@@ -25,8 +25,6 @@ read_diann_proteingroups(
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
-  feature_id = NULL,
-  sample_id = NULL,
   palette = NULL,
   verbose = TRUE
 )
@@ -63,6 +61,8 @@ read_diann(...)
 \item{contrasts}{coefficient contrasts of interest: character vector or NULL}
 
 \item{palette}{color palette: named string vector}
+
+\item{...}{used to maintain deprecated functions}
 }
 \value{
 data.table or SummarizedExperiment

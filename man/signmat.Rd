@@ -6,11 +6,22 @@
 \usage{
 signmat(
   object,
-  coefs = autonomics::coefs(object),
   fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit),
   var = "fdrmat",
   cutoff = 0.05
 )
+}
+\arguments{
+\item{object}{SummarizedExperiment}
+
+\item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
+
+\item{coefs}{character vector}
+
+\item{var}{functionname}
+
+\item{cutoff}{pvalue}
 }
 \description{
 Get sign

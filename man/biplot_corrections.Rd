@@ -19,6 +19,8 @@ biplot_corrections(
 
 \item{method}{'pca', 'pls', 'lda', or 'sma'}
 
+\item{by}{svar}
+
 \item{color}{variable mapped to color (symbol)}
 
 \item{covariates}{covariates to be batch-corrected}

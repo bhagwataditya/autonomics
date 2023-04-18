@@ -1,20 +1,21 @@
 
 #' Analyze
-#' @param object       SummarizedExperiment
-#' @param pca          TRUE / FALSE: perform pca ?
-#' @param pls          TRUE / FALSE: perform pls ?
-#' @param fit          glm engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'
-#' @param formula      model formula
-#' @param drop         TRUE / FALSE : drop varname in designmat ?
-#' @param coding       factor coding system : 'treatment', 'reference', difference', 
-#'                                            'grandref', 'granddiff', 'sum', 'helmert'
-#' @param contrasts    model coefficient contrasts of interest: string vector or NULL
-#' @param coefs        model coefficients          of interest: string vector or NULL
-#' @param block        model blockvar
-#' @param weightvar    NULL or name of weight matrix in assays(object)
-#' @param plot         TRUE / FALSE
-#' @param palette      NULL or colorvector
-#' @param verbose      TRUE / FALSE: message?
+#' @param object     SummarizedExperiment
+#' @param pca        TRUE / FALSE: perform pca ?
+#' @param pls        TRUE / FALSE: perform pls ?
+#' @param fit        linmod engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'
+#' @param formula    model formula
+#' @param drop       TRUE / FALSE : drop varname in designmat ?
+#' @param coding     factor coding system : 'treatment', 'reference', difference', 
+#'                                          'grandref', 'granddiff', 'sum', 'helmert'
+#' @param contrasts  model coefficient contrasts of interest: string vector or NULL
+#' @param coefs      model coefficients          of interest: string vector or NULL
+#' @param block      model blockvar
+#' @param weightvar  NULL or name of weight matrix in assays(object)
+#' @param plot       TRUE / FALSE
+#' @param label      fvar
+#' @param palette    NULL or colorvector
+#' @param verbose    TRUE / FALSE: message?
 #' @return SummarizedExperiment
 #' @examples 
 #' require(magrittr)
@@ -35,6 +36,7 @@ analyze <- function(
     block        = NULL,
     weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
     plot         = pca & !is.null(fit),
+    label        = 'feature_id',
     palette      = NULL,
     verbose      = TRUE
 ){
@@ -54,16 +56,17 @@ analyze <- function(
             plot         = FALSE) 
     }
     # Plot/Return
-    if (plot)  plot_summary(object, fit = fit, block = block, palette = palette)
+    if (plot)  plot_summary(object, fit = fit, block = block, label = label, palette = palette)
     object
 }
 
 
 #' Plot summary
-#' @param object       SummarizedExperiment
-#' @param fit          glm engine : 'limma', 'lm', 'lme', 'lmer' or 'wilcoxon'
-#' @param block        NULL or svar
-#' @param palette      NULL or colorvector
+#' @param object   SummarizedExperiment
+#' @param fit      linmod engine : 'limma', 'lm', 'lme', 'lmer' or 'wilcoxon'
+#' @param block    NULL or svar
+#' @param label    fvar
+#' @param palette  NULL or colorvector
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
@@ -73,20 +76,21 @@ analyze <- function(
 #' plot_summary(object, block = 'SUB')
 #' @export
 plot_summary <- function(
-    object, fit = 'limma', block = NULL, palette = make_subgroup_palette(object)
+    object, fit = 'limma', block = NULL, label = 'feature_id', 
+    palette = make_subgroup_palette(object)
 ){
 # Assert
     assert_is_valid_sumexp(object)
     assert_is_subset(c('effect~sample_id~pca1', 'effect~sample_id~pca2'), svars(object))
     assert_is_subset(c('effect~sample_id~pca1', 'effect~sample_id~pca2'), fvars(object))
-    assert_is_subset(c('effect~subgroup~pls1',  'effect~subgroup~pls2'), svars(object))
-    assert_is_subset(c('effect~subgroup~pls1',  'effect~subgroup~pls2'), fvars(object))
-    assertive::assert_any_are_matching_regex(fvars(object), fit)
+    assert_is_subset(c('effect~subgroup~pls1',  'effect~subgroup~pls2'),  svars(object))
+    assert_is_subset(c('effect~subgroup~pls1',  'effect~subgroup~pls2'),  fvars(object))
+    assert_any_are_matching_regex(fvars(object), fit)
 # Plot
     detections <- plot_subgroup_nas(object, 
                     palette  = palette) + ggtitle('Detections') + xlab(NULL) + 
                     theme(plot.title = element_text(hjust = 0.5))
-    pcaplot <- biplot(object, method = 'pca', color = 'subgroup', colorpalette = palette, nfeatures = 1) + 
+    pcaplot <- biplot(object, method = 'pca', color = 'subgroup', colorpalette = palette) + 
                guides(color = 'none', linetype = 'none') + # scale_x_continuous(expand = c(0.2, 0.2)) + 
                theme(axis.text.x  = element_blank(), axis.text.y  = element_blank(), 
                      axis.ticks.x = element_blank(), axis.ticks.y = element_blank(), 
@@ -109,7 +113,7 @@ plot_summary <- function(
     pls1exprs <- pls1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
     pls2exprs <- pls2exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
     glm1exprs <- glm1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
-    glm1volcano <- plot_top_volcano(object, fit = fit, coef = coefs[1]) + guides(shape = 'none', linetype = 'none')
+    glm1volcano <- plot_top_volcano(object, fit = fit, coef = coefs[1], label = label) + guides(shape = 'none', linetype = 'none')
 # Arrange
     layout_matrix <- matrix(c(1, 2, 3, 
                               4, 5, 6, 
@@ -137,7 +141,7 @@ plot_top_features <- function(object, fit){
     #idx2 <- order(abs(fdt(object)$`effect~sample_id~pca2`), decreasing = TRUE)[1]
     idx3 <- order(abs(fdt(object)$`effect~subgroup~pls1` ), decreasing = TRUE)[1]
     #idx4 <- order(abs(fdt(object)$`effect~subgroup~pls2` ), decreasing = TRUE)[1]
-    pvr <- pvar(object, fit = fit, coef = default_coefs(object, fit = fit))[1]
+    pvr <- pvar(object, fit = fit, coefs = default_coefs(object, fit = fit))[1]
     idx5 <- order(abs(fdt(object)[[pvr]]))[1]
     idx  <- unique(c(idx1,idx3,idx5))
     #idx  <- unique(c(idx1,idx2,idx3,idx4,idx5))
@@ -152,16 +156,18 @@ plot_top_features <- function(object, fit){
 }
 
 top_coef <- function(object, fit){
+    ndown <- NULL
     summarydt <- summarize_fit(fdt(object), fit = fit)
     summarydt %<>% extract(which.max(ndown))  # nup favours intercept !
     summarydt$contrast
 }
 
-plot_top_volcano <- function(object, fit, coef){
+plot_top_volcano <- function(object, fit, coef, label){
+    coefficient <- NULL
     summarydt <- summarize_fit(fdt(object), fit = fit)
     summarydt %<>% extract(coefficient == coef)  # nup favours intercept !
     
-    plot_volcano(object, fit = fit, coef = coef, ) + 
+    plot_volcano(object, fit = fit, coefs = coef, label = label) + 
     guides(color = 'none') + 
     ggtitle(sprintf('%s~%s', fit, coef)) + 
     #ggtitle(sprintf('%d down | %d up', summarydt$ndown, summarydt$nup)) +

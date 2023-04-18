@@ -10,6 +10,8 @@ is_collapsed_subset(x, y, sep = ";")
 \item{x}{character vector}
 
 \item{y}{character vector}
+
+\item{sep}{string}
 }
 \value{
 character vector

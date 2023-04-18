@@ -40,8 +40,6 @@ preprocess_rnaseq_counts(
 \item{verbose}{TRUE or FALSE : msg?}
 
 \item{plot}{TRUE or FALSE : plot?}
-
-\item{genesizevar}{string     : tpm normalization genesize fvar}
 }
 \value{
 SummarizedExperiment

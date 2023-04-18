@@ -17,6 +17,8 @@ explore_transformations(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{subgroupvar}{string}
+
 \item{transformations}{vector}
 
 \item{method}{'pca', 'pls', 'sma', or 'lda'}
@@ -26,8 +28,6 @@ explore_transformations(
 \item{ydim}{number (default 2)}
 
 \item{...}{passed to plot_data}
-
-\item{subgroup}{subgroup (sym)}
 }
 \value{
 grid object

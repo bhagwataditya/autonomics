@@ -100,8 +100,11 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' Filter features with replicated expression in some subgroup
 #' @param object       SummarizedExperiment
 #' @param subgroupvar  subgroup svar
+#' @param assay        string
 #' @param comparator   '>' or '!='
 #' @param lod          number: limit of detection
+#' @param nsample      number
+#' @param nsubgroup    number
 #' @param verbose      TRUE or FALSE
 #' @return Filtered SummarizedExperiment
 #' @examples
@@ -119,6 +122,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
 ){
 # Assert
     assert_is_subset(subgroupvar, svars(object))
+    replicated <- NULL
 # Datatablify
     replicated_in_its_subgroup <- replicated_in_any_subgroup <- value <- NULL
     dt <- sumexp_to_longdt(object, svars = subgroupvar, assay = assay)

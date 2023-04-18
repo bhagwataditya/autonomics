@@ -16,7 +16,7 @@ OrgDb
 Get corresponding orgdb
 }
 \examples{
-if (requireNamespace('org.Hs.eg.db'), quiet = TRUE){
+if (requireNamespace('org.Hs.eg.db', quiet = TRUE)){
     class(genome_to_orgdb('hg38'))
 }
 }

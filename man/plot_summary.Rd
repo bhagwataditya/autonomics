@@ -8,15 +8,18 @@ plot_summary(
   object,
   fit = "limma",
   block = NULL,
+  label = "feature_id",
   palette = make_subgroup_palette(object)
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{fit}{glm engine : 'limma', 'lm', 'lme', 'lmer' or 'wilcoxon'}
+\item{fit}{linmod engine : 'limma', 'lm', 'lme', 'lmer' or 'wilcoxon'}
 
 \item{block}{NULL or svar}
+
+\item{label}{fvar}
 
 \item{palette}{NULL or colorvector}
 }

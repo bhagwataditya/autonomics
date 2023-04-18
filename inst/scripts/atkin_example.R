@@ -72,7 +72,7 @@ fit_xxx_across <- function(object, groupvars, block){
 #' @rdname dot-fit_xxx_across
 #' @export
 .fit_xxx_within <- function(object, groupvars, block){
-    assertive::assert_is_of_length(groupvars, 2)
+    assert_is_of_length(groupvars, 2)
     Avar <- groupvars[1]
     Bvar <- groupvars[2]
     Alevels <- levels(object[[Avar]])
@@ -89,7 +89,7 @@ fit_xxx_across <- function(object, groupvars, block){
 #' @rdname dot-fit_xxx_across
 #' @export
 .fit_xxx_between <- function(object, groupvars, block){
-    assertive::assert_is_of_length(groupvars, 2)
+    assert_is_of_length(groupvars, 2)
     Avar <- groupvars[[1]]
     Bvar <- groupvars[[2]]
     Alevels <- levels(object[[Avar]])

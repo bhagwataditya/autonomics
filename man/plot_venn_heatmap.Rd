@@ -6,6 +6,9 @@
 \usage{
 plot_venn_heatmap(x)
 }
+\arguments{
+\item{x}{list}
+}
 \description{
 Plot venn heatmap
 }

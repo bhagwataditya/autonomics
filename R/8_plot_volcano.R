@@ -33,11 +33,11 @@ bin <- function(object, ...) UseMethod('bin')
 
 #' @rdname bin
 #' @export
-bin.logical <- function(object)  object
+bin.logical <- function(object, ...)  object
 
 #' @rdname bin
 #' @export
-bin.numeric <- function(object, probs = c(0, 0.33, 0.66, 1)){
+bin.numeric <- function(object, probs = c(0, 0.33, 0.66, 1), ...){
     breaks <- quantile(object, probs = probs)
     breaks[1] %<>% subtract(1e-7)      # avoid smallest number from falling outside of bin
     object %<>% cut(breaks)                 # explicit breaks avoid negative bin
@@ -49,7 +49,9 @@ bin.numeric <- function(object, probs = c(0, 0.33, 0.66, 1)){
 
 #' @rdname bin
 #' @export
-bin.SummarizedExperiment <- function(object, fvar, probs = c(0, 0.33, 0.66, 1)){
+bin.SummarizedExperiment <- function(
+    object, fvar, probs = c(0, 0.33, 0.66, 1), ...
+){
     if (is.null(fvar))  return(object)
     fdt(object)[[fvar]] %<>% bin()
     object
@@ -95,6 +97,7 @@ add_assay_means <- function(
 #' @param fit    'limma', 'lm', 'lme', 'lmer'
 #' @param coefs   coefficient (string)
 #' @examples
+#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_limma()
@@ -118,7 +121,7 @@ add_adjusted_pvalues <- function(
     for (.fit  in fit){
     for (.coef in coefs){
     for (.method in method){
-        pdt <- fdt(object)[ , pvar(object, coef = .coef, fit = .fit) , with = FALSE]
+        pdt <- fdt(object)[ , pvar(object, coefs = .coef, fit = .fit) , with = FALSE]
         pdt[, names(pdt) := lapply(.SD, p.adjust, method = .method), .SDcols = names(pdt)]
         names(pdt) %<>% stri_replace_first_fixed('p~', paste0(method, '~'))
     }}}
@@ -153,7 +156,7 @@ make_volcano_dt <- function(
 ){
 # Assert    
     assert_is_all_of(object, "SummarizedExperiment")
-    assertive::assert_any_are_matching_regex(fvars(object), paste0('^p', FITSEP))
+    assert_any_are_matching_regex(fvars(object), paste0('^p', FITSEP))
     assert_is_subset(fit, fits(object))
     assert_is_subset(coefs, autonomics::coefs(object, fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
@@ -162,7 +165,7 @@ make_volcano_dt <- function(
     if (!is.null(label))  assert_is_subset(label, fvars(object))
     object %<>% add_adjusted_pvalues('bonferroni', fit, coefs)
 # Prepare
-    effect <- p <- mlp <- significance <- fdr <- NULL
+    bon <- direction <- effect <- fdr <- mlp <- p <- significance <- NULL
     idvars <- 'feature_id'
     if ('control' %in% fvars(object))  idvars %<>% c('control')
     if (!is.null(label))  idvars %<>% union(label)
@@ -177,7 +180,7 @@ make_volcano_dt <- function(
     dt %<>% tidyr::separate(.data$variable, into = c('quantity', 'coef', 'fit'), sep = FITSEP)
     idvars %<>% c('coef', 'fit')
     #dt %<>% dcast.data.table(feature_id+feature_name+coef+fit ~ quantity, value.var = 'value')
-    dt %<>% tidyr::pivot_wider(id_cols = all_of(idvars), names_from = 'quantity', values_from = 'value')
+    dt %<>% tidyr::pivot_wider(id_cols = tidyr::all_of(idvars), names_from = 'quantity', values_from = 'value')
     dt %<>% data.table()
     dt$coef %<>% factor(coefs)
     dt[, fdr := p.adjust(p, method = 'fdr'),        by = c('fit', 'coef')]
@@ -251,7 +254,8 @@ plot_volcano <- function(
 ){
 # Assert
     assert_is_a_number(nrow)
-    effect <- mlp <- NULL
+    bon <- effect <- direction <- mlp <- ndown <- nup <- significance <- NULL
+    singlefeature <- yintercept <- NULL
     facet %<>% lapply(sym)
     facet <- vars(!!!facet)
 # Volcano 
@@ -343,6 +347,7 @@ stri_detect_fixed_in_collapsed <- function(x, patterns, sep){
     assert_is_character(x)
     assert_is_character(patterns)
     assert_is_a_string(sep)
+    detect <- x0 <- NULL
 # Detect
     dt <- data.table( x0 = x, x = x)
     if (!is.null(sep))  dt %<>% uncollapse(x, sep = sep)
