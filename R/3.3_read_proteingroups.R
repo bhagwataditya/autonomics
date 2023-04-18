@@ -936,7 +936,7 @@ read_maxquant_phosphosites <- function(
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
     impute = FALSE, plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
     fit = if (plot) 'limma' else NULL,  
-    formula = NULL, block = NULL, coefs = NULL, contrasts = NULL, 
+    formula = ~ subgroup, block = NULL, coefs = NULL, contrasts = NULL, 
     palette = NULL, verbose = TRUE
 ){
 # Assert

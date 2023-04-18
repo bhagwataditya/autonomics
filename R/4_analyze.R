@@ -81,8 +81,6 @@ plot_summary <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_is_subset(c('effect~sample_id~pca1', 'effect~sample_id~pca2'), svars(object))
-    assert_is_subset(c('effect~sample_id~pca1', 'effect~sample_id~pca2'), fvars(object))
     assert_is_subset(c('pca1', 'pca2'), fits(object))
     assert_is_subset(c('pls1', 'pls2'), fits(object))
     assert_any_are_matching_regex(fvars(object), fit)
@@ -136,18 +134,14 @@ plot_top_samples <- function(object, palette = make_subgroup_palette(object)){
               legend.title     = element_blank())
 }
 
-plot_top_features <- function(object, fit){
-    idx1 <- order(abs(fdt(object)$`effect~sample_id~pca1`), decreasing = TRUE)[1]
-   #idx2 <- order(abs(fdt(object)$`effect~sample_id~pca2`), decreasing = TRUE)[1]
-    idx3 <- order(abs(fdt(object)$`effect~subgroup~pls1` ), decreasing = TRUE)[1]
-   #idx4 <- order(abs(fdt(object)$`effect~subgroup~pls2` ), decreasing = TRUE)[1]
+plot_top_features <- function(object, fit, label){
+    idx1 <- order(abs(loadings(object, method = 'pca', dim = 1)), decreasing = TRUE)[1]
+    idx2 <- order(abs(loadings(object, method = 'pls', dim = 1)), decreasing = TRUE)[1]
     pvr <- pvar(object, fit = fit, coefs = default_coefs(object, fit = fit))[1]
-    idx5 <- order(abs(fdt(object)[[pvr]]))[1]
-    idx  <- unique(c(idx1,idx3,idx5))
-   #idx  <- unique(c(idx1,idx2,idx3,idx4,idx5))
-    
-    plot_feature_densities(
-        object[idx, ], n = length(idx)) + 
+    idx3 <- order(abs(fdt(object)[[pvr]]))[1]
+    idx  <- unique(c(idx1,idx2,idx3))
+
+    plot_feature_densities(object[idx, ], n = length(idx)) + 
         xlab(feature_id) + ggtitle('Features') + theme_void() + 
         theme(plot.title       = element_text(hjust = 0.5), 
               legend.position  = 'bottom', 

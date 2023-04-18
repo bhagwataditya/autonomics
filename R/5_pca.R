@@ -77,18 +77,40 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 }
 
 
-   scorenames <- function(method, by, dims)  sprintf('effect~%s~%s%d', by, method, dims)
- loadingnames <- function(method, by, dims)  sprintf('effect~%s~%s%d', by, method, dims)
-   methodname <- function(method, by)        sprintf('%s~%s',          by, method)
-variancenames <- function(dims)              sprintf('effect%d',       dims)
-
-variances <- function(object, method, by, dims){
-                y <- metadata(object)
-                y %<>% extract2(methodname(method, by))
-                y %<>% extract(variancenames(dims))
-                y
+scorenames <- function(
+    method = 'pca', by, dims = 1:2
+){
+    sprintf('effect~%s~%s%d', by, method, dims)
 }
-scoremat <- function(object, method, by, dims){
+
+loadingnames <- function(
+    method = 'pca', by, dims = 1:2
+){
+    sprintf('effect~%s~%s%d', by, method, dims)
+}
+
+methodname <- function(
+    method = 'pca', by
+){
+    sprintf('%s~%s', by, method)
+}
+
+variancenames <- function(dims = 1:2){
+    sprintf('effect%d', dims)
+}
+
+variances <- function(
+    object, method = 'pca', by = biplot_by(object, method), dims = 1:2
+){
+    y <- metadata(object)
+    y %<>% extract2(methodname(method, by))
+    y %<>% extract(variancenames(dims))
+    y
+}
+
+scoremat <- function(
+    object, method = 'pca', by = biplot_by(object, method), dims = 1:2
+){
     vars <- 'sample_id'
     vars %<>% c(scorenames(method, by, dims))
     mat <- sdt(object)[, vars, with = FALSE]
@@ -96,12 +118,26 @@ scoremat <- function(object, method, by, dims){
     mat
 }
 
-loadingmat <- function(object, method, by, dims){
+scores <- function(
+    object, method = 'pca', by = biplot_by(object, method), dim = 1
+){
+    sdt(object)[[scorenames(method, by, dim)]]
+}
+
+loadingmat <- function(
+    object, method = 'pls', by = biplot_by(object, method), dims = 1:2
+){
     vars <- 'feature_id'
     vars %<>% c(loadingnames(method, by, dims))
     mat <- fdt(object)[, vars, with = FALSE]
     mat %<>% dt2mat()
     mat
+}
+
+loadings <- function(
+    object, method = 'pca', by = biplot_by(object, method), dim = 1
+){
+    fdt(object)[[loadingnames(method, by, dim)]]
 }
 
 

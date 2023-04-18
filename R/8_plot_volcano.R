@@ -221,16 +221,16 @@ make_volcano_dt <- function(
 #' object %<>% fit_limma()
 #' plot_volcano(object)
 #' plot_volcano(object, label = 'gene')
-#' plot_volcano(object, label = 'gene', size = 'mean.log2.LFQ.intensity')
-#' plot_volcano(object, label = 'gene', size = 'mean.log2.LFQ.intensity', alpha = 'mean.pepcounts')
+#' plot_volcano(object, label = 'gene', size = 'log2maxlfq')
+#' plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
 #' plot_volcano(object, label = 'gene', features = c('hmbsb'))
-#' object %<>% fit_lm()
 #'
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, impute = TRUE, fit = 'limma')
+#' object <- read_metabolon(file)
+#' object %<>% fit_limma()
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'))
-#' object %<>% fit_lm(subgroupvar = 'SET')
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'), nrow = 2)
+#' object %<>% fit_lm()
+#' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit = 'limma')
 #' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit = 'lm')
 #' @export
 plot_volcano <- function(

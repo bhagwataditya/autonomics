@@ -78,12 +78,13 @@ object <- read_rnaseq_counts(
 The `block` argument in both importers allows to model e.g. subject_id as a random effect, which is very common in clinical data. Repeating the GEO Covid-19 analysis with subject_id as a block effect. Outcomment the line below, which takes a few minutes to complete.
 
 ```{r}
-#object <- read_rnaseq_counts(
-#  file  = '~/autonomicscache/datasets/GSE161731/GSE161731_counts.csv.gz', 
-#  sfile = '~/autonomicscache/datasets/GSE161731/GSE161731_counts_key.csv.gz', 
-#  sfileby = 'rna_id', 
-#  subgroupvar = 'gender', 
-#  block = 'subject_id')
+# object <- read_rnaseq_counts(
+#     file    = file.path(basedir, 'GSE161731/GSE161731_counts.csv.gz'), 
+#     sfile   = file.path(basedir, 'GSE161731/GSE161731_counts_key.csv.gz'), 
+#     by.y    = 'rna_id', 
+#     formula = ~ gender, 
+#     block   = 'subject_id', 
+#     fit     = 'limma')
 ```
 
 ## read_rnaseq_bams {-}
@@ -97,7 +98,6 @@ if (requireNamespace('Rsubread')){
                 dir    = download_data('billing16.bam.zip'), 
                 paired = TRUE, 
                 genome = 'hg38', 
-                pca    = TRUE, 
                 fit   = 'limma', 
                 plot   = TRUE)
 }
@@ -111,16 +111,16 @@ Proper preprocessing leads to increased power:
   file <- download_data('billing19.rnacounts.txt')
 # log2counts
   object <- read_rnaseq_counts(file, 
-       cpm = FALSE, voom = FALSE, fit = 'limma', verbose = FALSE, plot = FALSE)
-  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
+       cpm = FALSE, voom = FALSE, fit = 'limma', verbose = FALSE)
+  colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 # log2cpm
   object <- read_rnaseq_counts(file,
-       cpm = TRUE,  voom = FALSE, fit = 'limma', verbose = FALSE, plot=FALSE)
-  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
+       cpm = TRUE,  voom = FALSE, fit = 'limma', verbose = FALSE)
+  colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 # log2cpm + voom
   object <- read_rnaseq_counts(file,  # log2 cpm + voom
-       cpm = TRUE,  voom = TRUE,  fit = 'limma', verbose = FALSE, plot=FALSE)
-  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
+       cpm = TRUE,  voom = TRUE,  fit = 'limma', verbose = FALSE)
+  colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 ```
 
 # Proteingroups/phosphosites
@@ -150,8 +150,8 @@ A popular approach in (DDA) MS proteomics data analysis is to use **MaxQuant** t
 An **LFQ intensities** example is the **Fukuda et al. (2020)** dataset, which compares the proteome of **30d** zebrafish juveniles versus **adults** using label-free quantification. In the volcano plot measured values are shown with circles, imputed values as triangles.
 
 ```{r}
-object <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt'), 
-                             pca = TRUE, fit = 'limma', plot = TRUE)
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_maxquant_proteingroups(file = file, fit = 'limma')
 ```
 
 
@@ -161,22 +161,27 @@ object <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt'),
 
 
 ```{r}
-object <- read_proteingroups(
-              file = download_data('billing19.proteingroups.txt'),
-              select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
-                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'), 
-              pca = TRUE, fit = 'limma', plot = TRUE)
+file <- download_data('billing19.proteingroups.txt')
+subgroups <- c('E00_STD', 'E01_STD', 'E02_STD', 'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
+object <- read_maxquant_proteingroups(
+            file      = file, 
+            subgroups = subgroups, 
+            fit       = 'limma', 
+            plot      = TRUE)
 ```
 
 The phosphosites can be read in a similar fashion:
 
 ```{r}
-object <- read_phosphosites(
-              file = download_data('billing19.phosphosites.txt'), 
-              proteinfile = download_data('billing19.proteingroups.txt'), 
-              select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
-                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'), 
-              pca = TRUE, fit = 'limma', plot = TRUE)
+phosphofile <- download_data('billing19.phosphosites.txt')
+proteinfile <- download_data('billing19.proteingroups.txt')
+subgroups <- c('E00_STD', 'E01_STD', 'E02_STD', 'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
+object <- read_maxquant_phosphosites(
+                phosphofile = phosphofile, 
+                proteinfile = proteinfile, 
+                subgroups   = subgroups, 
+                fit         = 'limma', 
+                plot        = TRUE)
 ```
 
 # Metabolon
@@ -184,9 +189,8 @@ object <- read_phosphosites(
 **Metabolon** delivers metabolomics results in the form of an **xlsx** file, with values of interest likely in the (second) **OrigScale** sheet. Features are laid out in rows, samples in columns, and additional feature/sample data are self-contained in the file. Metabolon data can be read/analyzed with the autonomics function `read_metabolon`, as illustrated below on the dataset of **Halama and and Atkin (2018)**, who investigates the effects of **hypoglycemia** on a number of subjects (**SUB**) at four different time points (**t0**, **t1**, **t2**, **t3**):
 
 ```{r, fig.width=7, fig.height=4, out.width="95%"}
-object <- read_metabolon(
-        file  = download_data('atkin18.metabolon.xlsx'),  subgroupvar = 'SET',
-        pca = TRUE, fit = 'limma', block = 'SUB', plot = TRUE)
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file = file, subgroupvar = 'SET', fit = 'limma', block = 'SUB', plot = TRUE)
 ```
 
 # Somascan
@@ -194,9 +198,8 @@ object <- read_metabolon(
 **Somascan** results are returned in a txt file with extension **.adat**. Features are laid out in columns and samples in rows. Rectangles with feature/sample data are also contained in the file. The autonomics function `read_somascan` reads/analyzes SOMAscan files, additionally filtering samples/features for quality and type. This is illustrated on the above described dataset from **Halama and and Atkin (2018)**, who investigated the effects of **hypoglycemia** on a number of subjects (**SUB**) at four different time points (**t0**, **t1**, **t2**, **t3**):
 
 ```{r}
-object <- read_somascan(
-            file = download_data('atkin18.somascan.adat'), 
-            pca = TRUE, fit = 'limma', block = 'Subject_ID', plot = TRUE)
+file <- download_data('atkin18.somascan.adat')
+object <- read_somascan(file = file, fit = 'limma', block = 'Subject_ID', plot = TRUE)
 ```
 
 <!--

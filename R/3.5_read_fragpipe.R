@@ -81,8 +81,9 @@ stri_any_regex <- function(str, pattern){
 #' @examples
 #' file <- download_data('multiorganism.combined_protein.tsv')
 #' object <- read_fragpipe(file = file)
-#' assayNames(object)
+#' object
 #' fdt(object)
+#' sdt(object)
 #' @export
 read_fragpipe <- function(
     dir = getwd(), 
