@@ -23,6 +23,8 @@ plot_heatmap(
 )
 }
 \arguments{
+\item{...}{used to maintain deprecated functionality}
+
 \item{object}{SummarizedExperiment}
 
 \item{assay}{string: one of assayNames(object)}

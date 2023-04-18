@@ -81,6 +81,7 @@ A General Linear Model contains:                                                
     code_helmert(   levels(x))
 
 # Code
+    require(magrittr)
     x \%<>\% code('treatment')
     x \%<>\% code('reference')
     x \%<>\% code('grandref')

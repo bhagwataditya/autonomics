@@ -24,6 +24,8 @@
 \item{quantity}{string}
 
 \item{verbose}{TRUE / FALSE}
+
+\item{proteinfile}{proteingroups file}
 }
 \value{
 data.table
