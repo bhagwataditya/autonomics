@@ -178,6 +178,7 @@ block_vars <- function(formula){
 #' @param verbose          TRUE or FALSE
 #' @examples
 #' # Read
+#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     cols <- c('sample_id', 'subgroup', 'SUB', 'SET', 'AGE', 'SEX', 'T2D')
