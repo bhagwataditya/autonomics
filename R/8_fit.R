@@ -679,12 +679,12 @@ is_sig <- function(
     res <-  mapply(.is_sig, fit, 
                     MoreArgs = list(object = object, contrast = contrast, quantity = quantity),
                     SIMPLIFY = FALSE)
-    add_model_names <- function(isfdrmat, model){
-                        colnames(isfdrmat) %<>% paste(model, sep='.')
-                        isfdrmat }
-    if (length(fit)>1){
-        res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
-    }
+    #add_model_names <- function(isfdrmat, model){
+    #                    colnames(isfdrmat) %<>% paste(model, sep='.')
+    #                    isfdrmat }
+    #if (length(fit)>1){
+    #    res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
+    #}
     res %<>% do.call(cbind, .)
     res
 }

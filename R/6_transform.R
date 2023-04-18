@@ -16,9 +16,9 @@
 #' @examples
 #' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot = FALSE)
+#' object <- read_somascan(file)
 #' object %<>% filter_samples(subgroup %in% c('t1', 't2'), verbose = TRUE)
-#' rm_singleton_samples(object, svar = 'Subject_ID')
+#' rm_singleton_samples(object, subgroupvar = 'Subject_ID')
 #' rm_unmatched_samples(object, subgroupvar = 'subgroup', block = 'Subject_ID')
 #' @export
 rm_unmatched_samples <- function(

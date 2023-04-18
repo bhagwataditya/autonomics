@@ -23,7 +23,7 @@ Read olink file
 }
 \examples{
 # Example data
-    nnpxdt   <- data.table(OlinkAnalyze::npx_data1)[, c(1:11, 17)]
+    npxdt   <- data.table(OlinkAnalyze::npx_data1)[, c(1:11, 17)]
     sampledt <- data.table(OlinkAnalyze::npx_data1)[, c(1, 12:15)]
     sampledt \%<>\% extract(!grepl('CONTROL', SampleID))
     sampledt \%<>\% unique()

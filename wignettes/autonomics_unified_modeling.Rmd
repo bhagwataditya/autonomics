@@ -92,21 +92,18 @@ object %<>% fit_limma(~0+SET, contrasts = c('t1-t0', 't2-t1', 't3-t2'), block = 
 An alternative approach to compute statistics of interest is to use alternative coding systems for contrast variables. This system is less intuitive than limma's flexible contrast interface, but it is shared by all modeling engines (limma's approach is limited to limma only). In this system one specifies which coding system to use for a factor variable. The default is to use treatment coding (where the different model coefficients express baseline differences), but an alternative would be to use backward difference coding.
 
 ```{r}
-object <- read_metabolon(file, impute=TRUE, plot=FALSE)
-object$SET %<>% factor(); object$SUB %<>% factor()
-object %<>% fit_limma(formula=~SET, block = 'SUB')  # baseline diffs
-stats::contrasts(object$SET) <- MASS::contr.sdif(levels(object$SET))
-object %<>% fit_limma(formula=~SET, block = 'SUB')  # backward diffs
+object <- read_metabolon(file)
+object %<>% fit_limma(~SET, block = 'SUB')  # baseline diffs
+object %<>% fit_limma(~SET, block = 'SUB', coding = 'treatment')  # backward diffs
 ```
 
 # A non-parameteric alternative: **wilcoxon**
 
 ```{r}
-object <- read_metabolon(file, impute=TRUE, plot=FALSE)
-object$SET %<>% factor(); object$SUB %<>% factor()
-object %<>% fit_limma(formula=~0+SET, contrastdefs = c('t3-t0'), block = 'SUB')
-object %<>% fit_wilcoxon(subgroupvar='SET', contrastdefs = c('t3-t0'), block = 'SUB')
-plot_venn(testmat(object, coef = 't3-t0'))
+object <- read_metabolon(file)
+object %<>% fit_limma(   ~0+SET, contrasts = c('t3-t0'), block = 'SUB')
+object %<>% fit_wilcoxon(~0+SET, contrasts = c('t3-t0'), block = 'SUB')
+plot_contrast_venn(is_sig(object, contrast = 't3-t0', fit = fits(object)))
 ```
 
 

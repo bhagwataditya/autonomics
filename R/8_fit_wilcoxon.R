@@ -101,9 +101,9 @@ fit_wilcoxon <- function(
     assert_is_valid_sumexp(object)
     assert_is_formula(formula)
     assert_scalar_subset(all.vars(formula), svars(object))
+    subgroupvar <- all_vars(formula)[1]
     if (is.null(contrasts)){
         if (coding == 'treatment')  coding <- 'reference' # passed on from the readers - wilcox is the only one where that doesnt work
-        subgroupvar <- all_vars(formula)[1]
         contrasts <- colnames(create_design(object, formula = formula, drop = TRUE, coding = coding))[-1]
     }
     assert_is_character(contrasts)

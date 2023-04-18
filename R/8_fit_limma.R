@@ -663,9 +663,10 @@ varlevels_dont_clash.SummarizedExperiment <- function(
                 block = block, correlation = metadata(object)$dupcor,
                 weights = weightmat))
 # Effect
-    if (is.null(contrasts)){  limmafit %<>% contrasts.fit(coefficients = coefs) 
-    } else {                  limmafit %<>% contrasts.fit(contrasts = makeContrasts(
-                                                  contrasts = contrasts, levels = design)) }
+    if (is.null(contrasts)){  
+                limmafit %<>% contrasts.fit(coefficients = coefs) 
+    } else {    limmafit %<>% contrasts.fit(contrasts = makeContrasts(
+                                    contrasts = contrasts, levels = design)) }
     limmadt <- data.table(feature_id = rownames(limmafit))
     if ('effect' %in% statvars){
         dt0 <- data.table(limmafit$coefficients)
