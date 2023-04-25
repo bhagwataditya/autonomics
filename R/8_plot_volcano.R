@@ -241,7 +241,7 @@ plot_volcano <- function(
     shape         = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
     size          = NULL,
     alpha         = NULL,
-    label         = if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
+    label         = 'feature_id', #if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
     max.overlaps  = 10,
     features      = NULL,
     nrow          = length(fit),
