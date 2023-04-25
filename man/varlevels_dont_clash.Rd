@@ -27,8 +27,8 @@ Are varlevels unique
 }
 \examples{
 require(magrittr)
-object1 <- expand.grid(genome = c('WT', 'MUT'), treat = c('control', 'drug'))
-object2 <- expand.grid(mutant = c('YES', 'NO'), treated = c('YES', 'NO'))
+object1 <- data.table(expand.grid(genome = c('WT', 'MUT'), treat = c('control', 'drug')))
+object2 <- data.table(expand.grid(mutant = c('YES', 'NO'), treated = c('YES', 'NO')))
 varlevels_dont_clash(object1)
 varlevels_dont_clash(object2)
 }

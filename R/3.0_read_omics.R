@@ -734,25 +734,25 @@ read_genex <- function(file){
 #' # RNA
 #'     require(magrittr)
 #'     rnafile <- download_data('billing19.rnacounts.txt')
-#'     rna <- read_rnaseq_counts(rnafile, plot = FALSE)
+#'     rna <- read_rnaseq_counts(rnafile)
+#'     fdt(rna)$gene <- fdt(rna)$gene_name
 #' # PRO/FOS
-#'     fdt(rna)$feature_name <- fdt(rna)$gene_name
-#'     proteinfile <- download_data('billing19.proteingroups.txt')
-#'     phosphofile <- download_data('billing19.phosphosites.txt')
+#'     profile <- download_data('billing19.proteingroups.txt')
+#'     fosfile <- download_data('billing19.phosphosites.txt')
 #'     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-#'     pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
-#'     fos <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
+#'     pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
+#'     fos <- read_maxquant_phosphosites(phosphofile = fosfile, proteinfile = profile, subgroups = subgroups)
 #'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #' # sumexplist to longdt
 #'     sumexplist <- list(rna = rna, pro = pro, fos = fos)
 #'     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
-#'     dt %<>% extract(feature_name %in% c('TNMD', 'TSPAN6'))
+#'     dt %<>% extract(gene %in% c('TNMD', 'TSPAN6'))
 #' @export
 sumexplist_to_long_dt <- function(
     sumexplist, 
-    svars = intersect('subgroup',     autonomics::svars(sumexplist[[1]])),
-    fvars = intersect('feature_name', autonomics::fvars(sumexplist[[1]])), 
+    svars = intersect('subgroup',  autonomics::svars(sumexplist[[1]])),
+    fvars = intersect('gene',      autonomics::fvars(sumexplist[[1]])), 
     setvarname = 'set'
 ){
     assert_are_disjoint_sets(c(setvarname, 'xxxxx'), svars)
