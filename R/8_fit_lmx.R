@@ -56,7 +56,7 @@
                     data      = sd,
                     na.action = stats::na.omit, 
                     control   = ctrl)
-    suppressWarnings(fitres %<>% nlme:::summary.lme())  # only 2 replicates in a group -> df = 0 -> p = NaN -> warning
+    suppressWarnings(fitres %<>% summary())  # only 2 replicates in a group -> df = 0 -> p = NaN -> warning
     fitres %<>% stats::coefficients()
     fitres %<>% extract(, c('Value', 'p-value', 't-value'), drop = FALSE)
     colnames(fitres) %<>% stri_replace_first_fixed('Value', 'effect')
