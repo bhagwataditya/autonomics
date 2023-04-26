@@ -26,7 +26,7 @@
     cbind(pvalues, tvalues, effects, stderrs, F = fval, F.p = f.p )
 }
 
-.lm <- function(sd, formula, block, weights){
+.lm <- function(sd, formula, block, weights, optim = NULL){
     formula <- as.formula(formula)  # stackoverflow.com/questions/51142338
     environment(formula) <- environment()
     fitres <- stats::coefficients(summary(lm(
@@ -48,12 +48,14 @@
     data.table(fitmat)
 }
 
-.lme <- function(sd, formula, block, weights){
+.lme <- function(sd, formula, block, weights, opt = 'optim'){
+    ctrl <- nlme::lmeControl(opt = opt)  # https://stats.stackexchange.com/a/40664
     fitres <- nlme::lme(
                     fixed     = formula, 
                     random    = block, 
                     data      = sd,
-                    na.action = stats::na.omit)
+                    na.action = stats::na.omit, 
+                    control   = ctrl)
     suppressWarnings(fitres %<>% nlme:::summary.lme())  # only 2 replicates in a group -> df = 0 -> p = NaN -> warning
     fitres %<>% stats::coefficients()
     fitres %<>% extract(, c('Value', 'p-value', 't-value'), drop = FALSE)
@@ -69,7 +71,7 @@
     data.table(fitmat)
 }
 
-.lmer <- function(sd, formula, block, weights){
+.lmer <- function(sd, formula, block, weights, optim = NULL){
     fitres <- lme4::lmer(
         formula   = formula,
         data      = sd,
@@ -293,6 +295,7 @@ filter_all_slevels <- function(object, svar, verbose = TRUE){
 #' @param coefs        NULL or stringvector
 #' @param contrasts    unused. only to allow generic get(fitfun)(contrasts)
 #' @param block        NULL or svar
+#' @param optim        optimizer used in fit_lme: 'optim' (more robust) or 'nlminb'
 #' @param weightvar    NULL or svar
 #' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
 #' @param verbose      TRUE or FALSE
@@ -317,6 +320,7 @@ fit_lmx <- function(
     coding    = 'treatment',
     coefs     = colnames(create_design(object, formula = formula, drop = drop, coding = coding)), 
     block     = NULL, 
+    opt       = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p', 'fdr'),
     verbose   = TRUE, 
@@ -379,7 +383,7 @@ fit_lmx <- function(
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
     formula %<>% addlhs()
-    fitres <- dt[, fitmethod(.SD, formula = formula, block = block, weights = get(weightvar)), by = 'feature_id' ]
+    fitres <- dt[, fitmethod(.SD, formula = formula, block = block, weights = get(weightvar), opt = opt), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     if (drop)  for (var in all.vars(formula))   names(fitres) %<>% stri_replace_first_fixed(var, '')
     pattern1 <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
@@ -434,6 +438,7 @@ fit_lme <- function(
     coding    = 'treatment',
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    opt       = 'optim',
     statvars  = c('effect', 'p', 'fdr'),
     coefs     = NULL, 
     contrasts = NULL,
@@ -450,7 +455,8 @@ fit_lme <- function(
         object,                      fit          = 'lme', 
         formula      = formula,      drop         = drop,
         coding       = coding,       block        = block, 
-        weightvar    = weightvar,    coefs        = coefs, 
+        weightvar    = weightvar,    opt          = opt,
+        coefs        = coefs, 
         verbose      = verbose,      plot         = plot)
 }
 

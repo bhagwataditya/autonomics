@@ -16,6 +16,7 @@ fit_lmx(
   coefs = colnames(create_design(object, formula = formula, drop = drop, coding =
     coding)),
   block = NULL,
+  opt = "optim",
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "fdr"),
   verbose = TRUE,
@@ -43,6 +44,7 @@ fit_lme(
   coding = "treatment",
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
+  opt = "optim",
   statvars = c("effect", "p", "fdr"),
   coefs = NULL,
   contrasts = NULL,
@@ -89,6 +91,8 @@ fit_lmer(
 \item{plot}{TRUE or FALSE}
 
 \item{contrasts}{unused. only to allow generic get(fitfun)(contrasts)}
+
+\item{optim}{optimizer used in fit_lme: 'optim' (more robust) or 'nlminb'}
 }
 \value{
 SummarizedExperiment
