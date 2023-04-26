@@ -361,15 +361,14 @@ fit_lmx <- function(
                 if (verbose)  cmessage('\t\t\tRetain %d/%d features: 2+ obs per subgroup', length(datarich_features), nrow(obj))
                 dt %<>% extract(feature_id %in% datarich_features) #obj %<>% rm_consistent_nondetects(formula)  
             }
+        if (fit %in% c('lme', 'lmer')){
         # Rm blocks which lack an across-block level for all features
         # Example: C01 in atkin18.somascan (misses t1)
         # This is asking for problems: nlminb problem (convergence error code = 1')
-        if (fit %in% c('lme', 'lmer')){  
+            assert_is_not_null(block)
             full_blocks <- sdt(obj)[, .N, by = block][N==max(N)][[block]]
             dt %<>% extract(dt[[block]] %in% full_blocks)
-        }
         # Feature : at least two connected blocks
-        if (fit %in% c('lme', 'lmer')){  
             n0 <- length(unique(dt$feature_id))
             connected_features <- dt[, .N, by = c('feature_id', block)]                  # n per feature per block
             connected_features %<>% extract(, .(N = sum(N==max(N))), by = 'feature_id')  # n completeblocks per feature 
@@ -418,7 +417,7 @@ fit_lm <- function(
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
     coding    = 'treatment',
-    block     = NULL, 
+    block, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p', 'fdr'),
     coefs     = NULL, 
@@ -444,7 +443,7 @@ fit_lme <- function(
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
     coding    = 'treatment',
-    block     = NULL, 
+    block, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     opt       = 'optim',
     statvars  = c('effect', 'p', 'fdr'),
