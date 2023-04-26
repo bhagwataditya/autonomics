@@ -101,3 +101,5 @@
 #' @importFrom utils         installed.packages    unzip
 NULL
 
+utils::globalVariables('patterns')  # data.table constructs
+utils::globalVariables('.')         # magrittr   constructs

@@ -1660,7 +1660,7 @@ plot_heatmap <- function(
     setnames(dt, 'value', 'z-score')
     vlines <- 0.5 + c(0, cumsum(table(object[[group]])))
     if (!is.null(coef)){
-        hlines <- 0.5 + c(0, sum(effectmat(object, fit = fit, coef = coef)[, 1] < 0), nrow(object))
+        hlines <- 0.5 + c(0, sum(effectmat(object, fit = fit, coefs = coef)[, 1] < 0), nrow(object))
     }
 # Plot
     p <- ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +

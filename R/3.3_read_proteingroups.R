@@ -1141,7 +1141,6 @@ demultiplex <- function(x, verbose = FALSE){
     y
 }
 
-utils::globalVariables('.')
 .demultiplex <- function(y){
     y0 <- y
     channel <- split_extract_fixed(y, '{', 2) %>% substr(1, nchar(.)-1)
