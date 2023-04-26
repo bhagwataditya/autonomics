@@ -120,7 +120,7 @@ download_tcga_example <- function(){
     ah <- AnnotationHub::AnnotationHub()
     # AnnotationHub::query(ah, 'Homo sapiens', 'Ensembl', 'hg38')
     ensdb <- ah[['AH109336']]
-    genesizedt <- ensembldb::lengthOf(ensdb, filter = ensembldb::GeneIdFilter(fdt(rna)$ensg))
+    genesizedt <- ensembldb::lengthOf(ensdb, filter = ensembldb::GeneidFilter(fdt(rna)$ensg))
     genesizedt <- data.table(ensg = names(genesizedt), genesize = genesizedt)
     rna %<>% merge_fdt(genesizedt, by.x = 'ensg', by.y = 'ensg')
     rna %<>% filter_features(!is.na(genesize))
