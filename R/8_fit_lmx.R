@@ -197,12 +197,20 @@ block_vars <- function(formula){
 #'     object$SUBSET[  object$SET == 't2'] <- 'b'
 #'     object$SUBSET[  object$SET == 't3'] <- 'b'
 #' # Extract
-#'     extract_connected_features(object, formula = ~ SET,                     blockvars = 'SUB')
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = 'SUB')
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = 'SUB')
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = c('SUB', 'SEX'))
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + AGE, blockvars = c('SUB', 'SEX'))
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + T2D, blockvars = c('SUB', 'SEX'))
+#'     extract_connected_features(object, formula = ~ SET, 
+#'                                      blockvars = 'SUB')
+#'
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
+#'                                      blockvars = 'SUB')
+#'
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
+#'                                      blockvars = c('SUB', 'SEX'))
+#'
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + AGE, 
+#'                                      blockvars = c('SUB', 'SEX'))
+#'
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + T2D, 
+#'                                      blockvars = c('SUB', 'SEX'))
 #' @export
 extract_connected_features <- function(
     object, formula, blockvars, nconnectedblocks = 2, verbose = TRUE
@@ -349,8 +357,8 @@ fit_lmx <- function(
             dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), block), assay = assayNames(obj)[1])
             dt %<>% extract(!is.na(value))
             datarich_features <- dt[, .(N = .N), by = c('feature_id', all.vars(formula))][, .(N = min(N)), by = 'feature_id'][N>=3]$feature_id
-            if (verbose & length(datarich_features) < nrow(obj)){
-                cmessage('\t\t\tRetain %d/%d features: 2+ obs per subgroup', length(datarich_features), nrow(obj))
+            if (length(datarich_features) < nrow(obj)){
+                if (verbose)  cmessage('\t\t\tRetain %d/%d features: 2+ obs per subgroup', length(datarich_features), nrow(obj))
                 dt %<>% extract(feature_id %in% datarich_features) #obj %<>% rm_consistent_nondetects(formula)  
             }
         # Rm blocks which lack an across-block level for all features
@@ -367,9 +375,9 @@ fit_lmx <- function(
             connected_features %<>% extract(, .(N = sum(N==max(N))), by = 'feature_id')  # n completeblocks per feature 
             connected_features %<>% extract(N>1)                                         # two completeblocks per feature
             connected_features %<>% extract(, feature_id)
-            if (verbose & length(connected_features) < length(unique(dt$feature_id))){
-                cmessage('\t\t\tRetain %d/%d features: 2+ fully connected blocks', 
-                         length(connected_features), length(unique(dt$feature_id)))
+            if (length(connected_features) < length(unique(dt$feature_id))){
+                if (verbose)  cmessage('\t\t\tRetain %d/%d features: 2+ fully connected blocks', 
+                                        length(connected_features), length(unique(dt$feature_id)))
                 dt %<>% extract(feature_id %in% connected_features)
             }
             # This earlier approach fails in ~ subgroup / T2D

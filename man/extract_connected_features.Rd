@@ -45,10 +45,18 @@ Extract features for which connected factor levels are measured in at least two 
     object$SUBSET[  object$SET == 't2'] <- 'b'
     object$SUBSET[  object$SET == 't3'] <- 'b'
 # Extract
-    extract_connected_features(object, formula = ~ SET,                     blockvars = 'SUB')
-    extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = 'SUB')
-    extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = 'SUB')
-    extract_connected_features(object, formula = ~ SUPERSET + SUBSET,       blockvars = c('SUB', 'SEX'))
-    extract_connected_features(object, formula = ~ SUPERSET + SUBSET + AGE, blockvars = c('SUB', 'SEX'))
-    extract_connected_features(object, formula = ~ SUPERSET + SUBSET + T2D, blockvars = c('SUB', 'SEX'))
+    extract_connected_features(object, formula = ~ SET, 
+                                     blockvars = 'SUB')
+
+    extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
+                                     blockvars = 'SUB')
+
+    extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
+                                     blockvars = c('SUB', 'SEX'))
+
+    extract_connected_features(object, formula = ~ SUPERSET + SUBSET + AGE, 
+                                     blockvars = c('SUB', 'SEX'))
+
+    extract_connected_features(object, formula = ~ SUPERSET + SUBSET + T2D, 
+                                     blockvars = c('SUB', 'SEX'))
 }
