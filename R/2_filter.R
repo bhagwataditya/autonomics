@@ -152,36 +152,110 @@ filter_exprs_replicated_in_some_subgroup <- function(
     object
 }
 
-#' Filter for replicated features
-#' @param object     SummarizedExperiment
-#' @param comparator string
-#' @param lod        number: limit of detection
-#' @param n          number: number of replicates above lod
-#' @param verbose    TRUE/FALSE
-#' @return  SummarizedExperiment
+
+#' Keep replicated features
+#' 
+#' Keep features replicated for each slevel
+#' 
+#' @param object   SummarizedExperiment
+#' @param formula  formula
+#' @param block    svar
+#' @param n        min replications required
+#' @param verbose  TRUE or FALSE
 #' @examples
 #' require(magrittr)
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE)
-#' object %<>% filter_replicated()
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% keep_replicated_features()
+#' object %<>% keep_replicated_features(~ subgroup)
 #' @export
-filter_replicated  <- function(
-    object, comparator = `>`, lod=0, n=2, verbose=TRUE
+keep_replicated_features <- function(
+    object, formula = ~ 1, n = 3, verbose = TRUE
 ){
-    assert_is_all_of(object, "SummarizedExperiment")
-    assert_is_function(comparator)
-    assert_is_a_number(lod)
-    assert_is_a_number(n)
-
-    nreplicates <- rowSums(comparator(values(object), lod), na.rm=TRUE)
-    idx <- nreplicates >= n
-    if (verbose)  if (!any(idx))  message(
-        '\t\t\tRetain ', sum(idx), '/', length(idx), 
-        'features replicated in at least ', n, ' samples')
+# Drop NA values
+    dt <- sumexp_to_longdt(object, svars = c(all.vars(formula)), assay = assayNames(object)[1])
+    n0 <- length(unique(dt$feature_id))
+    dt %<>% extract(!is.na(value))
+    dt %<>% extract(, .SD[.N>=n], by = 'feature_id')
+    n1 <- length(unique(dt$feature_id))
+    if (n1<n0 & verbose)  cmessage('\t\tKeep %d/%d features with %d+ values', n1, n0, n)
+# Feature covers each slevel
+    for (var in all.vars(formula)){
+        # must span all slevels
+        nlevels <- length(unique(dt[[var]]))
+        n0 <- length(unique(dt$feature_id))
+        dt %<>% extract(, .SD[length(unique(get(var))) == nlevels], by = 'feature_id')
+        n1 <- length(unique(dt$feature_id))
+        if (n1<n0 & verbose)  cmessage('\t\tKeep %d/%d features spanning all %s levels', n1, n0, var)
+        
+        # must have n+ obs per slevel
+        n0 <- length(unique(dt$feature_id))
+        dt %<>% extract(, .SD[.N>=n], by = c('feature_id', var))
+        n1 <- length(unique(dt$feature_id))
+        if (n1<n0 & verbose)  cmessage('\t\tKeep %d/%d features with %d+ values per %s', n1, n0, n, var)
+    }
+# Return
+    idx <- fnames(object) %in% as.character(unique(dt$feature_id))
     object[idx, ]
 }
 
 
+#' Keep fully connected blocks
+#' @param object  SummarizedExperiment
+#' @param block   svar
+#' @param verbose TRUE or FALSE
+#' @examples
+#' require(magrittr)
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% keep_connected_blocks(  block = 'SUB')
+#' @export
+keep_connected_blocks <- function(object, block, verbose = TRUE){
+    if (is.null(block))  return(object)
+    all_blocks <- unique(object[[block]])
+    full_blocks <- sdt(object)[, .N, by = block][N==max(N)][[block]]
+    idx <- object[[block]] %in% full_blocks
+    if (sum(idx) < length(idx)){
+        if (verbose)  cmessage('\t\tKeep %d/%d fully connected blocks with %d/%d samples', 
+                         length(full_blocks), length(all_blocks), sum(idx), length(idx))
+        object[, idx]
+    }
+}
+
+
+#' Keep features with n+ connected blocks
+#' @param object   SummarizedExperiment
+#' @param block    svar
+#' @param n        number 
+#' @param verbose  TRUE or FALSE
+#' @examples
+#' require(magrittr)
+#' file <- download_data('atkin18.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% keep_connected_blocks(  block = 'SUB')
+#' object %<>% keep_connected_features(block = 'SUB')
+#' @export
+keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
+    if (is.null(block))  return(object)
+    dt <- sumexp_to_longdt(object, svars = block)
+    nperblock <- dt[, .N, by = c('feature_id', block)][, max(N)]
+    n0 <- length(unique(dt$feature_id))
+    
+    idx  <- dt[, .N, by = c('feature_id', block)]                    #   nobs per feature per block
+    idx %<>% extract(, .(N = sum(N==nperblock)), by = 'feature_id')  #   n completeblocks per feature 
+    idx %<>% extract(N>=n)                                           #   2 completeblocks per feature
+    idx %<>% extract(, feature_id)
+    
+    if (length(idx) < length(unique(dt$feature_id))){
+        if (verbose)  cmessage('\t\t\tRetain %d/%d features: 2+ fully connected blocks', 
+                                length(idx), length(unique(dt$feature_id)))
+        object %<>% extract(feature_id %in% idx, )
+    }
+    object
+    # This earlier approach fails in ~ subgroup / T2D
+    # Because a subject cannot be both diabetic AND control
+    # obj %<>% extract_connected_features(formula = formula, blockvars = block, verbose = verbose) # doesnt work for complex models
+}
 
 
 #=======================

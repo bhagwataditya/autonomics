@@ -267,32 +267,6 @@ extract_connected_features <- function(
 }
 
 
-#' Filter for features with all slevels
-#' @param object  SummarizedExperiment
-#' @param svar    svar
-#' @param verbose TRUE or FALSE
-#' @return SummarizedExperiment
-#' @examples 
-#' require(magrittr)
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' object %<>% filter_all_slevels('subgroup')
-#' @export
-filter_all_slevels <- function(object, svar, verbose = TRUE){
-    alllevels <- nvalues <- value <- NULL
-    tmpdt <- sumexp_to_longdt(object, svars = svar)
-    tmpdt <- tmpdt[, .(nvalues = sum(!is.na(value))), by = c('feature_id', svar)]
-    tmpdt <- tmpdt[, .(alllevels = all(nvalues>0)), by = 'feature_id']
-    tmpdt %<>% extract(alllevels == TRUE)
-    idx <- as.character(tmpdt$feature_id)
-    if (verbose & length(idx)<nrow(object)){
-        cmessage('\t\t\tRetain %d/%d features with all `%s` levels', length(idx), nrow(object), svar)
-        object %<>% extract(idx, )
-    }
-    object
-}
-
-
 #' Fit lm, lme, or lmer
 #' @param object       SummarizedExpriment
 #' @param fit         'lm', 'lme', or 'lmer'
@@ -326,7 +300,7 @@ fit_lmx <- function(
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
     coding    = 'treatment',
-    coefs     = colnames(create_design(object, formula = formula, drop = drop, coding = coding)), 
+    coefs     = colnames(create_design(object, formula = formula, drop = drop, coding = coding, verbose = FALSE)), 
     block     = NULL, 
     opt       = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
@@ -346,51 +320,21 @@ fit_lmx <- function(
         message('\t\t\tweights = assays(object)$', weightvar) 
     }
     N <- Subject_ID <- value <- V1 <- NULL
-# Contrast Code Factors
-    obj <- object
-    sdt(obj) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
 # Filter / Customize
+    obj <- object
     if (verbose)  cmessage('\t\tFilter features')
-        # Feature: cover each slevel
-            for (var in all.vars(formula))  obj %<>% filter_all_slevels(var, verbose = verbose)
-        # Feature: 2+ obs per level
-            dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), block), assay = assayNames(obj)[1])
-            dt %<>% extract(!is.na(value))
-            datarich_features <- dt[, .(N = .N), by = c('feature_id', all.vars(formula))][, .(N = min(N)), by = 'feature_id'][N>=3]$feature_id
-            if (length(datarich_features) < nrow(obj)){
-                if (verbose)  cmessage('\t\t\tRetain %d/%d features: 2+ obs per subgroup', length(datarich_features), nrow(obj))
-                dt %<>% extract(feature_id %in% datarich_features) #obj %<>% rm_consistent_nondetects(formula)  
-            }
-        if (fit %in% c('lme', 'lmer')){
-        # Rm blocks which lack an across-block level for all features
-        # Example: C01 in atkin18.somascan (misses t1)
-        # This is asking for problems: nlminb problem (convergence error code = 1')
-            assert_is_not_null(block)
-            full_blocks <- sdt(obj)[, .N, by = block][N==max(N)][[block]]
-            dt %<>% extract(dt[[block]] %in% full_blocks)
-        # Feature : at least two connected blocks
-            n0 <- length(unique(dt$feature_id))
-            connected_features <- dt[, .N, by = c('feature_id', block)]                  # n per feature per block
-            connected_features %<>% extract(, .(N = sum(N==max(N))), by = 'feature_id')  # n completeblocks per feature 
-            connected_features %<>% extract(N>1)                                         # two completeblocks per feature
-            connected_features %<>% extract(, feature_id)
-            if (length(connected_features) < length(unique(dt$feature_id))){
-                if (verbose)  cmessage('\t\t\tRetain %d/%d features: 2+ fully connected blocks', 
-                                        length(connected_features), length(unique(dt$feature_id)))
-                dt %<>% extract(feature_id %in% connected_features)
-            }
-            # This earlier approach fails in ~ subgroup / T2D
-            # Because a subject cannot be both diabetic AND control
-            # obj %<>% extract_connected_features(formula = formula, blockvars = block, verbose = verbose) # doesnt work for complex models
-        }
+    obj %<>% keep_replicated_features(formula, verbose = verbose)
+    obj %<>% keep_connected_blocks(  block, verbose = verbose) # keep samples from fully connected blocks
+    obj %<>% keep_connected_features(block, verbose = verbose) # keep features with 2+ connected blocks
 # Fit
     if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose); blockvars <- names(block)
     } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block = block,   verbose = verbose); blockvars <- character(0)
     } else {                                                                                         blockvars <- block }
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
-    formula %<>% addlhs()
-    fitres <- dt[, fitmethod(.SD, formula = formula, block = block, weights = get(weightvar), opt = opt), by = 'feature_id' ]
+    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars))
+    lhsformula <- addlhs(formula)
+    fitres <- dt[, fitmethod(.SD, formula = lhsformula, block = block, weights = get(weightvar), opt = opt), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     if (drop)  for (var in all.vars(formula))   names(fitres) %<>% stri_replace_first_fixed(var, '')
     pattern1 <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
@@ -402,6 +346,7 @@ fit_lmx <- function(
     object %<>% reset_fit(fit)
     object %<>% merge_fit(fitres, fit = fit)
     formula %<>% droplhs() %<>% formula2str()
+    
     if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object), fit = fit, coefs = coefs))
     if (length(coefs) > 1)  coefs %<>% setdiff('Intercept')
@@ -417,7 +362,7 @@ fit_lm <- function(
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
     coding    = 'treatment',
-    block, 
+    block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p', 'fdr'),
     coefs     = NULL, 
@@ -425,6 +370,8 @@ fit_lm <- function(
     verbose   = TRUE, 
     plot      = FALSE
 ){
+    
+    sdt(object) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
     fit_lmx(
         object,                      fit          = 'lm', 
@@ -443,7 +390,7 @@ fit_lme <- function(
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
     coding    = 'treatment',
-    block, 
+    block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     opt       = 'optim',
     statvars  = c('effect', 'p', 'fdr'),
@@ -458,6 +405,7 @@ fit_lme <- function(
         message("BiocManager::install('nlme'). Then re-run.")
         return(object)   }
 # Fit
+    sdt(object) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
     fit_lmx(
         object,                      fit          = 'lme', 
         formula      = formula,      drop         = drop,
@@ -492,7 +440,7 @@ fit_lmer <- function(
         message("`BiocManager::install('lmerTest')`. Then re-run.")
         return(object) }
 # Fit
-    metadata(object)$lmer <- NULL
+    sdt(object) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
     fit_lmx(
         object,                    fit        = 'lmer', 
         formula    = formula,      drop       = drop,
