@@ -109,7 +109,8 @@ fit_wilcoxon <- function(
     assert_is_character(contrasts)
     if (!is.null(block))      assert_is_subset(block, svars(object))
     obj <- object
-    obj %<>% rm_consistent_nondetects(formula, verbose = verbose)
+    obj %<>% keep_replicated_features(formula, n = 1, verbose = verbose)
+    # connected block filtering not required, .wilcoxon doesnt break there
 # fit
     . <- NULL
     dt <- sumexp_to_longdt(obj, svars = c(subgroupvar, block))
@@ -131,7 +132,7 @@ fit_wilcoxon <- function(
         colnames(quantitymat) %<>% stri_replace_first_fixed(quantitydot, '')
         quantitymat }
 # Return
-    if (plot)  print(plot_volcano(fdt(object), fit = 'wilcoxon')) 
+    if (plot)  print(plot_volcano(object, fit = 'wilcoxon')) 
     if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object),'wilcoxon'))
     object
 }

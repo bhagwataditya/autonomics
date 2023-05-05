@@ -449,62 +449,37 @@ split_features <- function(object, by){
 #
 #=============================================================================
 
-is_complete_nondetect <- function(object) rowAlls(is.na(values(object)))
 
-is_consistent_nondetect <- function(object, by = 'subgroup'){
-    x <- split_samples(object, by = by)
-    y <- vapply(x, is_complete_nondetect, logical(nrow(object)))
-    if (nrow(object)==1)  any(y)  else rowAnys(y)
-}
-
-#' Rm consistent nondetects 
-#' @param object   SummarizedExperiment
-#' @param formula  formula
-#' @param verbose  TRUE or FALSE
-#' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' rm_consistent_nondetects(object, formula = ~ subgroup)
-#' @return SummarizedExperiment
-#' @export
-rm_consistent_nondetects <- function(object, formula, verbose = TRUE){
-# Assert
-    assert_is_valid_sumexp(object)
-    assert_is_formula(formula)
-    assert_is_a_bool(verbose)
-# Remove
-    for (var in all.vars(formula)){
-        idx <- !is_consistent_nondetect(object, by = var)
-        if (verbose & sum(idx) < length(idx)){
-            cmessage('\t\t\tRetain %d/%d features after removing consistent `%s` nondetects', 
-                sum(idx), length(idx), var)
-            object %<>% extract(idx, )
-        }
-    }
-# Return
-    object
-}
-
-has_consistent_nondetects <- function(object, by = 'subgroup'){
-    any(is_consistent_nondetect(object, by = by))
-}
+# all
+# any
+# fraction
+fraction <- function(x, frac)  sum(x) >= frac*length(x)
 
 
-#' Is systematic/random/full detect
+#' Is systematic/random/full NA
 #' @param object SummarizedExperiment
-#' @param by svar (string)
+#' @param by     svar (string)
+#' @param frac   fraction
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
-#' head(systematic_nas(object))  # missing in some subgroups, present in others
-#' head(random_nas(object))        # missing in some samples, independent of subgroup
-#' head(no_nas(object))             # missing in no samples
+#' head(systematic_nas(object))   # missing in some subgroups, present in others
+#' head(random_nas(object))       # missing in some samples, independent of subgroup
+#' head(no_nas(object))           # missing in no samples
 #' @export
-systematic_nas <- function(object, by = 'subgroup'){
-    . <- NULL
-    y <- split_samples(object, by)
-    y %<>% lapply(function(x) rowAlls(is.na(values(x))))
-    y %<>% Reduce("|", .)
+systematic_nas <- function(object, by = 'subgroup', frac = 0.5){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(by, svars(object))
+    assert_is_fraction(frac)
+# Call
+    nlevels <- length(unique(object[[by]]))
+    dt <- sumexp_to_longdt(object)
+    dt %<>% extract(, .(nalevel =      all( is.na(value)),
+                     valuelevel = fraction(!is.na(value), frac = frac)), by = c('feature_id', by) )
+    dt %<>% extract(, .SD[any(nalevel) & any(valuelevel)] , by = by)
+    y <- fnames(object) %in% as.character(dt[, feature_id])
+# Return
     y
 }
 
@@ -548,64 +523,6 @@ venn_detects <- function(object, by = 'subgroup'){
         full       = no_nas(        object))))
 }
 
-#=============================================================================
-#
-#                     impute_consistent_nas
-#
-#==============================================================================
-
-# @rdname impute_consistent_nas
-# @export
-#impute_systematic_nondetects <- function(...){
-#    .Deprecated('impute_consistent_nondetects')
-#    impute_consistent_nas(...)
-#}
-
-# Impute consistent nas
-# @param object    SummarizedExperiment
-# @param subgroup     subgroup svar
-# @param fun       imputation function
-# @param plot      TRUE or FALSE
-# @param verbose   TRUE or FALSE
-# @param ...       passed to `fun`
-# @return SummarizedExperiment
-# @examples
-# file <- download_data('fukuda20.proteingroups.txt')
-# object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
-# impute_consistent_nas(object)
-# @export
-#impute_consistent_nas <- function(object, subgroup = subgroup,
-#    fun = halfnormimpute, plot = TRUE, verbose = TRUE, ...
-#){
-# Process
-#    absent <- replicated <- consistent <- value <- NULL
-#    subgroup <- enquo(subgroup)
-#    groupvar <- as_name(subgroup)
-# Impute
-#    dt  <-  sumexp_to_longdt(object, svars = groupvar)
-#    dt[, absent     := all(is.na(value)),    by = c('feature_id', groupvar)]
-#    dt[, replicated := sum(!is.na(value)) >= max(2, .N/2), by = c('feature_id', groupvar)]
-#    dt[, consistent := any(absent) & any(replicated), by = 'feature_id']
-#    dt[, is_imputed := consistent & absent]
-#    dt[, value := fun(value, is_imputed, ...), by='feature_id']
-# Update object
-#    ff <- fnames(object)
-#    ss <- snames(object)
-#    values(object) <- dt2exprs(dt)[ff, ss]
-#    assays(object)$is_imputed <- dt2mat(data.table::dcast(
-#                    dt, feature_id ~ sample_id, value.var = 'is_imputed'))
-#    fdata(object)$imputed <- rowAnys(assays(object)$is_imputed)
-# Plot
-#    nrowimputed <- sum(rowAnys(is_imputed(object)))
-#    ncolimputed <- sum(colAnys(is_imputed(object)))
-#    if (verbose & nrowimputed>0)  message('\t\tImpute consistent nondetects ', 
-#        'for ', nrowimputed, '/', nrow(object), ' features ', 
-#        'in ',  ncolimputed, '/', ncol(object), ' samples')
-#    if (plot)    print(plot_sample_nas(object, subgroup = !!subgroup))
-# Return
-#    object
-#}
-
 
 #==============================================================================
 #
@@ -648,16 +565,6 @@ detect_order_features <- function(object, by){
     fdt(object)$natype %<>% factor(natypes)
     object %<>% extract(order(fdt(.)$natype), )
     object
-}
-
-
-detect_order_features_old <- function(object, by = 'subgroup'){
-    x <- object
-    values(x)[is_imputed(x)] <- NA
-    idx1 <- fnames(cluster_order_features(x[systematic_nas(x, by = by),]))
-    idx2 <- fnames(cluster_order_features(x[random_nas(    x, by = by),]))
-    idx3 <- fnames(cluster_order_features(x[no_nas(      x         ),]))
-    SummarizedExperiment::rbind(object[idx1,], object[idx2,], object[idx3,])
 }
 
 

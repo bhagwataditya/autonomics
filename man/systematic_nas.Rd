@@ -4,9 +4,9 @@
 \alias{systematic_nas}
 \alias{random_nas}
 \alias{no_nas}
-\title{Is systematic/random/full detect}
+\title{Is systematic/random/full NA}
 \usage{
-systematic_nas(object, by = "subgroup")
+systematic_nas(object, by = "subgroup", frac = 0.5)
 
 random_nas(object, by = "subgroup")
 
@@ -16,14 +16,16 @@ no_nas(object)
 \item{object}{SummarizedExperiment}
 
 \item{by}{svar (string)}
+
+\item{frac}{fraction}
 }
 \description{
-Is systematic/random/full detect
+Is systematic/random/full NA
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file)
-head(systematic_nas(object))  # missing in some subgroups, present in others
-head(random_nas(object))        # missing in some samples, independent of subgroup
-head(no_nas(object))             # missing in no samples
+head(systematic_nas(object))   # missing in some subgroups, present in others
+head(random_nas(object))       # missing in some samples, independent of subgroup
+head(no_nas(object))           # missing in no samples
 }
