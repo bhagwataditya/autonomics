@@ -213,25 +213,34 @@ make_volcano_dt <- function(
 #' @param xndown         x position of ndown labels
 #' @param xnup           x position of nup labels
 #' @param title          string or NULL
+#' @param use            logical(1) : use new implementation?
 #' @return ggplot object
 #' @examples
-#' require(magrittr)
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, impute = TRUE)
-#' object %<>% fit_limma()
-#' plot_volcano(object)
-#' plot_volcano(object, label = 'gene')
-#' plot_volcano(object, label = 'gene', size = 'log2maxlfq')
-#' plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
-#' plot_volcano(object, label = 'gene', features = c('hmbsb'))
+#' # Unicontrast, Multicontrast, Multimethod
+#'     require(magrittr)
+#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     object %<>% fit_limma()
+#'     object %<>% fit_lm()
+#'     plot_volcano(object, coefs = 't3', fit = 'limma')                   #   unicontrast
+#'     plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multicontrast
+#'     plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multicontrast, multimethod
+#' 
+#' # When nothing passes FDR
+#'     plot_volcano(object, coefs = 't3', fit = 'limma')
+#'     object %<>% extract(fdt(.)$`fdr~t3~limma` > 0.05, )
+#'     plot_volcano(object, coefs = 't3', fit = 'limma')
+#' 
+#' # Additional mappings
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     object <- read_maxquant_proteingroups(file, impute = TRUE)
+#'     object %<>% fit_limma()
+#'     plot_volcano(object)
+#'     plot_volcano(object, label = 'gene')
+#'     plot_volcano(object, label = 'gene', size = 'log2maxlfq')
+#'     plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
+#'     plot_volcano(object, label = 'gene', features = c('hmbsb'))
 #'
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' object %<>% fit_limma()
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'))
-#' object %<>% fit_lm()
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit = 'limma')
-#' plot_volcano(object, coefs = c('t1', 't2', 't3'), fit = 'lm')
 #' @export
 plot_volcano <- function(
     object,
@@ -250,7 +259,8 @@ plot_volcano <- function(
   # xsignificance = 0,
     xndown        = NULL,
     xnup          = NULL,
-    title         = NULL
+    title         = NULL, 
+    new           = TRUE
 ){
 # Assert
     assert_is_a_number(nrow)
@@ -282,13 +292,22 @@ plot_volcano <- function(
     dy <- 0.03*(max(plotdt$mlp) - min(plotdt$mlp))
     minn <- function(x) if (length(x)==0) return(Inf) else min(x, na.rm = TRUE) 
         # Avoid warning 'no non-missing arguments to min; returning Inf'
-    summarydt <- plotdt[, 
+    if (new){  summarydt <- plotdt[ ,
+        .( 
+            significance = c('p = 0.05',   'fdr = 0.05',             'bon = 0.05'), 
+            yintercept   = c( -log10(0.05), -log10(fdr2p(c(0.05, fdr))[1]),   -log10(0.05/(length(feature_id)+1))), # +1 because dummy feature is added
+            ndown        = c( sum(p <0.05 & effect < 0),  sum(fdr <0.05 & effect < 0),  sum(bon <0.05 & effect < 0)),
+            nup          = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))
+        ),
+        by = c('fit', 'coef')]
+    } else {  summarydt <- plotdt[,
         .(  significance = c('p = 0.05',                 'fdr = 0.05',                 'bon = 0.05'),
             yintercept   = c( minn(mlp[p<0.05]),          minn(mlp[fdr<0.05]),          minn(mlp[bon<0.05])),
             ndown        = c( sum(p <0.05 & effect < 0),  sum(fdr <0.05 & effect < 0),  sum(bon <0.05 & effect < 0)),
             nup          = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))),
         by = c('fit', 'coef')  ]
-    summarydt %<>% extract(!is.infinite(yintercept))
+        summarydt %<>% extract(!is.infinite(yintercept))
+    }
     g <- g + geom_hline(data = summarydt, mapping = aes(yintercept = yintercept, linetype = significance), color = 'gray30')
     g <- g + ggplot2::scale_linetype_manual(values = c(`p = 0.05` = 3, `fdr = 0.05` = 2, `bon = 0.05` = 1))
     do_geom_label <- function(mapping, label.size){  
@@ -394,17 +413,19 @@ map_fvalues <- function(
 #' fdr to p
 #' @param p pvalues
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file)
-#' object %<>% fit_limma()
-#' object %<>% extract(order(fdt(.)$`p~t3~limma`), )
-#' object %<>% extract(1:100, )
-#' fdt(object) %<>% extract(, 1)
-#' object %<>% fit_limma(coefs = 't3')
-#' fdt(object)$`fdr~t3~limma`
-#' fdr2p(fdt(object)$`fdr~t3~limma`)
-#' fdr2p(fdt(object)$`fdr~t3~limma`) - fdt(object)$`p~t3~limma`
-#' fdr2p(c(fdt(object)$`fdr~t3~limma`, 0.05))
+#' # Read/Fit
+#'    require(magrittr)
+#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    object <- read_metabolon(file)
+#'    object %<>% fit_limma()
+#'    object %<>% extract(order(fdt(.)$`p~t3~limma`), )
+#'    object %<>% extract(1:10, )
+#'    fdt(object) %<>% extract(, 1)
+#'    object %<>% fit_limma(coefs = 't3')
+#' # fdr2p
+#'    fdt(object)$`p~t3~limma`
+#'    fdt(object)$`p~t3~limma` %>% p.adjust(method = 'fdr')
+#'    fdt(object)$`p~t3~limma` %>% p.adjust(method = 'fdr') %>% fdr2p()
 #' @export
 fdr2p <- function(fdr){
     idx <- order(fdr)
@@ -412,11 +433,4 @@ fdr2p <- function(fdr){
     p[idx] <- fdr[idx]*seq_along(fdr[idx])/length(fdr[idx])
     p
 }
-
-
-
-
-
-
-
 

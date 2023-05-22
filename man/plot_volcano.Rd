@@ -20,7 +20,8 @@ plot_volcano(
   fdr = 0.05,
   xndown = NULL,
   xnup = NULL,
-  title = NULL
+  title = NULL,
+  new = TRUE
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ plot_volcano(
 \item{xnup}{x position of nup labels}
 
 \item{title}{string or NULL}
+
+\item{use}{logical(1) : use new implementation?}
 }
 \value{
 ggplot object
@@ -63,21 +66,29 @@ ggplot object
 Plot volcano
 }
 \examples{
-require(magrittr)
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, impute = TRUE)
-object \%<>\% fit_limma()
-plot_volcano(object)
-plot_volcano(object, label = 'gene')
-plot_volcano(object, label = 'gene', size = 'log2maxlfq')
-plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
-plot_volcano(object, label = 'gene', features = c('hmbsb'))
+# Unicontrast, Multicontrast, Multimethod
+    require(magrittr)
+    file <- download_data('atkin18.metabolon.xlsx')
+    object <- read_metabolon(file)
+    object \%<>\% fit_limma()
+    object \%<>\% fit_lm()
+    plot_volcano(object, coefs = 't3', fit = 'limma')                   #   unicontrast
+    plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multicontrast
+    plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multicontrast, multimethod
 
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file)
-object \%<>\% fit_limma()
-plot_volcano(object, coefs = c('t1', 't2', 't3'))
-object \%<>\% fit_lm()
-plot_volcano(object, coefs = c('t1', 't2', 't3'), fit = 'limma')
-plot_volcano(object, coefs = c('t1', 't2', 't3'), fit = 'lm')
+# When nothing passes FDR
+    plot_volcano(object, coefs = 't3', fit = 'limma')
+    object \%<>\% extract(fdt(.)$`fdr~t3~limma` > 0.05, )
+    plot_volcano(object, coefs = 't3', fit = 'limma')
+
+# Additional mappings
+    file <- download_data('fukuda20.proteingroups.txt')
+    object <- read_maxquant_proteingroups(file, impute = TRUE)
+    object \%<>\% fit_limma()
+    plot_volcano(object)
+    plot_volcano(object, label = 'gene')
+    plot_volcano(object, label = 'gene', size = 'log2maxlfq')
+    plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
+    plot_volcano(object, label = 'gene', features = c('hmbsb'))
+
 }
