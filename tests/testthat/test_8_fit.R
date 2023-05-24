@@ -75,7 +75,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         expect_s3_class(fitdt, 'data.table')
 
         # lmer
-        object %<>% fit_lmer(formula = ~ subgroup + T2D, block = 'SUB', coding = 'reference')
+        suppressWarnings(object %<>% fit_lmer(formula = ~ subgroup + T2D, block = 'SUB', coding = 'reference'))
         fitdt <- summarize_fit(fdt(object), fit = 'lmer')
         expect_s3_class(fitdt, 'data.table')
 

@@ -74,7 +74,6 @@ is_fixed_col_file <- function(file){
 #' # FROM FILE: extract_rectangle.character
 #' #=======================================
 #' # exprs
-#'    require(magrittr)
 #'    x <- download_data('halama18.metabolon.xlsx')
 #'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
 #'    extract(1:3, 1:3)
@@ -530,7 +529,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 #' sfile %<>% paste0('.samples.txt')
 #' dt <- data.table(sample_id = object$sample_id, 
 #'                  day = split_extract_fixed(object$subgroup, '_', 1))
-#' fwrite(dt, sfile)                 
+#' data.table::fwrite(dt, sfile)                 
 #' merge_sample_file(object, sfile)
 #'@export
 merge_sample_file <- function(
@@ -657,7 +656,6 @@ add_affy_fdata <- function(object){
 #' @param celfiles string vector: CEL file paths
 #' @return RangedSummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' url <- paste0('http://www.bioconductor.org/help/publications/2003/',
 #'                 'Chiaretti/chiaretti2/T33.tgz')
 #' localdir  <- file.path(tools::R_user_dir('autonomics', 'cache'), 'T33')
@@ -732,7 +730,6 @@ read_genex <- function(file){
 #' @return data.table
 #' @examples
 #' # RNA
-#'     require(magrittr)
 #'     rnafile <- download_data('billing19.rnacounts.txt')
 #'     rna <- read_rnaseq_counts(rnafile)
 #'     fdt(rna)$gene <- fdt(rna)$gene_name
@@ -741,15 +738,16 @@ read_genex <- function(file){
 #'     fosfile <- download_data('billing19.phosphosites.txt')
 #'     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
 #'     pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
-#'     fos <- read_maxquant_phosphosites(phosphofile = fosfile, proteinfile = profile, subgroups = subgroups)
+#'     fos <- read_maxquant_phosphosites(
+#'               phosphofile = fosfile, proteinfile = profile, subgroups = subgroups)
 #'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #' # sumexplist to longdt
 #'     sumexplist <- list(rna = rna, pro = pro, fos = fos)
-#'     dt <- sumexplist_to_long_dt(sumexplist, setvarname = 'platform')
+#'     dt <- sumexplist_to_longdt(sumexplist, setvarname = 'platform')
 #'     dt %<>% extract(gene %in% c('TNMD', 'TSPAN6'))
 #' @export
-sumexplist_to_long_dt <- function(
+sumexplist_to_longdt <- function(
     sumexplist, 
     svars = intersect('subgroup',  autonomics::svars(sumexplist[[1]])),
     fvars = intersect('gene',      autonomics::fvars(sumexplist[[1]])), 

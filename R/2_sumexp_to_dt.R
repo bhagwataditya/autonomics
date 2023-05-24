@@ -306,7 +306,6 @@ dt2sumexp  <- function(
 #' @param verbose       TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr) 
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' x <- values(read_metabolon(file))
 #' object <- matrix2sumexp(x)

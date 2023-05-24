@@ -27,7 +27,6 @@ matrix: -1 (downregulated), +1 (upregulatd), 0 (not fdr significant)
 Is significant?
 }
 \examples{
-require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file)
 object \%<>\% fit_lm()

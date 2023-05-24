@@ -1,3 +1,20 @@
+#' @importFrom magrittr %>%
+#' @export
+magrittr::`%>%`
+
+#' @importFrom magrittr %<>% 
+#' @export
+magrittr::`%<>%`
+
+#' @importFrom magrittr extract
+#' @export
+magrittr::extract
+
+#' @importFrom data.table data.table
+#' @export
+data.table::data.table
+
+
 #' @importFrom abind                  adrop
 #' @importFrom assertive.base         are_identical
 #' @importFrom assertive.base         assert_all_are_true   assert_any_are_true
@@ -45,7 +62,7 @@
 #' @importFrom codingMatrices         code_control  code_diff   code_deviation
 #' @importFrom codingMatrices         code_helmert  contr.diff
 #' @importFrom colorspace  sequential_hcl
-#' @importFrom data.table  as.data.table   copy  data.table  
+#' @importFrom data.table  as.data.table   copy
 #' @importFrom data.table  dcast  dcast.data.table
 #' @importFrom data.table  fread   fwrite  is.data.table
 #' @importFrom data.table  melt.data.table   merge.data.table   
@@ -63,8 +80,8 @@
 #' @importFrom graphics    abline   axis   box   image   layout   par
 #' @importFrom grid        grid.layout  grid.draw   grid.newpage
 #' @importFrom gridExtra   arrangeGrob   grid.arrange
-#' @importFrom magrittr    %>%   %<>%   add   and   equals
-#' @importFrom magrittr    divide_by   extract   extract2   is_in
+#' @importFrom magrittr    add   and   equals
+#' @importFrom magrittr    divide_by   extract2   is_in
 #' @importFrom magrittr    multiply_by   subtract
 #' @importFrom magrittr    set_colnames   set_names   set_rownames
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans
@@ -101,5 +118,7 @@
 #' @importFrom utils         installed.packages    unzip
 NULL
 
+
 utils::globalVariables('patterns')  # data.table constructs
 utils::globalVariables('.')         # magrittr   constructs
+utils::globalVariables('N')         # data.table constructs

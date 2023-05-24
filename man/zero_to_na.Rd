@@ -33,7 +33,6 @@ Updated matrix
 Change nondetect representation
 }
 \examples{
-require(magrittr)
 matrix(c(0, 7), nrow = 1)
 matrix(c(0, 7), nrow = 1)  \%>\% zero_to_na(verbose = TRUE)
 

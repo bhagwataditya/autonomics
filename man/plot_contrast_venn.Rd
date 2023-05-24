@@ -18,7 +18,6 @@ nothing returned
 Plot contrast venn
 }
 \examples{
-require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% fit_wilcoxon(~ subgroup, block = 'SUB')

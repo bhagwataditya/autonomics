@@ -19,7 +19,6 @@ keep_connected_features(object, block, n = 2, verbose = TRUE)
 Keep features with n+ connected blocks
 }
 \examples{
-require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% keep_connected_blocks(  block = 'SUB')

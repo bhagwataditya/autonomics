@@ -766,7 +766,6 @@ explicitly_compute_voom_weights <- function(
 #' @param plot         TRUE or FALSE : plot?
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- .read_rnaseq_counts(file)
 #' object$subgroup
@@ -1054,7 +1053,8 @@ read_rnaseq_bams <- function(
 #'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05')
 #'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
 #'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
-#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
+#'     object <- read_rnaseq_counts(
+#'                  file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
 #'     object <- read_rnaseq_counts(file, plot = TRUE)
 #'     
 #' # read_rnaseq_counts(tpm = TRUE)

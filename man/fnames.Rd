@@ -27,7 +27,6 @@ feature name vector (get) or updated object (set)
 Get/Set feature names
 }
 \examples{
-require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
 object <- read_maxquant_proteingroups(file)
 fnames(object) \%<>\% paste0('protein_', .)

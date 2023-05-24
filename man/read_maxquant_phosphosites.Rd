@@ -95,6 +95,8 @@ fastadt <- read_fastahdrs(fastafile)
 subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
 pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
-fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
-fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
+fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, 
+                                   subgroups = subgroups)
+fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, 
+                                   fastadt = fastadt, subgroups = subgroups)
 }

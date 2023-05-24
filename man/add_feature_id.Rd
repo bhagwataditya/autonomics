@@ -16,7 +16,6 @@ data.table
 Add feature_id
 }
 \examples{
-require(magrittr)
 file <- download_data('billing19.proteingroups.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
 prodt <- .read_maxquant_proteingroups(file = file)

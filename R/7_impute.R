@@ -10,7 +10,6 @@
 #' @param verbose   logical(1)
 #' @return Updated matrix
 #' @examples
-#' require(magrittr)
 #' matrix(c(0, 7), nrow = 1)
 #' matrix(c(0, 7), nrow = 1)  %>% zero_to_na(verbose = TRUE)
 #' 
@@ -142,7 +141,6 @@ na_to_string <- function(x){
 #'    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
 #'    impute(object, plot = TRUE)                                # sumexp
 #' # Complex Design
-#'    require(magrittr)
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    invisible(impute(values(object)[1:3, 1   ]))               # vector
@@ -472,6 +470,7 @@ systematic_nas <- function(object, by = 'subgroup', frac = 0.5){
     assert_is_valid_sumexp(object)
     assert_scalar_subset(by, svars(object))
     assert_is_fraction(frac)
+    value <- nalevel <- valuelevel <- NULL
 # Call
     nlevels <- length(unique(object[[by]]))
     dt <- sumexp_to_longdt(object, svars = by)
@@ -607,7 +606,6 @@ plot_summarized_detections <- function(...){
 #' @param ...          used to maintain deprecated functions
 #' @return ggplot object
 #' @examples
-#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, impute = FALSE)
 #' plot_subgroup_nas(object)

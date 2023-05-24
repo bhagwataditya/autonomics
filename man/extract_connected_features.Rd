@@ -28,7 +28,6 @@ Extract features for which connected factor levels are measured in at least two 
 }
 \examples{
 # Read
-    require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     cols <- c('sample_id', 'subgroup', 'SUB', 'SET', 'AGE', 'SEX', 'T2D')

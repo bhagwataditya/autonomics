@@ -25,7 +25,6 @@ hdlproteins <- function(){
 #' @param verbose TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples 
-#' require(magrittr)
 #' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% tag_hdlproteins()
@@ -128,7 +127,6 @@ save_opentargets_targets <- function(){
 #' @param verbose  TRUE or FALSE
 #' @return  SummarizedExperiment
 #' @examples 
-#' require(magrittr)
 #' file <- download_data('billing19.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% add_opentargets_by_uniprot()

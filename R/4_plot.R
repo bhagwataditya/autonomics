@@ -215,7 +215,6 @@ make_twofactor_colors <- function(
 #' @param theme       list with ggplot theme specifications
 #' @return ggplot object
 #' @examples
-#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% pca()
@@ -310,7 +309,6 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' @return  ggplot object
 #' @examples
 #' # Data
-#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
@@ -470,7 +468,6 @@ plot_feature_densities <- function(
 #'          \code{\link{plot_densities}}
 #' @examples
 #' # data
-#'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% extract(, order(.$subgroup))
@@ -843,7 +840,6 @@ order_on_effect <- function(
 #' @return SummarizedExperiment
 #' @examples
 #' # Read and Fit
-#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
@@ -1366,7 +1362,6 @@ default_geom <- function(object, x, block = NULL){
 #' @param theme       ggplot theme specifications
 #' @return ggplot object
 #' @examples
-#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma')
 #' idx <- order(fdata(object)$`p~t1~limma`)[1:9]
@@ -1472,7 +1467,6 @@ plot_venn <- function(x){
 #' @param colors NULL or colorvector
 #' @return nothing returned
 #' @examples
-#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% fit_wilcoxon(~ subgroup, block = 'SUB')
@@ -1520,7 +1514,6 @@ plot_matrix <- function(mat){
 #' @param coding 'treatment', 'reference', 'difference', 'sum', 'helmert'
 #' @return ggplot
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing19.proteingroups.txt')
 #' subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
 #' object <- read_maxquant_proteingroups(file, subgroups = subgroups)

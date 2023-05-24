@@ -65,7 +65,6 @@ Extract rectangle from omics file, data.table, or matrix
 # FROM FILE: extract_rectangle.character
 #=======================================
 # exprs
-   require(magrittr)
    x <- download_data('halama18.metabolon.xlsx')
    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) \%>\%
    extract(1:3, 1:3)

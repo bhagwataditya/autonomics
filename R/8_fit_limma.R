@@ -177,7 +177,6 @@ create_design.data.table <- function(
 #'     code_helmert(   levels(x))
 #' 
 #' # Code
-#'     require(magrittr)
 #'     x %<>% code('treatment')
 #'     x %<>% code('reference')
 #'     x %<>% code('grandref')
@@ -507,7 +506,6 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @return Updated SummarizedExperiment
 #' @examples
 #' # Read
-#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     
@@ -578,7 +576,7 @@ fit_limma <- function(
 #' @param ... required for s3 dispatch
 #' @return TRUE or FALSE
 #' @examples 
-#' require(magrittr)
+#' require(data.table)
 #' object1 <- data.table(expand.grid(genome = c('WT', 'MUT'), treat = c('control', 'drug')))
 #' object2 <- data.table(expand.grid(mutant = c('YES', 'NO'), treated = c('YES', 'NO')))
 #' varlevels_dont_clash(object1)

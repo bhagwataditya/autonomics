@@ -150,7 +150,8 @@ Read rnaseq counts/bams
     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05')
     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
+    object <- read_rnaseq_counts(
+                 file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
     object <- read_rnaseq_counts(file, plot = TRUE)
     
 # read_rnaseq_counts(tpm = TRUE)

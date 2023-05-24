@@ -114,7 +114,6 @@ Plot sample/feature violins
 }
 \examples{
 # data
-    require(magrittr)
     file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% extract(, order(.$subgroup))

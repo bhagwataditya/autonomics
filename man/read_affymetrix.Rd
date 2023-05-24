@@ -16,7 +16,6 @@ RangedSummarizedExperiment
 Read affymetrix microarray
 }
 \examples{
-require(magrittr)
 url <- paste0('http://www.bioconductor.org/help/publications/2003/',
                 'Chiaretti/chiaretti2/T33.tgz')
 localdir  <- file.path(tools::R_user_dir('autonomics', 'cache'), 'T33')

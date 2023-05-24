@@ -252,7 +252,6 @@ fit_survival <- function(
 #' @param height      number
 #' @return ggsurvplot
 #' @examples 
-#' require(magrittr)
 #' file <- download_tcga_example()
 #' if (!is.null(file) & requireNamespace('survminer')){
 #' # Read

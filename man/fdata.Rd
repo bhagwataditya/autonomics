@@ -67,7 +67,6 @@ Get/Set sample/feature data
 }
 \examples{
 # Read data
-    require(magrittr)
     file <- download_data('billing16.proteingroups.txt')
     object <- read_maxquant_proteingroups(file)
 # sdata/fdata

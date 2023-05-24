@@ -57,7 +57,7 @@ plot_volcano(
 
 \item{title}{string or NULL}
 
-\item{use}{logical(1) : use new implementation?}
+\item{new}{logical(1) : use new implementation?}
 }
 \value{
 ggplot object
@@ -67,7 +67,6 @@ Plot volcano
 }
 \examples{
 # Unicontrast, Multicontrast, Multimethod
-    require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()

@@ -27,7 +27,6 @@ feature variables vector (get) or updated object (set)
 Get/Set feature variables
 }
 \examples{
-require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
 object <- read_maxquant_proteingroups(file)
 fvars(object)[1] \%<>\% paste0('1')

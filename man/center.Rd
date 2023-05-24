@@ -27,13 +27,12 @@ SummarizedExperiment
 Center samples
 }
 \examples{
-require(magrittr)
 require(matrixStats)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 fdata(object)$housekeeping <- FALSE
 fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
-values(object)[, object$subgroup=='Adult'] \%<>\% add(5)
+values(object)[, object$subgroup=='Adult'] \%<>\% magrittr::add(5)
 plot_sample_densities(object)
 plot_sample_densities(center(object))
 plot_sample_densities(center(object, housekeeping))

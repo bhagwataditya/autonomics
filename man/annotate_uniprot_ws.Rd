@@ -44,7 +44,6 @@ On these the mapping is performed. 1:many mappings are collapsed and only then r
     # annotate_uniprot_ws(x, upws)
 
 # SummarizedExperiment
-    require(magrittr)
     file <- download_data('fukuda20.proteingroups.txt')
     x <- read_maxquant_proteingroups(file, plot = FALSE)
     x \%<>\% extract(1:10, )

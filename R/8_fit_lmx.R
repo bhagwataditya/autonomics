@@ -180,7 +180,6 @@ block_vars <- function(formula){
 #' @param verbose          TRUE or FALSE
 #' @examples
 #' # Read
-#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     cols <- c('sample_id', 'subgroup', 'SUB', 'SET', 'AGE', 'SEX', 'T2D')
@@ -277,7 +276,7 @@ extract_connected_features <- function(
 #' @param coefs        NULL or stringvector
 #' @param contrasts    unused. only to allow generic get(fitfun)(contrasts)
 #' @param block        NULL or svar
-#' @param optim        optimizer used in fit_lme: 'optim' (more robust) or 'nlminb'
+#' @param opt          optimizer used in fit_lme: 'optim' (more robust) or 'nlminb'
 #' @param weightvar    NULL or svar
 #' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
 #' @param verbose      TRUE or FALSE

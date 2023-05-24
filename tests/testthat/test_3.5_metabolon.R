@@ -49,7 +49,7 @@ test_that("read_metabolon(file, fit = 'lme')", {
 
 test_that("read_metabolon(file, fit = 'lmer')",{
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, block = 'SUB', fit = 'lmer', plot = TRUE, label = NULL)
+    object <- suppressWarnings(read_metabolon(file, block = 'SUB', fit = 'lmer', plot = TRUE, label = NULL))
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'lmer'))))
 })

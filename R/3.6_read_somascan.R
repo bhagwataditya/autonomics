@@ -222,14 +222,14 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
 #' @return SummarizedExperiment
 #' @examples
 #' # Example data
-#'     npxdt   <- data.table(OlinkAnalyze::npx_data1)[, c(1:11, 17)]
-#'     sampledt <- data.table(OlinkAnalyze::npx_data1)[, c(1, 12:15)]
+#'     npxdt   <- data.table::data.table(OlinkAnalyze::npx_data1)[, c(1:11, 17)]
+#'     sampledt <- data.table::data.table(OlinkAnalyze::npx_data1)[, c(1, 12:15)]
 #'     sampledt %<>% extract(!grepl('CONTROL', SampleID))
 #'     sampledt %<>% unique()
 #' # Write to file
 #'     file <- paste0(tempfile(), '.olink.csv')
 #'     samplefile <- paste0(tempfile(), '.samples.xlsx')
-#'     fwrite(npxdt, file)
+#'     data.table::fwrite(npxdt, file)
 #'     writexl::write_xlsx(sampledt, samplefile)
 #' # Read
 #'     object <- read_olink(file, sample_excel = samplefile)

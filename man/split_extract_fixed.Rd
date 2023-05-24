@@ -30,7 +30,6 @@ stri_split and extract
 }
 \examples{
 # Read
-    require(magrittr)
     file <- download_data('halama18.metabolon.xlsx')
     object <- read_metabolon(file)
     x <- object$sample_id[1:5]

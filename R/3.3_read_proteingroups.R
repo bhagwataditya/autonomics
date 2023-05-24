@@ -222,9 +222,10 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 #' @param sep string
 #' @param by  string
 #' @examples
-#'(dt <- data.table(uniprot  = 'Q9BQL6;Q96AC1;Q96AC1-3', 
-#'                  protein  = 'FERM1_HUMAN;FERM2_HUMAN', 
-#'                  gene     = 'FERMT1;FERMT2'))
+#'(dt <- data.table::data.table(
+#'           uniprot  = 'Q9BQL6;Q96AC1;Q96AC1-3', 
+#'           protein  = 'FERM1_HUMAN;FERM2_HUMAN', 
+#'           gene     = 'FERMT1;FERMT2'))
 #'(dt %<>% uncollapse(protein, gene, sep = ';'))
 #'(dt %>% recollapse(by = 'uniprot')) 
 #' @export
@@ -419,7 +420,6 @@ drop_inferior <- function(anndt, verbose = TRUE){
 #' @param by string
 #' @examples
 #' require(data.table)
-#' require(magrittr)
 #' dt1 <- data.table(feature_id = c('PG1', 'PG2'), gene    = c('G1', 'G2'))
 #' dt2 <- data.table(feature_id = c('PG1', 'PG2'), protein = c('P1', 'P2'))
 #' dt1 %<>% .merge(dt2, by = 'feature_id')
@@ -601,7 +601,6 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
 #' @param dt       data.table
 #' @return data.table
 #' @examples 
-#' require(magrittr)
 #' file <- download_data('billing19.proteingroups.txt')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' prodt <- .read_maxquant_proteingroups(file = file)
@@ -657,7 +656,6 @@ add_feature_id <- function(dt){
 #' @param verbose  TRUE / FALSE
 #' @return matrix
 #' @examples 
-#' require(magrittr)
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
@@ -925,8 +923,10 @@ read_proteingroups <- function(...){
 #' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
 #' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
-#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
-#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastadt = fastadt, subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, 
+#'                                    subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, 
+#'                                    fastadt = fastadt, subgroups = subgroups)
 #' @export
 read_maxquant_phosphosites <- function(
     dir = getwd(), 
@@ -1219,7 +1219,6 @@ process_maxquant <- function(
 #' @param pspfile    phosphositeplus file
 #' @return  SummarizedExperiment
 #' @examples 
-#' require(magrittr)
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
@@ -1309,7 +1308,6 @@ paste_unique <- function(x, collapse) paste0(unique(x), collapse=collapse)
 #'     # annotate_uniprot_ws(x, upws)
 #'
 #' # SummarizedExperiment
-#'     require(magrittr)
 #'     file <- download_data('fukuda20.proteingroups.txt')
 #'     x <- read_maxquant_proteingroups(file, plot = FALSE)
 #'     x %<>% extract(1:10, )

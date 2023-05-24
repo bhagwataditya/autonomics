@@ -147,7 +147,6 @@ nfactors <- function(x, sep = guess_sep(x)){
 #' @return character vector
 #' @examples
 #' # Read
-#'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     x <- object$sample_id[1:5]
@@ -358,7 +357,6 @@ pvar <- function(
 #' @return matrix (feature x coef)
 #' @examples 
 #' # Read
-#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
@@ -553,8 +551,8 @@ signmat <- function(
     cutoff = 0.05
 ){ 
     if (length(coefs)==0) return(matrix(0, nrow = nrow(object), ncol = ncol(object), dimnames = dimnames(object)))
-    up(   object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)  -
-    down( object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)
+    upmat(   object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)  -
+    downmat( object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)
 }
 
 #' @rdname pmat
@@ -603,7 +601,6 @@ fits <- function(object){
 #'     coefs(code(object, 'grandref'))
 #'     
 #' # SummarizedExperiment
-#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file, fit = 'limma')
 #'     coefs(object)
@@ -654,7 +651,6 @@ coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL,
 #' @param quantity  value in dimnames(metadata(object)[[fit]])[3]
 #' @return matrix: -1 (downregulated), +1 (upregulatd), 0 (not fdr significant)
 #' @examples
-#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_lm()

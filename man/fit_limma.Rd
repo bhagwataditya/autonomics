@@ -92,7 +92,6 @@ Fit model and test for differential expression
 }
 \examples{
 # Read
-    require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     

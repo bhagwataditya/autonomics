@@ -56,7 +56,6 @@ Random missingness and full detection are shown together (bright color).
 Imputations are also shown (light color).
 }
 \examples{
-require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file, impute = FALSE)
 plot_subgroup_nas(object)

@@ -42,7 +42,6 @@ ggplot object
 Plot data
 }
 \examples{
-require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% pca()

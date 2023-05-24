@@ -97,7 +97,6 @@ add_assay_means <- function(
 #' @param fit    'limma', 'lm', 'lme', 'lmer'
 #' @param coefs   coefficient (string)
 #' @examples
-#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_limma()
@@ -213,11 +212,10 @@ make_volcano_dt <- function(
 #' @param xndown         x position of ndown labels
 #' @param xnup           x position of nup labels
 #' @param title          string or NULL
-#' @param use            logical(1) : use new implementation?
+#' @param new            logical(1) : use new implementation?
 #' @return ggplot object
 #' @examples
 #' # Unicontrast, Multicontrast, Multimethod
-#'     require(magrittr)
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
@@ -411,10 +409,9 @@ map_fvalues <- function(
 
 
 #' fdr to p
-#' @param p pvalues
+#' @param fdr fdr values
 #' @examples
 #' # Read/Fit
-#'    require(magrittr)
 #'    file <- download_data('atkin18.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    object %<>% fit_limma()

@@ -18,7 +18,6 @@ SummarizedExperiment
 Tag hdlproteins
 }
 \examples{
-require(magrittr)
 file <- download_data('billing19.proteingroups.txt')
 object <- read_maxquant_proteingroups(file)
 object \%<>\% tag_hdlproteins()

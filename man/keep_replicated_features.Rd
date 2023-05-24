@@ -14,14 +14,11 @@ keep_replicated_features(object, formula = ~1, n = 3, verbose = TRUE)
 \item{n}{min replications required}
 
 \item{verbose}{TRUE or FALSE}
-
-\item{block}{svar}
 }
 \description{
 Keep features replicated for each slevel
 }
 \examples{
-require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% keep_replicated_features()

@@ -73,7 +73,6 @@ ggplot object
 Biplot
 }
 \examples{
-require(magrittr)
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% pca(ndim = 4)

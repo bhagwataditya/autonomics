@@ -35,7 +35,6 @@ Get coefs
     coefs(code(object, 'grandref'))
     
 # SummarizedExperiment
-    require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file, fit = 'limma')
     coefs(object)

@@ -18,7 +18,6 @@ ggplot
 Plot model
 }
 \examples{
-require(magrittr)
 file <- download_data('billing19.proteingroups.txt')
 subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
 object <- read_maxquant_proteingroups(file, subgroups = subgroups)

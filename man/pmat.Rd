@@ -110,7 +110,6 @@ Get p/fdr/effect/down/up/sign matrix
 }
 \examples{
 # Read
-    require(magrittr)
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()

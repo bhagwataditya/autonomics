@@ -7,14 +7,13 @@
 fdr2p(fdr)
 }
 \arguments{
-\item{p}{pvalues}
+\item{fdr}{fdr values}
 }
 \description{
 fdr to p
 }
 \examples{
 # Read/Fit
-   require(magrittr)
    file <- download_data('atkin18.metabolon.xlsx')
    object <- read_metabolon(file)
    object \%<>\% fit_limma()

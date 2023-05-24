@@ -20,7 +20,6 @@ matrix
 Convert maxquant data.table to matrix
 }
 \examples{
-require(magrittr)
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')

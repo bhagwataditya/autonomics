@@ -108,7 +108,6 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' @param verbose      TRUE or FALSE
 #' @return Filtered SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
@@ -159,11 +158,9 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' 
 #' @param object   SummarizedExperiment
 #' @param formula  formula
-#' @param block    svar
 #' @param n        min replications required
 #' @param verbose  TRUE or FALSE
 #' @examples
-#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% keep_replicated_features()
@@ -175,6 +172,7 @@ keep_replicated_features <- function(
 # Drop NA values
     dt <- sumexp_to_longdt(object, svars = c(all.vars(formula)), assay = assayNames(object)[1])
     n0 <- length(unique(dt$feature_id))
+    value <- NULL
     dt %<>% extract(!is.na(value))
     dt %<>% extract(, .SD[.N>=n], by = 'feature_id')
     n1 <- length(unique(dt$feature_id))
@@ -205,7 +203,6 @@ keep_replicated_features <- function(
 #' @param block   svar
 #' @param verbose TRUE or FALSE
 #' @examples
-#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% keep_connected_blocks(  block = 'SUB')
@@ -229,7 +226,6 @@ keep_connected_blocks <- function(object, block, verbose = TRUE){
 #' @param n        number 
 #' @param verbose  TRUE or FALSE
 #' @examples
-#' require(magrittr)
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% keep_connected_blocks(  block = 'SUB')

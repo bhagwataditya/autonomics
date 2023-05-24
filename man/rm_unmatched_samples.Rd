@@ -33,7 +33,6 @@ SummarizedExperiment
 rm unmatched/singleton samples
 }
 \examples{
-require(magrittr)
 file <- download_data('atkin18.somascan.adat')
 object <- read_somascan(file)
 object \%<>\% filter_samples(subgroup \%in\% c('t1', 't2'), verbose = TRUE)

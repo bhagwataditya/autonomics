@@ -44,7 +44,6 @@ Transformed sumexp
 Transform values
 }
 \examples{
-require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 

@@ -82,6 +82,8 @@ fit_lmer(
 
 \item{block}{NULL or svar}
 
+\item{opt}{optimizer used in fit_lme: 'optim' (more robust) or 'nlminb'}
+
 \item{weightvar}{NULL or svar}
 
 \item{statvars}{character vector: subset of c('effect', 'p', 'fdr', 't')}
@@ -91,8 +93,6 @@ fit_lmer(
 \item{plot}{TRUE or FALSE}
 
 \item{contrasts}{unused. only to allow generic get(fitfun)(contrasts)}
-
-\item{optim}{optimizer used in fit_lme: 'optim' (more robust) or 'nlminb'}
 }
 \value{
 SummarizedExperiment

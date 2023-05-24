@@ -14,7 +14,6 @@
 #' @param verbose      TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('atkin18.somascan.adat')
 #' object <- read_somascan(file)
 #' object %<>% filter_samples(subgroup %in% c('t1', 't2'), verbose = TRUE)
@@ -80,7 +79,6 @@ which.medoid <- function(mat){
 #' @param verbose  whether to message
 #' @return SummarizedExperiment
 #' @examples 
-#' require(magrittr)
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot = FALSE)
 #' object %<>% filter_medoid(by = 'subgroup', verbose = TRUE)
@@ -257,7 +255,6 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' @param  delog    TRUE or FALSE (vsn)
 #' @return Transformed sumexp
 #' @examples
-#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 #'
@@ -326,13 +323,12 @@ zscore <- function(object, verbose = FALSE){
 #' @param verbose  TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' require(matrixStats)
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 #' fdata(object)$housekeeping <- FALSE
 #' fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
-#' values(object)[, object$subgroup=='Adult'] %<>% add(5)
+#' values(object)[, object$subgroup=='Adult'] %<>% magrittr::add(5)
 #' plot_sample_densities(object)
 #' plot_sample_densities(center(object))
 #' plot_sample_densities(center(object, housekeeping))

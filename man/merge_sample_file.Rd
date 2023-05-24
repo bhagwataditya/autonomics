@@ -61,6 +61,6 @@ sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
 sfile \%<>\% paste0('.samples.txt')
 dt <- data.table(sample_id = object$sample_id, 
                  day = split_extract_fixed(object$subgroup, '_', 1))
-fwrite(dt, sfile)                 
+data.table::fwrite(dt, sfile)                 
 merge_sample_file(object, sfile)
 }
