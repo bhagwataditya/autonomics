@@ -474,7 +474,7 @@ systematic_nas <- function(object, by = 'subgroup', frac = 0.5){
     assert_is_fraction(frac)
 # Call
     nlevels <- length(unique(object[[by]]))
-    dt <- sumexp_to_longdt(object)
+    dt <- sumexp_to_longdt(object, svars = by)
     dt %<>% extract(, .(nalevel =      all( is.na(value)),
                      valuelevel = fraction(!is.na(value), frac = frac)), by = c('feature_id', by) )
     dt %<>% extract(, .SD[any(nalevel) & any(valuelevel)] , by = by)
