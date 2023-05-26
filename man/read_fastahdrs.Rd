@@ -4,12 +4,18 @@
 \alias{read_fastahdrs}
 \title{Read headers from uniprot fastafile}
 \usage{
-read_fastahdrs(fastafile, verbose = TRUE)
+read_fastahdrs(
+  fastafile,
+  fastafields = setdiff(FASTAFIELDS, "description"),
+  verbose = TRUE
+)
 }
 \arguments{
-\item{fastafile}{string (or character vector)}
+\item{fastafile}{string (or charactervector)}
 
 \item{verbose}{bool}
+
+\item{fields}{charactervector : which fastahdr fields to extract ?}
 }
 \value{
 data.table(uniprot, protein, gene, uniprot, reviewed, existence)

@@ -290,7 +290,7 @@ extract_isoform <- function(fastahdrs){
     as.integer()
 }
 
-extract_proteinname <- function(fastahdrs){
+extract_description <- function(fastahdrs){
     fastahdrs                    %>%
     split_extract_regex('_[A-Z]+ ', 2) %>% 
     split_extract_regex(' OS=', 1)
@@ -298,7 +298,7 @@ extract_proteinname <- function(fastahdrs){
 
 extract_fragment <- function(fastahdrs){
     fastahdrs                    %>%
-    extract_proteinname()              %>%
+    extract_description()              %>%
     stri_detect_fixed(  'ragment')     %>%
     as.integer()
 }
@@ -311,29 +311,32 @@ extract_existence <- function(fastahdrs){
     as.integer()
 }
 
-parse_fastahdrs <- function(fastahdrs){
-    existence <- organism <- protein <- NULL
-    dt <- data.table(                                  # reviewed
-        reviewed    = extract_reviewed(   fastahdrs),  #   0 tr
-        protein     = extract_protein(    fastahdrs),  #   1 sp
-        gene        = extract_gene(       fastahdrs),
-        uniprot     = extract_uniprot(    fastahdrs),  # existence 
-        canonical   = extract_canonical(  fastahdrs),  #   1 protein 
-        isoform     = extract_isoform(    fastahdrs),  #   2 transcript
-        fragment    = extract_fragment(   fastahdrs),  #   3 homolog
-        existence   = extract_existence(  fastahdrs))  #   4 prediction
-    dt[, organism  := split_extract_fixed(protein, '_', 2)]  #   5 uncertain
-    dt[, existence := unique(.SD)[, existence[!is.na(existence)]], by = 'canonical']
-    # `unique`: for phosphosites the fastahdrs are
-    #  replicated when protein has multiple phosphosites
-    #  This duplication needs to be eliminated before proceeding.
+FASTAFIELDS <- c('reviewed', 'protein', 'gene', 'canonical', 'isoform', 'fragment', 'existence', 'organism', 'description')
+
+parse_fastahdrs <- function(fastahdrs, fastafields = setdiff(FASTAFIELDS, 'description')){
+    existence <- organism <- protein <- NULL                                                # reviewed
+    dt <- data.table(uniprot = extract_uniprot(    fastahdrs))                              #   0 tr
+    if ('reviewed'    %in% fastafields)  dt[, reviewed    := extract_reviewed( fastahdrs)]  #   1 sp
+    if ('protein'     %in% fastafields)  dt[, protein     := extract_protein(  fastahdrs)]  # existence
+    if ('gene'        %in% fastafields)  dt[, gene        := extract_gene(     fastahdrs)]  #   1 protein
+    if ('canonical'   %in% fastafields)  dt[, canonical   := extract_canonical(fastahdrs)]  #   2 transcript
+    if ('isoform'     %in% fastafields)  dt[, isoform     := extract_isoform(  fastahdrs)]  #   3 homolog
+    if ('fragment'    %in% fastafields)  dt[, fragment    := extract_fragment( fastahdrs)]  #   4 prediction
+    if ('existence'   %in% fastafields)  dt[, existence   := extract_existence(fastahdrs)]  #   5 uncertain
+    if ('organism'    %in% fastafields)  dt[, organism    := split_extract_fixed(protein, '_', 2)]
+    if ('description' %in% fastafields)  dt[, description := extract_description(fastahdrs)]
+    if ('existence'   %in% fastafields)  dt[, existence   := unique(.SD)[, existence[!is.na(existence)]], by = 'canonical'] 
+        # `unique`: for phosphosites the fastahdrs are
+        #  replicated when protein has multiple phosphosites
+        #  This duplication needs to be eliminated before proceeding.
     dt[]
 }
 
 
 #' Read headers from uniprot fastafile
 #'
-#' @param fastafile    string (or character vector)
+#' @param fastafile    string (or charactervector)
+#' @param fields       charactervector : which fastahdr fields to extract ?
 #' @param verbose      bool
 #' @examples
 #' # Single fastafile
@@ -349,23 +352,27 @@ parse_fastahdrs <- function(fastahdrs){
 #' @note existence values are always those of the canonical isoform
 #'       (no isoform-level resolution for this field)
 #' @export
-read_fastahdrs <- function(fastafile, verbose = TRUE){
+read_fastahdrs <- function(
+    fastafile, fastafields = setdiff(FASTAFIELDS, 'description'), verbose = TRUE
+){
 # Assert
     if (is.null(fastafile)) return(NULL)
     assert_all_are_existing_files(fastafile)
 # Read
     if (verbose) message('\tRead ', paste0(fastafile, collapse = '\n\t     '))
-    fastahdrs <- Map(.read_fastahdrs, fastafile)
+    fastahdrs <- mapply(.read_fastahdrs, fastafile, MoreArgs = list(fastafields = fastafields), SIMPLIFY = FALSE)
     fastahdrs %<>% data.table::rbindlist()
     fastahdrs
 }
 
-.read_fastahdrs <- function(fastafile, verbose = TRUE){
+.read_fastahdrs <- function(
+    fastafile, fastafields = setdiff(FASTAFIELDS, 'description'), verbose = TRUE
+){
     if (!requireNamespace('Biostrings', quietly = TRUE)){
         stop("BiocManager::install('Biostrings'). Then re-run.") }
     fastahdrs <- Biostrings::readAAStringSet(fastafile)
     fastahdrs %<>% names()
-    fastahdrs %<>% parse_fastahdrs()
+    fastahdrs %<>% parse_fastahdrs(fastafields = fastafields)
     fastahdrs
 }
 
