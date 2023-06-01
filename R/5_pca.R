@@ -239,8 +239,9 @@ pls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(assays(object)[[assay]])
-    y <- svalues(object, by)
+    obj <- object[, !is.na(object[[by]]) ]
+    x <- t(assays(obj)[[assay]])
+    y <- svalues(obj, by)
     pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
