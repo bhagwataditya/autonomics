@@ -341,6 +341,7 @@ plot_survival <- function(
     if (!is.null(file))  pdf(file, width = width, height = height)
     npages <- ceiling(nrow(object)/ncol)
     for (i in 1:npages){
+        cmessage('\t\t\tPage %02d/%d', i, npages)
         idx1 <- (i-1)*ncol+1
         idxn <- min(i*ncol, nrow(object))
         idx <- idx1:idxn
