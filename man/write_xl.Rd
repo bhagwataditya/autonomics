@@ -5,14 +5,16 @@
 \alias{write_ods}
 \title{Write xl/ods}
 \usage{
-write_xl(object, xlfile)
+write_xl(object, xlfile, fitcoefs = autonomics::fitcoefs(object))
 
-write_ods(object, odsfile)
+write_ods(object, odsfile, fitcoefs = autonomics::fitcoefs(object))
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
 \item{xlfile}{file}
+
+\item{fitcoefs}{character vector}
 
 \item{odsfile}{file}
 }

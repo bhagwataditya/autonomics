@@ -205,6 +205,7 @@ extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because n
 #' @param object  SummarizedExperiment
 #' @param xlfile  file
 #' @param odsfile file
+#' @param fitcoefs character vector
 #' @return filepath
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
@@ -214,7 +215,7 @@ extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because n
 #' # write_xl(object,  xlfile)
 #' # write_ods(object, odsfile)
 #' @export
-write_xl <- function(object, xlfile){
+write_xl <- function(object, xlfile, fitcoefs = autonomics::fitcoefs(object)){
 # Assert
     if (!requireNamespace('writexl', quietly = TRUE)){
         message("`BiocManager::install('readxl')`. Then re-run.")
@@ -224,7 +225,7 @@ write_xl <- function(object, xlfile){
     assert_all_are_dirs(dirname(xlfile))
 # Write
     list0 <- mapply(extract_contrast_fdt, 
-                    fitcoef = fitcoefs(object),
+                    fitcoef = fitcoefs,
                     MoreArgs = list(object = object), SIMPLIFY = FALSE)
     writexl::write_xlsx(list0, path = xlfile)
 # Return
@@ -234,7 +235,7 @@ write_xl <- function(object, xlfile){
 
 #' @rdname write_xl
 #' @export
-write_ods <- function(object, odsfile){
+write_ods <- function(object, odsfile, fitcoefs = autonomics::fitcoefs(object)){
 # Assert
     if (!requireNamespace('readODS', quietly = TRUE)){
         message("`BiocManager::install('readODS')`. Then re-run.")
@@ -243,7 +244,7 @@ write_ods <- function(object, odsfile){
     assert_is_valid_sumexp(object)
     assert_all_are_dirs(dirname(odsfile))
 # Write    
-    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs(object), 
+    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs, 
                     MoreArgs = list(object = object), SIMPLIFY = FALSE)
     if (file.exists(odsfile))  unlink(odsfile)
     mapply(readODS::write_ods, x = list0, sheet = names(list0), 
