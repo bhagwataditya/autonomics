@@ -3,6 +3,8 @@
 S3method(annotate_uniprot_ws,SummarizedExperiment)
 S3method(annotate_uniprot_ws,data.table)
 S3method(bin,SummarizedExperiment)
+S3method(bin,character)
+S3method(bin,factor)
 S3method(bin,logical)
 S3method(bin,numeric)
 S3method(code,data.table)

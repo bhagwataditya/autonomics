@@ -3,6 +3,8 @@
 \name{bin}
 \alias{bin}
 \alias{bin.logical}
+\alias{bin.character}
+\alias{bin.factor}
 \alias{bin.numeric}
 \alias{bin.SummarizedExperiment}
 \title{Bin continuous variable}
@@ -10,6 +12,10 @@
 bin(object, ...)
 
 \method{bin}{logical}(object, ...)
+
+\method{bin}{character}(object, ...)
+
+\method{bin}{factor}(object, ...)
 
 \method{bin}{numeric}(object, probs = c(0, 0.33, 0.66, 1), ...)
 

@@ -37,6 +37,14 @@ bin.logical <- function(object, ...)  object
 
 #' @rdname bin
 #' @export
+bin.character <- function(object, ...) object
+
+#' @rdname bin
+#' @export
+bin.factor <- function(object, ...) object
+
+#' @rdname bin
+#' @export
 bin.numeric <- function(object, probs = c(0, 0.33, 0.66, 1), ...){
     breaks <- quantile(object, probs = probs)
     breaks[1] %<>% subtract(1e-7)      # avoid smallest number from falling outside of bin
