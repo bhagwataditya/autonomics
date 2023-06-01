@@ -250,7 +250,7 @@ read_olink <- function(
     dt[N>1, SampleID := sprintf('%s(%s)', SampleID, Index)] # ensure that following line is unique
     mat <- dcast.data.table(dt, OlinkID ~ SampleID, value.var = 'NPX')
     mat %<>% dt2mat()
-    fdt0 <- unique(dt[, .(feature_id = Assay, OlinkID)])
+    fdt0 <- unique(dt[, .(feature_id = Assay, OlinkID, UniProt, Panel, Assay_Warning)])
     fdt0[cduplicated(feature_id), feature_id := paste0(feature_id, '-', OlinkID)]
     rownames(mat) <- fdt0$feature_id
     sdt0 <- unique(dt[, .(sample_id = SampleID)])
