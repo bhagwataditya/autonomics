@@ -342,7 +342,7 @@ plot_survival <- function(
     npages <- ceiling(nrow(object)/ncol)
     for (i in 1:npages){
         idx1 <- (i-1)*ncol+1
-        idxn <- max(i*ncol, nrow(object))
+        idxn <- min(i*ncol, nrow(object))
         idx <- idx1:idxn
         objlist <- object[idx, ]
         objlist %<>% split_features(by = 'feature_id')
