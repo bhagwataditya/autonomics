@@ -220,7 +220,6 @@ make_volcano_dt <- function(
 #' @param xndown         x position of ndown labels
 #' @param xnup           x position of nup labels
 #' @param title          string or NULL
-#' @param new            logical(1) : use new implementation?
 #' @return ggplot object
 #' @examples
 #' # Unicontrast, Multicontrast, Multimethod
@@ -265,8 +264,7 @@ plot_volcano <- function(
   # xsignificance = 0,
     xndown        = NULL,
     xnup          = NULL,
-    title         = NULL, 
-    new           = TRUE
+    title         = NULL
 ){
 # Assert
     assert_is_a_number(nrow)
@@ -298,7 +296,7 @@ plot_volcano <- function(
     dy <- 0.03*(max(plotdt$mlp) - min(plotdt$mlp))
     minn <- function(x) if (length(x)==0) return(Inf) else min(x, na.rm = TRUE) 
         # Avoid warning 'no non-missing arguments to min; returning Inf'
-    if (new){  summarydt <- plotdt[ ,
+    summarydt <- plotdt[ ,
         .( 
             significance = c('p = 0.05',   'fdr = 0.05',             'bon = 0.05'), 
             yintercept   = c( -log10(0.05), -log10(fdr2p(c(0.05, fdr))[1]),   -log10(0.05/(length(feature_id)+1))), # +1 because dummy feature is added
@@ -306,14 +304,6 @@ plot_volcano <- function(
             nup          = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))
         ),
         by = c('fit', 'coef')]
-    } else {  summarydt <- plotdt[,
-        .(  significance = c('p = 0.05',                 'fdr = 0.05',                 'bon = 0.05'),
-            yintercept   = c( minn(mlp[p<0.05]),          minn(mlp[fdr<0.05]),          minn(mlp[bon<0.05])),
-            ndown        = c( sum(p <0.05 & effect < 0),  sum(fdr <0.05 & effect < 0),  sum(bon <0.05 & effect < 0)),
-            nup          = c( sum(p <0.05 & effect > 0),  sum(fdr <0.05 & effect > 0),  sum(bon <0.05 & effect > 0))),
-        by = c('fit', 'coef')  ]
-        summarydt %<>% extract(!is.infinite(yintercept))
-    }
     g <- g + geom_hline(data = summarydt, mapping = aes(yintercept = yintercept, linetype = significance), color = 'gray30')
     g <- g + ggplot2::scale_linetype_manual(values = c(`p = 0.05` = 3, `fdr = 0.05` = 2, `bon = 0.05` = 1))
     do_geom_label <- function(mapping, label.size){  

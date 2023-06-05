@@ -20,8 +20,7 @@ plot_volcano(
   fdr = 0.05,
   xndown = NULL,
   xnup = NULL,
-  title = NULL,
-  new = TRUE
+  title = NULL
 )
 }
 \arguments{
@@ -56,8 +55,6 @@ plot_volcano(
 \item{xnup}{x position of nup labels}
 
 \item{title}{string or NULL}
-
-\item{new}{logical(1) : use new implementation?}
 }
 \value{
 ggplot object
