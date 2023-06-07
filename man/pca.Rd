@@ -104,12 +104,12 @@ Store sample scores, feature loadings, and dimension variances.
 \examples{
  file <- download_data('atkin18.metabolon.xlsx')
  object <- read_metabolon(file)
- pca(object, plot = TRUE)  # Principal Component Analysis
- pls(object, plot = TRUE)  # Partial Least Squares
- lda(object, plot = TRUE)  # Linear Discriminant Analysis
- sma(object, plot = TRUE)  # Spectral Map Analysis
-spls(object, plot = TRUE)  # Sparse PLS
-opls(object, plot = TRUE)  # OPLS
+ pca(object, plot = TRUE)    # Principal Component Analysis
+ pls(object, plot = TRUE)    # Partial Least Squares
+ lda(object, plot = TRUE)    # Linear Discriminant Analysis
+ sma(object, plot = TRUE)    # Spectral Map Analysis
+spls(object, plot = TRUE)    # Sparse PLS
+# opls(object, plot = TRUE)  # OPLS # outcommented because it produces a file named FALSE
 }
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)
