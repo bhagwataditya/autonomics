@@ -951,7 +951,7 @@ add_facetvars <- function(
 #==============================================================================
 
 .plot_exprs <- function(
-    object, assay, geom, x, fill, color, shape, size, block, linetype, 
+    object, assay, geom, x, fill, color, shape, size, alpha, block, linetype, 
     highlight, facet, scales, nrow, ncol, page, labeller, 
     pointsize, jitter, colorpalette, fillpalette, hlevels, 
     title, subtitle, xlab, ylab, theme
@@ -964,6 +964,7 @@ add_facetvars <- function(
     colorsym    <- if (is.null(color))     quo(NULL) else  sym(color)
     shapesym    <- if (is.null(shape))     quo(NULL) else  sym(shape)
     sizesym     <- if (is.null(size))      quo(NULL) else  sym(size)
+    alphasym    <- if (is.null(alpha))     quo(NULL) else  sym(alpha)
     blocksym    <- if (is.null(block))     quo(NULL) else  sym(block)
     linetypesym <- if (is.null(linetype))  quo(NULL) else  sym(linetype)
     plotvars <- 'feature_name'
@@ -972,6 +973,7 @@ add_facetvars <- function(
     if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
     if (!is.null(shape))      plotvars %<>% c(shape)     %>% unique()
     if (!is.null(size))       plotvars %<>% c(size)      %>% unique()
+    if (!is.null(alpha))      plotvars %<>% c(alpha)     %>% unique()
     if (!is.null(block))      plotvars %<>% c(block)     %>% unique()
     if (!is.null(linetype))   plotvars %<>% c(linetype)  %>% unique()
     if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
@@ -1001,7 +1003,7 @@ add_facetvars <- function(
             p <- p + geom_jitter(mapping = mapping, position = position, size = pointsize, na.rm = TRUE)
         }
     } else {
-        mapping <- aes(x = !!xsym, y = value, color = !!colorsym, shape = !!shapesym, size = !! sizesym)
+        mapping <- aes(x = !!xsym, y = value, color = !!colorsym, shape = !!shapesym, size = !! sizesym, alpha = !! alphasym)
         p <- p + geom_point(mapping = mapping, na.rm = TRUE)
     }
     p <- add_color_scale(p, color, data = dt, palette = colorpalette)
@@ -1010,7 +1012,7 @@ add_facetvars <- function(
     if (!is.null(block)){   
         byvar <- block
         if (!is.null(facet)) byvar %<>% c(facet)
-        mapping <- aes(x = !!xsym, y = value, color = !!colorsym, group = !!blocksym, linetype = !!linetypesym)
+        mapping <- aes(x = !!xsym, y = value, color = !!colorsym, group = !!blocksym, linetype = !!linetypesym, alpha = !!alphasym)
         p <- p + geom_line(mapping = mapping, na.rm = TRUE)      # color = direction
     }
 # Highlights (points)
@@ -1042,12 +1044,13 @@ add_facetvars <- function(
 #' @param assay         string: value in assayNames(object)
 #' @param x                     x svar
 #' @param geom          'boxplot' or 'point'
-#' @param color             color svar: points, lines
-#' @param fill               fill svar: boxplots
-#' @param shape             shape svar
-#' @param size               size svar
-#' @param block             group svar
-#' @param linetype       linetype svar
+#' @param color         color svar: points, lines
+#' @param fill          fill svar: boxplots
+#' @param shape         shape svar
+#' @param size          size svar
+#' @param alpha         alpha svar 
+#' @param block         group svar
+#' @param linetype      linetype svar
 #' @param highlight     highlight svar
 #' @param combiner     '&' or '|'
 #' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
@@ -1112,6 +1115,7 @@ plot_exprs <- function(
     fill         = x, # boxplots
     shape        = NULL,
     size         = NULL,
+    alpha        = NULL, 
     linetype     = NULL,
     highlight    = NULL, 
     combiner     = '|',
@@ -1180,7 +1184,7 @@ plot_exprs <- function(
             assay         = assay,             geom        = geom,
             x             = x,                 fill        = fill,
             color         = color,             shape       = shape,
-            size          = size,
+            size          = size,              alpha       = alpha, 
             block         = block,             linetype    = linetype,
             highlight     = highlight,         facet       = facet,     
             scales        = scales,            nrow        = nrow,

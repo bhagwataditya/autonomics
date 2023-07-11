@@ -21,6 +21,7 @@ plot_exprs(
   fill = x,
   shape = NULL,
   size = NULL,
+  alpha = NULL,
   linetype = NULL,
   highlight = NULL,
   combiner = "|",
@@ -88,6 +89,8 @@ plot_feature_boxplots(object, ...)
 \item{shape}{shape svar}
 
 \item{size}{size svar}
+
+\item{alpha}{alpha svar}
 
 \item{linetype}{linetype svar}
 
