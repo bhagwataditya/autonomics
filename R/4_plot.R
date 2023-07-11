@@ -132,10 +132,10 @@ make_colors <- function(
 #' @references https://stackoverflow.com/questions/8197559
 #' @noRd
 make_onefactor_colors <- function(
-    varlevels, show = FALSE, verbose = TRUE, sep = NULL
+    varlevels, starthue = 15, show = FALSE, verbose = TRUE, sep = NULL
 ){
     n <- length(varlevels)
-    hues <- seq(15, 375, length = n + 1)
+    hues <- seq(starthue, starthue + 360, length = n + 1)
     colors <- hcl(h = hues, l = 65, c = 100)[seq_len(n)] %>%
                     set_names(varlevels)
     if (show) pie(rep(1, length(colors)), names(colors),
