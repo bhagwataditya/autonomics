@@ -704,7 +704,7 @@ explicitly_compute_voom_weights <- function(
 # Extract
     log2cpm  <- values(object)
     libsize <- scaledlibsizes(counts(object))
-    design   <- create_design(object, formula = !!enquo(formula))
+    design   <- create_design(object, formula = formula)
 # Assert
     n <- nrow(log2cpm)
     if (n < 2L) stop("Need at least two genes to fit a mean-variance trend")
