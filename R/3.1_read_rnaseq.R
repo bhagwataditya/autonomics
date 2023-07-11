@@ -799,8 +799,7 @@ preprocess_rnaseq_counts <- function(object,
         assays(object) %<>% extract(c('cpm', other)) 
     }
     if (voom){  
-        object %<>% add_voom(
-            formula, verbose = verbose, plot = plot & is.null(block))
+        object %<>% add_voom(formula, verbose = verbose, plot = plot & is.null(block))
         if (!is.null(block))  object %<>% add_voom(
             formula, block = block, verbose = verbose, plot = plot) 
     }
@@ -850,9 +849,9 @@ add_voom <- function(
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$dupcor)){
             if (verbose)  message('\t\t\tdupcor `', blockvar, '`')
-            metadata(object)$dupcor <- 0.2#duplicateCorrelation(
-                #log2(cpm(object)), design=design, block=block
-            #)$consensus.correlation 
+            metadata(object)$dupcor <- duplicateCorrelation(
+                log2(cpm(object)), design=design, block=block
+            )$consensus.correlation 
             }}
 # Run voom
     txt <- sprintf('\t\t\tvoom: %s', formula2str(formula))
