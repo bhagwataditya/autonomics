@@ -14,7 +14,7 @@
 #' @param verbose      TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.somascan.adat')
+#' file <- download_data('atkin.somascan.adat')
 #' object <- read_somascan(file)
 #' object %<>% filter_samples(subgroup %in% c('t1', 't2'), verbose = TRUE)
 #' rm_singleton_samples(object, subgroupvar = 'Subject')
@@ -128,7 +128,7 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #' @return SummarizedExperiment
 #' @examples
 #' # read 
-#'     file <- download_data('atkin18.metabolon.xlsx') 
+#'     file <- download_data('atkin.metabolon.xlsx') 
 #'     object0 <- read_metabolon(file)
 #'     pca(object0, plot = TRUE, color = 'Time')
 #' 

@@ -28,7 +28,7 @@ Extract features for which connected factor levels are measured in at least two 
 }
 \examples{
 # Read
-    file <- download_data('atkin18.metabolon.xlsx')
+    file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file)
     cols <- c('sample_id', 'subgroup', 'Subject', 'Time', 'Age', 'Sex', 'Diabetes')
     sdt(object) \%<>\% extract(, cols, with = FALSE)

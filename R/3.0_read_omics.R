@@ -38,11 +38,11 @@ ncols <- function(x, sheet=1){
 #' @return TRUE or FALSE
 #' @examples
 #' # SOMASCAN
-#'     file <- download_data('atkin18.somascan.adat')
+#'     file <- download_data('atkin.somascan.adat')
 #'     is_fixed_col_file(file)
 #'
 #' # METABOLON
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     is_fixed_col_file(file)
 #' @noRd
 is_fixed_col_file <- function(file){

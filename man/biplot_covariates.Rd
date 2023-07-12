@@ -42,7 +42,7 @@ ggplot object
 Biplot covariates
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file, pca = TRUE)
 biplot_covariates(object, covariates = 'subgroup', ndim = 12, dimcols = 3)
 biplot_covariates(object, covariates = c('Sex', 'Diabetes', 'Subject', 'Time'))

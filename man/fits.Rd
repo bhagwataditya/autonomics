@@ -16,7 +16,7 @@ character vector
 Get fit models
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file, fit = 'limma')
 fits(object)
 }

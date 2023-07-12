@@ -180,7 +180,7 @@ block_vars <- function(formula){
 #' @param verbose          TRUE or FALSE
 #' @examples
 #' # Read
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     cols <- c('sample_id', 'subgroup', 'Subject', 'Time', 'Age', 'Sex', 'Diabetes')
 #'     sdt(object) %<>% extract(, cols, with = FALSE)
@@ -274,7 +274,7 @@ extract_connected_features <- function(
 #' @param plot         TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' fit_lm(   object, formula = ~subgroup)
 #' fit_limma(object, formula = ~subgroup)

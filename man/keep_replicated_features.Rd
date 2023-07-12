@@ -19,7 +19,7 @@ keep_replicated_features(object, formula = ~1, n = 3, verbose = TRUE)
 Keep features replicated for each slevel
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% keep_replicated_features()
 object \%<>\% keep_replicated_features(~ subgroup)

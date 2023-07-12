@@ -141,7 +141,7 @@ na_to_string <- function(x){
 #'    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
 #'    impute(object, plot = TRUE)                                # sumexp
 #' # Complex Design
-#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    file <- download_data('atkin.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    invisible(impute(values(object)[1:3, 1   ]))               # vector
 #'    invisible(impute(values(object)[1:3, 1:5 ]))               # matrix
@@ -405,7 +405,7 @@ is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 #' @param by     svar to split by (string)
 #' @return  SummarizedExperiment list
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' objlist <- split_features(object, by = 'PLATFORM')
 #' objlist <- split_samples(object, 'Diabetes')

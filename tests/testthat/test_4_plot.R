@@ -1,7 +1,7 @@
 require(magrittr)
 context('plot_violins')
     
-    file <- download_data('atkin18.metabolon.xlsx')
+    file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file, fit = 'limma')
     object %<>% extract(, order(.$subgroup))
     control_features <- c('biotin','phosphate')

@@ -2,8 +2,8 @@
 devtools::document()
 
 # Read
-mfile <- download_data('atkin18.metabolon.xlsx')
-pfile <- download_data('atkin18.somascan.adat')
+mfile <- download_data('atkin.metabolon.xlsx')
+pfile <- download_data('atkin.somascan.adat')
 mobj <- read_metabolon(mfile)
 pobj <- read_somascan( pfile)
 
@@ -34,7 +34,7 @@ svar_coefs <- function(object, svar)  colnames(contrasts(object[[svar]]))
 #' @param block      svar
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object$Diabetes %<>% factor()
 #' fdt1 <- .fit_xxx_across( object, groupvars = c('subgroup', 'Diabetes'), block = 'Subject')

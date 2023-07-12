@@ -66,7 +66,7 @@ has_identical_values <- function(x) length(unique(x))==1
 #'    guess_sep(c('WT_untreated_1', 'WT_untreated_2'))
 #'    guess_sep(c('group1', 'group2.R1'))
 #' # SummarizedExperiment
-#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    file <- download_data('atkin.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    guess_sep(object)
 #' @export
@@ -357,7 +357,7 @@ pvar <- function(
 #' @return matrix (feature x coef)
 #' @examples 
 #' # Read
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
@@ -574,7 +574,7 @@ sign.SummarizedExperimentz <- function(...){
 #' @param object SummarizedExperiment
 #' @return  character vector
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma')
 #' fits(object)
 #' @export
@@ -601,7 +601,7 @@ fits <- function(object){
 #'     coefs(code(object, 'baselinegrand'))
 #'     
 #' # SummarizedExperiment
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file, fit = 'limma')
 #'     coefs(object)
 #' @export

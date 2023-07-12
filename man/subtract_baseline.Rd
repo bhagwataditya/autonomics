@@ -58,7 +58,7 @@ again within block
 }
 \examples{
 # read 
-    file <- download_data('atkin18.metabolon.xlsx') 
+    file <- download_data('atkin.metabolon.xlsx') 
     object0 <- read_metabolon(file)
     pca(object0, plot = TRUE, color = 'Time')
 

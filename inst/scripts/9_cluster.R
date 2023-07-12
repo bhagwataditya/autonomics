@@ -2,7 +2,7 @@
 #' @param object SummarizedExperiment
 #' @param scale_features TRUE or FALSE: whether to scale (i.e. z-score) features
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'Time', block = 'Subject')
 #' object %<>% cluster()
 feature_sample_heatmap <- function(object){
@@ -55,7 +55,7 @@ plot_cluster_contrastograms <- function(object, subgroupvar){
 
 #' Cluster features
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'Time', block = '')
 cluster <- function(object, formula = ~ Subject + Time){
 

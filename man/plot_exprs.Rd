@@ -152,7 +152,7 @@ Plot exprs for coef
 }
 \examples{
 # Without limma
-    file <- download_data('atkin18.metabolon.xlsx')
+    file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file)
     plot_exprs(object, block = 'Subject', title = 'Subgroup Boxplots')
     plot_exprs(object, dim = 'samples')

@@ -10,7 +10,7 @@
 #' @param ...        required for s4 dispatch
 #' @return filtered eSet
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' filter_features(object, SUPER_PATHWAY == 'Lipid')
 #' @export
@@ -73,7 +73,7 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(values(object)))
 #' @param verbose TRUE (default) or FALSE
 #' @return updated object
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' rm_missing_in_all_samples( object)
 #' rm_missing_in_some_samples(object)
@@ -108,7 +108,7 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' @param verbose      TRUE or FALSE
 #' @return Filtered SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% filter_exprs_replicated_in_some_subgroup()
 #' filter_exprs_replicated_in_some_subgroup(object, character(0))
@@ -161,7 +161,7 @@ filter_exprs_replicated_in_some_subgroup <- function(
 #' @param n        min replications required
 #' @param verbose  TRUE or FALSE
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% keep_replicated_features()
 #' object %<>% keep_replicated_features(~ subgroup)
@@ -203,7 +203,7 @@ keep_replicated_features <- function(
 #' @param block   svar
 #' @param verbose TRUE or FALSE
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% keep_connected_blocks(  block = 'Subject')
 #' @export
@@ -226,7 +226,7 @@ keep_connected_blocks <- function(object, block, verbose = TRUE){
 #' @param n        number 
 #' @param verbose  TRUE or FALSE
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% keep_connected_blocks(  block = 'Subject')
 #' object %<>% keep_connected_features(block = 'Subject')
@@ -266,7 +266,7 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 #' @param record    TRUE/FALSE 
 #' @return filtered SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' filter_samples(object, subgroup != 't0', verbose = TRUE)
 #' @export

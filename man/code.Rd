@@ -90,7 +90,7 @@ A General Linear Model contains:                                                
     x \%<>\% code('helmert')
 
 # Model
-    file <- download_data('atkin18.metabolon.xlsx')
+    file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma(coding = 'treatment') # default
     object \%<>\% fit_limma(coding = 'baseline')

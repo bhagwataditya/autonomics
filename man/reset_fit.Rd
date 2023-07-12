@@ -24,7 +24,7 @@ reset_fit(
 Reset fit
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 (object <- read_metabolon(file))
 object \%<>\% reset_fit()
 object \%<>\% fit_limma() \%>\% reset_fit()

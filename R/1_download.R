@@ -1,5 +1,7 @@
 # Data in examples/vignettes/tests
-CORE_DATASETS  <- c('atkin18.somascan.adat',
+CORE_DATASETS  <- c('atkin.somascan.adat',    # new versions
+                    'atkin.metabolon.xlsx',
+                    'atkin18.somascan.adat',  # old versions - backward compatibility
                     'atkin18.metabolon.xlsx',
                     'billing16.bam.zip',
                     'billing16.rnacounts.txt',
@@ -36,8 +38,8 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #'     \item \href{https://pubmed.ncbi.nlm.nih.gov/30525282/}{
 #'                 Atkin 2018: hypoglycemia:} t0, t1, t2, t3
 #'     \itemize{
-#'         \item \code{'atkin18.somascan.adat'}
-#'         \item \code{'atkin18.metbolon.xlsx'}
+#'         \item \code{'atkin.somascan.adat'}
+#'         \item \code{'atkin.metabolon.xlsx'}
 #'     }
 #'     \item \href{https://pubmed.ncbi.nlm.nih.gov/29777783/}{
 #'                 Halama 2018: glutaminase inhibition: } 4 conc, 4 timepoints
@@ -63,9 +65,9 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' @param force    TRUE / FALSE
 #' @return local file path
 #' @examples
-#' # atkin18 - hypoglycemia - pubmed 30525282
-#'     download_data('atkin18.somascan.adat')            # somascan  intensities
-#'     download_data('atkin18.metabolon.xlsx')           # metabolon intensities
+#' # atkin 2018 - hypoglycemia - pubmed 30525282
+#'     download_data('atkin.somascan.adat')            # somascan  intensities
+#'     download_data('atkin.metabolon.xlsx')           # metabolon intensities
 #'
 #' # billing16 - stemcell characterization - pubmed 26857143
 #'     download_data('billing16.proteingroups.txt')      # proteingroup ratios

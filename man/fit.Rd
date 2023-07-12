@@ -111,7 +111,7 @@ Fit model and test for differential expression
 }
 \examples{
 # Default
-    file <- download_data('atkin18.metabolon.xlsx')
+    file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit(~ subgroup)
 # Standard

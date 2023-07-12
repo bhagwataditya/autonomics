@@ -97,6 +97,6 @@ SummarizedExperiment
 Read metabolon xlsxfile
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 read_metabolon(file, plot = TRUE, block = 'Subject')
 }

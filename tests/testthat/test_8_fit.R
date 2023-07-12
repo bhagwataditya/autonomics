@@ -26,8 +26,8 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
     })
     
 # SOMASCAN
-    test_that(  "fit: atkin18.somascan", {
-        file <- download_data('atkin18.somascan.adat')
+    test_that(  "fit: atkin.somascan", {
+        file <- download_data('atkin.somascan.adat')
         object <- read_somascan(file)
         
         object %<>% fit_limma( ~subgroup + T2D,  block = 'Subject', coding = 'baseline')
@@ -54,9 +54,9 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
     })
     
 # METABOLON
-    test_that(  "fit: atkin18.metabolon", {
+    test_that(  "fit: atkin.metabolon", {
         # read
-        file <- download_data('atkin18.metabolon.xlsx')
+        file <- download_data('atkin.metabolon.xlsx')
         object <- read_metabolon(file)
         
         # limma

@@ -46,7 +46,7 @@ design matrix
 Create design matrix  for statistical analysis
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 unique(create_design(object))
 unique(create_design(object, ~ Time))

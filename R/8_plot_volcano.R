@@ -223,7 +223,7 @@ make_volcano_dt <- function(
 #' @return ggplot object
 #' @examples
 #' # Unicontrast, Multicontrast, Multimethod
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
@@ -410,7 +410,7 @@ map_fvalues <- function(
 #' @param fdr fdr values
 #' @examples
 #' # Read/Fit
-#'    file <- download_data('atkin18.metabolon.xlsx')
+#'    file <- download_data('atkin.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    object %<>% fit_limma()
 #'    object %<>% extract(order(fdt(.)$`p~t3~limma`), )

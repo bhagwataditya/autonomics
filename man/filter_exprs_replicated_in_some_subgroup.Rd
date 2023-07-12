@@ -39,7 +39,7 @@ Filtered SummarizedExperiment
 Filter features with replicated expression in some subgroup
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% filter_exprs_replicated_in_some_subgroup()
 filter_exprs_replicated_in_some_subgroup(object, character(0))

@@ -25,7 +25,7 @@ filepath
 Write xl/ods
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file, fit = 'limma')
 xlfile  <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
 odsfile <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.ods')

@@ -47,7 +47,7 @@ SummarizedExperiment to data.table
 }
 \examples{
 # Atkin Hypoglycemia
-   file <- download_data('atkin18.metabolon.xlsx')
+   file <- download_data('atkin.metabolon.xlsx')
    object <- read_metabolon(file)
    sumexp_to_widedt(object)
    sumexp_to_longdt(object)

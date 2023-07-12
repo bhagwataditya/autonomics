@@ -36,7 +36,7 @@ grid object
 Biplot batch corrections
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file, pca = TRUE, plot = FALSE)
 biplot_corrections(object, color = 'subgroup', covariates = c('Sex', 'Diabetes', 'Subject', 'Time'))
 }

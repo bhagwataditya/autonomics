@@ -101,7 +101,7 @@ SummarizedExperiment
 Fit lm, lme, or lmer
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 fit_lm(   object, formula = ~subgroup)
 fit_limma(object, formula = ~subgroup)

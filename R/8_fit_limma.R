@@ -37,7 +37,7 @@ default_subgroupvar <- function(object){
 #' @return formula
 #' @examples 
 #' # Abundances
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     default_formula(object)
 # # Ratios
@@ -69,7 +69,7 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' @param ...          required to s3ify
 #' @return design matrix
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' unique(create_design(object))
 #' unique(create_design(object, ~ Time))
@@ -186,7 +186,7 @@ create_design.data.table <- function(
 #'     x %<>% code('helmert')
 #'
 #' # Model
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma(coding = 'treatment') # default
 #'     object %<>% fit_limma(coding = 'baseline')
@@ -428,7 +428,7 @@ add_fdr <- function(fitres){
 #' @param coefs   character vector
 #' @param verbose TRUE or FALSE
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' (object <- read_metabolon(file))
 #' object %<>% reset_fit()
 #' object %<>% fit_limma() %>% reset_fit()
@@ -506,7 +506,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @return Updated SummarizedExperiment
 #' @examples
 #' # Default
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit(~ subgroup)
 #' # Standard
@@ -754,7 +754,7 @@ pull_level <- function(x, lev){
 #' @param coefs string vector
 #' @return data.table(contrast, nup, ndown)
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' object %<>% fit_lm()
@@ -795,7 +795,7 @@ summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
 #' @param ncol number
 #' @param order TRUE or FALSE
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma(block = 'Subject')

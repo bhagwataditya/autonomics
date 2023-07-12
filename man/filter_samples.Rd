@@ -22,7 +22,7 @@ filtered SummarizedExperiment
 Filter samples on condition
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 filter_samples(object, subgroup != 't0', verbose = TRUE)
 }

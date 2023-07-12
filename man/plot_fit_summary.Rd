@@ -19,7 +19,7 @@ plot_fit_summary(sumdt, nrow = NULL, ncol = NULL, order = FALSE)
 Plot fit summary
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% fit_lm()
 object \%<>\% fit_limma(block = 'Subject')

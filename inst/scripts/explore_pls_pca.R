@@ -93,7 +93,7 @@ gridExtra::grid.arrange(
 )
 
 # Atkin data
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 gridExtra::grid.arrange(
     biplot(pca(object                        )) + ggtitle( 'center_samples = TRUE')  + theme(plot.title = element_text(hjust = 0.5)) + guides(color = 'none'), 

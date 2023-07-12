@@ -25,8 +25,8 @@ download_data(
     \item \href{https://pubmed.ncbi.nlm.nih.gov/30525282/}{
                 Atkin 2018: hypoglycemia:} t0, t1, t2, t3
     \itemize{
-        \item \code{'atkin18.somascan.adat'}
-        \item \code{'atkin18.metbolon.xlsx'}
+        \item \code{'atkin.somascan.adat'}
+        \item \code{'atkin.metabolon.xlsx'}
     }
     \item \href{https://pubmed.ncbi.nlm.nih.gov/29777783/}{
                 Halama 2018: glutaminase inhibition: } 4 conc, 4 timepoints
@@ -61,9 +61,9 @@ local file path
 Download autonomics example data
 }
 \examples{
-# atkin18 - hypoglycemia - pubmed 30525282
-    download_data('atkin18.somascan.adat')            # somascan  intensities
-    download_data('atkin18.metabolon.xlsx')           # metabolon intensities
+# atkin 2018 - hypoglycemia - pubmed 30525282
+    download_data('atkin.somascan.adat')            # somascan  intensities
+    download_data('atkin.metabolon.xlsx')           # metabolon intensities
 
 # billing16 - stemcell characterization - pubmed 26857143
     download_data('billing16.proteingroups.txt')      # proteingroup ratios

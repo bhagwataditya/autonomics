@@ -309,7 +309,7 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' @return  ggplot object
 #' @examples
 #' # Data
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
 #'     object %<>% extract(, order(.$subgroup))
 #'     
@@ -738,7 +738,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
 #' @param verbose  TRUE or FALSE
 #' @examples 
 #' # Read
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #' # no limma
 #'     object %<>% order_on_p()  # unchanged
@@ -840,7 +840,7 @@ order_on_effect <- function(
 #' @return SummarizedExperiment
 #' @examples
 #' # Read and Fit
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #' # Single coef
@@ -910,7 +910,7 @@ format_coef_vars <- function(
 #' @param coefs   string vector
 #' @return  SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma')
 #' fdt(object)
 #' fdt(add_facetvars(object))
@@ -1083,7 +1083,7 @@ add_facetvars <- function(
 #'          \code{\link{plot_sample_violins}}
 #' @examples 
 #' # Without limma
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     plot_exprs(object, block = 'Subject', title = 'Subgroup Boxplots')
 #'     plot_exprs(object, dim = 'samples')
@@ -1253,7 +1253,7 @@ plot_feature_boxplots <- function(object, ...){
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' object %<>% pls(by = 'subgroup')
@@ -1325,7 +1325,7 @@ default_subtitle <- function(fit, x, coefs){
 #' @param block  svar or NULL
 #' @return character vector
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' svars(object)
 #' default_geom(object, x = 'Age')
@@ -1366,7 +1366,7 @@ default_geom <- function(object, x, block = NULL){
 #' @param theme       ggplot theme specifications
 #' @return ggplot object
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma')
 #' idx <- order(fdata(object)$`p~t1~limma`)[1:9]
 #' object %<>% extract(idx, )
@@ -1471,7 +1471,7 @@ plot_venn <- function(x){
 #' @param colors NULL or colorvector
 #' @return nothing returned
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% fit_wilcoxon(~ subgroup, block = 'Subject')
 #' object %<>% fit_limma(   ~ subgroup, block = 'Subject', coding = 'baseline')
@@ -1488,7 +1488,7 @@ plot_contrast_venn <- function(issig, colors = NULL){
 #' Plot binary matrix
 #' @param mat matrix
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
+#' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' mat <- sdt(object)[, .(replicate, subgroup)]
 #' mat$present <- 1

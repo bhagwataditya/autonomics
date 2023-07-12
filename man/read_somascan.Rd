@@ -102,6 +102,6 @@ Summarizedexperiment
 Read somascan adatfile
 }
 \examples{
-file <- download_data('atkin18.somascan.adat')
+file <- download_data('atkin.somascan.adat')
 read_somascan(file, plot = TRUE, block = 'Subject')
 }

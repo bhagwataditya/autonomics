@@ -64,7 +64,7 @@ Plot volcano
 }
 \examples{
 # Unicontrast, Multicontrast, Multimethod
-    file <- download_data('atkin18.metabolon.xlsx')
+    file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()
     object \%<>\% fit_lm()

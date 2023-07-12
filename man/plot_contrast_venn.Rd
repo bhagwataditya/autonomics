@@ -18,7 +18,7 @@ nothing returned
 Plot contrast venn
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% fit_wilcoxon(~ subgroup, block = 'Subject')
 object \%<>\% fit_limma(   ~ subgroup, block = 'Subject', coding = 'baseline')

@@ -21,7 +21,7 @@ updated object
 Rm features missing in some samples
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 rm_missing_in_all_samples( object)
 rm_missing_in_some_samples(object)

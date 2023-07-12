@@ -54,7 +54,7 @@ ggplot object
 Plot features
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
+file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file, fit = 'limma')
 idx <- order(fdata(object)$`p~t1~limma`)[1:9]
 object \%<>\% extract(idx, )
