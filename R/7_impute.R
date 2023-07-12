@@ -145,7 +145,7 @@ na_to_string <- function(x){
 #'    object <- read_metabolon(file)
 #'    invisible(impute(values(object)[1:3, 1   ]))               # vector
 #'    invisible(impute(values(object)[1:3, 1:5 ]))               # matrix
-#'    object %>%  filter_samples(T2D == 'Control') %>% impute()  # sumexp
+#'    object %>%  filter_samples(Diabetes == 'Control') %>% impute()  # sumexp
 #' @export
 impute <- function(object, ...) UseMethod('impute')
 
@@ -408,7 +408,7 @@ is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' objlist <- split_features(object, by = 'PLATFORM')
-#' objlist <- split_samples(object, 'T2D')
+#' objlist <- split_samples(object, 'Diabetes')
 #' objlist %<>% Map(impute, .)
 #' object <- cbind_imputed(objlist)
 #' @export

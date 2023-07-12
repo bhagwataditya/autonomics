@@ -72,12 +72,12 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' unique(create_design(object))
-#' unique(create_design(object, ~ subgroup))
-#' unique(create_design(object, ~ subgroup, coding = 'baseline' ))
-#' unique(create_design(object, ~ subgroup, coding = 'backward'))
-#' unique(create_design(object, ~ subgroup + T2D))
-#' unique(create_design(object, ~ subgroup / T2D))
-#' unique(create_design(object, ~ subgroup * T2D))
+#' unique(create_design(object, ~ Time))
+#' unique(create_design(object, ~ Time, coding = 'baseline' ))
+#' unique(create_design(object, ~ Time, coding = 'backward'))
+#' unique(create_design(object, ~ Time + Diabetes))
+#' unique(create_design(object, ~ Time / Diabetes))
+#' unique(create_design(object, ~ Time * Diabetes))
 #' @export
 create_design <- function(object, ...) UseMethod('create_design')
 
@@ -124,7 +124,7 @@ create_design.data.table <- function(
         for (predictor in all.vars(formula)){
             if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
                         stri_replace_first_fixed(predictor, '') }
-            # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
+            # Fails for e.g. Diabetes = YES/NO: a meaningless column "YES" is created
             # For other cases it works wonderfully, so I keep it for now.
             # If it gives too many issues, roll back to doing the dropping only
             # for "subgroup" levels:

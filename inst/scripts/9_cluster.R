@@ -3,7 +3,7 @@
 #' @param scale_features TRUE or FALSE: whether to scale (i.e. z-score) features
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'SET', block = 'Subject')
+#' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'Time', block = 'Subject')
 #' object %<>% cluster()
 feature_sample_heatmap <- function(object){
    
@@ -56,8 +56,8 @@ plot_cluster_contrastograms <- function(object, subgroupvar){
 #' Cluster features
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'SET', block = '')
-cluster <- function(object, formula=~SUB+SET){
+#' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'Time', block = '')
+cluster <- function(object, formula = ~ Subject + Time){
 
 # Fit
     for (col in all.vars(formula)){
@@ -95,22 +95,22 @@ cluster <- function(object, formula=~SUB+SET){
     fdata(object)$cluster %<>% factor(exemplars)
     #heatmapres <- apcluster::heatmap(apres, cormat, col = rev(heat.colors(12)))
     
-    formula <- ~ SUB + SET
+    formula <- ~ Subject + Time
     contrastdefs <- colnames(create_design(object, formula = formula))[-1]
     object %<>% fit_limma(formula = formula, contrastdefs = contrastdefs)
     values(object)[1:3, 1:3]
     
-    blockeffects <- limma(object)[, levels(factor(object$SUB))[-1], 'effect']
+    blockeffects <- limma(object)[, levels(factor(object$Subject))[-1], 'effect']
     blockeffects %<>% data.table(keep.rownames = TRUE)
     setnames(blockeffects, 'rn', 'feature_id')
     blockeffects %<>% melt.data.table(id.vars = 'feature_id', variable.name = block, value.name = 'blockeffect')
     
-    valuedt <- sumexp_to_longdt(object, svars = c('Subject', 'SET'), fvars = c('feature_id'))
+    valuedt <- sumexp_to_longdt(object, svars = c('Subject', 'Time'), fvars = c('feature_id'))
     valuedt %<>% merge(blockeffects, by = c('feature_id', 'Subject'), all.x = TRUE)
     valuedt[is.na(blockeffect), blockeffect := 0]
     valuedt[, correctedvalue := value - blockeffect]
-    ggplot(valuedt[feature_id==feature_id[3]], aes(x=SET, y=value, color=SET, group=SUB)) + geom_point() + geom_line() + theme_bw()
-    ggplot(valuedt[feature_id==feature_id[3]], aes(x=SET, y=correctedvalue, color=SET, group=SUB)) + geom_point() + geom_line() + theme_bw()
+    ggplot(valuedt[feature_id==feature_id[3]], aes(x = Time, y = value,          color = Time, group = Subject)) + geom_point() + geom_line() + theme_bw()
+    ggplot(valuedt[feature_id==feature_id[3]], aes(x = Time, y = correctedvalue, color = Time, group = Subject)) + geom_point() + geom_line() + theme_bw()
     
     object
 }
@@ -133,7 +133,7 @@ difftype <- function(object, fit='limma', plot=TRUE){
         idx <-c(which(fdata(subject)$difftype==levels(fdata(subject)$difftype)[1])[1:2],
                 which(fdata(subject)$difftype==levels(fdata(subject)$difftype)[2])[1:2],
                 which(fdata(subject)$difftype==levels(fdata(subject)$difftype)[3])[1:2])
-        plot_subgroup_points(subject[idx, ], subgroup = SET, block = SUB, nrow=3)
+        plot_subgroup_points(subject[idx, ], subgroup = Time, block = Subject, nrow=3)
     }
         
     type %<>% extract(rowAlls(!is.na(type)), )

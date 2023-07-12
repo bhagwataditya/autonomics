@@ -9,12 +9,12 @@ test_that(  "read_metabolon(file) works", {
     expect_true('subgroup' %in% svars(object))
 })
 
-test_that(  "read_metabolon(file, subgroupvar = 'SET')", {
+test_that(  "read_metabolon(file, subgroupvar = 'Time')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, subgroupvar = 'SET')
+    object <- read_metabolon(file, subgroupvar = 'Time')
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('subgroup' %in% svars(object))
-    expect_false('SET'     %in% svars(object))
+    expect_false('Time'     %in% svars(object))
 })
 
 test_that(  "read_metabolon(file, pca = TRUE)", {

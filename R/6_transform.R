@@ -130,20 +130,20 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #' # read 
 #'     file <- download_data('atkin18.metabolon.xlsx') 
 #'     object0 <- read_metabolon(file)
-#'     pca(object0, plot = TRUE, color = 'SET')
+#'     pca(object0, plot = TRUE, color = 'Time')
 #' 
 #' # subtract_baseline: takes medoid of baseline samples if multiple
-#'     object <- subtract_baseline(object0, block = 'Subject', subgroupvar = 'SET')
-#'     pca(object, plot = TRUE, color = 'SET')
+#'     object <- subtract_baseline(object0, block = 'Subject', subgroupvar = 'Time')
+#'     pca(object, plot = TRUE, color = 'Time')
 #' 
 #' # subtract_pairs: optimized for many blocks
-#'     object <- subtract_pairs(object0, block = 'Subject', subgroupvar = 'SET')
-#'     pca(object, plot = TRUE, color = 'SET')
+#'     object <- subtract_pairs(object0, block = 'Subject', subgroupvar = 'Time')
+#'     pca(object, plot = TRUE, color = 'Time')
 #' 
 #' # subtract differences
-#'     object <- subtract_differences(object0, block = 'Subject', subgroupvar = 'SET')
+#'     object <- subtract_differences(object0, block = 'Subject', subgroupvar = 'Time')
 #'     values(object) %<>% na_to_zero()
-#'     pca(object, plot = TRUE, color = 'SET')
+#'     pca(object, plot = TRUE, color = 'Time')
 #' @export 
 subtract_baseline <- function(
     object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], 

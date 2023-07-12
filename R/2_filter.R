@@ -248,7 +248,7 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
         object %<>% extract(feature_id %in% idx, )
     }
     object
-    # This earlier approach fails in ~ subgroup / T2D
+    # This earlier approach fails in ~ Time / Diabetes
     # Because a subject cannot be both diabetic AND control
     # obj %<>% extract_connected_features(formula = formula, blockvars = block, verbose = verbose) # doesnt work for complex models
 }

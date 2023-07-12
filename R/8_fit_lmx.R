@@ -182,34 +182,25 @@ block_vars <- function(formula){
 #' # Read
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     cols <- c('sample_id', 'subgroup', 'Subject', 'SET', 'AGE', 'SEX', 'T2D')
+#'     cols <- c('sample_id', 'subgroup', 'Subject', 'Time', 'Age', 'Sex', 'Diabetes')
 #'     sdt(object) %<>% extract(, cols, with = FALSE)
 #'     sdt(object)
 #'     object$SUPERSET <- ''
-#'     object$SUPERSET[object$SET == 't0'] <- 'I'
-#'     object$SUPERSET[object$SET == 't1'] <- 'I'
-#'     object$SUPERSET[object$SET == 't2'] <- 'II'
-#'     object$SUPERSET[object$SET == 't3'] <- 'II'
+#'     object$SUPERSET[object$Time == 't0'] <- 'I'
+#'     object$SUPERSET[object$Time == 't1'] <- 'I'
+#'     object$SUPERSET[object$Time == 't2'] <- 'II'
+#'     object$SUPERSET[object$Time == 't3'] <- 'II'
 #'     object$SUBSET <- ''
-#'     object$SUBSET[  object$SET == 't0'] <- 'a'
-#'     object$SUBSET[  object$SET == 't1'] <- 'a'
-#'     object$SUBSET[  object$SET == 't2'] <- 'b'
-#'     object$SUBSET[  object$SET == 't3'] <- 'b'
+#'     object$SUBSET[  object$Time == 't0'] <- 'a'
+#'     object$SUBSET[  object$Time == 't1'] <- 'a'
+#'     object$SUBSET[  object$Time == 't2'] <- 'b'
+#'     object$SUBSET[  object$Time == 't3'] <- 'b'
 #' # Extract
-#'     extract_connected_features(object, formula = ~ SET, 
-#'                                      blockvars = 'Subject')
-#'
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
-#'                                      blockvars = 'Subject')
-#'
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
-#'                                      blockvars = c('Subject', 'SEX'))
-#'
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + AGE, 
-#'                                      blockvars = c('Subject', 'SEX'))
-#'
-#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + T2D, 
-#'                                      blockvars = c('Subject', 'SEX'))
+#'     extract_connected_features(object, formula = ~ Time,                         blockvars =   'Subject')
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,            blockvars =   'Subject')
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,            blockvars = c('Subject', 'Sex'))
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + Age,      blockvars = c('Subject', 'Sex'))
+#'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + Diabetes, blockvars = c('Subject', 'Sex'))
 #' @export
 extract_connected_features <- function(
     object, formula, blockvars, nconnectedblocks = 2, verbose = TRUE
@@ -290,8 +281,8 @@ extract_connected_features <- function(
 #' fit_limma(object, formula = ~subgroup, block = 'Subject')
 #' fit_lme(  object, formula = ~subgroup, block = 'Subject')
 #' fit_lmer( object, formula = ~subgroup, block = 'Subject')
-#' # fit_lme(  object, formula = ~subgroup, block = ~1|SUB) # needs fine-tuning
-#' # fit_lmer( object, formula = ~subgroup + (1|SUB))       # needs fine-tuning
+#' # fit_lme(  object, formula = ~subgroup, block = ~1|Subject) # needs fine-tuning
+#' # fit_lmer( object, formula = ~subgroup + (1|Subject))       # needs fine-tuning
 #' @export
 fit_lmx <- function(
     object, 

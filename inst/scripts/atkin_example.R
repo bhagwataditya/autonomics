@@ -8,9 +8,9 @@ mobj <- read_metabolon(mfile)
 pobj <- read_somascan( pfile)
 
 # Glucose
-table(mobj$SUB, mobj$SET)
-mobj %<>% filter_samples(SUB != 'C01')
-plot_exprs(mobj['glucose', ], block = 'Subject', geom = 'point', coefs = NULL, shape = 'T2D', size = 'T2D') + 
+table(mobj$Subject, mobj$Time)
+mobj %<>% filter_samples(Subject != 'C01')
+plot_exprs(mobj['glucose', ], block = 'Subject', geom = 'point', coefs = NULL, shape = 'Diabetes', size = 'Diabetes') + 
     scale_size_manual(values = c(Control = 3, T2DM = 3)) + 
     theme(panel.grid.major.y = element_blank(), 
           panel.grid.minor.y = element_blank(), 
@@ -21,9 +21,9 @@ contrasts(mobj$subgroup) <- MASS::contr.sdif(levels(mobj$subgroup))
 contrasts(pobj$subgroup) <- MASS::contr.sdif(levels(pobj$subgroup))
 
 object <- mobj
-subgroupvar <- c('subgroup', 'T2D')
+subgroupvar <- c('subgroup', 'Diabetes')
 block <- 'Subject'
-object$T2D %<>% factor()
+object$Diabetes %<>% factor()
 
 svar_coefs <- function(object, svar)  colnames(contrasts(object[[svar]]))
 
@@ -36,12 +36,12 @@ svar_coefs <- function(object, svar)  colnames(contrasts(object[[svar]]))
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object$T2D %<>% factor()
-#' fdt1 <- .fit_xxx_across( object, groupvars = c('subgroup', 'T2D'), block = 'Subject')
-#' fdt2 <- .fit_xxx_within( object, groupvars = c('subgroup', 'T2D'), block = 'Subject')
-#' fdt3 <- .fit_xxx_within( object, groupvars = c('T2D', 'subgroup'), block = 'Subject')
-#' fdt4 <- .fit_xxx_between(object, groupvars = c('T2D', 'subgroup'), block = 'Subject')
-#' object %<>% fit_across_within_between(groupvars = c('subgroup', 'T2D'), block = 'Subject')
+#' object$Diabetes %<>% factor()
+#' fdt1 <- .fit_xxx_across( object, groupvars = c('subgroup', 'Diabetes'), block = 'Subject')
+#' fdt2 <- .fit_xxx_within( object, groupvars = c('subgroup', 'Diabetes'), block = 'Subject')
+#' fdt3 <- .fit_xxx_within( object, groupvars = c('Diabetes', 'subgroup'), block = 'Subject')
+#' fdt4 <- .fit_xxx_between(object, groupvars = c('Diabetes', 'subgroup'), block = 'Subject')
+#' object %<>% fit_across_within_between(groupvars = c('subgroup', 'Diabetes'), block = 'Subject')
 #' @export
 fit_xxx_across <- function(object, groupvars, block){
 # Formula
@@ -153,8 +153,7 @@ fit_across_within_between <- function(object, groupvars, block){
 
 
 pdt2 <- .fit_limma(pobj, formula = ~ subgroup + T2D, block = 'Subject_ID', coefs = c('t1-t0', 't2-t1', 't3-t2', 'D'))
-
-mobj %<>% fit_limma(formula = ~ subgroup + T2D, block = 'Subject',        coefs = c('t1-t0', 't2-t1', 't3-t2', 'T2DM'))
+mobj %<>% fit_limma(formula = ~ subgroup + Diabetes, block = 'Subject',        coefs = c('t1-t0', 't2-t1', 't3-t2', 'T2DM'))
 pobj %<>% fit_limma(formula = ~ subgroup + T2D, block = 'Subject_ID', coefs = c('t1-t0', 't2-t1', 't3-t2', 'D'))
 mobj %<>% order_on_p(coef = 't1-t0')
 pobj %<>% order_on_p(coef = 't1-t0')
@@ -162,7 +161,7 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
            coef  = NULL,
            block = 'Subject_ID', 
@@ -177,7 +176,7 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
            block = 'Subject_ID', 
@@ -191,7 +190,7 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
            block = 'Subject_ID', 
@@ -205,7 +204,7 @@ plot_exprs(mobj[2,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
            block = 'Subject_ID', 
@@ -213,7 +212,7 @@ plot_exprs(pobj[1,],
            shape = 'T2D', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # D : t1 - t0
-mobj %<>% fit_limma(formula = ~ T2D/subgroup, block = 'Subject')
+mobj %<>% fit_limma(formula = ~ Diabetes/Time, block = 'Subject')
 pobj %<>% fit_limma(formula = ~ T2D/subgroup, block = 'Subject_ID')
 mobj %<>% order_on_p(coef = 'T2DM:t1-t0')
 pobj %<>% order_on_p(coef =    'D:t1-t0')
@@ -221,12 +220,12 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
            coef  = NULL,
            block = 'Subject_ID', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # C : t1 - t0
 mobj %<>% order_on_p(coef = 'Control:t1-t0')
@@ -235,7 +234,7 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
            coef  = NULL,
            block = 'Subject_ID', 
@@ -249,7 +248,7 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
            block = 'Subject_ID', 
@@ -263,7 +262,7 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
            block = 'Subject_ID', 
@@ -277,12 +276,12 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
            block = 'Subject_ID', 
            geom  = 'point', 
-           shape = 'T2D', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # C : t3 - t2
 mobj %<>% order_on_p(coef = 'Control:t3-t2')
@@ -291,7 +290,7 @@ plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
            coef  = NULL,
            block = 'Subject_ID', 
@@ -305,8 +304,8 @@ plot_exprs(mobj[1:6, ], n = 6,
            coef  = NULL,
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', 
-           size  = 'T2D', nrow = 2, ncol = 3) + scale_size_manual(values = c(Control = 3, T2DM = 3))
+           shape = 'Diabetes', 
+           size  = 'Diabetes', nrow = 2, ncol = 3) + scale_size_manual(values = c(Control = 3, T2DM = 3))
 plot_exprs(pobj[c(1,2,4,5,6,7)], n = 6,
            coef  = NULL,
            block = 'Subject_ID', 
@@ -323,38 +322,38 @@ plot_exprs(mobj[c(29,1,2,3), ],
            coefs = NULL, 
            block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', 
-           size  = 'T2D', 
+           shape = 'Diabetes', 
+           size  = 'Diabetes', 
            nrow  = 1, ncol = 4) + scale_size_manual(values = c(Control = 3, T2DM = 3))
 
 
 mobj %>% fit_limma()
-mobj$SET
-mobj$T2D
+mobj$Time
+mobj$Diabetes
 
 # 
 mobj
 
 # t0: strong dip and T2D/control difference
 contrasts(mobj$subgroup) <- MASS::contr.sdif(levels(mobj$subgroup))
-mobj %<>% fit_limma(formula = ~ subgroup/T2D, block = 'Subject')
+mobj %<>% fit_limma(formula = ~ subgroup/Diabetes, block = 'Subject')
 mobj %<>% order_on_p(    coefs = c('t1-t0', 't0:T2DM'), combiner = '&')
-mobj[1, ] %>% plot_exprs(coefs = c('t1-t0', 't0:T2DM'), geom = 'point', block = 'Subject', shape = 'T2D', size = 'T2D') +  scale_size_manual(values = c(Control = 2, T2DM = 3))
+mobj[1, ] %>% plot_exprs(coefs = c('t1-t0', 't0:T2DM'), geom = 'point', block = 'Subject', shape = 'Diabetes', size = 'Diabetes') +  scale_size_manual(values = c(Control = 2, T2DM = 3))
 
 # t3: strong recovery AND difference between diabetics and controls
 contrasts(mobj$subgroup) <- MASS::contr.sdif(levels(mobj$subgroup))
-mobj %<>% fit_limma(formula = ~ subgroup/T2D, block = 'Subject')
+mobj %<>% fit_limma(formula = ~ subgroup/Diabetes, block = 'Subject')
 mobj %<>% order_on_p(    coefs = c('t3-t2', 't3:T2DM'), combiner = '&')
-mobj[1, ] %>% plot_exprs(coefs = c('t3-t2', 't3:T2DM'), geom = 'point', block = 'Subject', shape = 'T2D', size = 'T2D') +  scale_size_manual(values = c(Control = 2, T2DM = 3))
+mobj[1, ] %>% plot_exprs(coefs = c('t3-t2', 't3:T2DM'), geom = 'point', block = 'Subject', shape = 'Diabetes', size = 'Diabetes') +  scale_size_manual(values = c(Control = 2, T2DM = 3))
 
 # 
 contrasts(mobj$subgroup) <- MASS::contr.sdif(levels(mobj$subgroup))
-mobj %<>% fit_limma(formula = ~ subgroup*T2D, block = 'Subject')
+mobj %<>% fit_limma(formula = ~ subgroup*Diabetes, block = 'Subject')
 mobj %<>% order_on_p(coefs = c('t3-t2', 't3-t2:T2DM'), combiner = '&')
-mobj[1, ] %>% plot_exprs(coef = NULL, geom = 'point', block = 'Subject', shape = 'T2D', facet = 'T2D', ncol = 2)
+mobj[1, ] %>% plot_exprs(coef = NULL, geom = 'point', block = 'Subject', shape = 'Diabetes', facet = 'Diabetes', ncol = 2)
 
 
-mobj |> fit_limma(formula = ~ T2D/subgroup, block = 'Subject') |>
-        plot_exprs(coef = 'T2DM', geom = 'point', block = 'Subject', shape = 'T2D', size = 'T2D') + 
+mobj |> fit_limma(formula = ~ Diabetes/subgroup, block = 'Subject') |>
+        plot_exprs(coef = 'Diabetes', geom = 'point', block = 'Subject', shape = 'Diabetes', size = 'Diabetes') + 
         scale_size_manual(values = c(Control = 3, T2DM = 3))
     

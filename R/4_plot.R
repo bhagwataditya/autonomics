@@ -315,10 +315,10 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #'     
 #' # Sample distributions
 #'     plot_sample_densities(object)
-#'     plot_sample_violins(  object, facet = 'SET')
+#'     plot_sample_violins(  object, facet = 'Time')
 #'     plot_sample_boxplots(object)
 #'     plot_exprs(object)
-#'     plot_exprs(object, dim = 'samples', x = 'subgroup', facet = 'SET')
+#'     plot_exprs(object, dim = 'samples', x = 'subgroup', facet = 'Time')
 #'     
 #' # Feature distributions
 #'     plot_feature_densities(object)
@@ -1092,7 +1092,7 @@ add_facetvars <- function(
 #'     object %<>% fit_limma(block = 'Subject')
 #'     plot_exprs(object, block = 'Subject')
 #'     plot_exprs(object, block = 'Subject', coefs = c('t1', 't2', 't3'))
-#'     plot_exprs_per_coef(object, x = 'SET', block = 'Subject')
+#'     plot_exprs_per_coef(object, x = 'Time', block = 'Subject')
 #' # Points
 #'     plot_exprs(object, geom = 'point', block = 'Subject')
 #' # Add highlights
@@ -1257,7 +1257,7 @@ plot_feature_boxplots <- function(object, ...){
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' object %<>% pls(by = 'subgroup')
-#' object %<>% pls(by = 'T2D')
+#' object %<>% pls(by = 'Diabetes')
 #' object %<>% pls(by = 'Subject')
 #' plot_exprs_per_coef(object)
 #' plot_exprs_per_coef(object, orderbyp = TRUE)
@@ -1328,9 +1328,9 @@ default_subtitle <- function(fit, x, coefs){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' svars(object)
-#' default_geom(object, x = 'AGE')
-#' default_geom(object, x = c('AGE', 'T2D'))
-#' default_geom(object, x = c('AGE', 'T2D'), block = 'Subject')
+#' default_geom(object, x = 'Age')
+#' default_geom(object, x = c('Age', 'Diabetes'))
+#' default_geom(object, x = c('Age', 'Diabetes'), block = 'Subject')
 #' @export
 default_geom <- function(object, x, block = NULL){
     if (all(x %in% fvars(object)))  return(set_names(rep('boxplot', length(x)), names(x)))
@@ -1372,9 +1372,9 @@ default_geom <- function(object, x, block = NULL){
 #' object %<>% extract(idx, )
 #' plot_sample_boxplots(  object)
 #' plot_feature_boxplots( object)
-#' plot_sample_boxplots(object, x = 'SET')
-#' plot_subgroup_points(  object, subgroup = 'SET')
-#' plot_subgroup_points(  object, subgroup = 'SET', block = 'Subject')
+#' plot_sample_boxplots(object, x = 'Time')
+#' plot_subgroup_points(  object, subgroup = 'Time')
+#' plot_subgroup_points(  object, subgroup = 'Time', block = 'Subject')
 #' @export
 plot_subgroup_points <- function(
     object, subgroup = 'subgroup', block = NULL, x = subgroup, 
