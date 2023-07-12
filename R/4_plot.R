@@ -1474,7 +1474,7 @@ plot_venn <- function(x){
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% fit_wilcoxon(~ subgroup, block = 'SUB')
-#' object %<>% fit_limma(   ~ subgroup, block = 'SUB', coding = 'reference')
+#' object %<>% fit_limma(   ~ subgroup, block = 'SUB', coding = 'baseline')
 #' isfdr <- is_sig(object, contrast = 't3-t0')
 #' plot_contrast_venn(isfdr)
 #' @export
@@ -1515,7 +1515,7 @@ plot_matrix <- function(mat){
 
 #' Plot model 
 #' @param object ´SummarizedExperiment
-#' @param coding 'treatment', 'reference', 'difference', 'sum', 'helmert'
+#' @param coding 'treatment', 'baseline', 'difference', 'sum', 'helmert'
 #' @return ggplot
 #' @examples
 #' file <- download_data('billing19.proteingroups.txt')

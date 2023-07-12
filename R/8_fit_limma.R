@@ -73,7 +73,7 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' object <- read_metabolon(file)
 #' unique(create_design(object))
 #' unique(create_design(object, ~ subgroup))
-#' unique(create_design(object, ~ subgroup, coding = 'reference' ))
+#' unique(create_design(object, ~ subgroup, coding = 'baseline' ))
 #' unique(create_design(object, ~ subgroup, coding = 'difference'))
 #' unique(create_design(object, ~ subgroup + T2D))
 #' unique(create_design(object, ~ subgroup / T2D))
@@ -143,7 +143,7 @@ create_design.data.table <- function(
 #' @param coding  coding system \cr
 #' @param vars    character vector
 #'    'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
-#'    'reference'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
+#'    'baseline'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
 #'    'difference' :  coef = level -  prevlevel, intercept = firstlevel, epxlicit coefnames (t2-t1) \cr
 #'    'grandref'   :  coef = level - firstlevel, intercept = grandmean   \cr
 #'    'granddiff'  :  coef = level -  prevlevel, intercept = grandmean   \cr
@@ -169,7 +169,7 @@ create_design.data.table <- function(
 #' @examples
 #' # Coding functions
 #'     x <- factor(paste0('t', 0:3))
-#'     code_reference( levels(x))
+#'     code_baseline( levels(x))
 #'     code_grandref(  levels(x))
 #'     code_difference(levels(x))
 #'     code_granddiff( levels(x))
@@ -178,7 +178,7 @@ create_design.data.table <- function(
 #' 
 #' # Code
 #'     x %<>% code('treatment')
-#'     x %<>% code('reference')
+#'     x %<>% code('baseline')
 #'     x %<>% code('grandref')
 #'     x %<>% code('difference')
 #'     x %<>% code('granddiff')
@@ -189,7 +189,7 @@ create_design.data.table <- function(
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma(coding = 'treatment') # default
-#'     object %<>% fit_limma(coding = 'reference')
+#'     object %<>% fit_limma(coding = 'baseline')
 #'     object %<>% fit_limma(coding = 'grandref')
 #'     object %<>% fit_limma(coding = 'difference')
 #'     object %<>% fit_limma(coding = 'granddiff')
@@ -202,10 +202,10 @@ code <- function(object, ...)  UseMethod('code')
 #' @export
 code.factor <- function(object, coding, verbose = TRUE, ...){
     
-    assert_scalar_subset(coding, c('treatment', 'reference', 'difference', 
+    assert_scalar_subset(coding, c('treatment', 'baseline', 'difference', 
                                    'grandref', 'granddiff', 'sum', 'helmert'))
     codingfun <- switch(coding, treatment  = contr.treatment, 
-                                reference  =  code_reference, 
+                                baseline  =  code_baseline, 
                                 difference =  code_difference, 
                                 grandref   =  code_grandref, 
                                 granddiff  =  code_granddiff, 
@@ -247,7 +247,7 @@ code.data.table <- function(object, coding, vars = names(object), verbose = TRUE
 
 #' @rdname code
 #' @export
-code_reference <- function(n){
+code_baseline <- function(n){
     y <- contr.treatment(n)
     colnames(y) %<>% paste0('-', n[1])
     y
@@ -491,7 +491,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param object       SummarizedExperiment
 #' @param formula      modeling formula
 #' @param drop         TRUE or FALSE
-#' @param coding       factor coding system: 'treatment', 'reference', 'difference', 
+#' @param coding       factor coding system: 'treatment', 'baseline', 'difference', 
 #'                                           'grandref',  'granddiff', 'sum', 'helmert'
 #' @param design       design matrix
 #' @param contrasts    NULL or character vector: coefficient contrasts to test
@@ -519,9 +519,9 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     object %<>% fit_lmer(      ~ subgroup, block = 'SUB')  # more powerful random effects
 #'     
 #' # Intuitive : alternative coding
-#'     object %<>% fit_lme(       ~ subgroup, block = 'SUB', coding = 'reference')
-#'     object %<>% fit_lmer(      ~ subgroup, block = 'SUB', coding = 'reference')
-#'     object %<>% fit_limma(     ~ subgroup, block = 'SUB', coding = 'reference')
+#'     object %<>% fit_lme(       ~ subgroup, block = 'SUB', coding = 'baseline')
+#'     object %<>% fit_lmer(      ~ subgroup, block = 'SUB', coding = 'baseline')
+#'     object %<>% fit_limma(     ~ subgroup, block = 'SUB', coding = 'baseline')
 #'     
 #' # Flexible : limma contrasts
 #'     object %<>% fit_limma( ~ 0 + subgroup, block = 'SUB', contrasts = c('t1-t0'))

@@ -88,7 +88,7 @@ fit_wilcoxon <- function(
     object,
     formula     = default_formula(object), 
     drop        = NULL,
-    coding      = 'reference', 
+    coding      = 'baseline', 
     contrasts   = NULL,
     coefs       = NULL, 
     block       = NULL, 
@@ -103,7 +103,7 @@ fit_wilcoxon <- function(
     assert_scalar_subset(all.vars(formula), svars(object))
     subgroupvar <- all_vars(formula)[1]
     if (is.null(contrasts)){
-        if (coding == 'treatment')  coding <- 'reference' # passed on from the readers - wilcox is the only one where that doesnt work
+        if (coding == 'treatment')  coding <- 'baseline' # passed on from the readers - wilcox is the only one where that doesnt work
         contrasts <- colnames(create_design(object, formula = formula, drop = TRUE, coding = coding))[-1]
     }
     assert_is_character(contrasts)

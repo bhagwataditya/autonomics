@@ -271,7 +271,7 @@ extract_connected_features <- function(
 #' @param fit         'lm', 'lme', or 'lmer'
 #' @param formula      formula
 #' @param drop         TRUE or FALSE
-#' @param coding       factor coding system: 'treatment' (default), 'reference', 
+#' @param coding       factor coding system: 'treatment' (default), 'baseline', 
 #'                      'difference', 'grandref', 'granddiff', 'sum', 'helmert'
 #' @param coefs        NULL or stringvector
 #' @param contrasts    unused. only to allow generic get(fitfun)(contrasts)

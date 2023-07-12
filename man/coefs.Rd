@@ -31,7 +31,7 @@ Get coefs
 # Factor
     object <- factor(c('A', 'B', 'C'))
     coefs(object)
-    coefs(code(object, 'reference'))
+    coefs(code(object, 'baseline'))
     coefs(code(object, 'grandref'))
     
 # SummarizedExperiment

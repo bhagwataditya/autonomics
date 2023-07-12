@@ -75,7 +75,7 @@ fit_lmer(
 
 \item{drop}{TRUE or FALSE}
 
-\item{coding}{factor coding system: 'treatment' (default), 'reference', 
+\item{coding}{factor coding system: 'treatment' (default), 'baseline', 
 'difference', 'grandref', 'granddiff', 'sum', 'helmert'}
 
 \item{coefs}{NULL or stringvector}

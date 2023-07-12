@@ -44,7 +44,7 @@ fit_wilcoxon(
   object,
   formula = default_formula(object),
   drop = NULL,
-  coding = "reference",
+  coding = "baseline",
   contrasts = NULL,
   coefs = NULL,
   block = NULL,
@@ -61,7 +61,7 @@ fit_wilcoxon(
 
 \item{drop}{TRUE or FALSE}
 
-\item{coding}{factor coding system: 'treatment', 'reference', 'difference', 
+\item{coding}{factor coding system: 'treatment', 'baseline', 'difference', 
 'grandref',  'granddiff', 'sum', 'helmert'}
 
 \item{design}{design matrix}
@@ -105,9 +105,9 @@ Fit model and test for differential expression
     object \%<>\% fit_lmer(      ~ subgroup, block = 'SUB')  # more powerful random effects
     
 # Intuitive : alternative coding
-    object \%<>\% fit_lme(       ~ subgroup, block = 'SUB', coding = 'reference')
-    object \%<>\% fit_lmer(      ~ subgroup, block = 'SUB', coding = 'reference')
-    object \%<>\% fit_limma(     ~ subgroup, block = 'SUB', coding = 'reference')
+    object \%<>\% fit_lme(       ~ subgroup, block = 'SUB', coding = 'baseline')
+    object \%<>\% fit_lmer(      ~ subgroup, block = 'SUB', coding = 'baseline')
+    object \%<>\% fit_limma(     ~ subgroup, block = 'SUB', coding = 'baseline')
     
 # Flexible : limma contrasts
     object \%<>\% fit_limma( ~ 0 + subgroup, block = 'SUB', contrasts = c('t1-t0'))

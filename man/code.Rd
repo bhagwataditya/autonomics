@@ -4,7 +4,7 @@
 \alias{code}
 \alias{code.factor}
 \alias{code.data.table}
-\alias{code_reference}
+\alias{code_baseline}
 \alias{code_grandref}
 \alias{code_difference}
 \alias{code_granddiff}
@@ -18,7 +18,7 @@ code(object, ...)
 
 \method{code}{data.table}(object, coding, vars = names(object), verbose = TRUE, ...)
 
-code_reference(n)
+code_baseline(n)
 
 code_grandref(n)
 
@@ -41,7 +41,7 @@ code_helmert(n)
 
 \item{vars}{character vector
 'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
-'reference'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
+'baseline'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
 'difference' :  coef = level -  prevlevel, intercept = firstlevel, epxlicit coefnames (t2-t1) \cr
 'grandref'   :  coef = level - firstlevel, intercept = grandmean   \cr
 'granddiff'  :  coef = level -  prevlevel, intercept = grandmean   \cr
@@ -73,7 +73,7 @@ A General Linear Model contains:                                                
 \examples{
 # Coding functions
     x <- factor(paste0('t', 0:3))
-    code_reference( levels(x))
+    code_baseline( levels(x))
     code_grandref(  levels(x))
     code_difference(levels(x))
     code_granddiff( levels(x))
@@ -82,7 +82,7 @@ A General Linear Model contains:                                                
 
 # Code
     x \%<>\% code('treatment')
-    x \%<>\% code('reference')
+    x \%<>\% code('baseline')
     x \%<>\% code('grandref')
     x \%<>\% code('difference')
     x \%<>\% code('granddiff')
@@ -93,7 +93,7 @@ A General Linear Model contains:                                                
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma(coding = 'treatment') # default
-    object \%<>\% fit_limma(coding = 'reference')
+    object \%<>\% fit_limma(coding = 'baseline')
     object \%<>\% fit_limma(coding = 'grandref')
     object \%<>\% fit_limma(coding = 'difference')
     object \%<>\% fit_limma(coding = 'granddiff')
