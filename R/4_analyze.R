@@ -6,7 +6,7 @@
 #' @param fit        linmod engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'
 #' @param formula    model formula
 #' @param drop       TRUE / FALSE : drop varname in designmat ?
-#' @param coding     factor coding system : 'treatment', 'baseline', 'difference', 
+#' @param coding     factor coding system : 'treatment', 'baseline', 'backward', 
 #'                                          'grandref', 'granddiff', 'sum', 'helmert'
 #' @param contrasts  model coefficient contrasts of interest: string vector or NULL
 #' @param coefs      model coefficients          of interest: string vector or NULL

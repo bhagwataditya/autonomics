@@ -6,7 +6,7 @@
 \alias{code.data.table}
 \alias{code_baseline}
 \alias{code_grandref}
-\alias{code_difference}
+\alias{code_backward}
 \alias{code_granddiff}
 \alias{code_sum}
 \alias{code_helmert}
@@ -22,7 +22,7 @@ code_baseline(n)
 
 code_grandref(n)
 
-code_difference(n)
+code_backward(n)
 
 code_granddiff(n)
 
@@ -41,8 +41,8 @@ code_helmert(n)
 
 \item{vars}{character vector
 'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
-'baseline'  :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
-'difference' :  coef = level -  prevlevel, intercept = firstlevel, epxlicit coefnames (t2-t1) \cr
+'baseline'   :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
+'backward'   :  coef = level -  prevlevel, intercept = firstlevel, explicit coefnames (t2-t1) \cr
 'grandref'   :  coef = level - firstlevel, intercept = grandmean   \cr
 'granddiff'  :  coef = level -  prevlevel, intercept = grandmean   \cr
 'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
@@ -65,17 +65,17 @@ A General Linear Model contains:                                                
        Several contrast coding functions are available in 'stats' and 'codingMatrices'
        But their (function and coefficient) namings are a bit confusing and unsystematic.
        Instead, the functions below offer an intuitive interface (to the otherwise powerful stats/codingMatrices packages).
-       The names of these functions reflect the contrast coding used (treatment, difference, sum, or helmert contrasts).
+       The names of these functions reflect the contrast coding used (treatment, backward, sum, or helmert contrasts).
        They also reflect the intercept interpretation (either first factor's first level or grand mean).
        They all produce intuitive coefficient names (e.g. 't1-t0' rather than just 't1').
-       They all have unit scaling (a coefficient of 1 means a difference of 1).
+       They all have unit scaling (a coefficient of 1 means a backward of 1).
 }
 \examples{
 # Coding functions
     x <- factor(paste0('t', 0:3))
     code_baseline( levels(x))
     code_grandref(  levels(x))
-    code_difference(levels(x))
+    code_backward(levels(x))
     code_granddiff( levels(x))
     code_sum(       levels(x))
     code_helmert(   levels(x))
@@ -84,7 +84,7 @@ A General Linear Model contains:                                                
     x \%<>\% code('treatment')
     x \%<>\% code('baseline')
     x \%<>\% code('grandref')
-    x \%<>\% code('difference')
+    x \%<>\% code('backward')
     x \%<>\% code('granddiff')
     x \%<>\% code('sum')
     x \%<>\% code('helmert')
@@ -95,7 +95,7 @@ A General Linear Model contains:                                                
     object \%<>\% fit_limma(coding = 'treatment') # default
     object \%<>\% fit_limma(coding = 'baseline')
     object \%<>\% fit_limma(coding = 'grandref')
-    object \%<>\% fit_limma(coding = 'difference')
+    object \%<>\% fit_limma(coding = 'backward')
     object \%<>\% fit_limma(coding = 'granddiff')
     object \%<>\% fit_limma(coding = 'sum')
     object \%<>\% fit_limma(coding = 'helmert')

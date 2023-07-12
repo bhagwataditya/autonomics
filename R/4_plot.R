@@ -1515,7 +1515,7 @@ plot_matrix <- function(mat){
 
 #' Plot model 
 #' @param object ´SummarizedExperiment
-#' @param coding 'treatment', 'baseline', 'difference', 'sum', 'helmert'
+#' @param coding 'treatment', 'baseline', 'backward', 'sum', 'helmert'
 #' @return ggplot
 #' @examples
 #' file <- download_data('billing19.proteingroups.txt')

@@ -9,7 +9,7 @@ plot_design(object, coding = "treatment")
 \arguments{
 \item{object}{´SummarizedExperiment}
 
-\item{coding}{'treatment', 'baseline', 'difference', 'sum', 'helmert'}
+\item{coding}{'treatment', 'baseline', 'backward', 'sum', 'helmert'}
 }
 \value{
 ggplot
