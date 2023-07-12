@@ -36,7 +36,7 @@ analyze(
 \item{drop}{TRUE / FALSE : drop varname in designmat ?}
 
 \item{coding}{factor coding system : 'treatment', 'baseline', 'backward', 
-'baselinegrand', 'granddiff', 'sum', 'helmert'}
+'baselinegrand', 'backwardgrand', 'sum', 'helmert'}
 
 \item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 

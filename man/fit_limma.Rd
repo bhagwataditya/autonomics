@@ -62,7 +62,7 @@ fit_wilcoxon(
 \item{drop}{TRUE or FALSE}
 
 \item{coding}{factor coding system: 'treatment', 'baseline', 'backward', 
-'baselinegrand',  'granddiff', 'sum', 'helmert'}
+'baselinegrand',  'backwardgrand', 'sum', 'helmert'}
 
 \item{design}{design matrix}
 

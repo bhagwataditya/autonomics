@@ -7,7 +7,7 @@
 \alias{code_baseline}
 \alias{code_baselinegrand}
 \alias{code_backward}
-\alias{code_granddiff}
+\alias{code_backwardgrand}
 \alias{code_sum}
 \alias{code_helmert}
 \title{Contrast Code Factor}
@@ -24,7 +24,7 @@ code_baselinegrand(n)
 
 code_backward(n)
 
-code_granddiff(n)
+code_backwardgrand(n)
 
 code_sum(n)
 
@@ -44,7 +44,7 @@ code_helmert(n)
 'baseline'   :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
 'backward'   :  coef = level -  prevlevel, intercept = firstlevel, explicit coefnames (t2-t1) \cr
 'baselinegrand'   :  coef = level - firstlevel, intercept = grandmean   \cr
-'granddiff'  :  coef = level -  prevlevel, intercept = grandmean   \cr
+'backwardgrand'  :  coef = level -  prevlevel, intercept = grandmean   \cr
 'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
 'helmert'    :  coef = level - prevlevels, intercept = grandmean   \cr}
 
@@ -76,7 +76,7 @@ A General Linear Model contains:                                                
     code_baseline( levels(x))
     code_baselinegrand(  levels(x))
     code_backward(levels(x))
-    code_granddiff( levels(x))
+    code_backwardgrand( levels(x))
     code_sum(       levels(x))
     code_helmert(   levels(x))
 
@@ -85,7 +85,7 @@ A General Linear Model contains:                                                
     x \%<>\% code('baseline')
     x \%<>\% code('baselinegrand')
     x \%<>\% code('backward')
-    x \%<>\% code('granddiff')
+    x \%<>\% code('backwardgrand')
     x \%<>\% code('sum')
     x \%<>\% code('helmert')
 
@@ -96,7 +96,7 @@ A General Linear Model contains:                                                
     object \%<>\% fit_limma(coding = 'baseline')
     object \%<>\% fit_limma(coding = 'baselinegrand')
     object \%<>\% fit_limma(coding = 'backward')
-    object \%<>\% fit_limma(coding = 'granddiff')
+    object \%<>\% fit_limma(coding = 'backwardgrand')
     object \%<>\% fit_limma(coding = 'sum')
     object \%<>\% fit_limma(coding = 'helmert')
 }

@@ -7,7 +7,7 @@
 #' @param formula    model formula
 #' @param drop       TRUE / FALSE : drop varname in designmat ?
 #' @param coding     factor coding system : 'treatment', 'baseline', 'backward', 
-#'                               'baselinegrand', 'granddiff', 'sum', 'helmert'
+#'                               'baselinegrand', 'backwardgrand', 'sum', 'helmert'
 #' @param contrasts  model coefficient contrasts of interest: string vector or NULL
 #' @param coefs      model coefficients          of interest: string vector or NULL
 #' @param block      model blockvar

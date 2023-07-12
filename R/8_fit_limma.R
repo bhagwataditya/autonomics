@@ -146,7 +146,7 @@ create_design.data.table <- function(
 #'    'baseline'   :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
 #'    'backward'   :  coef = level -  prevlevel, intercept = firstlevel, explicit coefnames (t2-t1) \cr
 #'    'baselinegrand'   :  coef = level - firstlevel, intercept = grandmean   \cr
-#'    'granddiff'  :  coef = level -  prevlevel, intercept = grandmean   \cr
+#'    'backwardgrand'  :  coef = level -  prevlevel, intercept = grandmean   \cr
 #'    'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
 #'    'helmert'    :  coef = level - prevlevels, intercept = grandmean   \cr
 #' @param verbose TRUE or FALSE
@@ -172,7 +172,7 @@ create_design.data.table <- function(
 #'     code_baseline( levels(x))
 #'     code_baselinegrand(  levels(x))
 #'     code_backward(levels(x))
-#'     code_granddiff( levels(x))
+#'     code_backwardgrand( levels(x))
 #'     code_sum(       levels(x))
 #'     code_helmert(   levels(x))
 #' 
@@ -181,7 +181,7 @@ create_design.data.table <- function(
 #'     x %<>% code('baseline')
 #'     x %<>% code('baselinegrand')
 #'     x %<>% code('backward')
-#'     x %<>% code('granddiff')
+#'     x %<>% code('backwardgrand')
 #'     x %<>% code('sum')
 #'     x %<>% code('helmert')
 #'
@@ -192,7 +192,7 @@ create_design.data.table <- function(
 #'     object %<>% fit_limma(coding = 'baseline')
 #'     object %<>% fit_limma(coding = 'baselinegrand')
 #'     object %<>% fit_limma(coding = 'backward')
-#'     object %<>% fit_limma(coding = 'granddiff')
+#'     object %<>% fit_limma(coding = 'backwardgrand')
 #'     object %<>% fit_limma(coding = 'sum')
 #'     object %<>% fit_limma(coding = 'helmert')
 #' @export
@@ -203,12 +203,12 @@ code <- function(object, ...)  UseMethod('code')
 code.factor <- function(object, coding, verbose = TRUE, ...){
     
     assert_scalar_subset(coding, c('treatment', 'baseline', 'backward', 
-                                   'baselinegrand', 'granddiff', 'sum', 'helmert'))
+                                   'baselinegrand', 'backwardgrand', 'sum', 'helmert'))
     codingfun <- switch(coding, treatment  = contr.treatment, 
                                 baseline  =  code_baseline, 
                                 backward =  code_backward, 
                                 baselinegrand   =  code_baselinegrand, 
-                                granddiff  =  code_granddiff, 
+                                backwardgrand  =  code_backwardgrand, 
                                 sum        =  code_sum,
                                 helmert    =  code_helmert)
     
@@ -280,7 +280,7 @@ code_backward <- function(n){
 
 #' @rdname code
 #' @export
-code_granddiff <- function(n){
+code_backwardgrand <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
@@ -492,7 +492,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param formula      modeling formula
 #' @param drop         TRUE or FALSE
 #' @param coding       factor coding system: 'treatment', 'baseline', 'backward', 
-#'                                           'baselinegrand',  'granddiff', 'sum', 'helmert'
+#'                                           'baselinegrand',  'backwardgrand', 'sum', 'helmert'
 #' @param design       design matrix
 #' @param contrasts    NULL or character vector: coefficient contrasts to test
 #' @param coefs        NULL or character vector: model coefs to test
