@@ -105,9 +105,9 @@ file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 fit_lm(   object, formula = ~subgroup)
 fit_limma(object, formula = ~subgroup)
-fit_limma(object, formula = ~subgroup, block = 'SUB')
-fit_lme(  object, formula = ~subgroup, block = 'SUB')
-fit_lmer( object, formula = ~subgroup, block = 'SUB')
+fit_limma(object, formula = ~subgroup, block = 'Subject')
+fit_lme(  object, formula = ~subgroup, block = 'Subject')
+fit_lmer( object, formula = ~subgroup, block = 'Subject')
 # fit_lme(  object, formula = ~subgroup, block = ~1|SUB) # needs fine-tuning
 # fit_lmer( object, formula = ~subgroup + (1|SUB))       # needs fine-tuning
 }

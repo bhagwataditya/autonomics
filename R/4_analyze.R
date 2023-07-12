@@ -72,7 +72,7 @@ analyze <- function(
 #' object %<>% pca()
 #' object %<>% pls(by = 'subgroup')
 #' object %<>% fit_limma()
-#' plot_summary(object, block = 'SUB')
+#' plot_summary(object, block = 'Subject')
 #' @export
 plot_summary <- function(
     object, fit = 'limma', block = NULL, label = 'feature_id', 

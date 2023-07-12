@@ -657,7 +657,7 @@ biplot_dims <- function(
 #' biplot(object, dims = 3:4, nx = 1)
 #' biplot(object, method = 'pls')
 #' biplot(object, method = 'pls', dims = 3:4)
-#' biplot(object, method = 'pls', dims = 3:4, group = 'SUB')
+#' biplot(object, method = 'pls', dims = 3:4, group = 'Subject')
 #' @export
 biplot <- function(
     object, 
@@ -747,7 +747,7 @@ biplot <- function(
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, pca = TRUE, plot = FALSE)
-#' biplot_corrections(object, color = 'subgroup', covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+#' biplot_corrections(object, color = 'subgroup', covariates = c('SEX', 'T2D', 'Subject', 'SET'))
 #' @seealso biplot_covariates
 #' @export
 biplot_corrections <- function(
@@ -796,8 +796,8 @@ biplot_corrections <- function(
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file, pca = TRUE)
 #' biplot_covariates(object, covariates = 'subgroup', ndim = 12, dimcols = 3)
-#' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
-#' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
+#' biplot_covariates(object, covariates = c('SEX', 'T2D', 'Subject', 'SET'))
+#' biplot_covariates(object, covariates = c('SEX', 'T2D', 'Subject', 'SET'), ndim=2)
 #' biplot_covariates(object, covariates = c('subgroup'), dimcols = 3)
 #' @seealso biplot_corrections
 #' @export

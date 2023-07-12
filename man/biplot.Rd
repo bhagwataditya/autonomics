@@ -82,5 +82,5 @@ biplot(object, nx = 1)
 biplot(object, dims = 3:4, nx = 1)
 biplot(object, method = 'pls')
 biplot(object, method = 'pls', dims = 3:4)
-biplot(object, method = 'pls', dims = 3:4, group = 'SUB')
+biplot(object, method = 'pls', dims = 3:4, group = 'Subject')
 }

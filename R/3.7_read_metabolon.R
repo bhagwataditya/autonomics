@@ -229,7 +229,7 @@ pubchem_to_smiles <- function(x){
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' read_metabolon(file, plot = TRUE, block = 'SUB')
+#' read_metabolon(file, plot = TRUE, block = 'Subject')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
     fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 

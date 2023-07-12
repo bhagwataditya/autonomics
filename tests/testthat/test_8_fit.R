@@ -60,7 +60,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         object <- read_metabolon(file)
         
         # limma
-        object %<>% fit_limma(formula = ~ subgroup + T2D, block = 'SUB', coding = 'baseline')
+        object %<>% fit_limma(formula = ~ subgroup + T2D, block = 'Subject', coding = 'baseline')
         fitdt <- summarize_fit(fdt(object), fit = 'limma')
         expect_s3_class(fitdt, 'data.table')
         
@@ -70,17 +70,17 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         expect_s3_class(fitdt, 'data.table')
         
         # lme
-        object %<>% fit_lme(formula = ~ subgroup + T2D, block = 'SUB', coding = 'baseline')
+        object %<>% fit_lme(formula = ~ subgroup + T2D, block = 'Subject', coding = 'baseline')
         fitdt <- summarize_fit(fdt(object), fit = 'lme')
         expect_s3_class(fitdt, 'data.table')
 
         # lmer
-        suppressWarnings(object %<>% fit_lmer(formula = ~ subgroup + T2D, block = 'SUB', coding = 'baseline'))
+        suppressWarnings(object %<>% fit_lmer(formula = ~ subgroup + T2D, block = 'Subject', coding = 'baseline'))
         fitdt <- summarize_fit(fdt(object), fit = 'lmer')
         expect_s3_class(fitdt, 'data.table')
 
         # wilcoxon        
-        object %<>% fit_wilcoxon(formula = ~ subgroup, block = 'SUB', coding = 'baseline')
+        object %<>% fit_wilcoxon(formula = ~ subgroup, block = 'Subject', coding = 'baseline')
         fitdt <- summarize_fit(fdt(object), fit = 'wilcoxon')
         expect_s3_class(fitdt, 'data.table')
     })

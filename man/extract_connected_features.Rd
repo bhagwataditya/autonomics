@@ -30,7 +30,7 @@ Extract features for which connected factor levels are measured in at least two 
 # Read
     file <- download_data('atkin18.metabolon.xlsx')
     object <- read_metabolon(file)
-    cols <- c('sample_id', 'subgroup', 'SUB', 'SET', 'AGE', 'SEX', 'T2D')
+    cols <- c('sample_id', 'subgroup', 'Subject', 'SET', 'AGE', 'SEX', 'T2D')
     sdt(object) \%<>\% extract(, cols, with = FALSE)
     sdt(object)
     object$SUPERSET <- ''
@@ -45,17 +45,17 @@ Extract features for which connected factor levels are measured in at least two 
     object$SUBSET[  object$SET == 't3'] <- 'b'
 # Extract
     extract_connected_features(object, formula = ~ SET, 
-                                     blockvars = 'SUB')
+                                     blockvars = 'Subject')
 
     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
-                                     blockvars = 'SUB')
+                                     blockvars = 'Subject')
 
     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
-                                     blockvars = c('SUB', 'SEX'))
+                                     blockvars = c('Subject', 'SEX'))
 
     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + AGE, 
-                                     blockvars = c('SUB', 'SEX'))
+                                     blockvars = c('Subject', 'SEX'))
 
     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + T2D, 
-                                     blockvars = c('SUB', 'SEX'))
+                                     blockvars = c('Subject', 'SEX'))
 }

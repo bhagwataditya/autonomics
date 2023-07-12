@@ -62,5 +62,5 @@ plot_sample_boxplots(  object)
 plot_feature_boxplots( object)
 plot_sample_boxplots(object, x = 'SET')
 plot_subgroup_points(  object, subgroup = 'SET')
-plot_subgroup_points(  object, subgroup = 'SET', block = 'SUB')
+plot_subgroup_points(  object, subgroup = 'SET', block = 'Subject')
 }

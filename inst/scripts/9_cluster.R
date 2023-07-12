@@ -3,7 +3,7 @@
 #' @param scale_features TRUE or FALSE: whether to scale (i.e. z-score) features
 #' @examples 
 #' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, fit='limma', subgroupvar='SET', block='SUB')
+#' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'SET', block = 'Subject')
 #' object %<>% cluster()
 feature_sample_heatmap <- function(object){
    
@@ -105,8 +105,8 @@ cluster <- function(object, formula=~SUB+SET){
     setnames(blockeffects, 'rn', 'feature_id')
     blockeffects %<>% melt.data.table(id.vars = 'feature_id', variable.name = block, value.name = 'blockeffect')
     
-    valuedt <- sumexp_to_longdt(object, svars = c('SUB', 'SET'), fvars = c('feature_id'))
-    valuedt %<>% merge(blockeffects, by = c('feature_id', 'SUB'), all.x = TRUE)
+    valuedt <- sumexp_to_longdt(object, svars = c('Subject', 'SET'), fvars = c('feature_id'))
+    valuedt %<>% merge(blockeffects, by = c('feature_id', 'Subject'), all.x = TRUE)
     valuedt[is.na(blockeffect), blockeffect := 0]
     valuedt[, correctedvalue := value - blockeffect]
     ggplot(valuedt[feature_id==feature_id[3]], aes(x=SET, y=value, color=SET, group=SUB)) + geom_point() + geom_line() + theme_bw()

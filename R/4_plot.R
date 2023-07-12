@@ -1085,22 +1085,22 @@ add_facetvars <- function(
 #' # Without limma
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     plot_exprs(object, block = 'SUB', title = 'Subgroup Boxplots')
+#'     plot_exprs(object, block = 'Subject', title = 'Subgroup Boxplots')
 #'     plot_exprs(object, dim = 'samples')
 #'     plot_exprs(object, dim = 'features', block = 'sample_id')
 #' # With limma 
-#'     object %<>% fit_limma(block = 'SUB')
-#'     plot_exprs(object, block = 'SUB')
-#'     plot_exprs(object, block = 'SUB', coefs = c('t1', 't2', 't3'))
-#'     plot_exprs_per_coef(object, x = 'SET', block = 'SUB')
+#'     object %<>% fit_limma(block = 'Subject')
+#'     plot_exprs(object, block = 'Subject')
+#'     plot_exprs(object, block = 'Subject', coefs = c('t1', 't2', 't3'))
+#'     plot_exprs_per_coef(object, x = 'SET', block = 'Subject')
 #' # Points
-#'     plot_exprs(object, geom = 'point', block = 'SUB')
+#'     plot_exprs(object, geom = 'point', block = 'Subject')
 #' # Add highlights
 #'     controlfeatures <- c('biotin','phosphate')
 #'     fdt(object) %<>% cbind(control = .$feature_name %in% controlfeatures)
 #'     plot_exprs(object, dim = 'samples', highlight = 'control')
 #' # Multiple pages
-#'     plot_exprs(object, block = 'SUB', n = 4, nrow = 1, ncol = 2)
+#'     plot_exprs(object, block = 'Subject', n = 4, nrow = 1, ncol = 2)
 #' @export
 plot_exprs <- function(
     object, 
@@ -1258,10 +1258,10 @@ plot_feature_boxplots <- function(object, ...){
 #' object %<>% fit_limma()
 #' object %<>% pls(by = 'subgroup')
 #' object %<>% pls(by = 'T2D')
-#' object %<>% pls(by = 'SUB')
+#' object %<>% pls(by = 'Subject')
 #' plot_exprs_per_coef(object)
 #' plot_exprs_per_coef(object, orderbyp = TRUE)
-#' plot_exprs_per_coef(object, fit = 'pls1', block = 'SUB')
+#' plot_exprs_per_coef(object, fit = 'pls1', block = 'Subject')
 #' @export
 plot_exprs_per_coef <- function(
     object, 
@@ -1330,7 +1330,7 @@ default_subtitle <- function(fit, x, coefs){
 #' svars(object)
 #' default_geom(object, x = 'AGE')
 #' default_geom(object, x = c('AGE', 'T2D'))
-#' default_geom(object, x = c('AGE', 'T2D'), block = 'SUB')
+#' default_geom(object, x = c('AGE', 'T2D'), block = 'Subject')
 #' @export
 default_geom <- function(object, x, block = NULL){
     if (all(x %in% fvars(object)))  return(set_names(rep('boxplot', length(x)), names(x)))
@@ -1374,7 +1374,7 @@ default_geom <- function(object, x, block = NULL){
 #' plot_feature_boxplots( object)
 #' plot_sample_boxplots(object, x = 'SET')
 #' plot_subgroup_points(  object, subgroup = 'SET')
-#' plot_subgroup_points(  object, subgroup = 'SET', block = 'SUB')
+#' plot_subgroup_points(  object, subgroup = 'SET', block = 'Subject')
 #' @export
 plot_subgroup_points <- function(
     object, subgroup = 'subgroup', block = NULL, x = subgroup, 
@@ -1473,8 +1473,8 @@ plot_venn <- function(x){
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% fit_wilcoxon(~ subgroup, block = 'SUB')
-#' object %<>% fit_limma(   ~ subgroup, block = 'SUB', coding = 'baseline')
+#' object %<>% fit_wilcoxon(~ subgroup, block = 'Subject')
+#' object %<>% fit_limma(   ~ subgroup, block = 'Subject', coding = 'baseline')
 #' isfdr <- is_sig(object, contrast = 't3-t0')
 #' plot_contrast_venn(isfdr)
 #' @export

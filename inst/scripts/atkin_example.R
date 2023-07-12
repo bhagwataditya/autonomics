@@ -10,7 +10,7 @@ pobj <- read_somascan( pfile)
 # Glucose
 table(mobj$SUB, mobj$SET)
 mobj %<>% filter_samples(SUB != 'C01')
-plot_exprs(mobj['glucose', ], block = 'SUB', geom = 'point', coefs = NULL, shape = 'T2D', size = 'T2D') + 
+plot_exprs(mobj['glucose', ], block = 'Subject', geom = 'point', coefs = NULL, shape = 'T2D', size = 'T2D') + 
     scale_size_manual(values = c(Control = 3, T2DM = 3)) + 
     theme(panel.grid.major.y = element_blank(), 
           panel.grid.minor.y = element_blank(), 
@@ -22,7 +22,7 @@ contrasts(pobj$subgroup) <- MASS::contr.sdif(levels(pobj$subgroup))
 
 object <- mobj
 subgroupvar <- c('subgroup', 'T2D')
-block <- 'SUB'
+block <- 'Subject'
 object$T2D %<>% factor()
 
 svar_coefs <- function(object, svar)  colnames(contrasts(object[[svar]]))
@@ -37,11 +37,11 @@ svar_coefs <- function(object, svar)  colnames(contrasts(object[[svar]]))
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object$T2D %<>% factor()
-#' fdt1 <- .fit_xxx_across( object, groupvars = c('subgroup', 'T2D'), block = 'SUB')
-#' fdt2 <- .fit_xxx_within( object, groupvars = c('subgroup', 'T2D'), block = 'SUB')
-#' fdt3 <- .fit_xxx_within( object, groupvars = c('T2D', 'subgroup'), block = 'SUB')
-#' fdt4 <- .fit_xxx_between(object, groupvars = c('T2D', 'subgroup'), block = 'SUB')
-#' object %<>% fit_across_within_between(groupvars = c('subgroup', 'T2D'), block = 'SUB')
+#' fdt1 <- .fit_xxx_across( object, groupvars = c('subgroup', 'T2D'), block = 'Subject')
+#' fdt2 <- .fit_xxx_within( object, groupvars = c('subgroup', 'T2D'), block = 'Subject')
+#' fdt3 <- .fit_xxx_within( object, groupvars = c('T2D', 'subgroup'), block = 'Subject')
+#' fdt4 <- .fit_xxx_between(object, groupvars = c('T2D', 'subgroup'), block = 'Subject')
+#' object %<>% fit_across_within_between(groupvars = c('subgroup', 'T2D'), block = 'Subject')
 #' @export
 fit_xxx_across <- function(object, groupvars, block){
 # Formula
@@ -154,13 +154,13 @@ fit_across_within_between <- function(object, groupvars, block){
 
 pdt2 <- .fit_limma(pobj, formula = ~ subgroup + T2D, block = 'Subject_ID', coefs = c('t1-t0', 't2-t1', 't3-t2', 'D'))
 
-mobj %<>% fit_limma(formula = ~ subgroup + T2D, block = 'SUB',        coefs = c('t1-t0', 't2-t1', 't3-t2', 'T2DM'))
+mobj %<>% fit_limma(formula = ~ subgroup + T2D, block = 'Subject',        coefs = c('t1-t0', 't2-t1', 't3-t2', 'T2DM'))
 pobj %<>% fit_limma(formula = ~ subgroup + T2D, block = 'Subject_ID', coefs = c('t1-t0', 't2-t1', 't3-t2', 'D'))
 mobj %<>% order_on_p(coef = 't1-t0')
 pobj %<>% order_on_p(coef = 't1-t0')
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
@@ -175,7 +175,7 @@ pobj %<>% order_on_p(coef = 't2-t1')
 fnames(mobj)[1] <- fdt(mobj)$feature_id[1] <- 'cAMP'
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
@@ -189,7 +189,7 @@ mobj %<>% order_on_p(coef = 't3-t2')
 pobj %<>% order_on_p(coef = 't3-t2')
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
@@ -203,7 +203,7 @@ mobj %<>% order_on_p(coef = 'T2DM')
 pobj %<>% order_on_p(coef = 'D')
 plot_exprs(mobj[2,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
@@ -213,13 +213,13 @@ plot_exprs(pobj[1,],
            shape = 'T2D', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # D : t1 - t0
-mobj %<>% fit_limma(formula = ~ T2D/subgroup, block = 'SUB')
+mobj %<>% fit_limma(formula = ~ T2D/subgroup, block = 'Subject')
 pobj %<>% fit_limma(formula = ~ T2D/subgroup, block = 'Subject_ID')
 mobj %<>% order_on_p(coef = 'T2DM:t1-t0')
 pobj %<>% order_on_p(coef =    'D:t1-t0')
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
@@ -233,7 +233,7 @@ mobj %<>% order_on_p(coef = 'Control:t1-t0')
 pobj %<>% order_on_p(coef =    'C:t1-t0')
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
@@ -247,7 +247,7 @@ mobj %<>% order_on_p(coef = 'T2DM:t2-t1')
 pobj %<>% order_on_p(coef =    'D:t2-t1')
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
@@ -261,7 +261,7 @@ mobj %<>% order_on_p(coef = 'Control:t2-t1')
 pobj %<>% order_on_p(coef =       'C:t2-t1')
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
@@ -275,7 +275,7 @@ mobj %<>% order_on_p(coef = 'T2DM:t3-t2')
 pobj %<>% order_on_p(coef =    'D:t3-t2')
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
@@ -289,7 +289,7 @@ mobj %<>% order_on_p(coef = 'Control:t3-t2')
 pobj %<>% order_on_p(coef =       'C:t3-t2')
 plot_exprs(mobj[1,],
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
@@ -303,7 +303,7 @@ mobj %<>% order_on_p(coef = 'T2DM:t3-t2')
 pobj %<>% order_on_p(coef = 'D:t3-t2')
 plot_exprs(mobj[1:6, ], n = 6, 
            coef  = NULL,
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D', 
            size  = 'T2D', nrow = 2, ncol = 3) + scale_size_manual(values = c(Control = 3, T2DM = 3))
@@ -321,7 +321,7 @@ pobj %<>% order_on_p()
 mobj %<>% order_on_p()
 plot_exprs(mobj[c(29,1,2,3), ], 
            coefs = NULL, 
-           block = 'SUB', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'T2D', 
            size  = 'T2D', 
@@ -337,24 +337,24 @@ mobj
 
 # t0: strong dip and T2D/control difference
 contrasts(mobj$subgroup) <- MASS::contr.sdif(levels(mobj$subgroup))
-mobj %<>% fit_limma(formula = ~ subgroup/T2D, block = 'SUB')
+mobj %<>% fit_limma(formula = ~ subgroup/T2D, block = 'Subject')
 mobj %<>% order_on_p(    coefs = c('t1-t0', 't0:T2DM'), combiner = '&')
-mobj[1, ] %>% plot_exprs(coefs = c('t1-t0', 't0:T2DM'), geom = 'point', block = 'SUB', shape = 'T2D', size = 'T2D') +  scale_size_manual(values = c(Control = 2, T2DM = 3))
+mobj[1, ] %>% plot_exprs(coefs = c('t1-t0', 't0:T2DM'), geom = 'point', block = 'Subject', shape = 'T2D', size = 'T2D') +  scale_size_manual(values = c(Control = 2, T2DM = 3))
 
 # t3: strong recovery AND difference between diabetics and controls
 contrasts(mobj$subgroup) <- MASS::contr.sdif(levels(mobj$subgroup))
-mobj %<>% fit_limma(formula = ~ subgroup/T2D, block = 'SUB')
+mobj %<>% fit_limma(formula = ~ subgroup/T2D, block = 'Subject')
 mobj %<>% order_on_p(    coefs = c('t3-t2', 't3:T2DM'), combiner = '&')
-mobj[1, ] %>% plot_exprs(coefs = c('t3-t2', 't3:T2DM'), geom = 'point', block = 'SUB', shape = 'T2D', size = 'T2D') +  scale_size_manual(values = c(Control = 2, T2DM = 3))
+mobj[1, ] %>% plot_exprs(coefs = c('t3-t2', 't3:T2DM'), geom = 'point', block = 'Subject', shape = 'T2D', size = 'T2D') +  scale_size_manual(values = c(Control = 2, T2DM = 3))
 
 # 
 contrasts(mobj$subgroup) <- MASS::contr.sdif(levels(mobj$subgroup))
-mobj %<>% fit_limma(formula = ~ subgroup*T2D, block = 'SUB')
+mobj %<>% fit_limma(formula = ~ subgroup*T2D, block = 'Subject')
 mobj %<>% order_on_p(coefs = c('t3-t2', 't3-t2:T2DM'), combiner = '&')
-mobj[1, ] %>% plot_exprs(coef = NULL, geom = 'point', block = 'SUB', shape = 'T2D', facet = 'T2D', ncol = 2)
+mobj[1, ] %>% plot_exprs(coef = NULL, geom = 'point', block = 'Subject', shape = 'T2D', facet = 'T2D', ncol = 2)
 
 
-mobj |> fit_limma(formula = ~ T2D/subgroup, block = 'SUB') |>
-        plot_exprs(coef = 'T2DM', geom = 'point', block = 'SUB', shape = 'T2D', size = 'T2D') + 
+mobj |> fit_limma(formula = ~ T2D/subgroup, block = 'Subject') |>
+        plot_exprs(coef = 'T2DM', geom = 'point', block = 'Subject', shape = 'T2D', size = 'T2D') + 
         scale_size_manual(values = c(Control = 3, T2DM = 3))
     

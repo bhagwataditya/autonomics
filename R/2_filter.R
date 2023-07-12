@@ -205,7 +205,7 @@ keep_replicated_features <- function(
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% keep_connected_blocks(  block = 'SUB')
+#' object %<>% keep_connected_blocks(  block = 'Subject')
 #' @export
 keep_connected_blocks <- function(object, block, verbose = TRUE){
     if (is.null(block))  return(object)
@@ -228,8 +228,8 @@ keep_connected_blocks <- function(object, block, verbose = TRUE){
 #' @examples
 #' file <- download_data('atkin18.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' object %<>% keep_connected_blocks(  block = 'SUB')
-#' object %<>% keep_connected_features(block = 'SUB')
+#' object %<>% keep_connected_blocks(  block = 'Subject')
+#' object %<>% keep_connected_features(block = 'Subject')
 #' @export
 keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
     if (is.null(block))  return(object)

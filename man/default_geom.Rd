@@ -25,5 +25,5 @@ object <- read_metabolon(file)
 svars(object)
 default_geom(object, x = 'AGE')
 default_geom(object, x = c('AGE', 'T2D'))
-default_geom(object, x = c('AGE', 'T2D'), block = 'SUB')
+default_geom(object, x = c('AGE', 'T2D'), block = 'Subject')
 }

@@ -32,5 +32,5 @@ object <- read_metabolon(file)
 object \%<>\% pca()
 object \%<>\% pls(by = 'subgroup')
 object \%<>\% fit_limma()
-plot_summary(object, block = 'SUB')
+plot_summary(object, block = 'Subject')
 }

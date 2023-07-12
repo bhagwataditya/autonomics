@@ -22,7 +22,7 @@ Plot fit summary
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% fit_lm()
-object \%<>\% fit_limma(block = 'SUB')
+object \%<>\% fit_limma(block = 'Subject')
 sumdt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 plot_fit_summary(sumdt)
 }

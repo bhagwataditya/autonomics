@@ -60,10 +60,10 @@ object <- read_metabolon(file)
 object \%<>\% fit_limma()
 object \%<>\% pls(by = 'subgroup')
 object \%<>\% pls(by = 'T2D')
-object \%<>\% pls(by = 'SUB')
+object \%<>\% pls(by = 'Subject')
 plot_exprs_per_coef(object)
 plot_exprs_per_coef(object, orderbyp = TRUE)
-plot_exprs_per_coef(object, fit = 'pls1', block = 'SUB')
+plot_exprs_per_coef(object, fit = 'pls1', block = 'Subject')
 }
 \seealso{
 \code{\link{plot_sample_densities}},

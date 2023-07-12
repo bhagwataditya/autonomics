@@ -182,7 +182,7 @@ block_vars <- function(formula){
 #' # Read
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     cols <- c('sample_id', 'subgroup', 'SUB', 'SET', 'AGE', 'SEX', 'T2D')
+#'     cols <- c('sample_id', 'subgroup', 'Subject', 'SET', 'AGE', 'SEX', 'T2D')
 #'     sdt(object) %<>% extract(, cols, with = FALSE)
 #'     sdt(object)
 #'     object$SUPERSET <- ''
@@ -197,19 +197,19 @@ block_vars <- function(formula){
 #'     object$SUBSET[  object$SET == 't3'] <- 'b'
 #' # Extract
 #'     extract_connected_features(object, formula = ~ SET, 
-#'                                      blockvars = 'SUB')
+#'                                      blockvars = 'Subject')
 #'
 #'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
-#'                                      blockvars = 'SUB')
+#'                                      blockvars = 'Subject')
 #'
 #'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET,
-#'                                      blockvars = c('SUB', 'SEX'))
+#'                                      blockvars = c('Subject', 'SEX'))
 #'
 #'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + AGE, 
-#'                                      blockvars = c('SUB', 'SEX'))
+#'                                      blockvars = c('Subject', 'SEX'))
 #'
 #'     extract_connected_features(object, formula = ~ SUPERSET + SUBSET + T2D, 
-#'                                      blockvars = c('SUB', 'SEX'))
+#'                                      blockvars = c('Subject', 'SEX'))
 #' @export
 extract_connected_features <- function(
     object, formula, blockvars, nconnectedblocks = 2, verbose = TRUE
@@ -287,9 +287,9 @@ extract_connected_features <- function(
 #' object <- read_metabolon(file)
 #' fit_lm(   object, formula = ~subgroup)
 #' fit_limma(object, formula = ~subgroup)
-#' fit_limma(object, formula = ~subgroup, block = 'SUB')
-#' fit_lme(  object, formula = ~subgroup, block = 'SUB')
-#' fit_lmer( object, formula = ~subgroup, block = 'SUB')
+#' fit_limma(object, formula = ~subgroup, block = 'Subject')
+#' fit_lme(  object, formula = ~subgroup, block = 'Subject')
+#' fit_lmer( object, formula = ~subgroup, block = 'Subject')
 #' # fit_lme(  object, formula = ~subgroup, block = ~1|SUB) # needs fine-tuning
 #' # fit_lmer( object, formula = ~subgroup + (1|SUB))       # needs fine-tuning
 #' @export

@@ -28,35 +28,35 @@ test_that(  "read_metabolon(file, pca = TRUE)", {
 
 test_that(  "read_metabolon(file, fit = 'limma')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, fit = 'limma', block = 'SUB', plot = TRUE, label = NULL)
+    object <- read_metabolon(file, fit = 'limma', block = 'Subject', plot = TRUE, label = NULL)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
 })
 
 test_that(  "read_metabolon(file, fit = 'lm')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, fit = 'lm', block = 'SUB', plot = TRUE, label = NULL)
+    object <- read_metabolon(file, fit = 'lm', block = 'Subject', plot = TRUE, label = NULL)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'lm'))))
 })
 
 test_that("read_metabolon(file, fit = 'lme')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, block = 'SUB', fit = 'lme', plot = TRUE, label = NULL)
+    object <- read_metabolon(file, block = 'Subject', fit = 'lme', plot = TRUE, label = NULL)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'lme'))))
 })
 
 test_that("read_metabolon(file, fit = 'lmer')",{
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- suppressWarnings(read_metabolon(file, block = 'SUB', fit = 'lmer', plot = TRUE, label = NULL))
+    object <- suppressWarnings(read_metabolon(file, block = 'Subject', fit = 'lmer', plot = TRUE, label = NULL))
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'lmer'))))
 })
 
 test_that("read_metabolon(file, fit = 'wilcoxon')", {
     file <- download_data('atkin18.metabolon.xlsx')
-    object <- read_metabolon(file, block = 'SUB', fit = 'wilcoxon', plot = TRUE, label = NULL)
+    object <- read_metabolon(file, block = 'Subject', fit = 'wilcoxon', plot = TRUE, label = NULL)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'wilcoxon'))))
 })

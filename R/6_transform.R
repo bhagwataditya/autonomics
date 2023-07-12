@@ -133,15 +133,15 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #'     pca(object0, plot = TRUE, color = 'SET')
 #' 
 #' # subtract_baseline: takes medoid of baseline samples if multiple
-#'     object <- subtract_baseline(object0, block = 'SUB', subgroupvar = 'SET')
+#'     object <- subtract_baseline(object0, block = 'Subject', subgroupvar = 'SET')
 #'     pca(object, plot = TRUE, color = 'SET')
 #' 
 #' # subtract_pairs: optimized for many blocks
-#'     object <- subtract_pairs(object0, block = 'SUB', subgroupvar = 'SET')
+#'     object <- subtract_pairs(object0, block = 'Subject', subgroupvar = 'SET')
 #'     pca(object, plot = TRUE, color = 'SET')
 #' 
 #' # subtract differences
-#'     object <- subtract_differences(object0, block = 'SUB', subgroupvar = 'SET')
+#'     object <- subtract_differences(object0, block = 'Subject', subgroupvar = 'SET')
 #'     values(object) %<>% na_to_zero()
 #'     pca(object, plot = TRUE, color = 'SET')
 #' @export 
