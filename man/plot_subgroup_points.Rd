@@ -60,7 +60,7 @@ idx <- order(fdata(object)$`p~t1~limma`)[1:9]
 object \%<>\% extract(idx, )
 plot_sample_boxplots(  object)
 plot_feature_boxplots( object)
-plot_sample_boxplots(object, x = 'SET')
-plot_subgroup_points(  object, subgroup = 'SET')
-plot_subgroup_points(  object, subgroup = 'SET', block = 'Subject')
+plot_sample_boxplots(object, x = 'Time')
+plot_subgroup_points(  object, subgroup = 'Time')
+plot_subgroup_points(  object, subgroup = 'Time', block = 'Subject')
 }

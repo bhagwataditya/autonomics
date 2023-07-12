@@ -152,9 +152,9 @@ fit_across_within_between <- function(object, groupvars, block){
 
 
 
-pdt2 <- .fit_limma(pobj, formula = ~ subgroup + T2D, block = 'Subject_ID', coefs = c('t1-t0', 't2-t1', 't3-t2', 'D'))
-mobj %<>% fit_limma(formula = ~ subgroup + Diabetes, block = 'Subject',        coefs = c('t1-t0', 't2-t1', 't3-t2', 'T2DM'))
-pobj %<>% fit_limma(formula = ~ subgroup + T2D, block = 'Subject_ID', coefs = c('t1-t0', 't2-t1', 't3-t2', 'D'))
+pdt2 <- .fit_limma(pobj, formula = ~ Time + Diabetes, block = 'Subject', coefs = c('t1-t0', 't2-t1', 't3-t2', 'T2DM'))
+mobj %<>% fit_limma(     formula = ~ Time + Diabetes, block = 'Subject', coefs = c('t1-t0', 't2-t1', 't3-t2', 'T2DM'))
+pobj %<>% fit_limma(     formula = ~ Time + Diabetes, block = 'Subject', coefs = c('t1-t0', 't2-t1', 't3-t2', 'T2DM'))
 mobj %<>% order_on_p(coef = 't1-t0')
 pobj %<>% order_on_p(coef = 't1-t0')
 plot_exprs(mobj[1,],
@@ -164,9 +164,9 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # t2 - t1
 mobj %<>% order_on_p(coef = 't2-t1')
@@ -179,9 +179,9 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # t3 - t2
 mobj %<>% order_on_p(coef = 't3-t2')
@@ -193,13 +193,13 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # T2DM
 mobj %<>% order_on_p(coef = 'T2DM')
-pobj %<>% order_on_p(coef = 'D')
+pobj %<>% order_on_p(coef = 'T2DM')
 plot_exprs(mobj[2,],
            coef  = NULL,
            block = 'Subject', 
@@ -207,15 +207,15 @@ plot_exprs(mobj[2,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes', facet = 'EntrezGeneSymbol') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # D : t1 - t0
 mobj %<>% fit_limma(formula = ~ Diabetes/Time, block = 'Subject')
-pobj %<>% fit_limma(formula = ~ T2D/subgroup, block = 'Subject_ID')
+pobj %<>% fit_limma(formula = ~ Diabetes/Time, block = 'Subject')
 mobj %<>% order_on_p(coef = 'T2DM:t1-t0')
-pobj %<>% order_on_p(coef =    'D:t1-t0')
+pobj %<>% order_on_p(coef = 'T2DM:t1-t0')
 plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
@@ -223,13 +223,13 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # C : t1 - t0
 mobj %<>% order_on_p(coef = 'Control:t1-t0')
-pobj %<>% order_on_p(coef =    'C:t1-t0')
+pobj %<>% order_on_p(coef = 'Control:t1-t0')
 plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
@@ -237,13 +237,13 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # D : t2 - t1
 mobj %<>% order_on_p(coef = 'T2DM:t2-t1')
-pobj %<>% order_on_p(coef =    'D:t2-t1')
+pobj %<>% order_on_p(coef = 'T2DM:t2-t1')
 plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
@@ -251,13 +251,13 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # D : t2 - t1
 mobj %<>% order_on_p(coef = 'Control:t2-t1')
-pobj %<>% order_on_p(coef =       'C:t2-t1')
+pobj %<>% order_on_p(coef = 'Control:t2-t1')
 plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
@@ -265,13 +265,13 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # D : t3 - t2
 mobj %<>% order_on_p(coef = 'T2DM:t3-t2')
-pobj %<>% order_on_p(coef =    'D:t3-t2')
+pobj %<>% order_on_p(coef = 'T2DM:t3-t2')
 plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
@@ -279,13 +279,13 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[1,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
            shape = 'Diabetes', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # C : t3 - t2
 mobj %<>% order_on_p(coef = 'Control:t3-t2')
-pobj %<>% order_on_p(coef =       'C:t3-t2')
+pobj %<>% order_on_p(coef = 'Control:t3-t2')
 plot_exprs(mobj[1,],
            coef  = NULL,
            block = 'Subject', 
@@ -293,13 +293,13 @@ plot_exprs(mobj[1,],
            shape = 'Diabetes') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 plot_exprs(pobj[2,],
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+           shape = 'Diabetes', facet = 'TargetFullName') + theme(legend.position = "none") + ylab(NULL) + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 
 # Explore
 mobj %<>% order_on_p(coef = 'T2DM:t3-t2')
-pobj %<>% order_on_p(coef = 'D:t3-t2')
+pobj %<>% order_on_p(coef = 'T2DM:t3-t2')
 plot_exprs(mobj[1:6, ], n = 6, 
            coef  = NULL,
            block = 'Subject', 
@@ -308,10 +308,10 @@ plot_exprs(mobj[1:6, ], n = 6,
            size  = 'Diabetes', nrow = 2, ncol = 3) + scale_size_manual(values = c(Control = 3, T2DM = 3))
 plot_exprs(pobj[c(1,2,4,5,6,7)], n = 6,
            coef  = NULL,
-           block = 'Subject_ID', 
+           block = 'Subject', 
            geom  = 'point', 
-           shape = 'T2D', 
-           size  = 'T2D',
+           shape = 'Diabetes', 
+           size  = 'Diabetes',
            ncol  = 3,
            facet = c('TargetFullName', 'EntrezGeneSymbol')) + scale_size_manual(values = c(C = 3, D = 3))
 

@@ -108,6 +108,6 @@ fit_limma(object, formula = ~subgroup)
 fit_limma(object, formula = ~subgroup, block = 'Subject')
 fit_lme(  object, formula = ~subgroup, block = 'Subject')
 fit_lmer( object, formula = ~subgroup, block = 'Subject')
-# fit_lme(  object, formula = ~subgroup, block = ~1|SUB) # needs fine-tuning
-# fit_lmer( object, formula = ~subgroup + (1|SUB))       # needs fine-tuning
+# fit_lme(  object, formula = ~subgroup, block = ~1|Subject) # needs fine-tuning
+# fit_lmer( object, formula = ~subgroup + (1|Subject))       # needs fine-tuning
 }

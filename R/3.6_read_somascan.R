@@ -164,7 +164,7 @@ rm_single_value_columns <- function(df){
 #' @return Summarizedexperiment
 #' @examples
 #' file <- download_data('atkin18.somascan.adat')
-#' read_somascan(file, plot = TRUE, block = 'Subject_ID')
+#' read_somascan(file, plot = TRUE, block = 'Subject')
 #' @export
 read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
     sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup', 

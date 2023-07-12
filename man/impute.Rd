@@ -81,5 +81,5 @@ Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
    object <- read_metabolon(file)
    invisible(impute(values(object)[1:3, 1   ]))               # vector
    invisible(impute(values(object)[1:3, 1:5 ]))               # matrix
-   object \%>\%  filter_samples(T2D == 'Control') \%>\% impute()  # sumexp
+   object \%>\%  filter_samples(Diabetes == 'Control') \%>\% impute()  # sumexp
 }

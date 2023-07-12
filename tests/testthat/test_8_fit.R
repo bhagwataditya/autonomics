@@ -30,22 +30,22 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         file <- download_data('atkin18.somascan.adat')
         object <- read_somascan(file)
         
-        object %<>% fit_limma( ~subgroup + T2D,  block = 'Subject_ID', coding = 'baseline')
+        object %<>% fit_limma( ~subgroup + T2D,  block = 'Subject', coding = 'baseline')
         expect_true(sumexp_contains_fit(object, 'limma'))
         
         object %<>% fit_lm(~ subgroup + T2D, coding = 'baseline')
         expect_true(sumexp_contains_fit(object, 'lm'))
         
-        object %<>% fit_lme(~ subgroup + T2D, block = 'Subject_ID', coding = 'baseline')
+        object %<>% fit_lme(~ subgroup + T2D, block = 'Subject', coding = 'baseline')
         expect_true(sumexp_contains_fit(object, 'lme'))
         
-        object %<>% fit_lmer(~ subgroup + T2D, block = 'Subject_ID', coding = 'baseline')
+        object %<>% fit_lmer(~ subgroup + T2D, block = 'Subject', coding = 'baseline')
         expect_true(sumexp_contains_fit(object, 'lmer'))
         
-        object %<>% fit_wilcoxon(~ subgroup, block = 'Subject_ID', coding = 'baseline')
+        object %<>% fit_wilcoxon(~ subgroup, block = 'Subject', coding = 'baseline')
         expect_true(sumexp_contains_fit(object, 'wilcoxon'))
         
-        object %<>% subtract_differences(block = 'Subject_ID', subgroupvar ='subgroup')
+        object %<>% subtract_differences(block = 'Subject', subgroupvar ='subgroup')
         object %<>% fit_lm(formula = ~ 0 + subgroup)
         expect_true(sumexp_contains_fit(object, 'lm'))
         
@@ -60,22 +60,22 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         object <- read_metabolon(file)
         
         # limma
-        object %<>% fit_limma(formula = ~ subgroup + T2D, block = 'Subject', coding = 'baseline')
+        object %<>% fit_limma(formula = ~ Time + Diabetes, block = 'Subject', coding = 'baseline')
         fitdt <- summarize_fit(fdt(object), fit = 'limma')
         expect_s3_class(fitdt, 'data.table')
         
         # lm
-        object %<>% fit_lm(formula = ~ subgroup + T2D, coding = 'baseline')
+        object %<>% fit_lm(formula = ~ Time + Diabetes, coding = 'baseline')
         fitdt <- summarize_fit(fdt(object), fit = 'lm')
         expect_s3_class(fitdt, 'data.table')
         
         # lme
-        object %<>% fit_lme(formula = ~ subgroup + T2D, block = 'Subject', coding = 'baseline')
+        object %<>% fit_lme(formula = ~ Time + Diabetes, block = 'Subject', coding = 'baseline')
         fitdt <- summarize_fit(fdt(object), fit = 'lme')
         expect_s3_class(fitdt, 'data.table')
 
         # lmer
-        suppressWarnings(object %<>% fit_lmer(formula = ~ subgroup + T2D, block = 'Subject', coding = 'baseline'))
+        suppressWarnings(object %<>% fit_lmer(formula = ~ Time + Diabetes, block = 'Subject', coding = 'baseline'))
         fitdt <- summarize_fit(fdt(object), fit = 'lmer')
         expect_s3_class(fitdt, 'data.table')
 

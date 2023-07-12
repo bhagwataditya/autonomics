@@ -309,7 +309,7 @@ fit_lmx <- function(
         assert_is_subset(weightvar, assayNames(object)) 
         message('\t\t\tweights = assays(object)$', weightvar) 
     }
-    N <- Subject_ID <- value <- V1 <- NULL
+    N <- value <- V1 <- NULL
 # Filter / Customize
     obj <- object
     if (verbose)  cmessage('\t\tFilter features')

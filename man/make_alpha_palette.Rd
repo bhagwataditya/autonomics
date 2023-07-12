@@ -20,5 +20,5 @@ Make alpha palette
 \examples{
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
-make_alpha_palette(object, 'SET')
+make_alpha_palette(object, 'Time')
 }

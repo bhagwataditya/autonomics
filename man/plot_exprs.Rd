@@ -161,7 +161,7 @@ Plot exprs for coef
     object \%<>\% fit_limma(block = 'Subject')
     plot_exprs(object, block = 'Subject')
     plot_exprs(object, block = 'Subject', coefs = c('t1', 't2', 't3'))
-    plot_exprs_per_coef(object, x = 'SET', block = 'Subject')
+    plot_exprs_per_coef(object, x = 'Time', block = 'Subject')
 # Points
     plot_exprs(object, geom = 'point', block = 'Subject')
 # Add highlights

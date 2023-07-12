@@ -23,7 +23,7 @@ Default geom
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 svars(object)
-default_geom(object, x = 'AGE')
-default_geom(object, x = c('AGE', 'T2D'))
-default_geom(object, x = c('AGE', 'T2D'), block = 'Subject')
+default_geom(object, x = 'Age')
+default_geom(object, x = c('Age', 'Diabetes'))
+default_geom(object, x = c('Age', 'Diabetes'), block = 'Subject')
 }

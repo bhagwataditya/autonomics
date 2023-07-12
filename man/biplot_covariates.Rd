@@ -45,8 +45,8 @@ Biplot covariates
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file, pca = TRUE)
 biplot_covariates(object, covariates = 'subgroup', ndim = 12, dimcols = 3)
-biplot_covariates(object, covariates = c('SEX', 'T2D', 'Subject', 'SET'))
-biplot_covariates(object, covariates = c('SEX', 'T2D', 'Subject', 'SET'), ndim=2)
+biplot_covariates(object, covariates = c('Sex', 'Diabetes', 'Subject', 'Time'))
+biplot_covariates(object, covariates = c('Sex', 'Diabetes', 'Subject', 'Time'), ndim = 2)
 biplot_covariates(object, covariates = c('subgroup'), dimcols = 3)
 }
 \seealso{

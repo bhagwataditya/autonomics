@@ -29,7 +29,7 @@ Split samples by svar
 file <- download_data('atkin18.metabolon.xlsx')
 object <- read_metabolon(file)
 objlist <- split_features(object, by = 'PLATFORM')
-objlist <- split_samples(object, 'T2D')
+objlist <- split_samples(object, 'Diabetes')
 objlist \%<>\% Map(impute, .)
 object <- cbind_imputed(objlist)
 }
