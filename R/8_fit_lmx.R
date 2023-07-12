@@ -272,7 +272,7 @@ extract_connected_features <- function(
 #' @param formula      formula
 #' @param drop         TRUE or FALSE
 #' @param coding       factor coding system: 'treatment' (default), 'baseline', 
-#'                      'backward', 'grandref', 'granddiff', 'sum', 'helmert'
+#'                      'backward', 'baselinegrand', 'granddiff', 'sum', 'helmert'
 #' @param coefs        NULL or stringvector
 #' @param contrasts    unused. only to allow generic get(fitfun)(contrasts)
 #' @param block        NULL or svar

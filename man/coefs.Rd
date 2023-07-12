@@ -32,7 +32,7 @@ Get coefs
     object <- factor(c('A', 'B', 'C'))
     coefs(object)
     coefs(code(object, 'baseline'))
-    coefs(code(object, 'grandref'))
+    coefs(code(object, 'baselinegrand'))
     
 # SummarizedExperiment
     file <- download_data('atkin18.metabolon.xlsx')
