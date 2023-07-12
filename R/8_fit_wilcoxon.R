@@ -83,7 +83,7 @@ all_vars <- function(x){
 }
     
 #' @export
-#' @rdname fit_limma
+#' @rdname fit
 fit_wilcoxon <- function(
     object,
     formula     = default_formula(object), 

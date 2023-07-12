@@ -488,52 +488,76 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 
 #' Fit model and test for differential expression
 #'
-#' @param object       SummarizedExperiment
-#' @param formula      modeling formula
-#' @param drop         TRUE or FALSE
-#' @param coding       factor coding system: 'treatment', 'baseline', 'backward', 
-#'                                           'baselinegrand',  'backwardgrand', 'sum', 'helmert'
-#' @param design       design matrix
-#' @param contrasts    NULL or character vector: coefficient contrasts to test
-#' @param coefs        NULL or character vector: model coefs to test
-#' @param block        block svar (or NULL)
-#' @param weightvar    NULL or name of weight matrix in assays(object)
-#' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
-#' @param sep          string: pvar separator  ("~" in "p~t2~limma")
-#' @param suffix       string: pvar suffix ("limma" in "p~t2~limma")
-#' @param verbose      whether to msg
-#' @param plot         whether to plot
+#' @param object    SummarizedExperiment
+#' @param formula   modeling formula
+#' @param drop      TRUE or FALSE
+#' @param coding    factor coding system: 'treatment', 'baseline', 'backward', 
+#'                        'baselinegrand',  'backwardgrand', 'sum', 'helmert'
+#' @param design    design matrix
+#' @param contrasts NULL or character vector: coefficient contrasts to test
+#' @param coefs     NULL or character vector: model coefs to test
+#' @param block     block svar (or NULL)
+#' @param weightvar NULL or name of weight matrix in assays(object)
+#' @param statvars  character vector: subset of c('effect', 'p', 'fdr', 't')
+#' @param sep       string: pvar separator  ("~" in "p~t2~limma")
+#' @param suffix    string: pvar suffix ("limma" in "p~t2~limma")
+#' @param verbose   whether to msg
+#' @param plot      whether to plot
 #' @return Updated SummarizedExperiment
 #' @examples
-#' # Read
+#' # Default
 #'     file <- download_data('atkin18.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     
+#'     object %<>% fit(~ subgroup)
 #' # Standard
 #'     object %<>% fit_lm(        ~ subgroup)                 #     statistics default
 #'     object %<>% fit_limma(     ~ subgroup)                 # bioinformatics default
-#' 
 #' # Blocked
 #'     object %<>% fit_limma(     ~ subgroup, block = 'SUB')  #        simple random effects
 #'     object %<>% fit_lme(       ~ subgroup, block = 'SUB')  #      powerful random effects
 #'     object %<>% fit_lmer(      ~ subgroup, block = 'SUB')  # more powerful random effects
-#'     
 #' # Intuitive : alternative coding
 #'     object %<>% fit_lme(       ~ subgroup, block = 'SUB', coding = 'baseline')
 #'     object %<>% fit_lmer(      ~ subgroup, block = 'SUB', coding = 'baseline')
 #'     object %<>% fit_limma(     ~ subgroup, block = 'SUB', coding = 'baseline')
-#'     
 #' # Flexible : limma contrasts
 #'     object %<>% fit_limma( ~ 0 + subgroup, block = 'SUB', contrasts = c('t1-t0'))
 #'         # flexible, but only approximate
 #'         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
-#'     
 #' # Non-parametric: wilcoxon
 #'     object %<>% fit_wilcoxon( ~ subgroup)                # unpaired
 #'     object %<>% fit_wilcoxon( ~ subgroup, block = 'SUB') # paired
 #'     plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
 #'    #plot_contrast_venn(is_sig(object, contrast = 't3', fit = c('limma', 'lme')))
-#'     
+#' @export
+fit <- function(
+    object, 
+    formula   = default_formula(object),
+    engine    = 'limma', 
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    coding    = 'treatment', 
+    design    = create_design(object, formula = formula, drop = drop, coding = coding),
+    contrasts = NULL,
+    coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
+    block     = NULL,
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+    statvars  = c('effect', 'p', 'fdr'),
+    sep       = FITSEP,
+    suffix    = paste0(sep, 'limma'),
+    verbose   = TRUE, 
+    plot      = FALSE
+){
+    assert_scalar_subset(engine, c('limma', 'lme', 'lmer', 'wilcoxon', 'lm'))
+    fitfun <- paste0('fit_', engine)
+    get(fitfun)(object, formula = formula, drop = drop, coding = coding, 
+                design = design, contrasts = contrasts, coefs = coefs, block = block, 
+                weightvar = weightvar, statvars = statvars, sep = sep, suffix = suffix, 
+                verbose = verbose, plot = plot)
+}
+
+
+
+#' @rdname fit
 #' @export
 fit_limma <- function(
     object, 
@@ -566,6 +590,7 @@ fit_limma <- function(
     if (plot)  print(plot_volcano(object, fit = 'limma')) 
     object
 }
+
 
 
 
@@ -608,7 +633,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 }
 
 
-#' @rdname fit_limma
+#' @rdname fit
 #' @export
 .fit_limma <- function(
     object, 
