@@ -657,6 +657,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     assert_is_subset(all.vars(formula), svars(object))
     assert_is_a_bool(drop)
     assert_is_matrix(design)
+    assert_is_subset(coefs, colnames(design))
     if (!is.null(block))      assert_is_subset(block, svars(object))
     if (!is.null(weightvar))  assert_scalar_subset(weightvar, assayNames(object))
     assert_is_subset(statvars, c('effect', 'p', 'fdr', 't'))
@@ -683,9 +684,9 @@ varlevels_dont_clash.SummarizedExperiment <- function(
                     assays(object)[[weightvar]][, rownames(design)] }
 # Fit
     limmafit <- suppressWarnings(lmFit(
-                object = exprmat, design = design, 
-                block = block, correlation = metadata(object)$dupcor,
-                weights = weightmat))
+                    object = exprmat, design = design, 
+                    block = block, correlation = metadata(object)$dupcor,
+                    weights = weightmat))
 # Effect
     if (is.null(contrasts)){  
                 limmafit %<>% contrasts.fit(coefficients = coefs) 
