@@ -142,13 +142,14 @@ create_design.data.table <- function(
 #' @param object  factor vector
 #' @param coding  coding system \cr
 #' @param vars    character vector
-#'    'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
-#'    'baseline'   :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
-#'    'backward'   :  coef = level -  prevlevel, intercept = firstlevel, explicit coefnames (t2-t1) \cr
-#'    'baselinegrand'   :  coef = level - firstlevel, intercept = grandmean   \cr
-#'    'backwardgrand'  :  coef = level -  prevlevel, intercept = grandmean   \cr
-#'    'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
-#'    'helmert'    :  coef = level - prevlevels, intercept = grandmean   \cr
+#'    'treatment'     : coef = level - firstlevel, intercept = firstlevel, implicit coefnames: t2.           \cr
+#'    'baselinefirst' : coef = level - firstlevel, intercept = firstlevel, explicit coefnames: t2-t0         \cr
+#'    'baseline'      : coef = level - firstlevel, intercept = grandmean,  explicit coefnames: t2-t0         \cr
+#'    'backward'      : coef = level -  prevlevel, intercept = grandmean,  explicit coefnames: t2-t1         \cr
+#'    'backwardfirst' : coef = level -  prevlevel, intercept = firstlevel, explicit coefnames: t2-t1         \cr
+#'    'sum'           : coef = level -  grandmean, intercept = grandmean,  explicit coefnames: t1-(t0+t1+t2)/3, last level dropped   \cr
+#'    'sumfirst'      : coef = level -  grandmean, intercept = grandmean,  explicit coefnames: t1-(t0+t1+t2)/3, first level dropped  \cr
+#'    'helmert'       : coef = level - prevlevels, intercept = grandmean,  explicit coefnames: t2-(t0+t1)/2   \cr
 #' @param verbose TRUE or FALSE
 #' @param n character vector
 #' @param ... used for s3 dispatch
@@ -201,18 +202,18 @@ code <- function(object, ...)  UseMethod('code')
 #' @rdname code
 #' @export
 code.factor <- function(object, coding, verbose = TRUE, ...){
-    
-    assert_scalar_subset(coding, c('treatment', 'baseline', 'backward', 
-                                   'baselinegrand', 'backwardgrand', 'sum', 'helmert'))
+
+    assert_scalar_subset(coding, c(
+        'treatment', 'baseline', 'backward', 'forward', 'sum', 'sumfirst',
+        'helmert',   'baselinefirst', 'backwardfirst'))
     codingfun <- switch(coding, treatment  = contr.treatment, 
-                                baseline  =  code_baseline, 
-                                backward =  code_backward, 
-                                baselinegrand   =  code_baselinegrand, 
-                                backwardgrand  =  code_backwardgrand, 
-                                sum        =  code_sum,
-                                helmert    =  code_helmert)
-    
-    
+                                baseline   = code_baseline, 
+                                backward   = code_backward, 
+                                forward    = code_forward,
+                                sum        = code_sum,
+                                sum1       = code_sumfirst,
+                                helmert    = code_helmert, 
+                                helmertfwd = code_helmertfwd)
     if (is.null(coding))  return(object)
     k <- length(levels(object))
     contrasts(object) <- codingfun(levels(object))
@@ -247,7 +248,7 @@ code.data.table <- function(object, coding, vars = names(object), verbose = TRUE
 
 #' @rdname code
 #' @export
-code_baseline <- function(n){
+code_baselinefirst <- function(n){
     y <- contr.treatment(n)
     colnames(y) %<>% paste0('-', n[1])
     y
@@ -255,7 +256,7 @@ code_baseline <- function(n){
 
 #' @rdname code
 #' @export
-code_baselinegrand <- function(n){
+code_baseline <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
@@ -267,7 +268,7 @@ code_baselinegrand <- function(n){
 
 #' @rdname code
 #' @export
-code_backward <- function(n){
+code_backwardfirst <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
@@ -280,7 +281,7 @@ code_backward <- function(n){
 
 #' @rdname code
 #' @export
-code_backwardgrand <- function(n){
+code_backward <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
@@ -296,7 +297,28 @@ code_backwardgrand <- function(n){
 code_sum <- function(n){
     y <- contr.sum(n)
     k <- length(n)
-    colnames(y) <- paste0(n[-k],  '-grand')
+    contrastnames <- paste0(n, collapse = '+')
+    contrastnames <- paste0('(', contrastnames, ')')
+    contrastnames <- paste0(contrastnames, '/', length(n))
+    contrastnames <- paste0(n[-k], '-', contrastnames) 
+    colnames(y) <- contrastnames
+    y
+}
+
+#' @rdname code
+#' @export
+code_sumfirst <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    y <- codingMatrices::code_deviation_first(n)
+    k <- length(n)
+    contrastnames <- paste0(n, collapse = '+')
+    contrastnames <- paste0('(', contrastnames, ')')
+    contrastnames <- paste0(contrastnames, '/', length(n))
+    contrastnames <- paste0(n[-1], '-', contrastnames) 
+    colnames(y) <- contrastnames
     y
 }
 
@@ -308,7 +330,13 @@ code_helmert <- function(n){
         return(n) 
     }
     y <- codingMatrices::code_helmert(n) # properly scaled version of stats::contr.helmert
-    colnames(y) <- paste0(n[-1],  '-helmert')
+    for (i in seq(2, ncol(y)+1)){
+        curlevel <- n[i]
+        prevlevels <- n[seq(1,i-1)]
+        helmertmean <- paste0(prevlevels, collapse = '+')
+        if (i>2)  helmertmean <- paste0('(', helmertmean, ')/', i-1)
+        colnames(y)[i-1] <- paste0(curlevel, '-', helmertmean)
+    }
     y
 }
 

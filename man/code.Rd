@@ -4,11 +4,12 @@
 \alias{code}
 \alias{code.factor}
 \alias{code.data.table}
+\alias{code_baselinefirst}
 \alias{code_baseline}
-\alias{code_baselinegrand}
+\alias{code_backwardfirst}
 \alias{code_backward}
-\alias{code_backwardgrand}
 \alias{code_sum}
+\alias{code_sumfirst}
 \alias{code_helmert}
 \title{Contrast Code Factor}
 \usage{
@@ -18,15 +19,17 @@ code(object, ...)
 
 \method{code}{data.table}(object, coding, vars = names(object), verbose = TRUE, ...)
 
+code_baselinefirst(n)
+
 code_baseline(n)
 
-code_baselinegrand(n)
+code_backwardfirst(n)
 
 code_backward(n)
 
-code_backwardgrand(n)
-
 code_sum(n)
+
+code_sumfirst(n)
 
 code_helmert(n)
 }
@@ -40,13 +43,14 @@ code_helmert(n)
 \item{verbose}{TRUE or FALSE}
 
 \item{vars}{character vector
-'treatment'  :  coef = level - firstlevel, intercept = firstlevel, implicit coefnames (t2).   \cr
-'baseline'   :  coef = level - firstlevel, intercept = firstlevel, explicit coefnames (t2-t0) \cr
-'backward'   :  coef = level -  prevlevel, intercept = firstlevel, explicit coefnames (t2-t1) \cr
-'baselinegrand'   :  coef = level - firstlevel, intercept = grandmean   \cr
-'backwardgrand'  :  coef = level -  prevlevel, intercept = grandmean   \cr
-'sum'        :  coef = level -  grandmean, intercept = grandmean   \cr
-'helmert'    :  coef = level - prevlevels, intercept = grandmean   \cr}
+'treatment'     : coef = level - firstlevel, intercept = firstlevel, implicit coefnames: t2.           \cr
+'baselinefirst' : coef = level - firstlevel, intercept = firstlevel, explicit coefnames: t2-t0         \cr
+'baseline'      : coef = level - firstlevel, intercept = grandmean,  explicit coefnames: t2-t0         \cr
+'backward'      : coef = level -  prevlevel, intercept = grandmean,  explicit coefnames: t2-t1         \cr
+'backwardfirst' : coef = level -  prevlevel, intercept = firstlevel, explicit coefnames: t2-t1         \cr
+'sum'           : coef = level -  grandmean, intercept = grandmean,  explicit coefnames: t1-(t0+t1+t2)/3, last level dropped   \cr
+'sumfirst'      : coef = level -  grandmean, intercept = grandmean,  explicit coefnames: t1-(t0+t1+t2)/3, first level dropped  \cr
+'helmert'       : coef = level - prevlevels, intercept = grandmean,  explicit coefnames: t2-(t0+t1)/2   \cr}
 
 \item{n}{character vector}
 }
