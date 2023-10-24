@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Generifying and intuifying cross-platform omics analysis
-Version: 1.9.0
+Version: 1.10.0
 Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Shahina",  "Hayat",     email = "shh2026@qatar-med.cornell.edu",    role = "aut"), 
              person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",    role = "ctb"), 
