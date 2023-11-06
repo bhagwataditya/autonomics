@@ -11,7 +11,7 @@ analyze(
   fit = "limma",
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  coding = "treatment",
+  codingfun = contr.treatment,
   contrasts = NULL,
   coefs = colnames(create_design(object, formula = formula, drop = drop)),
   block = NULL,
@@ -35,8 +35,19 @@ analyze(
 
 \item{drop}{TRUE / FALSE : drop varname in designmat ?}
 
-\item{coding}{factor coding system : 'treatment', 'baseline', 'backward', 
-'baselinegrand', 'backwardgrand', 'sum', 'helmert'}
+\item{codingfun}{factor coding function
+\itemize{
+    \item contr.treatment:          intercept = y0,     coefi = yi - y0
+    \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+    \item code_control:             intercept = ymean,  coefi = yi - y0
+    \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+    \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+    \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+    \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+    \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+    \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+    \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+}}
 
 \item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
 

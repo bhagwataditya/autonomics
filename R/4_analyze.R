@@ -6,8 +6,19 @@
 #' @param fit        linmod engine: 'limma', 'lm', 'lme(r)', 'lmer', 'wilcoxon'
 #' @param formula    model formula
 #' @param drop       TRUE / FALSE : drop varname in designmat ?
-#' @param coding     factor coding system : 'treatment', 'baseline', 'backward', 
-#'                               'baselinegrand', 'backwardgrand', 'sum', 'helmert'
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
 #' @param contrasts  model coefficient contrasts of interest: string vector or NULL
 #' @param coefs      model coefficients          of interest: string vector or NULL
 #' @param block      model blockvar
@@ -29,7 +40,7 @@ analyze <- function(
     fit          = 'limma',
     formula      = default_formula(object),
     drop         = varlevels_dont_clash(object, all.vars(formula)),
-    coding       = 'treatment', 
+    codingfun    = contr.treatment, 
     contrasts    = NULL,
     coefs        = colnames(create_design(object, formula = formula, drop = drop)),
     block        = NULL,
@@ -49,7 +60,7 @@ analyze <- function(
         if (is.null(coefs))   coefs <- colnames(create_design(object, formula = formula, drop = drop, verbose = FALSE))
         object %<>% fitfun(
             formula      = formula,       drop         = drop,
-            coding       = coding,        contrasts    = contrasts,
+            codingfun    = codingfun,     contrasts    = contrasts,
             coefs        = coefs,         block        = block,
             weightvar    = weightvar,     verbose      = verbose,
             plot         = FALSE) 

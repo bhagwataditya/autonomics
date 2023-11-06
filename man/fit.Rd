@@ -12,8 +12,8 @@ fit(
   formula = default_formula(object),
   engine = "limma",
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  coding = "treatment",
-  design = create_design(object, formula = formula, drop = drop, coding = coding),
+  codingfun = contr.treatment,
+  design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
@@ -29,8 +29,8 @@ fit_limma(
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  coding = "treatment",
-  design = create_design(object, formula = formula, drop = drop, coding = coding),
+  codingfun = contr.treatment,
+  design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
@@ -46,8 +46,8 @@ fit_limma(
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  coding = "treatment",
-  design = create_design(object, formula = formula, drop = drop, coding = coding),
+  codingfun = "treatment",
+  design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
   coefs = if (is.null(contrasts)) colnames(design) else NULL,
   block = NULL,
@@ -63,7 +63,7 @@ fit_wilcoxon(
   object,
   formula = default_formula(object),
   drop = NULL,
-  coding = "baseline",
+  codingfun = contr.treatment.explicit,
   contrasts = NULL,
   coefs = NULL,
   block = NULL,
@@ -80,8 +80,19 @@ fit_wilcoxon(
 
 \item{drop}{TRUE or FALSE}
 
-\item{coding}{factor coding system: 'treatment', 'baseline', 'backward', 
-'baselinegrand',  'backwardgrand', 'sum', 'helmert'}
+\item{codingfun}{factor coding function
+\itemize{
+    \item contr.treatment:          intercept = y0,     coefi = yi - y0
+    \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+    \item code_control:             intercept = ymean,  coefi = yi - y0
+    \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+    \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+    \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+    \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+    \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+    \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+    \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+}}
 
 \item{design}{design matrix}
 
@@ -122,9 +133,9 @@ Fit model and test for differential expression
     object \%<>\% fit_lme(       ~ subgroup, block = 'Subject')  #      powerful random effects
     object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject')  # more powerful random effects
 # Intuitive : alternative coding
-    object \%<>\% fit_lme(       ~ subgroup, block = 'Subject', coding = 'baseline')
-    object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject', coding = 'baseline')
-    object \%<>\% fit_limma(     ~ subgroup, block = 'Subject', coding = 'baseline')
+    object \%<>\% fit_lme(       ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
+    object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
+    object \%<>\% fit_limma(     ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
 # Flexible : limma contrasts
     object \%<>\% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = c('t1-t0'))
         # flexible, but only approximate

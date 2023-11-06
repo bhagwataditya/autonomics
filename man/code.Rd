@@ -4,53 +4,63 @@
 \alias{code}
 \alias{code.factor}
 \alias{code.data.table}
-\alias{code_baselinefirst}
-\alias{code_baseline}
-\alias{code_backwardfirst}
-\alias{code_backward}
-\alias{code_sum}
-\alias{code_sumfirst}
+\alias{contr.treatment.explicit}
+\alias{code_control}
+\alias{contr.diff}
+\alias{code_diff}
+\alias{code_diff_forward}
+\alias{code_deviation}
+\alias{code_deviation_first}
 \alias{code_helmert}
+\alias{code_helmert_forward}
 \title{Contrast Code Factor}
 \usage{
 code(object, ...)
 
-\method{code}{factor}(object, coding, verbose = TRUE, ...)
+\method{code}{factor}(object, codingfun, verbose = TRUE, ...)
 
-\method{code}{data.table}(object, coding, vars = names(object), verbose = TRUE, ...)
+\method{code}{data.table}(object, codingfun, vars = names(object), verbose = TRUE, ...)
 
-code_baselinefirst(n)
+contr.treatment.explicit(n)
 
-code_baseline(n)
+code_control(n)
 
-code_backwardfirst(n)
+contr.diff(n)
 
-code_backward(n)
+code_diff(n)
 
-code_sum(n)
+code_diff_forward(n)
 
-code_sumfirst(n)
+code_deviation(n)
+
+code_deviation_first(n)
 
 code_helmert(n)
+
+code_helmert_forward(n)
 }
 \arguments{
 \item{object}{factor vector}
 
 \item{...}{used for s3 dispatch}
 
-\item{coding}{coding system \cr}
+\item{codingfun}{factor coding function
+\itemize{
+    \item contr.treatment:          intercept = y0,     coefi = yi - y0
+    \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+    \item code_control:             intercept = ymean,  coefi = yi - y0
+    \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+    \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+    \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+    \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+    \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+    \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+    \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+}}
 
 \item{verbose}{TRUE or FALSE}
 
-\item{vars}{character vector
-'treatment'     : coef = level - firstlevel, intercept = firstlevel, implicit coefnames: t2.           \cr
-'baselinefirst' : coef = level - firstlevel, intercept = firstlevel, explicit coefnames: t2-t0         \cr
-'baseline'      : coef = level - firstlevel, intercept = grandmean,  explicit coefnames: t2-t0         \cr
-'backward'      : coef = level -  prevlevel, intercept = grandmean,  explicit coefnames: t2-t1         \cr
-'backwardfirst' : coef = level -  prevlevel, intercept = firstlevel, explicit coefnames: t2-t1         \cr
-'sum'           : coef = level -  grandmean, intercept = grandmean,  explicit coefnames: t1-(t0+t1+t2)/3, last level dropped   \cr
-'sumfirst'      : coef = level -  grandmean, intercept = grandmean,  explicit coefnames: t1-(t0+t1+t2)/3, first level dropped  \cr
-'helmert'       : coef = level - prevlevels, intercept = grandmean,  explicit coefnames: t2-(t0+t1)/2   \cr}
+\item{vars}{svars}
 
 \item{n}{character vector}
 }
@@ -77,30 +87,41 @@ A General Linear Model contains:                                                
 \examples{
 # Coding functions
     x <- factor(paste0('t', 0:3))
-    code_baseline( levels(x))
-    code_baselinegrand(  levels(x))
-    code_backward(levels(x))
-    code_backwardgrand( levels(x))
-    code_sum(       levels(x))
-    code_helmert(   levels(x))
+    xlevels <- levels(x)
+    contr.treatment(         xlevels)
+    contr.treatment.explicit(xlevels)
+    contr.diff(              xlevels)
+    code_control(            xlevels)
+    code_diff(               xlevels)
+    code_diff_forward(       xlevels)
+    code_deviation(          xlevels)
+    code_deviation_first(    xlevels)
+    code_helmert(            xlevels)
+    code_helmert_forward(    xlevels)
 
 # Code
-    x \%<>\% code('treatment')
-    x \%<>\% code('baseline')
-    x \%<>\% code('baselinegrand')
-    x \%<>\% code('backward')
-    x \%<>\% code('backwardgrand')
-    x \%<>\% code('sum')
-    x \%<>\% code('helmert')
+    x \%<>\% code(contr.treatment)
+    x \%<>\% code(contr.treatment.explicit)
+    x \%<>\% code(contr.diff)
+    x \%<>\% code(code_control)
+    x \%<>\% code(code_diff)
+    x \%<>\% code(code_diff_forward)
+    x \%<>\% code(code_deviation)
+    x \%<>\% code(code_deviation_first)
+    x \%<>\% code(code_helmert)
+    x \%<>\% code(code_helmert_forward)
 
 # Model
     file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file)
-    object \%<>\% fit_limma(coding = 'treatment') # default
-    object \%<>\% fit_limma(coding = 'baseline')
-    object \%<>\% fit_limma(coding = 'baselinegrand')
-    object \%<>\% fit_limma(coding = 'backward')
-    object \%<>\% fit_limma(coding = 'backwardgrand')
-    object \%<>\% fit_limma(coding = 'sum')
-    object \%<>\% fit_limma(coding = 'helmert')
+    object \%<>\% fit_limma(codingfun = contr.treatment) # default
+    object \%<>\% fit_limma(codingfun = contr.treatment.explicit)
+    object \%<>\% fit_limma(codingfun = contr.diff)
+    object \%<>\% fit_limma(codingfun = code_control)
+    object \%<>\% fit_limma(codingfun = code_diff)
+    object \%<>\% fit_limma(codingfun = code_diff_forward)
+    object \%<>\% fit_limma(codingfun = code_deviation)
+    object \%<>\% fit_limma(codingfun = code_deviation_first)
+    object \%<>\% fit_limma(codingfun = code_helmert)
+    object \%<>\% fit_limma(codingfun = code_helmert_forward)
 }

@@ -1476,7 +1476,7 @@ plot_venn <- function(x){
 #' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% fit_wilcoxon(~ subgroup, block = 'Subject')
-#' object %<>% fit_limma(   ~ subgroup, block = 'Subject', coding = 'baseline')
+#' object %<>% fit_limma(   ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
 #' isfdr <- is_sig(object, contrast = 't3-t0')
 #' plot_contrast_venn(isfdr)
 #' @export
@@ -1517,7 +1517,19 @@ plot_matrix <- function(mat){
 
 #' Plot model 
 #' @param object ´SummarizedExperiment
-#' @param coding 'treatment', 'baseline', 'backward', 'sum', 'helmert'
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
 #' @return ggplot
 #' @examples
 #' file <- download_data('billing19.proteingroups.txt')
@@ -1526,9 +1538,9 @@ plot_matrix <- function(mat){
 #' object$subgroup %<>% substr(1,3)
 #' plot_design(object)
 #' @export
-plot_design <- function(object, coding = 'treatment'){
+plot_design <- function(object, codingfun = contr.treatment){
     coef <- y <- yend <- NULL
-    designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE, coding = coding)
+    designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE, codingfun = codingfun)
     rownames(designmat) <- object$subgroup
     designmat %<>% unique()
     subgroups <- subgroup_levels(object)

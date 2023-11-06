@@ -262,8 +262,19 @@ extract_connected_features <- function(
 #' @param fit         'lm', 'lme', or 'lmer'
 #' @param formula      formula
 #' @param drop         TRUE or FALSE
-#' @param coding       factor coding system: 'treatment' (default), 'baseline', 
-#'                      'backward', 'baselinegrand', 'backwardgrand', 'sum', 'helmert'
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
 #' @param coefs        NULL or stringvector
 #' @param contrasts    unused. only to allow generic get(fitfun)(contrasts)
 #' @param block        NULL or svar
@@ -276,21 +287,21 @@ extract_connected_features <- function(
 #' @examples 
 #' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' fit_lm(   object, formula = ~subgroup)
-#' fit_limma(object, formula = ~subgroup)
-#' fit_limma(object, formula = ~subgroup, block = 'Subject')
-#' fit_lme(  object, formula = ~subgroup, block = 'Subject')
-#' fit_lmer( object, formula = ~subgroup, block = 'Subject')
-#' # fit_lme(  object, formula = ~subgroup, block = ~1|Subject) # needs fine-tuning
-#' # fit_lmer( object, formula = ~subgroup + (1|Subject))       # needs fine-tuning
+#' fit_lm(    object, formula = ~subgroup)
+#' fit_limma( object, formula = ~subgroup)
+#' fit_limma( object, formula = ~subgroup, block = 'Subject')
+#' fit_lme(   object, formula = ~subgroup, block = 'Subject')
+#' fit_lmer(  object, formula = ~subgroup, block = 'Subject')
+#' # fit_lme( object, formula = ~subgroup, block = ~1|Subject) # needs fine-tuning
+#' # fit_lmer(object, formula = ~subgroup + (1|Subject))       # needs fine-tuning
 #' @export
 fit_lmx <- function(
     object, 
     fit, 
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
-    coding    = 'treatment',
-    coefs     = colnames(create_design(object, formula = formula, drop = drop, coding = coding, verbose = FALSE)), 
+    coefs     = colnames(create_design(
+                object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
     block     = NULL, 
     opt       = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
@@ -351,7 +362,7 @@ fit_lm <- function(
     object,
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
-    coding    = 'treatment',
+    codingfun = contr.treatment,
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p', 'fdr'),
@@ -361,12 +372,12 @@ fit_lm <- function(
     plot      = FALSE
 ){
     
-    sdt(object) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
+    sdt(object) %<>% code(codingfun = codingfun, vars = all.vars(formula), verbose = verbose)
     if (verbose)  message('\t\tlm(', formula2str(formula), ')')
     fit_lmx(
         object,                      fit          = 'lm', 
         formula      = formula,      drop         = drop,
-        coding       = coding,       block        = block,
+        block        = block,
         weightvar    = weightvar,    statvars     = statvars,
         coefs        = coefs,        verbose      = verbose,
         plot         = plot)
@@ -379,7 +390,7 @@ fit_lme <- function(
     object, 
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
-    coding    = 'treatment',
+    codingfun = contr.treatment,
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     opt       = 'optim',
@@ -395,11 +406,11 @@ fit_lme <- function(
         message("BiocManager::install('nlme'). Then re-run.")
         return(object)   }
 # Fit
-    sdt(object) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
+    sdt(object) %<>% code(codingfun = codingfun, vars = all.vars(formula), verbose = verbose)
     fit_lmx(
         object,                      fit          = 'lme', 
         formula      = formula,      drop         = drop,
-        coding       = coding,       block        = block, 
+        block        = block, 
         weightvar    = weightvar,    opt          = opt,
         coefs        = coefs, 
         verbose      = verbose,      plot         = plot)
@@ -412,7 +423,7 @@ fit_lmer <- function(
     object, 
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
-    coding    = 'treatment',
+    codingfun = contr.treatment,
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p', 'fdr'),
@@ -430,11 +441,11 @@ fit_lmer <- function(
         message("`BiocManager::install('lmerTest')`. Then re-run.")
         return(object) }
 # Fit
-    sdt(object) %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
+    sdt(object) %<>% code(codingfun = codingfun, vars = all.vars(formula), verbose = verbose)
     fit_lmx(
         object,                    fit        = 'lmer', 
         formula    = formula,      drop       = drop,
-        coding     = coding,       block      = block, 
+        block      = block, 
         weightvar  = weightvar,    coefs      = coefs, 
         verbose    = verbose,      plot       = plot)
 }

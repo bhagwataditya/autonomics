@@ -21,7 +21,7 @@ Plot contrast venn
 file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 object \%<>\% fit_wilcoxon(~ subgroup, block = 'Subject')
-object \%<>\% fit_limma(   ~ subgroup, block = 'Subject', coding = 'baseline')
+object \%<>\% fit_limma(   ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
 isfdr <- is_sig(object, contrast = 't3-t0')
 plot_contrast_venn(isfdr)
 }

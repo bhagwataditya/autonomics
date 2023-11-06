@@ -12,7 +12,7 @@ create_design(object, ...)
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  coding = "treatment",
+  codingfun = contr.treatment,
   verbose = TRUE,
   ...
 )
@@ -21,7 +21,7 @@ create_design(object, ...)
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  coding = "treatment",
+  codingfun = contr.treatment,
   verbose = TRUE,
   ...
 )
@@ -35,7 +35,19 @@ create_design(object, ...)
 
 \item{drop}{whether to drop predictor names}
 
-\item{coding}{contrast coding function}
+\item{codingfun}{factor coding function
+\itemize{
+    \item contr.treatment:          intercept = y0,     coefi = yi - y0
+    \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+    \item code_control:             intercept = ymean,  coefi = yi - y0
+    \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+    \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+    \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+    \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+    \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+    \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+    \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+}}
 
 \item{verbose}{whether to message}
 }
@@ -50,8 +62,8 @@ file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
 unique(create_design(object))
 unique(create_design(object, ~ Time))
-unique(create_design(object, ~ Time, coding = 'baseline' ))
-unique(create_design(object, ~ Time, coding = 'backward'))
+unique(create_design(object, ~ Time, codingfun = contr.treatment.explicit))
+unique(create_design(object, ~ Time, codingfun = contr.diff))
 unique(create_design(object, ~ Time + Diabetes))
 unique(create_design(object, ~ Time / Diabetes))
 unique(create_design(object, ~ Time * Diabetes))

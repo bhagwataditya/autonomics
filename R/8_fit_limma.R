@@ -64,7 +64,19 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' @param object       SummarizedExperiment or data.frame
 #' @param formula      formula with svars
 #' @param drop         whether to drop predictor names
-#' @param coding    contrast coding function
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
 #' @param verbose      whether to message
 #' @param ...          required to s3ify
 #' @return design matrix
@@ -73,8 +85,8 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' object <- read_metabolon(file)
 #' unique(create_design(object))
 #' unique(create_design(object, ~ Time))
-#' unique(create_design(object, ~ Time, coding = 'baseline' ))
-#' unique(create_design(object, ~ Time, coding = 'backward'))
+#' unique(create_design(object, ~ Time, codingfun = contr.treatment.explicit))
+#' unique(create_design(object, ~ Time, codingfun = contr.diff))
 #' unique(create_design(object, ~ Time + Diabetes))
 #' unique(create_design(object, ~ Time / Diabetes))
 #' unique(create_design(object, ~ Time * Diabetes))
@@ -86,34 +98,34 @@ create_design <- function(object, ...) UseMethod('create_design')
 #' @export
 create_design.SummarizedExperiment <- function(
     object, 
-    formula = default_formula(object),
-    drop    = varlevels_dont_clash(object, all.vars(formula)), 
-    coding  = 'treatment',
-    verbose = TRUE, 
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)), 
+    codingfun = contr.treatment,
+    verbose   = TRUE, 
     ...
 ){
     create_design.data.table(sdt(object), 
-                            formula = formula,
-                            coding  = coding,
-                            drop    = drop,
-                            verbose = verbose)
+                            formula   = formula,
+                            codingfun = codingfun,
+                            drop      = drop,
+                            verbose   = verbose)
 }
 
 #' @rdname create_design
 #' @export
 create_design.data.table <- function(
     object, 
-    formula = default_formula(object),
-    drop    = varlevels_dont_clash(object, all.vars(formula)), 
-    coding  = 'treatment',
-    verbose = TRUE, 
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)), 
+    codingfun = contr.treatment,
+    verbose   = TRUE, 
     ...
 ){
 # Assert
     assert_is_subset(all.vars(formula), names(object))
     . <- NULL
 # Contrast Code Factors
-    object %<>% code(coding = coding, vars = all.vars(formula), verbose = verbose)
+    object %<>% code(codingfun = codingfun, vars = all.vars(formula), verbose = verbose)
 # Create design matrix
     #if (verbose)   message('\t\tDesign: ', formula2str(formula))
     object %<>% data.frame(row.names = .$sample_id)
@@ -140,16 +152,20 @@ create_design.data.table <- function(
 #' Contrast Code Factor for General Linear Model
 #'
 #' @param object  factor vector
-#' @param coding  coding system \cr
-#' @param vars    character vector
-#'    'treatment'     : coef = level - firstlevel, intercept = firstlevel, implicit coefnames: t2.           \cr
-#'    'baselinefirst' : coef = level - firstlevel, intercept = firstlevel, explicit coefnames: t2-t0         \cr
-#'    'baseline'      : coef = level - firstlevel, intercept = grandmean,  explicit coefnames: t2-t0         \cr
-#'    'backward'      : coef = level -  prevlevel, intercept = grandmean,  explicit coefnames: t2-t1         \cr
-#'    'backwardfirst' : coef = level -  prevlevel, intercept = firstlevel, explicit coefnames: t2-t1         \cr
-#'    'sum'           : coef = level -  grandmean, intercept = grandmean,  explicit coefnames: t1-(t0+t1+t2)/3, last level dropped   \cr
-#'    'sumfirst'      : coef = level -  grandmean, intercept = grandmean,  explicit coefnames: t1-(t0+t1+t2)/3, first level dropped  \cr
-#'    'helmert'       : coef = level - prevlevels, intercept = grandmean,  explicit coefnames: t2-(t0+t1)/2   \cr
+#' @param vars svars
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
 #' @param verbose TRUE or FALSE
 #' @param n character vector
 #' @param ... used for s3 dispatch
@@ -170,51 +186,51 @@ create_design.data.table <- function(
 #' @examples
 #' # Coding functions
 #'     x <- factor(paste0('t', 0:3))
-#'     code_baseline( levels(x))
-#'     code_baselinegrand(  levels(x))
-#'     code_backward(levels(x))
-#'     code_backwardgrand( levels(x))
-#'     code_sum(       levels(x))
-#'     code_helmert(   levels(x))
+#'     xlevels <- levels(x)
+#'     contr.treatment(         xlevels)
+#'     contr.treatment.explicit(xlevels)
+#'     contr.diff(              xlevels)
+#'     code_control(            xlevels)
+#'     code_diff(               xlevels)
+#'     code_diff_forward(       xlevels)
+#'     code_deviation(          xlevels)
+#'     code_deviation_first(    xlevels)
+#'     code_helmert(            xlevels)
+#'     code_helmert_forward(    xlevels)
 #' 
 #' # Code
-#'     x %<>% code('treatment')
-#'     x %<>% code('baseline')
-#'     x %<>% code('baselinegrand')
-#'     x %<>% code('backward')
-#'     x %<>% code('backwardgrand')
-#'     x %<>% code('sum')
-#'     x %<>% code('helmert')
+#'     x %<>% code(contr.treatment)
+#'     x %<>% code(contr.treatment.explicit)
+#'     x %<>% code(contr.diff)
+#'     x %<>% code(code_control)
+#'     x %<>% code(code_diff)
+#'     x %<>% code(code_diff_forward)
+#'     x %<>% code(code_deviation)
+#'     x %<>% code(code_deviation_first)
+#'     x %<>% code(code_helmert)
+#'     x %<>% code(code_helmert_forward)
 #'
 #' # Model
 #'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     object %<>% fit_limma(coding = 'treatment') # default
-#'     object %<>% fit_limma(coding = 'baseline')
-#'     object %<>% fit_limma(coding = 'baselinegrand')
-#'     object %<>% fit_limma(coding = 'backward')
-#'     object %<>% fit_limma(coding = 'backwardgrand')
-#'     object %<>% fit_limma(coding = 'sum')
-#'     object %<>% fit_limma(coding = 'helmert')
+#'     object %<>% fit_limma(codingfun = contr.treatment) # default
+#'     object %<>% fit_limma(codingfun = contr.treatment.explicit)
+#'     object %<>% fit_limma(codingfun = contr.diff)
+#'     object %<>% fit_limma(codingfun = code_control)
+#'     object %<>% fit_limma(codingfun = code_diff)
+#'     object %<>% fit_limma(codingfun = code_diff_forward)
+#'     object %<>% fit_limma(codingfun = code_deviation)
+#'     object %<>% fit_limma(codingfun = code_deviation_first)
+#'     object %<>% fit_limma(codingfun = code_helmert)
+#'     object %<>% fit_limma(codingfun = code_helmert_forward)
 #' @export
 code <- function(object, ...)  UseMethod('code')
 
 #' @rdname code
 #' @export
-code.factor <- function(object, coding, verbose = TRUE, ...){
-
-    assert_scalar_subset(coding, c(
-        'treatment', 'baseline', 'backward', 'forward', 'sum', 'sumfirst',
-        'helmert',   'baselinefirst', 'backwardfirst'))
-    codingfun <- switch(coding, treatment  = contr.treatment, 
-                                baseline   = code_baseline, 
-                                backward   = code_backward, 
-                                forward    = code_forward,
-                                sum        = code_sum,
-                                sum1       = code_sumfirst,
-                                helmert    = code_helmert, 
-                                helmertfwd = code_helmertfwd)
-    if (is.null(coding))  return(object)
+code.factor <- function(object, codingfun, verbose = TRUE, ...){
+    if (is.null(codingfun))  return(object)
+    assert_is_function(codingfun)
     k <- length(levels(object))
     contrasts(object) <- codingfun(levels(object))
     if (verbose){
@@ -230,17 +246,17 @@ code.factor <- function(object, coding, verbose = TRUE, ...){
 
 #' @rdname code
 #' @export
-code.data.table <- function(object, coding, vars = names(object), verbose = TRUE, ...){
-    if (verbose)  cmessage('\t\t%s code factors', stringr::str_to_title(coding))
+code.data.table <- function(object, codingfun, vars = names(object), verbose = TRUE, ...){
+    if (verbose)  cmessage('\t\t code factors')
     for (var in vars){
         if (is.character(object[[var]]))  object[[var]] %<>% factor()
         if (is.logical(  object[[var]]))  object[[var]] %<>% factor()
     }
-    if (is.null(coding)) return(object)
+    if (is.null(codingfun)) return(object)
     for (var in vars){
         if (is.factor(object[[var]])){
             if (verbose)  cmessage('\t\t\t%s', var)
-            object[[var]] %<>% code.factor(coding, verbose = verbose)
+            object[[var]] %<>% code.factor(codingfun, verbose = verbose)
         }
     }
     object
@@ -248,76 +264,84 @@ code.data.table <- function(object, coding, vars = names(object), verbose = TRUE
 
 #' @rdname code
 #' @export
-code_baselinefirst <- function(n){
+contr.treatment.explicit <- function(n){
     y <- contr.treatment(n)
     colnames(y) %<>% paste0('-', n[1])
     y
 }
 
+
 #' @rdname code
 #' @export
-code_baseline <- function(n){
+code_control <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
     }
-    y <- codingMatrices::code_control(n)
-    colnames(y) <- paste0(n[-1], '-', n[1])
-    y
+    codingMatrices::code_control(n, abbreviate = FALSE)
 }
+
 
 #' @rdname code
 #' @export
-code_backwardfirst <- function(n){
+contr.diff <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
     }
-    k <- length(n)
-    y <- codingMatrices::contr.diff(n)
-    colnames(y) <- paste0(n[-1], '-', n[-k])
-    y
+    codingMatrices::contr.diff(n, abbreviate = FALSE)
 }
 
 #' @rdname code
 #' @export
-code_backward <- function(n){
+code_diff <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
     }
-    k <- length(n)
-    y <- codingMatrices::code_diff(n)
-    colnames(y) <- paste0(n[-1], '-', n[-k])
-    y
+    codingMatrices::code_diff(n, abbreviate = FALSE)
 }
 
 #' @rdname code
 #' @export
-code_sum <- function(n){
-    y <- contr.sum(n)
+code_diff_forward <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    codingMatrices::code_diff_forward(n, abbreviate = FALSE)
+}
+
+#' @rdname code
+#' @export
+code_deviation <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
     k <- length(n)
     contrastnames <- paste0(n, collapse = '+')
     contrastnames <- paste0('(', contrastnames, ')')
     contrastnames <- paste0(contrastnames, '/', length(n))
     contrastnames <- paste0(n[-k], '-', contrastnames) 
+    y <- codingMatrices::code_deviation(n)
     colnames(y) <- contrastnames
     y
 }
 
 #' @rdname code
 #' @export
-code_sumfirst <- function(n){
+code_deviation_first <- function(n){
     if (!requireNamespace('codingMatrices', quietly = TRUE)){
         message("install.packages('codingMatrices'). Then re-run.")
         return(n) 
     }
-    y <- codingMatrices::code_deviation_first(n)
     k <- length(n)
     contrastnames <- paste0(n, collapse = '+')
     contrastnames <- paste0('(', contrastnames, ')')
     contrastnames <- paste0(contrastnames, '/', length(n))
     contrastnames <- paste0(n[-1], '-', contrastnames) 
+    y <- codingMatrices::code_deviation_first(n)
     colnames(y) <- contrastnames
     y
 }
@@ -340,6 +364,28 @@ code_helmert <- function(n){
     y
 }
 
+#' @rdname code
+#' @export
+code_helmert_forward <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    y <- codingMatrices::code_helmert_forward(n) # properly scaled version of stats::contr.helmert
+    k <- length(n)
+    for (i in seq(1, k-1)){
+        curlevel <- n[i]
+        nextlevels <- n[seq(i+1,k)]
+        fwdmean <- nextlevels
+        if (length(nextlevels)>1){
+            fwdmean %<>% paste0(collapse = '+')
+            fwdmean %<>% paste0('(', ., ')')
+            fwdmean %<>% paste0('/', length(nextlevels))
+        }
+        colnames(y)[i] <- sprintf('%s-%s',  curlevel, fwdmean)
+    }
+    y
+}
 
 #=============================================================================
 #
@@ -519,8 +565,19 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param object    SummarizedExperiment
 #' @param formula   modeling formula
 #' @param drop      TRUE or FALSE
-#' @param coding    factor coding system: 'treatment', 'baseline', 'backward', 
-#'                        'baselinegrand',  'backwardgrand', 'sum', 'helmert'
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
 #' @param design    design matrix
 #' @param contrasts NULL or character vector: coefficient contrasts to test
 #' @param coefs     NULL or character vector: model coefs to test
@@ -545,9 +602,9 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     object %<>% fit_lme(       ~ subgroup, block = 'Subject')  #      powerful random effects
 #'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject')  # more powerful random effects
 #' # Intuitive : alternative coding
-#'     object %<>% fit_lme(       ~ subgroup, block = 'Subject', coding = 'baseline')
-#'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject', coding = 'baseline')
-#'     object %<>% fit_limma(     ~ subgroup, block = 'Subject', coding = 'baseline')
+#'     object %<>% fit_lme(       ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
+#'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
+#'     object %<>% fit_limma(     ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
 #' # Flexible : limma contrasts
 #'     object %<>% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = c('t1-t0'))
 #'         # flexible, but only approximate
@@ -563,8 +620,8 @@ fit <- function(
     formula   = default_formula(object),
     engine    = 'limma', 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
-    coding    = 'treatment', 
-    design    = create_design(object, formula = formula, drop = drop, coding = coding),
+    codingfun = contr.treatment, 
+    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
     coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
     block     = NULL,
@@ -577,7 +634,7 @@ fit <- function(
 ){
     assert_scalar_subset(engine, c('limma', 'lme', 'lmer', 'wilcoxon', 'lm'))
     fitfun <- paste0('fit_', engine)
-    get(fitfun)(object, formula = formula, drop = drop, coding = coding, 
+    get(fitfun)(object, formula = formula, drop = drop, codingfun = codingfun, 
                 design = design, contrasts = contrasts, coefs = coefs, block = block, 
                 weightvar = weightvar, statvars = statvars, sep = sep, suffix = suffix, 
                 verbose = verbose, plot = plot)
@@ -591,8 +648,8 @@ fit_limma <- function(
     object, 
     formula   = default_formula(object),
     drop      = varlevels_dont_clash(object, all.vars(formula)),
-    coding    = 'treatment',
-    design    = create_design(object, formula = formula, drop = drop, coding = coding),
+    codingfun = contr.treatment,
+    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
     coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
     block     = NULL,
@@ -606,7 +663,7 @@ fit_limma <- function(
     object %<>% reset_fit(fit = 'limma', coefs = coefs)
     limmadt <- .fit_limma(
         object       = object,        formula      = formula,
-        drop         = drop,          coding       = coding,
+        drop         = drop,          codingfun    = codingfun,
         design       = design,        contrasts    = contrasts, 
         coefs        = coefs,         block        = block,
         weightvar    = weightvar,     statvars     = statvars,
@@ -667,8 +724,8 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     object, 
     formula   = default_formula(object),
     drop      = varlevels_dont_clash(object, all.vars(formula)),
-    coding    = 'treatment',
-    design    = create_design(object, formula = formula, drop = drop, coding = coding),
+    codingfun    = 'treatment',
+    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
     coefs     = if (is.null(contrasts))  colnames(design) else NULL,
     block     = NULL, 
