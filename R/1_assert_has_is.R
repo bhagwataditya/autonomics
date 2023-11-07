@@ -92,7 +92,7 @@ has_valid_snames <- function(x, .xname = get_name_in_parent(x)){
 #' @return TRUE or FALSE
 #' @noRd
 is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
-    if (!(ok <- assertive::is2(x, "SummarizedExperiment")))  return(ok)
+    if (!(ok <- assertive.base::is2(x, "SummarizedExperiment")))  return(ok)
     if (!(ok <- has_valid_fnames(x, .xname = .xname)))       return(ok)
     if (!(ok <- has_valid_snames(x, .xname = .xname)))       return(ok)
     TRUE

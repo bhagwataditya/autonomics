@@ -24,7 +24,9 @@ translate(
 
 \item{selector}{which values to impute}
 
-\item{mean}{which mean to impute around}
+\item{ref}{reference : which reference value away from which to impute}
+
+\item{pos}{position  : how many sds away to impute}
 }
 \value{
 numeric vector of same length

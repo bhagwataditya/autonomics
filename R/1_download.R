@@ -128,7 +128,7 @@ download_data_old <- function(
                         error = identity)
             if (!inherits(result, 'error'))  break
             ntries %<>% magrittr::subtract(1) }
-        assertive::assert_all_are_not_equal_to(ntries, 0) }
+        assertive.numbers::assert_all_are_not_equal_to(ntries, 0) }
     if (file_ext(file) == 'zip'){
         localdir <- file_path_sans_ext(localfile)
         if (!dir.exists(localdir)) unzip(localfile, exdir = localdir)

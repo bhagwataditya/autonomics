@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Generifying and intuifying cross-platform omics analysis
-Version: 1.10.0
+Version: 1.10.1
 Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Shahina",  "Hayat",     email = "shh2026@qatar-med.cornell.edu",    role = "aut"), 
              person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",    role = "ctb"), 
@@ -28,7 +28,13 @@ Depends:
     R (>= 4.0)
 Imports: 
   abind,
-  assertive, 
+  assertive.base,
+  assertive.files, 
+  assertive.numbers, 
+  assertive.properties,
+  assertive.sets, 
+  assertive.strings,
+  assertive.types,
   BiocFileCache,
   BiocGenerics,
   bit64,
