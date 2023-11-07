@@ -1,9 +1,14 @@
 #' @importFrom abind                 adrop
-#' @importFrom assertive.base        false                    get_name_in_parent
-#' @importFrom assertive.base        assert_all_are_true   assert_any_are_true
-#' @importFrom assertive.base        assert_are_identical     assert_are_same_length
+#' @importFrom assertive.base        false
+#' @importFrom assertive.base        get_name_in_parent
+#' @importFrom assertive.base        assert_all_are_true
+#' @importFrom assertive.base        assert_any_are_true
+#' @importFrom assertive.base        assert_are_identical
 #' @importFrom assertive.base        assert_engine
-#' @importFrom assertive.files       assert_all_are_dirs   assert_all_are_existing_files
+#' @importFrom assertive.base        assert_is_identical_to_true
+#' @importFrom assertive.files       assert_all_are_dirs
+#' @importFrom assertive.files       assert_all_are_existing_files
+#' @importFrom assertive.files       is_existing_file
 #' @importFrom assertive.numbers     assert_all_are_finite
 #' @importFrom assertive.numbers     assert_all_are_greater_than
 #' @importFrom assertive.numbers     assert_all_are_in_closed_range
@@ -11,22 +16,35 @@
 #' @importFrom assertive.numbers     assert_all_are_less_than_or_equal_to
 #' @importFrom assertive.numbers     assert_all_are_whole_numbers
 #' @importFrom assertive.numbers     assert_any_are_not_nan
-#' @importFrom assertive.properties  assert_has_names         assert_has_no_duplicates
-#' @importFrom assertive.properties  assert_is_non_scalar     assert_is_not_null
-#' @importFrom assertive.properties  assert_is_of_length      assert_is_subset
-#' @importFrom assertive.properties  has_names                has_no_duplicates
+#' @importFrom assertive.properties  assert_are_same_length
+#' @importFrom assertive.properties  assert_has_names
+#' @importFrom assertive.properties  assert_has_no_duplicates
+#' @importFrom assertive.properties  assert_is_non_scalar
+#' @importFrom assertive.properties  assert_is_not_null
+#' @importFrom assertive.properties  assert_is_of_length
+#' @importFrom assertive.properties  has_names
+#' @importFrom assertive.properties  has_no_duplicates
+#' @importFrom assertive.properties  assert_is_non_empty
+#' @importFrom assertive.properties  is_scalar
+#' @importFrom assertive.sets        assert_is_subset
+#' @importFrom assertive.sets        is_subset
 #' @importFrom assertive.strings     assert_all_are_non_missing_nor_empty_character
 #' @importFrom assertive.strings     assert_all_are_not_matching_fixed
-#' @importFrom assertive.types       assert_is_all_of         assert_is_any_of
+#' @importFrom assertive.strings     is_empty_character
+#' @importFrom assertive.types       assert_is_all_of
+#' @importFrom assertive.types       assert_is_any_of
 #' @importFrom assertive.types       assert_is_a_bool
-#' @importFrom assertive.types       assert_is_a_number       assert_is_a_string
-#' @importFrom assertive.types       assert_is_character      assert_is_data.frame
-#' @importFrom assertive.types       assert_is_function       assert_is_identical_to_true
+#' @importFrom assertive.types       assert_is_a_number
+#' @importFrom assertive.types       assert_is_a_string
+#' @importFrom assertive.types       assert_is_character
+#' @importFrom assertive.types       assert_is_data.frame
+#' @importFrom assertive.types       assert_is_function
 #' @importFrom assertive.types       assert_is_list
-#' @importFrom assertive.types       assert_is_logical        assert_is_non_empty
-#' @importFrom assertive.types       assert_is_matrix         assert_is_numeric
-#' @importFrom assertive.types       is_a_string  is_empty_character  is_existing_file
-#' @importFrom assertive.types       is_formula  is_scalar  is_subset
+#' @importFrom assertive.types       assert_is_logical
+#' @importFrom assertive.types       assert_is_matrix
+#' @importFrom assertive.types       assert_is_numeric
+#' @importFrom assertive.types       is_a_string
+#' @importFrom assertive.types       is_formula  
 #' @importFrom BiocGenerics cbind 
 #' @importFrom colorspace  sequential_hcl
 #' @importFrom data.table  as.data.table   copy  data.table  
