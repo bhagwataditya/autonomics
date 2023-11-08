@@ -8,6 +8,7 @@ CORE_DATASETS  <- c('atkin18.somascan.adat',
                     'billing19.rnacounts.txt',
                     'billing19.proteingroups.txt',
                     'billing19.phosphosites.txt',
+                    'dilution.report.tsv',
                     'fukuda20.proteingroups.txt',
                     'halama18.metabolon.xlsx')
 
