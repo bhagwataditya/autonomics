@@ -1,5 +1,5 @@
-#' @rdname are_same_length
-#' @export
+# @rdname are_same_length
+# @export
 assert_are_same_length <- function(x, y, 
   severity = getOption("assertive.severity", "stop"))
 {
@@ -13,8 +13,8 @@ assert_are_same_length <- function(x, y,
   )
 }
 
-#' @rdname are_same_length
-#' @export
+# @rdname are_same_length
+# @export
 assert_have_same_dims <- function(x, y, 
   severity = getOption("assertive.severity", "stop"))
 {
@@ -28,8 +28,8 @@ assert_have_same_dims <- function(x, y,
   )
 }
 
-#' @rdname are_same_length
-#' @export
+# @rdname are_same_length
+# @export
 assert_all_are_same_length_legacy <- function(..., l = list())
 {
   .Deprecated("assert_are_same_length")
@@ -53,12 +53,12 @@ assert_all_are_same_length_legacy <- function(..., l = list())
   }
 }
 
-#' @rdname are_same_length
-#' @export
+# @rdname are_same_length
+# @export
 assert_all_are_same_length <- assert_all_are_same_length_legacy
 
-#' @rdname are_same_length
-#' @export
+# @rdname are_same_length
+# @export
 assert_any_are_same_length_legacy <- function(..., l = list())
 {
   .Deprecated("assert_are_same_length")
@@ -81,6 +81,6 @@ assert_any_are_same_length_legacy <- function(..., l = list())
   }
 }
 
-#' @rdname are_same_length
-#' @export
+# @rdname are_same_length
+# @export
 assert_any_are_same_length <- assert_any_are_same_length_legacy

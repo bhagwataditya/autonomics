@@ -1,5 +1,5 @@
-#' @rdname has_names
-#' @export
+# @rdname has_names
+# @export
 has_colnames <- function(x, .xname = get_name_in_parent(x))
 {
   colnamesx <- colnames(x)
@@ -14,8 +14,8 @@ has_colnames <- function(x, .xname = get_name_in_parent(x))
   TRUE
 } 
 
-#' @rdname has_names
-#' @export
+# @rdname has_names
+# @export
 has_dimnames <- function(x, .xname = get_name_in_parent(x))
 {
   dimnamesx <- dimnames(x)
@@ -55,7 +55,7 @@ has_dimnames <- function(x, .xname = get_name_in_parent(x))
 #' assert_has_colnames(dfr)
 #' assert_has_dimnames(dfr)
 #' @author Richard Cotton
-#' @export
+#' @noRd
 has_names <- function(x, .xname = get_name_in_parent(x))
 {
   namesx <- names(x)
@@ -70,8 +70,8 @@ has_names <- function(x, .xname = get_name_in_parent(x))
   TRUE
 } 
 
-#' @rdname has_names
-#' @export
+# @rdname has_names
+# @export
 has_rownames <- function(x, .xname = get_name_in_parent(x))
 {
   rownamesx <- rownames(x)

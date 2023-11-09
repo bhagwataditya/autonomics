@@ -11,7 +11,7 @@
 #' @note In R, \code{NA_character_} is considered to be a non-empty string
 #' (at least by \code{\link[base]{nzchar}}), which is why many functions are
 #' needed to to clarify the situation.
-#' @seealso \code{\link[autonomics]{is_character}}, 
+#' @seealso \code{is_character}, 
 #' \code{\link[base]{nzchar}}
 #' @examples 
 #' # These functions return a vector:
@@ -41,7 +41,7 @@
 #' @importFrom assertive.base coerce_to
 #' @importFrom assertive.base call_and_name
 #' @importFrom assertive.base set_cause
-#' @export
+#' @noRd
 is_empty_character <- function(x, .xname = get_name_in_parent(x))
 { 
   x <- coerce_to(x, "character", .xname)
@@ -55,11 +55,10 @@ is_empty_character <- function(x, .xname = get_name_in_parent(x))
   )
 }
 
-#' @rdname is_empty_character
+# @rdname is_empty_character
 #' @importFrom assertive.base coerce_to
 #' @importFrom assertive.base call_and_name
 #' @importFrom assertive.base set_cause
-#' @export
 is_non_empty_character <- function(x, .xname = get_name_in_parent(x))
 { 
   x <- coerce_to(x, "character", .xname)
@@ -73,11 +72,10 @@ is_non_empty_character <- function(x, .xname = get_name_in_parent(x))
   )
 }
 
-#' @rdname is_empty_character
+# @rdname is_empty_character
 #' @importFrom assertive.base coerce_to
 #' @importFrom assertive.base is_na
 #' @importFrom assertive.base set_cause
-#' @export
 is_missing_or_empty_character <- function(x, .xname = get_name_in_parent(x))
 { 
   x <- coerce_to(x, "character", .xname)
@@ -85,11 +83,10 @@ is_missing_or_empty_character <- function(x, .xname = get_name_in_parent(x))
   set_cause(ok, "nonempty")
 }
 
-#' @rdname is_empty_character
+# @rdname is_empty_character
 #' @importFrom assertive.base coerce_to
 #' @importFrom assertive.base is_na
 #' @importFrom assertive.base set_cause
-#' @export
 is_non_missing_nor_empty_character <- function(x, .xname = get_name_in_parent(x))
 { 
   x <- coerce_to(x, "character", .xname)
@@ -97,8 +94,7 @@ is_non_missing_nor_empty_character <- function(x, .xname = get_name_in_parent(x)
   set_cause(ok, ifelse(is.na(x), "missing", "empty"))
 }
 
-#' @rdname is_empty_character
-#' @export
+# @rdname is_empty_character
 is_not_missing_nor_empty_character <- function(x)
 {
   .Deprecated("is_non_missing_nor_empty_character")

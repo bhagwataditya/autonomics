@@ -1,5 +1,5 @@
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 assert_has_elements <- function(x, n, 
   severity = getOption("assertive.severity", "stop"))
 {                                                  
@@ -12,8 +12,8 @@ assert_has_elements <- function(x, n,
   )
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 assert_is_empty <- function(x, metric = c("length", "elements"), 
   severity = getOption("assertive.severity", "stop"))
 {                             
@@ -27,8 +27,8 @@ assert_is_empty <- function(x, metric = c("length", "elements"),
   ) 
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 assert_is_non_empty <- function(x, metric = c("length", "elements"), 
   severity = getOption("assertive.severity", "stop"))
 {                            
@@ -42,8 +42,8 @@ assert_is_non_empty <- function(x, metric = c("length", "elements"),
   )  
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 assert_is_non_scalar <- function(x, metric = c("length", "elements"), 
   severity = getOption("assertive.severity", "stop"))
 {                            
@@ -57,8 +57,8 @@ assert_is_non_scalar <- function(x, metric = c("length", "elements"),
   )   
 }
 
-##' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 assert_is_of_dimension <- function(x, n, 
   severity = getOption("assertive.severity", "stop"))
 {                                                  
@@ -71,8 +71,8 @@ assert_is_of_dimension <- function(x, n,
   )
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 assert_is_of_length <- function(x, n, 
   severity = getOption("assertive.severity", "stop"))
 {                                                  
@@ -85,8 +85,8 @@ assert_is_of_length <- function(x, n,
   )
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 assert_is_scalar <- function(x, metric = c("length", "elements"), 
   severity = getOption("assertive.severity", "stop"))
 {                                        

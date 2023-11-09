@@ -19,15 +19,14 @@
 #' assertive.base::dont_stop(assert_is_matrix(array()))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_array <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "array", .xname)
 }
 
-#' @rdname is_language
+# @rdname is_language
 #' @importFrom assertive.base is2
-#' @export
 is_call <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "call", .xname)
@@ -52,7 +51,7 @@ is_call <- function(x, .xname = get_name_in_parent(x))
 #' assertive.base::dont_stop(assert_is_character(factor(letters)))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_character <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "character", .xname)
@@ -83,7 +82,7 @@ is_character <- function(x, .xname = get_name_in_parent(x))
 #' assertive.base::dont_stop(assert_is_a_complex(complex()))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_complex <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "complex", .xname)
@@ -105,15 +104,14 @@ is_complex <- function(x, .xname = get_name_in_parent(x))
 #' assert_is_data.frame(datasets::CO2)
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_data.frame <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "data.frame", .xname)
 }
 
-#' @rdname is_numeric
+# @rdname is_numeric
 #' @importFrom assertive.base is2
-#' @export
 is_double <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "double", .xname)
@@ -136,15 +134,15 @@ is_double <- function(x, .xname = get_name_in_parent(x))
 #' assert_is_environment(globalenv())
 #' assert_is_environment(baseenv())
 #' @author Richard Cotton
-#' @importFrom assertive.base is2
-#' @export
+# @importFrom assertive.base is2
+#' @noRd
 is_environment <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "environment", .xname)
 }
 
-#' @rdname is_language
-#' @export
+# @rdname is_language
+# @export
 is_expression <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "expression", .xname)
@@ -173,8 +171,7 @@ is_expression <- function(x, .xname = get_name_in_parent(x))
 #' })
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
-#' @export
+#' @noRd
 is_externalptr <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "externalptr", .xname)
@@ -196,7 +193,7 @@ is_externalptr <- function(x, .xname = get_name_in_parent(x))
 #' assert_is_factor(factor(sample(letters, 10)))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_factor <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "factor", .xname)
@@ -221,7 +218,7 @@ is_factor <- function(x, .xname = get_name_in_parent(x))
 #' assert_is_function(function(){})
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_function <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "function", .xname)
@@ -250,7 +247,7 @@ is_function <- function(x, .xname = get_name_in_parent(x))
 #' assertive.base::dont_stop(assert_is_an_integer(integer()))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_integer <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "integer", .xname)
@@ -286,7 +283,7 @@ is_integer <- function(x, .xname = get_name_in_parent(x))
 #' #These examples should fail.
 #' assertive.base::dont_stop(assert_is_language(function(){}))
 #' @author Richard Cotton
-#' @export
+#' @noRd
 is_language <- function(x, .xname = get_name_in_parent(x))
 {
   if(!is.language(x)) 
@@ -322,7 +319,7 @@ is_language <- function(x, .xname = get_name_in_parent(x))
 #' })
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_list <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "list", .xname)
@@ -352,23 +349,21 @@ is_list <- function(x, .xname = get_name_in_parent(x))
 #' assertive.base::dont_stop(assert_is_a_bool(logical()))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_logical <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "logical", .xname)
 }       
 
-#' @rdname is_array
+# @rdname is_array
 #' @importFrom assertive.base is2
-#' @export
 is_matrix <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "matrix", .xname)
 }
 
-#' @rdname is_language
+# @rdname is_language
 #' @importFrom assertive.base is2
-#' @export
 is_name <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "name", .xname)
@@ -409,14 +404,14 @@ is_name <- function(x, .xname = get_name_in_parent(x))
 #' assertive.base::dont_stop(assert_is_double(1:10))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_numeric <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "numeric", .xname)
 }
 
-#' @rdname is_factor
-#' @export
+# @rdname is_factor
+# @export
 is_ordered <- function(x, .xname = get_name_in_parent(x))
 {
   if(!(ok <- is_factor(x))) 
@@ -430,15 +425,15 @@ is_ordered <- function(x, .xname = get_name_in_parent(x))
   TRUE
 }
 
-#' @rdname is_list
-#' @export
+# @rdname is_list
+# @export
 is_pairlist <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "pairlist", .xname)
 }
 
-#' @rdname is_function
-#' @export
+# @rdname is_function
+# @export
 is_primitive <- function(x, .xname = get_name_in_parent(x))
 {
   if(!(ok <- is_function(x))) return(ok)
@@ -465,7 +460,7 @@ is_primitive <- function(x, .xname = get_name_in_parent(x))
 #' assert_is_qr(qr(matrix(rnorm(25), nrow = 5)))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_qr <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "qr", .xname)
@@ -494,7 +489,7 @@ is_qr <- function(x, .xname = get_name_in_parent(x))
 #' assertive.base::dont_stop(assert_is_a_raw(raw()))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_raw <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "raw", .xname)
@@ -517,7 +512,7 @@ is_raw <- function(x, .xname = get_name_in_parent(x))
 #' # These examples should fail.
 #' assertive.base::dont_stop(assert_is_s4(1:10))
 #' @author Richard Cotton
-#' @export
+#' @noRd
 is_s4 <- function(x, .xname = get_name_in_parent(x))
 {
   if(!isS4(x))
@@ -527,16 +522,16 @@ is_s4 <- function(x, .xname = get_name_in_parent(x))
   TRUE
 } 
 
-#' @rdname is_s4
-#' @export
+# @rdname is_s4
+# @export
 is_S4 <- function(x, .xname = get_name_in_parent(x))
 {
   .Deprecated("is_s4")
   is_s4(x, .xname)
 }
 
-#' @rdname is_language
-#' @export
+# @rdname is_language
+# @export
 is_symbol <- is_name
 
 #' Is the input a table?
@@ -555,7 +550,7 @@ is_symbol <- is_name
 #' assert_is_table(table(sample(letters, 100, replace = TRUE)))
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_table <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "table", .xname)

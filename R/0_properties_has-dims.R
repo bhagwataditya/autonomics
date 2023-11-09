@@ -16,7 +16,7 @@
 #' assert_has_rows(data.frame(x = 1:10))
 #' assert_has_cols(matrix())
 #' @author Richard Cotton
-#' @export
+#' @noRd
 has_cols <- function(x, .xname = get_name_in_parent(x))
 {
   ncolx <- ncol(x)
@@ -44,7 +44,7 @@ has_cols <- function(x, .xname = get_name_in_parent(x))
 #' \code{has_dims} is not \code{TRUE}.
 #' @seealso \code{\link[base]{dim}}, \code{\link{is_of_dimension}}.
 #' @author Richard Cotton
-#' @export
+#' @noRd
 has_dims <- function(x, .xname = get_name_in_parent(x))
 {
   dim_x <- dim(x)
@@ -55,8 +55,8 @@ has_dims <- function(x, .xname = get_name_in_parent(x))
   TRUE
 }
 
-#' @rdname has_cols
-#' @export
+# @rdname has_cols
+# @export
 has_rows <- function(x, .xname = get_name_in_parent(x))
 {
   nrowx <- nrow(x)

@@ -13,7 +13,7 @@
 #' DIM(1:10)
 #' DIM(list(x = 1:10))
 #' @author Richard Cotton
-#' @export
+#' @noRd
 DIM <- function(x)
 {
   dim_x <- dim(x)
@@ -37,7 +37,7 @@ DIM <- function(x)
 #' n_elements(list(1:5, list(1:3, list(1:7))))
 #' n_elements(var) # depends upon the length of the body
 #' @author Richard Cotton
-#' @export
+#' @noRd
 n_elements <- function(x)
 {
   if(is.recursive(x))

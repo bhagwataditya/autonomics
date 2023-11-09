@@ -1,5 +1,5 @@
-#' @rdname has_names
-#' @export
+# @rdname has_names
+# @export
 assert_has_colnames <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                       
@@ -11,8 +11,8 @@ assert_has_colnames <- function(x,
   )
 }
 
-#' @rdname has_names
-#' @export
+# @rdname has_names
+# @export
 assert_has_dimnames <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                       
@@ -24,8 +24,8 @@ assert_has_dimnames <- function(x,
   )
 }
 
-#' @rdname has_names
-#' @export
+# @rdname has_names
+# @export
 assert_has_names <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                            
@@ -37,8 +37,8 @@ assert_has_names <- function(x,
   )
 }
 
-#' @rdname has_names
-#' @export
+# @rdname has_names
+# @export
 assert_has_rownames <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                             

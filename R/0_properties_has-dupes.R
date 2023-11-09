@@ -16,7 +16,7 @@
 #' assert_has_duplicates(x)
 #' has_no_duplicates(x)
 #' @author Richard Cotton
-#' @export
+#' @noRd
 has_duplicates <- function(x, .xname = get_name_in_parent(x))
 {
   if(!anyDuplicated(x)) 
@@ -27,7 +27,7 @@ has_duplicates <- function(x, .xname = get_name_in_parent(x))
 }
 
 #' @rdname has_duplicates
-#' @export
+#' @noRd
 has_no_duplicates <- function(x, .xname = get_name_in_parent(x))
 {
   if(anyDuplicated(x)) 

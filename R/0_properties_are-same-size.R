@@ -30,7 +30,7 @@
 #' )
 #' have_same_dims(1:5, matrix(1:5))
 #' @author Richard Cotton
-#' @export
+#' @noRd
 are_same_length <- function(x, y, .xname = get_name_in_parent(x),
   .yname = get_name_in_parent(y))
 {
@@ -56,8 +56,8 @@ get_dim_string <- function(x)
   if(is.null(x)) "NULL" else toString(x)
 }
 
-#' @rdname are_same_length
-#' @export
+# @rdname are_same_length
+# @export
 have_same_dims <- function(x, y, .xname = get_name_in_parent(x),
   .yname = get_name_in_parent(y))
 {
@@ -78,8 +78,8 @@ have_same_dims <- function(x, y, .xname = get_name_in_parent(x),
   TRUE
 }
 
-#' @rdname are_same_length
-#' @export
+# @rdname are_same_length
+# @export
 are_same_length_legacy <- function(..., l = list())
 {
   .Deprecated("are_same_length")

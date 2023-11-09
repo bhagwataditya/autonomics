@@ -1,5 +1,5 @@
-#' @rdname is_logical
-#' @export
+# @rdname is_logical
+# @export
 assert_is_a_bool <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {      
@@ -11,8 +11,8 @@ assert_is_a_bool <- function(x,
   )
 }
 
-#' @rdname is_complex
-#' @export
+# @rdname is_complex
+# @export
 assert_is_a_complex <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                          
@@ -24,8 +24,8 @@ assert_is_a_complex <- function(x,
   )
 }
 
-#' @rdname is_numeric
-#' @export
+# @rdname is_numeric
+# @export
 assert_is_a_double <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                          
@@ -37,8 +37,8 @@ assert_is_a_double <- function(x,
   )
 }
 
-#' @rdname is_numeric
-#' @export
+# @rdname is_numeric
+# @export
 assert_is_a_number <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                          
@@ -50,8 +50,8 @@ assert_is_a_number <- function(x,
   )
 }
 
-#' @rdname is_raw
-#' @export
+# @rdname is_raw
+# @export
 assert_is_a_raw <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                          
@@ -63,8 +63,8 @@ assert_is_a_raw <- function(x,
   ) 
 }
 
-#' @rdname is_character
-#' @export
+# @rdname is_character
+# @export
 assert_is_a_string <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -76,8 +76,8 @@ assert_is_a_string <- function(x,
   )
 }
 
-#' @rdname is_integer
-#' @export
+# @rdname is_integer
+# @export
 assert_is_an_integer <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {
@@ -89,8 +89,8 @@ assert_is_an_integer <- function(x,
   ) 
 }
 
-#' @rdname is_inherited_from
-#' @export
+# @rdname is_inherited_from
+# @export
 assert_is_inherited_from <- function(x, classes, 
   severity = getOption("assertive.severity", "stop"))
 {

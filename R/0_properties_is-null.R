@@ -1,5 +1,5 @@
-#' @rdname is_null
-#' @export
+# @rdname is_null
+# @export
 is_not_null <- function(x, .xname = get_name_in_parent(x))
 {
   if(is.null(x))
@@ -47,7 +47,7 @@ is_not_null <- function(x, .xname = get_name_in_parent(x))
 #' assertive.base::dont_stop(assert_is_null(NaN))
 #' @author Richard Cotton
 #' @importFrom assertive.base safe_deparse
-#' @export
+#' @noRd
 is_null <- function(x, .xname = get_name_in_parent(x))
 {
   if(!is.null(x))

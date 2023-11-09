@@ -67,7 +67,7 @@
 #' assert_is_of_dimension(d, c(5, 2))
 #' assert_is_of_dimension(l, NULL)
 #' @author Richard Cotton
-#' @export
+#' @noRd
 is_empty <- function(x, metric = c("length", "elements"), .xname = get_name_in_parent(x))
 {  
   metric <- match.arg(metric)
@@ -76,8 +76,8 @@ is_empty <- function(x, metric = c("length", "elements"), .xname = get_name_in_p
 }
 
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 is_non_empty <- function(x, metric = c("length", "elements"), .xname = get_name_in_parent(x))
 {
   metric <- match.arg(metric)
@@ -94,8 +94,8 @@ is_non_empty <- function(x, metric = c("length", "elements"), .xname = get_name_
   TRUE
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 is_non_scalar <- function(x, metric = c("length", "elements"), .xname = get_name_in_parent(x))
 {
   metric <- match.arg(metric)
@@ -112,8 +112,8 @@ is_non_scalar <- function(x, metric = c("length", "elements"), .xname = get_name
   TRUE
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 is_scalar <- function(x, metric = c("length", "elements"), 
                       .xname = get_name_in_parent(x))
 {
@@ -123,8 +123,8 @@ is_scalar <- function(x, metric = c("length", "elements"),
 }     
 
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 has_elements <- function(x, n, .xname = get_name_in_parent(x))
 {
   n <- use_first(n)
@@ -148,8 +148,8 @@ has_elements <- function(x, n, .xname = get_name_in_parent(x))
   TRUE
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 is_of_dimension <- function(x, n, .xname = get_name_in_parent(x))
 {
   dim_x <- dim(x)
@@ -208,8 +208,8 @@ is_of_dimension <- function(x, n, .xname = get_name_in_parent(x))
   TRUE
 }
 
-#' @rdname is_empty
-#' @export
+# @rdname is_empty
+# @export
 is_of_length <- function(x, n, .xname = get_name_in_parent(x))
 {
   n <- use_first(n)

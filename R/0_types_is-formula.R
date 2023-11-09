@@ -15,14 +15,14 @@
 #' is_two_sided_formula(y ~ x)
 #' @author Richard Cotton
 #' @importFrom assertive.base is2
-#' @export
+#' @noRd
 is_formula <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "formula", .xname)
 }
 
-#' @rdname is_formula
-#' @export
+# @rdname is_formula
+# @export
 is_one_sided_formula <- function(x, .xname = get_name_in_parent(x))
 {
   if(!(ok <- is_formula(x, .xname)))
@@ -36,8 +36,8 @@ is_one_sided_formula <- function(x, .xname = get_name_in_parent(x))
   TRUE
 }
 
-#' @rdname is_formula
-#' @export
+# @rdname is_formula
+# @export
 is_two_sided_formula <- function(x, .xname = get_name_in_parent(x))
 {
   if(!(ok <- is_formula(x, .xname)))

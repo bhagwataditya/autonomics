@@ -31,10 +31,9 @@
 #'   assert_all_are_matching_regex(pi_digits, c("[13]", "[59]"))
 #' })
 #' @author Aditya Bhagwat
-#' @rdname is_matching_fixed
+#' @noRd
 #' @importFrom stringi stri_detect_fixed
 #' @importFrom assertive.base false get_name_in_parent
-#' @export
 is_matching_fixed <- function(x, pattern, opts_fixed = NULL, 
                               .xname = get_name_in_parent(x))
 {
@@ -49,10 +48,9 @@ is_matching_fixed <- function(x, pattern, opts_fixed = NULL,
   )
 }
 
-#' @rdname is_matching_fixed
+# @rdname is_matching_fixed
 #' @importFrom stringi stri_detect_fixed
 #' @importFrom assertive.base false get_name_in_parent
-#' @export
 is_not_matching_fixed <- function(x, pattern, opts_fixed = NULL, 
                               .xname = get_name_in_parent(x))
 {
@@ -68,10 +66,9 @@ is_not_matching_fixed <- function(x, pattern, opts_fixed = NULL,
 }
 
 
-#' @rdname is_matching_fixed
+# @rdname is_matching_fixed
 #' @importFrom stringi stri_detect_regex
 #' @importFrom assertive.base false get_name_in_parent
-#' @export
 is_matching_regex <- function(x, pattern, opts_regex = NULL, 
                               .xname = get_name_in_parent(x))
 {
@@ -86,10 +83,9 @@ is_matching_regex <- function(x, pattern, opts_regex = NULL,
   )
 }
 
-#' @rdname is_matching_fixed
+# @rdname is_matching_fixed
 #' @importFrom stringi stri_detect_regex
 #' @importFrom assertive.base false get_name_in_parent
-#' @export
 is_not_matching_regex <- function(x, pattern, opts_regex = NULL, 
                                   .xname = get_name_in_parent(x))
 {
