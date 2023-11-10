@@ -275,6 +275,7 @@ extract_connected_features <- function(
 #'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
 #'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
 #' }
+#' @param codingfun    coding function
 #' @param coefs        NULL or stringvector
 #' @param contrasts    unused. only to allow generic get(fitfun)(contrasts)
 #' @param block        NULL or svar
@@ -300,6 +301,7 @@ fit_lmx <- function(
     fit, 
     formula   = default_formula(object), 
     drop      = varlevels_dont_clash(object, all.vars(formula)),
+    codingfun = contr.treatment,
     coefs     = colnames(create_design(
                 object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
     block     = NULL, 
@@ -377,7 +379,7 @@ fit_lm <- function(
     fit_lmx(
         object,                      fit          = 'lm', 
         formula      = formula,      drop         = drop,
-        block        = block,
+        codingfun    = codingfun,    block        = block,
         weightvar    = weightvar,    statvars     = statvars,
         coefs        = coefs,        verbose      = verbose,
         plot         = plot)
@@ -410,7 +412,7 @@ fit_lme <- function(
     fit_lmx(
         object,                      fit          = 'lme', 
         formula      = formula,      drop         = drop,
-        block        = block, 
+        codingfun    = codingfun,    block        = block, 
         weightvar    = weightvar,    opt          = opt,
         coefs        = coefs, 
         verbose      = verbose,      plot         = plot)
@@ -445,7 +447,7 @@ fit_lmer <- function(
     fit_lmx(
         object,                    fit        = 'lmer', 
         formula    = formula,      drop       = drop,
-        block      = block, 
+        codingfun  = codingfun,    block      = block, 
         weightvar  = weightvar,    coefs      = coefs, 
         verbose    = verbose,      plot       = plot)
 }

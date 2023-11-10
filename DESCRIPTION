@@ -61,7 +61,6 @@ Imports:
   scales,
   stats, 
   stringi,
-  stringr,
   SummarizedExperiment,
   tidyr,
   tools,

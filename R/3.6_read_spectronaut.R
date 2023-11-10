@@ -19,11 +19,14 @@
 
 # Filter
     # on modification
+        PTM.CollapseKey <- PTM.ModificationTitle <- NULL
         n0 <- dt[, length(unique(PTM.CollapseKey))]
         dt %<>% extract(PTM.ModificationTitle == modification)
         n1 <- dt[, length(unique(PTM.CollapseKey))]
-        if (verbose & n1<n0)  message('\t\tRetain ', n1, '/', n0, ' sites with a ', modification, ' modification')
+        if (verbose & n1<n0)  message(
+            '\t\tRetain ', n1, '/', n0, ' sites with a ', modification, ' modification')
     # on pep
+        PG.PEP <- NULL
         dt %<>% extract(PG.PEP < pg.pep)
         n2 <- dt[, length(unique(PTM.CollapseKey))]
         if (verbose & n2<n1)  message('\t\tRetain ', n2, '/', n1, ' sites: pg.pep < ', pg.pep)
