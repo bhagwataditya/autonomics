@@ -94,7 +94,7 @@ An alternative approach to compute statistics of interest is to use alternative 
 ```{r}
 object <- read_metabolon(file)
 object %<>% fit_limma(~SET, block = 'SUB')  # baseline diffs
-object %<>% fit_limma(~SET, block = 'SUB', coding = 'treatment')  # backward diffs
+object %<>% fit_limma(~SET, block = 'SUB', codingfun = code_diff)  # backward diffs
 ```
 
 # A non-parameteric alternative: **wilcoxon**

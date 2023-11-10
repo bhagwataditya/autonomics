@@ -51,7 +51,7 @@ analyze <- function(
     verbose      = TRUE
 ){
     # Analyze
-    if (is.null(palette))       palette <- make_subgroup_palette(object)
+    if (is.null(palette))       palette <- make_svar_palette(object, svar = all.vars(formula)[1])
     if (pca)  object %<>% pca(verbose = verbose, plot = FALSE)
     if (pls)  object %<>% pls(by = all.vars(formula)[1], verbose = FALSE)
     for (curfit in fit){
@@ -66,7 +66,7 @@ analyze <- function(
             plot         = FALSE) 
     }
     # Plot/Return
-    if (plot)  plot_summary(object, fit = fit, block = block, label = label, palette = palette)
+    if (plot)  plot_summary(object, fit = fit, formula = formula, block = block, label = label, palette = palette)
     object
 }
 
@@ -86,36 +86,42 @@ analyze <- function(
 #' plot_summary(object, block = 'Subject')
 #' @export
 plot_summary <- function(
-    object, fit = 'limma', block = NULL, label = 'feature_id', 
-    palette = make_subgroup_palette(object)
+    object, 
+    fit = 'limma', 
+    formula = default_formula(object), 
+    block = NULL, 
+    label = 'feature_id', 
+    palette = make_svar_palette(object, svar = svar)
 ){
 # Assert
     assert_is_valid_sumexp(object)
     assert_is_subset(c('pca1', 'pca2'), fits(object))
     assert_is_subset(c('pls1', 'pls2'), fits(object))
     assert_any_are_matching_regex(fvars(object), fit)
+    assert_is_formula(formula)
 # Plot
-    detections <- plot_subgroup_nas(object, 
+    svar <- all.vars(formula)[1]
+    detections <- plot_subgroup_nas(object, by = svar,
                     palette  = palette) + ggtitle('Detections') + xlab(NULL) + 
                     theme(plot.title = element_text(hjust = 0.5))
-    pcaplot <- biplot(object, method = 'pca', color = 'subgroup', colorpalette = palette) + 
+    pcaplot <- biplot(object, method = 'pca', color = svar, colorpalette = palette) + 
                guides(color = 'none', linetype = 'none') + # scale_x_continuous(expand = c(0.2, 0.2)) + 
                theme(axis.text.x  = element_blank(), axis.text.y  = element_blank(), 
                      axis.ticks.x = element_blank(), axis.ticks.y = element_blank(), 
                      plot.title   = element_text(hjust = 0.5))
-    plsplot <- biplot(object, method = 'pls', color = 'subgroup', colorpalette = palette) + 
+    plsplot <- biplot(object, method = 'pls', by = svar, color = svar, colorpalette = palette) + 
                guides(color = 'none', linetype = 'none') + # scale_x_continuous(expand = c(0.2, 0.2)) +
                theme(axis.text.x  = element_blank(), axis.text.y  = element_blank(), 
                      axis.ticks.x = element_blank(), axis.ticks.y = element_blank(), 
                      plot.title   = element_text(hjust = 0.5))
-    samples  <- plot_top_samples(object, palette = palette)
+    samples  <- plot_top_samples(object, svar = svar, palette = palette)
     features <- plot_top_features(object, fit = fit)
-    pca1exprs <- plot_exprs(object, fit = 'pca1',  block = block, n = 1, subtitle = 'X1', title = NULL, verbose = FALSE)
-    pca2exprs <- plot_exprs(object, fit = 'pca2',  block = block, n = 1, subtitle = 'X2', title = NULL, verbose = FALSE)
-    pls1exprs <- plot_exprs(object, fit = 'pls1',  block = block, n = 1, subtitle = 'X1', title = NULL, verbose = FALSE)
-    pls2exprs <- plot_exprs(object, fit = 'pls2',  block = block, n = 1, subtitle = 'X2', title = NULL, verbose = FALSE)
+    pca1exprs <- plot_exprs(object, fit = 'pca1',  block = block, n = 1, subtitle = 'X1', title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
+    pca2exprs <- plot_exprs(object, fit = 'pca2',  block = block, n = 1, subtitle = 'X2', title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
+    pls1exprs <- plot_exprs(object, fit = 'pls1',  block = block, n = 1, subtitle = 'X1', title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
+    pls2exprs <- plot_exprs(object, fit = 'pls2',  block = block, n = 1, subtitle = 'X2', title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
     coefs <- default_coefs(object, fit = fit)
-    glm1exprs <- plot_exprs(object, fit = fit, coefs = coefs[1], block = block, n = 1, nrow = 1, subtitle = coefs[1], title = NULL, verbose = FALSE)
+    glm1exprs <- plot_exprs(object, fit = fit, coefs = coefs[1], block = block, n = 1, nrow = 1, subtitle = coefs[1], title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
     pca1exprs <- pca1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
     pca2exprs <- pca2exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
     pls1exprs <- pls1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
@@ -135,8 +141,8 @@ plot_summary <- function(
 }
 
 
-plot_top_samples <- function(object, palette = make_subgroup_palette(object)){
-    plot_sample_densities( object, n = 4, fill = 'subgroup', palette = palette) + 
+plot_top_samples <- function(object, svar, palette = make_svar_palette(object, svar)){
+    plot_sample_densities( object, n = 4, fill = svar, palette = palette) + 
         ggtitle('Samples') + theme_void() + coord_flip() + 
         theme(plot.title       = element_text(hjust = 0.5), 
               legend.position  = 'left', 

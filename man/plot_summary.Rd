@@ -7,9 +7,10 @@
 plot_summary(
   object,
   fit = "limma",
+  formula = default_formula(object),
   block = NULL,
   label = "feature_id",
-  palette = make_subgroup_palette(object)
+  palette = make_svar_palette(object, svar = svar)
 )
 }
 \arguments{

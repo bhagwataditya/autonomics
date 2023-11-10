@@ -1,6 +1,6 @@
 ---
 title: "autonomics: platform-aware analysis"
-subtitle: "Read + preprocess + analyze + visualize cross-platform omics data"
+subtitle: "read + preprocess + analyze + plot cross-platform omics data"
 output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{autonomics_platformaware_analysis}
@@ -47,7 +47,7 @@ Autonomics provides ready-to-use importers for both **count** as well as **BAM**
 
 **Billing et al. (2019)** studied the differentiation of embryonic (**E00**) into mesenchymal stem cells (**E00.8**, **E01**, **E02**, **E05**, **E15**, **E30**), with similar properties as bone-marrow mesenchymal stem cells (**M00**). Importing the RNAseq counts:
 
-```{r}
+```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
 require(autonomics, quietly = TRUE)
 file <- download_data('billing19.rnacounts.txt')
 object <-  read_rnaseq_counts(file = file, fit = 'limma', plot = TRUE, label = 'gene_name')
@@ -58,18 +58,17 @@ object <-  read_rnaseq_counts(file = file, fit = 'limma', plot = TRUE, label = '
 
 The `sfile/sfileby` arguments in both importers allow to merge in sample data from a separate file by a specified column. This is especially useful in clinical datasets, such as the GSE161731 Covid-19 dataset, for which both a **counts** file as well as a **sample** file can be downloaded from GEO:
 
-```{r}
+```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
 basedir <- file.path(tempdir(), 'datasets')
 dir.create(basedir, showWarnings = FALSE, recursive = TRUE)
 if (!dir.exists(file.path(basedir, 'GSE161731'))){
-    GEOquery::getGEOSuppFiles("GSE161731", baseDir=basedir)
+    sink <- GEOquery::getGEOSuppFiles("GSE161731", baseDir = basedir)
 }
 object <- read_rnaseq_counts(
   file    = file.path(basedir, 'GSE161731/GSE161731_counts.csv.gz'), 
   sfile   = file.path(basedir, 'GSE161731/GSE161731_counts_key.csv.gz'), 
   by.y    = 'rna_id', 
-  formula = ~ gender, 
-  fit     = 'limma', 
+  formula = ~ gender,
   plot    = TRUE)
 ```
 
@@ -112,15 +111,15 @@ Proper preprocessing leads to increased power:
 # log2counts
   object <- read_rnaseq_counts(file, 
        cpm = FALSE, voom = FALSE, fit = 'limma', verbose = FALSE, plot = FALSE)
-  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
+  colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 # log2cpm
   object <- read_rnaseq_counts(file,
        cpm = TRUE,  voom = FALSE, fit = 'limma', verbose = FALSE, plot=FALSE)
-  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
+  colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 # log2cpm + voom
   object <- read_rnaseq_counts(file,  # log2 cpm + voom
        cpm = TRUE,  voom = TRUE,  fit = 'limma', verbose = FALSE, plot=FALSE)
-  colSums(summarize_fit(object, 'limma')[-1, c(3,4)])
+  colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 ```
 
 # Proteingroups/phosphosites
@@ -149,9 +148,9 @@ A popular approach in (DDA) MS proteomics data analysis is to use **MaxQuant** t
 
 An **LFQ intensities** example is the **Fukuda et al. (2020)** dataset, which compares the proteome of **30d** zebrafish juveniles versus **adults** using label-free quantification. In the volcano plot measured values are shown with circles, imputed values as triangles.
 
-```{r}
-object <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt'), 
-                             pca = TRUE, fit = 'limma', plot = TRUE)
+```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
+file <- download_data('fukuda20.proteingroups.txt')
+object <- read_proteingroups(file = file, plot = TRUE)
 ```
 
 
@@ -160,43 +159,38 @@ object <- read_proteingroups(file = download_data('fukuda20.proteingroups.txt'),
 **Normalized ratios** were used in the proteomics profiling of the earlier described **Billing et al. (2019)** study, which examined the differentiation of embryonic stem cells (**E00**) into mesenchymal stem cells (**E01**,**E02**, **E05**, **E15**, **E30**), and compared these to bone-marrow derived mesenchymal stem cells (**M00**). The proteomics profiling experiment was performed using MS1 labeling: a light (**L**) labeled internal standard was created by mixing all samples in equal amounts, the subsequent samples were either medium (**M**) or heavy (**H**) labeled. Not all label combinations were of interest, and the `select_subgroups` argument allows to specifies which subgroup combinations to retain:
 
 
-```{r}
-object <- read_proteingroups(
-              file = download_data('billing19.proteingroups.txt'),
-              select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
-                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'), 
-              pca = TRUE, fit = 'limma', plot = TRUE)
+```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
+file <- download_data('billing19.proteingroups.txt')
+subgroups <- c('E00_STD', 'E01_STD', 'E02_STD', 'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
+object <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
 ```
 
 The phosphosites can be read in a similar fashion:
 
-```{r}
-object <- read_phosphosites(
-              file = download_data('billing19.phosphosites.txt'), 
-              proteinfile = download_data('billing19.proteingroups.txt'), 
-              select_subgroups = c('E00_STD', 'E01_STD', 'E02_STD',
-                                   'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD'), 
-              pca = TRUE, fit = 'limma', plot = TRUE)
+```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
+phosphofile <- download_data('billing19.phosphosites.txt')
+proteinfile <- download_data('billing19.proteingroups.txt')
+subgroups <- c('E00_STD', 'E01_STD', 'E02_STD', 'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
+object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, 
+                                     subgroups = subgroups, plot = TRUE)
 ```
 
 # Metabolon
 
 **Metabolon** delivers metabolomics results in the form of an **xlsx** file, with values of interest likely in the (second) **OrigScale** sheet. Features are laid out in rows, samples in columns, and additional feature/sample data are self-contained in the file. Metabolon data can be read/analyzed with the autonomics function `read_metabolon`, as illustrated below on the dataset of **Halama and and Atkin (2018)**, who investigates the effects of **hypoglycemia** on a number of subjects (**SUB**) at four different time points (**t0**, **t1**, **t2**, **t3**):
 
-```{r, fig.width=7, fig.height=4, out.width="95%"}
-object <- read_metabolon(
-        file  = download_data('atkin18.metabolon.xlsx'),  subgroupvar = 'SET',
-        pca = TRUE, fit = 'limma', block = 'SUB', plot = TRUE)
+```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_metabolon(file,  subgroupvar = 'SET', block = 'SUB', plot = TRUE)
 ```
 
 # Somascan
 
 **Somascan** results are returned in a txt file with extension **.adat**. Features are laid out in columns and samples in rows. Rectangles with feature/sample data are also contained in the file. The autonomics function `read_somascan` reads/analyzes SOMAscan files, additionally filtering samples/features for quality and type. This is illustrated on the above described dataset from **Halama and and Atkin (2018)**, who investigated the effects of **hypoglycemia** on a number of subjects (**SUB**) at four different time points (**t0**, **t1**, **t2**, **t3**):
 
-```{r}
-object <- read_somascan(
-            file = download_data('atkin18.somascan.adat'), 
-            pca = TRUE, fit = 'limma', block = 'Subject_ID', plot = TRUE)
+```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
+file <- download_data('atkin18.somascan.adat')
+object <- read_somascan(file, block = 'Subject_ID', plot = TRUE)
 ```
 
 <!--
