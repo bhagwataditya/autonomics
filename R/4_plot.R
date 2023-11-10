@@ -374,7 +374,6 @@ plot_densities <- function(
 }
 
 is_uniquely_empty <- function(x, y){
-    is_empty <- assertive.properties::is_empty
     ( is_empty(x) | !is_empty(y)) | (!is_empty(x) |  is_empty(y))
 }
 

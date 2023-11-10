@@ -23,6 +23,7 @@ data.table::data.table
 #' @importFrom assertive.base         assert_is_identical_to_false
 #' @importFrom assertive.base         assert_is_identical_to_true
 #' @importFrom assertive.base         false    get_name_in_parent
+#' @importFrom assertive.base         call_and_name   coerce_to   is2   use_first
 #' @importFrom assertive.files        assert_all_are_dirs   
 #' @importFrom assertive.files        assert_all_are_existing_files
 #' @importFrom assertive.files        is_existing_file
@@ -31,32 +32,8 @@ data.table::data.table
 #' @importFrom assertive.numbers      assert_all_are_less_than_or_equal_to
 #' @importFrom assertive.numbers      is_in_closed_range
 #' @importFrom assertive.numbers      is_greater_than   is_greater_than_or_equal_to
-#' @importFrom assertive.properties   assert_are_same_length
-#' @importFrom assertive.properties   assert_has_names
-#' @importFrom assertive.properties   assert_has_no_duplicates
-#' @importFrom assertive.properties   assert_is_of_length
-#' @importFrom assertive.properties   assert_is_not_null
-#' @importFrom assertive.properties   assert_is_scalar
-#' @importFrom assertive.properties   has_names   has_no_duplicates
-#' @importFrom assertive.properties   is_empty    is_scalar  
 #' @importFrom assertive.sets         assert_are_disjoint_sets
 #' @importFrom assertive.sets         assert_is_subset   is_subset
-#' @importFrom assertive.strings      assert_all_are_non_missing_nor_empty_character
-#' @importFrom assertive.strings      assert_any_are_matching_regex
-#' @importFrom assertive.strings      is_numeric_string
-#' @importFrom assertive.types        assert_is_all_of
-#' @importFrom assertive.types        assert_is_a_bool
-#' @importFrom assertive.types        assert_is_a_number
-#' @importFrom assertive.types        assert_is_a_string
-#' @importFrom assertive.types        assert_is_character
-#' @importFrom assertive.types        assert_is_data.frame
-#' @importFrom assertive.types        assert_is_data.table
-#' @importFrom assertive.types        assert_is_factor       assert_is_formula
-#' @importFrom assertive.types        assert_is_function
-#' @importFrom assertive.types        assert_is_list
-#' @importFrom assertive.types        assert_is_matrix
-#' @importFrom assertive.types        assert_is_numeric
-#' @importFrom assertive.types        is_a_number   is_a_string   is_formula  
 #' @importFrom BiocFileCache          BiocFileCache   bfcquery   bfcadd   bfcrpath
 #' @importFrom BiocGenerics           cbind 
 #' @importFrom codingMatrices         code_control  code_diff   code_deviation

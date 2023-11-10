@@ -264,10 +264,10 @@ extract_sdata <- function(
 }
 
 
-is_numeric <- function(x)   all(grepl('^[0-9.]+$', x) | is.na(x) | x=='NA')
+.is_numeric <- function(x)   all(grepl('^[0-9.]+$', x) | is.na(x) | x=='NA')
 numerify   <- function(df){
     for (i in names(df)){
-        if (is_numeric(df[[i]]))  df[[i]] %<>% as.numeric()
+        if (.is_numeric(df[[i]]))  df[[i]] %<>% as.numeric()
     }
     df
 }
