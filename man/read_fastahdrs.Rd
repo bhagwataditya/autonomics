@@ -13,9 +13,9 @@ read_fastahdrs(
 \arguments{
 \item{fastafile}{string (or charactervector)}
 
-\item{verbose}{bool}
+\item{fastafields}{charactervector : which fastahdr fields to extract ?}
 
-\item{fields}{charactervector : which fastahdr fields to extract ?}
+\item{verbose}{bool}
 }
 \value{
 data.table(uniprot, protein, gene, uniprot, reviewed, existence)

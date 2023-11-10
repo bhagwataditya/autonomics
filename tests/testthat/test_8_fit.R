@@ -80,7 +80,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         expect_s3_class(fitdt, 'data.table')
 
         # wilcoxon        
-        object %<>% fit_wilcoxon(formula = ~ subgroup, block = 'Subject', coding = contr.treatment.explicit)
+        object %<>% fit_wilcoxon(formula = ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
         fitdt <- summarize_fit(fdt(object), fit = 'wilcoxon')
         expect_s3_class(fitdt, 'data.table')
     })

@@ -247,8 +247,9 @@ assert_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
 is_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
     if (is.null(x))                  return(TRUE)
     if (!is.data.table(x))           return(false('%s is not a data.table', .xname))
-    if (names(x)[1] != 'reviewed')   return(false('col1(%s) != "reviewed"', .xname))
-    if (names(x)[2] != 'protein')    return(false('col2(%s) != "protein"',  .xname))
+    if (names(x)[1] != 'uniprot')    return(false('col1(%s) != "uniprot"', .xname))
+    if (names(x)[2] != 'reviewed')   return(false('col2(%s) != "reviewed"', .xname))
+    if (names(x)[3] != 'protein')    return(false('col3(%s) != "protein"',  .xname))
     return(TRUE)
 }
 

@@ -78,6 +78,8 @@ fit_wilcoxon(
 
 \item{formula}{modeling formula}
 
+\item{engine}{'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'}
+
 \item{drop}{TRUE or FALSE}
 
 \item{codingfun}{factor coding function

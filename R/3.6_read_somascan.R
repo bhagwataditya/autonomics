@@ -243,7 +243,7 @@ read_olink <- function(
         message("BiocManager::install('OlinkAnalyze'). Then re-run.")
         return(NULL) 
     }
-    Assay <- Index <- N <- OlinkID <- SampleID <- NULL
+    Assay <- Assay_Warning <- Index <- N <- OlinkID <- Panel <- SampleID <- UniProt <- NULL
 # Read    
     dt <- OlinkAnalyze::read_NPX(file) %>% data.table()
     dt[, N := .N, by = c('OlinkID', 'SampleID')]

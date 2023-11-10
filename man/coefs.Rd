@@ -31,8 +31,8 @@ Get coefs
 # Factor
     object <- factor(c('A', 'B', 'C'))
     coefs(object)
-    coefs(code(object, 'baseline'))
-    coefs(code(object, 'baselinegrand'))
+    coefs(code(object, contr.treatment.explicit))
+    coefs(code(object, code_control))
     
 # SummarizedExperiment
     file <- download_data('atkin.metabolon.xlsx')

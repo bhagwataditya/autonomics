@@ -564,6 +564,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'
 #' @param object    SummarizedExperiment
 #' @param formula   modeling formula
+#' @param engine    'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
 #' @param drop      TRUE or FALSE
 #' @param codingfun  factor coding function
 #' \itemize{

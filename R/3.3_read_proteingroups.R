@@ -311,10 +311,12 @@ extract_existence <- function(fastahdrs){
     as.integer()
 }
 
-FASTAFIELDS <- c('reviewed', 'protein', 'gene', 'canonical', 'isoform', 'fragment', 'existence', 'organism', 'description')
+FASTAFIELDS <- c('reviewed', 'protein', 'gene', 'canonical', 
+                 'isoform', 'fragment', 'existence', 'organism', 'description')
 
 parse_fastahdrs <- function(fastahdrs, fastafields = setdiff(FASTAFIELDS, 'description')){
-    existence <- organism <- protein <- NULL                                                # reviewed
+    reviewed <- protein <- gene <- canonical <- isoform <- fragment <- NULL
+    existence <- organism <- description <- NULL
     dt <- data.table(uniprot = extract_uniprot(    fastahdrs))                              #   0 tr
     if ('reviewed'    %in% fastafields)  dt[, reviewed    := extract_reviewed( fastahdrs)]  #   1 sp
     if ('protein'     %in% fastafields)  dt[, protein     := extract_protein(  fastahdrs)]  # existence
@@ -336,7 +338,7 @@ parse_fastahdrs <- function(fastahdrs, fastafields = setdiff(FASTAFIELDS, 'descr
 #' Read headers from uniprot fastafile
 #'
 #' @param fastafile    string (or charactervector)
-#' @param fields       charactervector : which fastahdr fields to extract ?
+#' @param fastafields  charactervector : which fastahdr fields to extract ?
 #' @param verbose      bool
 #' @examples
 #' # Single fastafile
