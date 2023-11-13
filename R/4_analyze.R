@@ -74,6 +74,7 @@ analyze <- function(
 #' Plot summary
 #' @param object   SummarizedExperiment
 #' @param fit      linmod engine : 'limma', 'lm', 'lme', 'lmer' or 'wilcoxon'
+#' @param formula  model formula
 #' @param block    NULL or svar
 #' @param label    fvar
 #' @param palette  NULL or colorvector
