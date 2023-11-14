@@ -11,7 +11,9 @@ CORE_DATASETS  <- c('atkin.somascan.adat',    # new versions
                     'billing19.proteingroups.txt',
                     'billing19.phosphosites.txt',
                     'fukuda20.proteingroups.txt',
-                    'halama18.metabolon.xlsx')
+                    'halama18.metabolon.xlsx',
+                    'dilution.report.tsv',
+                    'multiorganism.combined_protein.tsv')
 
 #' Data used in examples/vignette/tests/longtests
 #' @examples 
