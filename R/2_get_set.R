@@ -8,7 +8,7 @@
 #' @rdname analysis
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' analysis(object)
 #' @export
 setGeneric("analysis", function(object) standardGeneric("analysis"))
@@ -39,7 +39,7 @@ function(object, value){
 #' @return value matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file)
 #' values(object)[1:3, 1:3]
 #' values(object) <- 0
 #' values(object)[1:3, 1:3]
@@ -135,10 +135,9 @@ flevels <- function(object, fvar){
 #' @param value character vector with feature names
 #' @return feature name vector (get) or updated object (set)
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' fnames(object) %<>% paste0('PG', .)
+#' object <- read_maxquant_proteingroups(file)
+#' fnames(object) %<>% paste0('protein_', .)
 #' object
 #' @rdname fnames
 #' @export
@@ -172,8 +171,8 @@ function(object, value){  rownames(object) <- value
 #' @return fvar values
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' head(fvalues(object, 'feature_name'))
+#' object <- read_maxquant_proteingroups(file)
+#' head(fvalues(object, 'feature_id'))
 #' fvalues(object, NULL)
 #' @export
 fvalues <- function(object, fvar){
@@ -208,9 +207,8 @@ fid_values <- function(object) fvalues(object, 'feature_id')
 #' @param value character vector with feature variables
 #' @return feature variables vector (get) or updated object (set)
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file)
 #' fvars(object)[1] %<>% paste0('1')
 #' fvars(object)[1]
 #' @rdname fvars
@@ -304,9 +302,8 @@ function(object, value){
 #' @param value string vector with sample names
 #' @return sample names vector (get) or updated eSet (set)
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file)
 #' head(snames(object))
 #' head(snames(object) %<>% paste0('SAMPLE_', .))
 #' @rdname snames
@@ -341,7 +338,7 @@ function(object, value){
 #' @return svar values (character)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file)
 #' slevels(object, 'subgroup')
 #' subgroup_levels(object)
 #' @rdname slevels
@@ -369,7 +366,7 @@ subgroup_levels <- function(object){
 #' @return character vector (get) or SummarizedExperiment (set)
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file)
 #' svalues(object, 'subgroup')
 #' subgroup_values(object)
 #' @rdname svalues
@@ -416,11 +413,10 @@ function(object, svar, value){
 #' @param value string fector with variable names
 #' @return sample variable names (get) or updated SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file)
 #' svars(object)[1]
-#' (svars(object)[1] %<>% paste0('1'))
+#'(svars(object)[1] %<>% paste0('1'))
 #' @rdname svars
 #' @export
 setGeneric("svars", function(object) standardGeneric("svars") )
