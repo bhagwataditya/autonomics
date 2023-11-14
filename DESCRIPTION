@@ -1,13 +1,12 @@
 Package: autonomics
 Type: Package
 Title: Generifying and intuifying cross-platform omics analysis
-Version: 1.11.5
+Version: 1.11.6
 Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Richard",  "Cotton",    email = "richierocks@gmail.com",            role = "aut"),
-             person("Shahina",  "Hayat",     email = "shh2026@qatar-med.cornell.edu",    role = "aut"), 
-             person("Anna",     "Halama",    email = "amh2025@qatar-med.cornell.edu",    role = "ctb"), 
+             person("Shahina",  "Hayat",     email = "shahina.hayat@hotmail.com",        role = "aut"),
              person("Laure",    "Cougnaud",  email = "laure.cougnaud@openanalytics.eu",  role = "ctb"),
-             person("Rudolf",   "Engelke",   email = "rue2006@qatar-med.cornell.edu",    role = "ctb"),
+             person("Witold",   "Szymanski", email = "witold.szymanski@uni-marburg.de",  role = "ctb"),
              person("Hinrich",  "Goehlmann", email = "hinrich@goehlmann.info",           role = "sad"),
              person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",    role = "sad"),
              person("Johannes", "Graumann",  email = "johannes.graumann@uni-marburg.de", role = c('aut', 'sad', 'rth')))
@@ -21,9 +20,9 @@ LazyData: true
 VignetteBuilder: knitr
 biocViews: DataImport, DimensionReduction, GeneExpression, MassSpectrometry, 
             Preprocessing, PrincipalComponent, RNASeq, Software, Transcription
-BugReports: https://bitbucket.org/graumannlabtools/autonomics 
+BugReports: https://github.com/bhagwataditya/autonomics 
 URL: https://github.com/bhagwataditya/autonomics
-RoxygenNote: 7.2.4
+RoxygenNote: 7.2.3
 Depends:
     R (>= 4.0)
 Imports: 
@@ -35,10 +34,12 @@ Imports:
   BiocFileCache,
   BiocGenerics,
   bit64,
+  codingMatrices,
   colorspace,
   data.table,
   dplyr,
   edgeR,
+  ggforce,
   ggplot2,
   ggrepel,
   graphics,
@@ -52,7 +53,7 @@ Imports:
   MultiAssayExperiment,
   parallel,
   pcaMethods,
-  rappdirs,
+  RColorBrewer,
   rlang,
   R.utils,
   readxl,
@@ -63,17 +64,23 @@ Imports:
   SummarizedExperiment,
   tidyr,
   tools,
-  utils
+  utils,
+  vsn
 Suggests: 
   affy,
   AnnotationDbi,
+  AnnotationHub,
   BiocManager,
   BiocStyle,
+  Biostrings,
   diagram,
+  ensembldb,
+  GenomicDataCommons,
   GenomicRanges,
   GEOquery,
   hgu95av2.db,
   ICSNP,
+  jsonlite,
   knitr,
   lme4, 
   lmerTest,
@@ -81,15 +88,22 @@ Suggests:
   mixOmics,
   mpm,
   nlme,
+  OlinkAnalyze,
   org.Hs.eg.db, 
   org.Mm.eg.db,
+  pheatmap,
+  progeny,
   RCurl,
   remotes,
   rmarkdown,
   ropls,
   Rsubread, 
+  readODS,
   rtracklayer, 
-  seqinr,
   statmod,
+  survival,
+  survminer,
   testthat,
-  xml2
+  UniProt.ws,
+  writexl,
+  XML
