@@ -157,8 +157,13 @@ function(object, value)   standardGeneric("fnames<-"))
 
 #' @rdname fnames
 setReplaceMethod("fnames", signature("SummarizedExperiment", "character"),
-function(object, value){  rownames(object) <- value
-    object})
+function(object, value){  
+    fdata(object)$feature_id <- NULL
+    rownames(object) <- value
+    fdata(object)$feature_id <- value
+    fdata(object)$feature_id %<>% factor()
+    object
+})
 
 
 
@@ -325,6 +330,7 @@ setGeneric("snames<-", function(object, value)  standardGeneric("snames<-"))
 setReplaceMethod("snames", signature("SummarizedExperiment", "character"),
 function(object, value){
     colnames(object)  <- value
+    object$sample_id <- value
     object })
 
 
