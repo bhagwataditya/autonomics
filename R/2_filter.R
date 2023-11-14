@@ -135,32 +135,49 @@ filter_exprs_replicated_in_some_subgroup <- function(
     object
 }
 
-#' Filter for replicated features
-#' @param object     SummarizedExperiment
-#' @param comparator string
-#' @param lod        number: limit of detection
-#' @param n          number: number of replicates above lod
-#' @param verbose    TRUE/FALSE
-#' @return  SummarizedExperiment
-#' @examples
-#' require(magrittr)
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' object %<>% filter_replicated()
-#' @export
-filter_replicated  <- function(
-    object, comparator = `>`, lod=0, n=2, verbose=TRUE
-){
-    assert_is_all_of(object, "SummarizedExperiment")
-    assert_is_function(comparator)
-    assert_is_a_number(lod)
-    assert_is_a_number(n)
 
-    nreplicates <- rowSums(comparator(values(object), lod), na.rm=TRUE)
-    idx <- nreplicates >= n
-    if (verbose)  if (!any(idx))  message(
-        '\t\t\tRetain ', sum(idx), '/', length(idx), 
-        'features replicated in at least ', n, ' samples')
+#' Keep replicated features
+#'
+#' Keep features replicated for each slevel
+#'
+#' @param object   SummarizedExperiment
+#' @param formula  formula
+#' @param n        min replications required
+#' @param verbose  TRUE or FALSE
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% keep_replicated_features()
+#' object %<>% keep_replicated_features(~ subgroup)
+#' @export
+keep_replicated_features <- function(
+    object, formula = ~ 1, n = 3, verbose = TRUE
+){
+# Drop NA values
+    dt <- sumexp_to_longdt(object, svars = c(all.vars(formula)), assay = assayNames(object)[1])
+    n0 <- length(unique(dt$feature_id))
+    value <- NULL
+    dt %<>% extract(!is.na(value))
+    dt %<>% extract(, .SD[.N>=n], by = 'feature_id')
+    n1 <- length(unique(dt$feature_id))
+    if (n1<n0 & verbose)  cmessage('\t\tKeep %d/%d features with %d+ values', n1, n0, n)
+# Feature covers each slevel
+    for (var in all.vars(formula)){
+        # must span all slevels
+        nlevels <- length(unique(dt[[var]]))
+        n0 <- length(unique(dt$feature_id))
+        dt %<>% extract(, .SD[length(unique(get(var))) == nlevels], by = 'feature_id')
+        n1 <- length(unique(dt$feature_id))
+        if (n1<n0 & verbose)  cmessage('\t\tKeep %d/%d features spanning all %s levels', n1, n0, var)
+
+        # must have n+ obs per slevel
+        n0 <- length(unique(dt$feature_id))
+        dt %<>% extract(, .SD[.N>=n], by = c('feature_id', var))
+        n1 <- length(unique(dt$feature_id))
+        if (n1<n0 & verbose)  cmessage('\t\tKeep %d/%d features with %d+ values per %s', n1, n0, n, var)
+    }
+# Return
+    idx <- fnames(object) %in% as.character(unique(dt$feature_id))
     object[idx, ]
 }
 
