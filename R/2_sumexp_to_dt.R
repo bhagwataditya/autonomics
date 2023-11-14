@@ -304,42 +304,20 @@ dt2sumexp  <- function(
 
 #' Convert matrix into SummarizedExperiment
 #' @param x             matrix
-#' @param sdt           sample data.table / data.frame / DataFrame
-#' @param sdtby         sample data mergeby column
-#' @param subgroupvar   string / NULL
-#' @param fdt           feature data.table / data.frame / DataFrame
-#' @param fdtby         feature data mergeby column
-#' @param fnamevar      string / NULL
 #' @param verbose       TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr) 
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' x <- values(read_metabolon(file, plot=FALSE))
+#' file <- download_data('atkin.metabolon.xlsx')
+#' x <- values(read_metabolon(file))
 #' object <- matrix2sumexp(x)
 #' object %<>% pca()
-#' biplot(object, nloadings=0, color=subgroup)
+#' biplot(object, color = 'subgroup')
 #' @export
-matrix2sumexp <- function(
-    x,
-    sdt         = NULL,
-    sdtby       = if (is.null(sdt))   NULL else names(sdt)[1],
-    subgroupvar = NULL,
-    fdt         = NULL,
-    fdtby       = if (is.null(fdt)) NULL else names(fdt)[1],
-    fnamevar    = NULL,
-    verbose     = TRUE
-){
-# exprs
+matrix2sumexp <- function(x, verbose = TRUE){
     object <- SummarizedExperiment(list(exprs = x))
     fdata(object)$feature_id   <- rownames(object)
-    fdata(object)$feature_name <- rownames(object)
     sdata(object)$sample_id    <- colnames(object)
-# sdata
-    object %<>% merge_sdata(sdt, by.x = 'sample_id', by.y = sdtby)
-    object %<>% merge_fdata(fdt, by.x ='feature_id', by.y = fdtby)
-    object %<>% add_subgroup(subgroupvar, verbose = verbose)
-# return
+    object %<>% add_subgroup(verbose = verbose)
     object
 }
 
