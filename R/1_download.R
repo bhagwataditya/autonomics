@@ -1,5 +1,7 @@
 # Data in examples/vignettes/tests
-CORE_DATASETS  <- c('atkin18.somascan.adat',
+CORE_DATASETS  <- c('atkin.somascan.adat',    # new versions
+                    'atkin.metabolon.xlsx',
+                    'atkin18.somascan.adat',  # old versions - backward compatibility
                     'atkin18.metabolon.xlsx',
                     'billing16.bam.zip',
                     'billing16.rnacounts.txt',
