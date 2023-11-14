@@ -182,6 +182,60 @@ keep_replicated_features <- function(
 }
 
 
+#' Keep fully connected blocks
+#' @param object  SummarizedExperiment
+#' @param block   svar
+#' @param verbose TRUE or FALSE
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% keep_connected_blocks(  block = 'Subject')
+#' @export
+keep_connected_blocks <- function(object, block, verbose = TRUE){
+    if (is.null(block))  return(object)
+    all_blocks <- unique(object[[block]])
+    full_blocks <- sdt(object)[, .N, by = block][N==max(N)][[block]]
+    idx <- object[[block]] %in% full_blocks
+    if (sum(idx) < length(idx)){
+        if (verbose)  cmessage('\t\tKeep %d/%d fully connected blocks with %d/%d samples',
+                         length(full_blocks), length(all_blocks), sum(idx), length(idx))
+        object[, idx]
+    }
+}
+
+
+#' Keep features with n+ connected blocks
+#' @param object   SummarizedExperiment
+#' @param block    svar
+#' @param n        number
+#' @param verbose  TRUE or FALSE
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% keep_connected_blocks(  block = 'Subject')
+#' object %<>% keep_connected_features(block = 'Subject')
+#' @export
+keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
+    if (is.null(block))  return(object)
+    dt <- sumexp_to_longdt(object, svars = block)
+    nperblock <- dt[, .N, by = c('feature_id', block)][, max(N)]
+    n0 <- length(unique(dt$feature_id))
+
+    idx  <- dt[, .N, by = c('feature_id', block)]                    #   nobs per feature per block
+    idx %<>% extract(, .(N = sum(N==nperblock)), by = 'feature_id')  #   n completeblocks per feature 
+    idx %<>% extract(N>=n)                                           #   2 completeblocks per feature
+    idx %<>% extract(, feature_id)
+
+    if (length(idx) < length(unique(dt$feature_id))){
+        if (verbose)  cmessage('\t\t\tRetain %d/%d features: 2+ fully connected blocks',
+                                length(idx), length(unique(dt$feature_id)))
+        object %<>% extract(feature_id %in% idx, )
+    }
+    object
+    # This earlier approach fails in ~ Time / Diabetes
+    # Because a subject cannot be both diabetic AND control
+    # obj %<>% extract_connected_features(formula = formula, blockvars = block, verbose = verbose) # doesnt work for complex models
+}
 
 
 #=======================
