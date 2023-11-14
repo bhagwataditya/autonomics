@@ -73,51 +73,14 @@ function(object, value){
 
 #==============================================================================
 
-#' @title Get/Set fdata
-#' @description Get/Set feature data
-#' @param object SummarizedExperiment, eSet, or EList
-#' @param value data.frame
-#' @return feature dataframe (get) or updated object (set)
-#' @examples
-#' require(magrittr)
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' head(fdata(object)) # Getter
-#' fdata(object) %<>% cbind(z=1)
-#' head(fdata(object)) # Setter
-#' @export
-setGeneric('fdata',   function(object)   standardGeneric('fdata'))
-
-#' @rdname fdata
-setMethod('fdata',  signature('SummarizedExperiment'),
-function(object) as(rowData(object), "data.frame"))
-    # do not use as.data.frame !
-    # that somehow somewhere performs a check.names operation!
-
-#(1) as.data.frame(object@elementMetadata) doesn't handle check.names correctly!
-#(2) rowData returns a DataFrame (which is not generic to EList objects)
-
-#' @rdname fdata
-#' @export
-setGeneric('fdata<-',   function(object, value)  standardGeneric('fdata<-'))
-
-#' @rdname fdata
-setReplaceMethod('fdata', signature('SummarizedExperiment', 'data.frame'),
-function(object, value){
-    rowData(object) <- DataFrame(value, check.names = FALSE)
-    object })
-
-
-#==============================================================================
-
 #' Get fvar levels
 #' @param  object  SummarizedExperiment
 #' @param  fvar    feature variable
 #' @return fvar values
 #' @examples
 #' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' head(flevels(object, 'feature_name'))
+#' object <- read_maxquant_proteingroups(file)
+#' head(flevels(object, 'feature_id'))
 #' @export
 flevels <- function(object, fvar){
     object %>%
@@ -236,65 +199,108 @@ setReplaceMethod("fvars", signature("SummarizedExperiment", "character"),
 function(object, value){ names(rowData(object)) <- value
                         object })
 
-
-
 #==============================================================================
 
-#' @title Get/Set sdata
-#' @description Get/Set sample data
-#' @param object SummarizedExperiment, eSet, or EList
-#' @param value dataframe
-#' @return sample dataframe (get) or updated object (set)
+#' Get/Set sample/feature data
+#' @param object  SummarizedExperiment
+#' @param value   data.frame/data.table
+#' @return data.frame/data.table (get) or updated object (set)
 #' @examples
-#' require(magrittr)
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' head(sdata(object))
-#' head(sdata(object) %<>% cbind(z=1))
-#' @rdname sdata
+#' # Read data
+#'     file <- download_data('billing16.proteingroups.txt')
+#'     object <- read_maxquant_proteingroups(file)
+#' # sdata/fdata
+#'     sdata(object)[1:3, ]
+#'     fdata(object)[1:3, ]
+#'     sdata(object) %<>% cbind(a=1)
+#'     fdata(object) %<>% cbind(a=1)
+#'     sdata(object)[1:3, ]
+#'     fdata(object)[1:3, ]
+#' # sdt/fdt
+#'     sdt(object)[1:3, ]
+#'     fdt(object)[1:3, ]
+#'     sdt(object) %<>% cbind(b=1)
+#'     fdt(object) %<>% cbind(b=1)
+#'     sdt(object)
+#'     fdt(object)
+#' @rdname fdata
 #' @export
-setGeneric('sdata',
-function(object) standardGeneric('sdata'))
+setGeneric('fdata',  function(object)  standardGeneric('fdata'))               # fdata
 
+#' @rdname fdata
+#' @export
+setGeneric('sdata',  function(object)  standardGeneric('sdata'))               # sdata
 
-#' @rdname sdata
-setMethod('sdata', signature('SummarizedExperiment'),
-function(object) as(colData(object), "data.frame"))
+#' @rdname fdata
+#' @export
+setGeneric('fdt',    function(object)  standardGeneric('fdt'))                 # fdt
+
+#' @rdname fdata
+#' @export
+setGeneric('sdt',    function(object)  standardGeneric('sdt'))                 # sdt
+
+#' @rdname fdata
+setMethod('fdata',  signature('SummarizedExperiment'),                         # fdata se
+function(object)  as(rowData(object), "data.frame"))
     # !! as.data.frame somehow somewhere performs a check.names
 
+#' @rdname fdata
+setMethod('sdata', signature('SummarizedExperiment'),                          # sdata se
+function(object)  as(colData(object), "data.frame")) 
+    # !! as.data.frame somehow somewhere performs a check.names
 
-#' @rdname sdata
-setMethod('sdata', signature('MultiAssayExperiment'),
-function(object)  as(colData(object), "data.frame"))
+#' @rdname fdata
+setMethod('fdt',  signature('SummarizedExperiment'),                           # fdt se
+function(object)  data.table(data.frame(rowData(object), check.names = FALSE)))
 
+#' @rdname fdata
+setMethod('sdt',  signature('SummarizedExperiment'),                           # sdt se
+function(object)  data.table(data.frame(colData(object), check.names = FALSE)))
 
-#' @rdname sdata
+#' @rdname fdata
 #' @export
-setGeneric('sdata<-', function(object, value)  standardGeneric('sdata<-'))
+setGeneric('fdata<-', function(object, value)  standardGeneric('fdata<-'))     # fdata<-
 
-#' @rdname sdata
-setReplaceMethod('sdata', signature('SummarizedExperiment', 'data.frame'),
+#' @rdname fdata
+#' @export
+setGeneric('sdata<-', function(object, value)  standardGeneric('sdata<-'))     # sdata<-
+
+#' @rdname fdata
+#' @export
+setGeneric('fdt<-',   function(object, value)  standardGeneric('fdt<-'))       # fdt<-
+
+#' @rdname fdata
+#' @export
+setGeneric('sdt<-',   function(object, value)  standardGeneric('sdt<-'))       # sdt<-
+
+#' @rdname fdata
+setReplaceMethod('fdata', signature('SummarizedExperiment', 'data.frame'),     # fdata<- se df
+function(object, value){
+    rowData(object) <- DataFrame(value, check.names = FALSE)
+    object })
+
+#' @rdname fdata
+setReplaceMethod('sdata',  signature('SummarizedExperiment', 'data.frame'),    # sdata<- se df
 function(object, value){
     colData(object) <- DataFrame(value, check.names = FALSE)
     object })
 
-#' @rdname sdata
-setReplaceMethod('sdata',
-signature('SummarizedExperiment', 'DataFrame'),
+#' @rdname fdata
+setReplaceMethod('sdata', signature('SummarizedExperiment', 'DataFrame'),      # sdata<- se DF
 function(object, value){
     colData(object) <- value
     object })
 
-#' @rdname sdata
-setReplaceMethod('sdata', signature('MultiAssayExperiment', 'data.frame'),
+#' @rdname fdata
+setReplaceMethod('fdt', signature('SummarizedExperiment', 'data.table'),       # fdt<- se dt
 function(object, value){
-    colData(object) <- DataFrame(value, check.names = FALSE)
+    rowData(object) <- DataFrame(value, check.names = FALSE, row.names = value$feature_id)
     object })
 
-#' @rdname sdata
-setReplaceMethod('sdata', signature('MultiAssayExperiment', 'DataFrame'),
+#' @rdname fdata
+setReplaceMethod('sdt', signature('SummarizedExperiment', 'data.table'),       # sdt<- se dt
 function(object, value){
-    colData(object) <- value
+    colData(object) <- DataFrame(value, check.names = FALSE, row.names = value$sample_id)
     object })
 
 
@@ -452,5 +458,4 @@ function(object, value){
     names(colData(object)) <- value
     object
 })
-
 
