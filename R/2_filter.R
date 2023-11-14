@@ -84,41 +84,46 @@ rm_missing_in_some_samples <- function(object, verbose = TRUE){
 #' Filter features with replicated expression in some subgroup
 #' @param object       SummarizedExperiment
 #' @param subgroupvar  subgroup svar
+#' @param assay        string
 #' @param comparator   '>' or '!='
 #' @param lod          number: limit of detection
+#' @param nsample      number
+#' @param nsubgroup    number
 #' @param verbose      TRUE or FALSE
 #' @return Filtered SummarizedExperiment
 #' @examples
-#' require(magrittr)
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' object %<>% filter_exprs_replicated_in_some_subgroup(subgroupvar = 'Group')
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% filter_exprs_replicated_in_some_subgroup()
 #' filter_exprs_replicated_in_some_subgroup(object, character(0))
 #' filter_exprs_replicated_in_some_subgroup(object, NULL)
 #' @export
 filter_exprs_replicated_in_some_subgroup <- function(
-    object, subgroupvar = 'subgroup',
+    object, subgroupvar = 'subgroup', assay = assayNames(object)[1],
     comparator = if (contains_ratios(object)) '!=' else '>',
-    lod = 0, verbose = TRUE
+    lod = 0, nsample = 2, nsubgroup = 1, verbose = TRUE
 ){
 # Assert
     assert_is_subset(subgroupvar, svars(object))
+    replicated <- NULL
 # Datatablify
     replicated_in_its_subgroup <- replicated_in_any_subgroup <- value <- NULL
-    dt <- sumexp_to_long_dt(object, svars = subgroupvar)
+    dt <- sumexp_to_longdt(object, svars = subgroupvar, assay = assay)
 # Find replicated features
     exceeds_lod <- if (comparator == '>'){ function(value, lod) value >  lod
             } else if (comparator == '!=') function(value, lod) value != lod
-    V1 <- dt[,.I[sum(exceeds_lod(value, lod), na.rm=TRUE)>1],
-            by = c('feature_id', subgroupvar)]$V1
-            #https://stackoverflow.com/questions/16573995
+    
+    condition <- sprintf('value %s %s', comparator, lod)
+    repfeatures <- dt[,  .(replicated = .(sum(eval(parse(text = condition)), na.rm = TRUE) >= nsample)) , by = c('feature_id', subgroupvar)]
+    repfeatures %<>% extract( , .(replicated = sum(as.numeric(replicated)) >= 1), by = 'feature_id')
+    repfeatures %<>% extract(replicated == TRUE)
+    repfeatures %<>% extract2('feature_id')
+    repfeatures %<>% as.character()
 # Keep only replicated features
-    replicated_features <- dt[V1]$feature_id
-    idx <- fid_values(object) %in% replicated_features
-    if (verbose)  if (any(!idx))  message('\t\tFilter ', sum(idx), '/', 
-            length(idx), ' features: expr ', comparator, ' ', as.character(lod),
-            ' for at least two samples in some ', subgroupvar)
-    object %<>% extract_features(idx) # also handles limma in metadata
+    idx <- fid_values(object) %in% repfeatures
+    if (verbose)  if (any(!idx))  cmessage('\t\tFilter %d/%d features: %s %s %s for at least %d samples in %d %s', sum(idx), 
+            length(idx), assay, comparator, as.character(lod), nsample, nsubgroup, subgroupvar)
+    object %<>% extract(idx, )
 # Update analysis log
     if (!is.null(analysis(object))) {
         analysis(object)$nfeatures %<>% c(structure(
