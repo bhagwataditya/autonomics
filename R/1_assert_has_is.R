@@ -113,9 +113,240 @@ assert_is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
     assert_engine(is_valid_sumexp, x, .xname = get_name_in_parent(x))
 }
 
+#' Is diann, fragpipe, proteingroups, phosphosites file?
+#' @param x      file
+#' @param .xname name of x
+#' @return NULL
+#' @examples
+#' file <- NULL
+#' is_diann_report(file)
+#' is_fragpipe_tsv(file)
+#' is_maxquant_proteingroups(file)
+#' is_maxquant_phosphosites(file)
+#'
+#' file <- 3
+#' is_diann_report(file)
+#' is_fragpipe_tsv(file)
+#' is_maxquant_proteingroups(file)
+#' is_maxquant_phosphosites(file)
+#'
+#' file <- 'blabla.tsv'
+#' is_diann_report(file)
+#' is_fragpipe_tsv(file)
+#' is_maxquant_proteingroups(file)
+#' is_maxquant_phosphosites(file)
+#'
+#' file <- download_data('multiorganism.combined_protein.tsv')
+#' is_diann_report(file)
+#' is_fragpipe_tsv(file)
+#' is_maxquant_proteingroups(file)
+#' is_maxquant_phosphosites(file)
+#'
+#' file <- download_data('dilution.report.tsv')
+#' is_diann_report(file)
+#' is_fragpipe_tsv(file)
+#' is_maxquant_proteingroups(file)
+#' is_maxquant_phosphosites(file)
+#'
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' is_diann_report(file)
+#' is_fragpipe_tsv(file)
+#' is_maxquant_proteingroups(file)
+#' is_maxquant_phosphosites(file)
+#'
+#' file <- download_data('billing19.phosphosites.txt')
+#' is_diann_report(file)
+#' is_fragpipe_tsv(file)
+#' is_maxquant_proteingroups(file)
+#' is_maxquant_phosphosites(file)
+#' @export
+is_diann_report <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x)){                        false('%s is NULL',                  .xname)
+    } else if (!is_a_string(x)){            false('%s is not a string',          .xname)
+    } else if (!is_existing_file(x)){       false('%s does not exist',           .xname)
+    } else if (col1(x) != 'File.Name'){     false('col1(%s) != "File.Name"',     .xname)
+    } else if (col2(x) != 'Run'){           false('col2(%s) != "Run"',           .xname)
+    } else if (col3(x) != 'Protein.Group'){ false('col3(%s) != "Protein.Group"', .xname)
+    } else {                                TRUE
+    }
+}
+
+#' @rdname is_diann_report
+#' @export
+is_fragpipe_tsv <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x)){                      false('%s is NULL',                    .xname)
+    } else if (!is_a_string(x)){          false('%s is not a string',            .xname)
+    } else if (!is_existing_file(x)){     false('%s does not exist',             .xname)
+    } else if (col1(x) != 'Protein'){     false('col1(%s) != "Protein"',         .xname)
+    } else if (col2(x) != 'Protein ID'){  false('col2(%s) != "Protein ID"',      .xname)
+    } else if (col3(x) != 'Entry Name'){  false('col3(%s) != "Entry Name"',      .xname)
+    } else {                                TRUE
+    }
+}
+
+#' @rdname is_diann_report
+#' @export
+is_maxquant_proteingroups <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x)){                                false('%s is NULL',                         .xname)
+    } else if (!is_a_string(x)){                    false('%s is not a string',                 .xname)
+    } else if (!is_existing_file(x)){               false('%s does not exist',                  .xname)
+    } else if (col1(x) != 'Protein IDs'){           false('col1(%s) != "Protein IDs"',          .xname)
+    } else if (col2(x) != 'Majority protein IDs'){  false('col2(%s) != "Majority protein ID"',  .xname)
+    } else if (col3(x) != 'Peptide counts (all)'){  false('col3(%s) != "Peptide counts (all)"', .xname)
+    } else {                                TRUE
+    }
+}
+
+#' @rdname is_diann_report
+#' @export
+is_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x))                               return(false('%s is NULL',                              .xname))
+    if (!is_a_string(x))                          return(false('%s is not a string',                      .xname))
+    if (!is_existing_file(x))                     return(false('%s does not exist',                       .xname))
+    if (col1(x) != 'Proteins')                    return(false('col1(%s) != "Proteins"',                  .xname))
+    if (col2(x) != 'Positions within proteins')   return(false('col2(%s) != "Positions within proteins"', .xname))
+    if (col3(x) != 'Leading proteins')            return(false('col3(%s) != "Leading proteins"',          .xname))
+    return(TRUE)
+}
+
+#' @rdname is_diann_report
+#' @export
+assert_diann_report <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_diann_report, x, .xname = .xname)
+}
+
+#' @rdname is_diann_report
+#' @export
+assert_fragpipe_tsv <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_fragpipe_tsv, x, .xname = .xname)
+}
+
+#' @rdname is_diann_report
+#' @export
+assert_maxquant_proteingroups <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_maxquant_proteingroups, x, .xname = .xname)
+}
+
+#' @rdname is_diann_report
+#' @export
+assert_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_maxquant_phosphosites, x, .xname = .xname)
+}
 
 
+#--------
+
+#' Is fastadt or NULL
+#' @param x   fasta data.table
+#' @param .xname string
+#' @examples
+#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' x <- read_fastahdrs(fastafile)
+#' # is_fastadt_or_null(x)  # slow
+#' @export
+is_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
+    if (is.null(x))                  return(TRUE)
+    if (!is.data.table(x))           return(false('%s is not a data.table', .xname))
+    if (names(x)[1] != 'uniprot')    return(false('col1(%s) != "uniprot"', .xname))
+    if (names(x)[2] != 'reviewed')   return(false('col2(%s) != "reviewed"', .xname))
+    if (names(x)[3] != 'protein')    return(false('col3(%s) != "protein"',  .xname))
+    return(TRUE)
+}
+
+#' @rdname is_fastadt_or_null
+#' @export
+assert_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_fastadt_or_null, x, .xname = .xname)
+}
 
 
+#---------------
 
+#' Is scalar subset
+#' @param x scalar
+#' @param y SummarizedExperiment
+#' @param .xname name of x
+#' @param .yname name of y
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file)
+#' is_scalar_subset('subgroup',     svars(object))
+#' is_scalar_subset('subject',      svars(object))
+#' assert_scalar_subset('subgroup', svars(object))
+#' @export
+is_scalar_subset <- function(x, y, .xname = get_name_in_parent(x), .yname = get_name_in_parent(y)){
+    if (!(ok <- is_scalar(x, .xname = .xname)))                       return(ok)
+    if (!(ok <- is_subset(x, y, .xname = .xname, .yname = .yname)))   return(ok)
+    return(TRUE)
+}
+
+#' @rdname is_scalar_subset
+#' @export
+assert_scalar_subset <- function(x, y, .xname = get_name_in_parent(x), .yname = get_name_in_parent(y)){
+    assert_engine(is_scalar_subset, x, y, .xname = .xname, .yname = .yname)
+}
+
+#-------------------
+
+#' Is positive number
+#' @param x number
+#' @param .xname name of x
+#' @return TRUE or assertive.base::false
+#' @examples
+#' is_positive_number( 3)
+#' is_positive_number(-3)
+#' is_positive_number( 0)
+#' is_weakly_positive_number(0)
+#' assert_positive_number(3)
+#' @export
+is_positive_number <- function(x, .xname = get_name_in_parent(x)){
+    if (!is_a_number(x, .xname = .xname))                     return(false('%s is not a number',  .xname))
+    if (!is_greater_than(x, 0,.xname = .xname))               return(false('%s <= 0', .xname))
+    return(TRUE)
+}
+
+#' @rdname is_positive_number
+#' @export
+assert_positive_number <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_positive_number, x, .xname = .xname)
+}
+
+#' @rdname is_positive_number
+#' @export
+is_weakly_positive_number <- function(x, .xname = get_name_in_parent(x)){
+    if (!is_a_number(x, .xname = .xname))                     return(false('%s is not a number',  .xname))
+    if (!is_greater_than_or_equal_to(x, 0,.xname = .xname))   return(false('%s < 0', .xname))
+    return(TRUE)
+}
+
+
+#' @rdname is_positive_number
+#' @export
+assert_weakly_positive_number <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_weakly_positive_number, x, .xname = .xname)
+}
+
+#---------------------
+
+#' Is fraction
+#' @param  x      number
+#' @param .xname  string
+#' @return TRUE or false
+#' @examples
+#' is_fraction(0.1)          # YES
+#' is_fraction(1)            # YES
+#' is_fraction(1.2)          # NO - more than 1
+#' is_fraction(c(0.1, 0.2))  # NO - vector
+#' @export
+is_fraction <- function(x, .xname = get_name_in_parent(x)){
+    if (!(ok <- is_a_number(x, .xname = .xname)))                       return(ok)
+    if (!is_in_closed_range(x, lower = 0, upper = 1, .xname = .xname))  return(false('%s is not a fraction', .xname))
+    TRUE
+}
+
+#' @rdname is_fraction
+#' @export
+assert_is_fraction <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_fraction, x, .xname = .xname)
+}
 
