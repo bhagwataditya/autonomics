@@ -27,8 +27,7 @@ message_df <- function(format_string, x){
 #' @param x vector
 #' @return logical vector
 #' @examples
-#' require(magrittr)
-#' c(1,2,3,4,5,2) %>% cduplicated()
+#' cduplicated(c(1,2,3,4,5,2))
 #' @noRd
 cduplicated <- function(x){
     duplicated(x) | duplicated(x, fromLast = TRUE)
@@ -48,7 +47,7 @@ cduplicated <- function(x){
 #'    type   = c('proteincoding', 'proteincoding'))
 #' first_cols <- c('id', 'symbol', 'location', 'uniprot')
 #' pull_columns(df, first_cols)
-#' @noRd
+#' @export
 pull_columns <- function(df, first_cols, verbose = TRUE){
 
     assert_is_data.frame(df)
