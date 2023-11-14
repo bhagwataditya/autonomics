@@ -136,6 +136,125 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
     subrepdt
 }
 
+#' Write sumexp to tsv
+#' @param object SummarizedExperiment
+#' @param assay string
+#' @param file filename
+#' @return NULL
+#' @examples 
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file, fit = 'limma')
+#' tsv <- file.path(tempdir(), 'fukuda20.proteingroups.tsv')
+#' sumexp_to_tsv(object, file = tsv)
+#' @export
+sumexp_to_tsv <- function(object, assay = assayNames(object)[1], file){
+    widedt <- sumexp_to_widedt(object, assay = assay)
+    fwrite(widedt, file, sep = '\t')
+}
+
+#' Get fit vars/dt
+#' @param object SummarizedExperimenmt
+#' @return string vector
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' fitvars(object)
+#' fitdt(object)
+#' @export
+fitvars <- function(object){
+    fvars(object) %>% extract(stri_detect_fixed(., FITSEP))
+}
+
+#' @rdname fitvars
+#' @export
+fitdt <- function(object){
+    cols <- c('feature_id', fitvars(object))
+    fdt(object)[, cols, with = FALSE]
+}
+
+#' fitcoefs
+#' @param object SummarizedExperiment
+#' @return string vector
+#' @examples 
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' fitcoefs(object)
+#' @export
+fitcoefs <- function(object){
+    fitvars(object)  %>%  split_extract_fixed(FITSEP, 2:3) %>%  unique()
+}
+
+
+extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because not all fit have same coefs
+# Order
+    coef <- split_extract_fixed(fitcoef, FITSEP, 1)
+    fit  <- split_extract_fixed(fitcoef, FITSEP, 2)
+    object %<>% order_on_p(coefs = coef, fit = fit)
+# Extract
+    allfitcols <- fvars(object) %>% extract(stri_detect_fixed(., FITSEP))
+    curfitcols <- allfitcols %>% extract(stri_detect_fixed(., fitcoef))
+    annocols <- fvars(object) %>% setdiff('feature_id') %>% setdiff(allfitcols)
+    cols <- c('feature_id', curfitcols, annocols)
+    fdt0 <- fdt(object)[, cols, with = FALSE]
+    names(fdt0) %<>% stri_replace_first_fixed(paste0(FITSEP, coef, FITSEP, fit), '')
+    fdt0
+}
+
+
+#' Write xl/ods
+#' @param object  SummarizedExperiment
+#' @param xlfile  file
+#' @param odsfile file
+#' @param fitcoefs character vector
+#' @return filepath
+#' @examples 
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' xlfile  <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
+#' odsfile <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.ods')
+#' # write_xl(object,  xlfile)
+#' # write_ods(object, odsfile)
+#' @export
+write_xl <- function(object, xlfile, fitcoefs = autonomics::fitcoefs(object)){
+# Assert
+    if (!requireNamespace('writexl', quietly = TRUE)){
+        message("`BiocManager::install('readxl')`. Then re-run.")
+        return(NULL)
+    }
+    assert_is_valid_sumexp(object)
+    assert_all_are_dirs(dirname(xlfile))
+# Write
+    list0 <- mapply(extract_contrast_fdt, 
+                    fitcoef = fitcoefs,
+                    MoreArgs = list(object = object), SIMPLIFY = FALSE)
+    writexl::write_xlsx(list0, path = xlfile)
+# Return
+    return(xlfile)
+}
+
+
+#' @rdname write_xl
+#' @export
+write_ods <- function(object, odsfile, fitcoefs = autonomics::fitcoefs(object)){
+# Assert
+    if (!requireNamespace('readODS', quietly = TRUE)){
+        message("`BiocManager::install('readODS')`. Then re-run.")
+        return(NULL)
+    }
+    assert_is_valid_sumexp(object)
+    assert_all_are_dirs(dirname(odsfile))
+# Write    
+    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs, 
+                    MoreArgs = list(object = object), SIMPLIFY = FALSE)
+    if (file.exists(odsfile))  unlink(odsfile)
+    mapply(readODS::write_ods, x = list0, sheet = names(list0), 
+           MoreArgs = list(path = odsfile, append = TRUE), 
+           SIMPLIFY = FALSE)
+    
+# Return
+    return(odsfile)
+}
+
 
 #' `data.table` to `matrix`
 #'
