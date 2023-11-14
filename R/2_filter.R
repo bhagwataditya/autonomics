@@ -246,20 +246,22 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 #' Filter samples on condition
 #' @param object    SummarizedExperiment
 #' @param condition filter condition
-#' @param verbose   TRUE or FALSE (default)
-#' @param record    TRUE (default) or FALSE
+#' @param verbose   TRUE/FALSE 
+#' @param record    TRUE/FALSE 
 #' @return filtered SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' filter_samples(object, Group != 't0', verbose = TRUE)
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' filter_samples(object, subgroup != 't0', verbose = TRUE)
 #' @export
-filter_samples <- function(object, condition, verbose = FALSE, record = TRUE){
+filter_samples <- function(object, condition, verbose = TRUE, record = TRUE){
+    . <- NULL
     condition <- enquo(condition)
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
-    if (verbose & sum(idx)<length(idx))  message('\t\t\tRetain ', sum(idx), '/',
-                                length(idx), ' samples: ', expr_text(condition))
+    if (verbose & sum(idx)<length(idx)){
+        message('\t\t\tRetain ', sum(idx), '/', length(idx), ' samples: ', 
+                expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()
     if (record && !is.null(analysis(object))) {
