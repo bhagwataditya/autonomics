@@ -1341,57 +1341,54 @@ default_geom <- function(object, x, block = NULL){
 
 #' Plot features
 #' @param object      SummarizedExperiment
-#' @param geom        geom_point, geom_boxplot, etc.
 #' @param subgroup    subgroup svar
+#' @param block       block svar
 #' @param x           svar mapped to x
-#' @param fill        svar mapped to fill
 #' @param color       svar mapped to color
+#' @param group       svar mapped to group
+#' @param facet       svar mapped to facets
+#' @param nrow        number of rows
+#' @param scales      'free_y' etc. 
 #' @param ...         mapped aesthetics
+#' @param palette     color palette (named character vector)
 #' @param fixed       fixed aesthetics
 #' @param theme       ggplot theme specifications
 #' @return ggplot object
 #' @examples
-#' require(magrittr)
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=TRUE, plot = FALSE)
-#' idx <- order(abs(fdata(object)$pca1), decreasing=TRUE)[1:9]
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' idx <- order(fdata(object)$`p~t1~limma`)[1:9]
 #' object %<>% extract(idx, )
-#' plot_feature_boxplots(object)
-#' plot_subgroup_boxplots(object, subgroup=Group)
-#' plot_feature_profiles( object, subgroup=Group)
+#' plot_sample_boxplots(  object)
+#' plot_feature_boxplots( object)
+#' plot_sample_boxplots(object, x = 'Time')
+#' plot_subgroup_points(  object, subgroup = 'Time')
+#' plot_subgroup_points(  object, subgroup = 'Time', block = 'Subject')
 #' @export
-plot_features <- function(
-    object,
-    geom,
-    subgroup, 
-    x     = !!enquo(subgroup),
-    fill  = !!enquo(subgroup),
-    color = !!enquo(subgroup),
-    ...,
+plot_subgroup_points <- function(
+    object, subgroup = 'subgroup', block = NULL, x = subgroup, 
+    color = subgroup, group = block, 
+    facet = 'feature_id', nrow = NULL, scales = 'free_y', ...,
+    palette = NULL,
     fixed = list(na.rm=TRUE),  #element_text(angle=90, vjust=0.5),
-    theme = list(axis.text.x = element_blank(),
-                axis.title.x = element_blank(),
-                axis.ticks.x = element_blank())
+    theme = list(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ){
-    fill  <- enquo(fill)
-    color <- enquo(color)
-    x     <- enquo(x)
-    dt <- sumexp_to_long_dt(
-            object, svars = svars(object), fvars = fvars(object))
+    dt <- sumexp_to_longdt(object, svars = svars(object), fvars = fvars(object))
     value <- NULL
-    p <- plot_data(
-            dt, geom = geom, x = !!x, y = value, fill = !!fill,
-            color = !!color, ..., fixed = fixed)
-    p <- p + facet_wrap(~ feature_name, scales = 'free_y')
-    p <- p + do.call(ggplot2::theme, theme)
+    xsym     <- if (is.null(x))     quo(NULL) else sym(x)
+    colorsym <- if (is.null(color)) quo(NULL) else sym(color)
+    groupsym <- if (is.null(group)) quo(NULL) else sym(group)
+    blocksym <- if (is.null(block)) quo(NULL) else sym(block)
+    
+    p <- plot_data(dt, geom = geom_point, 
+                   x = !!xsym, y = value, color = !!colorsym, 
+                   group = !!groupsym, ..., palette = palette, fixed = fixed)
+    if (!is.null(block))  p <- p + geom_line()
+    p <- p + facet_wrap(facets = facet, scales = scales, nrow = nrow)
+    p <- p + do.call(ggplot2::theme, {{theme}})
     p
 }
 
-# @rdname plot_features
-# @export
-#plot_feature_boxplots <- function(...){
-#    plot_features(geom = geom_boxplot, color = NULL, ...)
-#}
 
 
 #' @rdname plot_features
