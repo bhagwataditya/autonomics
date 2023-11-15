@@ -142,7 +142,7 @@ make_onefactor_colors <- function(
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file, plot=FALSE)
-#' varlevels <- slevels(object, 'Group')
+#' varlevels <- slevels(object, 'subgroup')
 #' make_twofactor_colors(varlevels, show = TRUE)
 #' @noRd
 make_twofactor_colors <- function(
@@ -173,11 +173,16 @@ make_twofactor_colors <- function(
     hues <- seq(15, 375, length = n1 + 1)[seq_len(n1)] %>% set_names(V1levels)
 
     colors <- character(0)
-    for (i in seq_along(hues)){
-        colors  %<>%  c(sequential_hcl(
-                                n2, h = hues[[i]], power = 1, c = c(50, 100),
-                                l = c(90, 30)) %>%
-                            set_names(paste0(V1levels[[i]], sep, V2levels)))
+    for (i in seq_along(hues)){  # https://stackoverflow.com/a/5738083
+        # OLD IMPLEMENTATION
+        #     colors  %<>%  c(sequential_hcl(
+        #                        n2, h = hues[[i]], power = 1, c = c(50, 100),
+        #                        l = c(90, 30)) %>%
+        #                    set_names(paste0(V1levels[[i]], sep, V2levels)))
+        basecolor  <- hcl(h = hues[[i]], c = 100, l = 50)
+        newcolors <- grDevices::colorRampPalette(c('white', basecolor))(n2+1)[-1]
+        names(newcolors) <- paste0(V1levels[[i]], sep, V2levels)
+        colors %<>% c(newcolors)
     }
     if (show) pie(rep(1, length(colors)), names(colors),
                 col = colors)
