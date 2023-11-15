@@ -491,31 +491,60 @@ opls <- function(
 #
 #==============================================================================
 
-pca1 <- pca2 <- subgroup <- NULL
-add_scores <- function(
-    p, object, x = pca1, y = pca2, color = subgroup, group = NULL, ...,
-    fixed = list(shape=15, size=3, na.rm=TRUE)
-){
-    x     <- enquo(x)
-    y     <- enquo(y)
-    color <- enquo(color)
-    group <- enquo(group)
-
-    p <- p + layer(  geom = 'point',
-                mapping = aes(x = !!x, y = !!y, color = !!color, ...),
-                stat    = "identity",
-                data    = sdata(object),
-                params  = fixed,
-                position= 'identity')
-    if (!quo_is_null(group)) p <- p + layer(geom = 'path',
-        mapping  = aes(x = !!x, y = !!y, color = !!color, group = !!group),
-        stat     = "identity",
-        data    = sdata(object),
-        params   = list(size=0.1, linetype='dotted', na.rm = TRUE),
-        position = 'identity')
-    p
+num2char <- function(x){
+    if (is.null(x))     return(x)
+    if (is.numeric(x))  return(as.character(x))
+    return(x)
 }
 
+add_scores <- function(
+    p, object, x = 'pca1', y = 'pca2', color = 'subgroup', 
+    shape = if ('replicate' %in% svars(object)) 'replicate' else NULL,
+    size = NULL, alpha = NULL, group = NULL, linetype = NULL,
+    fixed = list(shape = 15, size = 3, na.rm = TRUE)
+){
+# manual colors require non-numerics
+    if (!is.null(color)){
+        if (is.numeric(color)){
+            levs <- as.character(unique(sort(object[[color]])))
+            object[[color]] %<>% num2char() %>% factor(levs)
+        }
+    }
+    xsym <- sym(x)
+    ysym <- sym(y)
+    colorsym <- if (is.null(color)) quo(NULL) else sym(color)
+    shapesym <- if (is.null(shape)) quo(NULL) else sym(shape)
+    sizesym  <- if (is.null(size))  quo(NULL) else sym(size )
+    alphasym <- if (is.null(alpha)) quo(NULL) else sym(alpha)
+    groupsym <- if (is.null(group)) quo(NULL) else sym(group)
+    linetypesym <- if (is.null(linetype)) quo(NULL) else sym(linetype)
+# Points    
+    p <- p + layer(  
+                geom     = 'point',
+                mapping  = aes(x = !!xsym, 
+                               y = !!ysym, 
+                           color = !!colorsym, 
+                           shape = !!shapesym, 
+                           size  = !!sizesym, 
+                           alpha = !!alphasym),
+                stat     = "identity", 
+                data     = sdt(object), 
+                params   = fixed,
+                position = 'identity')
+# Paths
+    if (!is.null(group))  p <- p + layer(
+                geom     = 'path',
+                mapping  = aes(x = !!xsym, 
+                               y = !!ysym, 
+                           color = !!colorsym, 
+                           group = !!groupsym, 
+                           linetype = !!linetypesym),
+                stat     = "identity",
+                data     = sdt(object),
+                params   = list(size = 0.1, na.rm = TRUE),
+                position = 'identity')
+    p
+}
 
 headtail <- function(x, n){
     c(x[seq(1, n)], x[seq(length(x)+1-n, length(x))])
