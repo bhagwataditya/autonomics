@@ -241,15 +241,17 @@ pca <- function(
 #' @rdname pca
 #' @export
 pls <- function(
-    object,  subgroupvar = 'subgroup', ndim = 2, minvar = 0, 
-    verbose = FALSE, plot = FALSE, ...
+    object,  by = 'subgroup', 
+    assay = assayNames(object)[1], ndim = 2, 
+    minvar = 0, verbose = FALSE, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         message("BiocManager::install('mixOmics'). Then re-run.")
         return(object) }
     assert_is_valid_sumexp(object)
-    assert_is_subset(subgroupvar, svars(object))
+    assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
+    assert_is_subset(by, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -257,24 +259,25 @@ pls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(values(object))
-    y <- svalues(object, subgroupvar)
+    obj <- object[, !is.na(object[[by]]) ]
+    x <- t(assays(obj)[[assay]])
+    y <- svalues(obj, by)
     pls_out <- mixOmics::plsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('pls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('pls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('pls%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'pls', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'pls', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(seq_len(ndim))
 # Add
-    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
-    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
-    metadata(object)$pls <- variances
+    object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdt(mat2dt(features, 'feature_id'))
+    metavar <- methodname(method = 'pls', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
-    pls1 <- pls2 <- NULL
-    if (plot)  print(biplot(object, pls1, pls2, ...))
+    if (plot)  print(biplot(object, method = 'pls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
