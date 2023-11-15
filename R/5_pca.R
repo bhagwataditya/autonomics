@@ -77,7 +77,91 @@ evenify_upwards <- function(x)   if (is_odd(x)) x+1 else x
 }
 
 
-#' Add PCA, SMA, LDA, PLS
+scorenames <- function(
+    method = 'pca', by, dims = 1:2
+){
+    sprintf('effect~%s~%s%d', by, method, dims)
+}
+
+loadingnames <- function(
+    method = 'pca', by, dims = 1:2
+){
+    sprintf('effect~%s~%s%d', by, method, dims)
+}
+
+methodname <- function(
+    method = 'pca', by
+){
+    sprintf('%s~%s', by, method)
+}
+
+variancenames <- function(dims = 1:2){
+    sprintf('effect%d', dims)
+}
+
+variances <- function(
+    object, method = 'pca', by = biplot_by(object, method), dims = 1:2
+){
+    y <- metadata(object)
+    y %<>% extract2(methodname(method, by))
+    y %<>% extract(variancenames(dims))
+    y
+}
+
+#' Extract scores/loadings
+#' @param object SummarizedExperiment
+#' @param method 'pca', 'pls', etc.
+#' @param by      svar (string)
+#' @param dims    numeric vector
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% pca()
+#'     scores(object)[1:2]
+#'   loadings(object)[1:2]
+#'   scoremat(object)[1:2, ]
+#' loadingmat(object)[1:2, ]
+#' @export
+scoremat <- function(
+    object, method = 'pca', by = biplot_by(object, method), dims = 1:2
+){
+    vars <- 'sample_id'
+    vars %<>% c(scorenames(method, by, dims))
+    mat <- sdt(object)[, vars, with = FALSE]
+    mat %<>% dt2mat()
+    mat
+}
+
+#' @rdname scoremat
+#' @export
+scores <- function(
+    object, method = 'pca', by = biplot_by(object, method), dim = 1
+){
+    sdt(object)[[scorenames(method, by, dim)]]
+}
+
+#' @rdname scoremat
+#' @export
+loadingmat <- function(
+    object, method = 'pca', by = biplot_by(object, method), dims = 1:2
+){
+    vars <- 'feature_id'
+    vars %<>% c(loadingnames(method, by, dims))
+    mat <- fdt(object)[, vars, with = FALSE]
+    mat %<>% dt2mat()
+    mat
+}
+
+#' @rdname scoremat
+#' @export
+loadings <- function(
+    object, method = 'pca', by = biplot_by(object, method), dim = 1
+){
+    fdt(object)[[loadingnames(method, by, dim)]]
+}
+
+
+#' PCA, SMA, LDA, PLS, SPLS, OPLS
 #'
 #' Perform a dimension reduction.
 #' Add sample scores, feature loadings, and dimension variances to object.
