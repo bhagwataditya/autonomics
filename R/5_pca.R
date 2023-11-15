@@ -284,12 +284,16 @@ pls <- function(
 
 #' @rdname pca
 #' @export
-sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
+sma <- function(
+    object, by = 'sample_id', assay = assayNames(object)[1], ndim = 2, minvar = 0,
+    verbose = TRUE, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
         message("First Biocinstaller::install('mpm'). Then re-run.")
         return(object)}
     assert_is_valid_sumexp(object)
+    assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -298,23 +302,23 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
     . <- NULL
 # Preprocess
     tmpobj <- object
-    values(tmpobj) %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
-    values(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
+    assays(tmpobj)[[assay]] %<>% minusinf_to_na(verbose = verbose)   # else SVD singular
+    assays(tmpobj)[[assay]] %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
     tmpobj        %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
-    df <- data.frame(feature = rownames(tmpobj), values(tmpobj))
+    df <- data.frame(feature = rownames(tmpobj), assays(tmpobj)[[assay]])
     mpm_tmp <- mpm::mpm(
                 df, logtrans = FALSE, closure = 'none', center = 'double',
                 normal = 'global', row.weight = 'mean', col.weight = 'constant')
     ncomponents <- length(mpm_tmp$contrib)
-    mpm_out <- mpm::plot.mpm(mpm_tmp, do.plot=FALSE, dim = seq_len(ncomponents))
+    mpm_out <- mpm::plot.mpm(mpm_tmp, do.plot = FALSE, dim = seq_len(ncomponents))
 # Extract
     samples   <- mpm_out$Columns
     features  <- mpm_out$Rows
     variances <- round(100*mpm_tmp$contrib[seq_len(ncomponents)])
-    names(samples)   <- sprintf('sma%d', seq_len(ncol(samples)))
-    names(features)  <- sprintf('sma%d', seq_len(ncol(features)))
-    names(variances) <- sprintf('sma%d', seq_len(length(variances)))
+    names(samples)   <-    scorenames(method = 'sma', by = by, dims = seq_len(ndim))
+    names(features)  <-  loadingnames(method = 'sma', by = by, dims = seq_len(ndim))
+    names(variances) <- variancenames(dims = seq_len(ndim))
 # Restrict
     if (is.infinite(ndim)) ndim <- ncol(samples)
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
@@ -323,14 +327,14 @@ sma <- function(object, ndim=2, minvar=0, verbose=TRUE, plot=FALSE, ...){
 # Add
     samples  %<>% cbind( sample_id = rownames(.), .)
     features %<>% cbind(feature_id = rownames(.), .)
-    object %<>% merge_sdata(samples, 'sample_id')
-    object %<>% merge_fdata(features, 'feature_id')
-    metadata(object)$sma <- variances
+    object %<>% merge_sdt(data.table(samples),  'sample_id')
+    object %<>% merge_fdt(data.table(features), 'feature_id')
+    metavar <- methodname(method = 'sma', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
-    sma1 <- sma2 <- NULL
-    if (plot)  print(biplot(object, sma1, sma2, ...))
+    if (plot)  print(biplot(object, method = 'sma', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
