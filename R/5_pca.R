@@ -440,16 +440,11 @@ spls <- function(
 }
 
 
-#' @param object  SummarizedExperiment
-#' @param ndim    number
-#' @return        SummarizedExperiment
-#' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' opls(object)
-#' @noRd
+#' @rdname pca
+#' @export
 opls <- function(
-    object, ndim = 2, minvar = 0, verbose = FALSE, plot = FALSE, ...
+    object, by = 'subgroup', assay = assayNames(object)[1], ndim = 2, minvar = 0, 
+    verbose = FALSE, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
@@ -457,6 +452,7 @@ opls <- function(
         return(object)
     }
     assert_is_valid_sumexp(object)
+    assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -464,24 +460,24 @@ opls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(values(object))
-    y <- subgroup_values(object)
+    x <- t(assays(object)[[assay]])
+    y <- svalues(object, by)
     pls_out <- ropls::opls(x, y, predI = ndim, permI = 0, fig.pdfC = FALSE)
     samples   <- pls_out@scoreMN
     features  <- pls_out@loadingMN
     variances <- round(pls_out@modelDF$R2X*100)
-    colnames(samples)  <- sprintf('opls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('opls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('opls%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'opls', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'opls', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(dims = seq_len(ndim))
 # Add
-    object %<>% merge_sdata(mat2dt(samples,  'sample_id'))
-    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
-    metadata(object)$opls <- variances
+    object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
+    object %<>% merge_fdt(mat2dt(features, 'feature_id'))
+    metavar <- methodname(method = 'opls', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
-    opls1 <- opls2 <- NULL
-    if (plot)  print(biplot(object, opls1, opls2, ...))
+    if (plot)  print(biplot(object, method = 'opls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
