@@ -1390,10 +1390,87 @@ plot_subgroup_points <- function(
 }
 
 
+#=========================================================
+#
+#           plot_venn_heatmap
+#           plot_venn
+#           plot_contrast_venn
+#               list2mat
+#
+#=========================================================
 
-#' @rdname plot_features
+
+#' list to matrix
+#' @param x list
+#' @return matrix
+#' @examples
+#' x <- list(roundfruit = c('apple', 'orange'), redfruit = c('apple', 'strawberry'))
+#' list2mat(x)
 #' @export
-plot_feature_profiles <- function(...){
-    plot_features(geom = geom_point, ...)
+list2mat <- function(x){
+    uni <- unique(Reduce(union, x))
+    mat <- matrix(0, nrow = length(uni), ncol = length(x),
+           dimnames = list(uni, names(x)))
+    for (i in seq_along(x))  mat[x[[i]], i] <- 1
+    mat
+}
+
+
+#' Plot venn heatmap
+#' @param x list
+#' @examples
+#' x <- list(roundfruit = c('apple', 'orange'), redfruit = c('apple', 'strawberry'))
+#' plot_venn_heatmap(x)
+#' @export
+plot_venn_heatmap <- function(x){
+    if (!requireNamespace('pheatmap', quietly = TRUE)){
+        stop("`BiocManager::install('pheatmap')`")
+    }
+    assert_is_list(x)
+    x %<>% list2mat()
+    pctmat <- matrix(0, nrow = ncol(x), ncol = ncol(x), dimnames = list(colnames(x), colnames(x)))
+    nmat   <- matrix(0, nrow = ncol(x), ncol = ncol(x), dimnames = list(colnames(x), colnames(x)))
+    for (cl1 in colnames(x)){
+    for (cl2 in colnames(x)){
+        set1 <- rownames(x)[x[, cl1]==1]
+        set2 <- rownames(x)[x[, cl2]==1]
+        nmat[  cl2, cl1] <- length(intersect(set1, set2))
+        pctmat[cl2, cl1] <- length(intersect(set1, set2)) / min(length(set1), length(set2))
+        pctmat[cl1, cl2] <- length(intersect(set1, set2)) / min(length(set2), length(set2))
+    }
+    }
+    pheatmap::pheatmap(pctmat, cluster_rows = FALSE, cluster_cols = FALSE, display_numbers = nmat)
+}
+
+
+#' Plot venn
+#' @param x list
+#' @examples
+#' x <- list(roundfruit = c('apple', 'orange'), redfruit = c('apple', 'strawberry'))
+#' plot_venn(x)
+#' @export
+plot_venn <- function(x){
+    assert_is_list(x)
+    limma::vennDiagram(list2mat(x))
+}
+
+
+#' Plot contrast venn
+#' @param issig  matrix(nrow, ncontrast): -1 (down), +1 (up)
+#' @param colors NULL or colorvector
+#' @return nothing returned
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% fit_wilcoxon(~ subgroup, block = 'Subject')
+#' object %<>% fit_limma(   ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
+#' isfdr <- is_sig(object, contrast = 't3-t0')
+#' plot_contrast_venn(isfdr)
+#' @export
+plot_contrast_venn <- function(issig, colors = NULL){
+    assert_is_matrix(issig)
+    layout(matrix(c(1,2), nrow=2))
+    vennDiagram(issig, include='up',   mar = rep(0,4), show.include=TRUE, circle.col = colors)
+    vennDiagram(issig, include='down', mar = rep(0,4), show.include=TRUE, circle.col = colors)
 }
 
