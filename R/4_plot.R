@@ -75,21 +75,38 @@ make_var_palette <- function(object, var){
     } else if (var %in% fvars(object)){ make_fvar_palette(object, var) }
 }
 
+#' Make colors
+#' @param varlevels character vector
+#' @param sep       string
+#' @param show      TRUE or FALSE: whether to plot
+#' @param verbose   TRUE or FALSE: whether to msg
+#' @examples 
+#' make_colors(c('A',   'B',   'C',  'D'  ), show = TRUE)
+#' make_colors(c('A.1', 'B.1', 'A.2','B.2'), show = TRUE)
+#' @export
 make_colors <- function(
-    varlevels, sep = guess_sep(varlevels), show=FALSE,
-    verbose = FALSE
+    varlevels, sep = guess_sep(varlevels), show = FALSE, verbose = FALSE
 ){
-    makefun <- make_onefactor_colors
-    if (!is.null(sep)){            # consistent separator
-        if (length(varlevels)>2){  # 3+ samples
-            n1 <- length(unique(split_extract(varlevels, 1, sep)))
-            n2 <- length(unique(split_extract(varlevels, 2, sep)))
-            if (n1>1 & n2>1){             # 2+ huevar levels
-                makefun <- make_twofactor_colors
-            }
-        }
+# Numeric colors
+    if (is.numeric(varlevels)){
+        colors <- brewer.pal(length(varlevels), 'YlOrRd')
+        names(colors) <- varlevels
+        if (show) pie(rep(1, length(colors)), names(colors), col = colors)
+        return(colors)
     }
-    makefun(varlevels, sep = sep, show = show, verbose = verbose)
+# # Twofactor colors
+#     if (!is.null(sep)){            # consistent separator
+#         if (length(varlevels)>2){  # 3+ samples
+#             n1 <- length(unique(split_extract_fixed(varlevels, sep, 1)))
+#             n2 <- length(unique(split_extract_fixed(varlevels, sep, 2)))
+#             if (n1>1 & n2>1){             # 2+ huevar levels
+#                 return(make_twofactor_colors(
+#                     varlevels, sep = sep, show = show, verbose = verbose))
+#             }
+#         }
+#     }
+# Onefactor colors
+    return(make_onefactor_colors(varlevels, show = show, verbose = verbose))
 }
 
 #' Create default ggplot colors for factor levels
