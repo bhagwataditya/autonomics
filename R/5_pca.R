@@ -621,74 +621,128 @@ make_alpha_palette <- function(object, alpha){
     palette
 }
     
-#' Biplot
-#' @param object         SummarizedExperiment
-#' @param x              pca1, etc.
-#' @param y              pca2, etc.
-#' @param color          svar mapped to color (symbol)
-#' @param label          svar mapped to label (symbol)
-#' @param group          svar mapped to group
-#' @param ...            additional svars mapped to aesthetics
-#' @param feature_label  fvar mapped to (loadings) label
-#' @param fixed          fixed plot aesthetics
-#' @param nloadings      number of loadings per half-axis to plot
-#' @return ggplot object
-#' @examples
-#' require(magrittr)
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' object %<>% pca(ndim=4)
-#' biplot(object)
-#' biplot(object, color=SUB, group=SUB)
-#' biplot(object, color=SUB, nloadings=1)
-#' biplot(object, pca3, pca4, color=SUB, nloadings=1)
-#' @export
-biplot <- function(object, x = pca1, y = pca2, color = NULL, group = NULL,
-    label = NULL, feature_label = feature_name, ...,
-    fixed = list(shape=15, size=3), nloadings = 0
-){
-    x     <- enquo(x)
-    y     <- enquo(y)
-    label <- enquo(label)
-    xstr <- as_name(x)
-    ystr <- as_name(y)
-    methodx <- gsub('[0-9]+', '', xstr)
-    methody <- gsub('[0-9]+', '', ystr)
-    assert_is_subset(xstr, names(colData(object)))
-    assert_is_subset(ystr, names(colData(object)))
-
-    #object %<>% get(methodx)(ndim=xdim, verbose = FALSE)
-    #object %<>% get(methody)(ndim=ydim, verbose = FALSE)
-    color <- enquo(color)
-    group <- enquo(group)
-    feature_label <- enquo(feature_label)
-    dots  <- enquos(...)
-    fixed %<>% extract(setdiff(names(fixed), names(dots)))
-
-    xvar <- round(metadata(object)[[methodx]][[xstr]], 1)
-    yvar <- round(metadata(object)[[methody]][[ystr]], 1)
-    xlab  <- paste0(xstr, ' : ', xvar,'% ')
-    ylab  <- paste0(ystr, ' : ', yvar,'% ')
-
-    p <- ggplot() + theme_bw() + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
-    p <- p + ggtitle(paste0(xstr, ':', ystr))
-    p %<>% add_loadings(
-            object, !!x, !!y, label = !!feature_label, nloadings = nloadings)
-    p %<>% add_scores(object, !!x, !!y, color = !!color, group = !!group,
-                    !!!dots, fixed = fixed)
-    p %<>% add_color_scale(!!color, data = sdata(object))
-
-    if (!quo_is_null(label)){
-        p <- p + geom_text_repel(aes(x=!!x, y=!!y, label=!!label), 
-                                data=sdata(object), na.rm = TRUE)}
-    p
+biplot_methods <- function(object){
+    y <- grep('(pca|pls)', svars(object), value = TRUE)
+    y %<>% split_extract_fixed('~', 3)
+    y <- gsub('[0-9]+', '', y)
+    y %<>% unique()
+    y
 }
 
-#' @rdname biplot
+biplot_by <- function(object, method = 'pca'){
+    y <- grep(method, svars(object), value = TRUE, fixed = TRUE)
+    y %<>% split_extract_fixed('~', 2)
+    y %<>% unique()
+    y
+}
+
+biplot_dims <- function(
+    object, method = 'pca', by = biplot_by(object, method)
+){
+    x <- sprintf('effect~%s~%s', by, method)
+    y <- grep(x, svars(object), value = TRUE, fixed = TRUE)
+    y <- gsub(x, '', y)
+    y %<>% as.numeric()
+    y
+}
+
+#' Biplot
+#' @param object         SummarizedExperiment
+#' @param method         'pca', 'pls', 'lda', 'spls', 'opls', 'sma'
+#' @param by             svar
+#' @param dims           numeric vector: e.g. 1:2
+#' @param alpha          svar
+#' @param color          svar
+#' @param shape          svar
+#' @param size           svar
+#' @param label          svar
+#' @param group          svar
+#' @param linetype       svar
+#' @param feature_label  fvar
+#' @param fixed          fixed plot aesthetics
+#' @param nx     number of x features to plot
+#' @param ny     number of y features to plot
+#' @param colorpalette   character vector
+#' @param alphapalette   character vector
+#' @param title          string
+#' @param theme          ggplot2::theme output
+#' @return ggplot object
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% pca(ndim = 4)
+#' object %<>% pls(ndim = 4)
+#' biplot(object)
+#' biplot(object, nx = 1)
+#' biplot(object, dims = 3:4, nx = 1)
+#' biplot(object, method = 'pls')
+#' biplot(object, method = 'pls', dims = 3:4)
+#' biplot(object, method = 'pls', dims = 3:4, group = 'Subject')
 #' @export
-plot_biplot <- function(...){
-    .Deprecated('biplot')
-    biplot(...)
+biplot <- function(
+    object, 
+    method        = biplot_methods(object)[1],
+    by            = biplot_by(object, method)[1], 
+    dims          = biplot_dims(object, method, by)[1:2],
+    color         = 'subgroup', 
+    shape         = NULL, 
+    size          = NULL, 
+    alpha         = NULL,
+    group         = NULL, 
+    linetype      = NULL,
+    label         = NULL, 
+    feature_label = if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
+    fixed         = list(shape = 15, size = 3), 
+    nx    = 0,
+    ny    = 0,
+    colorpalette  =  make_svar_palette(object, color),
+    alphapalette  = make_alpha_palette(object, alpha), 
+    title         = sprintf('%s~%s', method, by), 
+    theme         = ggplot2::theme(plot.title = element_text(hjust = 0.5), 
+                                   panel.grid = element_blank())
+){
+# Assert / Process
+    assert_is_all_of(object, 'SummarizedExperiment')
+    if (!is.null(color)){ assert_is_a_string(color)
+                          assert_is_subset(color, svars(object)) }
+    if (!is.null(group)){ assert_is_a_string(group)
+                          assert_is_subset(group, svars(object)) }
+    if (!is.null(shape)){ assert_is_a_string(shape)
+                          assert_is_subset(shape, svars(object)) 
+                          fixed %<>% extract(names(.) %>% setdiff('shape'))}
+    if (!is.null(size)){  assert_is_a_string(size)
+                          assert_is_subset(size,  svars(object)) 
+                          fixed %<>% extract(names(.) %>% setdiff('size'))}
+    
+    ndim <- max(dims)
+    x <- scorenames(method, by = by, dims = dims[[1]])
+    y <- scorenames(method, by = by, dims = dims[[2]])
+    vars <- round(variances(object, method = method, by = by, dims = dims))
+    xlab <- sprintf('X%d : %d%%', dims[[1]], vars[[1]])
+    ylab <- sprintf('X%d : %d%%', dims[[2]], vars[[2]])
+
+# Loadings
+# Plot
+    p <- ggplot() + theme_bw() + theme
+    p <- p + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
+    p <- p + ggtitle(title)
+    p %<>% add_loadings(object, x = x, y = y, label = feature_label, nx = nx, ny = ny)
+    p %<>% add_scores(object, x = x, y = y, color = color, shape = shape, 
+                      size = size, alpha = alpha, group = group, linetype = linetype, fixed = fixed)
+    if (!is.null(colorpalette))  p <- p + scale_color_manual(values = colorpalette, na.value = 'gray80')
+    if (!is.null(alphapalette))  p <- p + scale_alpha_manual(values = alphapalette)
+    if (!is.null(label  ))  p <- p + geom_text_repel(
+                    aes(x = !!sym(x), y = !!sym(y), label = !!sym(label)), 
+                    data = sdt(object), na.rm = TRUE)
+    if (!is.null(shape)){
+        n <- length(slevels(object, shape))
+        if (n > 6)  p <- p + scale_shape_manual(values = seq(15, 15+n-1))
+            # Warning messages: The shape palette can deal with a maximum 
+            # of 6 discrete values
+            # https://stackoverflow.com/questions/16813278
+    }
+# Return
+    p
 }
 
 
