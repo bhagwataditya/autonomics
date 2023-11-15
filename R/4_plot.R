@@ -436,99 +436,167 @@ plot_feature_densities <- function(
 #' Plot sample/feature violins
 #'
 #' @param object      SummarizedExperiment
+#' @param assay       string
 #' @param subgroup    subgroup svar
-#' @param x           svar mapped to x
-#' @param fill        svar mapped to fill
-#' @param color       svar mapped to color
-#' @param group       svar mapped to group
-#' @param facet       svar mapped to facets
-#' @param highlight   fvar expressing which feature should be highlighted
+#' @param x           svar (string)
+#' @param fill        svar (string)
+#' @param color       svar (string)
+#' @param n           number
+#' @param group       svar (string)
+#' @param facet       svar (character vector)
+#' @param nrow        NULL or number
+#' @param ncol        NULL or number
+#' @param dir         'h' or 'v' : are facets filled horizontally or vertically ?
+#' @param scales      'free', 'free_x', 'free_y', or 'fixed'
+#' @param labeller    label_both or label_value
+#' @param highlight   fvar expressing which feature should be highlighted (string)
+#' @param palette     named color vector (character vector)
 #' @param fixed       fixed aesthetics
 #' @return  ggplot object
-#' @seealso \code{\link{plot_sample_densities}},
-#'          \code{\link{plot_sample_boxplots}}
+#' @seealso \code{\link{plot_exprs}},
+#'          \code{\link{plot_densities}}
 #' @examples
 #' # data
-#'     require(magrittr)
 #'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$Group))
+#'     object <- read_metabolon(file)
+#'     object %<>% extract(, order(.$subgroup))
 #'     control_features <- c('biotin','phosphate')
-#'     fdata(object) %<>% cbind(control=.$feature_name %in% control_features)
+#'     fdata(object) %<>% cbind(control = .$feature_name %in% control_features)
 #' # plot
-#'     plot_violins(object[1:12, ], x=feature_id, fill=feature_id)
+#'     plot_violins(object[1:12, ], x = 'feature_id', fill = 'feature_id')
 #'     plot_feature_violins(object[1:12, ])
-#'     plot_sample_violins(object[, 1:12],  highlight = control)
-#'     plot_subgroup_violins(object[1:4, ], subgroup = Group)
+#'     plot_sample_violins(object[, 1:12],  highlight = 'control')
+#'     plot_subgroup_violins(object[1:4, ], subgroup = 'subgroup')
 #' @export
-plot_violins <- function(object, x, fill, color = NULL, group = NULL,
-    facet = NULL, highlight = NULL, fixed = list(na.rm=TRUE)
+plot_violins <- function(object, assay = assayNames(object)[1], x, fill, 
+    color = NULL, group = NULL, facet = NULL, nrow = NULL, ncol = NULL, 
+    dir = 'h', scales = "free", labeller = label_value, highlight = NULL, 
+    palette = NULL, fixed = list(na.rm = TRUE)
 ){
 # Process
     assert_is_all_of(object, 'SummarizedExperiment')
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    group     <- enquo(group)
-    highlight <- enquo(highlight)
-    facet     <- enquo(facet)
-    sample_id <- value <- NULL
-    xstr         <- as_name(x)
-    fillstr      <- if (quo_is_null(fill))      character(0) else as_name(fill)
-    colorstr     <- if (quo_is_null(color))     character(0) else as_name(color)
-    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
-                                                                    highlight)
+    assert_is_subset(assay, assayNames(object))
+                              assert_is_a_string(x)
+                              assert_is_a_string(fill)
+    if (!is.null(color))      assert_is_a_string(color)
+    if (!is.null(group))      assert_is_a_string(group)
+    if (!is.null(facet))      assert_is_a_string(facet)
+    if (!is.null(highlight))  assert_is_a_string(highlight)
+                              assert_is_subset(x,         c(svars(object), fvars(object)))
+                              assert_is_subset(fill,      c(svars(object), fvars(object)))
+    if (!is.null(color))      assert_is_subset(color,     c(svars(object), fvars(object)))
+    if (!is.null(group))      assert_is_subset(group,     c(svars(object), fvars(object)))
+    if (!is.null(facet))      assert_is_subset(facet,     c(svars(object), fvars(object)))
+    if (!is.null(highlight))  assert_is_subset(highlight, c(svars(object), fvars(object)))
+    assert_is_list(fixed)
+    value <- NULL
 # Prepare
-    plotvars <- unique(c('feature_name', fillstr, colorstr, highlightstr))
+    plotvars <- c('feature_name')
+                              plotvars %<>% c(x)         %>% unique()
+                              plotvars %<>% c(fill)      %>% unique()
+    if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
+    if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
+    if (!is.null(facet))      plotvars %<>% c(facet)     %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
-    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+    dt <- sumexp_to_longdt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
+    dtsum <- dt[, .(median = median(value, na.rm = TRUE), 
+                       iqr =    IQR(value, na.rm = TRUE) ), by = x]
 # Plot
-    p <- plot_data(dt, geom = geom_violin, x = !!x, y = value,
-                fill = !!fill, color= !!color, group=!!group, fixed = fixed)
-    p %<>% add_highlights(!!highlight, geom = geom_point)
-    p <- p + facet_wrap(vars(!!facet), scales = "free_y")
+    xsym         <- sym(x)
+    fillsym      <- sym(fill)
+    groupsym     <- if (is.null(group))  quo(NULL)  else  sym(group)
+    colorsym     <- if (is.null(color))  quo(NULL)  else  sym(color)
+    p <- plot_data(dt, geom = geom_violin, x = !!xsym, y = value,
+                fill = !!fillsym, color = !!colorsym, group = !!groupsym, 
+                palette = palette, fixed = fixed)
+    #p <- p + geom_point(data = dtsum, aes(x = !!xsym, y = median))
+    p <- p + geom_boxplot(width = 0.1, na.rm = TRUE)
+    #p <- p + geom_errorbar(
+    #    data    = dtsum, 
+    #    mapping = aes(x = !!xsym, ymin = median-iqr, ymax = median+iqr, y = median), 
+    #    width   = 0)
+    p %<>% add_highlights(x = x, hl = highlight, geom = geom_point)
+    if (!is.null(facet))  p <- p + facet_wrap(facet, nrow = nrow, ncol = ncol, 
+                              dir = dir, scales = scales, labeller = labeller)
     # Finish
-    breaks <- unique(dt[[xstr]])
-    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fillstr][[xstr]]
+    breaks <- unique(dt[[x]])
+    if (length(breaks)>50) breaks <- dt[, .SD[1], by = fill][[x]]
     p <- p + xlab(NULL) + scale_x_discrete(breaks = breaks) +
-        theme(axis.text.x = element_text(angle=90, hjust=1))
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
 # Return
     p
 }
 
-sample_id <- NULL
-#' @rdname plot_violins
-#' @export
-plot_sample_violins <- function(
-    object, x = sample_id, fill = sample_id, color = NULL, highlight = NULL,
-    fixed=list(na.rm=TRUE)
-) plot_violins(
-    object, x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color),
-    highlight=!!enquo(highlight), fixed = fixed
-)
 
-feature_id <- feature_name <- NULL
 #' @rdname plot_violins
 #' @export
 plot_feature_violins <- function(
-    object, x = feature_id, fill = feature_name, color = NULL, highlight = NULL,
-    fixed = list(na.rm=TRUE)
-) plot_violins(
-    object, x=!!enquo(x), fill=!!enquo(fill), color=!!enquo(color),
-    highlight=!!enquo(highlight), fixed = fixed
-)
+    object, assay = assayNames(object)[1], x = 'feature_id', 
+    fill = 'feature_id', color = NULL, n = 9,
+    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free',
+    labeller = label_value, highlight = NULL, fixed = list(na.rm = TRUE)
+){
+    object %<>% extract_features_evenly(n)
+    plot_violins(
+        object, assay = assay, x = x, fill = fill, color = color, facet = facet, 
+        nrow = nrow, ncol = ncol, dir  = dir, labeller = labeller,
+        highlight = highlight, fixed = fixed) + 
+        ggtitle('Feature Violins')
+}
+
+
+#' @rdname plot_violins
+#' @export
+plot_sample_violins <- function(
+    object,
+    assay = assayNames(object)[1],
+    x     = 'sample_id', 
+    fill  = if ('subgroup' %in% svars(object)) 'subgroup'  else  'sample_id', 
+    color = NULL, n = 100, facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', 
+    scales = 'free', labeller = label_value, highlight = NULL, fixed = list(na.rm = TRUE)
+){
+    object %<>% extract_samples_evenly(n)
+    plot_violins(
+        object, assay = assay, x = x, fill = fill, color = color, facet = facet, 
+        nrow = nrow, ncol = ncol, dir = dir, scales = scales, 
+        labeller = labeller, highlight = highlight, fixed = fixed) + 
+    ggtitle('Sample Violins')
+}
+
+
+extract_evenly <- function(l, p){
+    round(seq(1, l, length.out = p))
+}
+
+extract_samples_evenly <- function(object, n){
+    if (n < ncol(object)){
+        object %<>% extract(, extract_evenly(ncol(object), n))}
+    object
+}
+
+extract_features_evenly <- function(object, n){
+    if (n < nrow(object)){
+        object %<>% extract(rowSums(!is.na(values(object))) > 2, )
+        object %<>% extract(extract_evenly(nrow(object), n), )
+    }
+    object
+}
+
 
 subgroup <- NULL
 #' @rdname plot_violins
 #' @export
 plot_subgroup_violins <- function(
-    object, subgroup, x = !!enquo(subgroup), fill = !!enquo(subgroup), 
-    color = NULL, highlight = NULL, facet = feature_id, fixed = list(na.rm=TRUE)
-) plot_violins(
-    object, x = !!enquo(x), fill=!!enquo(fill), color=!!color,
-    facet=!!enquo(facet), highlight=!!enquo(highlight), fixed=fixed
-)
+    object, assay = assayNames(object)[1], subgroup, x = 'subgroup', 
+    fill = 'subgroup', color = NULL, highlight = NULL, facet = 'feature_id', 
+    fixed = list(na.rm = TRUE)
+){
+    plot_violins(
+       object, assay = assay, x = x, fill = fill, color = color,
+        facet = facet, highlight = highlight, fixed = fixed) + 
+    ggtitle('Subgroup violins')
+}
 
 
 #==============================================================================
