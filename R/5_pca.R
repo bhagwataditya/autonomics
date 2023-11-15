@@ -397,25 +397,20 @@ lda <- function(
 }
 
 
-#' @param object  SummarizedExperiment
-#' @param subgroupvar subgrup svar
-#' @param ndim    number
-#' @return        SummarizedExperiment
-#' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' spls(object, subgroupvar ='Group')
-#' @noRd
+#' @rdname pca
+#' @export
 spls <- function(
-    object, subgroupvar = 'subgroup', ndim = 2, minvar = 0, plot = FALSE, ...
+    object, assay = assayNames(object)[1], by = 'subgroup', ndim = 2, 
+    minvar = 0, plot = FALSE, ...
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
         message("BiocManager::install('mixOmics'). Then re-run.")
         return(object)
     }
-    assert_is_valid_sumexp(object)
-    assert_is_subset(subgroupvar, svars(object))
+    assert_is_valid_sumexp(object);  assert_is_scalar(assay)
+    assert_is_subset(assay, assayNames(object))
+    assert_is_subset(by, svars(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, ncol(object))
@@ -423,24 +418,24 @@ spls <- function(
     assert_all_are_in_range(minvar, 0, 100)
     . <- NULL
 # Transform
-    x <- t(values(object))
-    y <- object[[subgroupvar]]
+    x <- t(assays(object)[[assay]])
+    y <- object[[by]]
     pls_out <- mixOmics::splsda( x, y, ncomp = ndim)
     samples   <- pls_out$variates$X
     features  <- pls_out$loadings$X
     variances <- round(100*pls_out$prop_expl_var$X)
-    colnames(samples)  <- sprintf('spls%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('spls%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('spls%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'spls', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'spls', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(seq_len(ndim))
 # Add
-    object %<>% merge_sdata(mat2dt(samples,  'sample_id'))
-    object %<>% merge_fdata(mat2dt(features,'feature_id'))
-    metadata(object)$spls <- variances
+    object %<>% merge_sdt(mat2dt(samples,  'sample_id'))
+    object %<>% merge_fdt(mat2dt(features,'feature_id'))
+    metavar <- methodname(method = 'spls', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
-    spls1 <- spls2 <- NULL
-    if (plot)  print(biplot(object, spls1, spls2, ...))
+    if (plot)  print(biplot(object, method = 'spls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
