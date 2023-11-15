@@ -164,70 +164,77 @@ loadings <- function(
 #' PCA, SMA, LDA, PLS, SPLS, OPLS
 #'
 #' Perform a dimension reduction.
-#' Add sample scores, feature loadings, and dimension variances to object.
+#' Store sample scores, feature loadings, and dimension variances.
 #'
-#' @param object  SummarizedExperiment
-#' @param subgroupvar subgroup svar
-#' @param ndim    number
-#' @param minvar  number
-#' @param verbose TRUE (default) or FALSE
-#' @param plot    TRUE/FALSE
-#' @param ...     passed to biplot
-#' @return        SummarizedExperiment
+#' @param object          SummarizedExperiment
+#' @param by              svar or NULL
+#' @param assay           string
+#' @param ndim            number
+#' @param minvar          number
+#' @param center_samples  TRUE/FALSE: center samples prior to pca ?
+#' @param verbose         TRUE/FALSE: message ?
+#' @param plot            TRUE/FALSE: plot ?
+#' @param ...             passed to biplot
+#' @return                SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
-#' pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
-#' pls(object, subgroupvar = 'Group')  # Partial Least Squares
-#' lda(object, subgroupvar = 'Group')  # Linear Discriminant Analysis
-#' sma(object)  # Spectral Map Analysis
-#' pca(object, ndim=3)
-#' pca(object, ndim=Inf, minvar=5)
+#'  file <- download_data('atkin.metabolon.xlsx')
+#'  object <- read_metabolon(file)
+#'  pca(object, plot = TRUE)    # Principal Component Analysis
+#'  pls(object, plot = TRUE)    # Partial Least Squares
+#'  lda(object, plot = TRUE)    # Linear Discriminant Analysis
+#'  sma(object, plot = TRUE)    # Spectral Map Analysis
+#' spls(object, plot = TRUE)    # Sparse PLS
+#' # opls(object, plot = TRUE)  # OPLS # outcommented because it produces a file named FALSE
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
-    object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...
+    object, by = 'sample_id', assay = assayNames(object)[1], ndim = 2, minvar = 0, 
+    center_samples = TRUE, verbose = TRUE, plot = FALSE, ...
 ){
 # Assert
     assert_is_valid_sumexp(object)
+    assert_is_scalar(assay); assert_is_subset(assay, assayNames(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
     assert_is_a_number(ndim)
     assert_all_are_less_than_or_equal_to(ndim, ncol(object))
     assert_is_a_number(minvar)
     assert_all_are_in_range(minvar, 0, 100)
-    . <- NULL
+    assert_is_a_bool(center_samples)
+    assert_is_a_bool(verbose)
+    assert_is_a_bool(plot)
     if (verbose)  message('\t\tAdd PCA')
+    . <- NULL
 # Prepare
     tmpobj <- object
-    values(tmpobj) %<>% inf_to_na(verbose=verbose)
-    values(tmpobj) %<>% nan_to_na(verbose=verbose)
+    assays(tmpobj)[[assay]] %<>% inf_to_na(verbose=verbose)
+    assays(tmpobj)[[assay]] %<>% nan_to_na(verbose=verbose)
     tmpobj %<>% rm_missing_in_all_samples(verbose = verbose)
 # (Double) center and (global) normalize
-    row_means <- rowMeans(values(tmpobj), na.rm=TRUE)
-    col_means <- colWeightedMeans(values(tmpobj), abs(row_means), na.rm = TRUE)
+    row_means <- rowMeans(        assays(tmpobj)[[assay]], na.rm = TRUE)
+    col_means <- colWeightedMeans(assays(tmpobj)[[assay]], abs(row_means), na.rm = TRUE)
     global_mean <- mean(col_means)
-    values(tmpobj) %<>% apply(1, '-', col_means)  %>%   # Center columns
-                        apply(1, '-', row_means)  %>%   # Center rows
-                        add(global_mean)          %>%   # Add doubly subtracted
-                        divide_by(sd(., na.rm=TRUE))    # Normalize
+    if (center_samples)  assays(tmpobj)[[assay]] %<>% apply(1, '-', col_means)  %>% t()  # Center columns (samples)
+                         assays(tmpobj)[[assay]] %<>% apply(2, '-', row_means)           # Center rows (features)
+    if (center_samples)  assays(tmpobj)[[assay]] %<>% add(global_mean)                   # Add doubly subtracted
+                         assays(tmpobj)[[assay]] %<>% divide_by(sd(., na.rm=TRUE))       # Normalize
 # Perform PCA
-    pca_res  <- pcaMethods::pca(t(values(tmpobj)),
+    pca_res  <- pcaMethods::pca(t(assays(tmpobj)[[assay]]),
         nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
     samples   <- pca_res@scores
     features  <- pca_res@loadings
     variances <- round(100*pca_res@R2)
-    colnames(samples)  <- sprintf('pca%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('pca%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('pca%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'pca', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'pca', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(seq_len(ndim))
 # Add
-    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
-    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
-    metadata(object)$pca <- variances
+    object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdt(mat2dt(features, 'feature_id'))
+    metavar <- methodname(method = 'pca', by = by)
+    metadata(object)[[metavar]] <- variances
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
-    pca1 <- pca2 <- NULL
-    if (plot)  print(biplot(object, pca1, pca2, ...))
+    if (plot)  print(biplot(object, method = 'pca', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
