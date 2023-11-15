@@ -552,50 +552,49 @@ headtail <- function(x, n){
 
 pca1 <- pca2 <- NULL
 add_loadings <- function(
-    p, object, x = pca1, y = pca2, label = feature_name, nloadings = 1
+    p, object, x = 'pca1', y = 'pca2', label = 'feature_name', nx = 1, ny = 1
 ){
 # Process args
-    if (nloadings==0) return(p)
-    x     <- enquo(x)
-    y     <- enquo(y)
-    label <- enquo(label)
-    xstr <- rlang::as_name(x)
-    ystr <- rlang::as_name(y)
-    assert_is_subset(xstr, names(rowData(object)))
-    assert_is_subset(ystr, names(rowData(object)))
+    if (nx==0 & ny==0) return(p)
+    assert_is_subset(c(x, y), fvars(object))
+    assert_is_subset(c(x, y), svars(object))
+    axis <- angle <- NULL
 # Loadings
-    xloadings <- fdata(object)[[xstr]]
-    yloadings <- fdata(object)[[ystr]]
-    idx <- unique(c(headtail(order(xloadings, na.last=NA), nloadings),
-                    headtail(order(yloadings, na.last=NA), nloadings)))
-# Scale loadings to scoreplot
-    xscores <- sdata(object)[[xstr]]
-    yscores <- sdata(object)[[ystr]]
-    maxscore <- min(abs(min(c(xscores, yscores, na.rm=TRUE))),
-                    abs(max(c(xscores, yscores, na.rm=TRUE))), na.rm=TRUE)
-    scorefactor <- maxscore/max(abs(c(xloadings, yloadings)),  na.rm=TRUE)
-
-    plotdt <- fdata(object)
-    plotdt[[xstr]] %<>% multiply_by(scorefactor)
-    plotdt[[ystr]] %<>% multiply_by(scorefactor)
-    plotdt %<>% extract(idx, )
+    xloadings <- fdt(object)[[x]]
+    yloadings <- fdt(object)[[y]]
+    xscores   <- sdt(object)[[x]]
+    yscores   <- sdt(object)[[y]]
+    maxscore <- min(abs(min(c(xscores, yscores, na.rm = TRUE))),
+                    abs(max(c(xscores, yscores, na.rm = TRUE))), na.rm = TRUE)
+    scorefactor <- maxscore/max(abs(c(xloadings, yloadings)),  na.rm = TRUE)
+    idx1 <- order(abs(xloadings), decreasing = TRUE)[seq_len(nx)] 
+    idx2 <- order(abs(yloadings), decreasing = TRUE)[seq_len(ny)]
+    #idx1 <- headtail(order(xloadings, na.last = NA), nx)
+    #idx2 <- headtail(order(yloadings, na.last = NA), ny)
+    #idx <- unique(c(idx1, idx2))
+    idx <- c(idx1, idx2)
+    loadingdt1 <- fdt(object)[idx1, c(label, x, y), with = FALSE]
+    loadingdt2 <- fdt(object)[idx2, c(label, x, y), with = FALSE]
+    loadingdt1[, axis := split_extract_fixed(x, '~', 3)]
+    loadingdt2[, axis := split_extract_fixed(y, '~', 3)]
+    loadingdt <- rbind(loadingdt1, loadingdt2)
+    loadingdt[[x]] %<>% multiply_by(scorefactor) # bring them on same scale
+    loadingdt[[y]] %<>% multiply_by(scorefactor)
+    loadingdt[[x]] %<>% multiply_by(1.5)         # bring them somewhat outside
+    loadingdt[[y]] %<>% multiply_by(1.5)
+    loadingdt$angle <- loadingdt[[y]] / loadingdt[[x]]
+    loadingdt$angle <- atan(loadingdt$angle)
+    loadingdt$angle %<>% multiply_by(180/pi)
 
 # Plot
-    feature_name <- NULL
-    if (!'feature_name' %in% names(plotdt)){
-        setnames(plotdt, 'feature_id', 'feature_name')}
-    p + layer(  geom     = 'segment',
-                mapping  = aes(x=0, y=0, xend=!!x, yend=!!y),
-                stat     = "identity",
-                data     = plotdt, # list(alpha = 0.05, size=3),
-                params   = list(alpha = 0.1, size=1, na.rm = TRUE),
-                position = "identity") +
-        layer(  geom     = "text",
-                mapping  = aes(x = !!x, y = !!y, label = !!label),
-                stat     = "identity",
-                data     = plotdt,
-                params   = list(alpha = 0.5, na.rm = TRUE),
-                position ='identity')
+    p <- p + geom_segment(
+               data = loadingdt, 
+               aes(x = 0, xend = !!sym(x), y = 0, yend = !!sym(y), linetype = axis), color = 'gray85')
+    p <- p + geom_text(
+                data = loadingdt, 
+                aes(x = !!sym(x), y = !!sym(y), label = !!sym(label), angle = angle), 
+                hjust = 'inward', color = 'gray30')
+    p
 }
 
 pca1 <- pca2 <- feature_name <- NULL
