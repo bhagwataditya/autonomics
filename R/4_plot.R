@@ -601,60 +601,356 @@ plot_subgroup_violins <- function(
 
 #==============================================================================
 #
-#                   plot_boxplots()
-#                       plot_sample_boxplots()
-#                       plot_feature_boxplots
+#               extract_coef_features
+#                   .extract_p_features
+#                   .extract_fdr_features
+#                   .extract_effectsize_features
+#                       ..extract_statistic_features
+#                   .extract_sign_features
+#                   .extract_n_features
 #
 #==============================================================================
 
 
-#' Plot sample/feature boxplots
-#'
-#' @param object      SummarizedExperiment
-#' @param subgroup    subgroup svar symbol
-#' @param x           svar mapped to x
-#' @param fill        svar mapped to fill
-#' @param color       svar mapped to color
-#' @param facet       svar mapped to facet
-#' @param highlight   fvar expressing which feature should be highlighted
-#' @param fixed       fixed aesthetics
-#' @return  ggplot object
-#' @seealso \code{\link{plot_sample_densities}},
-#'          \code{\link{plot_sample_violins}}
-#' @examples
-#' # data
-#'     require(magrittr)
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$Group))
-#'     fdata(object) %<>% cbind(
-#'                         control=.$feature_name %in% c('biotin','phosphate'))
-#' # plot
-#'     plot_boxplots(object[1:9,], x = feature_id, fill = feature_id)
-#'     plot_boxplots(object[,1:9], x = sample_id,  fill = sample_id )
-#'     plot_feature_boxplots(object[1:9, ])
-#'     plot_sample_boxplots(object[, 1:12])
-#'     plot_sample_boxplots(object[, 1:12], highlight = control)
-#'     plot_subgroup_boxplots(object[1:2, ], subgroup = Group)
-#' @export
-plot_boxplots <- function(object, x, fill, color = NULL, facet = NULL,
-    highlight = NULL, fixed = list(na.rm=TRUE)
+cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
+
+..extract_statistic_features <- function(
+    object, coefs, statistic, comparer, threshold, 
+    fit = fits(object)[1], combiner = '|', verbose  = TRUE
 ){
-# Assert/Process
-    assert_is_all_of(object, "SummarizedExperiment")
-    sample_id <- value <- NULL
-    x         <- enquo(x)
-    fill      <- enquo(fill)
-    color     <- enquo(color)
-    highlight <- enquo(highlight)
-    facet     <- enquo(facet)
-    xstr         <- as_name(x)
-    fillstr      <- if (quo_is_null(fill))   character(0) else as_name(fill)
-    colorstr     <- if (quo_is_null(color))  character(0) else as_name(color)
-    highlightstr <- if (quo_is_null(highlight)) character(0) else as_name(
-                                                                    highlight)
+# Assert
+    assert_is_valid_sumexp(object)
+    if (is.null(fit))   return(object)
+    if (is.null(coefs)) return(object)
+    assert_scalar_subset(statistic, c('p', 'fdr', 'effect', 'effectsize'))
+    assert_scalar_subset(comparer,  c('<', '>', '=='))
+    assert_is_a_number(threshold)
+    assert_is_subset(fit, fits(object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_scalar_subset(combiner, c('|', '&'))
+    assert_is_a_bool(verbose)
+# Filter
+    fun <- getFromNamespace(sprintf('%smat', statistic), 'autonomics')
+    x <- fun(object, fit = fit, coefs = coefs)
+    if (is.null(x))  return(object)
+    idx <- get(comparer)(x, threshold)
+    idx[is.na(idx)] <- FALSE
+    fun <- function(y) Reduce(get(combiner), y)
+    idx %<>% apply(1, fun)
+    idx %<>% unname()
+# Return
+    n0 <- length(idx)
+    n1 <- sum(idx, na.rm = TRUE)
+    if (verbose & n1<n0){
+        combiner <- paste0(' ', combiner, ' ')
+        cmessage('\t\t\tRetain %d/%d features: %s(%s) %s %s', 
+                n1, n0, statistic, paste0(coefs, collapse = combiner), 
+                comparer, as.character(threshold))  
+    }
+    object[idx, ]
+}
+
+#' @rdname extract_coef_features
+#' @export
+.extract_p_features <- function(
+    object, coefs, p = 0.05, fit = fits(object), combiner = '|',  verbose = TRUE
+){
+    assert_is_fraction(p)
+    ..extract_statistic_features(
+        object    = object,        coefs     = coefs,
+        statistic = 'p',           comparer  = '<',   
+        threshold = p,             fit       = fit,
+        combiner  = combiner,      verbose   = verbose )
+}
+
+#' @rdname extract_coef_features
+#' @export
+.extract_fdr_features <- function(
+    object, coefs, fdr = 0.05, fit = fits(object), combiner = '|',  verbose = TRUE
+){
+    assert_is_fraction(fdr)
+    ..extract_statistic_features(
+        object    = object,        coefs     = coefs,
+        statistic = 'fdr',         comparer  = '<',
+        threshold = fdr,           fit       = fit,
+        combiner  = combiner,      verbose   = verbose )
+}
+
+
+#' @rdname extract_coef_features
+#' @export
+.extract_effectsize_features <- function(
+    object, coefs, effectsize = 1, fit = fits(object), combiner = '|',  verbose = TRUE
+){
+    assert_weakly_positive_number(effectsize)
+    ..extract_statistic_features(
+        object    = object,        coefs     = coefs, 
+        statistic = 'effectsize',  comparer  = '>',
+        threshold = effectsize,    fit       = fit,
+        combiner  = combiner,      verbose   = verbose )
+}
+
+#' @rdname extract_coef_features
+#' @export
+.extract_sign_features <- function(
+    object, 
+    coefs, 
+    sign, 
+    fit      = fits(object)[1], 
+    combiner = '|',
+    verbose  = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_is_subset(sign, c(-1, +1))
+    if (is.null(fit))    return(object)
+    if (is.null(coefs))  return(object)
+# Filter
+    x <- autonomics::effectmat(object, fit = fit, coefs = coefs)
+    idx <- unname(apply(sign(x), 1, function(y)  Reduce(get(combiner), sign(y) %in% sign) ))
+# Return
+    n0 <- length(idx)
+    n1 <- sum(idx, na.rm = TRUE)
+    if (verbose & n1<n0){
+        combiner <- paste0(' ', combiner, ' ')
+        cmessage('\t\t\tRetain %d/%d features: sign(%s) %%in%% c(%s)', 
+            n1, n0, paste0(coefs, collapse = combiner), paste0(sign,  collapse = ','))
+    }
+    object[idx, ]
+}
+
+#' Order on p 
+#' @param object   SummarizedExperiment
+#' @param fit      string vector: subset of `fits(object)`
+#' @param coefs    string vector: subset of `coefs(object)`
+#' @param combiner '|' or '&'
+#' @param verbose  TRUE or FALSE
+#' @examples 
+#' # Read
+#'     file <- download_data('atkin.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#' # no limma
+#'     object %<>% order_on_p()  # unchanged
+#' # with limma
+#'     object %<>% fit_limma(coefs = c('t1', 't2', 't3'))
+#'     object %<>% order_on_p()
+#' @return SummarizedExperiment
+#' @export
+order_on_p <- function(
+    object, 
+    fit = autonomics::fits(object), 
+    coefs = autonomics::coefs(object, fit = fit), 
+    combiner = '|',
+    verbose = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    if (is.null(fit))  return(object)
+    assert_is_subset(fit,   autonomics::fits( object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_scalar_subset(combiner, c('|', '&'))
+    assert_is_a_bool(verbose)
+# Order    
+    pmat <- autonomics::pmat(object, fit = fit, coefs = coefs)
+    if (is.null(pmat))  return(object)
+    if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
+                            paste0(fit,   collapse = ', '), 
+                            paste0(coefs, collapse = ', '))
+    if (combiner == '|')  idx <- order(matrixStats::rowMins(pmat))
+    if (combiner == '&')  idx <- order(matrixStats::rowMaxs(pmat))
+# Return
+    object[idx, ]
+}
+
+
+#' @rdname order_on_p
+#' @export
+order_on_effect <- function(
+    object, 
+    fit = autonomics::fits(object),
+    coefs = autonomics::coefs(object, fit = fit),
+    combiner = '|', 
+    verbose = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    if (is.null(fit))  return(object)
+    assert_is_subset(fit,   autonomics::fits( object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_scalar_subset(combiner, c('|', '&'))
+    assert_is_a_bool((verbose))
+# Order
+    effectmat <- autonomics::effectmat(object, fit = fit, coefs = coefs)
+    if (verbose)   cmessage("\t\tt-order features on: %s (%s)", 
+                            paste0(fit,   collapse = ', '), 
+                            paste0(coefs, collapse = ', '))
+    if (combiner == '|')  idx <- order(matrixStats::rowMaxs(abs(effectmat)), decreasing = TRUE)
+    if (combiner == '&')  idx <- order(matrixStats::rowMins(abs(effectmat)), decreasing = TRUE)
+# Return
+    object[idx, ]
+}
+
+
+#' @rdname extract_coef_features
+#' @export
+.extract_n_features <- function(object, coefs, combiner = '|', n, fit = fits(object)[1], verbose = TRUE){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_positive_number(n)
+# Filter
+    object %<>% order_on_effect(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # pls
+    object %<>% order_on_p(     fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # glm
+    n %<>% min(nrow(object))
+    idx <- c(rep(TRUE, n), rep(FALSE, nrow(object)-n))
+    n0 <- length(idx)
+    n1 <- sum(idx, na.rm = TRUE)
+    if (verbose & n1<n0){
+        combiner <- paste0(' ', combiner, ' ')
+        y <- paste0(coefs, collapse = combiner)
+        cmessage('\t\t\tRetain %d/%d features: p(%s) or effect(%s) in best %d', 
+                 n1, n0, y, y, n)
+    }
+# Return
+    object[idx, ]
+}
+
+
+#' Extract coefficient features
+#' @param object      SummarizedXExperiment
+#' @param fit         subset of fits(object)
+#' @param coefs       subset of coefs(object)
+#' @param combiner    '|' or '&': how to combine multiple fits/coefs
+#' @param p           p threshold
+#' @param fdr         fdr threshold
+#' @param effectsize  effectsize threshold
+#' @param sign        effect sign
+#' @param n           number of top features (Inf means all)
+#' @param verbose     TRUE or FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' # Read and Fit
+#'     file <- download_data('atkin.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     object %<>% fit_limma()
+#' # Single coef
+#'     object0 <- object
+#'     object %<>% .extract_p_features(         coefs = 't1', p = 0.05)
+#'     object %<>% .extract_fdr_features(       coefs = 't1', fdr = 0.05)
+#'     object %<>% .extract_effectsize_features(coefs = 't1', effectsize = 1)
+#'     object %<>% .extract_sign_features(      coefs = 't1', sign = -1)
+#'     object %<>% .extract_n_features(         coefs = 't1', n = 4)
+#'     object <- object0
+#'     object %<>%  extract_coef_features(
+#'         coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+#' # Multiple coefs
+#'     object <- object0
+#'     object %<>% .extract_p_features(         coefs = c('t1', 't2'), p = 0.05)
+#'     object %<>% .extract_fdr_features(       coefs = c('t1', 't2'), fdr = 0.05)
+#'     object %<>% .extract_effectsize_features(coefs = c('t1', 't2'), effectsize = 1)
+#'     object %<>% .extract_sign_features(      coefs = c('t1', 't2'), sign = -1)
+#'     object %<>% .extract_n_features(         coefs = c('t1', 't2'), n = 4)
+#'     object <- object0
+#'     object %<>%  extract_coef_features(
+#'         coefs = c('t1', 't2'), p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+#' @export
+extract_coef_features <- function(
+    object, 
+    fit         = fits(object)[1], 
+    coefs       = default_coefs(object, fit = fit),
+    combiner    = '|',
+    p           = 1, 
+    fdr         = 1, 
+    effectsize  = 0, 
+    sign        = c(-1,+1), 
+    n           = 4,
+    verbose     = TRUE
+){
+# Assert
+# Filter
+    object %<>% .extract_p_features(         coefs = coefs, p = p,                   fit = fit, combiner = combiner, verbose = verbose)
+    object %<>% .extract_fdr_features(       coefs = coefs, fdr = fdr,               fit = fit, combiner = combiner, verbose = verbose)
+    object %<>% .extract_effectsize_features(coefs = coefs, effectsize = effectsize, fit = fit, combiner = combiner, verbose = verbose)
+    object %<>% .extract_sign_features(      coefs = coefs, sign = sign,             fit = fit, combiner = combiner, verbose = verbose)
+    object %<>% .extract_n_features(         coefs = coefs, n = n,                   fit = fit, combiner = combiner, verbose = verbose)
+# Return
+    object
+}
+
+
+
+format_coef_vars <- function(
+    object, fit = fits(object)[1], coefs = default_coefs(object, fit = fit)[1]
+){
+    effectvars <- effectvar(object, coefs = coefs, fit = fit)
+    pvars      <- pvar(     object, coefs = coefs, fit = fit)
+    fdrvars    <- fdrvar(   object, coefs = coefs, fit = fit)
+    for (var in c(effectvars, pvars, fdrvars)){
+        fdt(object)[[var]] %<>% formatC(format='e', digits=0)
+        fdt(object)[[var]] %<>% as.character()
+        fdt(object)[[var]] %<>% paste0(split_extract_fixed(var, FITSEP, 2), ' : ',  
+                                       split_extract_fixed(var, FITSEP, 1), ' = ', .)
+    }
+    object
+}
+
+#' Add facetvars
+#' @param object  SummarizedExperiment
+#' @param fit     string
+#' @param coefs   string vector
+#' @return  SummarizedExperiment
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' fdt(object)
+#' fdt(add_facetvars(object))
+#' @export
+add_facetvars <- function(
+    object, fit = fits(object)[1], coefs = default_coefs(object, fit = fit)
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(fit, fits(object))
+    assert_is_subset(coefs, autonomics::coefs(object))
+# Add
+    for (i in seq_along(coefs)){
+               pvar <- autonomics::pvar(     object, fit = fit, coefs = coefs[i])
+             fdrvar <- autonomics::fdrvar(   object, fit = fit, coefs = coefs[i])
+          effectvar <- autonomics::effectvar(object, fit = fit, coefs = coefs[i])
+           facetvar <- paste0('facet.', coefs[[i]])
+        assert_are_disjoint_sets(facetvar, fvars(object))
+        if (!is.null(pvar))            pvalues <- fdt(object)[[     pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
+        if (!is.null(fdrvar))        fdrvalues <- fdt(object)[[   fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
+        if (!is.null(effectvar))  effectvalues <- fdt(object)[[effectvar]] %>% round(3)  %>% as.character()
+        fdt(object)[[facetvar]] <- 
+            if (is.null(pvar)){ sprintf('%s : %s', coefs[[i]], effectvalues)
+            } else {            sprintf('%s : %s (%s)', coefs[[i]], fdrvalues, pvalues) 
+            }
+    }
+# Return
+    object
+}
+
+
 # Prepare
-    plotvars <- unique(c('feature_name', xstr, fillstr, colorstr, highlightstr))
+    xsym        <- sym(x)
+    fillsym     <- if (is.null(fill))      quo(NULL) else  sym(fill)
+    colorsym    <- if (is.null(color))     quo(NULL) else  sym(color)
+    shapesym    <- if (is.null(shape))     quo(NULL) else  sym(shape)
+    sizesym     <- if (is.null(size))      quo(NULL) else  sym(size)
+    alphasym    <- if (is.null(alpha))     quo(NULL) else  sym(alpha)
+    blocksym    <- if (is.null(block))     quo(NULL) else  sym(block)
+    linetypesym <- if (is.null(linetype))  quo(NULL) else  sym(linetype)
+    plotvars <- 'feature_name'
+    if (!is.null(x))          plotvars %<>% c(x)         %>% unique()
+    if (!is.null(fill))       plotvars %<>% c(fill)      %>% unique()
+    if (!is.null(color))      plotvars %<>% c(color)     %>% unique()
+    if (!is.null(shape))      plotvars %<>% c(shape)     %>% unique()
+    if (!is.null(size))       plotvars %<>% c(size)      %>% unique()
+    if (!is.null(alpha))      plotvars %<>% c(alpha)     %>% unique()
+    if (!is.null(block))      plotvars %<>% c(block)     %>% unique()
+    if (!is.null(linetype))   plotvars %<>% c(linetype)  %>% unique()
+    if (!is.null(highlight))  plotvars %<>% c(highlight) %>% unique()
+    if (!is.null(facet))      plotvars %<>% c(facet)     %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
     dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
