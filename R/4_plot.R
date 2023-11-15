@@ -111,18 +111,20 @@ make_colors <- function(
 
 #' Create default ggplot colors for factor levels
 #' @param varlevels  string vector
-#' @param show           TRUE/FALSE
-#' @param verbose        TRUE/FALSE
+#' @param h          start hue
+#' @param l          luminance
+#' @param show       TRUE/FALSE
+#' @param verbose    TRUE/FALSE
 #' @return string vector: elements = colors, names = factor levels
 #' @author John Colby
 #' @references https://stackoverflow.com/questions/8197559
 #' @noRd
 make_onefactor_colors <- function(
-    varlevels, show, verbose = TRUE, sep = NULL
+    varlevels, h = 15, l = 65, show = FALSE, verbose = TRUE
 ){
     n <- length(varlevels)
-    hues <- seq(15, 375, length = n + 1)
-    colors <- hcl(h = hues, l = 65, c = 100)[seq_len(n)] %>%
+    hues <- seq(h, h + 360, length = n + 1)
+    colors <- hcl(h = hues, l = l, c = 100)[seq_len(n)] %>%
                     set_names(varlevels)
     if (show) pie(rep(1, length(colors)), names(colors),
                     col = colors)
