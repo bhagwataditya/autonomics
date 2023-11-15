@@ -341,15 +341,18 @@ sma <- function(
 
 #' @rdname pca
 #' @export
-lda <- function(object, subgroupvar = 'subgroup', ndim=2, minvar=0, 
-    verbose = TRUE, plot = FALSE, ...){
+lda <- function(
+    object, assay = assayNames(object)[1], by = 'subgroup', ndim = 2, 
+    minvar = 0, verbose = TRUE, plot = FALSE, ...
+){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
         message("BiocManager::install('MASS'). Then re-run.")
         return(object)}
     assert_is_valid_sumexp(object)
-    assert_is_subset(subgroupvar, svars(object))
-    nsubgroup <- length(slevels(object, subgroupvar))
+    assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
+    assert_is_subset(by, svars(object))
+    nsubgroup <- length(slevels(object, by))
     if (is.infinite(ndim))  ndim <- nsubgroup - 1
     assert_is_a_number(ndim)
     assert_all_are_in_range(ndim, 1, nsubgroup-1)
@@ -360,34 +363,36 @@ lda <- function(object, subgroupvar = 'subgroup', ndim=2, minvar=0,
     . <- NULL
 # Preprocess
     tmpobj <- object
-    values(tmpobj) %<>% minusinf_to_na(verbose = verbose)         # SVD singular
-    values(tmpobj) %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
+    assays(tmpobj)[[assay]] %<>% minusinf_to_na(verbose = verbose)         # SVD singular
+    assays(tmpobj)[[assay]] %<>% flip_sign_if_all_exprs_are_negative(verbose = verbose)
     tmpobj %<>% rm_missing_in_some_samples(verbose = verbose)
 # Transform
-    exprs_t  <- t(values(tmpobj))
-    lda_out  <- suppressWarnings(
-                    MASS::lda( exprs_t,grouping = object[[subgroupvar]]))
+    exprs_t  <- t(assays(tmpobj)[[assay]])
+    lda_out  <- suppressWarnings(MASS::lda( exprs_t,grouping = object[[by]]))
     features <- lda_out$scaling
     if (ncol(features)==1) features %<>% cbind(LD2 = 0)
     exprs_t %<>% scale(center = colMeans(lda_out$means), scale = FALSE)
     samples  <- exprs_t %*% features
     variances <- round((lda_out$svd^2)/sum(lda_out$svd^2)*100)
+    features  %<>% extract(, seq_len(ndim))
+    samples   %<>% extract(, seq_len(ndim))
+    variances %<>% extract(  seq_len(ndim))
     if (length(variances)==1) variances <- c(LD1 = variances, LD2 = 0)
 # Rename
-    colnames(samples)  <- sprintf('lda%d', seq_len(ncol(samples)))
-    colnames(features) <- sprintf('lda%d', seq_len(ncol(features)))
-    names(variances)   <- sprintf('lda%d', seq_len(length(variances)))
+    colnames(samples)  <-    scorenames(method = 'lda', by = by, dims = seq_len(ndim))
+    colnames(features) <-  loadingnames(method = 'lda', by = by, dims = seq_len(ndim))
+    names(variances)   <- variancenames(ndim)
 # Restrict
     samples   %<>% extract(, seq_len(ndim), drop = FALSE)
     features  %<>% extract(, seq_len(ndim), drop = FALSE)
     variances %<>% extract(  seq_len(ndim))
 # Merge - Filter - Return
-    object %<>% merge_sdata(mat2dt(samples,   'sample_id'))
-    object %<>% merge_fdata(mat2dt(features, 'feature_id'))
-    metadata(object)$lda <- variances
+    object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
+    object %<>% merge_fdt(mat2dt(features, 'feature_id'))
+    metavar <- methodname(method = 'lda', by = by)
+    metadata(object)[[metavar]] <- variances
     object %<>% .filter_minvar('lda', minvar)
-    lda1 <- lda2 <- NULL
-    if (plot)  print(biplot(object, lda1, lda2, ...))
+    if (plot)  print(biplot(object, method = 'lda', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
