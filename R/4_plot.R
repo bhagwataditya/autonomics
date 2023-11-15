@@ -7,7 +7,7 @@
 
 #' Add color scale
 #' @param object   SummarizedExperiment
-#' @param color    symbol: svar mapped to color
+#' @param color    string: svar mapped to color
 #' @param show     TRUE or FALSE (default)
 #' @param verbose  TRUE or FALSE (default)
 #' @return default color values vector
@@ -201,42 +201,45 @@ make_twofactor_colors <- function(
 #' @param geom        geom_point, etc.
 #' @param color       variable mapped to color (symbol)
 #' @param fill        variable mapped to fill (symbol)
+#' @param linetype    variable mapped to linetype (symbol)
 #' @param ...         mapped aesthetics
+#' @param palette     color palette (named character vector)
 #' @param fixed       fixed  aesthetics (list)
 #' @param theme       list with ggplot theme specifications
 #' @return ggplot object
 #' @examples
-#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' object <- read_metabolon(file)
 #' object %<>% pca()
-#' data <- sdata(object)
-#' plot_data(data, x = pca1, y = pca2)
-#' plot_data(data, x = pca1, y = pca2, color = TIME_POINT)
+#' data <- sdt(object)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME_POINT)
 #' data$TIME <- as.numeric(substr(data$TIME_POINT, 2, 3))
-#' plot_data(data, x = pca1, y = pca2, color = TIME)
-#' plot_data(data, x = pca1, y = pca2, color = NULL)
-#'
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = NULL)
 #' fixed <- list(shape = 15, size = 3)
-#' plot_data(data, x = pca1, y = pca2, fixed=fixed)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, fixed = fixed)
 #' @author Aditya Bhagwat, Johannes Graumann
 #' @export
 plot_data <- function(
-    data, geom = geom_point, color = NULL, fill = !!enquo(color), ...,
+    data, geom = geom_point, color = NULL, fill = NULL, linetype = NULL, ..., palette = NULL, 
     fixed = list(), theme = list()
 ){
     color <- enquo(color)
     fill  <- enquo(fill)
+    linetype <- enquo(linetype)
     dots  <- enquos(...)
     fixed %<>% extract(setdiff(names(fixed), names(dots)))
 
     p <- ggplot(data    = data,  # https://stackoverflow.com/a/55816211
-                mapping = eval(expr(aes(color=!!color, fill=!!fill, !!!dots))))
+                mapping = eval(expr(aes(color=!!color, fill=!!fill, linetype = !!linetype, !!!dots))))
     p <- p + do.call(geom, fixed)
     p <- p + theme_bw()
-    p <- add_color_scale(p, !!color, data)
-    p <- add_fill_scale( p, !!fill, data)
-    p <- p + do.call(ggplot2::theme, theme)
+    colorstr <- if (quo_is_null(color)) NULL else as_name(color)
+    fillstr  <- if (quo_is_null(fill))  NULL else as_name(fill)
+    p <- add_color_scale(p, colorstr, data, palette = palette)
+    p <- add_fill_scale( p, fillstr,  data, palette = palette)
+    p <- p + do.call(ggplot2::theme, {{theme}})
 
     p
 }
