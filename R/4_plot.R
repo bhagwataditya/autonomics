@@ -250,22 +250,19 @@ plot_data <- function(
 #                  add_highlights
 #
 #==============================================================================
-add_highlights <- function(p, hl, geom = geom_point, fixed_color = "black") {
-    feature_name <- NULL
-    hl <- enquo(hl)
-    if (quo_is_null(hl)) return(p)
-    hlstr <- as_name(hl)
-    hl_df <- p$data[get(hlstr)==TRUE]
+add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
+    feature_name <- value <- NULL
+    if (is.null(hl)) return(p)
+    hl_df <- p$data[get(hl)==TRUE]
     args <- list(data = hl_df)
     if (identical(geom, geom_point)) {
         many_hl <- length(unique(args$data$feature_name)) > 6
-        if (many_hl) args$data$feature_name <- hlstr
-        args %<>% c(
-            list(aes(shape = feature_name), size = rel(3), color = fixed_color))
+        if (many_hl) args$data$feature_name <- hl
+        args %<>% c(list(aes(shape = feature_name, x = !!sym(x), y = value), size = rel(3), color = fixed_color))
     }
     p <- p + do.call(geom, args)
     if (identical(geom, geom_point)) p <- p +
-        labs(shape = if (many_hl) NULL else hlstr) +
+        labs(shape = if (many_hl) NULL else hl) +
         guides(fill = guide_legend(override.aes = list(shape = NA)))
     p
 }
