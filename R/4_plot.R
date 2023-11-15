@@ -1502,3 +1502,58 @@ plot_matrix <- function(mat){
     abline(h = (0.5:(nr-0.5))/(nr-1), v = (0.5:(nc-0.5))/(nc-1), col = 'gray30')
 }
 
+#' Plot model 
+#' @param object ´SummarizedExperiment
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
+#' @return ggplot
+#' @examples
+#' file <- download_data('billing19.proteingroups.txt')
+#' subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
+#' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
+#' object$subgroup %<>% substr(1,3)
+#' plot_design(object)
+#' @export
+plot_design <- function(object, codingfun = contr.treatment){
+    coef <- y <- yend <- NULL
+    designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE, codingfun = codingfun)
+    rownames(designmat) <- object$subgroup
+    designmat %<>% unique()
+    subgroups <- subgroup_levels(object)
+    designmat %<>% extract(subgroups, )
+    coefs <- colnames(designmat)
+    ymat <- matrix(seq_along(subgroups), nrow = ncol(designmat), ncol = 1)
+    betamat <- solve(designmat) %*% ymat
+    betamat[1,1] <- 1 # not strictly required, but plot is nicer if Intercept 
+                      # is 1 unit long (in MASS:contr.sdif it gets much longer, 
+                      # I think to maintain orthogonality of design)
+    plotdt <- data.table(subgroup = subgroups, 
+                         coef     = coefs, 
+                         x        = seq_along(subgroups),
+                         yend     = seq_along(subgroups),
+                         y        = seq_along(subgroups) - betamat[, 1])
+    arrow <- arrow(length = unit(0.15, 'in'))
+    
+    ggplot(plotdt) + theme_bw() + 
+    geom_segment(aes(x = x-0.05, xend = x+0.05, y = yend, yend = yend)) + 
+    geom_text(   aes(x = x+0.1, y = yend, label = subgroup), hjust = 0) + 
+    geom_segment(aes(x = x, xend = x, y = y, yend = yend), arrow = arrow) + 
+    geom_label(  aes(x = x, y = y + (yend-y)/2, label = coef), parse = TRUE) +
+    xlab(NULL) + ylab(NULL) + 
+    theme_void()
+    # theme(axis.text = element_blank(), 
+    #       panel.grid.major.x = element_blank(), 
+    #       panel.grid.minor.x = element_blank())
+}
+
