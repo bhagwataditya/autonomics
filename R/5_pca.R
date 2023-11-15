@@ -800,47 +800,49 @@ biplot_corrections <- function(
 }
 
 
-#' @rdname biplot_covariates
-#' @export
-plot_covariates <- function(...){
-    .Deprecated('biplot_covariates')
-    biplot_covariates(...)
-}
-
-
 #' Biplot covariates
 #'
 #' @param object     SummarizedExperiment
 #' @param method     'pca', 'pls', 'lda', or 'sma'
+#' @param by          svar
+#' @param block       svar
 #' @param covariates  covariates: mapped to color or batch-corrected
 #' @param ndim        number of dimensions to plot
 #' @param dimcols     number of dimension columns
 #' @param varcols     number of covariate columns
 #' @param plot        TRUE or FALSE: whether to plot
-#' @param ...         used to maintain deprecated functions
 #' @return  ggplot object
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca = TRUE, plot = FALSE)
-#' biplot_covariates(object, covariates = 'Group', ndim = 12, dimcols = 3)
-#' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
-#' biplot_covariates(object, covariates = c('SEX', 'T2D', 'SUB', 'SET'), ndim=2)
-#' biplot_covariates(object, covariates = c('Group'), dimcols = 3)
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, pca = TRUE)
+#' biplot_covariates(object, covariates = 'subgroup', ndim = 12, dimcols = 3)
+#' biplot_covariates(object, covariates = c('Sex', 'Diabetes', 'Subject', 'Time'))
+#' biplot_covariates(object, covariates = c('Sex', 'Diabetes', 'Subject', 'Time'), ndim = 2)
+#' biplot_covariates(object, covariates = c('subgroup'), dimcols = 3)
 #' @seealso biplot_corrections
 #' @export
 biplot_covariates <- function(
-    object, method = 'pca', covariates = 'subgroup', ndim = 6,
-    dimcols = 1, varcols = length(covariates), plot = TRUE
+    object, method = 'pca', by = 'sample_id', block = NULL, 
+    covariates = 'subgroup', ndim = 6, dimcols = 1, varcols = length(covariates), plot = TRUE
 ){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(method, c('pca', 'sma', 'pls', 'spls', 'opls', 'lda'))
+    assert_is_subset(covariates, svars(object))
+    blocksym <- if (is.null(block))  quo(NULL) else sym(block)
+    dims <- NULL
+# Plot
     x <- y <- NULL
-    plotdt <- prep_covariates(object, method = method, ndim=ndim)
+    plotdt <- prep_covariates(object, method = method, by = by, ndim = ndim)
     plotlist <- list()
     for (covar in covariates){
-        p <- plot_data(plotdt, geom = geom_point, x=x, y=y, color=!!sym(covar),
-                        fixed = list(shape=15, size=3))
-        p <- p + facet_wrap(~dims, ncol = dimcols, scales = 'free')
+        p <- ggplot(plotdt, aes(x = x, y = y, color = !!sym(covar), group = !!blocksym))
+        p <- p + theme_bw()
+        p <- p + facet_wrap(vars(dims), ncol = dimcols, scales = 'free')
+        p <- p + geom_point(shape = 15, size = 3)
+        if (!is.null(block))  p <- p + geom_line()
         p <- p + xlab(NULL) + ylab(NULL) + ggtitle(covar)
-        p <- p + theme(legend.position = 'bottom', legend.title=element_blank())
+        p <- p + theme(legend.position = 'bottom', legend.title = element_blank())
         plotlist %<>% c(list(p))
     }
     pp <- gridExtra::arrangeGrob(grobs = plotlist, ncol = varcols)
