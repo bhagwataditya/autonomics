@@ -277,48 +277,88 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #=============================================================================
 
 
-#' Plot sample/feature densities
+#' Plot sample/feature distributions
 #'
 #' @param object      SummarizedExperiment
-#' @param fill        svar mapped to fill
-#' @param color       svar mapped to color
-#' @param group       svar mapped to group
+#' @param assay       string
+#' @param group       svar (string)
+#' @param fill        svar (string)
+#' @param color       svar (string)
+#' @param linetype    svar (string)
+#' @param facet       svar (character vector)
+#' @param n           number
+#' @param nrow        number of facet rows
+#' @param ncol        number of facet cols
+#' @param dir         'h' (horizontal) or 'v' (vertical)
+#' @param scales      'free', 'fixed', 'free_y'
+#' @param labeller    e.g. label_value
+#' @param palette     named character vector
 #' @param fixed       fixed aesthetics
-#' @param subsetter   subsetter for showing a subset of samples/features
 #' @seealso \code{\link{plot_sample_violins}},
 #'          \code{\link{plot_sample_boxplots}}
 #' @return  ggplot object
 #' @examples
-#' # Read data
-#'     require(magrittr)
-#'     file <- download_data('atkin18.metabolon.xlsx')
+#' # Data
+#'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file, plot = FALSE)
-#'     object %<>% extract(, order(.$Group))
-#' # Plot distributions
-#'     plot_sample_densities(object, fill = Group)
+#'     object %<>% extract(, order(.$subgroup))
+#'     
+#' # Sample distributions
+#'     plot_sample_densities(object)
+#'     plot_sample_violins(  object, facet = 'Time')
+#'     plot_sample_boxplots(object)
+#'     plot_exprs(object)
+#'     plot_exprs(object, dim = 'samples', x = 'subgroup', facet = 'Time')
+#'     
+#' # Feature distributions
 #'     plot_feature_densities(object)
+#'     plot_feature_violins(  object)
+#'     plot_feature_boxplots( object)
 #' @export
-plot_densities <- function(object, group, fill, color = NULL,
-    fixed = list(alpha = 0.5, na.rm = TRUE)
+plot_densities <- function(
+    object, assay = assayNames(object)[1], group, fill, color = NULL, linetype = NULL,
+    facet = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free_y', 
+    labeller = label_value, 
+    palette = NULL, fixed = list(alpha = 0.8, na.rm = TRUE)
 ){
-# Process
-    assert_is_all_of(object, 'SummarizedExperiment')
-    fill  <- enquo(fill)
-    color <- enquo(color)
-    group <- enquo(group)
+# Assert / Process
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(assay, assayNames(object))
+                            assert_is_a_string(group)
+    if (!is.null(fill))     assert_is_a_string(fill)
+    if (!is.null(color))    assert_is_a_string(color)
+    if (!is.null(facet))    assert_is_a_string(facet)
+    if (!is.null(nrow))     assert_is_a_number(nrow)
+    if (!is.null(ncol))     assert_is_a_number(ncol)
+    if (!is.null(palette))  assert_is_character(palette)
+                            assert_is_list(fixed)
+                            assert_is_subset(group, c(svars(object), fvars(object)))
+    if (!is.null(fill))     assert_is_subset(fill,  c(svars(object), fvars(object))) 
+    if (!is.null(color))    assert_is_subset(color, c(svars(object), fvars(object)))
+    if (!is.null(facet))    assert_is_subset(facet, c(svars(object), fvars(object)))
+                            assert_is_subset(dir, c('h', 'v'))
     value <- NULL
-    fillstr  <- if (quo_is_null(fill))  character(0) else as_name(fill)
-    colorstr <- if (quo_is_null(color)) character(0) else as_name(color)
-    groupstr <- if (quo_is_null(group)) character(0) else as_name(group)
 # Prepare
-    plotvars <- unique(c(fillstr, colorstr, groupstr))
+    plotvars <- group
+    if (!is.null(fill))   plotvars %<>% c(fill)  %>% unique()
+    if (!is.null(color))  plotvars %<>% c(color) %>% unique()
+    if (!is.null(facet))  plotvars %<>% c(facet) %>% unique()
     plottedsvars <- intersect(plotvars, svars(object))
     plottedfvars <- intersect(plotvars, fvars(object))
     assert_is_identical_to_true(is_uniquely_empty(plottedsvars, plottedfvars))
-    dt <- sumexp_to_long_dt(object, svars = plottedsvars, fvars = plottedfvars)
+    if (!is.null(fill))  object[[fill]] %<>% num2char()
+    dt <- sumexp_to_longdt(object, assay = assay, svars = plottedsvars, fvars = plottedfvars)
 # Plot
-    plot_data(dt, geom = geom_density, x = value, fill = !!fill,
-        color = !!color, group = !!group, fixed = fixed)
+    groupsym    <- if (is.null(group))    quo(NULL) else sym(group)
+    fillsym     <- if (is.null(fill ))    quo(NULL) else sym(fill)
+    colorsym    <- if (is.null(color))    quo(NULL) else sym(color)
+    linetypesym <- if (is.null(linetype)) quo(NULL) else sym(linetype)
+    p <- plot_data(dt, geom = geom_density, x = value, fill = !!fillsym,
+            color = !!colorsym, linetype = !!linetypesym, group = !!groupsym, palette = palette, fixed = fixed)
+    if (!is.null(facet))  p <- p + facet_wrap(
+            facet, nrow = nrow, ncol = ncol, dir = dir, labeller = labeller, 
+            scales = scales)
+    p
 }
 
 is_uniquely_empty <- function(x, y){
@@ -329,19 +369,30 @@ is_uniquely_empty <- function(x, y){
 #' @export
 plot_sample_densities <- function(
     object,
-    fill  = sample_id,
-    color = NULL,
-    group = sample_id,
-    fixed = list(alpha=0.5, na.rm=TRUE),
-    subsetter = if (ncol(object)<100){  seq_len(ncol(object))
-                } else {                sample(ncol(object), 9)}
+    assay    = assayNames(object)[1],
+    group    = 'sample_id',
+    fill     = if ('subgroup' %in% svars(object)) 'subgroup' else  'sample_id',
+    color    = NULL, 
+    linetype = NULL,
+    n        = 100,
+    facet    = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free_y',
+    labeller = label_value,
+    palette  = NULL,
+    fixed    = list(alpha = 0.8, na.rm = TRUE)
 ){
-    plot_densities( object[, subsetter],
-                    fill  = !!enquo(fill),
-                    color = !!enquo(color),
-                    group = !!enquo(group),
-                    fixed = fixed ) +
-    ggtitle("samples")
+    object %<>% extract_samples_evenly(n)
+    plot_densities(
+        object,
+        assay    = assay,
+        group    = group,
+        fill     = fill,
+        color    = color,
+        linetype = linetype,
+        facet    = facet, nrow = nrow, ncol = ncol, dir = dir, scales = scales,
+        labeller = labeller, 
+        palette  = palette, 
+        fixed    = fixed ) +
+    ggtitle("Sample Densities")
 }
 
 feature_id <- NULL
@@ -349,19 +400,29 @@ feature_id <- NULL
 #' @export
 plot_feature_densities <- function(
     object,
-    fill = feature_id,
-    color = NULL,
-    group = feature_id,
-    fixed = list(alpha=0.5, na.rm=TRUE),
-    subsetter = if (nrow(object)<100){  seq_len(nrow(object))
-                } else {                sample(nrow(object), 9)}
+    assay    = assayNames(object)[1],
+    fill     = 'feature_id',
+    group    = fill,
+    color    = NULL,
+    linetype = NULL,
+    n        = 9,
+    facet    = NULL, nrow = NULL, ncol = NULL, dir = 'h', scales = 'free', 
+    labeller = label_value, palette = NULL, 
+    fixed    = list(alpha = 0.8, na.rm = TRUE)
 ){
-    plot_densities( object[subsetter, ],
-                    fill  = !!enquo(fill),
-                    color = !!enquo(color),
-                    group = !!enquo(group),
-                    fixed = fixed) +
-    ggtitle("features")
+    object %<>% extract_features_evenly(n)
+    plot_densities( 
+        object,
+        assay    = assay,
+        group    = group,
+        fill     = fill,
+        color    = color,
+        linetype = linetype,
+        facet    = facet,  nrow = nrow, ncol = ncol, dir = dir, scales = scales, 
+        labeller = labeller, 
+        palette  = palette, 
+        fixed    = fixed ) +
+    ggtitle("Feature Densities")
 }
 
 #==============================================================================
