@@ -15,31 +15,27 @@
 #' # STEMCELL RATIOS
 #'     file <- download_data('billing16.proteingroups.txt')
 #'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
-#'     object <- read_proteingroups(
-#'                file, invert_subgroups = invert_subgroups, plot=FALSE)
+#'     object <- read_maxquant_proteingroups(file, invert = invert_subgroups)
 #'     p <- plot_sample_densities(object)
-#'     add_color_scale(p, color=subgroup, data=sdata(object))
+#'     add_color_scale(p, color = 'subgroup', data = sdt(object))
 #' # STEMCELL INTENSITIES
 #'    file <- download_data('billing16.proteingroups.txt')
-#'    object <- read_proteingroups(
-#'               file, quantity = 'Intensity labeled', plot=FALSE)
-#'     p <- plot_sample_densities(object)
-#'    add_color_scale(p, color=subgroup, data = sdata(object))
+#'    object <- read_maxquant_proteingroups(file, quantity = 'labeledintensity')
+#'    p <- plot_sample_densities(object)
+#'    add_color_scale(p, color = 'subgroup', data = sdt(object))
 #' @noRd
-add_color_scale <- function(p, color, data){
+add_color_scale <- function(p, color, data, palette = NULL){
 # Assert
     assert_is_data.frame(data)
-    color <- enquo(color)
+    assert_is_subset(color, names(data))
 # Colors
-    if (!rlang::quo_is_null(color)){
-        color_var <- as_name(color)
-        assert_is_subset(color_var, names(data))
-        values0 <- data[[color_var]]
+    if (!is.null(color)){
+        values0 <- data[[color]]
         if (!is.numeric(values0)){
             if (is.character(values0)) values0 %<>% factor()
             levels0 <- levels(values0)
-            colors0 <- make_colors(levels0, sep = guess_sep(levels0))
-            p <- p + scale_color_manual(values = colors0, na.value = 'gray80')
+            if (is.null(palette))  palette <- make_colors(levels0, sep = guess_sep(levels0))
+            p <- p + scale_color_manual(values = palette, na.value = 'gray80')
         }
     }
 # Return
@@ -47,19 +43,17 @@ add_color_scale <- function(p, color, data){
 }
 
 
-add_fill_scale <- function(p, fill, data){
+add_fill_scale <- function(p, fill, data, palette = NULL){
 # Assert
     assert_is_data.frame(data)
-    fill <- enquo(fill)
 # Colors
-    if (!rlang::quo_is_null(fill)){
-        fillstr <- as_name(fill)
-        assert_is_subset(fillstr, names(data))
-        values0 <- data[[fillstr]]
+    if (!is.null(fill)){
+        assert_is_subset(fill, names(data))
+        values0 <- data[[fill]]
         if (!is.numeric(values0)){
-            levels0 <- unique(values0)
-            colors0 <- make_colors(levels0, sep = guess_sep(levels0))
-            p <- p + scale_fill_manual(values = colors0, na.value = 'gray80')
+            levels0 <- as.character(unique(values0))
+            if (is.null(palette)) palette <- make_colors(levels0, sep = guess_sep(levels0))
+            p <- p + scale_fill_manual(values = palette, na.value = 'gray80')
         }
     }
 # Return
