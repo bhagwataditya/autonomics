@@ -1557,3 +1557,119 @@ plot_design <- function(object, codingfun = contr.treatment){
     #       panel.grid.minor.x = element_blank())
 }
 
+#' @rdname plot_heatmap
+#' @export
+plot_top_heatmap <- function(...){
+    .Deprecated('plot_heatmap')
+    plot_heatmap(...)
+}
+
+#' Plot heatmap
+#' @param object           SummarizedExperiment
+#' @param assay            string: one of assayNames(object)
+#' @param fit             'limma', 'lm', 'lme(r)', 'wilcoxon'
+#' @param coef             string: one of coefs(object)
+#' @param effectsize       number: effectsize filter
+#' @param p                number: p    filter
+#' @param fdr              number: fdr  filter
+#' @param n                number: n filter
+#' @param cluster_features TRUE or FALSE
+#' @param cluster_samples  TRUE or FALSE
+#' @param flabel           string: feature label
+#' @param group            sample groupvar
+#' @param ...              used to maintain deprecated functionality
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file, fit = 'limma')
+#' plot_heatmap(object)
+#' plot_heatmap(object, cluster_samples = FALSE)
+#' @export
+plot_heatmap <- function(
+    object,
+    assay            = assayNames(object)[1],
+    fit              = fits(object)[1],
+    coef             = default_coefs(object, fit = fit)[1],
+    effectsize       = 0,
+    p                = 1,
+    fdr              = 0.05,
+    n                = 100,
+    cluster_features = is.null(coef),
+    cluster_samples  = FALSE,
+    flabel           = intersect(c('gene', 'feature_id'), fvars(object))[1], 
+    group            = 'subgroup'
+){
+# Assert
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset(assay,         assayNames(object))
+    assert_is_a_string(fit)
+    assert_is_subset(  fit, fits(object))
+    if (!is.null(coef))  assert_is_a_string(coef)
+    if (!is.null(coef))  assert_is_subset(  coef, coefs(object))
+    assert_is_a_number(effectsize)
+    assert_is_a_number(p)
+    assert_is_a_number(fdr)
+    assert_is_a_number(n)
+    assert_is_a_string(flabel)
+    assert_is_subset(  flabel, fvars(object))
+    assert_is_subset(group,  svars(object))
+    sample_id <- `z-score` <- NULL
+# Filter: significant features
+    object0 <- object
+    if (is.null(coef)){   object %<>% extract_features_evenly(n)
+    } else {              object %<>% extract_coef_features(
+                            fit = fit, coefs = coef, effectsize = effectsize, p = p, fdr = fdr, n = n) }
+# Zscore
+    assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
+    assays(object)[[assay]] %<>% na_to_zero()
+# Order features                                # in an edge case one of the groups had no obs
+    idx <- rowSds(assays(object)[[assay]]) > 0  # still limma::lmFit produced a p value - limma bug ?
+    object %<>% extract(idx, )                  # leads to a 0 variance error in the next line
+    if (cluster_features){
+        idx <- hclust(as.dist(1-cor(t(assays(object)[[assay]]))))$order
+        object  %<>% extract(  idx , )                          # order features
+    }
+    if (!is.null(coef)){
+        idx <- effectmat(object, fit = fit, coefs = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
+        idx <- effectmat(object, fit = fit, coefs = coef)[, 1] > 0;   up <- object[idx, ]
+        object <- rbind(rev(down), rev(up))
+    }
+# Add pvalues
+    if (!is.null(coef)){
+        pvar   <- paste('p',   coef, fit, sep = FITSEP)
+        fdrvar <- paste('fdr', coef, fit, sep = FITSEP)
+        pvalues   <- fdt(object)[[  pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
+        fdrvalues <- fdt(object)[[fdrvar]] %>% formatC(format = 'e', digits = 0) %>% as.character()
+        fdt(object)[[flabel]] %<>% paste0('  ', pvalues, '  ', fdrvalues)
+        if (flabel == 'feature_id')  fnames(object) <- as.character(fdt(object)$feature_id)
+    }
+    fdt(object)[[flabel]] %<>% factor(unique(.))                # fix order
+# Order samples
+    if (cluster_samples){
+        idx <- matrixStats::colSds(assays(object)[[assay]]) > 0 # this ad-hoc dropping of samples is undesirable
+        object %<>% extract(, idx)
+        idx <- hclust(as.dist(1-cor(assays(object)[[assay]])))$order
+        object %<>% extract(, idx)                              # order samples
+    }
+    object %<>% split_samples(group)                            # split by group
+    object %<>% Reduce(cbind, .)                                # cbind
+    sdt(object)$sample_id %<>% factor(unique(.))                # fix order
+# Prepare
+    dt <- sumexp_to_longdt(object, assay = assay, fvars = flabel)
+    setnames(dt, 'value', 'z-score')
+    vlines <- 0.5 + c(0, cumsum(table(object[[group]])))
+    if (!is.null(coef)){
+        hlines <- 0.5 + c(0, sum(effectmat(object, fit = fit, coefs = coef)[, 1] < 0), nrow(object))
+    }
+# Plot
+    p <- ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +
+        geom_tile() +
+        theme_minimal() + xlab(NULL) + ylab(NULL) + 
+        scale_x_discrete(position = 'top') + 
+        theme(axis.text.x = element_text(angle = 90, hjust = 0)) + 
+        scale_fill_gradient2(low = '#ff5050', high = '#009933', na.value = 'white') + 
+        geom_vline(xintercept = vlines)
+    if (!is.null(coef)){
+        p <- p + geom_hline(yintercept = hlines)
+    }
+    p
+}
