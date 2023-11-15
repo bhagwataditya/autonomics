@@ -60,6 +60,20 @@ add_fill_scale <- function(p, fill, data, palette = NULL){
     return(p)
 }
 
+make_svar_palette <- function(object, svar){ 
+    if (is.null(svar))               return(NULL)
+    if (is.numeric(object[[svar]]))  return(NULL)
+    make_colors(slevels(object, svar))
+}
+make_fvar_palette <- function(object, fvar){
+    if (is.null(fvar)) return(NULL)
+    make_colors(flevels(object, fvar))
+}
+make_var_palette <- function(object, var){
+    if (is.null(var)) return(NULL)
+    if (var %in% svars(object)){        make_svar_palette(object, var)
+    } else if (var %in% fvars(object)){ make_fvar_palette(object, var) }
+}
 
 make_colors <- function(
     varlevels, sep = guess_sep(varlevels), show=FALSE,
