@@ -598,6 +598,29 @@ add_loadings <- function(
 }
 
 pca1 <- pca2 <- feature_name <- NULL
+
+#' Make alpha palette
+#' @param object SummarizedExperiment
+#' @param alpha string
+#' @return character vector
+#' @examples 
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' make_alpha_palette(object, 'Time')
+#' @export
+make_alpha_palette <- function(object, alpha){
+# Assert
+    assert_is_valid_sumexp(object)
+    if (is.null(alpha))  return(NULL)
+    assert_scalar_subset(alpha, svars(object))
+# Create
+    levels <- slevels(object, alpha)
+    palette <- seq(1, 0.4, length.out = length(levels))
+    names(palette) <- levels
+# Return
+    palette
+}
+    
 #' Biplot
 #' @param object         SummarizedExperiment
 #' @param x              pca1, etc.
