@@ -746,8 +746,6 @@ biplot <- function(
 }
 
 
-
-
 #=============================================================================
 #
 #                       biplot_corrections()
@@ -755,54 +753,48 @@ biplot <- function(
 #
 #==============================================================================
 
-#' @export
-#' @rdname biplot_corrections
-plot_corrections <- function(...){
-    .Deprecated("biplot_corrections")
-    biplot_corrections(...)
-}
 
-subgroup <- NULL
 #' Biplot batch corrections
 #'
 #' @param object      SummarizedExperiment
 #' @param method      'pca', 'pls', 'lda', or 'sma'
+#' @param by          svar
 #' @param color       variable mapped to color (symbol)
 #' @param covariates  covariates to be batch-corrected
 #' @param varcols     number of covariate columns
 #' @param plot        TRUE/FALSE: plot?
-#' @param ...         used to maintain deprecated functions
 #' @return  grid object
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, pca=TRUE, plot = FALSE)
-#' biplot_corrections(
-#'     object,  color = Group, covariates = c('SEX', 'T2D', 'SUB', 'SET'))
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, pca = TRUE, plot = FALSE)
+#' biplot_corrections(object, color = 'subgroup', covariates = c('Sex', 'Diabetes', 'Subject', 'Time'))
 #' @seealso biplot_covariates
 #' @export
 biplot_corrections <- function(
-    object, method = 'pca', color = subgroup, covariates = character(0),
+    object, method = 'pca', by = 'sample_id', color = 'subgroup', covariates = character(0),
     varcols = ceiling(sqrt(1+length(covariates))), plot = TRUE
 ){
-    x <- paste0(method, "1")
-    y <- paste0(method, "2")
-    p <- biplot(object, !!sym(x), !!sym(y), color = !!enquo(color),
-                nloadings=0)
+    x <- scorenames(method, by = by, dims = 1)
+    y <- scorenames(method, by = by, dims = 2)
+    p <- biplot(object, method = method, by = by, dims = 1:2, color = color)
     p <- p + ggtitle('INPUT')
-    p <- p + guides(color=FALSE, fill=FALSE)
+    legend  <- gglegend(p + theme(legend.position = 'bottom', legend.title = element_blank()))
+    p <- p + guides(color = 'none', fill = 'none')
     plotlist <- list(p)
     for (ibatch in covariates){
         tmp_object <- object
-        values(tmp_object) %<>%
-            removeBatchEffect(batch=sdata(tmp_object)[[ibatch]])
+        tmp_b <- sdata(tmp_object)[[ibatch]]
+        if (any(is.na(tmp_b))) {
+            tmp_object %<>% filter_samples(!is.na(!!sym(ibatch)))
+        }
+        values(tmp_object) %<>% removeBatchEffect(batch = tmp_b)
         tmp_object <- get(method)(tmp_object, ndim=2, verbose=FALSE)
-        p <- biplot(tmp_object, !!sym(x), !!sym(y), color = !!enquo(color),
-                    nloadings=0)
+        p <- biplot(tmp_object, method = method, by = by, dims = 1:2, color = color)
         p <- p + ggtitle(paste0(' - ', ibatch))
-        p <- p + guides(color=FALSE, fill=FALSE)
+        p <- p + guides(color = 'none', fill = 'none')
         plotlist %<>% c(list(p))
     }
-    pp <- arrangeGrob(grobs = plotlist, ncol = varcols)
+    pp <- arrangeGrob(grobs = plotlist, ncol = varcols, bottom = legend)
     if (plot) grid::grid.draw(pp)
     invisible(pp)
 }
