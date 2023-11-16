@@ -6,19 +6,30 @@
 #=============================================================================
 
 
-true_names <- function(x) names(x[x])
+ true_names <- function(x) names(x)[ x]
+false_names <- function(x) names(x)[!x]
+
+fit_limma_contrastogram <- function(object, subgroupvar, design){
+    colcontrasts <- contrast_subgroup_cols(object, subgroupvar)
+    rowcontrasts <- contrast_subgroup_rows(object, subgroupvar)
+    contrasts <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
+    object %<>% fit_limma(design = design, contrasts = contrasts)
+    object
+}
 
 compute_connections <- function(
-    object, subgroupvar, formula,
+    object, subgroupvar, design,
     colors = make_colors(slevels(object, subgroupvar), guess_sep(object))
 ){
 # subgroup matrix, difference contrasts, limma
-    pvalues <- limma(object)[, , 'p',      drop=FALSE]
-    effects <- limma(object)[, , 'effect', drop=FALSE]
-    nsignif <- apply(pvalues < 0.05, 2, sum, na.rm=TRUE)
-                #colSums( pvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
-    nup     <- apply(pvalues < 0.05 & effects>0, 2, sum, na.rm=TRUE)
-    ndown   <- apply(pvalues < 0.05 & effects<0, 2, sum, na.rm=TRUE)
+    fdrvalues <- fdrmat(object)
+    effects <- effectmat(object)
+    colnames(fdrvalues) %<>% split_extract_fixed(FITSEP, 1)
+    colnames(effects) %<>% split_extract_fixed(FITSEP, 1)
+    nsignif <- apply(fdrvalues < 0.05, 2, sum, na.rm=TRUE)
+                #colSums( fdrvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
+    nup     <- apply(fdrvalues < 0.05 & effects > 0, 2, sum, na.rm = TRUE)
+    ndown   <- apply(fdrvalues < 0.05 & effects < 0, 2, sum, na.rm = TRUE)
 # Create diagram
     sep <- guess_sep(object)
     subgroupmatrix <- subgroup_matrix(object, subgroupvar = subgroupvar)
@@ -29,11 +40,7 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    design <- create_design(object, formula = formula, verbose = FALSE)
-    colcontrasts <- contrastdefs(object)[[1]]
-    rowcontrasts <- contrastdefs(object)[[2]]
-    contrastdefs <-  c( c(t(colcontrasts)), c(t(rowcontrasts)))
-    contrastmat  <- makeContrasts(contrasts = contrastdefs, levels = design)
+    contrastmat  <- makeContrasts(contrasts = coefs(object), levels = design)
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
         to   <- true_names(contrastvector>0)
@@ -68,24 +75,29 @@ compute_connections <- function(
 #' @examples
 #' if (requireNamespace('diagram', quietly = TRUE)){
 #'    file <- download_data('halama18.metabolon.xlsx')
-#'    object <- read_metabolon(file, fit='limma', plot=FALSE)
-#'    plot_contrastogram(object, subgroupvar = 'Group')
+#'    object <- read_metabolon(file)
+#'    plot_contrastogram(object, subgroupvar = 'subgroup')
 #' }
 #' @export
 plot_contrastogram <- function(
     object, 
     subgroupvar,
-    formula = default_formula(object, subgroupvar, 'limma'),
-    colors = make_colors(slevels(object, subgroupvar), guess_sep(object)),
-    curve  = 0.1
+    formula = as.formula(paste0('~ 0 +', subgroupvar)),
+    colors  = make_colors(slevels(object, subgroupvar), guess_sep(object)),
+    curve   = 0.1
 ){
 # Initialize
     V2 <- N <- NULL
     if (!requireNamespace('diagram', quietly = TRUE)){
         stop("BiocManager::install('diagram'). Then re-run.") }
-# Prepare
-    contrastogram_matrices <- compute_connections(object, 
-        subgroupvar = subgroupvar, formula = formula, colors = colors)
+# Fit limma
+    formula <- as.formula(paste0('~ 0 + ', subgroupvar))
+    design <- create_design(object, formula = formula)
+    colnames(design) %<>% stri_replace_first_regex(subgroupvar, '')
+    object %<>% fit_limma_contrastogram(subgroupvar = subgroupvar, design = design)
+# Compute connections
+    contrastogram_matrices <- compute_connections(
+        object, design = design, subgroupvar = subgroupvar, colors = colors)
     arrowsizes  <- contrastogram_matrices$arrowsizes
     arrowcolors <- contrastogram_matrices$arrowcolors
     arrowlabels <- contrastogram_matrices$arrowlabels
@@ -95,7 +107,7 @@ plot_contrastogram <- function(
     nrow <- dt[, data.table::uniqueN(V2)]
     nperrow <- dt[, .N, by = 'V1'][, N]
     if (all(nperrow==1)) nperrow %<>% length()
-    # basedir <- file.path(rappdirs::user_cache_dir(appname = 'autonomics'), 'contrastogram')
+    # basedir <- file.path(tools::R_user_dir('autonomics', 'cache'), 'contrastogram')
     # dir.create(basedir)
     # pdf(file.path(basedir, 'directed_contrastogram.pdf'), 
     # width = 9, height = 9)
@@ -116,6 +128,8 @@ plot_contrastogram <- function(
                     arr.type    = 'triangle')
     #, arr.lcol = log2(1+diagram_matrix))
     #dev.off()
+# Return
+    object # limma!
 }
 
 
