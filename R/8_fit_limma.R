@@ -564,6 +564,12 @@ reset_fit <- function(
     object
 }
 
+#' Fit results separator
+#' @examples
+#' FITSEP
+#' @export
+FITSEP <- '~'
+
 
 #' Fit model and test for differential expression
 #'
