@@ -562,55 +562,85 @@ sign.SummarizedExperimentz <- function(...){
     signmat(...)
 }
 
-.summarize_fit <- function(object, fit){
-    effect <- fdr <- . <- NULL
-    extract_fit_dt(object, fit = fit)[,
-        .(  ndown = sum(effect<0 & fdr<0.05, na.rm=TRUE),
-            nup   = sum(effect>0 & fdr<0.05, na.rm=TRUE)),
-        by='contrast']
+
+# dont rm - its the lower-level function used by fits() and coefs() !
+.effectvars <- function(object){
+    . <- NULL
+    fvars(object) %>% extract(stri_startswith_fixed(., paste0('effect', FITSEP)))
 }
 
-#' Summarize fit
+#' Get fit models
+#' 
 #' @param object SummarizedExperiment
-#' @param fit 'limma', 'lme', 'lm', 'lme', 'wilcoxon'
-#' @return data.table(contrast, nup, ndown)
-#' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, fit='limma', plot=FALSE)
-#' summarize_fit(object, 'limma')
+#' @return  character vector
+#' @examples 
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma')
+#' fits(object)
 #' @export
-summarize_fit <- function(
-    object, 
-    fit = intersect(names(metadata(object)), TESTS)[1]
-){
+fits <- function(object){
+    x <- .effectvars(object)
+    x %<>% split_extract_fixed(FITSEP, 3)
+    x %<>% unique()
+    if (length(x)==0)  x <- NULL
+    x
+}
+
+#' Get coefs
+#' 
+#' @param object  SummarizedExperiment or factor
+#' @param fit     string: 'limma', 'lm', 'lme', 'lmer'
+#' @param svars   NULL or charactervector (svar for which to return coefs)
+#' @param ...     required for s3 dispatch
+#' @return  character vector
+#' @examples
+#' # Factor
+#'     object <- factor(c('A', 'B', 'C'))
+#'     coefs(object)
+#'     coefs(code(object, contr.treatment.explicit))
+#'     coefs(code(object, code_control))
+#'     
+#' # SummarizedExperiment
+#'     file <- download_data('atkin.metabolon.xlsx')
+#'     object <- read_metabolon(file, fit = 'limma')
+#'     coefs(object)
+#' @export
+coefs <- function(object, ...)  UseMethod('coefs')
+
+#' @rdname coefs
+#' @export
+coefs.factor <- function(object, ...)   colnames(contrasts(object))
+
+#' @rdname coefs
+#' @export
+coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL, ...){
     . <- NULL
-    if (is_scalar(fit)) return(.summarize_fit(object, fit))
-    res <- mapply(.summarize_fit, 
-                fit = fit, 
-                MoreArgs = list(object = object), 
-                SIMPLIFY = FALSE)
-    res %<>% mapply(function(dt, model) cbind(model = model, dt), 
-                    dt = ., model = names(res), SIMPLIFY = FALSE)
-    res %<>% data.table::rbindlist()
-    res
+    coefs0 <- split_extract_fixed(.effectvars(object), FITSEP, 2)
+    fits0  <- split_extract_fixed(.effectvars(object), FITSEP, 3)
+    coefs0 %<>% extract(fits0 %in% fit)
+    coefs0 %<>% unique()
+    if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))
+    coefs0 
 }
 
 #============================================================================
 #
 #                   is_sig  .is_sig
-#                   plot_venn
+#                   plot_contrast_venn
 #
 #============================================================================
 
 .is_sig <- function(object, fit, contrast, quantity = 'fdr'){
-    fitres <- metadata(object)[[fit]]
-    isfdr  <- adrop(fitres[, , quantity, drop = FALSE] < 0.05, 3)
-    isdown <- isfdr & adrop(fitres[, , 'effect', drop=FALSE]<0, 3)
-    isup   <- isfdr & adrop(fitres[, , 'effect', drop=FALSE]>0, 3)
-    testmat <- matrix(0, nrow(isfdr), ncol(isfdr), dimnames=dimnames(isfdr))
+    sigfun <- get(paste0(quantity, 'mat'))
+    issig  <- sigfun(object) < 0.05
+    isdown <- issig & effectmat(object) < 0
+    isup   <- issig & effectmat(object) > 0
+    isdown[is.na(isdown)] <- FALSE
+    isup[  is.na(isup)  ] <- FALSE
+    testmat <- matrix(0, nrow(issig), ncol(issig), dimnames=dimnames(issig))
     testmat[isdown] <- -1
     testmat[isup]   <-  1
-    testmat[, contrast, drop=FALSE]
+    testmat[, paste0(contrast, FITSEP, fit), drop=FALSE]
 }
 
 
@@ -621,56 +651,38 @@ summarize_fit <- function(
 #' @param quantity  value in dimnames(metadata(object)[[fit]])[3]
 #' @return matrix: -1 (downregulated), +1 (upregulatd), 0 (not fdr significant)
 #' @examples
-#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
-#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
-#' plot_venn(issig)
+#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
+#' plot_contrast_venn(issig)
 #' @export
 is_sig <- function(
     object,
-    fit = intersect(names(metadata(object)), TESTS),
-    contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1,
+    fit = fits(object)[1],
+    contrast = coefs(object),
     quantity = 'fdr'
 ){
 # Assert
     . <- NULL
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_character(fit)
-    assert_is_subset(fit, names(metadata(object)))
-    if (is.character(contrast))  for (fi in fit)  assert_is_subset(
-                        contrast, colnames(metadata(object)[[fi]]))
+    assert_is_subset(fit, fits(object))
+    if (is.character(contrast))  for (fi in fit){
+        assert_is_subset(contrast, coefs(object, fit = fi)) }
 # Run across models
     res <-  mapply(.is_sig, fit, 
-                    MoreArgs = list(object=object, contrast=contrast, quantity=quantity),
+                    MoreArgs = list(object = object, contrast = contrast, quantity = quantity),
                     SIMPLIFY = FALSE)
-    add_model_names <- function(isfdrmat, model){
-                        colnames(isfdrmat) %<>% paste(model, sep='.')
-                        isfdrmat }
-    if (length(fit)>1){
-        res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
-    }
+    #add_model_names <- function(isfdrmat, model){
+    #                    colnames(isfdrmat) %<>% paste(model, sep='.')
+    #                    isfdrmat }
+    #if (length(fit)>1){
+    #    res %<>% mapply(add_model_names , ., names(.), SIMPLIFY=FALSE)
+    #}
     res %<>% do.call(cbind, .)
     res
 }
 
 
-#' Plot venn
-#' @param isfdr matrix(nrow, ncontrast): -1 (down), +1 (up)
-#' @return nothing returned
-#' @examples
-#' require(magrittr)
-#' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
-#' object %<>% fit_wilcoxon(subgroupvar='SampleGroup', block = 'Subject_ID')
-#' object %<>% fit_limma(   subgroupvar='SampleGroup', block = 'Subject_ID')
-#' isfdr <- is_sig(object, contrast = 't3-t2')
-#' plot_venn(isfdr)
-#' @export
-plot_venn <- function(isfdr){
-    layout(matrix(c(1,2), nrow=2))
-    vennDiagram(isfdr, include='up',   mar = rep(0,4), show.include=TRUE)
-    vennDiagram(isfdr, include='down', mar = rep(0,4), show.include=TRUE)
-}
