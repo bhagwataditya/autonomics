@@ -513,6 +513,17 @@ vectorize_contrasts <- function(contrasts){
     unname(unlist(lapply(contrasts, function(x) na.exclude(c(t(x))))))
 }
 
+add_fdr <- function(fitres){
+    . <- NULL
+    fdr <- fitres %>% extract(, stri_startswith_fixed(
+                                    names(.), paste0('p', FITSEP)), with=FALSE)
+    fdr[] %<>% lapply(p.adjust, method='fdr')
+    names(fdr) %<>% stri_replace_first_fixed(
+                paste0('p', FITSEP), paste0('fdr', FITSEP))
+    fitres %<>% cbind(fdr)
+    fitres
+}
+
 #' Reset fit
 #' @param object  SummarizedExperiment
 #' @param fit     character vector
