@@ -2,64 +2,67 @@
 #
 #          plot_volcano
 #              make_volcano_dt
-#                  top_down/top_up
-#                      nmax/nmin
 #
 #==============================================================================
 
-invwhich <- function(indices, totlength) is.element(seq_len(totlength), indices)
-
-#' Return nth max (min) value in vector
-#'
-#' Orders a vector and returns n'th ordered value.
-#' When vector length is smaller than n, returns last value.
-#'
-#' @param x numeric vector
-#' @param n integer
-#' @return value
-#' @examples
-#' nmax(c(1,2,3,4,5), 2)
-#' nmin(c(1,2,3,4,5), 2)
-#' @noRd
-nmax <- function(x, n){
-    . <- NULL
-    sort(x, decreasing = TRUE) %>% extract(min(length(.), n))
-}
-nmin <- function(x, n){
-    . <- NULL
-    sort(x) %>% extract(min(length(.), n))
+default_coefs <- function(object, fit = fits(object)){
+    if (length(fit)==0) return(NULL)    # none
+    y <- autonomics::coefs(object, fit = fit)   # intercept
+    if (length(y)==1)   return(y)
+    y %<>% setdiff('Intercept')                 # intercept + others
+    y
 }
 
-top_down <- function(effect, fdr, mlp, ntop){
-    fdr_ok   <- fdr  < 0.05
-    coef_ok  <- effect < -1
-    coef_top <- if (any(fdr_ok)){  effect < nmin(effect[fdr_ok], ntop+1)
-                } else {           rep(FALSE, length(effect))            }
-    mlp_top  <- if (any(coef_ok)){ mlp  > nmax(mlp[coef_ok], ntop+1)
-                } else {           rep(FALSE, length(effect))            }
-    fdr_ok & coef_ok & (coef_top | mlp_top)
+#' Bin continuous variable
+#' @param object numeric or SummarizedExperiment
+#' @param fvar   string or NULL
+#' @param probs  numeric
+#' @param ... (S3 dispatch)
+#' @return  factor vector
+#' @examples 
+#' # Numeric vector
+#'     object <- rnorm(10, 5, 1)
+#'     bin(object)
+#' # SummarizedExperiment
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     fdt(object <- read_maxquant_proteingroups(file))
+#'     fdt(bin(object, 'pepcounts'))
+#' @export
+bin <- function(object, ...) UseMethod('bin')
+
+
+#' @rdname bin
+#' @export
+bin.logical <- function(object, ...)  object
+
+#' @rdname bin
+#' @export
+bin.character <- function(object, ...) object
+
+#' @rdname bin
+#' @export
+bin.factor <- function(object, ...) object
+
+#' @rdname bin
+#' @export
+bin.numeric <- function(object, probs = c(0, 0.33, 0.66, 1), ...){
+    breaks <- quantile(object, probs = probs)
+    breaks[1] %<>% subtract(1e-7)      # avoid smallest number from falling outside of bin
+    object %<>% cut(breaks)                 # explicit breaks avoid negative bin
+    levels(object) %<>% substr(2, nchar(.)) #    https://stackoverflow.com/questions/47189232
+    levels(object) %<>% split_extract_fixed(',', 1)
+    levels(object) %<>% paste0('>', .)
+    object
 }
 
-#' @examples
-#' file <- download_data("billing16.proteingroups.txt")
-#' invert_subgroups <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(
-#'           file, invert_subgroups=invert_subgroups, fit='limma', plot=FALSE)
-#' effect <-      limma(object)[,1,'effect']
-#' fdr    <-      limma(object)[,1,'fdr']
-#' mlp    <- -log(limma(object)[,1,'p'])
-#' ntop   <- 3
-#' table(top_up(effect, fdr, mlp, ntop))
-#' table(top_down(effect, fdr, mlp, ntop))
-#' @noRd
-top_up <- function(effect, fdr, mlp, ntop){
-    fdr_ok   <- fdr  < 0.05
-    coef_ok  <- effect >  0 # currently no filter 
-    coef_top <- if(any(fdr_ok)){  effect > nmax(effect[fdr_ok], ntop+1)
-                } else {          rep(FALSE, length(effect)) }
-    mlp_top  <- if (any(coef_ok)){ mlp > nmax(mlp[coef_ok], ntop+1)
-                } else {           rep(FALSE, length(effect)) }
-    fdr_ok & coef_ok & (coef_top | mlp_top)
+#' @rdname bin
+#' @export
+bin.SummarizedExperiment <- function(
+    object, fvar, probs = c(0, 0.33, 0.66, 1), ...
+){
+    if (is.null(fvar))  return(object)
+    fdt(object)[[fvar]] %<>% bin()
+    object
 }
 
 
