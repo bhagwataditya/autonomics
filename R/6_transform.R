@@ -1,5 +1,56 @@
 #==============================================================================
 #
+#                           rm_unmatched_samples
+#                           rm_singleton_samples
+#
+#==============================================================================
+
+#' rm unmatched/singleton samples
+#'
+#' @param object       SummarizedExperiment
+#' @param subgroupvar  subgroup variable (string)
+#' @param subgroupctr  control subgroup (string)
+#' @param block        block variable (string)
+#' @param verbose      TRUE/FALSE
+#' @return SummarizedExperiment
+#' @examples
+#' file <- download_data('atkin.somascan.adat')
+#' object <- read_somascan(file)
+#' object %<>% filter_samples(subgroup %in% c('t1', 't2'), verbose = TRUE)
+#' rm_singleton_samples(object, subgroupvar = 'Subject')
+#' rm_unmatched_samples(object, subgroupvar = 'subgroup', block = 'Subject')
+#' @export
+rm_unmatched_samples <- function(
+    object,
+    subgroupvar = 'subgroup',
+    subgroupctr = slevels(object, subgroupvar)[1],
+    block,
+    verbose = TRUE
+){
+    snames1 <- sdt(object)[,
+                .SD[(sum(get(subgroupvar)==subgroupctr)==1) &
+                    (sum(get(subgroupvar)!=subgroupctr) >0)],  by = block]$sample_id
+    n <- length(snames1)
+    if (verbose & n < ncol(object)){
+        message('\t\tRetain ', n, '/', ncol(object), ' samples with matching ', subgroupctr) }
+    object %<>% extract(, snames1)
+    object
+}
+
+#' @rdname rm_unmatched_samples
+#' @export
+rm_singleton_samples <- function(object, subgroupvar = 'subgroup', verbose = TRUE){
+    selectedsamples <- sdt(object)[, .SD[.N>1], by = subgroupvar][['sample_id']]
+    n <- length(selectedsamples)
+    if (verbose & n < ncol(object)){
+        message('\t\tRetain ', length(selectedsamples), '/',
+                ncol(object), ' samples with replicated ', subgroupvar) }
+    object[, selectedsamples]
+}
+
+
+#==============================================================================
+#
 #                           log2transform()
 #                           zscore()
 #                           quantnorm()
