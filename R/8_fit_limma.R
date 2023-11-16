@@ -34,26 +34,25 @@ default_subgroupvar <- function(object){
 
 #' Create default formula
 #' @param object SummarizedExperiment
-#' @param subgroupvar string
-#' @param fit 'limma', 'lm', 'lme', 'lmer'
 #' @return formula
 #' @examples 
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <-.read_metabolon(file)
-#' default_subgroupvar(object)
-#' default_formula(object, fit = 'limma')
-#' default_formula(object, fit = 'lm')
+#' # Abundances
+#'     file <- download_data('atkin.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     default_formula(object)
+# # Ratios
+#'     file <- download_data('billing16.proteingroups.txt')
+#'     object <- read_maxquant_proteingroups(file)
+#'     default_formula(object)
 #' @export 
-default_formula <- function(
-    object, subgroupvar = default_subgroupvar(object), fit
-){
-    formula <- if (is.null(subgroupvar))        '~1'
-    else if (!subgroupvar %in% svars(object))   '~1'
-    else if (singlelevel(object, subgroupvar))  '~1'
-    else if (fit %in% c('limma', 'wilcoxon'))   sprintf('~0 + %s', subgroupvar)
-    else                                        sprintf('~ %s', subgroupvar)
-    formula %<>% as.formula()
-    formula
+default_formula <- function(object){
+    if ('subgroup' %in% svars(object)){
+        if (singlelevel(object, 'subgroup')){    return(~1)
+        } else if (contains_ratios(object)){      return(~0+subgroup)
+        } else {                                  return(~subgroup)
+        }
+    } else {                                      return(~1)
+    }
 }
 
 #' Create design
