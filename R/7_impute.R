@@ -505,75 +505,21 @@ no_nas <- function(object){
 
 #' Venn detects
 #'
-#' Venn diagram full/systematic/random detects
+#' Venn diagram full/consistent/random detects
 #'
-#' @param object SummarizedExperiment
-#' @param subgroup subgroup symbol
+#' @param object  SummarizedExperiment
+#' @param by      svar (string)
 #' @return  \code{NULL}
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
-#' venn_detects(object, subgroup)
+#' object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
+#' venn_detects(object, 'subgroup')
 #' @export
-venn_detects <- function(object, subgroup){
-    subgroup <- enquo(subgroup)
+venn_detects <- function(object, by = 'subgroup'){
     limma::vennDiagram(as.matrix(cbind(
-        systematic = is_systematic_detect(object, !!subgroup),
-        random     = is_random_detect(    object, !!subgroup),
-        full       = is_full_detect(      object))))
-}
-
-#=============================================================================
-#
-#                     impute_systematic_nondetects
-#
-#==============================================================================
-#' Impute systematic nondetects
-#' @param object    SummarizedExperiment
-#' @param subgroup     subgroup svar
-#' @param fun       imputation function
-#' @param plot      TRUE or FALSE
-#' @param verbose   TRUE or FALSE
-#' @param ...       passed to `fun`
-#' @return SummarizedExperiment
-#' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute = FALSE, plot = FALSE)
-#' impute_systematic_nondetects(object)
-#' @export
-impute_systematic_nondetects <- function(object, subgroup = subgroup,
-    fun = halfnormimpute, plot = TRUE, verbose = TRUE, ...
-){
-# Process
-    absent <- replicated <- systematic <- value <- NULL
-    subgroup <- enquo(subgroup)
-    groupvar <- as_name(subgroup)
-# Filter
-    object %<>% filter_exprs_replicated_in_some_subgroup(
-                    subgroupvar = groupvar, verbose = verbose)
-# Impute
-    dt  <-  sumexp_to_long_dt(object, svars = groupvar)
-    dt[, absent     := all(is.na(value)),    by = c('feature_id', groupvar)]
-    dt[, replicated := sum(!is.na(value))>1, by = c('feature_id', groupvar)]
-    dt[, systematic := any(absent) & any(replicated), by = 'feature_id']
-    dt[, is_imputed := systematic & absent]
-    dt[, value := fun(value, is_imputed, ...), by='feature_id']
-# Update object
-    ff <- fnames(object)
-    ss <- snames(object)
-    values(object) <- dt2exprs(dt)[ff, ss]
-    assays(object)$is_imputed <- dt2mat(data.table::dcast(
-                    dt, feature_id ~ sample_id, value.var = 'is_imputed'))
-    fdata(object)$imputed <- rowAnys(assays(object)$is_imputed)
-# Plot
-    nrowimputed <- sum(rowAnys(is_imputed(object)))
-    ncolimputed <- sum(colAnys(is_imputed(object)))
-    if (verbose & nrowimputed>0)  message('\t\tImpute systematic nondetects ', 
-        'for ', nrowimputed, '/', nrow(object), ' features ', 
-        'in ',  ncolimputed, '/', ncol(object), ' samples')
-    if (plot)    print(plot_detections(object, subgroup = !!subgroup))
-# Return
-    object
+        consistent = systematic_nas(object, by),
+        random     = random_nas(    object, by),
+        full       = no_nas(        object))))
 }
 
 
