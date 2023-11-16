@@ -247,13 +247,16 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 
 
 #' Transform values
-#' @param object SummarizedExperiment
-#' @param verbose TRUE or FALSE
+#' 
+#' @param  object   SummarizedExperiment
+#' @param  assay    character vector : assays for which to perform transformation
+#' @param  pseudo   number           : pseudo value to be added prior to transformation
+#' @param  verbose  TRUE or FALSE    : whether to msg
+#' @param  delog    TRUE or FALSE (vsn)
 #' @return Transformed sumexp
 #' @examples
-#' require(magrittr)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 #'
 #' object                       %>% plot_sample_densities()
 #' invnorm(object)              %>% plot_sample_densities()
@@ -262,17 +265,37 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' quantnorm(object)            %>% plot_sample_densities()
 #'
 #' object                       %>% plot_sample_densities()
+#' vsn(object)                  %>% plot_sample_densities()
+#'
+#' object                       %>% plot_sample_densities()
 #' zscore(object)               %>% plot_sample_densities()
 #'
 #' object                       %>% plot_sample_densities()
 #' exp2(object)                 %>% plot_sample_densities()
 #' log2transform(exp2(object))  %>% plot_sample_densities()
 #' @export
-log2transform <- function(object, verbose = FALSE){
-    if (verbose)  message('\t\tLog2 transform')
-    values(object) %<>% log2()
+log2transform <- function(
+    object, 
+    assay   = assayNames(object)[1], 
+    pseudo  = 0,
+    verbose = FALSE
+){
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_not_null(assayNames(object))
+    assert_is_subset(assay, assayNames(object))
+    . <- NULL
+    for (ass in assay){
+        i <- match(ass, assayNames(object))
+        if (verbose)  if (pseudo != 0)  message('\t\tAdd pseudo value ', pseudo)
+        assays(object)[[i]] %<>% add(pseudo) 
+         
+        if (verbose)  message('\t\tlog2 ', ass)
+        assays(object)[[i]] %<>% log2()
+        assayNames(object)[i] %<>% paste0('log2', .)
+    }
     object
 }
+
 
 #' @rdname log2transform
 #' @export
