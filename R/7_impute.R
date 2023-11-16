@@ -419,6 +419,25 @@ split_samples <- function(object, by = 'subgroup'){
 }
 
 
+#' @rdname split_samples
+#' @export
+cbind_imputed <- function(objlist){
+    imputed <- objlist %>% lapply(fdt)
+    imputed %<>% lapply(extract2, 'imputed') 
+    imputed %<>% Reduce(`|`, .)
+    objlist %<>% Map(function(obj){ fdt(obj)$imputed <- imputed; obj }, .)
+    object <- Reduce(SummarizedExperiment::cbind, objlist)
+    object
+}
+
+
+#' @rdname split_samples
+#' @export
+split_features <- function(object, by){
+    if (!by %in% fvars(object))  return(list(object))
+    extract_features  <- function(level)  object %>% extract(fdt(.)[[by]] == level, )
+    Map(extract_features, flevels(object, by))
+}
 
 #=============================================================================
 #
