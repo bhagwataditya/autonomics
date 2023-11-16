@@ -544,17 +544,26 @@ cluster_order_features <- function(object){
     object
 }
 
-detect_order_features <- function(object, subgroup){
-    subgroup <- enquo(subgroup)
-    x <- object
-    values(x)[is_imputed(x)] <- NA
-    idx1 <- fnames(cluster_order_features(
-                        x[is_systematic_detect(x, !!subgroup),]))
-    idx2 <- fnames(cluster_order_features(
-                        x[is_random_detect(x, !!subgroup), ]))
-    idx3 <- fnames(cluster_order_features(
-                        x[is_full_detect(x),]))
-    SummarizedExperiment::rbind(object[idx1,], object[idx2,], object[idx3,])
+detect_order_features <- function(object, by){
+    objlist <- object %>% split_samples(by)
+    block_detected <- function(obj){
+        as.character(as.numeric(!rowAlls(is.na(values(obj)))))
+    }
+    object <- Reduce(cbind, objlist)
+    fdt(object)$natype <- objlist %>% Map(block_detected, .) %>% Reduce(paste0, .)
+    ngroup <- length(objlist)
+    onestring <- paste0(rep('1', ngroup), collapse = '')
+    twostring <- paste0(rep('2', ngroup), collapse = '')
+    fdt(object)$natype[rowAlls(!is.na(values(object)))] <- twostring
+
+    natypes <- table(fdt(object)$natype)
+    natypes %<>% sort(decreasing = TRUE)
+    natypes %<>% names()
+    natypes %<>% setdiff(c(onestring, twostring))
+    natypes %<>% c(onestring, twostring)
+    fdt(object)$natype %<>% factor(natypes)
+    object %<>% extract(order(fdt(.)$natype), )
+    object
 }
 
 
