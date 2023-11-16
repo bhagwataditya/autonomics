@@ -199,19 +199,10 @@ split_extract <- function(x, i, sep=guess_sep(x)){
 
 #=============================================================================
 #
-#               merge_sfile
-#                   file_exists
-#                       default_sfile
+#               merge_sample_file
+#                   default_sfile
 #
 #=============================================================================
-
-# Deals properly with NULL values
-# file.exists does not!
-file_exists <- function(file){
-    if (is.null(file))      return(FALSE)
-    if (file.exists(file))  return(TRUE)
-                            return(FALSE)
-}
 
 #' Default sfile
 #' @param file data file
