@@ -837,6 +837,111 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 
 }
 
+old_summarize_fit <- function(object, fit = fits(object)){
+    . <- NULL
+    downdt <- colSums(downmat(object, fit = fit)) %>% data.table(coef = names(.), ndown = .)
+    downdt %<>% tidyr::separate(
+                    col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
+    
+    updt <- colSums(upmat(object)) %>% data.table(coef = names(.), nup = .)
+    updt %<>% tidyr::separate(
+                    col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
+    
+    sumdt <- merge(downdt, updt, by = c('fit', 'contrast'))
+    sumdt$contrast %<>% factor()
+    sumdt$contrast %<>% pull_level('Intercept')
+    setorderv(sumdt, c('fit', 'contrast'))
+    sumdt %<>% extract(fit, on = 'fit')
+    sumdt %<>% extract(coefs(object), on = 'contrast')
+    sumdt
+}
+
+pull_level <- function(x, lev){
+    assert_is_factor(x)
+    if (lev %in% levels(x))  x %<>% 
+        factor(levels = c(lev, setdiff(levels(x), lev)))
+    x
+}
+
+#' Summarize fit
+#' @param fdt  fdt(object)
+#' @param fit  'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL
+#' @param coefs string vector
+#' @return data.table(contrast, nup, ndown)
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% fit_limma()
+#' object %<>% fit_lm()
+#' summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
+#' @export
+summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
+    assert_is_data.table(fdt)
+    statistic <- coefficient <- fit <- variable <- NULL
+    cols <- names(fdt) %>% extract(stri_detect_fixed(., FITSEP))
+    fdt %<>% extract(, c('feature_id', cols), with = FALSE)
+    
+    longdt <- fdt %>% melt.data.table(id.vars = 'feature_id')
+    longdt[, statistic    := split_extract_fixed(variable, FITSEP, 1) %>% factor(unique(.))]
+    longdt[,  coefficient := split_extract_fixed(variable, FITSEP, 2) %>% factor(unique(.))]
+    longdt[,       fit    := split_extract_fixed(variable, FITSEP, 3) %>% factor(unique(.))]
+    longdt[, variable := NULL]
+    
+    
+    sumdt <- dcast.data.table(longdt, feature_id + coefficient + fit ~ statistic, value.var = 'value')
+    sumdt <- sumdt[, .(
+        downfdr = sum(effect < 0  & fdr < 0.05, na.rm = TRUE), 
+        upfdr   = sum(effect > 0  & fdr < 0.05, na.rm = TRUE),
+        downp   = sum(effect < 0  &   p < 0.05, na.rm = TRUE), 
+        upp     = sum(effect > 0  &   p < 0.05, na.rm = TRUE)), by = c('coefficient', 'fit') ]
+    if (!is.null(fit)){
+        idx <- sumdt$fit %in% fit
+        sumdt %<>% extract(idx)
+    }
+    if (!is.null(coefs)){
+        sumdt <- sumdt[coefficient %in% coefs]
+    }
+    sumdt
+}
+
+#' Plot fit summary
+#' @param sumdt data.table
+#' @param nrow number
+#' @param ncol number
+#' @param order TRUE or FALSE
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% fit_lm()
+#' object %<>% fit_limma(block = 'Subject')
+#' sumdt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
+#' plot_fit_summary(sumdt)
+#' @export
+plot_fit_summary <- function(sumdt, nrow = NULL, ncol = NULL, order = FALSE){
+    coefficient <- downfdr <- downp <- fit <- upfdr <- upp <- NULL
+    if (order){
+        sumdt <- sumdt[order(downfdr+upfdr, downp+upp)]
+        sumdt[, coefficient := factor(coefficient, unique(coefficient))]
+    }
+    ggplot(sumdt) + facet_wrap(vars(fit), nrow = nrow, ncol = ncol) + 
+    geom_col(aes(y = coefficient, x = -downp),   fill = 'firebrick',   alpha = 0.3) +
+    geom_col(aes(y = coefficient, x =    upp),   fill = 'forestgreen', alpha = 0.3) + 
+    geom_col(aes(y = coefficient, x = -downfdr), fill = 'firebrick',   alpha = 1) +
+    geom_col(aes(y = coefficient, x =    upfdr), fill = 'forestgreen', alpha = 1) + 
+    geom_text(data = sumdt[  downp>0], aes(y = coefficient, x = -max(downp), label = paste0(downp, ' | ', downfdr) ), hjust = +1) + 
+    geom_text(data = sumdt[    upp>0], aes(y = coefficient, x =    max(upp), label = paste0(upfdr, ' | ', upp) ), hjust = 0) + 
+    xlab('count') + 
+    ylab(NULL) + 
+    xlim(c(-max(sumdt$downp)-100, max(sumdt$upp)+100)) + 
+    #scale_x_continuous(n.breaks = 20) + 
+    theme_bw() + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+}
+
+
+setna <- function(dt, value){
+   for (j in seq_len(ncol(dt)))  set(dt, which(is.na(dt[[j]])), j, value)
+    dt
 }
 
 
