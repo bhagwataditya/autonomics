@@ -508,43 +508,69 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 }
 
 
-#' Merge sample/feature file
+#' Merge sample / feature file
 #'
 #' @param object            SummarizedExperiment
-#' @param sfile             sample file path
-#' @param ffile             ffile path
-#' @param by.x              object mergevar
-#' @param by.y              file mergevvar
-#' @param stringsAsFactors  TRUE or FALSE
-#' @param verbose           TRUE (default) or FALSE
+#' @param sfile             string       : sample file path
+#' @param ffile             string       : ffile path
+#' @param by.x              string       : object mergevar
+#' @param by.y              string       : file mergevvar
+#' @param all.x             TRUE / FALSE : whether to keep samples / feature without annotation
+#' @param select            character    : [sf]file columns to select
+#' @param stringsAsFactors  TRUE / FALSE
+#' @param verbose           TRUE / FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing19.proteingroups.txt')
-#' select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-#' select %<>% paste0('_STD')
-#' object <- read_proteingroups(file, select_subgroups = select, plot=FALSE)
+#' subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+#' subgroups %<>% paste0('_STD')
+#' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
 #' sfile <- paste0(tempdir(),'/', basename(tools::file_path_sans_ext(file)))
 #' sfile %<>% paste0('.samples.txt')
-#' invisible(create_sfile(object, sfile))
-#' merge_sfile(object, sfile)
+#' dt <- data.table(sample_id = object$sample_id, 
+#'                  day = split_extract_fixed(object$subgroup, '_', 1))
+#' data.table::fwrite(dt, sfile)                 
+#' merge_sample_file(object, sfile)
 #'@export
-merge_sfile <- function(
-    object, sfile = NULL, by.x = 'sample_id', by.y = NULL, 
-    stringsAsFactors = TRUE, verbose = TRUE
+merge_sample_file <- function(
+    object, sfile = NULL, by.x = 'sample_id', by.y = 'sample_id', all.x = TRUE, 
+    select = NULL, stringsAsFactors = FALSE, verbose = TRUE
 ){
     if (is.null(sfile))  return(object)
     assert_all_are_existing_files(sfile)
-    if (verbose) message('\t\tMerge sdata: ', sfile)
-    dt <- fread(sfile, stringsAsFactors = stringsAsFactors)
-    if (is.null(by.y))  by.y <- names(dt)[1]
+    if (verbose)  message('\t\tMerge sdata: ', sfile)
+    dt <- fread(sfile, select = select, stringsAsFactors = stringsAsFactors)
     assert_is_subset(by.y, names(dt))
     dt[[by.y]] %<>% as.character()
-    object %<>% merge_sdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
+    object %<>% merge_sdt(dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
     object
 }
 
-#' @rdname merge_sfile
+#' Merge sample excel
+#' @param object SummarizedExperiment
+#' @param sfile  sample file
+#' @param range  string
+#' @param by.x   string
+#' @param by.y   string
+#' @return SummarizedExperiment
+#' @export
+merge_sample_excel <- function(
+    object, sfile, range = NULL, by.x = 'sample_id', by.y = 'sample_id'
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_all_are_existing_files(sfile)
+    assert_is_subset(by.y, excelcols(sfile, range = range))
+# Read, Merge, Return
+    sdt0 <- read_excel(sfile, range = range)
+    sdt0 %<>% data.table()
+    sdt0$sample_id
+    object %<>% merge_sdt(sdt0, by.x = by.x, by.y = by.y)
+    object
+}
+
+
+#' @rdname merge_sample_file
 #' @export
 merge_ffile <- function(
     object, ffile = NULL, by.x = 'feature_id', by.y = NULL, 
