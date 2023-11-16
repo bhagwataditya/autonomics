@@ -147,6 +147,246 @@ create_design.data.table <- function(
 }
 
 
+#' Contrast Code Factor
+#' 
+#' Contrast Code Factor for General Linear Model
+#'
+#' @param object  factor vector
+#' @param vars svars
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
+#' @param verbose TRUE or FALSE
+#' @param n character vector
+#' @param ... used for s3 dispatch
+#' @return (explicitly coded) factor vector
+#' @details
+#' A General Linear Model contains:                                                                   \cr
+#'   * An Intercept Coefficient: expressing some form of sample average                               \cr
+#'   * For each numeric variable: a slope coefficient                                                 \cr
+#'   * For each k-leveled factor: (k-1) Contrast Coefficients.                                        \cr
+#'        The interpretation of (intercept and contrast) coefficients depends on the contrast coding function used.
+#'        Several contrast coding functions are available in 'stats' and 'codingMatrices'
+#'        But their (function and coefficient) namings are a bit confusing and unsystematic.
+#'        Instead, the functions below offer an intuitive interface (to the otherwise powerful stats/codingMatrices packages).
+#'        The names of these functions reflect the contrast coding used (treatment, backward, sum, or helmert contrasts).
+#'        They also reflect the intercept interpretation (either first factor's first level or grand mean).
+#'        They all produce intuitive coefficient names (e.g. 't1-t0' rather than just 't1').
+#'        They all have unit scaling (a coefficient of 1 means a backward of 1).
+#' @examples
+#' # Coding functions
+#'     x <- factor(paste0('t', 0:3))
+#'     xlevels <- levels(x)
+#'     contr.treatment(         xlevels)
+#'     contr.treatment.explicit(xlevels)
+#'     contr.diff(              xlevels)
+#'     code_control(            xlevels)
+#'     code_diff(               xlevels)
+#'     code_diff_forward(       xlevels)
+#'     code_deviation(          xlevels)
+#'     code_deviation_first(    xlevels)
+#'     code_helmert(            xlevels)
+#'     code_helmert_forward(    xlevels)
+#' 
+#' # Code
+#'     x %<>% code(contr.treatment)
+#'     x %<>% code(contr.treatment.explicit)
+#'     x %<>% code(contr.diff)
+#'     x %<>% code(code_control)
+#'     x %<>% code(code_diff)
+#'     x %<>% code(code_diff_forward)
+#'     x %<>% code(code_deviation)
+#'     x %<>% code(code_deviation_first)
+#'     x %<>% code(code_helmert)
+#'     x %<>% code(code_helmert_forward)
+#'
+#' # Model
+#'     file <- download_data('atkin.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     object %<>% fit_limma(codingfun = contr.treatment) # default
+#'     object %<>% fit_limma(codingfun = contr.treatment.explicit)
+#'     object %<>% fit_limma(codingfun = contr.diff)
+#'     object %<>% fit_limma(codingfun = code_control)
+#'     object %<>% fit_limma(codingfun = code_diff)
+#'     object %<>% fit_limma(codingfun = code_diff_forward)
+#'     object %<>% fit_limma(codingfun = code_deviation)
+#'     object %<>% fit_limma(codingfun = code_deviation_first)
+#'     object %<>% fit_limma(codingfun = code_helmert)
+#'     object %<>% fit_limma(codingfun = code_helmert_forward)
+#' @export
+code <- function(object, ...)  UseMethod('code')
+
+#' @rdname code
+#' @export
+code.factor <- function(object, codingfun, verbose = TRUE, ...){
+    if (is.null(codingfun))  return(object)
+    assert_is_function(codingfun)
+    k <- length(levels(object))
+    contrasts(object) <- codingfun(levels(object))
+    if (verbose){
+        contrastmat <- codingMatrices::mean_contrasts(contrasts(object))
+        colnames(contrastmat) <- levels(object)
+        rownames(contrastmat)[1] <- 'Intercept'
+        names(dimnames(contrastmat)) <- c('coefficient', 'level')
+        message_df('\t\t\t\t%s', contrastmat)
+    }
+    object
+}
+
+
+#' @rdname code
+#' @export
+code.data.table <- function(object, codingfun, vars = names(object), verbose = TRUE, ...){
+    if (verbose)  cmessage('\t\t code factors')
+    for (var in vars){
+        if (is.character(object[[var]]))  object[[var]] %<>% factor()
+        if (is.logical(  object[[var]]))  object[[var]] %<>% factor()
+    }
+    if (is.null(codingfun)) return(object)
+    for (var in vars){
+        if (is.factor(object[[var]])){
+            if (verbose)  cmessage('\t\t\t%s', var)
+            object[[var]] %<>% code.factor(codingfun, verbose = verbose)
+        }
+    }
+    object
+}
+
+#' @rdname code
+#' @export
+contr.treatment.explicit <- function(n){
+    y <- contr.treatment(n)
+    colnames(y) %<>% paste0('-', n[1])
+    y
+}
+
+
+#' @rdname code
+#' @export
+code_control <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    codingMatrices::code_control(n, abbreviate = FALSE)
+}
+
+
+#' @rdname code
+#' @export
+contr.diff <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    codingMatrices::contr.diff(n, abbreviate = FALSE)
+}
+
+#' @rdname code
+#' @export
+code_diff <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    codingMatrices::code_diff(n, abbreviate = FALSE)
+}
+
+#' @rdname code
+#' @export
+code_diff_forward <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    codingMatrices::code_diff_forward(n, abbreviate = FALSE)
+}
+
+#' @rdname code
+#' @export
+code_deviation <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    k <- length(n)
+    contrastnames <- paste0(n, collapse = '+')
+    contrastnames <- paste0('(', contrastnames, ')')
+    contrastnames <- paste0(contrastnames, '/', length(n))
+    contrastnames <- paste0(n[-k], '-', contrastnames) 
+    y <- codingMatrices::code_deviation(n)
+    colnames(y) <- contrastnames
+    y
+}
+
+#' @rdname code
+#' @export
+code_deviation_first <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    k <- length(n)
+    contrastnames <- paste0(n, collapse = '+')
+    contrastnames <- paste0('(', contrastnames, ')')
+    contrastnames <- paste0(contrastnames, '/', length(n))
+    contrastnames <- paste0(n[-1], '-', contrastnames) 
+    y <- codingMatrices::code_deviation_first(n)
+    colnames(y) <- contrastnames
+    y
+}
+
+#' @rdname code
+#' @export
+code_helmert <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    y <- codingMatrices::code_helmert(n) # properly scaled version of stats::contr.helmert
+    for (i in seq(2, ncol(y)+1)){
+        curlevel <- n[i]
+        prevlevels <- n[seq(1,i-1)]
+        helmertmean <- paste0(prevlevels, collapse = '+')
+        if (i>2)  helmertmean <- paste0('(', helmertmean, ')/', i-1)
+        colnames(y)[i-1] <- paste0(curlevel, '-', helmertmean)
+    }
+    y
+}
+
+#' @rdname code
+#' @export
+code_helmert_forward <- function(n){
+    if (!requireNamespace('codingMatrices', quietly = TRUE)){
+        message("install.packages('codingMatrices'). Then re-run.")
+        return(n) 
+    }
+    y <- codingMatrices::code_helmert_forward(n) # properly scaled version of stats::contr.helmert
+    k <- length(n)
+    for (i in seq(1, k-1)){
+        curlevel <- n[i]
+        nextlevels <- n[seq(i+1,k)]
+        fwdmean <- nextlevels
+        if (length(nextlevels)>1){
+            fwdmean %<>% paste0(collapse = '+')
+            fwdmean %<>% paste0('(', ., ')')
+            fwdmean %<>% paste0('/', length(nextlevels))
+        }
+        colnames(y)[i] <- sprintf('%s-%s',  curlevel, fwdmean)
+    }
+    y
+}
+
 #=============================================================================
 #
 #               contrast_coefs
