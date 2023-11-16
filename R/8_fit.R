@@ -273,19 +273,23 @@ subgroup_array <- function(object, subgroupvar){
 #' @return matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' subgroup_matrix(object, 'Group')
+#' object <- read_metabolon(file)
+#' subgroup_matrix(object, 'subgroup')
 #' @export
 subgroup_matrix <- function(object, subgroupvar){
     . <- NULL
     subgroup_array <- subgroup_array(object, subgroupvar)
-    if (length(dim(subgroup_array))==1)  return(matrix(subgroup_array,
-        byrow=TRUE, nrow=1, dimnames=list(NULL, subgroup_array)))
+    if (length(dim(subgroup_array)) == 1){
+        return(matrix(subgroup_array, 
+                      byrow = TRUE, 
+                      nrow = 1, 
+                      dimnames = list(NULL, subgroup_array)))  
+    }
     otherdims <- names(dim(subgroup_array)) %>% setdiff('V1')
     ncol1   <- Reduce('*', dim(subgroup_array)[otherdims])
     colnames1 <- dimnames(subgroup_array)[otherdims] %>%
-                expand.grid()                        %>%
-                apply(1, paste0, collapse='.')
+                 expand.grid()                       %>%
+                 apply(1, paste0, collapse = '.')
     subgroupmat <- matrix(subgroup_array,
                         nrow = nrow(subgroup_array), ncol = ncol1,
                         dimnames=list(rownames(subgroup_array), colnames1))
@@ -296,65 +300,266 @@ subgroup_matrix <- function(object, subgroupvar){
     #subgroupmat %>% extract(rev(order(rownames(.))), order(colnames(.)))
 }
 
-
 #==============================================================================
 #
-#                    limma & limma<-
-#                    extract_fit_dt
+#                   tvar / pvar / fdrvar / effectvar
+#                   tmat / pmat / fdrmat / effectmat
 #
 #==============================================================================
 
-#' Extract fit quantity
-#' @param object SummarizedExperiment
-#' @param quantity 'effect', 'p', 'fdr', 'bonf'
-#' @return melted data.table
-#' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(
-#'             file, invert_subgroups=inv, fit='limma', plot=FALSE)
-#' extract_fit_quantity(object, fit = 'limma')
-#' @noRd
-extract_fit_quantity <- function(object, fit, quantity='p'){
-    fvars0 <- c('feature_id','feature_name','imputed', 'control')
-    fvars0 %<>% intersect(fvars(object))
-    fdt <- data.table(fdata(object)[, fvars0, drop=FALSE])
-    fitdt <- metadata(object)[[fit]][, , quantity, drop=FALSE]
-    fitdt %<>% adrop(drop=3)
-    fdt %<>% cbind(fitdt)
-    melt.data.table(
-        fdt, id.vars = fvars0, variable.name = 'contrast', value.name=quantity)
+
+#' @rdname pmat
+#' @export
+tvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    x <- expand.grid(var = 't', fit = fit, coefs = coefs)
+    x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
+}
+
+#' @rdname pmat
+#' @export
+tmat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    var <- tvar(object, coefs = coefs, fit = fit)
+    if (is.null(var))  return(NULL)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('t', FITSEP), '')
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
 }
 
 
-merge_fit_quantities <- function(x, y){
-    names0 <- c('feature_id','feature_name','imputed', 'control', 'contrast')
-    names0 %<>% intersect(names(x)) %>% intersect(names(y))
-    merge(x, y, by = names0)
+#' @rdname pmat
+#' @export
+pvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    x <- expand.grid(var = 'p', fit = fit, coefs = coefs)
+    x <-  paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
+}
+
+#' Get p/fdr/effect/down/up/sign matrix
+#' @param object    SummarizedExperiment
+#' @param fit       string
+#' @param coefs     string
+#' @param cutoff    cutoff pvalue
+#' @param var       'fdrmat' etc.
+#' @param ...       maintain deprecated functions
+#' @return matrix (feature x coef)
+#' @examples 
+#' # Read
+#'     file <- download_data('atkin.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     object %<>% fit_limma()
+#'     object %<>% fit_lm()
+#' # Variables
+#'     tvar(     object)
+#'     pvar(     object)
+#'     fdrvar(   object)
+#'     effectvar(object)
+#' # Matrix
+#'     tmat(     object)[1:3, ]
+#'     pmat(     object)[1:3, ]
+#'     fdrmat(   object)[1:3, ]
+#'     effectmat(object)[1:3, ]
+#'     downmat(  object)[1:3, ]
+#'     upmat(    object)[1:3, ]
+#'     signmat(  object)[1:3, ]
+#' @export
+pmat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    var <- pvar(object, coefs = coefs, fit = fit)
+    if (is.null(var))  return(NULL)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('p', FITSEP), '')
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
+}
+
+#' @rdname pmat
+#' @export
+p <- function(...){
+    .Deprecated('pmat')
+    pmat(...)
+}
+
+#' @rdname pmat
+#' @export
+effectvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    x <- expand.grid(var = 'effect', fit = fit, coef = coefs)
+    x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
+}
+
+#' @rdname pmat
+#' @export
+effectmat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    var <- effectvar(object, coefs = coefs, fit = fit)
+    if (is.null(var))  return(NULL)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('effect', FITSEP), '')
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
+}
+
+#' @rdname pmat
+#' @export
+effect <- function(...){
+    .Deprecated('effectmat')
+    effectmat(...)
 }
 
 
-#' Extract fit datatable
+#' @rdname pmat
+#' @export
+effectsizemat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    mat <- effectmat(object, coefs = coefs, fit = fit)
+    if (is.null(mat))  return(NULL)  else  abs(mat)
+}
+
+#' @rdname pmat
+#' @export
+effectsize <- function(...){
+    .Deprecated('effectsizemat')
+    effectsizemat(...)
+}
+
+
+#' @rdname pmat
+#' @export
+fdrvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    x <- expand.grid(var = 'fdr', fit = fit, coef = coefs)
+    x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x) == 0)  x <- NULL         # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   #        `lm(coefs)` mostly with    intercept
+}                   
+
+#' @rdname pmat
+#' @export
+fdrmat <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    var <- fdrvar(object, coefs = coefs, fit = fit)
+    if (is.null(var))  return(NULL)
+    dt <- fdt(object)[, var, with = FALSE]
+    names(dt) %<>% stri_replace_first_fixed(paste0('fdr', FITSEP), '')
+    mat <- as.matrix(dt)
+    rownames(mat) <- rownames(object)
+    mat
+}
+
+#' @rdname pmat
+#' @export
+fdr <- function(...){
+    .Deprecated('fdrmat')
+    fdr(...)
+}
+
+bonvar <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    x <- expand.grid(var = 'bonferroni', fit = fit, coef = coefs)
+    x <- paste(x$var, x$coef, x$fit, sep = FITSEP)
+    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
+    x   # NULL[1] and c('a', NULL) work!   # `   lm(coefs)`     mostly with    intercept
+}                   
+
+#' @rdname pmat
+#' @export
+upmat <- function(
+    object, 
+    fit    = fits(object),
+    coefs  = autonomics::coefs(object, fit = fit),
+    var    = 'fdrmat', 
+    cutoff = 0.05
+){
+    fdrmat  <- get(var)(object, coefs = coefs, fit = fit)
+    effectmat <- autonomics::effectmat(object, coefs = coefs, fit = fit)
+    y <- fdrmat < cutoff  &  effectmat > 0
+    y[is.na(y)] <- FALSE
+    mode(y) <- 'numeric'
+    y
+}
+
+#' @rdname pmat
+#' @export
+up <- function(...){
+    .Deprecated('upmat')
+    upmat(...)
+}
+
+#' @rdname pmat
+#' @export
+downmat <- function(
+    object, 
+    fit     = fits(object), 
+    coefs   = autonomics::coefs(object, fit = fit), 
+    var     = 'fdrmat', 
+    cutoff  = 0.05
+){
+    fdrmat  <- get(var)(object, coefs = coefs, fit = fit)
+    effectmat <- autonomics::effectmat(object, coefs = coefs, fit = fit)
+    y <- fdrmat < cutoff  &  effectmat < 0
+    y[is.na(y)] <- FALSE
+    mode(y) <- 'numeric'
+    y
+}
+
+#' @rdname pmat
+#' @export
+down <- function(...){
+    .Deprecated('downmat')
+    downmat(...)
+}
+
+#' Get sign
 #' @param object SummarizedExperiment
-#' @param fit 'limma', 'lme', 'lm', 'lmer', 'wilcoxon'
-#' @return melted data.table
-#' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, fit='limma', plot=FALSE)
-#' extract_fit_dt(object, fit = 'limma')
-#'
-#' file <- download_data('billing16.proteingroups.txt')
-#' inv <- c('EM_E', 'BM_E', 'BM_EM')
-#' object <- read_proteingroups(
-#'            file, invert_subgroups=inv, fit='limma', plot=FALSE)
-#' extract_fit_dt(object, fit = 'limma')
-#' @noRd
-extract_fit_dt <- function(object, fit){
-    Reduce( merge_fit_quantities,
-            mapply( extract_fit_quantity,
-                    quantity = c('effect', 'p', 'fdr', 'bonf'),
-                    MoreArgs = list(object=object, fit=fit),
-                    SIMPLIFY = FALSE ))
+#' @param fit   'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
+#' @param coefs  character vector
+#' @param var    functionname
+#' @param cutoff pvalue
+#' @export
+signmat <- function(
+    object, 
+    fit    = fits(object),
+    coefs  = autonomics::coefs(object, fit = fit),
+    var    = 'fdrmat',
+    cutoff = 0.05
+){ 
+    if (length(coefs)==0) return(matrix(0, nrow = nrow(object), ncol = ncol(object), dimnames = dimnames(object)))
+    upmat(   object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)  -
+    downmat( object, coefs = coefs, fit = fit, var = var, cutoff = cutoff)
+}
+
+#' @rdname pmat
+#' @export
+sign.SummarizedExperimentz <- function(...){
+    .Deprecated('signmat')
+    signmat(...)
 }
 
 .summarize_fit <- function(object, fit){
