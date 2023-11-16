@@ -359,11 +359,19 @@ quantnorm <- function(object, verbose = FALSE){
 #' @rdname log2transform
 #' @export
 invnorm <- function(object, verbose = FALSE){
-    if (verbose)  message('\t\tInvnorm')
+    if (verbose)  message('Invnorm')
     values(object) %<>% apply(2, transform_to_fitting_normal)
     object
 }
 
+#' @rdname log2transform
+#' @export
+vsn <- function(object, verbose = FALSE, delog = TRUE){
+    if (verbose) message('\t\tVSN')
+    if (delog) object %<>% exp2()
+    values(object) %<>% vsn::justvsn(verbose = FALSE)
+    object
+}
 
 #' Transform vector to fitting normal distribution
 #' @param x numeric vector
