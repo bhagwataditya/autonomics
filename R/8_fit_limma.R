@@ -513,8 +513,44 @@ vectorize_contrasts <- function(contrasts){
     unname(unlist(lapply(contrasts, function(x) na.exclude(c(t(x))))))
 }
 
+#' Reset fit
+#' @param object  SummarizedExperiment
+#' @param fit     character vector
+#' @param coefs   character vector
+#' @param verbose TRUE or FALSE
+#' @examples 
+#' file <- download_data('atkin.metabolon.xlsx')
+#' (object <- read_metabolon(file))
+#' object %<>% reset_fit()
+#' object %<>% fit_limma() %>% reset_fit()
+#' object %<>% fit_limma() %>% fit_lm() %>% reset_fit()
+#' object %<>% fit_limma() %>% fit_lm() %>% reset_fit('limma')
+#' @export
+reset_fit <- function(
+    object, 
+    fit     = fits(object), 
+    coefs   = autonomics::coefs(object, fit = fit), 
+    verbose = TRUE
+){
+# Assert
+    . <- NULL
+    assert_is_valid_sumexp(object)
+    if (is.null(fits(object)))  return(object)
+    assert_is_a_bool(verbose)
+# Reset
+    vars <- c('effect', 'p', 'fdr', 't')
+    varpat  <- paste0(vars,  collapse = '|')
+    coefpat <- paste0(coefs, collapse = '|')
+    fitpat  <- paste0(fit,   collapse = '|')
+        
+    pattern <- sprintf('^(%s)%s(%s)%s(%s)$', varpat, FITSEP, coefpat, FITSEP, fitpat)
+    cols <- grep(pattern, fvars(object), value = TRUE)
+    if (length(cols)>0){
+        if (verbose)  cmessage('\t\tRm from fdt: %s', pattern)
+        for (col in cols)  fdt(object)[[col]] <- NULL
     }
-    return(object)
+# Return
+    object
 }
 
 
