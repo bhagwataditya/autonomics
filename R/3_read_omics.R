@@ -573,17 +573,16 @@ merge_sample_excel <- function(
 #' @rdname merge_sample_file
 #' @export
 merge_ffile <- function(
-    object, ffile = NULL, by.x = 'feature_id', by.y = NULL, 
-    stringsAsFactors = TRUE, verbose = TRUE
+    object, ffile = NULL, by.x = 'feature_id', by.y = 'feature_id', all.x = TRUE,
+    select = NULL, stringsAsFactors = FALSE, verbose = TRUE
 ){
     if (is.null(ffile))  return(object)
     assert_all_are_existing_files(ffile)
     if (verbose) message('\t\tMerge fdata: ', ffile)
-    dt <- fread(ffile, stringsAsFactors = stringsAsFactors)
-    if (is.null(by.y))  by.y <- names(dt)[1]
+    dt <- fread(ffile, select = select, stringsAsFactors = stringsAsFactors)
     assert_is_subset(by.y, names(dt))
     dt[[by.y]] %<>% as.character()
-    object %<>% merge_fdata(dt, by.x = by.x, by.y = by.y, verbose = verbose)
+    object %<>% merge_fdt(dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
     object
 }
 
