@@ -590,57 +590,197 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 
 #' Fit model and test for differential expression
 #'
-#' @param object       SummarizedExperiment
-#' @param subgroupvar  subgroup variable
-#' @param formula      modeling formula
-#' @param contrastdefs contrastdef vector / matrix / list
+#' @param object    SummarizedExperiment
+#' @param formula   modeling formula
+#' @param engine    'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
+#' @param drop      TRUE or FALSE
+#' @param codingfun  factor coding function
 #' \itemize{
-#' \item{c("t1-t0", "t2-t1", "t3-t2")}
-#' \item{matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
-#'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE)}
-#' \item{list(matrix(c("WT.t1-WT.t0", "WT.t2-WT.t1", "WT.t3-WT.t2"), \cr
-#'      c("KD.t1-KD.t0", "KD.t2-KD.t1", "KD.t3-KD.t2"), nrow=2, byrow=TRUE), \cr
-#'      matrix(c("KD.t0-WT.t0", "KD.t1-WT.t1", "KD.t2-WT.t2", "KD.t3-WT.t3"),\cr
-#'      nrow=1, byrow=TRUE))}}
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
+#' @param design    design matrix
+#' @param contrasts NULL or character vector: coefficient contrasts to test
+#' @param coefs     NULL or character vector: model coefs to test
 #' @param block     block svar (or NULL)
 #' @param weightvar NULL or name of weight matrix in assays(object)
+#' @param statvars  character vector: subset of c('effect', 'p', 'fdr', 't')
+#' @param sep       string: pvar separator  ("~" in "p~t2~limma")
+#' @param suffix    string: pvar suffix ("limma" in "p~t2~limma")
 #' @param verbose   whether to msg
 #' @param plot      whether to plot
 #' @return Updated SummarizedExperiment
 #' @examples
-#' require(magrittr)
-#' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
-#' object %<>% fit_limma(subgroupvar = 'SampleGroup')
-#' object %<>% fit_lm(   subgroupvar = 'SampleGroup')
-#' plot_venn(is_sig(object, contrast='t3-t2'))
-#' 
-#' S4Vectors::metadata(object)$limma <- S4Vectors::metadata(object)$lm <- NULL
-#' object %<>% fit_limma(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' object %<>% fit_wilcoxon(subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' # object %<>% fit_lme(   subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' # object %<>% fit_lmer(  subgroupvar = 'SampleGroup', block = 'Subject_ID')
-#' plot_venn(is_sig(object, contrast='t3-t2'))
+#' # Default
+#'     file <- download_data('atkin.metabolon.xlsx')
+#'     object <- read_metabolon(file)
+#'     object %<>% fit(~ subgroup)
+#' # Standard
+#'     object %<>% fit_lm(        ~ subgroup)                 #     statistics default
+#'     object %<>% fit_limma(     ~ subgroup)                 # bioinformatics default
+#' # Blocked
+#'     object %<>% fit_limma(     ~ subgroup, block = 'Subject')  #        simple random effects
+#'     object %<>% fit_lme(       ~ subgroup, block = 'Subject')  #      powerful random effects
+#'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject')  # more powerful random effects
+#' # Intuitive : alternative coding
+#'     object %<>% fit_lme(       ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
+#'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
+#'     object %<>% fit_limma(     ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
+#' # Flexible : limma contrasts
+#'     object %<>% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = c('t1-t0'))
+#'         # flexible, but only approximate
+#'         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
+#' # Non-parametric: wilcoxon
+#'     object %<>% fit_wilcoxon( ~ subgroup)                # unpaired
+#'     object %<>% fit_wilcoxon( ~ subgroup, block = 'Subject') # paired
+#'     plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
+#'    #plot_contrast_venn(is_sig(object, contrast = 't3', fit = c('limma', 'lme')))
 #' @export
-fit_limma <- function(object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL,
-    formula = default_formula(object, subgroupvar, 'limma'), 
-    contrastdefs = contrast_coefs(object, formula), 
-    block = NULL, 
-    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    verbose = TRUE, plot=FALSE
+fit <- function(
+    object, 
+    formula   = default_formula(object),
+    engine    = 'limma', 
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    codingfun = contr.treatment, 
+    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
+    contrasts = NULL,
+    coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
+    block     = NULL,
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+    statvars  = c('effect', 'p', 'fdr'),
+    sep       = FITSEP,
+    suffix    = paste0(sep, 'limma'),
+    verbose   = TRUE, 
+    plot      = FALSE
 ){
-# Design/contrasts
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_scalar_subset(engine, c('limma', 'lme', 'lmer', 'wilcoxon', 'lm'))
+    fitfun <- paste0('fit_', engine)
+    get(fitfun)(object, formula = formula, drop = drop, codingfun = codingfun, 
+                design = design, contrasts = contrasts, coefs = coefs, block = block, 
+                weightvar = weightvar, statvars = statvars, sep = sep, suffix = suffix, 
+                verbose = verbose, plot = plot)
+}
+
+
+
+#' @rdname fit
+#' @export
+fit_limma <- function(
+    object, 
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    codingfun = contr.treatment,
+    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
+    contrasts = NULL,
+    coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
+    block     = NULL,
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+    statvars  = c('effect', 'p', 'fdr'),
+    sep       = FITSEP,
+    suffix    = paste0(sep, 'limma'),
+    verbose   = TRUE, 
+    plot      = FALSE
+){
+    object %<>% reset_fit(fit = 'limma', coefs = coefs)
+    limmadt <- .fit_limma(
+        object       = object,        formula      = formula,
+        drop         = drop,          codingfun    = codingfun,
+        design       = design,        contrasts    = contrasts, 
+        coefs        = coefs,         block        = block,
+        weightvar    = weightvar,     statvars     = statvars,
+        sep          = sep,           suffix       = suffix,
+        verbose      = verbose)
+    object %<>% merge_fdt(limmadt)
+        #fdata(object)$F.limma   <- limmares$F
+        #fdata(object)$F.p.limma <- limmares$F.p
+    if (plot)  print(plot_volcano(object, fit = 'limma')) 
+    object
+}
+
+
+
+
+#' Are varlevels unique
+#' 
+#' @param object SummarizedExperiment or data.table
+#' @param vars character vector
+#' @param ... required for s3 dispatch
+#' @return TRUE or FALSE
+#' @examples 
+#' require(data.table)
+#' object1 <- data.table(expand.grid(genome = c('WT', 'MUT'), treat = c('control', 'drug')))
+#' object2 <- data.table(expand.grid(mutant = c('YES', 'NO'), treated = c('YES', 'NO')))
+#' varlevels_dont_clash(object1)
+#' varlevels_dont_clash(object2)
+#' @export
+varlevels_dont_clash <- function(object, ...)  UseMethod('varlevels_dont_clash')
+
+#' @rdname varlevels_dont_clash
+#' @export
+varlevels_dont_clash.data.table <- function(
+    object, vars = names(object), ...
+){
+    object                         %>% 
+    extract(, vars, with = FALSE)  %>%
+    lapply(factor)                 %>% 
+    lapply(levels)                 %>% 
+    unlist()                       %>% 
+    duplicated()                   %>% 
+    any()                          %>%
+    magrittr::not()
+}
+
+#' @rdname varlevels_dont_clash
+#' @export
+varlevels_dont_clash.SummarizedExperiment <- function(
+    object, vars = svars(object), ...
+){
+    varlevels_dont_clash.data.table(sdt(object), vars)
+}
+
+
+#' @rdname fit
+#' @export
+.fit_limma <- function(
+    object, 
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)),
+    codingfun    = 'treatment',
+    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
+    contrasts = NULL,
+    coefs     = if (is.null(contrasts))  colnames(design) else NULL,
+    block     = NULL, 
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
+    statvars  = c('effect', 'p', 'fdr'),
+    sep       = FITSEP,
+    suffix    = paste0(sep, 'limma'),
+    verbose   = TRUE, 
+    plot      = FALSE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_is_formula(formula)
+    assert_is_subset(all.vars(formula), svars(object))
+    assert_is_a_bool(drop)
+    assert_is_matrix(design)
+    assert_is_subset(coefs, colnames(design))
+    if (!is.null(block))      assert_is_subset(block, svars(object))
+    if (!is.null(weightvar))  assert_scalar_subset(weightvar, assayNames(object))
+    assert_is_subset(statvars, c('effect', 'p', 'fdr', 't'))
+# Design/contrasts/block/weights
+    . <- NULL
     if (verbose)  message('\t\tlmFit(', formula2str(formula),
         if(is.null(block))     '' else paste0(' | ',block),
         if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
                                             weightvar), ')')
-    design <- create_design(object, formula=formula, verbose = FALSE)
-    if (is.character(contrastdefs)) contrastdefs %<>% contrvec2mat()
-    if (is.matrix(contrastdefs))    contrastdefs %<>% contrmat2list()
-    contrastdefs(object) <- contrastdefs
-# Block
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
         blockvar <- block
@@ -648,24 +788,55 @@ fit_limma <- function(object,
         if (is.null(metadata(object)$dupcor)){
             if (verbose)  message('\t\t\t\tdupcor `', blockvar, '`')
             metadata(object)$dupcor <- duplicateCorrelation(
-                values(object), design=design, block=block
+                values(object), design = design, block = block
             )$consensus.correlation }}
-# Exprs/Weights
-    exprmat <-  assays(object)[[1]][, rownames(design)]
+    design %<>% extract(intersect(snames(object), rownames(.)), , drop = FALSE) # required in mae
+    exprmat <-  values(object)[, rownames(design)]
     weightmat <- if (is.null(weightvar)){ NULL 
             } else {assert_is_a_string(weightvar)
                     assert_is_subset(weightvar, assayNames(object))
                     assays(object)[[weightvar]][, rownames(design)] }
 # Fit
-    fit <- suppressWarnings(lmFit(
-                object = exprmat, design = design, 
-                block = block, correlation = metadata(object)$dupcor,
-                weights = weightmat))
-# Contrast
-    object %<>% .limmacontrast(fit, formula)
-    if (plot)  print(plot_volcano(object, fit='limma')) 
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(object, 'limma'))
-    return(object)
+    limmafit <- suppressWarnings(lmFit(
+                    object = exprmat, design = design, 
+                    block = block, correlation = metadata(object)$dupcor,
+                    weights = weightmat))
+# Effect
+    if (is.null(contrasts)){  
+                limmafit %<>% contrasts.fit(coefficients = coefs) 
+    } else {    limmafit %<>% contrasts.fit(contrasts = makeContrasts(
+                                    contrasts = contrasts, levels = design)) }
+    limmadt <- data.table(feature_id = rownames(limmafit))
+    if ('effect' %in% statvars){
+        dt0 <- data.table(limmafit$coefficients)
+        names(dt0) %<>% paste0('effect', sep, ., suffix)
+        limmadt %<>% cbind(data.table(dt0)) 
+    }
+# p/t/fdr
+    if (!all(limmafit$df.residual==0)){
+        limmafit %<>% eBayes()
+        if ('p' %in% statvars){ 
+            dt0 <- data.table(limmafit$p.value)
+            names(dt0) %<>% paste0('p', sep, ., suffix)
+            limmadt %<>% cbind(dt0)  
+        } 
+        if ('t' %in% statvars){ 
+            dt0 <- data.table(limmafit$t)
+            names(dt0) %<>% paste0('t', sep, ., suffix)
+            limmadt %<>% cbind(dt0)  
+        } 
+        if ('fdr' %in% statvars){
+            dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
+            names(dt0) %<>% paste0('fdr', sep, .,suffix)
+            limmadt %<>% cbind(dt0)  
+        } 
+    }
+# Return
+    if (verbose)  message_df('\t\t\t%s',  summarize_fit(limmadt, fit = 'limma'))
+    limmadt
+
+}
+
 }
 
 
