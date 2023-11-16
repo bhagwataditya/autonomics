@@ -402,10 +402,10 @@ code_helmert_forward <- function(n){
 #' @return  matrix
 #' @examples
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' subgroup_matrix(object, subgroupvar = 'Group')
-#' contrast_subgroup_cols(object, subgroupvar = 'Group')
-#' contrast_subgroup_rows(object, subgroupvar = 'Group')
+#' object <- read_metabolon(file)
+#' subgroup_matrix(object, subgroupvar = 'subgroup')
+#' contrast_subgroup_cols(object, subgroupvar = 'subgroup')
+#' contrast_subgroup_rows(object, subgroupvar = 'subgroup')
 #' @export
 contrast_subgroup_cols <- function(object, subgroupvar){
     subgroupmat <- subgroup_matrix(object, subgroupvar)
@@ -442,18 +442,31 @@ contrast_subgroup_rows <- function(object, subgroupvar){
 }
 
 
+# contrast_coefs <- function(object, formula){
+#     subgroupvar <- all.vars(formula)[1]
+#     design <- create_design(object, formula = formula)
+#     if (ncol(design)==1){
+#         list(matrix(colnames(design), nrow=1, ncol=1), 
+#             matrix(nrow=0, ncol=0))
+#     } else if (all(design[, 1]==1)){
+#         list(colnames(design)[-1][seq_len(nlevels(object, subgroupvar)-1)], 
+#             matrix(nrow=0, ncol=0))
+#     } else {
+#         list(contrast_subgroup_cols(object, subgroupvar),
+#             contrast_subgroup_rows( object, subgroupvar)) }
+# }
+
 contrast_coefs <- function(object, formula){
     subgroupvar <- all.vars(formula)[1]
-    design <- create_design(object, formula = formula, verbose = FALSE)
-    if (ncol(design)==1){
-        list(matrix(colnames(design), nrow=1, ncol=1), 
-            matrix(nrow=0, ncol=0))
-    } else if (all(design[, 1]==1)){
-        list(colnames(design)[-1][seq_len(nlevels(object, subgroupvar)-1)], 
-            matrix(nrow=0, ncol=0))
+    design <- create_design(object, formula = formula)
+    if (ncol(design)==1){  
+        colnames(design)
+    } else if (all(design[, 1]==1)){ 
+        colnames(design)[-1][seq_len(nlevels(object, subgroupvar)-1)]
     } else {
-        list(contrast_subgroup_cols(object, subgroupvar),
-            contrast_subgroup_rows( object, subgroupvar)) }
+        c(contrast_subgroup_cols(object, subgroupvar), 
+          contrast_subgroup_rows( object, subgroupvar))
+    }
 }
 
 
