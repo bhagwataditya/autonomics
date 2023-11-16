@@ -393,29 +393,29 @@ is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 
 #=============================================================================
 #
-#                        split_by_svar
+#                        split_samples
 #
 #==============================================================================
 
-#' Split by svar
-#' @param object SummarizedExperiment
-#' @param svar   svar to split on
-#' @return list of SummarizedExperiment
+#' Split samples
+#'
+#' Split samples by svar
+#' @param object  SummarizedExperiment
+#' @param objlist SummarizedExperiment list
+#' @param by     svar to split by (string)
+#' @return  SummarizedExperiment list
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
-#' split_by_svar(object)
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' objlist <- split_features(object, by = 'PLATFORM')
+#' objlist <- split_samples(object, 'Diabetes')
+#' objlist %<>% Map(impute, .)
+#' object <- cbind_imputed(objlist)
 #' @export
-split_by_svar <- function(object, svar = subgroup){
-    svar <- enquo(svar)
-    svarstr <- as_name(svar)
-
-    if (is.null(svar)) return(list(object))
-    extract_samples  <- function(sg){
-                            idx <- sdata(object)[[svarstr]] == sg
-                            object[, idx]
-                        }
-    Map(extract_samples, slevels(object, svarstr))
+split_samples <- function(object, by = 'subgroup'){
+    if (!by %in% svars(object))  return(list(object))
+    extract_samples  <- function(level){  object %>% extract(, .[[by]] == level)  }
+    Map(extract_samples, slevels(object, by))
 }
 
 
