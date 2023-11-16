@@ -79,7 +79,6 @@ which.medoid <- function(mat){
 #' @param verbose  whether to message
 #' @return SummarizedExperiment
 #' @examples 
-#' require(magrittr)
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
 #' object %<>% filter_medoid(by = 'subgroup', verbose=TRUE)
@@ -89,7 +88,7 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
         message("`BiocManager::install('ICSNP')`. Then re-run.")
         return(object) }
     if (is.null(by))  return(.filter_medoid(object, verbose=verbose))
-    object %<>% split_by_svar(!!sym(by))
+    object %<>% split_samples(by)
     if (verbose)  message('\t\t\tRetain medoid sample')
     object %<>% lapply(.filter_medoid, verbose=verbose)
     do.call(BiocGenerics::cbind, object)
@@ -129,23 +128,22 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #' @return SummarizedExperiment
 #' @examples
 #' # read 
-#'     require(magrittr)
-#'     file <- download_data('atkin18.metabolon.xlsx') 
-#'     object0 <- read_metabolon(file, plot=FALSE)
-#'     pca(object0, plot=TRUE, color=SET)
+#'     file <- download_data('atkin.metabolon.xlsx') 
+#'     object0 <- read_metabolon(file)
+#'     pca(object0, plot = TRUE, color = 'Time')
 #' 
 #' # subtract_baseline: takes medoid of baseline samples if multiple
-#'     object <- subtract_baseline(object0, block='SUB', subgroupvar='SET')
-#'     pca(object, plot=TRUE, color=SET)
+#'     object <- subtract_baseline(object0, block = 'Subject', subgroupvar = 'Time')
+#'     pca(object, plot = TRUE, color = 'Time')
 #' 
 #' # subtract_pairs: optimized for many blocks
-#'     object <- subtract_pairs(   object0, block='SUB', subgroupvar='SET')
-#'     pca(object, plot=TRUE, color=SET)
+#'     object <- subtract_pairs(object0, block = 'Subject', subgroupvar = 'Time')
+#'     pca(object, plot = TRUE, color = 'Time')
 #' 
 #' # subtract differences
-#'     object <- subtract_differences(object0, block='SUB', subgroupvar='SET')
+#'     object <- subtract_differences(object0, block = 'Subject', subgroupvar = 'Time')
 #'     values(object) %<>% na_to_zero()
-#'     pca(object, plot=TRUE, color=SET)
+#'     pca(object, plot = TRUE, color = 'Time')
 #' @export 
 subtract_baseline <- function(
     object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], 
@@ -158,8 +156,7 @@ subtract_baseline <- function(
         if (!is.null(block))  message("\t\t\tin block  : ", block)
         message("\t\t\tfor assays: ", paste0(assaynames, collapse = ', '))
     }
-    objlist <- if (is.null(block)) list(object) else split_by_svar(
-                                                        object, !!sym(block)) 
+    objlist <- if (is.null(block)) list(object) else split_samples(object, block)
     objlist %<>% lapply(.subtract_baseline, 
                         subgroupvar = subgroupvar, subgroupctr = subgroupctr, 
                         assaynames = assaynames)
@@ -170,27 +167,28 @@ subtract_baseline <- function(
 #' @rdname subtract_baseline
 #' @export
 subtract_pairs <- function(
-    object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], block,
-    assaynames = setdiff(assayNames(object), 'weights'), verbose = TRUE
+    object, 
+    subgroupvar = 'subgroup', 
+    subgroupctr = slevels(object, subgroupvar)[1], 
+    block,
+    assaynames = assayNames(object)[1], verbose = TRUE
 ){
 # Report
     # PRO: optimized for many block levels
     # CON: works only with exactly one ref per block 
     . <- NULL
     if (verbose){ 
-        message("\t\tSubtract pairs")
-        message("\t\t\tcontrols  : ", subgroupvar, "==", subgroupctr)
-        if (!is.null(block))  message("\t\t\tin block  : ", block)
-        message("\t\t\tfor assays: ", paste0(assaynames, collapse = ', '))
+        txt <- paste0("\t\tSubtract ", subgroupvar, "==", subgroupctr, ' ')
+        txt %<>% paste0(paste0(assaynames, collapse = '/'))
+        if (!is.null(block))  txt %<>% paste0(" per ", block)
+        message(txt)
     }
 # Ensure single ref per block
-    sdata1 <- sdata(object)[, c('sample_id', subgroupvar, block)]
-    sdata1 %<>% data.table()
-    singlerefperblock <- sdata1[,
-                            sum(get(subgroupvar)==subgroupctr)==1, by=block]$V1
+    sdt1 <- sdt(object)[, c('sample_id', subgroupvar, block), with = FALSE]
+    singlerefperblock <- sdt1[, sum(get(subgroupvar)==subgroupctr)==1, by=block]$V1
     assert_is_identical_to_true(all(singlerefperblock))
 # Subtract ref
-    splitobjects <- split_by_svar(object, !!sym(subgroupvar))
+    splitobjects <- split_samples(object, subgroupvar)
     refobj <- splitobjects[[subgroupctr]]
     splitobjects %<>% extract(setdiff(names(splitobjects), subgroupctr))
     splitobjects %<>% lapply(function(obj){
@@ -223,7 +221,7 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
         message("\t\t\tfor assays: ", assayNames(object)[1])
     }
     fvars0 <- intersect(c('feature_id', 'feature_name'), fvars(object))
-    dt <- sumexp_to_long_dt(object, fvars=fvars0, svars=c(subgroupvar, block))
+    dt <- sumexp_to_longdt(object, fvars=fvars0, svars=c(subgroupvar, block))
     subgroups <- slevels(object, subgroupvar)
     n <- length(subgroups)
     formula <- paste0(c(fvars0, block), collapse = ' + ')
