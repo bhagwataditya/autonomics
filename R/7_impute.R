@@ -10,7 +10,6 @@
 #' @param verbose   logical(1)
 #' @return Updated matrix
 #' @examples
-#' require(magrittr)
 #' matrix(c(0, 7), nrow=1)
 #' matrix(c(0, 7), nrow=1)    %>% zero_to_na(verbose=TRUE)
 #' 
@@ -100,6 +99,8 @@ minusinf_to_na <- function(x, verbose = FALSE){
 }
 
 
+#' @rdname zero_to_na
+#' @export
 na_to_string <- function(x){
     x[is.na(x)] <- ''
     x
@@ -114,64 +115,281 @@ na_to_string <- function(x){
 #
 #=============================================================================
 
-#' @rdname halfnormimpute
-#' @export
-normimpute <- function(x, selector = is.na(x), mean = 0){
-    x[selector] <- rnorm(
-        length(x[selector]), mean = mean, sd = sd(x[!selector]))
-    x
-}
-
-#' Impute from half-normal distribution around 0
-#' @param x         NA-containing numeric vector
-#' @param selector  which values to impute
-#' @param mean      number
-#' @param ref       reference : which reference value away from which to impute
-#' @param pos       position  : how many sds away to impute
-#' @return numeric vector of same length
+#' Impute
+#' 
+#' Impute NA values
+#'
+#' Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
+#' @param object   numeric vector, SumExp
+#' @param assay    string
+#' @param by       svar
+#' @param shift    number: sd units
+#' @param width    number: sd units
+#' @param frac     fraction: fraction of available samples should be greater 
+#'                           than this value for a subgroup to be called available
+#' @param verbose  TRUE or FALSE
+#' @param plot     TRUE or FALSE
+#' @param n        number of samples to plot
+#' @param palette  color vector
+#' @param ...      required for s3 dispatch
+#' @return numeric vector, matrix or SumExp
 #' @examples
-#' require(data.table)
-#' x <- rnorm(1e5)
-#' idx <- runif(length(x))>0.9
-#' x[idx] <- NA
-#' dt1 <- data.table(value = normimpute(x), distr = 'norm')
-#'
-#' x <- abs(rnorm(1e5)); x[idx] <- NA
-#' dt2 <- data.table(value = halfnormimpute(x), distr = 'halfnorm')
-#'
-#' x <- abs(rnorm(1e5)); x[idx] <- NA
-#' dt3 <- data.table(value = zeroimpute(x), distr = 'zero')
-#'
-#' x <- abs(rnorm(1e5)); x[idx] <- NA
-#' dt4 <- data.table(value = translate(x), distr = 'translate')
-#'
-#' require(ggplot2)
-#' ggplot(rbind(dt1,dt2,dt3, dt4), aes(x=value, fill=distr)) +
-#' geom_density(alpha=0.5)
+#' # Simple Design
+#'    file <- download_data('fukuda20.proteingroups.txt')
+#'    object <- read_maxquant_proteingroups(file)
+#'    impute(values(object)[, 1], plot = TRUE)[1:3]              # vector
+#'    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
+#'    impute(object, plot = TRUE)                                # sumexp
+#' # Complex Design
+#'    file <- download_data('atkin.metabolon.xlsx')
+#'    object <- read_metabolon(file)
+#'    invisible(impute(values(object)[1:3, 1   ]))               # vector
+#'    invisible(impute(values(object)[1:3, 1:5 ]))               # matrix
+#'    object %>%  filter_samples(Diabetes == 'Control') %>% impute()  # sumexp
 #' @export
-halfnormimpute <- function(x, selector = is.na(x)){
-    x[selector] <- abs(
-        rnorm(length(x[selector]), sd = 2*sd(x[!selector], na.rm = TRUE)))
-    x
-}
+impute <- function(object, ...) UseMethod('impute')
 
-
-#' @rdname halfnormimpute
+#' @rdname impute
 #' @export
-zeroimpute <- function(x, selector = is.na(x)){
-    x[selector] <- 0
-    x
-}
-
-#' @rdname halfnormimpute
-#' @export
-translate <- function(
-    x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x, na.rm = TRUE)
+impute.numeric <- function(
+    object, shift = 2.5, width = 0.3, verbose = TRUE, plot = FALSE, ...
 ){
-    assert_any_are_true(sapply(c(min, mean, median, max), identical, ref))
-    shift <- ref(x, na.rm = TRUE) - pos
-    x - shift
+# Original
+    count <- imputed <- NULL
+    sd1    <- sd(object, na.rm = TRUE)
+    mean1  <- mean(object, na.rm = TRUE)
+# Imputed
+    mean0 <- mean1 - shift*sd1
+    sd0 <- width*sd1
+    idx    <- is.na(object)
+    if (verbose)  message('\tImpute ', sum(idx), ' / ', length(idx), ' values')
+    n <- length(object[idx])
+    object[idx] <- rnorm(n, mean = mean0, sd = sd0)
+# Plot and Return
+    if (plot){
+        dt <- data.table(x = object, imputed = idx)
+        p <- ggplot(dt) + 
+             geom_density(aes(x = x, y = after_stat(count), fill = imputed))
+        print(p)
+    }
+    object
 }
+
+#' @rdname impute
+#' @export
+impute.matrix <- function(
+    object, 
+    shift   = 2.5, 
+    width   = 0.3, 
+    verbose = TRUE, 
+    plot    = FALSE, 
+    n       = min(9, ncol(object)),  
+    palette = make_colors(colnames(object)), 
+    ...
+){
+    count <- imputed <- sample_id <- value <- NULL
+    idx <- is.na(object)
+    if (verbose){
+        message(sprintf('\tImpute (out of %d) features per sample: ', nrow(object)))
+        message_df('\t\t%s', colSums(idx[, 1:n]))
+    }
+    object %<>% apply(2, impute.numeric,
+                 shift = shift, width = width, verbose = FALSE, plot = FALSE)
+    if (plot){
+        dt1 <- mat2dt(object[,  1:n], 'feature_id')
+        dt2 <- mat2dt(idx[,1:n], 'feature_id')
+        dt1 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'value')
+        dt2 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
+        dt <- merge(dt1, dt2, by = c('feature_id', 'sample_id'))
+        p <- ggplot(dt) + 
+             geom_density(aes(x = value, y = after_stat(count), fill = sample_id, 
+                              group = interaction(sample_id, imputed))) +
+            scale_fill_manual(values = palette)
+        print(p)
+    }
+    object
+}
+
+#' @rdname impute
+#' @export 
+impute.SummarizedExperiment <- function(
+    object,
+    assay    = assayNames(object)[1],
+    by       = 'subgroup',
+    shift    = 2.5, 
+    width    = 0.3, 
+    frac     = 0.5,
+    verbose  = TRUE, 
+    plot     = FALSE, 
+    palette  = make_colors(colnames(object)), 
+    n        = min(9, ncol(object)), 
+    ...
+){
+# Assert
+    assert_is_scalar(assay); assert_is_subset(assay, assayNames(object))
+    assert_is_a_number(shift)
+    assert_is_a_number(width)
+    assert_is_a_bool(verbose)
+    assert_is_a_bool(plot)
+    assert_is_character(palette)
+    assert_has_names(palette)
+    assert_is_a_number(n)
+    consistent.na <- imputed <- isNa <- isValue <- na.group <- value <- NULL
+    value.group <- NULL
+# Impute systematic NAs
+    dt <- sumexp_to_longdt(object, assay = assay, svars = by)
+    dt[, imputed := impute(value, shift = shift, width = width, 
+                           verbose = FALSE, plot = FALSE), by = 'sample_id']
+    dt[, isNa    :=  is.na(value)]
+    dt[, isValue := !is.na(value)]
+    dt[, na.group    := sum(isNa)   == .N,   by = c('feature_id', by)]
+    dt[, value.group := sum(isValue) > frac*.N, by = c('feature_id', by)]
+    dt[, consistent.na := na.group & any(value.group), by = 'feature_id']
+    dt[consistent.na==TRUE, value := imputed]
+# Update object
+    mat <- dcast(dt, feature_id ~ sample_id, value.var = 'value')
+    mat %<>% dt2mat()
+    mat %<>% extract(rownames(object), )
+    mat %<>% extract(, colnames(object))
+    is_imputed(object) <- is.na(values(object))  &  !is.na(mat)
+    fdt(object)$imputed <- rowAnys(is_imputed(object))
+    values(object) <- mat
+    if (verbose & any(is_imputed(object))){
+        message(sprintf('\tImputed %d/%d features in the following groups:', 
+                        sum(is_imputed_feature(object)), nrow(object)))
+        message_df('\t\t%s', n_imputed_features_per_subgroup(object))
+    }
+# Plot/Return
+    if (plot){
+        #p1 <- plot_sample_densities(object, fill = 'subgroup') + guides(fill = 'none')
+        #dt <- sumexp_to_longdt(object)
+        # p1 <- ggplot(dt) + ggridges::geom_density_ridges(aes(
+        #         x = value, y = sample_id, fill = subgroup, group = sample_id)) + 
+        #         theme_bw() + ggtitle('Sample densities')
+        p1 <- if (ncol(object)<=9){ plot_sample_nas(object) + guides(fill = 'none')
+              } else {   plot_subgroup_nas(object) }
+        p2 <- plot_sample_violins(object, fill = by) + guides(fill = 'none') + ggtitle(NULL)
+        gridExtra::grid.arrange(p1, p2, nrow = 2)
+    }
+    object
+}
+
+# # @rdname impute
+# # @export
+# impute.list <- function(
+#     object,
+#     assay = assayNames(object[[1]])[1],
+#     by = 'subgroup',
+#     shift    = 2.5, 
+#     width    = 0.3, 
+#     frac     = 0.5,
+#     verbose  = TRUE, 
+#     plot     = FALSE, 
+#     palette  = make_colors(colnames(object)), 
+#     n        = min(9, ncol(object))
+# ){
+# # Assert
+#     assert_is_list(object)                                            # is it a list
+#     assert_all_are_true(vapply(object, is_valid_sumexp, logical(1)))  # of valid sumexps
+#     assert_all_are_true(Reduce(identical, lapply(object, fdt)))       # with identical fdt
+# # Impute then Align
+#     object %<>% Map(impute.SummarizedExperiment, .) 
+#     imputed <- object %>% lapply(fdt)
+#     imputed %<>% lapply(extract2, 'imputed') 
+#     imputed %<>% Reduce(`|`, .)
+#     object %<>% Map(function(obj){ fdt(obj)$imputed <- imputed; obj }, .)
+# # Return
+#     object
+# }
+
+n_imputed_features_per_subgroup <- function(object){ 
+    objlist <- split_samples(object, by = 'subgroup')
+    n <- vapply(objlist, n_imputed_features, integer(1))
+    n[n!=0]
+}
+n_imputed_features  <- function(object) sum(is_imputed_feature(object))
+n_imputed_samples   <- function(object) sum(is_imputed_sample( object))
+is_imputed_feature  <- function(object)     rowAnys(is_imputed(object))
+is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
+
+# Plot imputation densities
+# @param object SummarizedExperiment
+# @return 
+# @examples 
+# @export
+#plot_imputation_densities <- function(object, n = min(9, ncol(object))){
+# Prepare
+#    dt1 <- mat2dt(    values(object)[, 1:n], 'feature_id')
+#    dt2 <- mat2dt(is_imputed(object)[, 1:n], 'feature_id')
+#    dt1 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'value')
+#    dt2 %<>% melt.data.table(id.vars = 'feature_id', variable.name = 'sample_id', value.name = 'imputed')
+#    dt <- merge(dt1, dt2, by = c('feature_id', 'sample_id'))
+# Measured
+#    p <- ggplot(dt[imputed==FALSE])
+#    p <- p + geom_density(aes(x = value, y = stat(count), fill = sample_id), na.rm = TRUE)
+# Imputed
+#    dt %<>% extract(imputed==TRUE)
+#    dt %<>% extract(, .SD[.N>2], by = c('sample_id'))
+#    if (nrow(dt)>0){
+#        p <- p + geom_density(aes(x = value, y = stat(count), fill = sample_id), data = dt, na.rm = TRUE) 
+#    }
+# Return
+#    p <- p + scale_fill_manual(values = palette)
+#    p
+#}
+
+
+# @rdname halfnormimpute
+# @export
+# normimpute <- function(x, selector = is.na(x), mean = 0){
+#    x[selector] <- rnorm(
+#        length(x[selector]), mean = mean, sd = sd(x[!selector]))
+#    x
+#}
+
+
+# Impute from half-normal distribution around 0
+# 
+# @param x          NA-containing numeric vector
+# @param selector   which values to impute
+# @param mean       which mean to impute around
+# @param ref        reference (\code{translate})
+# @param pos        position (\code{translate})
+# @return numeric vector of same length
+# @examples
+# x <- rnorm(1e5, mean = 5)
+# idx <- runif(length(x))>0.9
+# x[idx] <- NA
+# dt0 <- data.table(x = x, method = '0.original')
+# dt1 <- data.table(x =     zeroimpute(x)[idx], method = '1.zeroimpute')
+# dt2 <- data.table(x =     normimpute(x)[idx], method = '2.normimpute')
+# dt3 <- data.table(x = halfnormimpute(x)[idx], method = '3.halfnormimpute')
+# dt <- rbindlist(list(dt0, dt1, dt2, dt3, dt4))
+# ggplot(dt) + geom_density(aes(x = x, y = stat(count), group = method, fill = method), alpha = 0.5)
+# @export
+#halfnormimpute <- function(x, selector = is.na(x)){
+#    x[selector] <- abs(
+#        rnorm(length(x[selector]), sd = 2*sd(x[!selector], na.rm = TRUE)))
+#    x
+#}
+
+
+# @rdname halfnormimpute
+# @export
+#zeroimpute <- function(x, selector = is.na(x)){
+#    x[selector] <- 0
+#    x
+#}
+
+# @rdname halfnormimpute
+# @export
+#translate <- function(
+#    x, ref = c(min, mean, median, max)[[1]], pos = 3*sd(x, na.rm = TRUE)
+#){
+#    assert_any_are_true(sapply(c(min, mean, median, max), identical, ref))
+#    shift <- ref(x, na.rm = TRUE) - pos
+#    x - shift
+#}
 
 #=============================================================================
 #
