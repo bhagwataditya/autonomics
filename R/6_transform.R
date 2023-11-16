@@ -323,13 +323,12 @@ zscore <- function(object, verbose = FALSE){
 #' @param verbose  TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' require(matrixStats)
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 #' fdata(object)$housekeeping <- FALSE
 #' fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
-#' values(object)[, object$subgroup=='Adult'] %<>% add(5)
+#' values(object)[, object$subgroup=='Adult'] %<>% magrittr::add(5)
 #' plot_sample_densities(object)
 #' plot_sample_densities(center(object))
 #' plot_sample_densities(center(object, housekeeping))
@@ -339,7 +338,7 @@ center <- function(object, selector = rep(TRUE, nrow(object))==TRUE,
 ){
     selector <- enexpr(selector)
     selector <- rlang::eval_tidy(selector, data = fdata(object))
-    if (verbose)  message(fun, ' center samples on ', 
+    if (verbose)  message('\t\t', fun, ' center samples on ', 
                             nrow(object[selector, ]), ' features')
     correction_factors <- apply(values(object[selector, ]), 2, fun, na.rm=TRUE)
     correction_factors[is.na(correction_factors)] <- 0
