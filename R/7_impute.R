@@ -441,28 +441,57 @@ split_features <- function(object, by){
 
 #=============================================================================
 #
-#                     is_systematic_detect
-#                     is_random_detect
-#                     is_full_detect
+#                     systematic_nas
+#                     random_nas
+#                     no_nas
 #
 #=============================================================================
 
 
-is_systematic_detect <- function(object, subgroup = subgroup){
-    . <- NULL
-    subgroup <- enquo(subgroup)
-    split_by_svar(object, !!subgroup) %>%
-    lapply(function(x) rowAlls(is.na(values(x)))) %>%
-    Reduce("|", .)
+# all
+# any
+# fraction
+fraction <- function(x, frac)  sum(x) >= frac*length(x)
+
+
+#' Is systematic/random/full NA
+#' @param object SummarizedExperiment
+#' @param by     svar (string)
+#' @param frac   fraction
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file)
+#' head(systematic_nas(object))   # missing in some subgroups, present in others
+#' head(random_nas(object))       # missing in some samples, independent of subgroup
+#' head(no_nas(object))           # missing in no samples
+#' @export
+systematic_nas <- function(object, by = 'subgroup', frac = 0.5){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(by, svars(object))
+    assert_is_fraction(frac)
+    value <- nalevel <- valuelevel <- NULL
+# Call
+    nlevels <- length(unique(object[[by]]))
+    dt <- sumexp_to_longdt(object, svars = by)
+    dt %<>% extract(, .(nalevel =      all( is.na(value)),
+                     valuelevel = fraction(!is.na(value), frac = frac)), by = c('feature_id', by) )
+    dt %<>% extract(, .SD[any(nalevel) & any(valuelevel)] , by = by)
+    y <- fnames(object) %in% as.character(dt[, feature_id])
+# Return
+    y
 }
 
-is_random_detect <- function(object, subgroup = subgroup){
-    subgroup <- enquo(subgroup)
-    rowAnys(is.na(values(object))) & !is_systematic_detect(object, !!subgroup)
+#' @rdname systematic_nas
+#' @export
+random_nas <- function(object, by = 'subgroup'){
+    rowAnys(is.na(values(object))) & 
+    !systematic_nas(object, by)
 }
 
-
-is_full_detect <- function(object){
+#' @rdname systematic_nas
+#' @export
+no_nas <- function(object){
     rowAlls(!is.na(values(object)))
 }
 
