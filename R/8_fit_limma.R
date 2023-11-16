@@ -55,55 +55,93 @@ default_formula <- function(object){
     }
 }
 
+character2factor <- function(x)  if (is.character(x)) factor(x) else x
+
+
 #' Create design
 #'
 #'  Create design matrix  for statistical analysis
-#' @param object  SummarizedExperiment
-#' @param subgroupvar subgroup svar
-#' @param formula formula with svars
-#' @param verbose whether to message
+#' @param object       SummarizedExperiment or data.frame
+#' @param formula      formula with svars
+#' @param drop         whether to drop predictor names
+#' @param codingfun  factor coding function
+#' \itemize{
+#'     \item contr.treatment:          intercept = y0,     coefi = yi - y0
+#'     \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+#'     \item code_control:             intercept = ymean,  coefi = yi - y0
+#'     \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+#'     \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+#'     \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+#'     \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+#'     \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+#'     \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+#'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+#' }
+#' @param verbose      whether to message
+#' @param ...          required to s3ify
 #' @return design matrix
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
 #' unique(create_design(object))
-#'
-#' object$subgroup <- 'billing19'
-#' unique(create_design(object))
-#'
-#' file <- download_data('atkin18.somascan.adat')
-#' object <- read_somascan(file, plot=FALSE)
-#' unique(create_design(object))
-#' create_design(object, formula= ~ 0 + SampleGroup + Sex + T2D + age + bmi)
-#' object$subgroup <- 'atkin18'
-#' unique(create_design(object))
+#' unique(create_design(object, ~ Time))
+#' unique(create_design(object, ~ Time, codingfun = contr.treatment.explicit))
+#' unique(create_design(object, ~ Time, codingfun = contr.diff))
+#' unique(create_design(object, ~ Time + Diabetes))
+#' unique(create_design(object, ~ Time / Diabetes))
+#' unique(create_design(object, ~ Time * Diabetes))
 #' @export
-create_design <- function(
+create_design <- function(object, ...) UseMethod('create_design')
+
+
+#' @rdname create_design
+#' @export
+create_design.SummarizedExperiment <- function(
     object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, fit = 'limma'), 
-    verbose = TRUE
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)), 
+    codingfun = contr.treatment,
+    verbose   = TRUE, 
+    ...
+){
+    create_design.data.table(sdt(object), 
+                            formula   = formula,
+                            codingfun = codingfun,
+                            drop      = drop,
+                            verbose   = verbose)
+}
+
+#' @rdname create_design
+#' @export
+create_design.data.table <- function(
+    object, 
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)), 
+    codingfun = contr.treatment,
+    verbose   = TRUE, 
+    ...
 ){
 # Assert
-    assert_is_all_of(object, 'SummarizedExperiment')
-    assert_is_subset(all.vars(formula), svars(object))
+    assert_is_subset(all.vars(formula), names(object))
     . <- NULL
-# Ensure that subgroup vector is a factor to preserve order of levels
-    for (var in all.vars(formula)){
-        if (is.character(object[[var]])) object[[var]] %<>% factor() }
+# Contrast Code Factors
+    object %<>% code(codingfun = codingfun, vars = all.vars(formula), verbose = verbose)
 # Create design matrix
-    if (verbose)   message('\t\tDesign: ', formula2str(formula))
-    myDesign <- model.matrix(formula,  data = sdata(object))
+    #if (verbose)   message('\t\tDesign: ', formula2str(formula))
+    object %<>% data.frame(row.names = .$sample_id)
+    myDesign <- model.matrix(formula, data = object)
     colnames(myDesign) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     is_factor_var <- function(x, object) is.factor(object[[x]])
-    for (predictor in all.vars(formula)){
-        if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
-                    stri_replace_first_fixed(predictor, '') %>% make.names() }
-        # Fails for e.g. T2D = YES/NO: a meaningless column "YES" is created
-        # For other cases it works wonderfully, so I keep it for now.
-        # If it gives too many issues, roll back to doing the dropping only
-        # for "subgroup" levels:
-        #colnames(myDesign) %<>% gsub('subgroup', '', ., fixed=TRUE)
+    if (drop){
+        for (predictor in all.vars(formula)){
+            if (is.factor(object[[predictor]]))  colnames(myDesign) %<>% 
+                        stri_replace_first_fixed(predictor, '') }
+            # Fails for e.g. Diabetes = YES/NO: a meaningless column "YES" is created
+            # For other cases it works wonderfully, so I keep it for now.
+            # If it gives too many issues, roll back to doing the dropping only
+            # for "subgroup" levels:
+            #colnames(myDesign) %<>% gsub('subgroup', '', ., fixed=TRUE)
+    }
 # Return
     return(myDesign)
 }
