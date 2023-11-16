@@ -470,22 +470,11 @@ contrast_coefs <- function(object, formula){
 }
 
 
-
 #==============================================================================
 #
 #                            fit_limma
 #
 #==============================================================================
-
-contrvec2mat  <- function(contrastdefs)  matrix(
-                    contrastdefs, nrow=1, dimnames=list("", contrastdefs))
-
-contrmat2list <- function(contrastdefs)  list(colcontrasts = contrastdefs)
-
-vectorize_contrastdefs <- function(contrastdefs){
-    unname(unlist(lapply(contrastdefs, function(x) na.exclude(c(t(x))))))
-}
-
 
 .limmacontrast <- function(object, fit, formula){
     # compute contrasts
@@ -515,6 +504,15 @@ vectorize_contrastdefs <- function(contrastdefs){
         limma(object)[,,'bonf'] <- apply(pp, 2, p.adjust, 'bonferroni')
         fdata(object)$F.limma   <- fit$F
         fdata(object)$F.p.limma <- fit$F.p
+contrvec2mat  <- function(contrasts)  matrix(
+                    contrasts, nrow=1, dimnames=list("", contrasts))
+
+contrmat2list <- function(contrasts)  list(colcontrasts = contrasts)
+
+vectorize_contrasts <- function(contrasts){
+    unname(unlist(lapply(contrasts, function(x) na.exclude(c(t(x))))))
+}
+
     }
     return(object)
 }
