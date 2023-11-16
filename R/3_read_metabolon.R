@@ -13,8 +13,8 @@
 #' @param pathway_var kegg pathway fvar
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% add_kegg_pathways()
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
 #' @noRd
@@ -23,7 +23,7 @@ add_kegg_pathways <- function(
 ){
 # Add KEGG Pathways
     fdata(object)[[pathway_var]] <- fdata(object)[[entry_var]]     %>%
-                                    extract_first_from_collapsed() %>%
+                                    split_extract_fixed(';', 1) %>%
                                     kegg_entry_to_pathways()
 # Report
     nkeggid  <- sum(!is.na(fdata(object)[[entry_var]]))
@@ -89,8 +89,8 @@ kegg_entry_to_pathways <- function(x){
 #' @param object character/factor vector with pubchem ids
 #' @return character/factor vector
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, plot = FALSE)
 #' add_smiles(object[1:10, ])
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
 #' @export
@@ -100,7 +100,7 @@ add_smiles <- function(object){
 # Assert
     assert_is_subset('PUBCHEM', fvars(object))
 # Map to smiles
-    PUBCHEMIDS <- fdata(object)$PUBCHEM %>% split_extract(1,';')
+    PUBCHEMIDS <- fdata(object)$PUBCHEM %>% split_extract_fixed(';', 1)
     SMILES <- rep(NA_character_, length(PUBCHEMIDS))
     idx <- !is.na(PUBCHEMIDS)
     SMILES[idx] <- PUBCHEMIDS[idx] %>%
@@ -145,59 +145,6 @@ pubchem_to_smiles <- function(x){
 }
 
 
-#=============================================================================
-#
-#                           (r|c)stack
-#
-#=============================================================================
-
-rstack <- function(x, y){
-    ncolmax <- max(ncol(x), ncol(y))
-    if (ncol(x) < ncolmax)  x %<>% cbind(matrix(NA, nrow=nrow(x),
-                                                    ncol=ncolmax-ncol(x)))
-    if (ncol(y) < ncolmax)  y %<>% cbind(matrix(NA, nrow=nrow(y),
-                                                    ncol=ncolmax-ncol(y)))
-    stacked <- rbind(x, y)
-    rownames(stacked) <- sprintf('r%d', seq_len(nrow(stacked)))
-    colnames(stacked) <- sprintf('c%d', seq_len(ncol(stacked)))
-    stacked
-}
-
-
-cstack <- function(x, y){
-    nrowmax <- max(nrow(x), nrow(y))
-    if (nrow(x) < nrowmax)  x %<>% rbind(matrix(NA, ncol=ncol(x),
-                                                    nrow=nrowmax-nrow(x)))
-    if (nrow(y) < nrowmax)  y %<>% rbind(matrix(NA, ncol=ncol(y),
-                                                    nrow=nrowmax-nrow(y)))
-    stacked <- cbind(x, y)
-    rownames(stacked) <- sprintf('r%d', seq_len(nrow(stacked)))
-    colnames(stacked) <- sprintf('c%d', seq_len(ncol(stacked)))
-    stacked
-}
-
-
-#' stack matrices
-#'
-#' cbind/rbind matrices with incompatible dimensions
-#' @param x matrix
-#' @param y matrix
-#' @examples
-#' x <- matrix(c('a','b','c','d','e','f','g','h'), nrow=2, byrow=TRUE)
-#' y <- matrix(c('1','2','3','4','5','6','7','8'), nrow=4, byrow=TRUE)
-#' x
-#' y
-#' rstack(x,y)
-#' cstack(x,y)
-#'  stack(x,y)
-#' @noRd
-stack <- function(x, y){
-    rs <- rstack(x,y)
-    cs <- cstack(x,y)
-    if (sum(dim(rs)) <= sum(dim(cs)))  rs  else  cs
-
-}
-
 #==============================================================================
 #
 #                           .read_metabolon
@@ -208,8 +155,10 @@ stack <- function(x, y){
 #' @rdname read_metabolon
 #' @export
 .read_metabolon <- function(file, sheet = 'OrigScale',
-    fid_var = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'Group'
+    fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
+    sidvar = '(CLIENT_IDENTIFIER|Client ID)',
+    sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group', 
+    verbose  = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -223,87 +172,97 @@ stack <- function(x, y){
     svar_rows <- sdata_rows <- seq_len(fvar_rows)
     fvar_names <- extract_dt_row(d_f, fvar_rows) %>% extract(seq_len(svar_cols))
     svar_names <- extract_dt_col(d_f, svar_cols) %>%extract(seq_len(fvar_rows))
-    fid_var <- fvar_names %>% extract(stri_detect_regex(., fid_var))
-    sid_var <- svar_names %>% extract(stri_detect_regex(., sid_var))
+    fidvar <- fvar_names %>% extract(stri_detect_regex(., fidvar))
+    sidvar <- svar_names %>% extract(stri_detect_regex(., sidvar))
     fid_rows  <- fdata_rows <- expr_rows <- (fvar_rows+1):nrow(d_f)
     sid_cols  <- sdata_cols <- expr_cols <- (svar_cols+1):ncol(d_f)
-    fid_cols  <-  fvar_names %>% equals(fid_var) %>% which()
-    sid_rows  <-  svar_names %>% is_in(sid_var) %>% which() %>% extract(1)
+    fid_cols  <-  fvar_names %>% equals(fidvar) %>% which()
+    sid_rows  <-  svar_names %>% is_in(sidvar) %>% which() %>% extract(1)
 # Systematic read
     object <- read_rectangles(
-                file,                       sheet      = sheet,
-                fid_rows   = fid_rows,      fid_cols   = fid_cols,
-                sid_rows   = sid_rows,      sid_cols   = sid_cols,
-                expr_rows  = expr_rows,     expr_cols  = expr_cols,
-                fvar_rows  = fvar_rows,     fvar_cols  = fvar_cols,
-                svar_rows  = svar_rows,     svar_cols  = svar_cols,
-                fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
-                sdata_rows = svar_rows,     sdata_cols = sdata_cols,
-                transpose  = FALSE, verbose    = TRUE)
+        file,                       sheet      = sheet,
+        fid_rows   = fid_rows,      fid_cols   = fid_cols,
+        sid_rows   = sid_rows,      sid_cols   = sid_cols,
+        expr_rows  = expr_rows,     expr_cols  = expr_cols,
+        fvar_rows  = fvar_rows,     fvar_cols  = fvar_cols,
+        svar_rows  = svar_rows,     svar_cols  = svar_cols,
+        fdata_rows = fdata_rows,    fdata_cols = fdata_cols,
+        sdata_rows = svar_rows,     sdata_cols = sdata_cols,
+        transpose  = FALSE,         verbose    = verbose)
     assayNames(object)[1] <- paste0('metabolon')
 # Update sdata/fdata                        Group   HMDB_ID -> HMDB_ID
     nsv <- length(svars((object)))
     nfv <- length(fvars((object)))
     svars(object)[nsv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$1')
     fvars(object)[nfv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$2')
-    object %<>% merge_sfile(sfile = sfile, by.x = by, by.y = sfileby)
-    if (is.null(subgroupvar)) subgroupvar <- 'Group'
-    object %<>% add_subgroup(subgroupvar)
+    object %<>% merge_sample_file(sfile = sfile, by.x = by.x, by.y = by.y)
+    object %<>% add_subgroup(subgroupvar, verbose = verbose)
 # Return
     object
 }
 
-#' Read metabolon
-#' @param file            metabolon xlsx filepath
-#' @param sheet           xls sheet number or name
-#' @param fid_var         feature_id fvar
-#' @param sid_var         sampleid svar
-#' @param sfile           sample file
-#' @param sfileby         sample file mergeby column
-#' @param by              metabolon file mergeby column
-#' @param subgroupvar     subgroup svar
-#' @param fname_var       featurename fvar
-#' @param impute          whether to impute
-#' @param add_kegg_pathways  whether to add kegg pathways
-#' @param add_smiles      whether to add smiles
-#' @param pca             whether to pca
-#' @param fit       fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param formula         designmat formula
-#' @param block           block svar
-#' @param contrastdefs    contrastdef vector/matrix/list
-#' @param verbose         whether to msg
-#' @param plot            whether to plot
+
+#' Read metabolon xlsxfile
+#' @param file          metabolon xlsx file
+#' @param sheet         excel sheet (number or string)
+#' @param fidvar        featureid var
+#' @param sidvar        samplid var
+#' @param sfile         sample file
+#' @param by.x          `file`  mergeby column
+#' @param by.y          `sfile` mergeby column
+#' @param subgroupvar   subgroup var
+#' @param fnamevar      featurename fvar
+#' @param kegg_pathways TRUE or FALSE: add kegg pathways?
+#' @param smiles        TRUE or FALSE: add smiles?
+#' @param impute        TRUE or FALSE: impute group-specific NA values?
+#' @param plot          TRUE or FALSE
+#' @param label         fvar
+#' @param pca           TRUE or FALSE
+#' @param pls           TRUE or FALSE
+#' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
+#' @param formula       model formula
+#' @param block         model blockvar: string or NULL
+#' @param coefs         model coefficients of interest:    character vector or NULL
+#' @param contrasts     coefficient contrasts of interest: character vector or NULL
+#' @param palette       NULL or colorvector
+#' @param verbose       TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' read_metabolon(file, pca = TRUE, fit = 'limma', block='SUB')
+#' file <- download_data('atkin.metabolon.xlsx')
+#' read_metabolon(file, plot = TRUE, block = 'Subject')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',
-    fid_var = '(COMP|COMP_ID)', sid_var = '(CLIENT_IDENTIFIER|Client ID)',
-    sfile = NULL, sfileby = NULL, by = NULL, subgroupvar = 'Group',
-    fname_var = 'BIOCHEMICAL',
-    impute  = FALSE, add_kegg_pathways = FALSE, add_smiles = FALSE,
-    pca = FALSE, fit = NULL, formula = NULL, block = NULL, 
-    contrastdefs = NULL, verbose = TRUE, plot = TRUE
+    fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
+    sidvar = '(CLIENT_IDENTIFIER|Client ID)',
+    sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group',
+    fnamevar = 'BIOCHEMICAL', kegg_pathways = FALSE, smiles = FALSE,
+    impute  = TRUE, plot = FALSE, pca = plot, pls = plot, label = 'feature_id',
+    fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL, 
+    coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
-    subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
     object <- .read_metabolon(
-        file = file, sheet = sheet, fid_var = fid_var, sid_var = sid_var, 
-        sfile = sfile, sfileby = sfileby, by = by, subgroupvar = subgroupvar)
+        file    = file,    sheet       = sheet, 
+        fidvar  = fidvar,  sidvar      = sidvar, 
+        sfile   = sfile,   by.x        = by.x, 
+        by.y    = by.y,    subgroupvar = subgroupvar, 
+        verbose = verbose)
 # Prepare
-    assert_is_subset(fname_var, fvars(object))
-    fdata(object)$feature_name <- fdata(object)[[fname_var]]
+    assert_is_subset(fnamevar, fvars(object))
+    fdata(object)$feature_name <- fdata(object)[[fnamevar]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
-    object %<>% log2transform(verbose = TRUE)
-    if (impute)             object %<>% impute_systematic_nondetects(
-                                            subgroup = !!subgroup, plot = plot)
-    if (add_kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
-    if (add_smiles)         object %<>% add_smiles('SMILES', 'PUBCHEM')
+    object %<>% log2transform(verbose = verbose)
+    if ({{impute}})     object %<>% impute(plot = FALSE)
+    if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
+    if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze
-    object %<>% analyze(pca = pca, fit = fit, subgroupvar = subgroupvar, 
-                    formula = formula, block = block, 
-                    contrastdefs = contrastdefs, verbose = verbose, plot=plot)
+    object %<>% analyze(
+        pca        = pca,           pls        = pls,
+        fit        = fit,           formula    = formula,
+        block      = block,         coefs      = coefs,
+        contrasts  = contrasts,     plot       = plot,
+        label      = label,
+        palette    = palette,       verbose    = verbose)
 # Return
     object
 }
