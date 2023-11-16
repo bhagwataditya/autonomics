@@ -570,6 +570,21 @@ reset_fit <- function(
 #' @export
 FITSEP <- '~'
 
+# object: SumExp
+# fitres: data.table(p.contr1, p.contr2, effect.contr1, effect.contr2)
+# stat:  'p', 'effect', 'fdr', 't'
+# fit:   'limma', 'wilcoxon'
+merge_fit <- function(object, fitres, fit, statistic = NULL){
+    . <- NULL
+    fitresdt <- data.table::copy(fitres)   # dont change in original
+    firstcols <- intersect(c('feature_id', 'Intercept'), names(fitresdt))
+    fitresdt %<>% extract(,c(firstcols, sort(setdiff(names(.), firstcols))), with = FALSE)
+    if (!is.null(statistic)) names(fitresdt)[-1] %<>% paste0(statistic,FITSEP,.)
+    names(fitresdt)[-1] %<>% paste0(FITSEP, fit)
+    object %<>% merge_fdt(fitresdt)
+    object
+}
+
 
 #' Fit model and test for differential expression
 #'
