@@ -585,6 +585,8 @@ merge_fit <- function(object, fitres, fit, statistic = NULL){
     object
 }
 
+mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
+
 
 #' Fit model and test for differential expression
 #'
