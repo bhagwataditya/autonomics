@@ -38,15 +38,12 @@ ncols <- function(x, sheet=1){
 #' @return TRUE or FALSE
 #' @examples
 #' # SOMASCAN
-#' #---------
-#' file <- paste0('../../wcmq/atkin.hypo/atkin.hypoglycemia/extdata/soma/',
-#'     'WCQ-18-007.hybNorm.plateScale.medNorm.calibrate.20181004.original.adat')
-#' is_fixed_col_file(file)
+#'     file <- download_data('atkin.somascan.adat')
+#'     is_fixed_col_file(file)
 #'
 #' # METABOLON
-#' #----------
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' is_fixed_col_file(file)
+#'     file <- download_data('atkin.metabolon.xlsx')
+#'     is_fixed_col_file(file)
 #' @noRd
 is_fixed_col_file <- function(file){
     if (is_excel_file(file)){ TRUE
@@ -77,7 +74,6 @@ is_fixed_col_file <- function(file){
 #' # FROM FILE: extract_rectangle.character
 #' #=======================================
 #' # exprs
-#'    require(magrittr)
 #'    x <- download_data('halama18.metabolon.xlsx')
 #'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
 #'    extract(1:3, 1:3)
@@ -90,19 +86,18 @@ is_fixed_col_file <- function(file){
 #'    extract_rectangle(x, rows = 2, cols = 15:86, sheet = 2)      %>%
 #'    extract(,1:3)
 #'
-#' # fdata
+#' # fdt
 #'    extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) %>%
 #'    extract(1:3, 1:3)
 #'
-#' # sdata
+#' # sdt
 #'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
 #'    transpose = TRUE) %>% extract(1:3, 1:3)
 #'
 #' # FROM MATRIX: extract_rectangle.matrix
 #' #======================================
 #' # exprs
-#'    x <-download_data('halama18.metabolon.xlsx') %>%
-#'        extract_rectangle(sheet = 2)
+#'    x <- download_data('halama18.metabolon.xlsx') %>% extract_rectangle(sheet = 2)
 #'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
 #'    extract(1:3, 1:3)
 #'
@@ -114,13 +109,13 @@ is_fixed_col_file <- function(file){
 #'    extract_rectangle(x, rows = 2,      cols = 15:86, sheet = 2) %>%
 #'    extract(,1:3)
 #'
-#' # fdata
+#' # fdt
 #'    extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) %>%
 #'    extract(1:3, 1:3)
 #'
-#' # sdata
-#'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
-#'    transpose = TRUE) %>% extract(1:3, 1:3)
+#' # sdt
+#'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2, transpose = TRUE) %>% 
+#'    extract(1:3, 1:3)
 #' @export
 extract_rectangle <- function(x, ...){
     UseMethod('extract_rectangle')
@@ -417,7 +412,7 @@ read_rectangles <- function(
                         fdata_rows = fdata_rows, fdata_cols = fdata_cols,
                         sdata_rows = sdata_rows, sdata_cols = sdata_cols,
                         transpose  = transpose,  verbose    = verbose)
-        object %<>% merge_sfile(
+        object %<>% merge_sample_file(
             sfile = sfile, by.x = 'sample_id', by.y = sfileby, verbose=verbose)
     object
 }
@@ -433,69 +428,82 @@ split_values <- function(x){
 
 
 
-#' Merge sample/feature data
+#' Merge sample/feature dt
 #' @param object          SummarizedExperiment
 #' @param dt              data.frame, data.table, DataFrame
-#' @param by.x            object mergevar
-#' @param by.y            df mergevar
-#' @param verbose         TRUE/FALSE
+#' @param by.x            string : object mergevar
+#' @param by.y            string : df mergevar
+#' @param all.x           TRUE / FALSE : whether to keep samples / features without annotation
+#' @param verbose         TRUE / FALSE : whether to msg
 #' @return                SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' object %<>% merge_sdata( data.frame(sample_id = object$sample_id,
-#'                                     number = seq_along(object$sample_id)))
-#' head(sdata(object))
+#' object <- read_metabolon(file)
+#' object %<>% merge_sdt(   data.table(sample_id = object$sample_id,
+#'                                        number = seq_along(object$sample_id)))
+#' sdt(object)
 #'@export
-merge_sdata <- function(object, dt, by.x = 'sample_id',
-    by.y = names(dt)[1], verbose=TRUE
+merge_sdata <- function(
+    object, dt, by.x = 'sample_id',  by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
 ){
-    sdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
+    .Deprecated('merge_sdt')
+    merge_sdt(object, dt = dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
+}
+
+#' @rdname merge_sdata
+#' @export
+merge_sdt <- function(
+    object, dt, by.x = 'sample_id',  by.y = 'sample_id', all.x = TRUE, verbose = TRUE
+){
+    if (!all.x)  object %<>% filter_samples(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = verbose)
+    sdt(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
+}
+
+
+#'@rdname merge_sdata
+#'@export
+merge_fdata <- function(
+    object, dt, by.x = 'feature_id', by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
+){
+    .Deprecated('merge_fdt')
+    merge_fdt(object, dt = dt, by.x = by.x, by.y = by.y, all.x = all.x, verbose = verbose)
 }
 
 #'@rdname merge_sdata
 #'@export
-merge_fdata <- function(object, dt, by.x = 'feature_id',
-    by.y = names(dt)[1], verbose=TRUE
+merge_fdt <- function(
+    object, dt, by.x = 'feature_id', by.y = 'feature_id', all.x = TRUE, verbose = TRUE
 ){
-    fdata(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose=verbose)
+    if (!all.x)  object %<>% filter_features(!!sym(by.x) %in% unique(dt[[by.y]]), verbose = TRUE)
+    fdt(object) %<>% merge_data(dt, by.x = by.x, by.y = by.y, verbose = verbose)
     object
 }
 
 
-merge_data <- function(objectdt, dt, by.x, by.y, verbose){
+merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 # Assert
-    assert_is_any_of(objectdt,c('data.frame', 'DataFrame'))
     if (is.null(dt))  return(objectdt)
-    assert_is_any_of(dt,c('data.table', 'data.frame', 'DataFrame'))
-# Convert to data.table
-# Important: * both have to be data.table, because merge.data.frame
-#              and merge.data.frame are differently behaved!
-#            * as.data.table does not work directly on a DataFrame object!
-#              data.table::data.table(S4Vectors::DataFrame(a=1, b=2))
-    rownames1 <- rownames(objectdt)
-    objectdtclass <- class(objectdt)[1]
-    # First convert DataFrame to dataframe
-        if (is(      dt, 'DataFrame'))        dt %<>% as.data.frame()
-        if (is(objectdt, 'DataFrame'))  objectdt %<>% as.data.frame()
-    # Then convert dataframe to data.table
-        dt %<>% as.data.table()
-        objectdt %<>% as.data.table()
-# Rm duplicate keys
-    n0 <- nrow(dt)
-    dt %<>% unique(by = by.y) # keys should be unique!
-    if (n0>nrow(dt) & verbose)  message('\t\tRetain ', nrow(dt),
-            ' rows after removing duplicate `', by.y, '` entries')
-# Rm duplicate cols: https://stackoverflow.com/questions/9202413
-    duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
-    for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
+    assert_is_data.table(objectdt)
+    assert_is_data.table(dt)
+    assert_is_subset(by.x, names(objectdt))
+    assert_is_subset(by.y, names(dt))
+# Prepare
+    # Rm duplicate keys
+        dt %<>% unique() # drop duplicate rows with identical info 
+        n0 <- nrow(dt)   # drop rows with duplicate key values 
+        dt %<>% unique(by = by.y) # keys should be unique!
+        if (n0>nrow(dt) & verbose)  message('\t\t\tRetain ', nrow(dt),
+            '/', n0, ' rows after removing duplicate `', by.y, '` entries')
+    # Rm duplicate cols: https://stackoverflow.com/questions/9202413
+        duplicate_cols <- setdiff(intersect(names(objectdt), names(dt)), by.x)
+        for (dupcol in duplicate_cols) objectdt[, (dupcol) := NULL]
+    # Ensure character class for merge column - one being factor means horrible bug!
+    # Dont use dt[[byy]] : class not updated properly resulting in many NA when merging!
+        for (byx in by.x)  objectdt[, (byx) := as.character(get(byx)) ]
+        for (byy in by.y)        dt[, (byy) := as.character(get(byy)) ]
 # Merge
-    objectdt %<>% merge(dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort=FALSE)
-    objectdt %<>% as(objectdtclass)
-    rownames(objectdt) <- rownames1 # merging drops rownames
-# Return
+    objectdt %<>% merge.data.table(dt, by.x = by.x, by.y = by.y, all.x = TRUE, sort = FALSE)
     objectdt
 }
 
