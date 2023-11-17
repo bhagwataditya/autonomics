@@ -554,6 +554,47 @@ entrezg_to_symbol <- function(x, orgdb){
     y
 }
 
+#' Collapsed entrezg to genesymbol
+#' @param x      charactervector
+#' @param sep    string
+#' @param orgdb  OrgDb
+#' @return character vector
+#' @examples
+#' if (requireNamespace('org.Hs.eg.db', quiet = TRUE)){
+#'     x <- c('7448/3818/727', '5034/9601/64374')
+#'     orgdb <- org.Hs.eg.db::org.Hs.eg.db
+#'     collapsed_entrezg_to_symbol(x, sep = '/', orgdb = orgdb)
+#' }
+#' @export
+collapsed_entrezg_to_symbol <- function(x, sep, orgdb){
+    x %<>% stri_split_fixed(sep)
+    x %<>% lapply(entrezg_to_symbol, orgdb = orgdb)
+    x %<>% vapply(paste0, character(1), collapse = sep)
+    x
+}
+
+
+#' Get corresponding orgdb
+#' @param genome 'hg38', 'hg19', 'mm10', or 'mm9'
+#' @return OrgDb
+#' @examples 
+#' if (requireNamespace('org.Hs.eg.db', quiet = TRUE)){
+#'     class(genome_to_orgdb('hg38'))
+#' }
+#' @export
+genome_to_orgdb <- function(genome){
+    assert_scalar_subset(genome, c('mm10', 'mm9', 'hg38', 'hg19'))
+    if (genome %in% c('mm10', 'mm9')){
+        if (!requireNamespace('org.Mm.eg.db', quietly = FALSE)){
+            stop("First: BiocManager::install('org.Mm.eg.db')")}
+        return(org.Mm.eg.db::org.Mm.eg.db)
+
+    } else if (genome %in% c('hg38', 'hg19')){
+        if (!requireNamespace('org.Hs.eg.db', quietly = FALSE)){
+            stop("First: BiocManager::install('org.Hs.eg.db')")}
+        return(org.Hs.eg.db::org.Hs.eg.db)
+    }
+}
 
 
 count_reads <- function(files, paired, nthreads, genome){
@@ -567,8 +608,8 @@ count_reads <- function(files, paired, nthreads, genome){
     if (genome %in% c('mm10', 'mm9', 'hg38', 'hg19')){
         args %<>% c(list(annot.inbuilt = genome))
         fcounts <- do.call(Rsubread::featureCounts, args)
-        fcounts$annotation$gene_name <-
-            entrezg_to_symbol(fcounts$annotation$GeneID, genome)
+        orgdb <- genome_to_orgdb(genome)
+        fcounts$annotation$gene_name <- entrezg_to_symbol(fcounts$annotation$GeneID, orgdb)
 # User GTF
     } else {
         assert_all_are_existing_files(genome)
