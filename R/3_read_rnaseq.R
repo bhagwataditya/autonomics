@@ -879,6 +879,24 @@ add_voom <- function(
 #
 #==============================================================================
 
+add_ensdb <- function(object, ensdb, verbose = TRUE){
+# Assert
+    if (is.null(ensdb)) return(object)
+    if (!stri_startswith_fixed(fdt(object)$feature_id[1],'ENS'))  return(object)
+    if (!requireNamespace('ensembldb', quietly = TRUE)){
+        message("BiocManager::install('ensembldb'). Then re-run.")
+        return(object) }
+# Genesize
+    genesize <- ensembldb::lengthOf(
+        ensdb, filter = ensembldb::GeneidFilter(fdt(object)$feature_id))
+    genesize <- data.table(feature_id = names(genesize), genesize = genesize)
+    object %<>% merge_fdt(genesize)
+# Return
+    object
+}
+    
+    
+
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_bams <- function(
