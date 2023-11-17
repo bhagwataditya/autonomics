@@ -754,70 +754,69 @@ explicitly_compute_voom_weights <- function(
 
 #' Preprocess RNAseq counts
 #' @param object       SummarizedExperiment
-#' @param subgroupvar  subgroup svar
 #' @param formula      designmat formula
 #' @param block        blocK svar
 #' @param min_count    min count required in some samples
-#' @param pseudocount  added pseudocount to avoid log(x)=-Inf
-#' @param genesize     genesize fvar to compute tpm
-#' @param cpm          whether to compute counts per million (scaled) reads
-#' @param tmm          whether to tmm normalize
-#' @param voom         whether to voom weight
-#' @param log2         whether to log2
-#' @param verbose      whether to msg
-#' @param plot         whether to plot
+#' @param pseudo       added pseudocount to avoid log(x)=-Inf
+#' @param tpm          TRUE or FALSE : tpm normalize?
+#' @param cpm          TRUE or FALSE : cpm normalize? (counts per million (scaled) reads)
+#' @param voom         TRUE or FALSE : voom weight?
+#' @param log2         TRUE or FALSE : log2 transform?
+#' @param verbose      TRUE or FALSE : msg?
+#' @param plot         TRUE or FALSE : plot?
 #' @return SummarizedExperiment
 #' @examples
-#' require(magrittr)
 #' file <- download_data('billing19.rnacounts.txt')
 #' object <- .read_rnaseq_counts(file)
 #' object$subgroup
 #' object %<>% preprocess_rnaseq_counts()
 #' @export
 preprocess_rnaseq_counts <- function(object, 
-    subgroupvar = if ('subgroup' %in% svars(object)) 'subgroup' else NULL, 
-    formula = default_formula(object, subgroupvar, 'limma'), block = NULL,
-    min_count = 10, pseudocount = 0.5, genesize = NULL, cpm  = TRUE, tmm = cpm,
-    voom = TRUE, log2 = TRUE, verbose = TRUE, plot = TRUE){
-# Initialize
-    . <- NULL
-    if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
-    if (is.null(formula))      formula <- default_formula(
-                                            object, subgroupvar, fit='limma')
-# Filter
+    formula = ~ subgroup, block = NULL,
+    min_count = 10, pseudo = 0.5, tpm  = FALSE, 
+    cpm = TRUE, voom = TRUE, log2 = TRUE,
+    verbose = TRUE, plot = TRUE
+){
+# tpm
     if (verbose) message('\t\tPreprocess')
+    if (tpm){   assert_is_subset('genesize', fvars(object))
+                if (verbose)  message('\t\t\ttpm')
+                tpm(object) <- counts2tpm(counts(object), fdata(object)$genesize) }
+# Filter
     object$libsize <- matrixStats::colSums2(counts(object))
-    object %<>% filter_by_expr(
-                    formula=formula, min_count = min_count, verbose=verbose)
-# Add pseudocount
-    if (pseudocount>0){ if (verbose)  message('\t\t\tpseudocount ', pseudocount)
-                        counts(object) %<>% add(pseudocount) }
-# Tpm/Cpm normalize
-    if (!is.null(genesize)){
-        assert_is_subset(genesize, fvars(object))
-        if (verbose)  message('\t\t\ttpm')
-        tpm(object) <- counts2tpm(counts(object), fdata(object)[[genesize]])}
-    if (tmm){   if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
-                object$libsize <- scaledlibsizes(counts(object)) }
-    if (cpm){   if (verbose)  message('\t\t\t\tcpm')
-                cpm(object) <- counts2cpm(counts(object), object$libsize)
-                other <- setdiff(assayNames(object), 'cpm')
-                assays(object) %<>% extract(c('cpm', other)) }
-# Voom  weight (counts) & dupcor (log2(cpm))
-    if (voom){
-        object %<>% add_voom(
-                        formula, verbose=verbose, plot=plot & is.null(block))
-        if (!is.null(block)){
-            object %<>%
-                add_voom(formula, block=block, verbose=verbose, plot=plot) }}
+    if (min_count>0)  object %<>% filter_by_expr(formula = formula, min_count = min_count, verbose = verbose)
+# tmm/cpm/voom normalize
+    if (pseudo>0){
+        if (verbose)  message('\t\t\tcounts: add ', pseudo)
+            counts(object) %<>% add(pseudo) 
+        }
+    if (cpm){
+        if (verbose)  message('\t\t\tcpm:    tmm scale libsizes')
+        object$libsize <- scaledlibsizes(counts(object))
+        if (verbose)  message('\t\t\t\tcpm')
+        cpm(object) <- counts2cpm(counts(object), object$libsize)
+        other <- setdiff(assayNames(object), 'cpm')
+        assays(object) %<>% extract(c('cpm', other)) 
+    }
+    if (voom){  
+        object %<>% add_voom(formula, verbose = verbose, plot = plot & is.null(block))
+        if (!is.null(block))  object %<>% add_voom(
+            formula, block = block, verbose = verbose, plot = plot) 
+    }
+    if (pseudo>0){
+        if (verbose)  message('\t\t\tcounts: rm ', pseudo)
+        counts(object) %<>% subtract(pseudo) 
+    }
 # Log2 transform
-    if (log2){  if (verbose)  message('\t\t\tlog2')
-                selectedassays <- c('counts','cpm','tpm')
-                selectedassays %<>% intersect(assayNames(object))
-                for (curassay in selectedassays){
-                    i <- match(curassay, assayNames(object))
-                    assays(object)[[i]] %<>% log2()
-                    assayNames(object)[[i]] %<>% paste0('log2', .)}}
+    if (log2){    assays(object)$log2counts <- log2(pseudo + counts(object))
+        if (tpm)  assays(object)$log2tpm    <- log2(pseudo + tpm(object))
+        if (cpm)  assays(object)$log2cpm    <- log2(pseudo + cpm(object))
+    }
+# Rm pseudocounts
+# Order assays
+    ass <- c('log2cpm', 'log2tpm', 'log2counts', 'cpm', 'tpm', 'counts', 'weights')
+    ass %<>% intersect(assayNames(object))
+    assays(object) %<>% extract(ass)
 # Return
     object
 }
