@@ -823,7 +823,7 @@ preprocess_rnaseq_counts <- function(object,
 
 
 filter_by_expr <- function(object, formula, min_count, verbose){
-    design <- create_design(object, formula=formula, verbose = FALSE)
+    design <- create_design(object, formula = formula, verbose = FALSE)
     idx <- filterByExpr(counts(object), design = design,#group=object$subgroup,
                 lib.size  = object$libsize, min.count = min_count)
     if (verbose) message('\t\t\tKeep ', sum(idx), '/', length(idx),
@@ -833,10 +833,12 @@ filter_by_expr <- function(object, formula, min_count, verbose){
 }
 
 
-add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
+add_voom <- function(
+    object, formula, block = NULL, verbose = TRUE, plot = TRUE
+){
 # Retain samples with subgroups
     n0 <- ncol(object)
-    design <- create_design(object, formula=formula, verbose = FALSE)
+    design <- create_design(object, formula = formula, verbose = FALSE)
     object %<>% extract(, rownames(design))
     if (verbose & nrow(object)<n0)  message('\t\t\t\tRetain ',
             ncol(object), '/', n0, ' samples with subgroup definitions')
@@ -847,9 +849,9 @@ add_voom <- function(object, formula, block=NULL, verbose=TRUE, plot=TRUE){
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$dupcor)){
             if (verbose)  message('\t\t\tdupcor `', blockvar, '`')
-            metadata(object)$dupcor <- 0.2#duplicateCorrelation(
-                #log2(cpm(object)), design=design, block=block
-            #)$consensus.correlation 
+            metadata(object)$dupcor <- duplicateCorrelation(
+                log2(cpm(object)), design=design, block=block
+            )$consensus.correlation 
             }}
 # Run voom
     txt <- sprintf('\t\t\tvoom: %s', formula2str(formula))
