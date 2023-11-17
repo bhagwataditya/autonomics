@@ -532,22 +532,24 @@ add_genenames <- function(object, gtffile, verbose = TRUE){
 #==============================================================================
 
 
-entrezg_to_symbol <- function(x, genome){
-
-    assert_is_subset(genome, c('mm9', 'mm10', 'hg19', 'hg38'))
-
-    orgdb <- if (genome %in% c('mm10', 'mm9')){
-                if (!requireNamespace('org.Mm.eg.db', quietly = FALSE)){
-                    stop("First: BiocManager::install('org.Mm.eg.db')")}
-                orgdb <- org.Mm.eg.db::org.Mm.eg.db
-
-            } else if (genome %in% c('hg19', 'hg38')){
-                if (!requireNamespace('org.Hs.eg.db', quietly = FALSE)){
-                    stop("First: BiocManager::install('org.Hs.eg.db')")}
-                orgdb <- org.Hs.eg.db::org.Hs.eg.db
-            }
+#' Entrezg to genesymbol
+#' @param x      charactervector
+#' @param orgdb  OrgDb
+#' @return  character vector
+#' @examples
+#' if (requireNamespace('org.Hs.eg.db', quiet = TRUE)){
+#'     orgdb <- org.Hs.eg.db::org.Hs.eg.db
+#'     entrezg_to_symbol(x = c('7448', '3818', '727'), orgdb)
+#' }
+#' @export
+entrezg_to_symbol <- function(x, orgdb){
     x %<>% as.character()
-    suppressMessages(y <- AnnotationDbi::mapIds(orgdb, x, 'SYMBOL', 'ENTREZID'))
+    suppressMessages(y <- AnnotationDbi::mapIds(
+                            orgdb, 
+                            keys      = x, 
+                            keytype   = 'ENTREZID', 
+                            column    = 'SYMBOL', 
+                            multiVals = 'first'))
     y %<>% unname()
     y
 }
