@@ -901,8 +901,8 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
 #' @export
 .read_rnaseq_bams <- function(
     dir, paired, genome, nthreads = detectCores(),
-    sfile = NULL, sfileby = NULL, subgroupvar = NULL,
-    ffile = NULL, ffileby = NULL, fnamevar    = NULL, verbose = TRUE
+    sfile = NULL, by.y = NULL, 
+    ensdb = NULL, verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(dir)
@@ -921,16 +921,14 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
                     } else {           paste0(subdirnames, '_', filenames)}
 
     colnames(fcounts$counts) <- sample_names
-    object <- matrix2sumexp(fcounts$counts,
-                            fdt = fcounts$annotation, fdtby='feature_id')
+    object <- matrix2sumexp(fcounts$counts)
+    object %<>% merge_fdt(data.table(fcounts$annotation))
     assayNames(object)[1] <- 'counts'
 # Add sample/feature data
-    object %<>% merge_sfile(
-                sfile, by.x = 'sample_id',  by.y = sfileby, verbose = verbose)
-    object %<>% merge_ffile(
-                ffile, by.x = 'feature_id', by.y = ffileby, verbose = verbose)
-    metadata(object)$platform <- 'rnaseq'
-    metadata(object)$file <- dir
+    object %<>% merge_sample_file(
+        sfile, by.x = 'sample_id',  by.y = by.y, verbose = verbose)
+    fdt(object)$feature_id %<>% split_extract_fixed('.', 1)  # drop ensemblid version
+    object %<>% add_ensdb(ensdb)    
 # Return
     object
 }
