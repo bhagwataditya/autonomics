@@ -363,7 +363,7 @@ function(object, value){
 #' @return weight matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
 #' weights(object)[1:3, 1:2]
 #' weights(object) <- 1; weights(object)[1:3, 1:2]
 #' @rdname weights
@@ -454,7 +454,7 @@ download_gtf <- function(
     organism,
     release = 100,
     gtffile = sprintf("%s/gtf/%s",
-        rappdirs::user_cache_dir(appname = 'autonomics'),
+        R_user_dir('autonomics', 'cache'),
         basename(make_gtf_url(organism, release) %>% substr(1, nchar(.)-3)))
 ){
     assert_is_subset(organism,
