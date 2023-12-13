@@ -978,41 +978,35 @@ is_numeric_character <- function(x)  all(!is.na(suppressWarnings(as.numeric(x)))
 #' @export
 read_rnaseq_bams <- function(
     dir, paired, genome, nthreads = detectCores(),
-    sfile = NULL, sfileby = NULL, subgroupvar = NULL, block = NULL,
-    ffile = NULL, ffileby = NULL, fnamevar = NULL,
-    formula = NULL, min_count = 10, pseudocount = 0.5, genesize = NULL,
-    cpm = TRUE, tmm = cpm, log2 = TRUE, pca = FALSE, fit = NULL, 
-    voom = !is.null(fit), contrastdefs = NULL, verbose = TRUE, plot=TRUE
+    sfile = NULL, by.y = NULL, block = NULL,
+    formula = ~ subgroup, min_count = 10, pseudo = 0.5, 
+    ensdb = NULL, tpm = FALSE, cpm = TRUE, log2 = TRUE, 
+    plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
+    fit = if (plot) 'limma' else NULL, voom = cpm, coefs = NULL, 
+    contrasts = NULL, palette = NULL, verbose = TRUE
 ){
 # Read
-    object <- .read_rnaseq_bams(dir   = dir,
-                                paired   = paired,
-                                genome   = genome,
-                                nthreads = nthreads,
-                                sfile    = sfile,
-                                sfileby  = sfileby,
-                                ffile    = ffile,
-                                ffileby  = ffileby,
-                                fnamevar = fnamevar,
-                                subgroupvar = subgroupvar)
+    object <- .read_rnaseq_bams(
+        dir         = dir,          paired      = paired,
+        genome      = genome,       nthreads    = nthreads,
+        sfile       = sfile,        by.y        = by.y,
+        ensdb       = ensdb)
 # Preprocess
-    object %<>% preprocess_rnaseq_counts(subgroupvar = subgroupvar, 
-                                        formula      = formula,
-                                        block        = block,
-                                        min_count    = min_count,
-                                        pseudocount  = pseudocount,
-                                        genesize     = genesize,
-                                        cpm          = cpm,
-                                        tmm          = tmm,
-                                        voom         = voom,
-                                        log2         = log2,
-                                        verbose      = verbose,
-                                        plot         = plot)
+    object %<>% preprocess_rnaseq_counts(
+        formula     = formula,
+        block       = block,        min_count   = min_count,
+        pseudo      = pseudo,       tpm         = tpm,
+        cpm         = cpm,          voom        = voom,
+        log2        = log2,         verbose     = verbose,
+        plot        = plot)
 # Analyze
-    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
-                        formula = formula, block = block, 
-                        contrastdefs = contrastdefs, 
-                        verbose = verbose, plot = plot)
+    object %<>% analyze(
+        pca         = pca,          pls         = pls,
+        fit         = fit,          formula     = formula, 
+        block       = block,        weightvar   = if (voom) 'weights' else NULL,
+        coefs       = coefs,        contrasts   = contrasts, 
+        plot        = plot,         label       = label,
+        verbose     = verbose)
 # Return
     object
 }
