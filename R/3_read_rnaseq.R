@@ -938,10 +938,9 @@ is_numeric_character <- function(x)  all(!is.na(suppressWarnings(as.numeric(x)))
 #' @rdname read_rnaseq_counts
 #' @export
 .read_rnaseq_counts <- function(file, fid_col = 1,
-    sfile = NULL, sfileby  = NULL, ffile = NULL, ffileby = NULL, 
-    subgroupvar = NULL, verbose = TRUE
+    sfile = NULL, by.y  = NULL, ensdb = NULL, verbose = TRUE
 ){
-# scan
+# counts
     assert_all_are_existing_files(file)
     if (verbose)  message('\tRead ', file)
     dt <- fread(file, integer64 = 'numeric')
@@ -954,15 +953,15 @@ is_numeric_character <- function(x)  all(!is.na(suppressWarnings(as.numeric(x)))
     }
     assert_has_no_duplicates(fdt0[[fid_col]])
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
-    rownames(counts1) <- fdata1[[fid_col]]
-    object <- matrix2sumexp(
-                counts1, fdt = fdata1, fdtby = fid_col, verbose = verbose)
+    rownames(counts1) <- fdt0[[fid_col]]
+    object <- matrix2sumexp(counts1, verbose = verbose)
     assayNames(object)[1] <- 'counts'
-    metadata(object)$platform <- 'rnaseq'
-# sumexp
-    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id',by.y = sfileby)
-    object %<>% merge_ffile(ffile = ffile, by.x='feature_id', by.y = ffileby)
-    object %<>% add_subgroup(subgroupvar)
+# fdata
+    object %<>% merge_fdt(fdt0, by.y = fid_col, verbose = verbose)
+    object %<>% add_ensdb(ensdb)
+# sdata
+    object %<>% merge_sample_file(sfile = sfile, by.x = 'sample_id', by.y = by.y)
+    object %<>% add_subgroup('subgroup', verbose = verbose)
     object
 }
 
