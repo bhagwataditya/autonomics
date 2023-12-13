@@ -933,6 +933,7 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
     object
 }
 
+is_numeric_character <- function(x)  all(!is.na(suppressWarnings(as.numeric(x))))
 
 #' @rdname read_rnaseq_counts
 #' @export
@@ -945,8 +946,13 @@ add_ensdb <- function(object, ensdb, verbose = TRUE){
     if (verbose)  message('\tRead ', file)
     dt <- fread(file, integer64 = 'numeric')
     if (is.numeric(fid_col)) fid_col <- names(dt)[fid_col]
-    idx <- vapply(dt, is.integer, logical(1))
-    fdata1   <- dt[, !idx, with = FALSE]
+    idx <- vapply(dt, is.integer,           logical(1)) |
+           vapply(dt, is_numeric_character, logical(1))
+    fdt0   <- dt[, !idx, with = FALSE]
+    if (stri_startswith_fixed(fdt0[[fid_col]][1], 'ENS')){
+        fdt0[[fid_col]] %<>% split_extract_fixed('.', 1)  # drop ensemblid version
+    }
+    assert_has_no_duplicates(fdt0[[fid_col]])
     counts1  <- as.matrix(dt[,  idx, with = FALSE])
     rownames(counts1) <- fdata1[[fid_col]]
     object <- matrix2sumexp(
