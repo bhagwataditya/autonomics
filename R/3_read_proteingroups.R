@@ -1089,6 +1089,66 @@ rename_phospho_fvars <- function(object){
     names(fdata(object)) %<>% stri_rep('Proteins', 'uniprot')
     names(fdata(object)) %<>% stri_rep('Positions within proteins', 'position')
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name', 'uniprot'))
+#---------------------------------------------------------------------------
+#
+#                      add_psp
+#
+#---------------------------------------------------------------------------
+
+#' Add psp
+#' 
+#' Add PhosphoSitePlus literature counts
+#' 
+#' Go to www.phosphosite.org                   \cr
+#' Register and Login.                         \cr
+#' Download Phosphorylation_site_dataset.gz'.  \cr
+#' Save into: file.path(R_user_dir('autonomics','cache'),'phosphositeplus')
+#' @param object     SummarizedExperiment
+#' @param pspfile    phosphositeplus file
+#' @return  SummarizedExperiment
+#' @examples 
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
+#' fdt(object)
+#' object %<>% add_psp()
+#' fdt(object)
+#' @export
+add_psp <- function(
+    object, 
+    pspfile = file.path(R_user_dir('autonomics', 'cache'), 
+            'phosphositeplus', 'Phosphorylation_site_dataset.gz')
+){
+# Initialize
+    AA <- ACC_ID <- `Amino acid` <- LT_LIT <- MOD_RSD <- MS_CST <- MS_LIT <- psp <- NULL
+# Read
+    assert_is_all_of(object, 'SummarizedExperiment')
+    if (!file.exists(pspfile))  return(object)
+    dt <- data.table::fread(pspfile)
+    dt[is.na(LT_LIT), LT_LIT := 0]
+    dt[is.na(MS_LIT), MS_LIT := 0]
+    dt[is.na(MS_CST), MS_CST := 0]
+    dt[, psp := LT_LIT + MS_LIT + MS_CST]
+    dt$AA <- dt$MOD_RSD %>% substr(1, 1)
+    dt$MOD_RSD %<>% substr(2, nchar(.)-2)
+# Rm duplicates
+    idx <- cduplicated(dt[, .(ACC_ID, MOD_RSD)])
+    # dt[idx]  # Seems like a (single) psiteplus bug: two different rows for the same site
+    #          # On the website it says 'under review' for this particular site
+    #          # Rm these
+    dt %<>% extract(!idx)
+    dt %<>% extract(, .(ACC_ID, MOD_RSD, psp, AA))
+    # Look at example
+    # dt %<>% extract('ZZZ3',   on = 'PROTEIN')
+    # dt %<>% extract(c('S606-p', 'S613-p'), on = 'MOD_RSD')
+# Merge
+    fdt(object)$uniprot1  <- split_extract_fixed(fdt(object)$Curated, ';', 1)
+    fdt(object)$Position1 <- split_extract_fixed(fdt(object)$`Positions within proteins`, ';', 1)
+    object %<>% merge_fdt(dt, by.x = c('uniprot1', 'Position1'), 
+                                by.y = c('ACC_ID', 'MOD_RSD'))
+    idx <- fdt(object)[, !is.na(psp) &  AA != `Amino acid`]
+    fdt(object)$psp[idx] <- NA
+    fdt(object)$AA <- NULL
     object
 }
 
