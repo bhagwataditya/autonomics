@@ -170,59 +170,16 @@ guess_maxquant_quantity <- function(x){
 #' @export
 }
 
-#==============================================================================
-#
-#                       standardize_maxquant_snames
 #
 #==============================================================================
 
 
-#' Standardize maxquant snames
-#'
-#' Standardize maxquant sample names
-#'
-#' Drop "Ratio normalized", "LFQ intensity" etc from maxquant sample names
-#'
-#' @param x        character vector or SummarizedExperiment
-#' @param quantity maxquant quantity
-#' @param verbose  TRUE (default) or FALSE
-#' @param ...      allow for proper S3 method dispatch
-#' @return character vector or SummarizedExperiment
 #' @examples
-#' # character vector
-#'    x <- "Ratio M/L normalized STD(L)_E00(M)_E01(H)_R1"
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <- "Ratio M/L STD(L)_E00(M)_E01(H)_R1"
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <-'LFQ intensity STD_R1'
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <- 'LFQ intensity L STD(L)_E00(M)_E01(H)_R1'
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <-'Reporter intensity 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
-#'    standardize_maxquant_snames(x)
-#'
-#'    x <- 'Reporter intensity corrected 0 A(0)_B(1)_C(2)_D(3)_E(4)_F(5)_R1'
-#'    standardize_maxquant_snames(x)
 #' @export
-standardize_maxquant_snames <- function (x, ...) {
-    UseMethod("standardize_maxquant_snames", x)
 }
 
 
 #' @export
-#' @rdname standardize_maxquant_snames
-standardize_maxquant_snames.character <- function(
-    x,
-    quantity = guess_maxquant_quantity(x),
-    verbose  = FALSE,
-    ...
-){
-    # x = multiplexes + channels. Return multiplexes if single channel.
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
 
     # Decompose multiplexes and channels
     if (quantity == 'Intensity'){
@@ -243,18 +200,6 @@ standardize_maxquant_snames.character <- function(
     return(cleanx)
 }
 
-#' @export
-#' @rdname standardize_maxquant_snames
-standardize_maxquant_snames.SummarizedExperiment <- function(
-    x,
-    quantity = guess_maxquant_quantity(x),
-    verbose  = FALSE,
-    ...
-){
-    newsnames <- standardize_maxquant_snames(
-                    snames(x), quantity = quantity, verbose=verbose)
-    snames(x) <- sdata(x)$sample_id <- newsnames
-    x
 extract_reviewed <- function(fastahdrs){
     fastahdrs                    %>%   # seqinr::read.fasta          gives '>sp|tr' fastahdrs
     split_extract_fixed('|',1)         %>%   # Biostrings::readAAStringSet gives  'sp|tr' fastahdrs
@@ -724,6 +669,62 @@ prefer_swissprot_over_trembl <- function(feature_dt, verbose=TRUE){
                 '\t\t\tDrop trembl when swissprot available')
     feature_dt[, REVIEWED := NULL]
     feature_dt
+#' Dequantify maxquant snames
+#' 
+#' Drop quantity ('Reporter intensity'). \cr
+#' Encode {channel} as suffix.
+#' 
+#' `               Ratio H/L WT(L).KD(H).R1  ->  WT(L).KD(H).R1{H/L}`
+#' `                    LFQ intensity WT.R1  ->  WT.R1`
+#' `Reporter intensity 0 WT(126).KD(127).R1  ->  WT(1).KD(2).R1{1}`
+#' @param x        `character`
+#' @param quantity `'ratio',              'normalizedratio'`,  \cr
+#'                 `'LFQ intensity'`, \cr
+#'                 `'intensity',          'labeledintensity'`
+#'                 `'reporterintensity', 'correctedreporterintensity'`
+#' @param verbose  `TRUE` or `FALSE`
+#' @return `character`
+#' @examples
+#' dequantify(c('Ratio H/L WT(L).KD(M).OE(H).R1',             # Ratios
+#'              'Ratio M/L WT(L).KD(M).OE(H).R1'))
+#' dequantify(c('Ratio H/L normalized WT(L).KD(M).OE(H).R1',  # Norm. Ratios
+#'              'Ratio M/L normalized WT(L).KD(M).OE(H).R1'))
+#' dequantify(c('LFQ intensity WT.R1',                        # LFQ intensity
+#'              'LFQ intensity KD.R1'))
+#' dequantify(c('Reporter intensity 1 WT(126).KD(127).R1',    # Rep.intensities
+#'              'Reporter intensity 2 WT(126).KD(127).R1'))
+#' @md
+#' @export
+dequantify <- function(
+    x, quantity = guess_maxquant_quantity(x), verbose  = FALSE
+){
+# x = multiplex + channel. Return multiplex if single channel.
+# Decompose multiplex and channel
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
+    if (quantity == 'intensity'){
+        multiplex <- stri_replace_first_regex(x, pattern, '$1')
+        channel   <- rep('', length(multiplex))
+    } else {
+        multiplex <- stri_replace_first_regex(x, pattern, '$2')
+        channel   <- stri_replace_first_regex(x, pattern, '$1')
+        channel %<>% stri_replace_first_fixed(' ', '')
+    }
+# Reporter intensity
+    if (quantity %in% c('reporterintensity', 'correctedreporterintensity')){
+        multiplex %<>% lapply(label2index)
+        channel %<>% as.numeric()
+        if (0 %in% channel){                           # pre-2018 mq is 0-based
+            channel %<>% as.numeric() %>% add(1) %>% as.character()
+        }
+    }
+# Standardize
+    if (all(channel=='')){
+        cleanx <- multiplex
+    } else {
+        cleanx <- sprintf('%s{%s}', multiplex, channel)
+    }
+    if (verbose) message('\t\tStandardize snames: ', x[1], '  ->  ', cleanx[1])
+    return(cleanx)
 }
 
 
@@ -738,6 +739,27 @@ drop_fragments <- function(feature_dt, verbose=TRUE){
     if (verbose) message(
             '\t\t\tDrop fragments when full seqs available')
     feature_dt
+#' Convert labels into indices
+#' @param x  `character`
+#' @examples
+#' label2index(x = 'Reporter intensity 0 WT(0).KD(1).OE(2).R1')
+#' label2index(x = 'Reporter intensity 1 WT(1).KD(2).OE(3).R1')
+#' label2index(x = 'Reporter intensity 0 WT(126).KD(127).OE(128).R1')
+#' label2index(x = 'Reporter intensity 1 WT(126).KD(127).OE(128).R1')
+#' label2index(x = 'Reporter intensity 1 Mix1')
+#' @export
+label2index <- function(x){
+    labels <- unlist(stri_extract_all_regex(x, '\\(.+?\\)'))
+    if (any(is.na(labels)))  return(x)
+    for (i in rev(seq_along(labels))){ 
+        # important to do this in rev order!!! otherwise ...
+        #                 Reporter intensity 0 WT(0).KD(1).OE(2).R1
+        # i=1: (0) -> 1 : Reporter intensity 0 WT(1).KD(1).OE(2).R1
+        # i=2: (1) -> 2 : Reporter intensity 0 WT(2).KD(1).OE(2).R1
+        # not what we want!!!
+        x %<>% stri_replace_first_fixed(labels[[i]], paste0('(',i,')'))
+    }
+    x
 }
 
 
