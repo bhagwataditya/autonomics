@@ -1158,6 +1158,7 @@ add_psp <- function(
 #==============================================================================
 #
 #                     filter_maxquant samples
+#                       annotate_uniprot_ws
 #
 #==============================================================================
 
@@ -1166,8 +1167,51 @@ filter_maxquant_samples <- function(object, select_subgroups, verbose){
     if (!is.null(select_subgroups))  object %<>%
         filter_samples(subgroup %in% select_subgroups, verbose = verbose)
     object
+paste_unique <- function(x, collapse) paste0(unique(x), collapse=collapse)
+
+.annotate_uniprot_ws <- function(fdt, upws, columns='ENSEMBL', collapse=';'){
+    # Map uniprot -> columns
+        resdt <- data.table(UniProt.ws::select(upws, fdt$uniprot, columns))
+    # Trim whitespace
+        resdt <- resdt[, lapply(.SD, trimws),                          by = 'From']
+    # Collapse per uniprot
+        resdt <- resdt[, lapply(.SD, paste_unique, collapse=collapse), by = 'From']
+    # Ensure original order
+        merge.data.table(
+            fdt, resdt, by.x = 'uniprot', by.y = 'From', all.x = TRUE, sort = FALSE)
 }
 
+#' Annotate uniprotids using UniProt.ws
+#'
+#' Annotate uniprotids in data.table or SummarizedExperiment
+#'
+#' data.table: column "uniprot" with uniprotid values (e.g. "Q5JTY5"). \cr
+#'
+#' SummarizedExperiment:  svar "feature_id" with collapsed uniprot values for 
+#' a single protein ("A0A068F9P7") or a proteingroup ("A0A068F9P7;F1Q7I4").
+#' On these the mapping is performed. 1:many mappings are collapsed and only then returned.
+#' @param x          data.table/SummarizedExperiment with (s)var "uniprot" \cr
+#'                   with single (data.table) or collapsed (SummarizedExperiment) uniprot values
+#' @param upws       return value of Uniprot.ws::Uniprot.ws()
+#' @param columns    subset of UniProt.ws::columns(up)
+#' @param collapse   string: used in paste(collapse = .)
+#' @param ...        used for S3 generic definition
+#' @return SummarizedExperiment/data.table
+#' @examples
+#' # data.table
+#'     x <- data.table::data.table(uniprot = c('A0A068F9P7', 'Q7ZVA2'))
+#'     # upws <- UniProt.ws::UniProt.ws(taxId=7955)
+#'     # annotate_uniprot_ws(x, upws)
+#'
+#' # SummarizedExperiment
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     x <- read_maxquant_proteingroups(file, plot = FALSE)
+#'     x %<>% extract(1:10, )
+#'     fdt(x)[1:3, ]
+#'     # x %<>% annotate_uniprot_ws(upws)
+#'     # fdt(x)[1:3, ]
+#' @export
+annotate_uniprot_ws <- function(x, ...)  UseMethod('annotate_uniprot_ws')
 
 #==============================================================================
 #
@@ -1180,6 +1224,35 @@ transform_maxquant <- function(object, impute, verbose, plot){
 # Impute
     if (impute) object %<>% impute_systematic_nondetects(plot = FALSE)
     object
+#' @rdname annotate_uniprot_ws
+#' @export
+annotate_uniprot_ws.data.table <- function(
+    x, upws, columns=c('xref_ensembl'), collapse=';', ...
+){
+    # Assert valid inputs
+        if (!requireNamespace('UniProt.ws', quietly = TRUE)){
+            message("`BiocManager::install('UniProt.ws')`. Then re-run.")
+            return(x)
+        }
+        assert_is_data.table(x)
+        assert_is_subset('uniprot', names(x))
+        assert_is_identical_to_true(all(!is.na(x$uniprot)))
+        assert_is_all_of(upws, 'UniProt.ws')
+        assert_is_character(columns)
+        assert_is_subset(columns, UniProt.ws::columns(upws))
+        assert_is_a_string(collapse)
+        columns %<>% setdiff(names(x))
+    # Chunk data (to avoid UniProt.ws warning)
+        n <- ceiling(nrow(x)/99)
+        chunks <- rep(seq_len(n), each=99)
+        chunks %<>% extract(seq_len(nrow(x)))
+        chunk <- NULL
+        x[, chunk := chunks]
+    # Call backend for each chunk
+        x <- x[, .annotate_uniprot_ws(.SD, upws, columns = columns, collapse = collapse), by = 'chunk']
+    # Return
+        x$chunk <- NULL
+        x[]
 }
 
 #==============================================================================
@@ -1199,6 +1272,26 @@ transform_maxquant <- function(object, impute, verbose, plot){
 phospho_expr_columns <- function(x, quantity){
     pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
     which(stri_detect_regex(x,pattern) & stri_detect_regex(x, '___1'))
+#' @rdname annotate_uniprot_ws
+#' @export
+annotate_uniprot_ws.SummarizedExperiment <- function(
+    x, upws, columns = c('ENSEMBL'), collapse=';', ...
+){
+    # Assert
+        assert_is_all_of(upws, 'UniProt.ws')
+    # Split proteingroups into proteins and extract uniprot
+        fdt <- data.table(fdata(x))
+        fdt %<>% uncollapse(uniprot, sep=collapse)
+        fdt[, uniprot := split_extract_fixed(uniprot, '-', 1)]
+    # Annotate
+        uniprot <- NULL
+        # fdt %<>% extract(uniprot %in% UniProt.ws::keys(upws, keytype = 'UniProtKB'))  # latest version returns only small number of keys!
+        fdt %<>% annotate_uniprot_ws.data.table(upws, columns = columns, collapse = collapse)
+    # Collapse
+        fdt <- fdt[, lapply(.SD, trimws),                          by = 'feature_id'] # trim whitespace
+        fdt <- fdt[, lapply(.SD, paste_unique, collapse=collapse), by = 'feature_id'] # collapse
+        x %<>% merge_fdt(fdt)
+        x
 }
 
 
