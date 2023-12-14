@@ -299,6 +299,12 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
                     snames(x), quantity = quantity, verbose=verbose)
     snames(x) <- sdata(x)$sample_id <- newsnames
     x
+extract_reviewed <- function(fastahdrs){
+    fastahdrs                    %>%   # seqinr::read.fasta          gives '>sp|tr' fastahdrs
+    split_extract_fixed('|',1)         %>%   # Biostrings::readAAStringSet gives  'sp|tr' fastahdrs
+    substr(nchar(.)-1, nchar(.))       %>%   # this function now works with both scenarios
+    equals('sp')                       %>%
+    as.integer()
 }
 
 #==============================================================================
@@ -307,7 +313,18 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #
 #==============================================================================
 
+extract_protein <- function(fastahdrs){
+    y <- fastahdrs %>% split_extract_fixed(' ', 1)
+    idx <- stri_detect_fixed(y, '|')         # >IL2-FAT1  (645 aa)
+    y[idx] %<>% split_extract_fixed('|', 3)  # >sp|P22234|PUR6_HUMAN
+    #split_extract_fixed('_', 1)             # drop _HUMAN: not robust in multi-organism db!
+    y
+}
 
+extract_gene <- function(fastahdrs){
+    fastahdrs %>% 
+    split_extract_fixed('GN=', 2)      %>% 
+    split_extract_fixed(' ', 1)}
 
 #' Demultiplex snames
 #'
@@ -348,6 +365,10 @@ standardize_maxquant_snames.SummarizedExperiment <- function(
 #' @noRd
 demultiplex <- function (x, ...) {
     UseMethod("demultiplex", x)
+extract_uniprot <- function(fastahdrs){
+    fastahdrs                    %>%
+    split_extract_fixed(' ', 1)        %>% 
+    split_extract_fixed('|', 2) 
 }
 
 is_multiplexed <- function(x){
@@ -355,10 +376,20 @@ is_multiplexed <- function(x){
     n_open   <- stri_count_fixed(x, '(')
     n_closed <- stri_count_fixed(x, ')')
     all(stri_detect_regex(x, pattern) & (n_open==n_closed) & (n_open>0))
+extract_canonical <- function(fastahdrs){
+    fastahdrs                    %>%
+    extract_uniprot()                  %>%
+    split_extract_fixed('-', 1) 
 }
 
 are_all_identical <- function(y){
     if (length(y)==1) TRUE else all(y[-1] == y[1])
+extract_isoform <- function(fastahdrs){
+    fastahdrs                    %>%
+    extract_uniprot()                  %>%
+    split_extract_fixed('-', 2)        %>%
+    nastring_to_0()                    %>%
+    as.integer()
 }
 
 #' Separate multiplexes from channels
@@ -377,10 +408,20 @@ are_all_identical <- function(y){
 extract_multiplexes <- function(x){
     pattern <- '(.+)\\{(.+)\\}'
     stri_replace_first_regex(x, pattern, '$1')
+extract_description <- function(fastahdrs){
+    fastahdrs                    %>%
+    split_extract_regex('_[A-Z]+ ', 2) %>% 
+    split_extract_regex(' OS=', 1)
 }
 extract_channels <- function(x){
     pattern <- '(.+)\\{(.+)\\}'
     stri_replace_first_regex(x, pattern, '$2')
+
+extract_fragment <- function(fastahdrs){
+    fastahdrs                    %>%
+    extract_description()              %>%
+    stri_detect_fixed(  'ragment')     %>%
+    as.integer()
 }
 
 #' Separate samples from labels
@@ -395,6 +436,12 @@ extract_labels <- function(multiplexes){
     stri_extract_all_regex(multiplexes, pattern)       %>%
     lapply(stri_replace_first_fixed, '(', '')  %>%
     lapply(stri_replace_first_fixed, ')', '')
+extract_existence <- function(fastahdrs){
+    fastahdrs                   %>%
+    split_extract_fixed('PE=', 2)     %>%
+    split_extract_fixed(' ', 1)       %>%
+    nastring_to_nachar()              %>%
+    as.integer()
 }
 extract_biosamples <- function(multiplexes, labels){
     pattern <- '\\(.+?\\)'
@@ -403,14 +450,40 @@ extract_biosamples <- function(multiplexes, labels){
             y[seq_len(length(labels[[1]]))] %<>%
             stri_replace_first_regex('^[_. ]', ''); y})
     # rm sep from samples (but not from replicate - needed to glue back later!)
+
+FASTAFIELDS <- c('reviewed', 'protein', 'gene', 'canonical', 
+                 'isoform', 'fragment', 'existence', 'organism', 'description')
+
+parse_fastahdrs <- function(fastahdrs, fastafields = setdiff(FASTAFIELDS, 'description')){
+    reviewed <- protein <- gene <- canonical <- isoform <- fragment <- NULL
+    existence <- organism <- description <- NULL
+    dt <- data.table(uniprot = extract_uniprot(    fastahdrs))                              #   0 tr
+    if ('reviewed'    %in% fastafields)  dt[, reviewed    := extract_reviewed( fastahdrs)]  #   1 sp
+    if ('protein'     %in% fastafields)  dt[, protein     := extract_protein(  fastahdrs)]  # existence
+    if ('gene'        %in% fastafields)  dt[, gene        := extract_gene(     fastahdrs)]  #   1 protein
+    if ('canonical'   %in% fastafields)  dt[, canonical   := extract_canonical(fastahdrs)]  #   2 transcript
+    if ('isoform'     %in% fastafields)  dt[, isoform     := extract_isoform(  fastahdrs)]  #   3 homolog
+    if ('fragment'    %in% fastafields)  dt[, fragment    := extract_fragment( fastahdrs)]  #   4 prediction
+    if ('existence'   %in% fastafields)  dt[, existence   := extract_existence(fastahdrs)]  #   5 uncertain
+    if ('organism'    %in% fastafields)  dt[, organism    := split_extract_fixed(protein, '_', 2)]
+    if ('description' %in% fastafields)  dt[, description := extract_description(fastahdrs)]
+    if ('existence'   %in% fastafields)  dt[, existence   := unique(.SD)[, existence[!is.na(existence)]], by = 'canonical'] 
+        # `unique`: for phosphosites the fastahdrs are
+        #  replicated when protein has multiple phosphosites
+        #  This duplication needs to be eliminated before proceeding.
+    dt[]
 }
 
 
 #' Are number of samples/labels equally multiplexed across mixes?
+#' Read headers from uniprot fastafile
 #'
 #' @param samples list of char vectors (see examples)
 #' @param labels  list of char vectors (see examples)
 #' @return TRUE or FALSE
+#' @param fastafile    string (or charactervector)
+#' @param fastafields  charactervector : which fastahdr fields to extract ?
+#' @param verbose      bool
 #' @examples
 #' samples <- list(c("STD", "E00", "E01", "_R1" ),
 #'                 c("STD", "E00", "E01", "_R2"))
@@ -422,6 +495,30 @@ are_equally_multiplexed <- function(samples, labels){
     n_samples <- vapply(samples,  length, integer(1))
     n_labels  <- vapply(labels, length, integer(1))
     are_all_identical(n_samples) & are_all_identical(n_labels)
+#' # Single fastafile
+#'    fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#'    read_fastahdrs(fastafile)
+#'    
+#' # Multiple fastafiles
+#'    # dir <- R_user_dir('autonomics', 'cache')
+#'    # dir %<>% file.path('uniprot', 'uniprot_sprot-only2014_01')
+#'    # fastafile <- file.path(dir, c("uniprot_sprot_human.fasta", "uniprot_sprot_mouse.fasta"))
+#'    # read_fastahdrs(fastafile)
+#' @return data.table(uniprot, protein, gene, uniprot, reviewed, existence)
+#' @note existence values are always those of the canonical isoform
+#'       (no isoform-level resolution for this field)
+#' @export
+read_fastahdrs <- function(
+    fastafile, fastafields = setdiff(FASTAFIELDS, 'description'), verbose = TRUE
+){
+# Assert
+    if (is.null(fastafile)) return(NULL)
+    assert_all_are_existing_files(fastafile)
+# Read
+    if (verbose) message('\tRead ', paste0(fastafile, collapse = '\n\t     '))
+    fastahdrs <- mapply(.read_fastahdrs, fastafile, MoreArgs = list(fastafields = fastafields), SIMPLIFY = FALSE)
+    fastahdrs %<>% data.table::rbindlist()
+    fastahdrs
 }
 
 
@@ -454,6 +551,15 @@ drop_replicates <- function(biosamples, labels){
         biosamples %<>% lapply(extract, seq_len(n_samples-1))
     }
     biosamples
+.read_fastahdrs <- function(
+    fastafile, fastafields = setdiff(FASTAFIELDS, 'description'), verbose = TRUE
+){
+    if (!requireNamespace('Biostrings', quietly = TRUE)){
+        stop("BiocManager::install('Biostrings'). Then re-run.") }
+    fastahdrs <- Biostrings::readAAStringSet(fastafile)
+    fastahdrs %<>% names()
+    fastahdrs %<>% parse_fastahdrs(fastafields = fastafields)
+    fastahdrs
 }
 
 #' First stri_split_fixed. Then extract component i
@@ -568,59 +674,6 @@ DEFAULT_FASTAFIELDS <- c('GENES', 'EXISTENCE', 'REVIEWED', 'PROTEIN-NAMES')
 #' @param fastafile    path to fasta file
 #' @param fastafields  character vector
 #' @examples
-#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#' load_uniprot_fasta(fastafile)
-#' @return data.table(uniprot, genename, proteinname, reviewed, existence)
-#' @note EXISTENCE values are always those of the canonical isoform
-#'       (no isoform-level resolution for this field)
-#' @noRd
-load_uniprot_fasta <- function(
-    fastafile, fastafields = DEFAULT_FASTAFIELDS, verbose = TRUE){
-    if (!requireNamespace('seqinr', quietly = TRUE)){
-        stop("BiocManager::install('seqinr'). Then re-run.") }
-    assert_all_are_existing_files(fastafile)
-    CANONICAL <- REVIEWED <- ENTRYNAME <- VERSION <- EXISTENCE <- GENES <- NULL
-    ORGID <- ORGNAME <- `PROTEIN-NAMES` <- UNIPROTKB <- annotation <- NULL
-    if (verbose) message('\t\tLoad fasta file')
-    fasta <- seqinr::read.fasta(fastafile)
-    all_accessions <- extract_from_name(names(fasta), 2)
-    dt <- data.table(UNIPROTKB = extract_from_name(names(fasta), 2),
-            annotation = unname(vapply(fasta, attr, character(1), 'Annot')))
-    dt[, CANONICAL := stri_replace_last_regex(UNIPROTKB, '[-][0-9]+','')]
-message('\t\t\tExtract REVIEWED: 0=trembl, 1=swissprot')
-    dt[, REVIEWED := as.numeric(extract_from_name(names(fasta),1)=='sp')]
-    message('\t\t\tExtract ENTRYNAME')
-    dt [, ENTRYNAME := extract_from_name(names(fasta), 3)]
-message('\t\t\tExtract (sequence) VERSION')
-    pattern <- ' SV=[0-9]'  # VERSION
-    dt [, VERSION := as.numeric(extract_from_annot(annotation, pattern,5))]
-    dt [, annotation   := rm_from_annot(annotation, pattern)]
-message('\t\t\tExtract EXISTENCE: 1=protein, 2=transcript, ',
-        '3=homology, 4=prediction, 5=uncertain, NA=isoform')
-    pattern <- ' PE=[0-9]'  # EXISTENCE
-    dt [, EXISTENCE  := as.numeric(extract_from_annot(annotation, pattern, 5))]
-    dt [, annotation := rm_from_annot(annotation, pattern) ]
-    dt [, EXISTENCE  := EXISTENCE[UNIPROTKB==CANONICAL], by = 'CANONICAL']
-    # only canonical have this
-message('\t\t\tExtract GENES')
-    pattern <- ' GN=.+$'    # GENES
-    dt [, GENES       := extract_from_annot(annotation, pattern, 5)]
-    dt [, annotation  := rm_from_annot(annotation, pattern)]
-message('\t\t\tExtract ORGID')
-    pattern <- ' OX=[0-9]+' # ORGID
-    dt [, ORGID        := extract_from_annot(annotation, pattern, 5)]
-    dt [, annotation   := rm_from_annot(annotation, pattern)]
-message('\t\t\tExtract ORGNAME')
-    pattern <- ' OS=.+$'    # ORGNAME
-    dt [, ORGNAME      := extract_from_annot(annotation, pattern, 5)]
-    dt [, annotation   := rm_from_annot(annotation, pattern)]
-message('\t\t\tExtract PROTEIN-NAMES')
-    pattern <- ' .+$'       # PROTEIN-NAMES
-    dt [, `PROTEIN-NAMES` := extract_from_annot(annotation, pattern, 2)]
-    dt [,  annotation     := rm_from_annot(annotation, pattern)]
-    dt [, `PROTEIN-NAMES` := `PROTEIN-NAMES`[UNIPROTKB==CANONICAL],
-        by = 'CANONICAL'] # only canonical have this
-    dt[, c('UNIPROTKB', 'CANONICAL', fastafields), with = FALSE]
 }
 
 
