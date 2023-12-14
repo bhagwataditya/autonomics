@@ -109,23 +109,17 @@ PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
 
 #' maxquant quantity patterns
 #' @examples
-#' MAXQUANT_PATTERNS_QUANTITY
+#' MAXQUANT_PATTERNS
 #' @export
-MAXQUANT_PATTERNS_QUANTITY <- c(
-`Ratio normalized`             =
-    '^Ratio ([HM]/[ML]) normalized (.+)$',
-`Ratio`                        =
-    '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
-`LFQ intensity`                =
-    '^LFQ intensity ([HML])? ?(.+)$',
-`Reporter intensity corrected` =
-    '^Reporter intensity corrected ([0-9]+) (.+)$',
-`Reporter intensity`           =
-    '^Reporter intensity ([0-9]+) (.+)$',
-`Intensity labeled`            =
-    '^Intensity ([HML]) (.+)$',
-`Intensity`                    =
-    '^Intensity (.+)$')
+MAXQUANT_PATTERNS <- c(
+    `normalizedratio`            = '^Ratio ([HM]/[ML]) normalized (.+)$',
+    `ratio`                      = '^Ratio ([HM]/[ML]) (?!count|type|variability|iso-count|normalized)(.+)',
+    `correctedreporterintensity` = '^Reporter intensity corrected ([0-9]+) (.+)$',
+    `reporterintensity`          = '^Reporter intensity ([0-9]+) (.+)$',
+    `maxlfq`                     = '^LFQ intensity ([HML] )? ?(.+)$',
+    `labeledintensity`           = '^Intensity ([HML]) (.+)$',
+    `intensity`                  = '^Intensity (.+)$'
+)
 
 
 #' Guess maxquant quantity from snames
