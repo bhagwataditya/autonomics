@@ -362,21 +362,25 @@ pvar <- function(
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
 #' # Variables
-#'     tvar(     object)
-#'     pvar(     object)
-#'     fdrvar(   object)
+#'          tvar(object)
+#'          pvar(object)
+#'        fdrvar(object)
 #'     effectvar(object)
 #' # Matrix
-#'     tmat(     object)[1:3, ]
-#'     pmat(     object)[1:3, ]
-#'     fdrmat(   object)[1:3, ]
+#'          tmat(object)[1:3, ]
+#'          pmat(object)[1:3, ]
+#'        fdrmat(object)[1:3, ]
 #'     effectmat(object)[1:3, ]
-#'     downmat(  object)[1:3, ]
-#'     upmat(    object)[1:3, ]
-#'     signmat(  object)[1:3, ]
+#'       downmat(object)[1:3, ]
+#'         upmat(object)[1:3, ]
+#'       signmat(object)[1:3, ]
+#' # Vector 
+#'          pvec(object)[1:3]
+#' # Features
+#'     pfeatures(object)[1:3]
 #' @export
 pmat <- function(
-    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+    object, fit = fits(object), coefs = default_coefs(object, fit = fit)
 ){
     var <- pvar(object, coefs = coefs, fit = fit)
     if (is.null(var))  return(NULL)
@@ -386,6 +390,110 @@ pmat <- function(
     rownames(mat) <- rownames(object)
     mat
 }
+
+
+#' Get p/effect vector
+#' @param object SummarizedExperiment
+#' @param fit    string: subset of  fits(object)
+#' @param coef   string: subset of coefs(object)
+#' @param fvar   string: fvar mapped to output names
+#' @return numeric vector
+#' @examples 
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% fit_limma()
+#'      pvec(object)[1:3]
+#' effectvec(object)[1:3]
+#' @export
+pvec <- function(
+    object, 
+    fit  = fits(object)[1], 
+    coef = default_coefs(object, fit = fit)[1],
+    fvar = 'feature_id'
+){
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(fit,   fits(object))
+    assert_scalar_subset(coef, coefs(object))
+    y        <- fdt(object)  %>%  extract2(pvar(object, fit = fit, coefs = coef))
+    names(y) <- fdt(object)  %>%  extract2(fvar)
+    y
+}
+
+#' @rdname pvec
+#' @export
+effectvec <- function(
+    object, 
+    fit  = fits(object)[1], 
+    coef = coefs(object, fit = fit)[1], 
+    fvar = 'feature_id'
+){
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(fit,   fits(object))
+    assert_scalar_subset(coef, coefs(object))
+    y        <- fdt(object)  %>%  extract2(effectvar(object, fit = fit, coefs = coef))
+    names(y) <- fdt(object)  %>%  extract2(fvar)
+    y
+}
+    
+
+#' Get p/up/down features
+#' @param object    SummarizedExperiment
+#' @param fit       string: subset of  fits(object)
+#' @param coef      string: subset of coefs(object)
+#' @param fvar      string: vector to be outputted
+#' @param p         pvalue cutoff
+#' @param effect    effect cutoff
+#' @return character vector
+#' @examples 
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' object %<>% fit_limma()
+#'    pfeatures(object)[1:3]
+#'   upfeatures(object)[1:3]
+#' downfeatures(object)[1:3]
+#' @export
+pfeatures <- function(
+    object, 
+    fit  = fits(object)[1],
+    coef = default_coefs(object, fit = fit)[1],
+    fvar = 'feature_id',
+    p    = 0.05
+){
+    idx <- pvec(object, fit = fit, coef = coef, fvar = fvar) < p
+    unique(fdt(object)[[fvar]][idx])
+}
+
+
+#' @rdname pfeatures
+#' @export
+upfeatures <- function(
+    object, 
+    fit    = fits(object)[1], 
+    coef   = default_coefs(object, fit = fit)[1], 
+    fvar   = 'feature_id',
+    p      = 0.05,
+    effect = 0
+){
+    idx <-      pvec(object, fit = fit, coef = coef, fvar = fvar) < p       & 
+           effectvec(object, fit = fit, coef = coef, fvar = fvar) > effect
+    unique(fdt(object)[[fvar]][idx])
+}
+
+#' @rdname pmat
+#' @export
+downfeatures <- function(
+    object, 
+    fit    = fits(object)[1], 
+    coef   = default_coefs(object, fit = fit)[1], 
+    fvar   = 'feature_id',
+    p      = 0.05,
+    effect = 0
+){
+    idx <-      pvec(object, fit = fit, coef = coef, fvar = fvar) < p       & 
+           effectvec(object, fit = fit, coef = coef, fvar = fvar) < effect
+    unique(fdt(object)[[fvar]][idx])
+}
+
 
 #' @rdname pmat
 #' @export
