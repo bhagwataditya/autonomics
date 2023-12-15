@@ -1408,9 +1408,15 @@ plot_subgroup_points <- function(
 #' list2mat(x)
 #' @export
 list2mat <- function(x){
+# Assert
+    assert_is_list(x)
+    for (i in seq_along(x)){
+        x[[i]] %<>% extract(!is.na(.))
+        x[[i]] %<>% extract(. != '')
+    }
+# Convert    
     uni <- unique(Reduce(union, x))
-    mat <- matrix(0, nrow = length(uni), ncol = length(x),
-           dimnames = list(uni, names(x)))
+    mat <- matrix(0, nrow = length(uni), ncol = length(x), dimnames = list(uni, names(x)))
     for (i in seq_along(x))  mat[x[[i]], i] <- 1
     mat
 }
