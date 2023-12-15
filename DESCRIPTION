@@ -2,18 +2,20 @@ Package: autonomics
 Type: Package
 Title: Generifying and intuifying cross-platform omics analysis
 Version: 1.11.6
-Authors@R: c(person("Aditya",   "Bhagwat",   email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
-             person("Richard",  "Cotton",    email = "richierocks@gmail.com",            role = "aut"),
-             person("Shahina",  "Hayat",     email = "shahina.hayat@hotmail.com",        role = "aut"),
-             person("Laure",    "Cougnaud",  email = "laure.cougnaud@openanalytics.eu",  role = "ctb"),
-             person("Witold",   "Szymanski", email = "witold.szymanski@uni-marburg.de",  role = "ctb"),
-             person("Hinrich",  "Goehlmann", email = "hinrich@goehlmann.info",           role = "sad"),
-             person("Karsten",  "Suhre",     email = "kas2049@qatar-med.cornell.edu",    role = "sad"),
-             person("Johannes", "Graumann",  email = "johannes.graumann@uni-marburg.de", role = c('aut', 'sad', 'rth')))
+Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
+             person("Richard",  "Cotton",     email = "richierocks@gmail.com",            role = "aut"),
+             person("Shahina",  "Hayat",      email = "shahina.hayat@hotmail.com",        role = "aut"),
+             person("Laure",    "Cougnaud",   email = "laure.cougnaud@openanalytics.eu",  role = "ctb"),
+             person("Witold",   "Szymanski",  email = "witold.szymanski@uni-marburg.de",  role = "ctb"),
+             person("Vanessa",  "Beutgen",    email = "vanessa.beutgen@uni-marburg.de",   role = "ctb"),
+             person("Willem",   "Ligtenberg", email = "wligtenberg@gmail.com",            role = "sad"),
+             person("Hinrich",  "Goehlmann",  email = "hinrich@goehlmann.info",           role = "sad"),
+             person("Karsten",  "Suhre",      email = "kas2049@qatar-med.cornell.edu",    role = "sad"),
+             person("Johannes", "Graumann",   email = "johannes.graumann@uni-marburg.de", role = c('aut', 'sad', 'rth')))
 Description:
-  This package offers a generic and intuitive solution for cross-platform omics data analysis.
-  It has functions for import, preprocessing, exploration, contrast analysis and visualization of omics data.
-  It follows a tidy, functional programming paradigm.
+  This package offers a generic solution for cross-platform omics data analysis.
+  It offers easy access to general linear modeling across coding systems and modeling engines.
+  It contains functions to read, preprocess, impute, project, general linear model, and analyze enrichment.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
