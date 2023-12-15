@@ -1097,63 +1097,52 @@ read_rnaseq_counts <- function(
 }
 
 
-#' Analyze
-#' @param object       SummarizedExperiment
-#' @param pca          whether to perform pca
-#' @param fit          NULL, 'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
-#' @param subgroupvar  subgroup svar
-#' @param formula      model formula
-#' @param block        block svar
-#' @param weightvar    NULL or name of weight matrix in assays(object)
-#' @param contrastdefs contrastdefs vector/matrix/list
-#' @param verbose      whether to msg
-#' @param plot         whether to plot
-#' @return SummarizedExperiment
-#' @examples 
-#' require(magrittr)
-#' file <- download_data('atkin18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' object %<>% analyze(pca=TRUE, subgroupvar = 'Group', fit='limma')
-#' @export
-analyze <- function(
-    object,
-    pca = FALSE,
-    fit = NULL,
-    subgroupvar = default_subgroupvar(object),
-    formula = default_formula(object, subgroupvar, fit),
-    block = NULL,
-    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    contrastdefs = contrast_coefs(object, formula),
-    verbose = TRUE,
-    plot = TRUE
-){
-    if (is.null(subgroupvar))  subgroupvar <- default_subgroupvar(object)
-    subgroup <- if (is.null(subgroupvar)) quo(NULL) else sym(subgroupvar)
-    if (plot){
-        grid.draw(
-            grid.arrange(arrangeGrob(
-                plot_sample_densities(
-                    object[, seq_len(min(30, ncol(object)))], 
-                    fill = !!subgroup), 
-                plot_feature_densities(object[sample(ncol(object), 4)]), 
-                ncol=2),
-            plot_summarized_detections(
-                object, subgroup = !!subgroup, fill = !!subgroup),
-            nrow=2))
-    }
-    if (pca)   object %<>% pca(verbose=verbose, plot=plot, color=!!subgroup)
-    for (curfit in fit){
-        fitfun <- get(paste0('fit_', curfit))
-        if (is.null(formula)) formula <- default_formula(object,subgroupvar,fit)
-        if (is.null(contrastdefs)) contrastdefs<- contrast_coefs(object,formula)
-        object %<>% fitfun( subgroupvar  = subgroupvar,
-                            formula      = formula,
-                            contrastdefs = contrastdefs,
-                            block        = block,
-                            weightvar    = weightvar,
-                            verbose      = verbose,
-                            plot         = plot) }
-    object
+.read_salmon_sample <- function(sampledir){
+    Name <- TPM <- NULL
+    file <- sprintf('%s/quant.sf', sampledir)
+    dt <- fread(file)[, .(Name, TPM)]
+    setnames(dt, 'TPM', basename(sampledir))
+    dt
 }
 
 
+#' Read salmon
+#' @param dir   salmon results rootdir
+#' @param ensdb EnsDb object
+#' @param sfile samplefile
+#' @param by    samplefile column to merge by
+#' @return SummarizedExperiment
+#' @examples 
+#' # dir <- '../bh/salmon_quants'
+#' # sfile <- '../bh/samplesheet.csv'
+#' # by <- 'salmonDir'
+#' # ah <- AnnotationHub::AnnotationHub()
+#' # ensdb <- ah[['AH98078']]
+#' # read_salmon(dir, sfile = sfile, by = 'salmonDir', ensdb = ensdb)
+#' @export
+read_salmon <- function(
+    dir, sfile = NULL, by = NULL, ensdb = NULL
+){
+# Assert
+    if (!requireNamespace('ensembldb', quietly = TRUE)){
+        message("BiocManager::install('ensembldb'). Then re-run.")
+        return(object) }
+    assert_all_are_dirs(dir)
+    if (!is.null(ensdb))   assert_is_all_of(ensdb, 'EnsDb')
+    if (!is.null(sfile))   assert_all_are_existing_files(sfile)
+    if (!is.null(by)) assert_is_subset(by, names(fread(sfile)))
+# Read
+    samples <- list.dirs(dir, recursive = FALSE, full.names = TRUE)
+    object <- Map(.read_salmon_sample, samples)
+    names(object) %<>% basename()
+    object %<>% Reduce(function(x, y) merge(x, y, by = 'Name'), .)
+    object %<>% dt2mat()
+    object <- list(log2tpm = log2(0.00001 + object))  # assay
+    object %<>% SummarizedExperiment()
+    sdt(object)$sample_id <- snames(object)           # samples
+    object %<>% merge_sample_file(sfile, by.y = by)
+    fdt(object)$feature_id <- fnames(object)          # features
+    fdt(object)$enst <- fdt(object)$feature_id %>% split_extract_fixed('.', 1)
+    fdt(object)$gene <- ensembldb::mapIds(ensdb, keys = fdt(object)$enst, keytype = 'TXID', column = 'GENENAME')
+    object
+}
