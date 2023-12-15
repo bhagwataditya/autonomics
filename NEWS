@@ -1,2 +1,2 @@
-Changes in version 0.99.0 (2020-08-05)
-    + Submitted to Bioconductor
+* Changes in version 0.99.0 (2020-08-05)    Submitted to BioC
+* Changes in version 1.13.5 Improved support for multiple coding systems and modeling engines
