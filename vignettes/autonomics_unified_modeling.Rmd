@@ -1,0 +1,137 @@
+---
+title: "autonomics: unified modeling"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{autonomics_unified_modeling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, message=FALSE, include=TRUE}
+knitr::opts_chunk$set(
+  echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
+#str(knitr::opts_chunk$get())
+```
+<!-- ![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png) -->
+
+# Introduction
+
+Statistical modeling is a powerful tool, but it can also be a bit overwhelming to use efficiently. Different modeling engines exist (lm, limma, lme, lmer, wilcoxon), with each different interfaces. Autonomics offers a unified modeling interface to these different modeling engines. This makes them easy to use and also to compare.  
+
+We illustrate the functionality using data from the **hypoglycemia metabolomics** profiling study of Halama et al. and Atkin (2018), in which participants (**t0**) were subjected to mild (**t1**) and  stronger (**t2**) hypoglycemia, and then brought back to normal levels, additionally being profiled again the next day (**t3**).
+
+```{r}
+   require(magrittr)
+   require(autonomics)
+   file <- download_data('atkin18.metabolon.xlsx')
+   object <- read_metabolon(file)
+   object$SET %<>% factor()
+   object$SUB %<>% factor()
+```
+
+# Classicial: **lm** and **limma**
+
+## lm {-}
+
+Autonomics provides a one-liner interface to *the* classical statistics modeling engine `lm`.  
+The design is defined using the `formula` interface:
+
+```{r}
+object <- read_metabolon(file)
+object$SET %<>% factor()
+object$SUB %<>% factor()
+object %<>% fit_lm(~ SET)
+```
+## limma {-}
+
+`limma` innovated statistcis modeling for Bioinformatics over lm in several ways, out of which the three most fundamental are:
+
+(1) **fast** for even a large number of features.
+(2) A **generalized contrast analysis** framework that allows to compute statistics for any contrast (i.e. linear combination of model coefficients)
+(3) A **moderated t-test** that places upweights effect size (and downweights standard deviation) in significance computation, increasing biological meaningfulness of the results.
+
+Autonomics provides a similar one-liner interface to the limma modeling engine.
+The results of lm and limma are quite similar for coefficient (`t3`, i.e. the residual effect of the hypoglycemia study after 24h), which is, in fact re-assuring.
+
+```{r}
+object <- read_metabolon(file)
+object %<>% fit_lm(~ SET)
+object %<>% fit_limma(~ SET) # prefers large effects over small sds
+plot_contrast_venn(is_sig(object, fit = fits(object), contrast = 't3'))
+# plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
+```
+
+# Blocked: **limma**, **lme**, **lmer**
+
+Block effects (i.e. subject) need to be accounted for.  
+**lme**, **lmer** and **limma** all support the modeling of block effects as random effects.
+Autonomics provides easy access to model block effects with the `block` variable:
+
+
+```{r}
+object <- read_metabolon(file)
+object %<>% fit_limma(~ SET, block = 'SUB')
+object %<>% fit_lme(  ~ SET, block = 'SUB')
+object %<>% fit_lmer( ~ SET, block = 'SUB') # results identical for this basic 
+plot_contrast_venn(is_sig(object, fit = fits(object), contrast = 't3'))
+# plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
+```
+
+# Flexible: **limma**'s contrasts.fit
+
+autonomics also provides easy access to limma's extremely flexible contrasts.fit interface: for any linear combination between model coefficients statistics can be computed.
+
+```{r}
+object <- read_metabolon(file)
+object %<>% fit_limma(~0+SET, contrasts = c('t1-t0', 't2-t0', 't3-t0'), block = 'SUB')
+object %<>% fit_limma(~0+SET, contrasts = c('t1-t0', 't2-t1', 't3-t2'), block = 'SUB')
+```
+
+# Alternative coding schemes: limma, lm, lme, lmer
+
+An alternative approach to compute statistics of interest is to use alternative coding systems for contrast variables. This system is less intuitive than limma's flexible contrast interface, but it is shared by all modeling engines (limma's approach is limited to limma only). In this system one specifies which coding system to use for a factor variable. The default is to use treatment coding (where the different model coefficients express baseline differences), but an alternative would be to use backward difference coding.
+
+```{r}
+object <- read_metabolon(file)
+object %<>% fit_limma(~SET, block = 'SUB')  # baseline diffs
+object %<>% fit_limma(~SET, block = 'SUB', codingfun = code_diff)  # backward diffs
+```
+
+# A non-parameteric alternative: **wilcoxon**
+
+```{r}
+object <- read_metabolon(file)
+object %<>% fit_limma(   ~0+SET, contrasts = c('t3-t0'), block = 'SUB')
+object %<>% fit_wilcoxon(~0+SET, contrasts = c('t3-t0'), block = 'SUB')
+plot_contrast_venn(is_sig(object, contrast = 't3-t0', fit = fits(object)))
+```
+
+
+
+```{r}
+sessionInfo()
+```
+
+
+# References {-}
+
+A  M Billing, S S Dib, A M Bhagwat, I T da Silva, R D Drummond, S Hayat, R Al-Mismar, H Ben-Hamidane, N Goswami, K Engholm-Keller, M R Larsen, K Suhre, A Rafii, J Graummann (2019). Mol Cell Proteomics. 18(10):1950-1966. doi: 10.1074/mcp.RA119.001356.
+
+A M Billing, H Ben Hamidane, S S Dib, R J Cotton, A M Bhagwat, P Kumar, S Hayat, N A Yousri, N Goswami, K Suhre, A Rafii, J Graumann (2016). Comprehensive transcriptomics and proteomics characterization of human mesenchymal stem cells reveals source specific cellular markers. Sci Rep. 9;6:21507. doi: 10.1038/srep21507.
+
+R Fukuda, R Marin-Juez, H El-Sammak, A Beisaw, R Ramadass, C Kuenne, S Guenther, A Konzer, A M Bhagwat, J Graumann, D YR Stainier (2020). EMBO Rep. 21(8): e49752. doi: 10.15252/embr.201949752
+
+A Halama, M Kulinski, S Dib, S B Zaghlool, K S Siveen, A Iskandarani, J Zierer 3, K S Prabhu, N J Satheesh, A M Bhagwat, S Uddin, G Kastenmüller, O Elemento, S S Gross, K Suhre (2018). Accelerated lipid catabolism and autophagy are cancer survival mechanisms under inhibited glutaminolysis. Cancer Lett., 430:133-147. doi:10.1016/j.canlet.2018.05.017
+
+A Halama, H Kahal, A M Bhagwat, J Zierer, T Sathyapalan, J Graumann, K Suhre, S L Atkin (2018). Metabolic and proteomics signatures of hypoglycaemia in type 2 diabetes. Diabetes, obesity and metabolism,  https://doi.org/10.1111/dom.13602
+
+
+
+
+
+
+
+
+
+
+
