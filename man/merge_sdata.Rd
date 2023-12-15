@@ -2,14 +2,26 @@
 % Please edit documentation in R/3_read_omics.R
 \name{merge_sdata}
 \alias{merge_sdata}
+\alias{merge_sdt}
 \alias{merge_fdata}
-\title{Merge sample/feature data}
+\alias{merge_fdt}
+\title{Merge sample/feature dt}
 \usage{
 merge_sdata(
   object,
   dt,
   by.x = "sample_id",
   by.y = names(dt)[1],
+  all.x = TRUE,
+  verbose = TRUE
+)
+
+merge_sdt(
+  object,
+  dt,
+  by.x = "sample_id",
+  by.y = "sample_id",
+  all.x = TRUE,
   verbose = TRUE
 )
 
@@ -18,6 +30,16 @@ merge_fdata(
   dt,
   by.x = "feature_id",
   by.y = names(dt)[1],
+  all.x = TRUE,
+  verbose = TRUE
+)
+
+merge_fdt(
+  object,
+  dt,
+  by.x = "feature_id",
+  by.y = "feature_id",
+  all.x = TRUE,
   verbose = TRUE
 )
 }
@@ -26,23 +48,24 @@ merge_fdata(
 
 \item{dt}{data.frame, data.table, DataFrame}
 
-\item{by.x}{object mergevar}
+\item{by.x}{string : object mergevar}
 
-\item{by.y}{df mergevar}
+\item{by.y}{string : df mergevar}
 
-\item{verbose}{TRUE/FALSE}
+\item{all.x}{TRUE / FALSE : whether to keep samples / features without annotation}
+
+\item{verbose}{TRUE / FALSE : whether to msg}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Merge sample/feature data
+Merge sample/feature dt
 }
 \examples{
-require(magrittr)
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
-object \%<>\% merge_sdata( data.frame(sample_id = object$sample_id,
-                                    number = seq_along(object$sample_id)))
-head(sdata(object))
+object <- read_metabolon(file)
+object \%<>\% merge_sdt(   data.table(sample_id = object$sample_id,
+                                       number = seq_along(object$sample_id)))
+sdt(object)
 }

@@ -6,9 +6,15 @@
 \alias{zscore}
 \alias{quantnorm}
 \alias{invnorm}
+\alias{vsn}
 \title{Transform values}
 \usage{
-log2transform(object, verbose = FALSE)
+log2transform(
+  object,
+  assay = assayNames(object)[1],
+  pseudo = 0,
+  verbose = FALSE
+)
 
 exp2(object, verbose = FALSE)
 
@@ -17,11 +23,19 @@ zscore(object, verbose = FALSE)
 quantnorm(object, verbose = FALSE)
 
 invnorm(object, verbose = FALSE)
+
+vsn(object, verbose = FALSE, delog = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{verbose}{TRUE or FALSE}
+\item{assay}{character vector : assays for which to perform transformation}
+
+\item{pseudo}{number           : pseudo value to be added prior to transformation}
+
+\item{verbose}{TRUE or FALSE    : whether to msg}
+
+\item{delog}{TRUE or FALSE (vsn)}
 }
 \value{
 Transformed sumexp
@@ -30,15 +44,17 @@ Transformed sumexp
 Transform values
 }
 \examples{
-require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, plot=FALSE, impute=FALSE)
+object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
 
 object                       \%>\% plot_sample_densities()
 invnorm(object)              \%>\% plot_sample_densities()
 
 object                       \%>\% plot_sample_densities()
 quantnorm(object)            \%>\% plot_sample_densities()
+
+object                       \%>\% plot_sample_densities()
+vsn(object)                  \%>\% plot_sample_densities()
 
 object                       \%>\% plot_sample_densities()
 zscore(object)               \%>\% plot_sample_densities()

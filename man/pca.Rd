@@ -5,13 +5,26 @@
 \alias{pls}
 \alias{sma}
 \alias{lda}
-\title{Add PCA, SMA, LDA, PLS}
+\alias{spls}
+\alias{opls}
+\title{PCA, SMA, LDA, PLS, SPLS, OPLS}
 \usage{
-pca(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
+pca(
+  object,
+  by = "sample_id",
+  assay = assayNames(object)[1],
+  ndim = 2,
+  minvar = 0,
+  center_samples = TRUE,
+  verbose = TRUE,
+  plot = FALSE,
+  ...
+)
 
 pls(
   object,
-  subgroupvar = "subgroup",
+  by = "subgroup",
+  assay = assayNames(object)[1],
   ndim = 2,
   minvar = 0,
   verbose = FALSE,
@@ -19,14 +32,45 @@ pls(
   ...
 )
 
-sma(object, ndim = 2, minvar = 0, verbose = TRUE, plot = FALSE, ...)
-
-lda(
+sma(
   object,
-  subgroupvar = "subgroup",
+  by = "sample_id",
+  assay = assayNames(object)[1],
   ndim = 2,
   minvar = 0,
   verbose = TRUE,
+  plot = FALSE,
+  ...
+)
+
+lda(
+  object,
+  assay = assayNames(object)[1],
+  by = "subgroup",
+  ndim = 2,
+  minvar = 0,
+  verbose = TRUE,
+  plot = FALSE,
+  ...
+)
+
+spls(
+  object,
+  assay = assayNames(object)[1],
+  by = "subgroup",
+  ndim = 2,
+  minvar = 0,
+  plot = FALSE,
+  ...
+)
+
+opls(
+  object,
+  by = "subgroup",
+  assay = assayNames(object)[1],
+  ndim = 2,
+  minvar = 0,
+  verbose = FALSE,
   plot = FALSE,
   ...
 )
@@ -34,34 +78,38 @@ lda(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{by}{svar or NULL}
+
+\item{assay}{string}
+
 \item{ndim}{number}
 
 \item{minvar}{number}
 
-\item{verbose}{TRUE (default) or FALSE}
+\item{center_samples}{TRUE/FALSE: center samples prior to pca ?}
 
-\item{plot}{TRUE/FALSE}
+\item{verbose}{TRUE/FALSE: message ?}
+
+\item{plot}{TRUE/FALSE: plot ?}
 
 \item{...}{passed to biplot}
-
-\item{subgroupvar}{subgroup svar}
 }
 \value{
 SummarizedExperiment
 }
 \description{
 Perform a dimension reduction.
-Add sample scores, feature loadings, and dimension variances to object.
+Store sample scores, feature loadings, and dimension variances.
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
-pca(object, plot=TRUE, color = Group)  # Principal Component Analysis
-pls(object, subgroupvar = 'Group')  # Partial Least Squares
-lda(object, subgroupvar = 'Group')  # Linear Discriminant Analysis
-sma(object)  # Spectral Map Analysis
-pca(object, ndim=3)
-pca(object, ndim=Inf, minvar=5)
+ file <- download_data('atkin.metabolon.xlsx')
+ object <- read_metabolon(file)
+ pca(object, plot = TRUE)    # Principal Component Analysis
+ pls(object, plot = TRUE)    # Partial Least Squares
+ lda(object, plot = TRUE)    # Linear Discriminant Analysis
+ sma(object, plot = TRUE)    # Spectral Map Analysis
+spls(object, plot = TRUE)    # Sparse PLS
+# opls(object, plot = TRUE)  # OPLS # outcommented because it produces a file named FALSE
 }
 \author{
 Aditya Bhagwat, Laure Cougnaud (LDA)

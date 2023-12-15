@@ -6,9 +6,12 @@
 \usage{
 make_volcano_dt(
   object,
-  fit,
-  contrastdefmat = contrastdefs(object)[[1]],
-  ntop = 3
+  fit = fits(object)[1],
+  coefs = default_coefs(object, fit = fit)[1],
+  shape = "imputed",
+  size = NULL,
+  alpha = NULL,
+  label = "feature_id"
 )
 }
 \arguments{
@@ -16,9 +19,15 @@ make_volcano_dt(
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
-\item{contrastdefmat}{contrastdef matrix}
+\item{coefs}{character vector: coefs for which to plot volcanoes}
 
-\item{ntop}{no of top features to be annotated}
+\item{shape}{fvar or NULL}
+
+\item{size}{fvar or NULL}
+
+\item{alpha}{fvar or NULL}
+
+\item{label}{fvar or NULL}
 }
 \value{
 data.table
@@ -28,6 +37,6 @@ Create volcano datatable
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, fit='limma', plot=FALSE)
-make_volcano_dt(object, fit = 'limma')
+object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma')
+make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 }

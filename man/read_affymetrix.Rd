@@ -16,10 +16,9 @@ RangedSummarizedExperiment
 Read affymetrix microarray
 }
 \examples{
-require(magrittr)
 url <- paste0('http://www.bioconductor.org/help/publications/2003/',
                 'Chiaretti/chiaretti2/T33.tgz')
-localdir  <- file.path(rappdirs::user_cache_dir(appname = 'autonomics'), 'T33')
+localdir  <- file.path(tools::R_user_dir('autonomics', 'cache'), 'T33')
 dir.create(localdir, showWarnings=FALSE)
 localfile <- file.path(localdir, basename(url))
 if (!file.exists(localfile)){
@@ -27,10 +26,9 @@ if (!file.exists(localfile)){
     untar(localfile, exdir = path.expand(localdir))
 }
 localfile \%<>\% substr(1, nchar(.)-4)
-if (!requireNamespace("BiocManager", quietly = TRUE))  install.packages(
-                                                            'BiocManager')
-if (!requireNamespace("hgu95av2.db", quietly = TRUE))  BiocManager::install(
-                                                            'hgu95av2.db')
-# read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
-# currently openblas issue: https://stackoverflow.com/questions/61629861/
+if (!requireNamespace("BiocManager", quietly = TRUE)){
+    install.packages('BiocManager') }
+if (!requireNamespace("hgu95av2.db", quietly = TRUE)){
+    BiocManager::install('hgu95av2.db') }
+read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 }

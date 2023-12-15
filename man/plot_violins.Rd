@@ -2,67 +2,107 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_violins}
 \alias{plot_violins}
-\alias{plot_sample_violins}
 \alias{plot_feature_violins}
+\alias{plot_sample_violins}
 \alias{plot_subgroup_violins}
 \title{Plot sample/feature violins}
 \usage{
 plot_violins(
   object,
+  assay = assayNames(object)[1],
   x,
   fill,
   color = NULL,
   group = NULL,
   facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free",
+  labeller = label_value,
+  highlight = NULL,
+  palette = NULL,
+  fixed = list(na.rm = TRUE)
+)
+
+plot_feature_violins(
+  object,
+  assay = assayNames(object)[1],
+  x = "feature_id",
+  fill = "feature_id",
+  color = NULL,
+  n = 9,
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free",
+  labeller = label_value,
   highlight = NULL,
   fixed = list(na.rm = TRUE)
 )
 
 plot_sample_violins(
   object,
-  x = sample_id,
-  fill = sample_id,
+  assay = assayNames(object)[1],
+  x = "sample_id",
+  fill = if ("subgroup" \%in\% svars(object)) "subgroup" else "sample_id",
   color = NULL,
-  highlight = NULL,
-  fixed = list(na.rm = TRUE)
-)
-
-plot_feature_violins(
-  object,
-  x = feature_id,
-  fill = feature_name,
-  color = NULL,
+  n = 100,
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free",
+  labeller = label_value,
   highlight = NULL,
   fixed = list(na.rm = TRUE)
 )
 
 plot_subgroup_violins(
   object,
+  assay = assayNames(object)[1],
   subgroup,
-  x = !!enquo(subgroup),
-  fill = !!enquo(subgroup),
+  x = "subgroup",
+  fill = "subgroup",
   color = NULL,
   highlight = NULL,
-  facet = feature_id,
+  facet = "feature_id",
   fixed = list(na.rm = TRUE)
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{x}{svar mapped to x}
+\item{assay}{string}
 
-\item{fill}{svar mapped to fill}
+\item{x}{svar (string)}
 
-\item{color}{svar mapped to color}
+\item{fill}{svar (string)}
 
-\item{group}{svar mapped to group}
+\item{color}{svar (string)}
 
-\item{facet}{svar mapped to facets}
+\item{group}{svar (string)}
 
-\item{highlight}{fvar expressing which feature should be highlighted}
+\item{facet}{svar (character vector)}
+
+\item{nrow}{NULL or number}
+
+\item{ncol}{NULL or number}
+
+\item{dir}{'h' or 'v' : are facets filled horizontally or vertically ?}
+
+\item{scales}{'free', 'free_x', 'free_y', or 'fixed'}
+
+\item{labeller}{label_both or label_value}
+
+\item{highlight}{fvar expressing which feature should be highlighted (string)}
+
+\item{palette}{named color vector (character vector)}
 
 \item{fixed}{fixed aesthetics}
+
+\item{n}{number}
 
 \item{subgroup}{subgroup svar}
 }
@@ -74,19 +114,18 @@ Plot sample/feature violins
 }
 \examples{
 # data
-    require(magrittr)
     file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, plot = FALSE)
-    object \%<>\% extract(, order(.$Group))
+    object <- read_metabolon(file)
+    object \%<>\% extract(, order(.$subgroup))
     control_features <- c('biotin','phosphate')
-    fdata(object) \%<>\% cbind(control=.$feature_name \%in\% control_features)
+    fdata(object) \%<>\% cbind(control = .$feature_name \%in\% control_features)
 # plot
-    plot_violins(object[1:12, ], x=feature_id, fill=feature_id)
+    plot_violins(object[1:12, ], x = 'feature_id', fill = 'feature_id')
     plot_feature_violins(object[1:12, ])
-    plot_sample_violins(object[, 1:12],  highlight = control)
-    plot_subgroup_violins(object[1:4, ], subgroup = Group)
+    plot_sample_violins(object[, 1:12],  highlight = 'control')
+    plot_subgroup_violins(object[1:4, ], subgroup = 'subgroup')
 }
 \seealso{
-\code{\link{plot_sample_densities}},
-         \code{\link{plot_sample_boxplots}}
+\code{\link{plot_exprs}},
+         \code{\link{plot_densities}}
 }

@@ -4,31 +4,10 @@
 \alias{matrix2sumexp}
 \title{Convert matrix into SummarizedExperiment}
 \usage{
-matrix2sumexp(
-  x,
-  sdt = NULL,
-  sdtby = if (is.null(sdt)) NULL else names(sdt)[1],
-  subgroupvar = NULL,
-  fdt = NULL,
-  fdtby = if (is.null(fdt)) NULL else names(fdt)[1],
-  fnamevar = NULL,
-  verbose = TRUE
-)
+matrix2sumexp(x, verbose = TRUE)
 }
 \arguments{
 \item{x}{matrix}
-
-\item{sdt}{sample data.table / data.frame / DataFrame}
-
-\item{sdtby}{sample data mergeby column}
-
-\item{subgroupvar}{string / NULL}
-
-\item{fdt}{feature data.table / data.frame / DataFrame}
-
-\item{fdtby}{feature data mergeby column}
-
-\item{fnamevar}{string / NULL}
 
 \item{verbose}{TRUE/FALSE}
 }
@@ -39,10 +18,9 @@ SummarizedExperiment
 Convert matrix into SummarizedExperiment
 }
 \examples{
-require(magrittr) 
-file <- download_data('atkin18.metabolon.xlsx')
-x <- values(read_metabolon(file, plot=FALSE))
+file <- download_data('atkin.metabolon.xlsx')
+x <- values(read_metabolon(file))
 object <- matrix2sumexp(x)
 object \%<>\% pca()
-biplot(object, nloadings=0, color=subgroup)
+biplot(object, color = 'subgroup')
 }

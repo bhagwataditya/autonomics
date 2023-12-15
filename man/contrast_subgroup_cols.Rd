@@ -22,8 +22,8 @@ Row/Col contrasts
 }
 \examples{
 file <- download_data('halama18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
-subgroup_matrix(object, subgroupvar = 'Group')
-contrast_subgroup_cols(object, subgroupvar = 'Group')
-contrast_subgroup_rows(object, subgroupvar = 'Group')
+object <- read_metabolon(file)
+subgroup_matrix(object, subgroupvar = 'subgroup')
+contrast_subgroup_cols(object, subgroupvar = 'subgroup')
+contrast_subgroup_rows(object, subgroupvar = 'subgroup')
 }

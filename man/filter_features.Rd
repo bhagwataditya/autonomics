@@ -4,7 +4,7 @@
 \alias{filter_features}
 \title{Filter features on condition}
 \usage{
-filter_features(object, condition, verbose = FALSE)
+filter_features(object, condition, verbose = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -20,7 +20,7 @@ filtered eSet
 Filter features on condition
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
-filter_features(object,   SUPER_PATHWAY=='Lipid',  verbose = TRUE)
+file <- download_data('atkin.metabolon.xlsx')
+object <- read_metabolon(file)
+filter_features(object, SUPER_PATHWAY == 'Lipid')
 }

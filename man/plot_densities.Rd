@@ -4,72 +4,115 @@
 \alias{plot_densities}
 \alias{plot_sample_densities}
 \alias{plot_feature_densities}
-\title{Plot sample/feature densities}
+\title{Plot sample/feature distributions}
 \usage{
 plot_densities(
   object,
+  assay = assayNames(object)[1],
   group,
   fill,
   color = NULL,
-  fixed = list(alpha = 0.5, na.rm = TRUE)
+  linetype = NULL,
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free_y",
+  labeller = label_value,
+  palette = NULL,
+  fixed = list(alpha = 0.8, na.rm = TRUE)
 )
 
 plot_sample_densities(
   object,
-  fill = sample_id,
+  assay = assayNames(object)[1],
+  group = "sample_id",
+  fill = if ("subgroup" \%in\% svars(object)) "subgroup" else "sample_id",
   color = NULL,
-  group = sample_id,
-  fixed = list(alpha = 0.5, na.rm = TRUE),
-  subsetter = if (ncol(object) < 100) {
-     seq_len(ncol(object))
- } else {
-    
-    sample(ncol(object), 9)
- }
+  linetype = NULL,
+  n = 100,
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free_y",
+  labeller = label_value,
+  palette = NULL,
+  fixed = list(alpha = 0.8, na.rm = TRUE)
 )
 
 plot_feature_densities(
   object,
-  fill = feature_id,
+  assay = assayNames(object)[1],
+  fill = "feature_id",
+  group = fill,
   color = NULL,
-  group = feature_id,
-  fixed = list(alpha = 0.5, na.rm = TRUE),
-  subsetter = if (nrow(object) < 100) {
-     seq_len(nrow(object))
- } else {
-    
-    sample(nrow(object), 9)
- }
+  linetype = NULL,
+  n = 9,
+  facet = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  dir = "h",
+  scales = "free",
+  labeller = label_value,
+  palette = NULL,
+  fixed = list(alpha = 0.8, na.rm = TRUE)
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{group}{svar mapped to group}
+\item{assay}{string}
 
-\item{fill}{svar mapped to fill}
+\item{group}{svar (string)}
 
-\item{color}{svar mapped to color}
+\item{fill}{svar (string)}
+
+\item{color}{svar (string)}
+
+\item{linetype}{svar (string)}
+
+\item{facet}{svar (character vector)}
+
+\item{nrow}{number of facet rows}
+
+\item{ncol}{number of facet cols}
+
+\item{dir}{'h' (horizontal) or 'v' (vertical)}
+
+\item{scales}{'free', 'fixed', 'free_y'}
+
+\item{labeller}{e.g. label_value}
+
+\item{palette}{named character vector}
 
 \item{fixed}{fixed aesthetics}
 
-\item{subsetter}{subsetter for showing a subset of samples/features}
+\item{n}{number}
 }
 \value{
 ggplot object
 }
 \description{
-Plot sample/feature densities
+Plot sample/feature distributions
 }
 \examples{
-# Read data
-    require(magrittr)
-    file <- download_data('atkin18.metabolon.xlsx')
+# Data
+    file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file, plot = FALSE)
-    object \%<>\% extract(, order(.$Group))
-# Plot distributions
-    plot_sample_densities(object, fill = Group)
+    object \%<>\% extract(, order(.$subgroup))
+    
+# Sample distributions
+    plot_sample_densities(object)
+    plot_sample_violins(  object, facet = 'Time')
+    plot_sample_boxplots(object)
+    plot_exprs(object)
+    plot_exprs(object, dim = 'samples', x = 'subgroup', facet = 'Time')
+    
+# Feature distributions
     plot_feature_densities(object)
+    plot_feature_violins(  object)
+    plot_feature_boxplots( object)
 }
 \seealso{
 \code{\link{plot_sample_violins}},

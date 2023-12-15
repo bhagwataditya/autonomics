@@ -2,44 +2,69 @@
 % Please edit documentation in R/5_pca.R
 \name{biplot}
 \alias{biplot}
-\alias{plot_biplot}
 \title{Biplot}
 \usage{
 biplot(
   object,
-  x = pca1,
-  y = pca2,
-  color = NULL,
+  method = biplot_methods(object)[1],
+  by = biplot_by(object, method)[1],
+  dims = biplot_dims(object, method, by)[1:2],
+  color = "subgroup",
+  shape = NULL,
+  size = NULL,
+  alpha = NULL,
   group = NULL,
+  linetype = NULL,
   label = NULL,
-  feature_label = feature_name,
-  ...,
+  feature_label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
   fixed = list(shape = 15, size = 3),
-  nloadings = 0
+  nx = 0,
+  ny = 0,
+  colorpalette = make_svar_palette(object, color),
+  alphapalette = make_alpha_palette(object, alpha),
+  title = sprintf("\%s~\%s", method, by),
+  theme = ggplot2::theme(plot.title = element_text(hjust = 0.5), panel.grid =
+    element_blank())
 )
-
-plot_biplot(...)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{x}{pca1, etc.}
+\item{method}{'pca', 'pls', 'lda', 'spls', 'opls', 'sma'}
 
-\item{y}{pca2, etc.}
+\item{by}{svar}
 
-\item{color}{svar mapped to color (symbol)}
+\item{dims}{numeric vector: e.g. 1:2}
 
-\item{group}{svar mapped to group}
+\item{color}{svar}
 
-\item{label}{svar mapped to label (symbol)}
+\item{shape}{svar}
 
-\item{feature_label}{fvar mapped to (loadings) label}
+\item{size}{svar}
 
-\item{...}{additional svars mapped to aesthetics}
+\item{alpha}{svar}
+
+\item{group}{svar}
+
+\item{linetype}{svar}
+
+\item{label}{svar}
+
+\item{feature_label}{fvar}
 
 \item{fixed}{fixed plot aesthetics}
 
-\item{nloadings}{number of loadings per half-axis to plot}
+\item{nx}{number of x features to plot}
+
+\item{ny}{number of y features to plot}
+
+\item{colorpalette}{character vector}
+
+\item{alphapalette}{character vector}
+
+\item{title}{string}
+
+\item{theme}{ggplot2::theme output}
 }
 \value{
 ggplot object
@@ -48,12 +73,14 @@ ggplot object
 Biplot
 }
 \examples{
-require(magrittr)
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot = FALSE)
-object \%<>\% pca(ndim=4)
+file <- download_data('atkin.metabolon.xlsx')
+object <- read_metabolon(file)
+object \%<>\% pca(ndim = 4)
+object \%<>\% pls(ndim = 4)
 biplot(object)
-biplot(object, color=SUB, group=SUB)
-biplot(object, color=SUB, nloadings=1)
-biplot(object, pca3, pca4, color=SUB, nloadings=1)
+biplot(object, nx = 1)
+biplot(object, dims = 3:4, nx = 1)
+biplot(object, method = 'pls')
+biplot(object, method = 'pls', dims = 3:4)
+biplot(object, method = 'pls', dims = 3:4, group = 'Subject')
 }

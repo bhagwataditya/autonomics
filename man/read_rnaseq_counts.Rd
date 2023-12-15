@@ -5,7 +5,7 @@
 \alias{.read_rnaseq_counts}
 \alias{read_rnaseq_bams}
 \alias{read_rnaseq_counts}
-\title{Read rnaseq}
+\title{Read rnaseq counts/bams}
 \usage{
 .read_rnaseq_bams(
   dir,
@@ -13,11 +13,8 @@
   genome,
   nthreads = detectCores(),
   sfile = NULL,
-  sfileby = NULL,
-  subgroupvar = NULL,
-  ffile = NULL,
-  ffileby = NULL,
-  fnamevar = NULL,
+  by.y = NULL,
+  ensdb = NULL,
   verbose = TRUE
 )
 
@@ -25,10 +22,8 @@
   file,
   fid_col = 1,
   sfile = NULL,
-  sfileby = NULL,
-  ffile = NULL,
-  ffileby = NULL,
-  subgroupvar = NULL,
+  by.y = NULL,
+  ensdb = NULL,
   verbose = TRUE
 )
 
@@ -38,119 +33,133 @@ read_rnaseq_bams(
   genome,
   nthreads = detectCores(),
   sfile = NULL,
-  sfileby = NULL,
-  subgroupvar = NULL,
+  by.y = NULL,
   block = NULL,
-  ffile = NULL,
-  ffileby = NULL,
-  fnamevar = NULL,
-  formula = NULL,
+  formula = ~subgroup,
   min_count = 10,
-  pseudocount = 0.5,
-  genesize = NULL,
+  pseudo = 0.5,
+  ensdb = NULL,
+  tpm = FALSE,
   cpm = TRUE,
-  tmm = cpm,
   log2 = TRUE,
-  pca = FALSE,
-  fit = NULL,
-  voom = !is.null(fit),
-  contrastdefs = NULL,
-  verbose = TRUE,
-  plot = TRUE
+  plot = FALSE,
+  label = "feature_id",
+  pca = plot,
+  pls = plot,
+  fit = if (plot) "limma" else NULL,
+  voom = cpm,
+  coefs = NULL,
+  contrasts = NULL,
+  palette = NULL,
+  verbose = TRUE
 )
 
 read_rnaseq_counts(
   file,
   fid_col = 1,
   sfile = NULL,
-  sfileby = NULL,
-  subgroupvar = NULL,
+  by.y = NULL,
+  formula = ~subgroup,
   block = NULL,
-  ffile = NULL,
-  ffileby = NULL,
-  fnamevar = NULL,
-  formula = NULL,
   min_count = 10,
-  pseudocount = 0.5,
-  genesize = NULL,
-  cpm = TRUE,
-  tmm = cpm,
+  pseudo = 0.5,
+  tpm = FALSE,
+  ensdb = NULL,
+  cpm = !tpm,
   log2 = TRUE,
-  pca = FALSE,
-  fit = NULL,
-  voom = !is.null(fit),
-  contrastdefs = NULL,
-  verbose = TRUE,
-  plot = TRUE
+  plot = FALSE,
+  label = "feature_id",
+  pca = plot,
+  pls = plot,
+  fit = if (plot) "limma" else NULL,
+  voom = cpm,
+  coefs = NULL,
+  contrasts = NULL,
+  palette = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
-\item{dir}{read_rnaseq_bams: bam/samfile dir}
+\item{dir}{read_rnaseq_bams: bam/sam dir}
 
-\item{paired}{read_rnaseq_bams: whether paired end reads}
+\item{paired}{read_rnaseq_bams: TRUE/FALSE : paired end reads ?}
 
-\item{genome}{read_rnaseq_bams: mm10"/"hg38"/etc. or GTF file}
+\item{genome}{read_rnaseq_bams: 'mm10', 'hg38', etc. or GTF file}
 
 \item{nthreads}{read_rnaseq_bams: nthreads used by Rsubread::featureCounts()}
 
 \item{sfile}{sample file}
 
-\item{sfileby}{sample file mergeby column}
+\item{by.y}{sample file mergeby column}
 
-\item{subgroupvar}{subgroup svar}
+\item{ensdb}{EnsDb with genesizes : e.g. AnnotationHub::AnnotationHub[['AH64923']]}
 
-\item{ffile}{feature file}
+\item{verbose}{TRUE or FALSE: message?}
 
-\item{ffileby}{feature file mergeby column}
+\item{file}{count file}
 
-\item{fnamevar}{featurename fvar}
+\item{fid_col}{featureid column (number or string)}
 
-\item{verbose}{whether to message}
+\item{block}{model blockvar: string or NULL}
 
-\item{file}{read_rnaseq_counts: count file}
-
-\item{fid_col}{featureid fvar}
-
-\item{block}{block svar}
-
-\item{formula}{designmat formula}
+\item{formula}{model formula}
 
 \item{min_count}{min feature count required in some samples}
 
-\item{pseudocount}{added pseudocount to prevent -Inf log2 values}
+\item{pseudo}{pseudocount added to prevent -Inf log2 values}
 
-\item{genesize}{genesize fvar for tpm}
+\item{tpm}{TRUE or FALSE : add tpm to assays ( counts / libsize / genelength ) ?}
 
-\item{cpm}{whether to compute cpm}
+\item{cpm}{TRUE or FALSE: add cpm to assays ( counts / effectivelibsize ) ?}
 
-\item{tmm}{whether to tmm-scale library sizes}
+\item{log2}{TRUE or FALSE: log2 transform ?}
 
-\item{log2}{whether to log2 transform}
+\item{plot}{TRUE or FALSE: plot?}
 
-\item{pca}{whether to pca}
+\item{label}{fvar}
 
-\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
+\item{pca}{TRUE or FALSE: perform and plot pca?}
 
-\item{voom}{whether to compute voom precision weights}
+\item{pls}{TRUE or FALSE: run pls ?}
 
-\item{contrastdefs}{contrastdef vector/matrix/list}
+\item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
-\item{plot}{whether to plot}
+\item{voom}{model weights to be computed?  TRUE/FALSE}
+
+\item{coefs}{model coefficients          of interest: string vector or NULL}
+
+\item{contrasts}{model coefficient contrasts of interest: string vector or NULL}
+
+\item{palette}{color palette : named string vector}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Read/analyze rnaseq counts / bamfiles
+Read rnaseq counts/bams
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, pca= TRUE, fit='limma')
-
-# requires Rsubread
-# file <- download_data('billing16.bam.zip')
-# object <- read_rnaseq_bams(file, paired=TRUE, genome='hg38', pca=TRUE, 
-#                            fit='limma', plot=TRUE)
+# read_rnaseq_bams
+    if (requireNamespace('Rsubread')){
+       dir <- download_data('billing16.bam.zip')
+       object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38')  
+       object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38', plot = TRUE)  
+    }
+# read_rnaseq_counts
+    file <- download_data('billing19.rnacounts.txt')
+    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05')
+    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
+    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
+    object <- read_rnaseq_counts(
+                 file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
+    object <- read_rnaseq_counts(file, plot = TRUE)
+    
+# read_rnaseq_counts(tpm = TRUE)
+    \dontrun{
+    ah <- AnnotationHub::AnnotationHub()
+    ensdb <- ah[['AH64923']]
+    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E02', tpm = TRUE, ensdb = ensdb)
+    }
 }
 \author{
 Aditya Bhagwat, Shahina Hayat

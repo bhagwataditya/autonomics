@@ -27,9 +27,8 @@ sample names vector (get) or updated eSet (set)
 Get/Set sample names
 }
 \examples{
-require(magrittr)
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file, plot=FALSE)
+object <- read_maxquant_proteingroups(file)
 head(snames(object))
 head(snames(object) \%<>\% paste0('SAMPLE_', .))
 }

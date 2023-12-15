@@ -6,10 +6,21 @@
 \usage{
 plot_volcano(
   object,
-  fit = intersect(names(metadata(object)), TESTS)[1],
-  contrastdefs = autonomics::contrastdefs(object)[[1]],
-  label = feature_name,
-  ntop = 1
+  fit = fits(object)[1],
+  coefs = default_coefs(object, fit)[1],
+  facet = if (is_scalar(fit)) "coef" else c("fit", "coef"),
+  shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
+  size = NULL,
+  alpha = NULL,
+  label = "feature_id",
+  max.overlaps = 10,
+  features = NULL,
+  nrow = length(fit),
+  p = 0.05,
+  fdr = 0.05,
+  xndown = NULL,
+  xnup = NULL,
+  title = NULL
 )
 }
 \arguments{
@@ -17,11 +28,33 @@ plot_volcano(
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 
-\item{contrastdefs}{contrastdef vector / matrix / list}
+\item{coefs}{character vector}
 
-\item{label}{fvar for labeling top features}
+\item{facet}{character vector}
 
-\item{ntop}{number: n top features to be annotated}
+\item{shape}{fvar  (string)}
+
+\item{size}{fvar  (string)}
+
+\item{alpha}{fvar  (string)}
+
+\item{label}{fvar  (string)}
+
+\item{max.overlaps}{number: passed to ggrepel}
+
+\item{features}{feature ids (character vector): features to encircle}
+
+\item{nrow}{number: no of rows in plot}
+
+\item{p}{number: p cutoff for labeling}
+
+\item{fdr}{number: fdr cutoff for labeling}
+
+\item{xndown}{x position of ndown labels}
+
+\item{xnup}{x position of nup labels}
+
+\item{title}{string or NULL}
 }
 \value{
 ggplot object
@@ -30,7 +63,28 @@ ggplot object
 Plot volcano
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, fit='limma', plot=FALSE)
-plot_volcano(object)
+# Unicontrast, Multicontrast, Multimethod
+    file <- download_data('atkin.metabolon.xlsx')
+    object <- read_metabolon(file)
+    object \%<>\% fit_limma()
+    object \%<>\% fit_lm()
+    plot_volcano(object, coefs = 't3', fit = 'limma')                   #   unicontrast
+    plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multicontrast
+    plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multicontrast, multimethod
+
+# When nothing passes FDR
+    plot_volcano(object, coefs = 't3', fit = 'limma')
+    object \%<>\% extract(fdt(.)$`fdr~t3~limma` > 0.05, )
+    plot_volcano(object, coefs = 't3', fit = 'limma')
+
+# Additional mappings
+    file <- download_data('fukuda20.proteingroups.txt')
+    object <- read_maxquant_proteingroups(file, impute = TRUE)
+    object \%<>\% fit_limma()
+    plot_volcano(object)
+    plot_volcano(object, label = 'gene')
+    plot_volcano(object, label = 'gene', size = 'log2maxlfq')
+    plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
+    plot_volcano(object, label = 'gene', features = c('hmbsb'))
+
 }

@@ -31,7 +31,7 @@ Get/Set value matrix
 }
 \examples{
 file <- download_data('billing16.proteingroups.txt')
-object <- read_proteingroups(file, plot=FALSE)
+object <- read_maxquant_proteingroups(file)
 values(object)[1:3, 1:3]
 values(object) <- 0
 values(object)[1:3, 1:3]

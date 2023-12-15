@@ -65,7 +65,6 @@ Extract rectangle from omics file, data.table, or matrix
 # FROM FILE: extract_rectangle.character
 #=======================================
 # exprs
-   require(magrittr)
    x <- download_data('halama18.metabolon.xlsx')
    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) \%>\%
    extract(1:3, 1:3)
@@ -78,19 +77,18 @@ Extract rectangle from omics file, data.table, or matrix
    extract_rectangle(x, rows = 2, cols = 15:86, sheet = 2)      \%>\%
    extract(,1:3)
 
-# fdata
+# fdt
    extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) \%>\%
    extract(1:3, 1:3)
 
-# sdata
+# sdt
    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
    transpose = TRUE) \%>\% extract(1:3, 1:3)
 
 # FROM MATRIX: extract_rectangle.matrix
 #======================================
 # exprs
-   x <-download_data('halama18.metabolon.xlsx') \%>\%
-       extract_rectangle(sheet = 2)
+   x <- download_data('halama18.metabolon.xlsx') \%>\% extract_rectangle(sheet = 2)
    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) \%>\%
    extract(1:3, 1:3)
 
@@ -102,11 +100,11 @@ Extract rectangle from omics file, data.table, or matrix
    extract_rectangle(x, rows = 2,      cols = 15:86, sheet = 2) \%>\%
    extract(,1:3)
 
-# fdata
+# fdt
    extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) \%>\%
    extract(1:3, 1:3)
 
-# sdata
-   extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
-   transpose = TRUE) \%>\% extract(1:3, 1:3)
+# sdt
+   extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2, transpose = TRUE) \%>\% 
+   extract(1:3, 1:3)
 }

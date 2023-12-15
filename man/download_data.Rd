@@ -5,15 +5,14 @@
 \title{Download autonomics example data}
 \usage{
 download_data(
-  filename,
-  url = paste0("https://bitbucket.org/graumannlabtools/autonomics/downloads/", filename),
-  verbose = TRUE
+  filename = NULL,
+  localdir = file.path(R_user_dir("autonomics", "cache"), "datasets"),
+  verbose = TRUE,
+  force = FALSE
 )
 }
 \arguments{
-\item{filename}{file name}
-
-\item{url}{web url
+\item{filename}{file name
 \itemize{
     \item \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{
                 Billing 2016: stemcell comparison:} E, EM, BM
@@ -26,8 +25,8 @@ download_data(
     \item \href{https://pubmed.ncbi.nlm.nih.gov/30525282/}{
                 Atkin 2018: hypoglycemia:} t0, t1, t2, t3
     \itemize{
-        \item \code{'atkin18.somascan.adat'}
-        \item \code{'atkin18.metbolon.xlsx'}
+        \item \code{'atkin.somascan.adat'}
+        \item \code{'atkin.metabolon.xlsx'}
     }
     \item \href{https://pubmed.ncbi.nlm.nih.gov/29777783/}{
                 Halama 2018: glutaminase inhibition: } 4 conc, 4 timepoints
@@ -49,7 +48,11 @@ download_data(
     }
 }}
 
+\item{localdir}{local dir to save file to}
+
 \item{verbose}{TRUE / FALSE}
+
+\item{force}{TRUE / FALSE}
 }
 \value{
 local file path
@@ -58,15 +61,15 @@ local file path
 Download autonomics example data
 }
 \examples{
-# atkin18 - hypoglycemia - pubmed 30525282
-    download_data('atkin18.somascan.adat')          # somascan  intensities
-    download_data('atkin18.metabolon.xlsx')         # metabolon intensities
+# atkin 2018 - hypoglycemia - pubmed 30525282
+    download_data('atkin.somascan.adat')            # somascan  intensities
+    download_data('atkin.metabolon.xlsx')           # metabolon intensities
 
 # billing16 - stemcell characterization - pubmed 26857143
-    download_data('billing16.proteingroups.txt')  # proteingroup ratios
-    download_data('billing16.somascan.adat')      # somascan  intensities
-    download_data('billing16.rnacounts.txt')      # rnaseq    counts
-    download_data('billing16.bam.zip')            # rnaseq    alignments
+    download_data('billing16.proteingroups.txt')      # proteingroup ratios
+    download_data('billing16.somascan.adat')          # somascan  intensities
+    download_data('billing16.rnacounts.txt')          # rnaseq    counts
+    download_data('billing16.bam.zip')                # rnaseq    alignments
 
 # billing19 - stemcell differentiation - pubmed 31332097
     # download_data('billing19.proteingroups.txt')    # proteingroup ratios
@@ -74,8 +77,8 @@ Download autonomics example data
     # download_data('billing19.rnacounts.txt')        # rnaseq       counts
 
 # fukuda20 - heart regeneration - pubmed PXD016235
-    download_data('fukuda20.proteingroups.txt')     # proteingroup LFQ
+    download_data('fukuda20.proteingroups.txt')       # proteingroup LFQ
 
 # halama18 - glutaminase inhibition - pubmed 30525282
-    download_data('halama18.metabolon.xlsx')        # metabolon intensities
+    download_data('halama18.metabolon.xlsx')          # metabolon intensities
 }

@@ -6,6 +6,7 @@
 \alias{na_to_zero}
 \alias{inf_to_na}
 \alias{minusinf_to_na}
+\alias{na_to_string}
 \title{Change nondetect representation}
 \usage{
 zero_to_na(x, verbose = FALSE)
@@ -17,6 +18,8 @@ na_to_zero(x, verbose = FALSE)
 inf_to_na(x, verbose = FALSE)
 
 minusinf_to_na(x, verbose = FALSE)
+
+na_to_string(x)
 }
 \arguments{
 \item{x}{matrix}
@@ -30,7 +33,6 @@ Updated matrix
 Change nondetect representation
 }
 \examples{
-require(magrittr)
 matrix(c(0, 7), nrow=1)
 matrix(c(0, 7), nrow=1)    \%>\% zero_to_na(verbose=TRUE)
 

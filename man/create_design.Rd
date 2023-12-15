@@ -2,21 +2,52 @@
 % Please edit documentation in R/8_fit_limma.R
 \name{create_design}
 \alias{create_design}
+\alias{create_design.SummarizedExperiment}
+\alias{create_design.data.table}
 \title{Create design}
 \usage{
-create_design(
+create_design(object, ...)
+
+\method{create_design}{SummarizedExperiment}(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, fit = "limma"),
-  verbose = TRUE
+  formula = default_formula(object),
+  drop = varlevels_dont_clash(object, all.vars(formula)),
+  codingfun = contr.treatment,
+  verbose = TRUE,
+  ...
+)
+
+\method{create_design}{data.table}(
+  object,
+  formula = default_formula(object),
+  drop = varlevels_dont_clash(object, all.vars(formula)),
+  codingfun = contr.treatment,
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
-\item{object}{SummarizedExperiment}
+\item{object}{SummarizedExperiment or data.frame}
 
-\item{subgroupvar}{subgroup svar}
+\item{...}{required to s3ify}
 
 \item{formula}{formula with svars}
+
+\item{drop}{whether to drop predictor names}
+
+\item{codingfun}{factor coding function
+\itemize{
+    \item contr.treatment:          intercept = y0,     coefi = yi - y0
+    \item contr.treatment.explicit: intercept = y0,     coefi = yi - y0
+    \item code_control:             intercept = ymean,  coefi = yi - y0
+    \item contr.diff:               intercept = y0,     coefi = yi - y(i-1)
+    \item code_diff:                intercept = ymean,  coefi = yi - y(i-1)
+    \item code_diff_forward:        intercept = ymean,  coefi = yi - y(i+)
+    \item code_deviation:           intercept = ymean,  coefi = yi - ymean (drop last)
+    \item code_deviation_first:     intercept = ymean,  coefi = yi - ymean (drop first)
+    \item code_helmert:             intercept = ymean,  coefi = yi - mean(y0:(yi-1))
+    \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
+}}
 
 \item{verbose}{whether to message}
 }
@@ -27,17 +58,13 @@ design matrix
 Create design matrix  for statistical analysis
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot=FALSE)
+file <- download_data('atkin.metabolon.xlsx')
+object <- read_metabolon(file)
 unique(create_design(object))
-
-object$subgroup <- 'billing19'
-unique(create_design(object))
-
-file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file, plot=FALSE)
-unique(create_design(object))
-create_design(object, formula= ~ 0 + SampleGroup + Sex + T2D + age + bmi)
-object$subgroup <- 'atkin18'
-unique(create_design(object))
+unique(create_design(object, ~ Time))
+unique(create_design(object, ~ Time, codingfun = contr.treatment.explicit))
+unique(create_design(object, ~ Time, codingfun = contr.diff))
+unique(create_design(object, ~ Time + Diabetes))
+unique(create_design(object, ~ Time / Diabetes))
+unique(create_design(object, ~ Time * Diabetes))
 }

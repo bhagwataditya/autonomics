@@ -7,14 +7,10 @@
 \usage{
 default_subgroupvar(object)
 
-default_formula(object, subgroupvar = default_subgroupvar(object), fit)
+default_formula(object)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{subgroupvar}{string}
-
-\item{fit}{'limma', 'lm', 'lme', 'lmer'}
 }
 \value{
 formula
@@ -23,9 +19,11 @@ formula
 Create default formula
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
-object <-.read_metabolon(file)
-default_subgroupvar(object)
-default_formula(object, fit = 'limma')
-default_formula(object, fit = 'lm')
+# Abundances
+    file <- download_data('atkin.metabolon.xlsx')
+    object <- read_metabolon(file)
+    default_formula(object)
+    file <- download_data('billing16.proteingroups.txt')
+    object <- read_maxquant_proteingroups(file)
+    default_formula(object)
 }

@@ -16,8 +16,8 @@ character/factor vector
 Add smiles
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file, plot=FALSE)
+file <- download_data('atkin.metabolon.xlsx')
+object <- read_metabolon(file, plot = FALSE)
 add_smiles(object[1:10, ])
 }
 \references{

@@ -6,14 +6,12 @@
 \usage{
 preprocess_rnaseq_counts(
   object,
-  subgroupvar = if ("subgroup" \%in\% svars(object)) "subgroup" else NULL,
-  formula = default_formula(object, subgroupvar, "limma"),
+  formula = ~subgroup,
   block = NULL,
   min_count = 10,
-  pseudocount = 0.5,
-  genesize = NULL,
+  pseudo = 0.5,
+  tpm = FALSE,
   cpm = TRUE,
-  tmm = cpm,
   voom = TRUE,
   log2 = TRUE,
   verbose = TRUE,
@@ -23,29 +21,25 @@ preprocess_rnaseq_counts(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroupvar}{subgroup svar}
-
 \item{formula}{designmat formula}
 
 \item{block}{blocK svar}
 
 \item{min_count}{min count required in some samples}
 
-\item{pseudocount}{added pseudocount to avoid log(x)=-Inf}
+\item{pseudo}{added pseudocount to avoid log(x)=-Inf}
 
-\item{genesize}{genesize fvar to compute tpm}
+\item{tpm}{TRUE or FALSE : tpm normalize?}
 
-\item{cpm}{whether to compute counts per million (scaled) reads}
+\item{cpm}{TRUE or FALSE : cpm normalize? (counts per million (scaled) reads)}
 
-\item{tmm}{whether to tmm normalize}
+\item{voom}{TRUE or FALSE : voom weight?}
 
-\item{voom}{whether to voom weight}
+\item{log2}{TRUE or FALSE : log2 transform?}
 
-\item{log2}{whether to log2}
+\item{verbose}{TRUE or FALSE : msg?}
 
-\item{verbose}{whether to msg}
-
-\item{plot}{whether to plot}
+\item{plot}{TRUE or FALSE : plot?}
 }
 \value{
 SummarizedExperiment
@@ -54,7 +48,6 @@ SummarizedExperiment
 Preprocess RNAseq counts
 }
 \examples{
-require(magrittr)
 file <- download_data('billing19.rnacounts.txt')
 object <- .read_rnaseq_counts(file)
 object$subgroup

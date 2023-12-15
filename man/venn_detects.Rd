@@ -4,21 +4,21 @@
 \alias{venn_detects}
 \title{Venn detects}
 \usage{
-venn_detects(object, subgroup)
+venn_detects(object, by = "subgroup")
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroup}{subgroup symbol}
+\item{by}{svar (string)}
 }
 \value{
 \code{NULL}
 }
 \description{
-Venn diagram full/systematic/random detects
+Venn diagram full/consistent/random detects
 }
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, impute=FALSE, plot = FALSE)
-venn_detects(object, subgroup)
+object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
+venn_detects(object, 'subgroup')
 }

@@ -3,25 +3,26 @@
 \name{.read_somascan}
 \alias{.read_somascan}
 \alias{read_somascan}
-\title{Read somascan}
+\title{Read somascan adatfile}
 \usage{
 .read_somascan(
   file,
-  fidvar = "SeqId",
+  fidvar = "Target",
   sidvar = "SampleId",
   sfile = NULL,
-  sfileby = NULL,
-  by = NULL,
-  subgroupvar = "SampleGroup"
+  by.x = NULL,
+  by.y = NULL,
+  subgroupvar = "SampleGroup",
+  verbose = TRUE
 )
 
 read_somascan(
   file,
-  fidvar = "SeqId",
+  fidvar = "Target",
   sidvar = "SampleId",
   sfile = NULL,
-  sfileby = NULL,
-  by = NULL,
+  by.x = NULL,
+  by.y = NULL,
   subgroupvar = "SampleGroup",
   fname_var = "EntrezGeneSymbol",
   sample_type = "Sample",
@@ -30,67 +31,77 @@ read_somascan(
   feature_quality = c("FLAG", "PASS"),
   rm_na_svars = FALSE,
   rm_single_value_svars = FALSE,
-  pca = FALSE,
-  fit = NULL,
-  formula = NULL,
+  plot = FALSE,
+  label = "feature_id",
+  pca = plot,
+  pls = plot,
+  fit = if (plot) "limma" else NULL,
+  formula = ~subgroup,
   block = NULL,
-  contrastdefs = NULL,
-  verbose = TRUE,
-  plot = TRUE
+  coefs = NULL,
+  contrasts = NULL,
+  palette = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
-\item{file}{*.adat file path (string)}
+\item{file}{somascan (adat) file}
 
-\item{fidvar}{featureid fvar (string)}
+\item{fidvar}{featureid var}
 
-\item{sidvar}{sampleid svar (string)}
+\item{sidvar}{sampleid  var}
 
 \item{sfile}{sample file}
 
-\item{sfileby}{sample file mergeby column}
+\item{by.x}{`file`  mergeby column}
 
-\item{by}{metabolon file mergeby column}
+\item{by.y}{`sfile` mergeby column}
 
-\item{subgroupvar}{subgroup svar (string)}
+\item{subgroupvar}{subgroup var: string}
 
-\item{fname_var}{featurename fvar (string)}
+\item{verbose}{TRUE or FALSE: message?}
+
+\item{fname_var}{featurename var: string}
 
 \item{sample_type}{subset of c('Sample','QC','Buffer','Calibrator')}
 
-\item{feature_type}{subset of c('Protein',
-'Hybridization Control Elution',
-'Rat Protein')}
+\item{feature_type}{subset of c('Protein', 'Hybridization Control Elution','Rat Protein')}
 
 \item{sample_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
 \item{feature_quality}{subset of c('PASS', 'FLAG', 'FAIL')}
 
-\item{rm_na_svars}{whether to rm NA svars}
+\item{rm_na_svars}{TRUE or FALSE: rm NA svars?}
 
-\item{rm_single_value_svars}{whether to rm single value svars}
+\item{rm_single_value_svars}{TRUE or FALSE: rm single value svars?}
 
-\item{pca}{whether to pca}
+\item{plot}{TRUE or FALSE: plot ?}
 
-\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'}
+\item{label}{fvar}
 
-\item{formula}{design formula (using svars)}
+\item{pca}{TRUE or FALSE: run pca?}
 
-\item{block}{block var}
+\item{pls}{TRUE or FALSE: run pls?}
 
-\item{contrastdefs}{contrastdef vector/matrix/list}
+\item{fit}{model engine: 'limma', 'lm', 'lme(r)','wilcoxon' or NULL}
 
-\item{verbose}{whether to msg}
+\item{formula}{model formula}
 
-\item{plot}{whether to plot}
+\item{block}{model blockvar}
+
+\item{coefs}{model coefficients    of interest: character vector or NULL}
+
+\item{contrasts}{coefficient contrasts of interest: character vector or NULL}
+
+\item{palette}{character vector or NULL}
 }
 \value{
 Summarizedexperiment
 }
 \description{
-Read data from somascan adat file
+Read somascan adatfile
 }
 \examples{
-file <- download_data('atkin18.somascan.adat')
-read_somascan(file, pca = TRUE, fit = 'limma', block = 'Subject_ID')
+file <- download_data('atkin.somascan.adat')
+read_somascan(file, plot = TRUE, block = 'Subject')
 }

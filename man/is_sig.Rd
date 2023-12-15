@@ -6,8 +6,8 @@
 \usage{
 is_sig(
   object,
-  fit = intersect(names(metadata(object)), TESTS),
-  contrast = if (is_scalar(fit)) colnames(metadata(object)[[fit]]) else 1,
+  fit = fits(object)[1],
+  contrast = coefs(object),
   quantity = "fdr"
 )
 }
@@ -27,11 +27,10 @@ matrix: -1 (downregulated), +1 (upregulatd), 0 (not fdr significant)
 Is significant?
 }
 \examples{
-require(magrittr)
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file, plot=FALSE)
+object <- read_maxquant_proteingroups(file)
 object \%<>\% fit_lm()
 object \%<>\% fit_limma()
-issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
-plot_venn(issig)
+issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
+plot_contrast_venn(issig)
 }

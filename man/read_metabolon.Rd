@@ -3,87 +3,100 @@
 \name{.read_metabolon}
 \alias{.read_metabolon}
 \alias{read_metabolon}
-\title{Read metabolon}
+\title{Read metabolon xlsxfile}
 \usage{
 .read_metabolon(
   file,
   sheet = "OrigScale",
-  fid_var = "(COMP|COMP_ID)",
-  sid_var = "(CLIENT_IDENTIFIER|Client ID)",
+  fidvar = "BIOCHEMICAL",
+  sidvar = "(CLIENT_IDENTIFIER|Client ID)",
   sfile = NULL,
-  sfileby = NULL,
-  by = NULL,
-  subgroupvar = "Group"
+  by.x = "sample_id",
+  by.y = NULL,
+  subgroupvar = "Group",
+  verbose = TRUE
 )
 
 read_metabolon(
   file,
   sheet = "OrigScale",
-  fid_var = "(COMP|COMP_ID)",
-  sid_var = "(CLIENT_IDENTIFIER|Client ID)",
+  fidvar = "BIOCHEMICAL",
+  sidvar = "(CLIENT_IDENTIFIER|Client ID)",
   sfile = NULL,
-  sfileby = NULL,
-  by = NULL,
+  by.x = "sample_id",
+  by.y = NULL,
   subgroupvar = "Group",
-  fname_var = "BIOCHEMICAL",
-  impute = FALSE,
-  add_kegg_pathways = FALSE,
-  add_smiles = FALSE,
-  pca = FALSE,
-  fit = NULL,
-  formula = NULL,
+  fnamevar = "BIOCHEMICAL",
+  kegg_pathways = FALSE,
+  smiles = FALSE,
+  impute = TRUE,
+  plot = FALSE,
+  pca = plot,
+  pls = plot,
+  label = "feature_id",
+  fit = if (plot) "limma" else NULL,
+  formula = ~subgroup,
   block = NULL,
-  contrastdefs = NULL,
-  verbose = TRUE,
-  plot = TRUE
+  coefs = NULL,
+  contrasts = NULL,
+  palette = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
-\item{file}{metabolon xlsx filepath}
+\item{file}{metabolon xlsx file}
 
-\item{sheet}{xls sheet number or name}
+\item{sheet}{excel sheet (number or string)}
 
-\item{fid_var}{feature_id fvar}
+\item{fidvar}{featureid var}
 
-\item{sid_var}{sampleid svar}
+\item{sidvar}{samplid var}
 
 \item{sfile}{sample file}
 
-\item{sfileby}{sample file mergeby column}
+\item{by.x}{`file`  mergeby column}
 
-\item{by}{metabolon file mergeby column}
+\item{by.y}{`sfile` mergeby column}
 
-\item{subgroupvar}{subgroup svar}
+\item{subgroupvar}{subgroup var}
 
-\item{fname_var}{featurename fvar}
+\item{verbose}{TRUE or FALSE}
 
-\item{impute}{whether to impute}
+\item{fnamevar}{featurename fvar}
 
-\item{add_kegg_pathways}{whether to add kegg pathways}
+\item{kegg_pathways}{TRUE or FALSE: add kegg pathways?}
 
-\item{add_smiles}{whether to add smiles}
+\item{smiles}{TRUE or FALSE: add smiles?}
 
-\item{pca}{whether to pca}
+\item{impute}{TRUE or FALSE: impute group-specific NA values?}
 
-\item{fit}{fit model: NULL, 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
+\item{plot}{TRUE or FALSE}
 
-\item{formula}{designmat formula}
+\item{pca}{TRUE or FALSE}
 
-\item{block}{block svar}
+\item{pls}{TRUE or FALSE}
 
-\item{contrastdefs}{contrastdef vector/matrix/list}
+\item{label}{fvar}
 
-\item{verbose}{whether to msg}
+\item{fit}{model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL}
 
-\item{plot}{whether to plot}
+\item{formula}{model formula}
+
+\item{block}{model blockvar: string or NULL}
+
+\item{coefs}{model coefficients of interest:    character vector or NULL}
+
+\item{contrasts}{coefficient contrasts of interest: character vector or NULL}
+
+\item{palette}{NULL or colorvector}
 }
 \value{
 SummarizedExperiment
 }
 \description{
-Read metabolon
+Read metabolon xlsxfile
 }
 \examples{
-file <- download_data('atkin18.metabolon.xlsx')
-read_metabolon(file, pca = TRUE, fit = 'limma', block='SUB')
+file <- download_data('atkin.metabolon.xlsx')
+read_metabolon(file, plot = TRUE, block = 'Subject')
 }

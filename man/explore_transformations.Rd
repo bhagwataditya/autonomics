@@ -6,8 +6,8 @@
 \usage{
 explore_transformations(
   object,
-  subgroup = subgroup,
-  transformations = c("quantnorm", "zscore", "invnorm"),
+  subgroupvar = "subgroup",
+  transformations = c("quantnorm", "vsn", "zscore", "invnorm"),
   method = "pca",
   xdim = 1,
   ydim = 2,
@@ -17,7 +17,7 @@ explore_transformations(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{subgroup}{subgroup (sym)}
+\item{subgroupvar}{string}
 
 \item{transformations}{vector}
 
@@ -38,6 +38,6 @@ Explore transformations
 \examples{
 file <- download_data('billing16.proteingroups.txt')
 invert <- c('EM_E', 'EM_BM', 'BM_E')
-object <- read_proteingroups(file, invert_subgroups = invert, plot=FALSE)
+object <- read_maxquant_proteingroups(file, invert = invert, plot = FALSE)
 explore_transformations(object)
 }
