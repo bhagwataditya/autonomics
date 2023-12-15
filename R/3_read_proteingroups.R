@@ -727,97 +727,136 @@ extract_common_substr <- function(a, b){
 
 }
 
-#==============================================================================
-#
-#                            invert
-#
-#==============================================================================
 
-#' Invert
-#'
-#' For character vectors: invert collapsed strings.
-#' For SummarizedExperiments: invert expressions , subgroups, and sample ids
-#'
-#' @param  x          character vector or SummarizedExperiment
-#' @param  sep        string: collapsed string separator
-#' @param  subgroups  character vector: subgroup levels to be inversed
-#' @param  ... to enable S3 method dispatch
-#' @return character vector or SummarizedExperiment
+#' Read maxquant phosphosites
+#' @param dir           proteingroups directory
+#' @param phosphofile   phosphosites  file
+#' @param proteinfile   proteingroups file
+#' @param fastadt       NULL or data.table
+#' @param quantity     'normalizedratio', 'ratio', 'correctedreporterintensity', 
+#'                     'reporterintensity', 'maxlfq', 'labeledintensity', 
+#'                     'intensity' or NULL
+#' @param subgroups     NULL or string vector : subgroups to retain
+#' @param contaminants  TRUE or FALSE: retain contaminants ?
+#' @param reverse       TRUE or FALSE: include reverse hits ?
+#' @param localization  number: min localization probability (for phosphosites)
+#' @param invert        string vector: subgroups which require inversion
+#' @param impute        TRUE or FALSE: impute group-specific NA values?
+#' @param plot          TRUE or FALSE
+#' @param label         fvar
+#' @param pca           TRUE or FALSE: run pca ?
+#' @param pls           TRUE or FALSE: run pls ?
+#' @param fit           model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
+#' @param formula       model formula
+#' @param block         model blockvar: string or NULL
+#' @param coefs         model coefficients          of interest: string vector or NULL
+#' @param contrasts     model coefficient contrasts of interest: string vector or NULL
+#' @param palette       color palette: named string vector
+#' @param verbose       TRUE or FALSE: message ?
+#' @param ...           maintain deprecated functions
+#' @return SummarizedExperiment
 #' @examples
-#' # character
-#'     x <- c('Ctrl_A', 'Ctrl_B')
-#'     invert(x)
-#'
-#' # SummarizedExperiment
-#'     file <- download_data('fukuda20.proteingroups.txt')
-#'     object <- read_proteingroups(file, plot=FALSE)
-#'     invert(object)
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' fastadt <- read_fastahdrs(fastafile)
+#' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
+#' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
+#' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, 
+#'                                    subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, 
+#'                                    fastadt = fastadt, subgroups = subgroups)
 #' @export
 invert <- function(x, ...)    UseMethod('invert', x)
 
 
-#' @rdname invert
+#' @rdname read_maxquant_phosphosites
 #' @export
-invert.character <- function(x, sep = guess_sep(x), ... ){
+read_phosphosites <- function(...){
+    .Deprecated('read_maxquant_phosphosites')
+   read_maxquant_phosphosites(...) 
+}
+
+
+#-----------------------------------------------------------------------------
+#
+#                            invert_subgroups
+#
+#-----------------------------------------------------------------------------
+
+# x <- c('Ctrl_A', 'Ctrl_B')
+# .invert_subgroups(x)
+.invert_subgroups <- function(x, sep = guess_sep(x)){
     stri_split_fixed(x, sep)                      %>%
     lapply(rev)                                   %>%
     vapply(paste, character(1), collapse = sep)
 }
 
 
-#' @rdname invert
+#' Invert subgroups
+#'
+#' Invert expressions , subgroups, and sample ids
+#'
+#' @param  object     SummarizedExperiment
+#' @param  subgroups  character vector: subgroup levels to be inversed
+#' @param  sep        string: collapsed string separator
+#' @return character vector or SummarizedExperiment
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' invert_subgroups(object)
 #' @export
-invert.SummarizedExperiment <- function(
-    x, subgroups = slevels(x, 'subgroup'), sep = guess_sep(x, 'subgroup'), ...
+#' @export
+invert_subgroups <- function(
+    object, 
+    subgroups = slevels(object, 'subgroup'), 
+    sep = guess_sep(object, 'subgroup')
 ){
-# Assert
-    if (length(subgroups)==0) return(x)
-    assert_is_all_of(x, 'SummarizedExperiment')
-    assert_is_subset('subgroup', svars(x))
-    assert_is_subset(subgroups, subgroup_levels(x))
-# Initialize message
-    idx <- which(x$subgroup %in% subgroups)
-    first <- values(x)[, idx[1]] %>% (function(y) which(!is.na(y))[[1]])
-    oldvalue <- values(x)[first, idx[1]] %>% round(2) %>% as.character()
+# Assert / Msg
+    if (length(subgroups)==0) return(object)
+    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_subset('subgroup', svars(object))
+    assert_is_subset(subgroups, subgroup_levels(object))
+    idx <- which(object$subgroup %in% subgroups)
+    first <- values(object)[, idx[1]] %>% (function(y) which(!is.na(y))[[1]])
+    oldvalue <- values(object)[first, idx[1]] %>% round(2) %>% as.character()
     message('\t\tInvert subgroups ', paste0(subgroups, collapse = ', '))
-
 # Invert (log) ratios
-    if (all(values(x)>0, na.rm=TRUE)){ values(x)[, idx] %<>% (function(x){1/x})
-    } else {                           values(x)[, idx] %<>% (function(x){ -x})}
-    newvalue <- as.character(round(values(x)[first, idx[1]], 2))
+    if (all(values(object)>0, na.rm=TRUE)){ values(object)[, idx] %<>% (function(object){1/object})
+    } else {                                values(object)[, idx] %<>% (function(object){ -object})}
+    newvalue <- as.character(round(values(object)[first, idx[1]], 2))
     message('\t\t\texprs    : ', as.character(oldvalue), ' -> ', 
             as.character(newvalue))
 # Invert subgroup and sampleid values
-    oldsubgroups <- sdata(x)$subgroup[idx]
-    newsubgroups <- vapply(oldsubgroups, invert.character, character(1),sep=sep)
-    oldsampleids <- sdata(x)$sample_id[idx]
+    oldsubgroups <- sdata(object)$subgroup[idx]
+    newsubgroups <- vapply(oldsubgroups, .invert_subgroups, character(1),sep=sep)
+    oldsampleids <- sdata(object)$sample_id[idx]
     for (i in seq_along(idx)){
-        sdata(x)$subgroup[ idx[i]] <- newsubgroups[i]
-        sdata(x)$sample_id[idx[i]] %<>% stri_replace_first_fixed(
-                                            oldsubgroups[i], newsubgroups[i])
-        snames(x)[         idx[i]] %<>% stri_replace_first_fixed(
-                                            oldsubgroups[i], newsubgroups[i])
+        sdata(object)$subgroup[ idx[i]] <- newsubgroups[i]
+        sdata(object)$sample_id[idx[i]] %<>% stri_replace_first_fixed(oldsubgroups[i], newsubgroups[i])
+        snames(object)[         idx[i]] %<>% stri_replace_first_fixed(oldsubgroups[i], newsubgroups[i])
     }
-    newsampleids <- sdata(x)$sample_id[idx]
+    newsampleids <- sdata(object)$sample_id[idx]
     message('\t\t\tsubgroups: ', oldsubgroups[1], ' -> ', newsubgroups[1])
     message('\t\t\tsampleids: ', oldsampleids[1], ' -> ', newsampleids[1])
-
 # Order on subgroup
-    x %<>% arrange_samples_('subgroup')
+    object %<>% arrange_samples_('subgroup')
     message('\t\tOrder on subgroup')
-    x$subgroup %<>% droplevels()
+    object$subgroup %<>% droplevels()
 
 # Return
-    return(x)
+    return(object)
 }
 
-arrange_samples_ <- function(x, svars){
-    idx <- do.call(order, sdata(x)[, svars, drop = FALSE])
-    x %<>% extract(, idx)
-    return(x)
+arrange_samples_ <- function(object, svars){
+    idx <- do.call(order, sdata(object)[, svars, drop = FALSE])
+    object %<>% extract(, idx)
+    return(object)
 }
 
-#==============================================================================
+
+#---------------------------------------------------------------------------
 #
 #                     demultiplex
 #                         .is_multiplexed
