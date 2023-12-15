@@ -1,104 +1,8 @@
-#===========================================================================
+#---------------------------------------------------------------------------
+# 
+#                       guess_maxquant_quantity
 #
-#                            Getters/Setters
-#
-#===========================================================================
-
-#' @title Get/Set occupancies
-#' @description Get / Set phosphosite occupancies matrix
-#' @param object SummarizedExperiment
-#' @param value occupancy matrix (features x samples)
-#' @return occpuancy matrix (get) or updated object (set)
-#' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' occupancies(object)
-#' occupancies(object) <- values(object)
-#' occupancies(object)[1:3, 1:3]
-#' @rdname occupancies
-#' @export
-setGeneric('occupancies', function(object)   standardGeneric("occupancies"))
-
-#' @rdname occupancies
-setMethod("occupancies", signature("SummarizedExperiment"),
-function(object)   assays(object)$occupancies)
-
-
-#' @rdname occupancies
-#' @export
-setGeneric('occupancies<-',
-function(object, value) standardGeneric("occupancies<-"))
-
-#' @rdname occupancies
-setReplaceMethod("occupancies", signature("SummarizedExperiment", "matrix"),
-function(object, value){
-    assays(object)$occupancies <- value
-    object })
-
-#' @rdname occupancies
-setReplaceMethod("occupancies", signature("SummarizedExperiment", "numeric"),
-function(object, value){
-    assays(object)$occupancies[] <- value
-    object })
-
-
-
-#' @title Get/Set proteingroups
-#' @description Get / Set proteingroups matrix
-#' @param object SummarizedExperiment
-#' @param value occupancy matrix (features x samples)
-#' @return occpuancy matrix (get) or updated object (set)
-#' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, plot=FALSE)
-#' proteingroups(object)[1:3, 1:3]
-#' @rdname proteingroups
-#' @export
-setGeneric('proteingroups', function(object)   standardGeneric("proteingroups"))
-
-#' @rdname proteingroups
-setMethod("proteingroups", signature("SummarizedExperiment"),
-function(object)   assays(object)$proteingroups)
-
-
-#' @rdname proteingroups
-#' @export
-setGeneric('proteingroups<-',
-function(object, value) standardGeneric("proteingroups<-"))
-
-#' @rdname proteingroups
-setReplaceMethod("proteingroups", signature("SummarizedExperiment", "matrix"),
-function(object, value){
-    assays(object)$proteingroups <- value
-    object })
-
-#' @rdname proteingroups
-setReplaceMethod("proteingroups", signature("SummarizedExperiment", "numeric"),
-function(object, value){
-    assays(object)$proteingroups[] <- value
-    object })
-
-
-
-#============================================================================
-#
-#                            Constants
-#
-#============================================================================
-
-
-#' proteingroup fvars
-#' @noRd
-PROTEINGROUP_FVARS <- c(
-    'id', 'Majority protein IDs', 'Protein names', 'Gene names',
-    'Contaminant', 'Potential contaminant', 'Reverse', 'Phospho (STY) site IDs')
-
-
-#' phosphosites fvars
-#' @noRd
-PHOSPHOSITE_FVARS <- c('id', 'Protein group IDs', 'Proteins', 'Protein names',
-    'Gene names', 'Positions within proteins', 'Localization prob', 'Reverse',
-    'Potential contaminant', 'Contaminant')
+#---------------------------------------------------------------------------
 
 
 #' maxquant quantity patterns
@@ -163,11 +67,100 @@ guess_maxquant_quantity <- function(x){
 }
 
 
+#---------------------------------------------------------------------------
+# 
+#                       .read_maxquant_proteingroups
+#                       .read_maxquant_phosphosites
+#
+#---------------------------------------------------------------------------
+
+utils::globalVariables('where')
+un_int64 <- function(x) {
+    dplyr::mutate(x, dplyr::across(where(bit64::is.integer64), as.numeric))
+}
+
+#' Read proteingroups/phosphosites as-is
+#' @param file         proteingroups / phosphosites file
+#' @param proteinfile  proteingroups file
+#' @param quantity     string
+#' @param verbose      TRUE / FALSE
+#' @return data.table
+#' @examples 
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' prodt <- .read_maxquant_proteingroups(file = proteinfile)
+#' fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinfile)
 #' @export
+.read_maxquant_proteingroups <- function(file, quantity = guess_maxquant_quantity(file), verbose = TRUE){
+# Assert
+    assert_maxquant_proteingroups(file)
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
+# Read
+    if (verbose)  message('\tRead ', file)
+    prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
+    prodt %<>% un_int64()
+    n0 <- nrow(prodt)
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
+    anncols <- c('id', 'Majority protein IDs', 'Reverse', 
+                 'Potential contaminant', 'Contaminant', 'Fasta headers')#, 'Phospho (STY) site IDs')
+    anncols %<>% intersect(names(prodt))
+    valcols <- grep(pattern, names(prodt), value = TRUE)
+    pepcols <- grep('Razor + unique peptides ', names(prodt), fixed = TRUE, value = TRUE)
+    prodt %<>% extract(, c(anncols, pepcols, valcols), with = FALSE)
+    digits <- ceiling(log10(nrow(prodt)))
+    if (verbose)  message('\t\t', nrow(prodt), ' proteins, contaminants, reverse')
+# Return
+    names(prodt) %<>% stri_replace_first_fixed(          'Reverse',     'reverse')
+    names(prodt) %<>% stri_replace_first_fixed(          'Contaminant', 'contaminant') # older MaxQuant
+    names(prodt) %<>% stri_replace_first_fixed('Potential contaminant', 'contaminant') # newer MaxQuant
+    setnames(prodt, 'id',                   'proId')
+    setnames(prodt, 'Majority protein IDs', 'uniprot')
+    setnames(prodt, 'Fasta headers',        'fastahdrs')
+    prodt
 }
 
 
+#' @rdname dot-read_maxquant_proteingroups
 #' @export
+.read_maxquant_phosphosites <- function(
+    file, proteinfile, quantity = guess_maxquant_quantity(file), verbose = TRUE
+){
+# Assert
+    assert_maxquant_proteingroups(proteinfile)
+    assert_maxquant_phosphosites(file)
+    `Protein group IDs` <- NULL
+# Read    
+    if (verbose)  message('\tRead ', file)
+    fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
+    fosdt %<>% un_int64()
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
+    anncols <- c('id', 'Protein group IDs', 'Proteins', 
+                 'Positions within proteins', 'Amino acid', 
+                 'Reverse', 'Contaminant', 'Potential contaminant', 'Fasta headers')
+    anncols %<>% intersect(names(fosdt))
+    valcols <- grep(pattern, names(fosdt), value = TRUE)
+    valcols %<>% extract(stri_detect_fixed(., '___1'))
+    fosdt %<>% extract(, c(anncols, valcols), with = FALSE)
+    digits <- ceiling(log10(nrow(fosdt)))
+    if (verbose)  message('\t\tRead   ', formatC(nrow(fosdt), digits = digits), 
+                          ' phosphosites in proteins, contaminants, reverse')
+    names(fosdt) %<>% stri_replace_first_fixed(          'Reverse',     'reverse')
+    names(fosdt) %<>% stri_replace_first_fixed(          'Contaminant', 'contaminant') # older MaxQuant
+    names(fosdt) %<>% stri_replace_first_fixed('Potential contaminant', 'contaminant') # newer MaxQuant
+# Filter
+    fosdt <- fosdt[stri_count_fixed(`Protein group IDs`, ';') == 0]
+    if (verbose)  message('\t\tRetain ', formatC(nrow(fosdt), digits = digits), 
+                          ' phosphosites in single proteingroup')
+    idx <- rowSums(fosdt[, valcols, with = FALSE], na.rm = TRUE) > 0
+    fosdt <- fosdt[which(idx)]
+    if (verbose)  message('\t\tRetain ', formatC(nrow(fosdt), digits = digits), 
+                          ' phosphosites with signal in some sample')
+# Rename 
+    names(fosdt) %<>% stri_replace_first_fixed('___1', '')
+    setnames(fosdt, 'id',                'fosId')
+    setnames(fosdt, 'Protein group IDs', 'proId')
+    setnames(fosdt, 'Proteins',          'uniprot')
+    setnames(fosdt, 'Fasta headers',     'fastahdrs')
 }
 
 
@@ -175,15 +168,85 @@ guess_maxquant_quantity <- function(x){
 # 
 #                      drop_differing_uniprots
 #
+#---------------------------------------------------------------------------
 
 
-#' @examples
-#' @export
+drop_differing_uniprots <- function(fosdt, prodt, verbose){
+# Assert
+    contaminant <- fosId <- `Positions within proteins` <- proId <- NULL
+    reverse <- uniprot <- NULL
+# Avoid changing the global env
+    prodt %<>% copy()
+    fosdt %<>% copy()
+# Extract annotation cols
+    if (verbose)  message('\t\t\tKeep proteingroup uniprots')
+    proanncols <- c('proId', 'uniprot', 'reverse', 'contaminant')
+    fosanncols <- c('fosId', 'proId', 'uniprot', 'Positions within proteins', 'reverse', 'contaminant')
+    proanndt <- prodt[, proanncols, with = FALSE]
+    fosanndt <- fosdt[, fosanncols, with = FALSE]
+# Separate contaminants-reverse from other proteins.
+    conrevdt <- fosanndt[reverse == '+' | contaminant == '+']
+    fosanndt <- fosanndt[reverse == ''  & contaminant == '']
+    proanndt <- proanndt[reverse == ''  & contaminant == '']
+    fosanndt[, c('reverse', 'contaminant') := NULL]
+    proanndt[, c('reverse', 'contaminant') := NULL]
+    conrevdt[, c('reverse', 'contaminant') := NULL]
+# Merge
+    fosanndt %<>% uncollapse(uniprot, `Positions within proteins`, sep = ';')
+    proanndt %<>% uncollapse(uniprot,                              sep = ';')
+    fosanndt %<>% merge(proanndt, by = c('proId', 'uniprot'))
+    fosanndt %<>% extract(order(as.integer(fosId)))
+    fosanndt %<>% extract(, lapply(.SD, paste0, collapse = ';'), by = 'fosId')
+# Add back contaminants/reverse
+    fosanndt %<>% rbind(conrevdt)
+    fosanndt[, proId := NULL]
+    fosdt[, c('uniprot', 'Positions within proteins') := NULL]
+    fosdt %<>% merge(fosanndt, by = 'fosId', all.x = TRUE, sort = FALSE)
+    fosdt %<>% pull_columns(names(fosanndt))
+    fosdt    
 }
 
+
+#-----------------------------------------------------------------------------
+#
+#                       read_fastahdrs
+#                           parse_fastahdrs
+#
+#-----------------------------------------------------------------------------
+
+#' Uncollapse/Recollapse
+#' 
+#' Uncollapse data.table cols
+#' @param dt data.table
+#' @param ... cols
+#' @param sep string
+#' @param by  string
+#' @examples
+#'(dt <- data.table::data.table(
+#'           uniprot  = 'Q9BQL6;Q96AC1;Q96AC1-3', 
+#'           protein  = 'FERM1_HUMAN;FERM2_HUMAN', 
+#'           gene     = 'FERMT1;FERMT2'))
+#'(dt %<>% uncollapse(protein, gene, sep = ';'))
+#'(dt %>% recollapse(by = 'uniprot')) 
 #' @export
+uncollapse <- function(dt, ..., sep = ';'){
+    dt %>% 
+    separate_rows(..., sep = sep) %>%
+    data.table()
+}
 
+#' @rdname uncollapse
+#' @export
+recollapse <- function(dt, by, sep = ';'){
+    dt[, lapply(.SD, paste_unique, collapse = sep), by = by]
+}
 
+nastring_to_nachar <- function(x){ x[x=='NA'] <- NA_character_;  x }
+
+nastring_to_0 <- function(x){ 
+    x[x=='NA'] <- 0; x
+        # Sometimes the canonical isoform is NOT isoform-1 !
+        # https://www.uniprot.org/uniprotkb/Q9H0P0/entry#sequences
 }
 
 extract_reviewed <- function(fastahdrs){
@@ -360,8 +423,38 @@ drop_inferior <- function(anndt, verbose = TRUE){
 }
 
 
+#' Clean Merge
+#' @param dt1 data.table
+#' @param dt2 data.table
+#' @param by string
+#' @examples
+#' require(data.table)
+#' dt1 <- data.table(feature_id = c('PG1', 'PG2'), gene    = c('G1', 'G2'))
+#' dt2 <- data.table(feature_id = c('PG1', 'PG2'), protein = c('P1', 'P2'))
+#' dt1 %<>% .merge(dt2, by = 'feature_id')
+#' dt1
+#' @export
+.merge <- function(dt1, dt2, by){
+    dt1 %<>% copy()
+    dt2 %<>% copy()
+    commoncols <- intersect(names(dt1), names(dt2))
+    commoncols %<>% setdiff(by)
+    if (length(commoncols) > 0)  dt1[, (commoncols) := NULL]
+    dt1 %<>% merge(dt2, by = by, sort = FALSE, all.x = TRUE)
+    dt1 %<>% pull_columns(names(dt2))
+    dt1[]
 }
 
+.rbind <- function(dt1, dt2, sortby, as.integer = FALSE){
+    dt1only <- setdiff(names(dt1), names(dt2))
+    dt2only <- setdiff(names(dt2), names(dt1))
+    if (length(dt1only)>0)  dt2[, (dt1only) := '']
+    if (length(dt2only)>0)  dt1[, (dt2only) := '']
+    dt <- rbind(dt1, dt2)
+    sorter <- dt[[sortby]]
+    if ({{as.integer}})  sorter %<>% as.integer()
+    sorter %<>% order()
+    dt[sorter]
 }
 
 CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism')
@@ -556,6 +649,41 @@ add_feature_id <- function(dt){
 }
 
 
+
+#---------------------------------------------------------------------------
+# 
+#                 mqdt_to_mat
+#                 dequantify
+#                     label2index
+#
+#---------------------------------------------------------------------------
+
+
+#' Convert maxquant data.table to matrix
+#' @param dt       data.table
+#' @param pattern  string
+#' @param verbose  TRUE / FALSE
+#' @return matrix
+#' @examples 
+#' proteinfile <- download_data('billing19.proteingroups.txt')
+#' phosphofile <- download_data('billing19.phosphosites.txt')
+#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' prodt <- .read_maxquant_proteingroups(file = proteinfile)
+#' fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinfile)
+#' prodt %<>% curate_annotate_maxquant()
+#' prodt %<>% add_feature_id()
+#' quantity <- guess_maxquant_quantity(proteinfile)
+#' pattern <- MAXQUANT_PATTERNS[[quantity]]
+#' mqdt_to_mat(prodt, pattern = pattern)[1:2, 1:2]
+#' @export
+mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
+    mat <- dt[, .SD, .SDcols = patterns(pattern)]
+    mat %<>% data.matrix()
+    rownames(mat) <- dt$feature_id
+    mat %<>% zero_to_na(verbose = verbose) 
+    mat %<>% nan_to_na( verbose = verbose)
+    mat <- log2(mat)
+    mat
 }
 
 
@@ -642,6 +770,12 @@ label2index <- function(x){
 }
 
 
+#---------------------------------------------------------------------------
+# 
+#                   read_maxquant_proteingroups
+#                   read_maxquant_phosphosites
+#
+#---------------------------------------------------------------------------
 
 
 
@@ -689,42 +823,77 @@ is_file <- function(file){
 #' @param ...           maintain deprecated functions
 #' @return SummarizedExperiment
 #' @examples
-#' # Sequences
-#'   a <- "heart-specific Fatty acid binding protein"
-#'   b <- "Fatty acid binding protein, isoform 3"
-#'   extract_common_substr(a, b)
-#'
-#'   a <- "Small nuclear ribonucleoprotein-associated proteins B and B'"
-#'   b <- "Small nuclear ribonucleoprotein-associated protein N"
-#'   extract_common_substr(a, b)
-#' @references https://stackoverflow.com/questions/28261825
-#' @noRd
-extract_common_substr <- function(a, b){
+#' # fukuda20 - LFQ
+#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     pro <- read_maxquant_proteingroups(file = file, plot = TRUE)
+#'     
+#' # billing19 - Normalized Ratios
+#'     file <- download_data('billing19.proteingroups.txt')
+#'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#'     fastadt <- read_fastahdrs(fastafile)
+#'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
+#'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
+#' @export
+read_maxquant_proteingroups <- function(
+    dir = getwd(), 
+    file = if (is_file(dir)) dir else file.path(dir, 'proteinGroups.txt'), 
+    fastadt = NULL, quantity = NULL, 
+    subgroups = NULL, invert = character(0),
+    contaminants = FALSE, reverse = FALSE, impute = FALSE,
+    plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
+    fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL, 
+    coefs = NULL, contrasts = NULL,
+    palette = NULL, verbose = TRUE
+){
+# Assert
+    assert_maxquant_proteingroups(file)
+    if (is.null(quantity))  quantity <- guess_maxquant_quantity(file)
+    assert_is_a_string(quantity)
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
+    assert_is_a_bool(verbose)
+# Read/Curate
+    prodt <- .read_maxquant_proteingroups(file = file, quantity = quantity, verbose = verbose)
+    prodt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
+    prodt %<>% add_feature_id()
+# SumExp
+    if (verbose)  message('\tCreate SummarizedExperiment')
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
+    promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
+    pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
+    pepdt <- prodt[, pepcols, with = FALSE]
+    prodt %<>% extract(, names(prodt) %>% setdiff(colnames(promat)) %>% setdiff(names(pepdt)), with = FALSE)
+    object <- list(promat)
+    names(object) <- paste0('log2', quantity)
+    object %<>% SummarizedExperiment(rowData = prodt)
+# Dequantify. Add pepcounts
+    object$mqcol <- colnames(object)
+    colnames(object) %<>% dequantify(quantity = quantity, verbose = verbose)
+    pepcols <- paste0('Razor + unique peptides ', gsub('\\{.+\\}', '', colnames(object)))
+    pepmat <- pepdt[, pepcols, with = FALSE ]
+    pepmat %<>% data.matrix()
+    dimnames(pepmat) <- dimnames(object)
+    assays(object)$pepcounts <- pepmat
+    object %<>% process_maxquant(
+        subgroups = subgroups,      invert = invert,       reverse = reverse,
+     contaminants = contaminants,   impute = impute,       verbose = verbose)
+    assays <- c(assayNames(object)[1], 'pepcounts')
+    for (assay in assays)  object %<>% add_assay_means(assay)
+    object %<>% analyze(
+        pca          = pca,           pls       = pls,
+        fit          = fit,           formula   = formula,
+        block        = block,         coefs     = coefs,
+        contrasts    = contrasts,     plot      = plot,
+        label        = label,
+        palette      = palette,       verbose   = verbose )
+    object
+}
 
-    tt <- drop(attr(adist(a, b, counts=TRUE), "trafos"))
 
-    # Nothing in common
-    if (!stri_detect_regex(tt, 'M+')) return('')
-
-    # Something in common
-    aa  <-  stri_sub(tt, stri_locate_all_regex(tt, '[DM]+')[[1]]) %>%
-            paste0(collapse = '') %>% trimws()
-            # paste is required because multiple substrings can be found
-    #bb <- tt %>%
-    # stri_sub(stri_locate_all_regex(tt, '[IM]+')[[1]]) %>%
-    # paste0(collapse = '')
-
-    stri_sub(a, stri_locate_all_regex(aa, 'M+')[[1]]) %>%
-    paste0(collapse = '') %>%
-    trimws()
-
-    # different  = c(a %>%
-    #    stri_sub(stri_locate_all_regex(aa, 'D+')[[1]]) %>%
-    #    trimws(),
-    # b %>%
-    #    stri_sub(stri_locate_all_regex(bb, 'I+')[[1]])) %>%
-    #    trimws())
-
+#' @rdname read_maxquant_proteingroups
+#' @export
+read_proteingroups <- function(...){
+    .Deprecated('read_maxquant_proteingroups')
+    read_maxquant_proteingroups(...)
 }
 
 
@@ -768,7 +937,70 @@ extract_common_substr <- function(a, b){
 #' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, 
 #'                                    fastadt = fastadt, subgroups = subgroups)
 #' @export
-invert <- function(x, ...)    UseMethod('invert', x)
+read_maxquant_phosphosites <- function(
+    dir = getwd(), 
+    phosphofile = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
+    proteinfile = file.path(dirname(phosphofile), 'proteinGroups.txt'), 
+    fastadt = NULL, 
+    quantity = NULL, 
+    subgroups = NULL, invert = character(0), 
+    contaminants = FALSE, reverse = FALSE, localization = 0.75, 
+    impute = FALSE, plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
+    fit = if (plot) 'limma' else NULL,  
+    formula = ~ subgroup, block = NULL, coefs = NULL, contrasts = NULL, 
+    palette = NULL, verbose = TRUE
+){
+# Assert
+    assert_all_are_existing_files(c(phosphofile, proteinfile))
+    if (is.null(quantity))  quantity <- guess_maxquant_quantity(phosphofile)
+    assert_is_a_string(quantity)
+    assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
+    assert_is_a_bool(verbose)
+# Read
+    prodt <- .read_maxquant_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
+    fosdt <- .read_maxquant_phosphosites(file = phosphofile, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
+    fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
+    fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
+    fosdt %<>% add_feature_id()
+    prodt %<>% extract(fosdt$proId, on = 'proId')
+# SumExp
+    if (verbose)  message('\tCreate SummarizedExperiment')
+    pattern <- MAXQUANT_PATTERNS[[quantity]]
+    promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
+    pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
+    pepdt <- prodt[, pepcols, with = FALSE]
+    prodt %<>% extract(, names(prodt) %>% setdiff(colnames(promat)) %>% setdiff(names(pepdt)), with = FALSE)
+    fosmat <- mqdt_to_mat(fosdt, pattern, verbose = verbose)
+    fosdt <- fosdt %>% extract(, setdiff(names(.), colnames(fosmat)), with = FALSE)
+    object <- SummarizedExperiment::SummarizedExperiment(
+        assays  = list(log2sites    = fosmat,
+                       log2proteins = promat,
+                       log2diffs = fosmat - promat),
+        rowData = fosdt)
+# Dequantify. Add pepcounts
+    object$mqcol <- colnames(object)
+    colnames(object) %<>% dequantify()
+    pepcols <- paste0('Razor + unique peptides ', gsub('\\{.+\\}', '', colnames(object)))
+    pepmat <- pepdt[, pepcols, with = FALSE ]
+    pepmat %<>% data.matrix()
+    dimnames(pepmat) <- dimnames(object)
+    assays(object)$pepcounts <- pepmat
+# Process / Analyze
+    object %<>% process_maxquant(
+        subgroups = subgroups,     invert = invert,      
+          reverse = reverse, contaminants = contaminants,  localization = localization, 
+           impute = impute,      verbose = verbose)
+    assays <- c('log2sites', 'pepcounts')
+    for (assay in assays)  object %<>% add_assay_means(assay)
+    object %<>% analyze(
+        pca       = pca,           pls       = pls,
+        fit       = fit,           formula   = formula,
+        block     = block,         coefs     = coefs,
+        contrasts = contrasts,     plot      = plot,
+        label     = label,
+        palette   = palette,       verbose   = verbose )
+    object
+}
 
 
 #' @rdname read_maxquant_phosphosites
@@ -1094,17 +1326,7 @@ paste_unique <- function(x, collapse) paste0(unique(x), collapse=collapse)
 #' @export
 annotate_uniprot_ws <- function(x, ...)  UseMethod('annotate_uniprot_ws')
 
-#==============================================================================
-#
-#                     transform_maxquant
-#
-#==============================================================================
 
-transform_maxquant <- function(object, impute, verbose, plot){
-    if (verbose) message('\tTransform exprs')
-# Impute
-    if (impute) object %<>% impute_systematic_nondetects(plot = FALSE)
-    object
 #' @rdname annotate_uniprot_ws
 #' @export
 annotate_uniprot_ws.data.table <- function(
@@ -1136,23 +1358,6 @@ annotate_uniprot_ws.data.table <- function(
         x[]
 }
 
-#==============================================================================
-#
-#                  subtract_proteingroups
-#
-#==============================================================================
-
-#' Which are the phospho expr columns?
-#' @param x phosphosites colnames
-#' @examples
-#' phosphosites <- download_data('billing19.phosphosites.txt')
-#' x <- names(data.table::fread(phosphosites))
-#' quantity <- guess_maxquant_quantity(phosphosites)
-#' phospho_expr_columns(x, quantity)
-#' @noRd
-phospho_expr_columns <- function(x, quantity){
-    pattern <- MAXQUANT_PATTERNS_QUANTITY[[quantity]]
-    which(stri_detect_regex(x,pattern) & stri_detect_regex(x, '___1'))
 #' @rdname annotate_uniprot_ws
 #' @export
 annotate_uniprot_ws.SummarizedExperiment <- function(
@@ -1176,269 +1381,128 @@ annotate_uniprot_ws.SummarizedExperiment <- function(
 }
 
 
-subtract_proteingroups <- function(phosphosites, proteingroups, verbose){
-# Initialize
-    . <- phospho <- protein <- occupancy <- NULL
-    `Protein group IDs` <- NULL
-# Report
-    if (verbose) message(
-        '\tAdd occupancies(phospho) = values(phospho) - values(proteins)')
-# phospho datatable
-    cols <- c('feature_id', 'Protein group IDs')
-    fosdt <- sumexp_to_wide_dt(phosphosites, fvars = 'Protein group IDs')
-    fosdt %<>% separate_rows(`Protein group IDs`, sep = ';' )
-    fosdt %<>% data.table()
-    fosdt %<>% melt.data.table(id.vars = c('feature_id', 'Protein group IDs'))
-    setnames(fosdt,
-        c('feature_id', 'Protein group IDs', 'variable',  'value'),
-        c('phospho_id', 'protein_id',        'sample_id', 'phospho'))
-# proteingroups datatable
-    protein_dt <- sumexp_to_long_dt(proteingroups)
-    setnames(
-        protein_dt,c('feature_id', 'value'), c('protein_id', 'protein'))
-# merge
-    fosdt %<>% merge(  protein_dt,
-                            by = c('protein_id', 'sample_id'), all.x = TRUE)
-    fosdt %<>% extract(,
-                        .(  phospho  = unique(phospho),
-                            protein = median(protein, na.rm = TRUE),
-                            subgroup      = unique(subgroup)),
-                        by = c('phospho_id', 'sample_id') )
-    fosdt[ is.na(protein), protein := 0 ]
-# compute occupancy
-    fosdt[, occupancy := phospho - protein]
-    occ <- dt2mat(dcast(fosdt, phospho_id ~ sample_id, value.var = 'occupancy'))
-    pgs <- dt2mat(dcast(fosdt, phospho_id ~ sample_id, value.var = 'protein'))
-    assert_are_identical(rownames(phosphosites), rownames(occ))
-    assert_are_identical(rownames(phosphosites), rownames(pgs))
-    assert_are_identical(colnames(phosphosites), colnames(occ))
-    assert_are_identical(colnames(phosphosites), colnames(pgs))
-    proteingroups(phosphosites) <- pgs
-    occupancies(phosphosites)   <- occ
-    phosphosites
-}
 
-#==============================================================================
+#---------------------------------------------------------------------------
 #
-#               extract peptide count information
+#                       log2proteins
 #
-#==============================================================================
-#' maxquant peptide count patterns
-#' @examples
-#' MAXQUANT_PATTERNS_PEPCOUNTS
-#' @export
-MAXQUANT_PATTERNS_PEPCOUNTS <- c(
-    uniquepeps         = '^Unique peptides (.+)$',
-    razoranduniquepeps = '^Razor \\+ unique peptides (.+)$',
-    peps               = '^Peptides (.+)$')
-
-#==============================================================================
-#
-#                  .read_maxquant
-#                       add_pepcounts
-#                   read_proteingroups
-#                   read_phosphosites
-#                       phospho_expr_columns
-#                       subtract_proteingroups
-#
-#==============================================================================
-
-add_pepcounts <- function(object, file, pepcountpattern, quantity){
-    . <- NULL
-    assert_is_all_of(object, 'SummarizedExperiment')
-    assert_all_are_existing_files(file)
-    assert_is_a_string(pepcountpattern)
-    assert_has_names(pepcountpattern)
-    assert_is_subset(pepcountpattern, MAXQUANT_PATTERNS_PEPCOUNTS)
-    assert_is_subset(quantity,  names(MAXQUANT_PATTERNS_QUANTITY))
-    
-    names1 <- names(fread(file, integer64 = 'numeric', nrows=1))
-    pepcselect <- names1 %>% extract(stri_detect_regex(., pepcountpattern))
-    pepcs <- as.matrix(fread(file, select=pepcselect, integer64='numeric'))
-    rownames(pepcs) <- rownames(object)
-    colnames(pepcs) %<>% stri_replace_first_regex(pepcountpattern, "$1")
-    if (quantity == 'Intensity'){
-        exprsselect <- stri_replace_first_regex(
-            colnames(object), MAXQUANT_PATTERNS_QUANTITY[quantity], "$1")
-    } else {
-        exprsselect <- stri_replace_first_regex(
-            colnames(object), MAXQUANT_PATTERNS_QUANTITY[quantity], "$2")
-    }
-    pepcs %<>% extract(, exprsselect)
-    colnames(pepcs) <- colnames(object)
-    assays(object)$pepcounts <- pepcs
-    assayNames(object) %<>% stri_replace_first_fixed(
-                            'pepcounts', names(pepcountpattern))
-    object
-}
+#---------------------------------------------------------------------------
 
 
-#' @rdname read_proteingroups
-#' @export
-.read_maxquant <- function(file, quantity = guess_maxquant_quantity(file),
-    sfile = NULL, sfileby = NULL, subgroupvar = 'subgroup',
-    select_subgroups = NULL, invert_subgroups = character(0),
-    pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], verbose = TRUE){
-# Read
-    . <- NULL
-    assert_all_are_existing_files(file)
-    assert_is_subset(quantity,  names(MAXQUANT_PATTERNS_QUANTITY))
-    assert_is_a_bool(verbose)
-    phospho <- stri_detect_fixed(basename(file),'phospho',case_insensitive=TRUE)
-    if (verbose)  message('\tRead ', file)
-    names1 <- names(fread(file, integer64 = 'numeric', nrows=1))
-    fids1  <- fread(file, select = 'id', colClasses = 'character')[[1]]
-    FVARS <- if (phospho) PHOSPHOSITE_FVARS else PROTEINGROUP_FVARS
-    fdata1 <- fread(file, select = intersect(FVARS, names1))
-    fdata1$id %<>% as.character()
-    setnames(fdata1, 'id', 'feature_id')
-    if ('Gene names' %in% names(fdata1)) setnames(fdata1, 'Gene names',
-                                                        'feature_name')
-# Exprs/pepcounts
-    select <- names1 %>%
-            extract(stri_detect_regex(.,MAXQUANT_PATTERNS_QUANTITY[[quantity]]))
-    if (phospho)  select %<>% extract(stri_endswith_fixed(., '___1'))
-    exprs1 <- fread(file, select = select, integer64 = 'numeric') %>%
-        un_int64() %>%
-        as.matrix()
-    if (is.character(exprs1)){
-        message("File contains strings rather than numbers - convert")
-        storage.mode(exprs1) <- 'numeric'}
-    assert_all_are_non_missing_nor_empty_character(fids1)
-    rownames(exprs1) <- fids1
-    object <- SummarizedExperiment(exprs1, rowData=fdata1)
-    if (!phospho)  object %<>% add_pepcounts(file, pepcountpattern, quantity)
-# Process
-    if (phospho)  colnames(object) %<>% stri_replace_last_fixed('___1', '')
-    colnames(object) %<>% standardize_maxquant_snames(quantity)
-    colnames(object) %<>% demultiplex()
-    object$sample_id <- colnames(object)
-    object %<>% merge_sfile(sfile = sfile, by.x = 'sample_id', by.y = sfileby)
-    object %<>% add_subgroup(subgroupvar=subgroupvar, verbose=verbose)
-    object %<>% filter_maxquant_samples(
-                    select_subgroups = select_subgroups, verbose)
-    values(object) %<>% zero_to_na(verbose = verbose)
-    values(object) %<>% nan_to_na( verbose = verbose)
-    object %<>% log2transform(verbose=verbose)
-    object %<>% invert(invert_subgroups)
-# Return
-    assayNames(object)[1] <- 'maxquant'
-    metadata(object)$quantity <- quantity
-    metadata(object)$file <- file
-    object
-}
-
-un_int64 <- function(x) {
-    dplyr::mutate(x, dplyr::across(dplyr::where(bit64::is.integer64), as.numeric))
-}
-
-#' Read/Analyze proteingroups/phosphosites
-#'
-#' @param file         proteingroups/phosphosites file
-#' @param proteinfile  proteingroups file
-#' @param fastafile    NULL or fastafile (to deconvolute proteingroups)
-#' @param quantity     string: "Ratio normalized",
-#'                             "Ratio",
-#'                             "LFQ intensity",
-#'                             "Reporter intensity corrected",
-#'                             "Reporter intensity",
-#'                             "Intensity labeled",
-#'                             "Intensity"
-#' @param sfile         sample file
-#' @param sfileby       sample file mergeby column
-#' @param subgroupvar   subgroup svar
-#' @param select_subgroups  subgroups to be selected (character vector)
-#' @param invert_subgroups  subgroups to be inverted (character vector)
-#' @param contaminants  whether to return contaminants
-#' @param reverse       whether to return reverse peptides
-#' @param min_localization_prob min site localization probability (number)
-#' @param impute        whether to impute consistent nondetects
-#' @param pepcountpattern value in MAXQUANT_PATTERNS_PEPCOUNTS
-#' @param formula       desgnmat formula
-#' @param block         block svar
-#' @param contrastdefs  contrastdef vector/matrix/list
-#' @param pca           whether to pca
-#' @param fit           fit model: NULL, 'limma', 'lm', 'lme', 'lmer','wilcoxon'
-#' @param verbose       whether to message
-#' @param plot          whether to plot
-#' @return SummarizedExperiment
+#' Get/Set log2proteins
+#' @param object SummarizedExperiment
+#' @param value occupancy matrix (features x samples)
+#' @return occpuancy matrix (get) or updated object (set)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_proteingroups(file, pca=TRUE, fit='limma')
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' log2proteins(object)[1:3, 1:3]
+#' @rdname log2proteins
 #' @export
-read_proteingroups <- function(
-    file, quantity = guess_maxquant_quantity(file), sfile = NULL,
-    sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
-    reverse = FALSE, fastafile = NULL, invert_subgroups = character(0),
-    impute = stri_detect_regex(quantity, "[Ii]ntensity"),
-    pepcountpattern = MAXQUANT_PATTERNS_PEPCOUNTS[1], subgroupvar = NULL,
-    formula = NULL, block = NULL, contrastdefs = NULL,
-    pca = FALSE, fit = NULL, verbose = TRUE, plot = TRUE
-){
-# Assert
-    . <- NULL
-    assert_all_are_existing_files(file)
-    if (!is.null(fastafile)) assert_all_are_existing_files(fastafile)
-# Read
-    object <- .read_maxquant(file, quantity,
-        sfile = sfile, sfileby = sfileby, select_subgroups = select_subgroups,
-        invert_subgroups = invert_subgroups,
-        pepcountpattern = pepcountpattern, verbose = verbose)
-    assayNames(object)[1] %<>% gsub('maxquant', 'proteingroups', .)
-# Preprocess
-    object %<>% filter_maxquant_features(reverse = reverse,
-                    contaminants = contaminants, verbose = verbose)
-    object %<>% rename_proteingroup_fvars()
-    object %<>% simplify_proteingroups(fastafile)
-    object %<>% transform_maxquant(impute=impute, verbose=verbose, plot=plot)
-# Analyze
-    object %<>% analyze(pca=pca, fit=fit, subgroupvar = subgroupvar, 
-                        formula = formula, block = block, 
-                        contrastdefs = contrastdefs, 
-                        verbose = verbose, plot = plot)
-# Return
-    object
-}
+setGeneric('log2proteins', function(object)   standardGeneric("log2proteins"))
 
-#' @rdname read_proteingroups
+#' @rdname log2proteins
+setMethod("log2proteins", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2proteins)
+
+
+#' @rdname log2proteins
 #' @export
-read_phosphosites <- function(
-    file, proteinfile = paste0(dirname(file), '/proteinGroups.txt'),
-    quantity = guess_maxquant_quantity(file),
-    sfile = NULL, sfileby = NULL, select_subgroups = NULL, contaminants = FALSE,
-    reverse = FALSE, min_localization_prob = 0.75, fastafile = NULL,
-    invert_subgroups = character(0), pca = FALSE,
-    fit = NULL, subgroupvar = NULL, formula = NULL, block = NULL, 
-    contrastdefs = NULL, verbose = TRUE, plot = TRUE
-){
-# Assert
-    . <- NULL
-    `Protein group IDs` <- `Localization prob` <- NULL
-    assert_all_are_existing_files(c(file, proteinfile))
-    assert_is_subset(quantity, names(MAXQUANT_PATTERNS_QUANTITY))
-# Read
-    prot <- .read_maxquant(file=proteinfile, quantity = quantity,
-        sfile = sfile, select_subgroups = select_subgroups,
-        invert_subgroups = invert_subgroups, verbose=verbose)
-    object  <- .read_maxquant(file = file, quantity = quantity,
-        sfile = sfile, sfileby = sfileby, select_subgroups = select_subgroups,
-        invert_subgroups = invert_subgroups, verbose = verbose)
-    assayNames(prot)[1]   %<>% gsub('maxquant', 'proteingroups', ., fixed=TRUE)
-    assayNames(object)[1] %<>% gsub('maxquant', 'phosphosites',  ., fixed=TRUE)
-    object %<>% filter_maxquant_features(
-                    reverse = reverse, contaminants = contaminants,
-                    min_localization_prob = min_localization_prob,
-                    verbose = verbose)
-    object %<>% subtract_proteingroups(prot, verbose)
-# Prepare
-    object %<>% rename_phospho_fvars()
-    object %<>% simplify_proteingroups(fastafile)
-    object %<>% transform_maxquant(impute=FALSE, verbose=verbose, plot=plot)
-# Analyze
-    object %<>% analyze(pca=pca, fit=fit, subgroupvar=subgroupvar, 
-                        formula=formula, block=block, contrastdefs=contrastdefs,
-                        verbose=verbose, plot=plot)
-# Return
-    object
-}
+setGeneric('log2proteins<-',
+function(object, value) standardGeneric("log2proteins<-"))
 
+#' @rdname log2proteins
+setReplaceMethod("log2proteins", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2proteins <- value
+    object })
+
+#' @rdname log2proteins
+setReplaceMethod("log2proteins", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$log2proteins[] <- value
+    object })
+
+
+#---------------------------------------------------------------------------
+#
+#                       log2sites
+#
+#---------------------------------------------------------------------------
+
+
+#' Get/Set log2sites
+#' @param object SummarizedExperiment
+#' @param value occupancy matrix (features x samples)
+#' @return occpuancy matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' log2sites(object)[1:3, 1:3]
+#' @rdname log2sites
+#' @export
+setGeneric('log2sites', function(object)   standardGeneric("log2sites"))
+
+#' @rdname log2sites
+setMethod("log2sites", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2sites)
+
+
+#' @rdname log2sites
+#' @export
+setGeneric('log2sites<-',
+function(object, value) standardGeneric("log2sites<-"))
+
+#' @rdname log2sites
+setReplaceMethod("log2sites", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2sites <- value
+    object })
+
+#' @rdname log2sites
+setReplaceMethod("log2sites", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$log2sites[] <- value
+    object })
+
+
+#---------------------------------------------------------------------------
+#
+#                       log2diffs
+#
+#---------------------------------------------------------------------------
+
+
+#' Get/Set log2diffs
+#' @param object SummarizedExperiment
+#' @param value occupancy matrix (features x samples)
+#' @return occpuancy matrix (get) or updated object (set)
+#' @examples
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file, plot=FALSE)
+#' log2diffs(object)[1:3, 1:3]
+#' @rdname log2diffs
+#' @export
+setGeneric('log2diffs', function(object)   standardGeneric("log2diffs"))
+
+#' @rdname log2diffs
+setMethod("log2diffs", signature("SummarizedExperiment"),
+function(object)   assays(object)$log2diffs)
+
+
+#' @rdname log2diffs
+#' @export
+setGeneric('log2diffs<-',
+function(object, value) standardGeneric("log2diffs<-"))
+
+#' @rdname log2diffs
+setReplaceMethod("log2diffs", signature("SummarizedExperiment", "matrix"),
+function(object, value){
+    assays(object)$log2diffs <- value
+    object })
+
+#' @rdname log2diffs
+setReplaceMethod("log2diffs", signature("SummarizedExperiment", "numeric"),
+function(object, value){
+    assays(object)$log2diffs[] <- value
+    object })
