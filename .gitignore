@@ -4,3 +4,10 @@
 .Ruserdata
 autonomics.Rproj
 .Rhistory
+vignettes/*_cache
+vignettes/*_files
+vignettes/*.html
+wignettes/*_cache
+wignettes/*_files
+wignettes/*.html
+docs
