@@ -79,8 +79,6 @@ msigfile <- function(organism, year = 2023, release = 2){
 #' dir <- file.path(R_user_dir('autonomics', 'cache'), 'msigdb')
 #' read_msigdt(file = file.path(dir, 'msigdb_v2023.2.Hs.db'))
 #' read_msigdt(file = file.path(dir, 'msigdb_v2023.2.Mm.db'))
-#' @importFrom DBI      dbConnect  dbReadTable
-#' @importFrom RSQLite  SQLite
 #' @export
 read_msigdt <- function(
     organism    = 'human',
@@ -92,10 +90,14 @@ read_msigdt <- function(
     if (!requireNamespace('RSQLite', quietly = TRUE))  message("BiocManager::install('RSQLite'). Then re-run.")
     if (!file.exists(file))  return(NULL)
 # Read
-    con <- dbConnect(SQLite(), file)
-    dt1 <- data.table(dbReadTable(con, 'gene_set_gene_symbol'))[, .(setid  = gene_set_id, geneid     = gene_symbol_id)]
-    dt2 <- data.table(dbReadTable(con, 'gene_symbol'         ))[, .(geneid = id,          gene = symbol        )]
-    dt3 <- data.table(dbReadTable(con, 'gene_set'            ))[, .(setid  = id, set = standard_name, collection = collection_name)]
+    con <- DBI::dbConnect(RSQLite::SQLite(), file)
+    dt1 <- data.table(DBI::dbReadTable(con, 'gene_set_gene_symbol'))
+    dt2 <- data.table(DBI::dbReadTable(con, 'gene_symbol'         ))
+    dt3 <- data.table(DBI::dbReadTable(con, 'gene_set'            ))
+    dt1 %<>% extract(, .(setid  = gene_set_id, geneid = gene_symbol_id))
+    dt2 %<>% extract(, .(geneid = id, gene = symbol))
+    dt3 %<>% extract(, .(setid  = id, set = standard_name, collection = collection_name))
+    
     msigdt <- dt1
     msigdt %<>% merge(dt2, by = 'geneid')
     msigdt %<>% merge(dt3, by = 'setid')
