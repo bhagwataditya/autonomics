@@ -479,7 +479,7 @@ upfeatures <- function(
     unique(fdt(object)[[fvar]][idx])
 }
 
-#' @rdname pmat
+#' @rdname pfeatures
 #' @export
 downfeatures <- function(
     object, 

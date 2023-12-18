@@ -59,6 +59,8 @@ MSIGMOUSE <- c(
 
 #' Get path to msigfile
 #' @param organism 'human' or 'mouse'
+#' @param year      number
+#' @param release   number
 #' @examples
 #' msigfile('human')
 #' msigfile('mouse')
@@ -89,6 +91,8 @@ read_msigdt <- function(
     if (!requireNamespace('DBI',     quietly = TRUE))  message("BiocManager::install('DBI'). Then re-run.")
     if (!requireNamespace('RSQLite', quietly = TRUE))  message("BiocManager::install('RSQLite'). Then re-run.")
     if (!file.exists(file))  return(NULL)
+    gene_set_id <- gene_symbol_id <- id <- symbol <- NULL
+    standard_name <- collection_name <- collection <- NULL
 # Read
     con <- DBI::dbConnect(RSQLite::SQLite(), file)
     dt1 <- data.table(DBI::dbReadTable(con, 'gene_set_gene_symbol'))
@@ -97,6 +101,7 @@ read_msigdt <- function(
     dt1 %<>% extract(, .(setid  = gene_set_id, geneid = gene_symbol_id))
     dt2 %<>% extract(, .(geneid = id, gene = symbol))
     dt3 %<>% extract(, .(setid  = id, set = standard_name, collection = collection_name))
+    DBI::dbDisconnect(con)
     
     msigdt <- dt1
     msigdt %<>% merge(dt2, by = 'geneid')
@@ -123,10 +128,10 @@ read_msigdt <- function(
 #' @examples
 #' file <- download_data('atkin.somascan.adat')
 #' object <- read_somascan(file, fit = 'limma')
-#' fvars(object) %<>% stri_replace_first_fixed('EntrezGeneSymbol', 'gene')
+#' fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #' coldt <- read_msigdt(collections = 'gobp')
 #' coldt
-#' enrichment(object, coldt, by = 'gene', sep = ' ')
+#' enrichdt <- enrichment(object, coldt, by = 'gene', sep = ' ')
 #' @details
 #' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
 #' Results are returned in a data.table
@@ -147,6 +152,7 @@ read_msigdt <- function(
 #'    p.contrast.naive  \tab : prob to randomly select this many (or more) up OR downregulated genes (among all genes)      \cr
 #'    p.detected        \tab : prob to randomly select this many (or more) detected genes (among all genes)
 #' }
+#' @importFrom stats phyper
 #' @export
 enrichment <- function(
     object, 
@@ -171,6 +177,7 @@ enrichment <- function(
     assert_scalar_subset(fit, fits(object))
     genes0 <- fdt(object)[[by]]
     fdt(object)[[by]] %<>% split_extract_fixed(sep, 1)
+    gene <- in.up <- in.detected <- in.down <- in.updown <- `in` <- out <- NULL
 # Genome
           all <- unique(fdt(object)[[by]]) %>% union(coldt[, unique(gene)])                  # 17 987  all
      detected <- unique(fdt(object)[[by]])                                                   #  1 084  detected

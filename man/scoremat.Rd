@@ -7,11 +7,11 @@
 \alias{loadings}
 \title{Extract scores/loadings}
 \usage{
-scoremat(object, method = "pca", by = biplot_by(object, method), dims = 1:2)
+scoremat(object, method = "pca", by = biplot_by(object, method), dim = 1:2)
 
 scores(object, method = "pca", by = biplot_by(object, method), dim = 1)
 
-loadingmat(object, method = "pca", by = biplot_by(object, method), dims = 1:2)
+loadingmat(object, method = "pca", by = biplot_by(object, method), dim = 1:2)
 
 loadings(object, method = "pca", by = biplot_by(object, method), dim = 1)
 }
@@ -22,7 +22,7 @@ loadings(object, method = "pca", by = biplot_by(object, method), dim = 1)
 
 \item{by}{svar (string)}
 
-\item{dims}{numeric vector}
+\item{dim}{numeric vector}
 }
 \description{
 Extract scores/loadings

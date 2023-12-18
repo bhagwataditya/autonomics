@@ -5,7 +5,6 @@
 \alias{tmat}
 \alias{pvar}
 \alias{pmat}
-\alias{downfeatures}
 \alias{p}
 \alias{effectvar}
 \alias{effectmat}
@@ -29,15 +28,6 @@ tmat(object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit))
 pvar(object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit))
 
 pmat(object, fit = fits(object), coefs = default_coefs(object, fit = fit))
-
-downfeatures(
-  object,
-  fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
-  fvar = "feature_id",
-  p = 0.05,
-  effect = 0
-)
 
 p(...)
 

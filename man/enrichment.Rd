@@ -59,8 +59,8 @@ Results are returned in a data.table
 \examples{
 file <- download_data('atkin.somascan.adat')
 object <- read_somascan(file, fit = 'limma')
-fvars(object) \%<>\% stri_replace_first_fixed('EntrezGeneSymbol', 'gene')
+fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
 coldt <- read_msigdt(collections = 'gobp')
 coldt
-enrichment(object, coldt, by = 'gene', sep = ' ')
+enrichdt <- enrichment(object, coldt, by = 'gene', sep = ' ')
 }

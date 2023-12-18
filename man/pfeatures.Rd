@@ -3,6 +3,7 @@
 \name{pfeatures}
 \alias{pfeatures}
 \alias{upfeatures}
+\alias{downfeatures}
 \title{Get p/up/down features}
 \usage{
 pfeatures(
@@ -14,6 +15,15 @@ pfeatures(
 )
 
 upfeatures(
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
+  fvar = "feature_id",
+  p = 0.05,
+  effect = 0
+)
+
+downfeatures(
   object,
   fit = fits(object)[1],
   coef = default_coefs(object, fit = fit)[1],

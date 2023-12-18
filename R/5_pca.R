@@ -112,7 +112,7 @@ variances <- function(
 #' @param object SummarizedExperiment
 #' @param method 'pca', 'pls', etc.
 #' @param by      svar (string)
-#' @param dims    numeric vector
+#' @param dim     numeric vector
 #' @examples
 #' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
@@ -123,10 +123,10 @@ variances <- function(
 #' loadingmat(object)[1:2, ]
 #' @export
 scoremat <- function(
-    object, method = 'pca', by = biplot_by(object, method), dims = 1:2
+    object, method = 'pca', by = biplot_by(object, method), dim = 1:2
 ){
     vars <- 'sample_id'
-    vars %<>% c(scorenames(method, by, dims))
+    vars %<>% c(scorenames(method, by, dim))
     mat <- sdt(object)[, vars, with = FALSE]
     mat %<>% dt2mat()
     mat
@@ -143,10 +143,10 @@ scores <- function(
 #' @rdname scoremat
 #' @export
 loadingmat <- function(
-    object, method = 'pca', by = biplot_by(object, method), dims = 1:2
+    object, method = 'pca', by = biplot_by(object, method), dim = 1:2
 ){
     vars <- 'feature_id'
-    vars %<>% c(loadingnames(method, by, dims))
+    vars %<>% c(loadingnames(method, by, dim))
     mat <- fdt(object)[, vars, with = FALSE]
     mat %<>% dt2mat()
     mat

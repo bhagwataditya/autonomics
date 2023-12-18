@@ -8,6 +8,10 @@ msigfile(organism, year = 2023, release = 2)
 }
 \arguments{
 \item{organism}{'human' or 'mouse'}
+
+\item{year}{number}
+
+\item{release}{number}
 }
 \description{
 Get path to msigfile
