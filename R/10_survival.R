@@ -12,7 +12,7 @@ download_tcga_example <- function(){
         message("BiocManager::install('AnnotationHub'). Then re-run.")
     }
     if (!requireNamespace('ensembldb', quietly = TRUE)){
-        message("BiocManager::install('AnnotationHub'). Then re-run.")
+        message("BiocManager::install('ensembldb'). Then re-run.")
     }
     file <- tools::R_user_dir('autonomics', 'cache')
     file %<>% file.path('datasets', 'tcga.rna.rds')

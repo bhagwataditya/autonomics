@@ -83,11 +83,13 @@ msigfile <- function(organism, year = 2023, release = 2){
 #' @importFrom RSQLite  SQLite
 #' @export
 read_msigdt <- function(
-    organism = 'human',
+    organism    = 'human',
     file        = msigfile(organism), 
     collections = c('gobp', 'gomf', 'gocc', 'reactome', 'wiki')
 ){
 # Assert
+    if (!requireNamespace('DBI',     quietly = TRUE))  message("BiocManager::install('DBI'). Then re-run.")
+    if (!requireNamespace('RSQLite', quietly = TRUE))  message("BiocManager::install('RSQLite'). Then re-run.")
     if (!file.exists(file))  return(NULL)
 # Read
     con <- dbConnect(SQLite(), file)
