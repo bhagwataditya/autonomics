@@ -112,6 +112,37 @@ read_msigdt <- function(
     msigdt
 }
 
+# # Lower-level function
+#     # selected 
+#         file <- download_data('atkin.somascan.adat')
+#         object <- read_somascan(file)
+#         detected <- fdt(object)$EntrezGeneSymbol %>% split_extract_fixed(' ', 1) %>% unique()
+#     # universe and set
+#         coldt <- read_msigdt()
+#         universe <- unique(coldt[, gene])  # 19 669
+#         set <- coldt[set == 'GOBP_GLYCOLYTIC_PROCESS', gene]
+#     # enrichment
+#         .enrichdt <- .enrichment(detected, set)
+.enrichment <- function(selected, set, universe){
+    dt <- data.table(`in`         = nintersect(universe, set),
+                      in.selected = nintersect(selected, set),
+                      out         =   nsetdiff(universe, set),
+                      selected    =     length(selected))
+    dt[, p.selected := 1 - phyper(in.selected, `in`, out, selected)]
+    dt[]
+}
+
+.enrichmentVERBOSE <- function(selected, set, universe){
+    dt <- data.table(`in`         = nintersect(universe, set),
+                      in.selected = nintersect(selected, set),
+                      out         =   nsetdiff(universe, set),
+                      selected    =     length(selected),
+                in.selected.genes = collapse(intersect(selected, set), ' '))
+    dt[, p.selected := 1 - phyper(in.selected, `in`, out, selected)]
+    dt[]
+}
+
+
 
 #' Analyze enrichment
 #' 
@@ -123,15 +154,18 @@ read_msigdt <- function(
 #' @param sep      \code{string} or \code{NULL}
 #' @param contrast \code{string} in \code{coefs(object)}
 #' @param fit      \code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}
-#' @param p        p value cutoff
-#' @param n        no of detected genes required (for geneset to be examined)
+#' @param p       pvalue cutoff
+#' @param n       no of detected genes required (for geneset to be examined)
+#' @param verbose TRUE or FALSE
+#' @param modular TRUE or FALSE : whether to use modular implementation
 #' @examples
 #' file <- download_data('atkin.somascan.adat')
 #' object <- read_somascan(file, fit = 'limma')
 #' fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #' coldt <- read_msigdt(collections = 'gobp')
 #' coldt
-#' enrichdt <- enrichment(object, coldt, by = 'gene', sep = ' ')
+#' enrichdt  <- enrichment(object, coldt, by = 'gene', sep = ' ')
+#' enrichdt2 <- enrichment(object, coldt, by = 'gene', sep = ' ', modular = FALSE)
 #' @details
 #' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
 #' Results are returned in a data.table
@@ -162,7 +196,9 @@ enrichment <- function(
     contrast = default_coefs(object)[1], 
     fit      = fits(object)[1], 
     p        = 0.05, 
-    n        = 3
+    n        = 3, 
+    verbose  = TRUE, 
+    modular  = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -188,9 +224,44 @@ enrichment <- function(
     NOTupdown   <- setdiff(detected, updown)                                                 #   1025  not updown
     NOTup       <- setdiff(detected, up)                                                     #   1070  not up
     NOTdown     <- setdiff(detected, down)                                                   #   1039  not down
+    upvar     <- sprintf('p.%s.upDETECTED',     contrast)
+    downvar   <- sprintf('p.%s.downDETECTED',   contrast)
+    updownvar <- sprintf('p.%s.updownDETECTED', contrast)
+    naivevar  <- sprintf('p.%s.updownGENOME',  contrast)
+    detectedvar <- 'p.detectedGENOME'
     
-      enrichdt <- coldt[,  .(                                                                 #
-                                `in`             =          nintersect(all,      gene),       # in
+# Analyze enrichment - generic
+    if (modular){
+        if (verbose)  cmessage( '\t\tIs pathway enriched in       UP genes (among DETECTED genes) ?');       upDT <- coldt[, .enrichmentVERBOSE(  up, gene, detected), by = 'set']
+        if (verbose)  cmessage( '\t\tIs pathway enriched in     DOWN genes (among DETECTED genes) ?');     downDT <- coldt[, .enrichmentVERBOSE(down, gene, detected), by = 'set']
+        if (verbose)  cmessage( '\t\tIs pathway enriched in  UP/DOWN genes (among DETECTED genes) ?');   updownDT <- coldt[, .enrichment(     updown, gene, detected), by = 'set']
+        if (verbose)  cmessage( '\t\tIs pathway enriched in  UP/DOWN genes (among GENOME   genes) ?');   updownGN <- coldt[, .enrichment(     updown, gene,      all), by = 'set']
+        if (verbose)  cmessage( '\t\tIs pathway enriched in DETECTED genes (among GENOME   genes) ?'); detectedGN <- coldt[, .enrichment(   detected, gene,      all), by = 'set']
+        assert_are_identical(upDT$set,     downDT$set)
+        assert_are_identical(upDT$set,   updownDT$set)
+        assert_are_identical(upDT$set,   updownGN$set)
+        assert_are_identical(upDT$set, detectedGN$set)
+        enrichdt <- data.table( set           =       upDT$set,
+                               `in`           =       upDT$`in`, 
+                                in.detected   = detectedGN$in.selected,
+                                in.updown     =   updownDT$in.selected,
+                                in.up         =       upDT$in.selected,
+                                in.down       =     downDT$selected,
+                                in.up.genes   =       upDT$in.selected.genes,
+                                in.down.genes =     downDT$in.selected.genes,
+                                out           =       upDT$out,
+                                detected      = detectedGN$selected,
+                                updown        =   updownDT$selected,
+                                up            =       upDT$selected,
+                                down          =     downDT$selected )
+        enrichdt[, (      upvar) :=       upDT$p.selected]
+        enrichdt[, (    downvar) :=     downDT$p.selected]
+        enrichdt[, (  updownvar) :=   updownDT$p.selected]
+        enrichdt[, (   naivevar) :=   updownGN$p.selected]
+        enrichdt[, (detectedvar) := detectedGN$p.selected]
+    } else {
+        if (verbose)  cmessage( '\t\tIs pathway enriched - fast ?');       
+        enrichdt <- coldt[,  .( `in`             =          nintersect(all,      gene),       # in
                                  in.detected     =          nintersect(detected, gene),       # in: detected
                                  in.updown       =          nintersect(updown,   gene),       # in: updown
                                  in.up           =          nintersect(up,       gene),       # in: up
@@ -202,17 +273,14 @@ enrichment <- function(
                                  updown          = length(updown),                            # updown
                                  up              = length(up),                                # up
                                  down            = length(down)),                             # down
-                     by = 'set'  ]
-    upvar     <- sprintf('p.%s.up',     contrast)
-    downvar   <- sprintf('p.%s.down',   contrast)
-    updownvar <- sprintf('p.%s.updown', contrast)
-    naivevar  <- sprintf('p.%s.naive',  contrast)
-    detectedvar <- 'p.detected'
-    enrichdt[, (      upvar) := 1- phyper(in.up,        in.detected, detected - in.detected, updown),  by = 'set']
-    enrichdt[, (    downvar) := 1- phyper(in.down,      in.detected, detected - in.down,     updown),  by = 'set']
-    enrichdt[, (  updownvar) := 1- phyper(in.updown,    in.detected, detected - in.up,       updown),  by = 'set']
-    enrichdt[, (   naivevar) := 1- phyper(in.updown,   `in`,         out,                    updown),  by = 'set']
-    enrichdt[, (detectedvar) := 1- phyper(in.detected, `in`,         out,                  detected),  by = 'set']
+                        by = 'set'  ]
+        enrichdt[, (      upvar) := 1- phyper(in.up,        in.detected, detected - in.detected,    up),   by = 'set']
+        enrichdt[, (    downvar) := 1- phyper(in.down,      in.detected, detected - in.down,       down),  by = 'set']
+        enrichdt[, (  updownvar) := 1- phyper(in.updown,    in.detected, detected - in.up,       updown),  by = 'set']
+        enrichdt[, (   naivevar) := 1- phyper(in.updown,   `in`,         out,                    updown),  by = 'set']
+        enrichdt[, (detectedvar) := 1- phyper(in.detected, `in`,         out,                  detected),  by = 'set']
+    }
+# Return
     usefuldt  <- enrichdt[in.detected >= n]
     uselessdt <- enrichdt[in.detected <  n]
     usefuldt %<>% extract(order(get(updownvar)))
