@@ -238,6 +238,31 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 }
 
 
+#' Keep intersecting features
+#' @param object  SummarizedExperiment
+#' @param fvar    string
+#' @param sep     string
+#' @param intersection   vector
+#' @examples
+#' file <- download_data('atkin.somascan.adat')
+#' object <- read_somascan(file)
+#' features <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = 'SYMBOL')
+#' keep_intersecting_features(object, fvar = 'EntrezGeneSymbol', sep = ' ', features)
+#' @export
+keep_intersecting_features <- function(object, fvar, sep, features){
+    fdt0 <- fdt(object)[, c('feature_id', fvar), with = FALSE ]
+    fdt0 %<>% uncollapse(all_of(fvar), sep = sep)
+    fdt0 %<>% extract(get(fvar) %in% features)
+    
+    idx <- fdt(object)$feature_id %in% unique(fdt0$feature_id)
+    fdt(object)$intersection <- FALSE
+    fdt(object)$intersection[idx] <- TRUE
+    object %<>% filter_features(intersection == TRUE)
+    fdt(object)$intersection <- NULL
+    object
+}
+
+
 #=======================
 # FILTER SAMPLES
 #=======================

@@ -21,7 +21,7 @@ read_msigdt(
 Read msig datatable
 }
 \examples{
-dir <- file.path(R_user_dir('autonomics', 'cache'), 'msigdb')
+dir <- file.path(tools::R_user_dir('autonomics', 'cache'), 'msigdb')
 read_msigdt(file = file.path(dir, 'msigdb_v2023.2.Hs.db'))
 read_msigdt(file = file.path(dir, 'msigdb_v2023.2.Mm.db'))
 }
