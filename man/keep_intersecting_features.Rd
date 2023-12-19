@@ -4,7 +4,7 @@
 \alias{keep_intersecting_features}
 \title{Keep intersecting features}
 \usage{
-keep_intersecting_features(object, fvar, sep, features)
+keep_intersecting_features(object, fvar, sep, features, verbose = TRUE)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -12,6 +12,8 @@ keep_intersecting_features(object, fvar, sep, features)
 \item{fvar}{string}
 
 \item{sep}{string}
+
+\item{verbose}{TRUE or FALSE}
 
 \item{intersection}{vector}
 }
