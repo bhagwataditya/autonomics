@@ -157,7 +157,8 @@ read_msigdt <- function(
 #' @param p       pvalue cutoff
 #' @param n       no of detected genes required (for geneset to be examined)
 #' @param verbose TRUE or FALSE
-#' @param modular TRUE or FALSE : whether to use modular implementation
+#' @param fast    TRUE or FALSE : use fast implementation (or modular)?
+
 #' @examples
 #' file <- download_data('atkin.somascan.adat')
 #' object <- read_somascan(file, fit = 'limma')
@@ -165,7 +166,7 @@ read_msigdt <- function(
 #' coldt <- read_msigdt(collections = 'gobp')
 #' coldt
 #' enrichdt  <- enrichment(object, coldt, by = 'gene', sep = ' ')
-#' enrichdt2 <- enrichment(object, coldt, by = 'gene', sep = ' ', modular = FALSE)
+#' enrichdt2 <- enrichment(object, coldt, by = 'gene', sep = ' ', fast = FALSE)
 #' @details
 #' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
 #' Results are returned in a data.table
@@ -198,7 +199,7 @@ enrichment <- function(
     p        = 0.05, 
     n        = 3, 
     verbose  = TRUE, 
-    modular  = TRUE
+    fast     = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -214,7 +215,7 @@ enrichment <- function(
     genes0 <- fdt(object)[[by]]
     fdt(object)[[by]] %<>% split_extract_fixed(sep, 1)
     gene <- in.up <- in.detected <- in.down <- in.updown <- `in` <- out <- NULL
-# Genome
+# Constants
           all <- unique(fdt(object)[[by]]) %>% union(coldt[, unique(gene)])                  # 17 987  all
      detected <- unique(fdt(object)[[by]])                                                   #  1 084  detected
        updown <-    pfeatures(object, fit = fit, coef = contrast, fvar = by, p = p)          #     59  updown
@@ -227,40 +228,18 @@ enrichment <- function(
     upvar     <- sprintf('p.%s.upDETECTED',     contrast)
     downvar   <- sprintf('p.%s.downDETECTED',   contrast)
     updownvar <- sprintf('p.%s.updownDETECTED', contrast)
-    naivevar  <- sprintf('p.%s.updownGENOME',  contrast)
+    naivevar  <- sprintf('p.%s.updownGENOME',   contrast)
     detectedvar <- 'p.detectedGENOME'
-    
-# Analyze enrichment - generic
-    if (modular){
-        if (verbose)  cmessage( '\t\tIs pathway enriched in       UP genes (among DETECTED genes) ?');       upDT <- coldt[, .enrichmentVERBOSE(  up, gene, detected), by = 'set']
-        if (verbose)  cmessage( '\t\tIs pathway enriched in     DOWN genes (among DETECTED genes) ?');     downDT <- coldt[, .enrichmentVERBOSE(down, gene, detected), by = 'set']
-        if (verbose)  cmessage( '\t\tIs pathway enriched in  UP/DOWN genes (among DETECTED genes) ?');   updownDT <- coldt[, .enrichment(     updown, gene, detected), by = 'set']
-        if (verbose)  cmessage( '\t\tIs pathway enriched in  UP/DOWN genes (among GENOME   genes) ?');   updownGN <- coldt[, .enrichment(     updown, gene,      all), by = 'set']
-        if (verbose)  cmessage( '\t\tIs pathway enriched in DETECTED genes (among GENOME   genes) ?'); detectedGN <- coldt[, .enrichment(   detected, gene,      all), by = 'set']
-        assert_are_identical(upDT$set,     downDT$set)
-        assert_are_identical(upDT$set,   updownDT$set)
-        assert_are_identical(upDT$set,   updownGN$set)
-        assert_are_identical(upDT$set, detectedGN$set)
-        enrichdt <- data.table( set           =       upDT$set,
-                               `in`           =       upDT$`in`, 
-                                in.detected   = detectedGN$in.selected,
-                                in.updown     =   updownDT$in.selected,
-                                in.up         =       upDT$in.selected,
-                                in.down       =     downDT$selected,
-                                in.up.genes   =       upDT$in.selected.genes,
-                                in.down.genes =     downDT$in.selected.genes,
-                                out           =       upDT$out,
-                                detected      = detectedGN$selected,
-                                updown        =   updownDT$selected,
-                                up            =       upDT$selected,
-                                down          =     downDT$selected )
-        enrichdt[, (      upvar) :=       upDT$p.selected]
-        enrichdt[, (    downvar) :=     downDT$p.selected]
-        enrichdt[, (  updownvar) :=   updownDT$p.selected]
-        enrichdt[, (   naivevar) :=   updownGN$p.selected]
-        enrichdt[, (detectedvar) := detectedGN$p.selected]
-    } else {
-        if (verbose)  cmessage( '\t\tIs pathway enriched - fast ?');       
+# Message
+    if (verbose){ 
+        if (fast)  cmessage('\tAnalyze enrichment (fast)') else cmessage('\tAnalyze enrichment (modular)')
+        cmessage( '\t\tIs pathway enriched in       UP genes (among DETECTED genes) ?')
+        cmessage( '\t\tIs pathway enriched in     DOWN genes (among DETECTED genes) ?')
+        cmessage( '\t\tIs pathway enriched in  UP/DOWN genes (among DETECTED genes) ?')
+        cmessage( '\t\tIs pathway enriched in  UP/DOWN genes (among GENOME   genes) ?')
+        cmessage( '\t\tIs pathway enriched in DETECTED genes (among GENOME   genes) ?')  }
+# Enrichment
+    if (fast){
         enrichdt <- coldt[,  .( `in`             =          nintersect(all,      gene),       # in
                                  in.detected     =          nintersect(detected, gene),       # in: detected
                                  in.updown       =          nintersect(updown,   gene),       # in: updown
@@ -274,11 +253,39 @@ enrichment <- function(
                                  up              = length(up),                                # up
                                  down            = length(down)),                             # down
                         by = 'set'  ]
-        enrichdt[, (      upvar) := 1- phyper(in.up,        in.detected, detected - in.detected,    up),   by = 'set']
-        enrichdt[, (    downvar) := 1- phyper(in.down,      in.detected, detected - in.down,       down),  by = 'set']
-        enrichdt[, (  updownvar) := 1- phyper(in.updown,    in.detected, detected - in.up,       updown),  by = 'set']
+        enrichdt[, (      upvar) := 1- phyper(in.up,        in.detected, detected - in.detected,     up),  by = 'set']
+        enrichdt[, (    downvar) := 1- phyper(in.down,      in.detected, detected - in.detected,   down),  by = 'set']
+        enrichdt[, (  updownvar) := 1- phyper(in.updown,    in.detected, detected - in.detected, updown),  by = 'set']
         enrichdt[, (   naivevar) := 1- phyper(in.updown,   `in`,         out,                    updown),  by = 'set']
         enrichdt[, (detectedvar) := 1- phyper(in.detected, `in`,         out,                  detected),  by = 'set']
+    } else {
+              upDT <- coldt[, .enrichmentVERBOSE(  up, gene, detected), by = 'set']
+            downDT <- coldt[, .enrichmentVERBOSE(down, gene, detected), by = 'set']
+          updownDT <- coldt[, .enrichment(     updown, gene, detected), by = 'set']
+          updownGN <- coldt[, .enrichment(     updown, gene,      all), by = 'set']
+        detectedGN <- coldt[, .enrichment(   detected, gene,      all), by = 'set']
+        assert_are_identical(upDT$set,     downDT$set)
+        assert_are_identical(upDT$set,   updownDT$set)
+        assert_are_identical(upDT$set,   updownGN$set)
+        assert_are_identical(upDT$set, detectedGN$set)
+        enrichdt <- data.table( set           =       upDT$set,
+                               `in`           = detectedGN$`in`, 
+                                in.detected   = detectedGN$in.selected,
+                                in.updown     =   updownDT$in.selected,
+                                in.up         =       upDT$in.selected,
+                                in.down       =     downDT$selected,
+                                in.up.genes   =       upDT$in.selected.genes,
+                                in.down.genes =     downDT$in.selected.genes,
+                                out           = detectedGN$out,
+                                detected      = detectedGN$selected,
+                                updown        =   updownDT$selected,
+                                up            =       upDT$selected,
+                                down          =     downDT$selected )
+        enrichdt[, (      upvar) :=       upDT$p.selected]
+        enrichdt[, (    downvar) :=     downDT$p.selected]
+        enrichdt[, (  updownvar) :=   updownDT$p.selected]
+        enrichdt[, (   naivevar) :=   updownGN$p.selected]
+        enrichdt[, (detectedvar) := detectedGN$p.selected]
     }
 # Return
     usefuldt  <- enrichdt[in.detected >= n]
