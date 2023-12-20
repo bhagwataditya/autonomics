@@ -310,7 +310,7 @@ fit_survival <- function(
 #' @return numeric vector
 #' @export
 percentiles <- function(object){
-    pvar(object, coefs = 'surv')  %>% 
+    pvar(object, coef = 'surv')  %>% 
     substr(nchar(.)-1, nchar(.))  %>% 
     as.numeric()
 }

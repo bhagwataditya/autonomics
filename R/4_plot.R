@@ -706,7 +706,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     if (is.null(fit))    return(object)
     if (is.null(coefs))  return(object)
 # Filter
-    x <- autonomics::effectmat(object, fit = fit, coefs = coefs)
+    x <- autonomics::effectmat(object, fit = fit, coef = coefs)
     idx <- unname(apply(sign(x), 1, function(y)  Reduce(get(combiner), sign(y) %in% sign) ))
 # Return
     n0 <- length(idx)
@@ -751,7 +751,7 @@ order_on_p <- function(
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool(verbose)
 # Order    
-    pmat <- autonomics::pmat(object, fit = fit, coefs = coefs)
+    pmat <- autonomics::pmat(object, fit = fit, coef = coefs)
     if (is.null(pmat))  return(object)
     if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
                             paste0(fit,   collapse = ', '), 
@@ -780,7 +780,7 @@ order_on_effect <- function(
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool((verbose))
 # Order
-    effectmat <- autonomics::effectmat(object, fit = fit, coefs = coefs)
+    effectmat <- autonomics::effectmat(object, fit = fit, coef = coefs)
     if (verbose)   cmessage("\t\tt-order features on: %s (%s)", 
                             paste0(fit,   collapse = ', '), 
                             paste0(coefs, collapse = ', '))
@@ -879,11 +879,11 @@ extract_coef_features <- function(
 
 
 format_coef_vars <- function(
-    object, fit = fits(object)[1], coefs = default_coefs(object, fit = fit)[1]
+    object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1]
 ){
-    effectvars <- effectvar(object, coefs = coefs, fit = fit)
-    pvars      <- pvar(     object, coefs = coefs, fit = fit)
-    fdrvars    <- fdrvar(   object, coefs = coefs, fit = fit)
+    effectvars <- effectvar(object, coef = coef, fit = fit)
+    pvars      <- pvar(     object, coef = coef, fit = fit)
+    fdrvars    <- fdrvar(   object, coef = coef, fit = fit)
     for (var in c(effectvars, pvars, fdrvars)){
         fdt(object)[[var]] %<>% formatC(format='e', digits=0)
         fdt(object)[[var]] %<>% as.character()
@@ -913,9 +913,9 @@ add_facetvars <- function(
     assert_is_subset(coefs, autonomics::coefs(object))
 # Add
     for (i in seq_along(coefs)){
-               pvar <- autonomics::pvar(     object, fit = fit, coefs = coefs[i])
-             fdrvar <- autonomics::fdrvar(   object, fit = fit, coefs = coefs[i])
-          effectvar <- autonomics::effectvar(object, fit = fit, coefs = coefs[i])
+               pvar <- autonomics::pvar(     object, fit = fit, coef = coefs[i])
+             fdrvar <- autonomics::fdrvar(   object, fit = fit, coef = coefs[i])
+          effectvar <- autonomics::effectvar(object, fit = fit, coef = coefs[i])
            facetvar <- paste0('facet.', coefs[[i]])
         assert_are_disjoint_sets(facetvar, fvars(object))
         if (!is.null(pvar))            pvalues <- fdt(object)[[     pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 
@@ -1272,7 +1272,7 @@ plot_exprs_per_coef <- function(
 ){
     assert_is_valid_sumexp(object)
     if (orderbyp){
-        idx <- order(vapply(coefs, function(x)  min(pmat(object, fit = fit, coefs = x)), numeric(1)))
+        idx <- order(vapply(coefs, function(x)  min(pmat(object, fit = fit, coef = x)), numeric(1)))
         coefs %<>% extract(idx)
         if (length(x)        > 1)         x %<>% extract(idx)
         if (length(geom)     > 1)      geom %<>% extract(idx)
@@ -1635,8 +1635,8 @@ plot_heatmap <- function(
         object  %<>% extract(  idx , )                          # order features
     }
     if (!is.null(coef)){
-        idx <- effectmat(object, fit = fit, coefs = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
-        idx <- effectmat(object, fit = fit, coefs = coef)[, 1] > 0;   up <- object[idx, ]
+        idx <- effectmat(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
+        idx <- effectmat(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
         object <- rbind(rev(down), rev(up))
     }
 # Add pvalues
@@ -1664,7 +1664,7 @@ plot_heatmap <- function(
     setnames(dt, 'value', 'z-score')
     vlines <- 0.5 + c(0, cumsum(table(object[[group]])))
     if (!is.null(coef)){
-        hlines <- 0.5 + c(0, sum(effectmat(object, fit = fit, coefs = coef)[, 1] < 0), nrow(object))
+        hlines <- 0.5 + c(0, sum(effectmat(object, fit = fit, coef = coef)[, 1] < 0), nrow(object))
     }
 # Plot
     p <- ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +

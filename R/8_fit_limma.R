@@ -843,25 +843,6 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 
 }
 
-old_summarize_fit <- function(object, fit = fits(object)){
-    . <- NULL
-    downdt <- colSums(downmat(object, fit = fit)) %>% data.table(coef = names(.), ndown = .)
-    downdt %<>% tidyr::separate(
-                    col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
-    
-    updt <- colSums(upmat(object)) %>% data.table(coef = names(.), nup = .)
-    updt %<>% tidyr::separate(
-                    col = .data$coef, into = c('contrast', 'fit'), sep = FITSEP)
-    
-    sumdt <- merge(downdt, updt, by = c('fit', 'contrast'))
-    sumdt$contrast %<>% factor()
-    sumdt$contrast %<>% pull_level('Intercept')
-    setorderv(sumdt, c('fit', 'contrast'))
-    sumdt %<>% extract(fit, on = 'fit')
-    sumdt %<>% extract(coefs(object), on = 'contrast')
-    sumdt
-}
-
 pull_level <- function(x, lev){
     assert_is_factor(x)
     if (lev %in% levels(x))  x %<>% 

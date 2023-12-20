@@ -154,7 +154,7 @@ plot_top_samples <- function(object, svar, palette = make_svar_palette(object, s
 plot_top_features <- function(object, fit, label){
     idx1 <- order(abs(loadings(object, method = 'pca', dim = 1)), decreasing = TRUE)[1]
     idx2 <- order(abs(loadings(object, method = 'pls', dim = 1)), decreasing = TRUE)[1]
-    pvr <- pvar(object, fit = fit, coefs = default_coefs(object, fit = fit))[1]
+    pvr <- pvar(object, fit = fit, coef = default_coefs(object, fit = fit))[1]
     idx3 <- order(abs(fdt(object)[[pvr]]))[1]
     idx  <- unique(c(idx1,idx2,idx3))
 

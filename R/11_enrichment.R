@@ -152,7 +152,7 @@ read_msigdt <- function(
 #' @param coldt    \code{data.table}, e.g. \code{\link{read_msigdt}}
 #' @param by       \code{fvar}
 #' @param sep      \code{string} or \code{NULL}
-#' @param contrast \code{string} in \code{coefs(object)}
+#' @param coef \code{string} in \code{coefs(object)}
 #' @param fit      \code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}
 #' @param p       pvalue cutoff
 #' @param n       no of detected genes required (for geneset to be examined)
@@ -181,10 +181,10 @@ read_msigdt <- function(
 #'    updown            \tab : up/downregulated genes (in + out)      \cr
 #'    up                \tab :      upregulated genes (in + out)      \cr
 #'    down              \tab :    downregulated genes (in + out)      \cr
-#'    p.contrast.up     \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
-#'    p.contrast.down   \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
-#'    p.contrast.updown \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
-#'    p.contrast.naive  \tab : prob to randomly select this many (or more) up OR downregulated genes (among all genes)      \cr
+#'    p.coef.up     \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
+#'    p.coef.down   \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
+#'    p.coef.updown \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
+#'    p.coef.naive  \tab : prob to randomly select this many (or more) up OR downregulated genes (among all genes)      \cr
 #'    p.detected        \tab : prob to randomly select this many (or more) detected genes (among all genes)
 #' }
 #' @importFrom stats phyper
@@ -192,14 +192,16 @@ read_msigdt <- function(
 enrichment <- function(
     object, 
     coldt, 
-    by       = 'gene', 
+    by              = 'gene', 
     sep, 
-    contrast = default_coefs(object)[1], 
-    fit      = fits(object)[1], 
-    p        = 0.05, 
-    n        = 3, 
-    verbose  = TRUE, 
-    fast     = TRUE
+    coef            = default_coefs(object)[1], 
+    fit             = fits(object)[1],
+    significancevar = 'p',
+    significance    = 0.05,
+    effectsize      = 0,
+    n               = 3, 
+    verbose         = TRUE, 
+    fast            = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -210,25 +212,31 @@ enrichment <- function(
     assert_all_are_non_missing_nor_empty_character(fdt(object)[[by]])
     assert_all_are_non_missing_nor_empty_character(      coldt[[by]])
     if (!is.null(sep))  assert_is_a_string(sep)
-    assert_scalar_subset(contrast, coefs(object))
+    assert_scalar_subset(coef, coefs(object))
     assert_scalar_subset(fit, fits(object))
     genes0 <- fdt(object)[[by]]
     fdt(object)[[by]] %<>% split_extract_fixed(sep, 1)
     gene <- in.up <- in.detected <- in.down <- in.updown <- `in` <- out <- NULL
+# Function
+     mdlfeatures <- function(direction)  modelfeatures(
+            object = object, fit = fit, coef = coef, fvar = by, 
+            significancevar = significancevar, significance = significance, 
+            effectdirection = direction,         effectsize = effectsize)
 # Constants
-          all <- unique(fdt(object)[[by]]) %>% union(coldt[, unique(gene)])                  # 17 987  all
-     detected <- unique(fdt(object)[[by]])                                                   #  1 084  detected
-       updown <-    pfeatures(object, fit = fit, coef = contrast, fvar = by, p = p)          #     59  updown
-           up <-   upfeatures(object, fit = fit, coef = contrast, fvar = by, p = p)          #     14  up
-         down <- downfeatures(object, fit = fit, coef = contrast, fvar = by, p = p)          #     45  down
-    NOTdetected <- setdiff(all, detected)                                                    # 16 903  not detected
-    NOTupdown   <- setdiff(detected, updown)                                                 #   1025  not updown
-    NOTup       <- setdiff(detected, up)                                                     #   1070  not up
-    NOTdown     <- setdiff(detected, down)                                                   #   1039  not down
-    upvar     <- sprintf('p.%s.upDETECTED',     contrast)
-    downvar   <- sprintf('p.%s.downDETECTED',   contrast)
-    updownvar <- sprintf('p.%s.updownDETECTED', contrast)
-    naivevar  <- sprintf('p.%s.updownGENOME',   contrast)
+          all <- unique(fdt(object)[[by]])
+          all %<>% union(coldt[, unique(gene)])       # 17 987  all
+     detected <- unique(fdt(object)[[by]])            #  1 084  detected
+       updown <- mdlfeatures(direction = '<>')        #     59  updown
+         down <- mdlfeatures(direction = '<' )        #     45  down
+           up <- mdlfeatures(direction = '>' )        #     14  up
+    NOTdetected <- setdiff(all, detected)             # 16 903  not detected
+    NOTupdown   <- setdiff(detected, updown)          #   1025  not updown
+    NOTup       <- setdiff(detected, up)              #   1070  not up
+    NOTdown     <- setdiff(detected, down)            #   1039  not down
+    upvar     <- sprintf('p.%s.upDETECTED',     coef)
+    downvar   <- sprintf('p.%s.downDETECTED',   coef)
+    updownvar <- sprintf('p.%s.updownDETECTED', coef)
+    naivevar  <- sprintf('p.%s.updownGENOME',   coef)
     detectedvar <- 'p.detectedGENOME'
 # Message
     if (verbose){ 

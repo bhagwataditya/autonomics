@@ -128,7 +128,7 @@ add_adjusted_pvalues <- function(
     for (.fit  in fit){
     for (.coef in coefs){
     for (.method in method){
-        pdt <- fdt(object)[ , pvar(object, coefs = .coef, fit = .fit) , with = FALSE]
+        pdt <- fdt(object)[ , pvar(object, coef = .coef, fit = .fit) , with = FALSE]
         pdt[, names(pdt) := lapply(.SD, p.adjust, method = .method), .SDcols = names(pdt)]
         names(pdt) %<>% stri_replace_first_fixed('p~', paste0(method, '~'))
     }}}
@@ -179,8 +179,8 @@ make_volcano_dt <- function(
     if (!is.null(shape))  idvars %<>% union(shape)
     if (!is.null(size))   idvars %<>% union(size)
     if (!is.null(alpha))  idvars %<>% union(alpha)
-    valuevars  <-  effectvar(object, coefs = coefs, fit = fit)  # elminate similar function pvars etc.
-    valuevars %<>%  c(  pvar(object, coefs = coefs, fit = fit))
+    valuevars  <-  effectvar(object, coef = coefs, fit = fit)  # elminate similar function pvars etc.
+    valuevars %<>%  c(  pvar(object, coef = coefs, fit = fit))
 
     dt <- fdt(object)[, c(idvars, valuevars), with = FALSE]
     dt %<>% melt.data.table(id.vars = idvars)
