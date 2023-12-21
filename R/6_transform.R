@@ -102,7 +102,14 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
     perturbs <- object[, !idx]
     controls %<>% filter_medoid()
     for (ass in assaynames){
-        assays(perturbs)[[ass]] %<>% sweep(1, assays(controls)[[ass]]) }
+        assays(perturbs)[[ass]] %<>% sweep(1, assays(controls)[[ass]]) 
+        # Confirm that sweep works as thought (it does)
+        # controlmat <- assays(controls)[[ass]]
+        # assert_is_identical_to_true(ncol(controlmat)==1)
+        # controlmat %<>% extract(, 1)
+        # controlmat %<>% matrix(byrow = FALSE, nrow = length(controlvec), ncol = ncol(perturbs))
+        # assays(perturbs)[[ass]] %<>% subtract(controlmat)
+    }
     perturbs
 }
 
