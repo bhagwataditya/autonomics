@@ -465,6 +465,15 @@ effectmat <- function(
 
 #' @rdname modelfvar
 #' @export
+effectsizemat <- function(
+    object, fit = fits(object), coef = default_coefs(object, fit = fit)
+){
+    abs(modelmat(object, quantity = 'effect', fit = fit, coef = coef))
+} # dont rm: used in ..extract_statistic_features : 
+  # getFromNamespace(sprintf('%smat', statistic), 'autonomics')
+
+#' @rdname modelfvar
+#' @export
 tmat <- function(
     object, fit = fits(object), coef = default_coefs(object, fit = fit)
 ){

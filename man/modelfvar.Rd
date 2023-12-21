@@ -13,6 +13,7 @@
 \alias{fdrvec}
 \alias{modelmat}
 \alias{effectmat}
+\alias{effectsizemat}
 \alias{tmat}
 \alias{pmat}
 \alias{fdrmat}
@@ -80,6 +81,12 @@ modelmat(
 )
 
 effectmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+
+effectsizemat(
+  object,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
 tmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
