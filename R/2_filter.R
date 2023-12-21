@@ -199,8 +199,9 @@ keep_connected_blocks <- function(object, block, verbose = TRUE){
     if (sum(idx) < length(idx)){
         if (verbose)  cmessage('\t\tKeep %d/%d fully connected blocks with %d/%d samples',
                          length(full_blocks), length(all_blocks), sum(idx), length(idx))
-        object[, idx]
+        object %<>% extract(, idx)
     }
+    object
 }
 
 

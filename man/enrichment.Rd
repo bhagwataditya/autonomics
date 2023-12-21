@@ -47,21 +47,21 @@ Are up / downregulated genes enriched in geneset?
 Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
 Results are returned in a data.table
 \tabular{rl}{
-   in                \tab :                  genes      in pathway \cr
-   in.detected       \tab :         detected genes      in pathway \cr
-   in.updown         \tab : up/downregulated genes      in pathway \cr
-   in.up(.genes)     \tab :      upregulated genes      in pathway \cr
-   in.down(.genes)   \tab :    downregulated genes      in pathway \cr
-   out               \tab :                  genes outside pathway \cr
-   detected          \tab :         detected genes (in + out)      \cr
-   updown            \tab : up/downregulated genes (in + out)      \cr
-   up                \tab :      upregulated genes (in + out)      \cr
-   down              \tab :    downregulated genes (in + out)      \cr
-   p.coef.up     \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
-   p.coef.down   \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
-   p.coef.updown \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
-   p.coef.naive  \tab : prob to randomly select this many (or more) up OR downregulated genes (among all genes)      \cr
-   p.detected        \tab : prob to randomly select this many (or more) detected genes (among all genes)
+   in                    \tab :                  genes      in pathway \cr
+   in.detected           \tab :         detected genes      in pathway \cr
+   in.updown             \tab : up/downregulated genes      in pathway \cr
+   in.up(.genes)         \tab :      upregulated genes      in pathway \cr
+   in.down(.genes)       \tab :    downregulated genes      in pathway \cr
+   out                   \tab :                  genes outside pathway \cr
+   detected              \tab :         detected genes (in + out)      \cr
+   updown                \tab : up/downregulated genes (in + out)      \cr
+   up                    \tab :      upregulated genes (in + out)      \cr
+   down                  \tab :    downregulated genes (in + out)      \cr
+   p.coef.upDETECTED     \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
+   p.coef.downDETECTED   \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
+   p.coef.updownDETECTED \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
+   p.coef.updownGENOME   \tab : prob to randomly select this many (or more) up OR downregulated genes (among genome   genes)      \cr
+   p.detectedgGENOME     \tab : prob to randomly select this many (or more) detected genes (among genome genes)
 }
 }
 \examples{
