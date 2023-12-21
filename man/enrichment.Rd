@@ -9,10 +9,14 @@ enrichment(
   coldt,
   by = "gene",
   sep,
-  contrast = default_coefs(object)[1],
+  coef = default_coefs(object)[1],
   fit = fits(object)[1],
-  p = 0.05,
-  n = 3
+  significancevar = "p",
+  significance = 0.05,
+  effectsize = 0,
+  n = 3,
+  verbose = TRUE,
+  fast = TRUE
 )
 }
 \arguments{
@@ -24,13 +28,17 @@ enrichment(
 
 \item{sep}{\code{string} or \code{NULL}}
 
-\item{contrast}{\code{string} in \code{coefs(object)}}
+\item{coef}{\code{string} in \code{coefs(object)}}
 
 \item{fit}{\code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}}
 
-\item{p}{p value cutoff}
-
 \item{n}{no of detected genes required (for geneset to be examined)}
+
+\item{verbose}{TRUE or FALSE}
+
+\item{fast}{TRUE or FALSE : use fast implementation (or modular)?}
+
+\item{p}{pvalue cutoff}
 }
 \description{
 Are up / downregulated genes enriched in geneset?
@@ -49,10 +57,10 @@ Results are returned in a data.table
    updown            \tab : up/downregulated genes (in + out)      \cr
    up                \tab :      upregulated genes (in + out)      \cr
    down              \tab :    downregulated genes (in + out)      \cr
-   p.contrast.up     \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
-   p.contrast.down   \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
-   p.contrast.updown \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
-   p.contrast.naive  \tab : prob to randomly select this many (or more) up OR downregulated genes (among all genes)      \cr
+   p.coef.up     \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
+   p.coef.down   \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
+   p.coef.updown \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
+   p.coef.naive  \tab : prob to randomly select this many (or more) up OR downregulated genes (among all genes)      \cr
    p.detected        \tab : prob to randomly select this many (or more) detected genes (among all genes)
 }
 }
@@ -62,5 +70,6 @@ object <- read_somascan(file, fit = 'limma')
 fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
 coldt <- read_msigdt(collections = 'gobp')
 coldt
-enrichdt <- enrichment(object, coldt, by = 'gene', sep = ' ')
+enrichdt  <- enrichment(object, coldt, by = 'gene', sep = ' ')
+enrichdt2 <- enrichment(object, coldt, by = 'gene', sep = ' ', fast = FALSE)
 }

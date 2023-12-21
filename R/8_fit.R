@@ -299,11 +299,11 @@ subgroup_matrix <- function(object, subgroupvar){
     #subgroupmat %>% extract(rev(order(rownames(.))), order(colnames(.)))
 }
 
-#==============================================================================
+#------------------------------------------------------------------------------
 #
-#                   (effect|t|p|fdr)var
+#                   modelfvar
 #
-#==============================================================================
+#------------------------------------------------------------------------------
 
 
 #' Get model variable
@@ -312,7 +312,8 @@ subgroup_matrix <- function(object, subgroupvar){
 #' @param coef            string (vector)
 #' @param fvar            'feature_id' or other fvar for values (pvec) or names (upfeatures)
 #' @param significancevar 'p' or 'fdr'
-#' @param significance    p or fdr cutoff (fractional number)
+#' @param significance     p or fdr cutoff (fractional number)
+#' @param effectdirection  '<>', '<' or '>'
 #' @param effectsize      effectsize cutoff (positive number)
 #' @return string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures)
 #' @examples 
@@ -322,9 +323,21 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
 #' # modelfvar
-#'     modelfvar(object, 'p');                 pvar(object)
-#'     modelfvar(object, 'effect');       effectvar(object)
-#'     modelfvar(object, 'fdr');             fdrvar(object)
+#'     modelfvar(object, 'p');                        pvar(object)
+#'     modelfvar(object, 'effect');              effectvar(object)
+#'     modelfvar(object, 'fdr');                    fdrvar(object)
+#' # modelvec
+#'     modelvec(object, 'p'     )[1:3];               pvec(object)[1:3]
+#'     modelvec(object, 'effect')[1:3];          effectvec(object)[1:3]
+#'     modelvec(object, 'fdr'   )[1:3];             fdrvec(object)[1:3]
+#' # modelmatrix
+#'     modelmat(object, 'p'     )[1:3, 1:3];          pmat(object)[1:3, 1:3]
+#'     modelmat(object, 'effect')[1:3, 1:3];     effectmat(object)[1:3, 1:3]
+#'     modelmat(object, 'fdr'   )[1:3, 1:3];        fdrmat(object)[1:3, 1:3]
+#' # modelfeatures
+#'     modelfeatures(object      )[1:3]
+#'     modelfeatures(object, '<' )[1:3];      downfeatures(object)[1:3]
+#'     modelfeatures(object, '>' )[1:3];        upfeatures(object)[1:3]
 #' @export
 modelfvar <- function(
     object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
@@ -368,26 +381,13 @@ fdrvar <- function(
     modelfvar(object, quantity = 'fdr', fit = fit, coef = coef)
 }                   
 
+#------------------------------------------------------------------------------
+#
+#                   modelvec
+#
+#------------------------------------------------------------------------------
 
-#' Get model vector
-#' @param object          SummarizedExperiment
-#' @param fit             string (vector)
-#' @param coef            string (vector)
-#' @param fvar            'feature_id' or other fvar for values (pvec) or names (upfeatures)
-#' @param significancevar 'p' or 'fdr'
-#' @param significance    p or fdr cutoff (fractional number)
-#' @param effectsize      effectsize cutoff (positive number)
-#' @return string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures)
-#' @examples 
-#' # Read
-#'     file <- download_data('atkin.metabolon.xlsx')
-#'     object <- read_metabolon(file)
-#'     object %<>% fit_limma()
-#'     object %<>% fit_lm()
-#' # modelvec
-#'     modelvec(object, 'p'     )[1:3];          pvec(object)[1:3]
-#'     modelvec(object, 'effect')[1:3];     effectvec(object)[1:3]
-#'     modelvec(object, 'fdr'   )[1:3];        fdrvec(object)[1:3]
+#' @rdname modelfvar
 #' @export
 modelvec <- function(
     object, quantity, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id'
@@ -402,7 +402,7 @@ modelvec <- function(
     y
 }
 
-#' @rdname modelvec
+#' @rdname modelfvar
 #' @export
 effectvec <- function(
     object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id'
@@ -410,7 +410,7 @@ effectvec <- function(
     modelvec(object, quantity = 'effect', fit = fit, coef = coef, fvar = fvar)
 }
 
-#' @rdname modelvec
+#' @rdname modelfvar
 #' @export
 tvec <- function(
     object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id'
@@ -418,7 +418,7 @@ tvec <- function(
     modelvec(object, quantity = 't', fit = fit, coef = coef, fvar = fvar)
 }
     
-#' @rdname modelvec
+#' @rdname modelfvar
 #' @export
 pvec <- function(
     object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id'
@@ -426,7 +426,7 @@ pvec <- function(
     modelvec(object, quantity = 'p', fit = fit, coef = coef, fvar = fvar)
 }
 
-#' @rdname modelvec
+#' @rdname modelfvar
 #' @export
 fdrvec <- function(
     object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id'
@@ -434,27 +434,14 @@ fdrvec <- function(
     modelvec(object, quantity = 'fdr', fit = fit, coef = coef, fvar = fvar)
 }
 
+#------------------------------------------------------------------------------
+#
+#                   modelmat
+#
+#------------------------------------------------------------------------------
 
 
-#' Get model matrix
-#' @param object          SummarizedExperiment
-#' @param fit             string (vector)
-#' @param coef            string (vector)
-#' @param fvar            'feature_id' or other fvar for values (pvec) or names (upfeatures)
-#' @param significancevar 'p' or 'fdr'
-#' @param significance    p or fdr cutoff (fractional number)
-#' @param effectsize      effectsize cutoff (positive number)
-#' @return string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures)
-#' @examples 
-#' # Read
-#'     file <- download_data('atkin.metabolon.xlsx')
-#'     object <- read_metabolon(file)
-#'     object %<>% fit_limma()
-#'     object %<>% fit_lm()
-#' # modelmatrix
-#'      modelmat(object, 'p'     )[1:3, 1:3];          pmat(object)[1:3, 1:3]
-#'      modelmat(object, 'effect')[1:3, 1:3];     effectmat(object)[1:3, 1:3]
-#'      modelmat(object, 'fdr'   )[1:3, 1:3];        fdrmat(object)[1:3, 1:3]
+#' @rdname modelfvar
 #' @export
 modelmat <- function(
     object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
@@ -468,7 +455,7 @@ modelmat <- function(
     mat
 }
 
-#' @rdname modelmat
+#' @rdname modelfvar
 #' @export
 effectmat <- function(
     object, fit = fits(object), coef = default_coefs(object, fit = fit)
@@ -476,7 +463,7 @@ effectmat <- function(
     modelmat(object, quantity = 'effect', fit = fit, coef = coef)
 }
 
-#' @rdname modelmat
+#' @rdname modelfvar
 #' @export
 tmat <- function(
     object, fit = fits(object), coef = default_coefs(object, fit = fit)
@@ -484,7 +471,7 @@ tmat <- function(
     modelmat(object, quantity = 't', fit = fit, coef = coef)
 }
 
-#' @rdname modelmat
+#' @rdname modelfvar
 #' @export
 pmat <- function(
     object, fit = fits(object), coef = default_coefs(object, fit = fit)
@@ -492,7 +479,7 @@ pmat <- function(
     modelmat(object, quantity = 'p', fit = fit, coef = coef)
 }
 
-#' @rdname modelmat
+#' @rdname modelfvar
 #' @export
 fdrmat <- function(
     object, fit = fits(object), coef = default_coefs(object, fit = fit)
@@ -501,25 +488,14 @@ fdrmat <- function(
 }
 
 
-#' Get model features
-#' @param object          SummarizedExperiment
-#' @param fit             string (vector)
-#' @param coef            string (vector)
-#' @param fvar            'feature_id' or other fvar for values (pvec) or names (upfeatures)
-#' @param significancevar 'p' or 'fdr'
-#' @param significance    p or fdr cutoff (fractional number)
-#' @param effectsize      effectsize cutoff (positive number)
-#' @return string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures)
-#' @examples 
-#' # Read
-#'     file <- download_data('atkin.metabolon.xlsx')
-#'     object <- read_metabolon(file)
-#'     object %<>% fit_limma()
-#'     object %<>% fit_lm()
-#' # modelfeatures
-#'      modelfeatures(object      )[1:3]
-#'      modelfeatures(object, '<' )[1:3];   downfeatures(object)[1:3]
-#'      modelfeatures(object, '>' )[1:3];     upfeatures(object)[1:3]
+#==============================================================================
+#
+#                   modelfeatures
+#
+#==============================================================================
+
+
+#' @rdname modelfvar
 #' @export
 modelfeatures <- function(
     object,
@@ -542,7 +518,7 @@ modelfeatures <- function(
     unique(y)
 }
 
-#' @rdname modelfeatures
+#' @rdname modelfvar
 #' @export
 upfeatures <- function(
     object, 
@@ -560,7 +536,7 @@ upfeatures <- function(
     )
 }
 
-#' @rdname modelfeatures
+#' @rdname modelfvar
 #' @export
 downfeatures <- function(
     object, 
