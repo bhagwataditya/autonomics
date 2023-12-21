@@ -635,7 +635,8 @@ coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL,
     testmat <- matrix(0, nrow(issig), ncol(issig), dimnames=dimnames(issig))
     testmat[isdown] <- -1
     testmat[isup]   <-  1
-    testmat[, paste0(contrast, FITSEP, fit), drop=FALSE]
+    col <- modelfvar(object, fit = fit, coef = contrast, quantity = quantity)
+    testmat[, col, drop = FALSE]
 }
 
 

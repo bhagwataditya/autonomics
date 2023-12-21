@@ -55,7 +55,7 @@ The results of lm and limma are quite similar for coefficient (`t3`, i.e. the re
 
 ```{r}
 object <- read_metabolon(file)
-object %<>% fit_lm(~ SET)
+object %<>% fit_lm(   ~ SET)
 object %<>% fit_limma(~ SET) # prefers large effects over small sds
 plot_contrast_venn(is_sig(object, fit = fits(object), contrast = 't3'))
 # plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
