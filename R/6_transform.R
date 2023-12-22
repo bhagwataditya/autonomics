@@ -154,7 +154,7 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #' @export 
 subtract_baseline <- function(
     object, subgroupvar, subgroupctr = slevels(object, subgroupvar)[1], 
-    block = NULL, assaynames = setdiff(assayNames(object), 'weights'), 
+    block = NULL, assaynames = setdiff(assayNames(object), 'weights', 'pepcounts'), 
     verbose = TRUE
 ){
     if (verbose){ 
