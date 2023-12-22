@@ -345,7 +345,7 @@ modelfvar <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_is_subset(quantity, c('p', 'fdr', 't', 'se'))
+    assert_is_subset(quantity, c('fdr', 'p', 't', 'effect', 'se'))
     assert_is_subset(fit,   fits(object))
     assert_is_subset(coef, coefs(object))
 # Return
