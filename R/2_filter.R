@@ -261,7 +261,7 @@ keep_intersecting_features <- function(object, fvar, sep, features, verbose = TR
     intersection <- NULL
 # Intersect
     fdt0 <- fdt(object)[, c('feature_id', fvar), with = FALSE ]
-    fdt0 %<>% uncollapse(all_of(fvar), sep = sep)
+    fdt0 %<>% uncollapse(tidyselect::all_of(fvar), sep = sep)
     fdt0 %<>% extract(get(fvar) %in% features)
 # Filter
     idx <- fdt(object)$feature_id %in% unique(fdt0$feature_id)
