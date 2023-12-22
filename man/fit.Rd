@@ -106,7 +106,7 @@ fit_wilcoxon(
 
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
 
-\item{statvars}{character vector: subset of c('effect', 'p', 'fdr', 't')}
+\item{statvars}{character vector: subset of c('effect', 'p', 'fdr', 't', 'se')}
 
 \item{sep}{string: pvar separator  ("~" in "p~t2~limma")}
 

@@ -618,7 +618,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param coefs     NULL or character vector: model coefs to test
 #' @param block     block svar (or NULL)
 #' @param weightvar NULL or name of weight matrix in assays(object)
-#' @param statvars  character vector: subset of c('effect', 'p', 'fdr', 't')
+#' @param statvars  character vector: subset of c('effect', 'p', 'fdr', 't', 'se')
 #' @param sep       string: pvar separator  ("~" in "p~t2~limma")
 #' @param suffix    string: pvar suffix ("limma" in "p~t2~limma")
 #' @param verbose   whether to msg
@@ -780,7 +780,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     assert_is_subset(coefs, colnames(design))
     if (!is.null(block))      assert_is_subset(block, svars(object))
     if (!is.null(weightvar))  assert_scalar_subset(weightvar, assayNames(object))
-    assert_is_subset(statvars, c('effect', 'p', 'fdr', 't'))
+    assert_is_subset(statvars, c('effect', 'p', 'fdr', 't', 'se'))
 # Design/contrasts/block/weights
     . <- NULL
     if (verbose)  message('\t\tlmFit(', formula2str(formula),
@@ -833,9 +833,14 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         } 
         if ('fdr' %in% statvars){
             dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
-            names(dt0) %<>% paste0('fdr', sep, .,suffix)
+            names(dt0) %<>% paste0('fdr', sep, ., suffix)
             limmadt %<>% cbind(dt0)  
-        } 
+        }
+        if ('se' %in% statvars){
+            dt0 <- data.table(sqrt(limmafit$s2.post) * limmafit$stdev.unscaled)
+            names(dt0) %<>% paste0('se', sep, ., suffix)
+            limmadt %<>% cbind(dt0)
+        }
     }
 # Return
     if (verbose)  message_df('\t\t\t%s',  summarize_fit(limmadt, fit = 'limma'))
