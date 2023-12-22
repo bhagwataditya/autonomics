@@ -156,7 +156,9 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 #' @param sep      \code{string} or \code{NULL}
 #' @param coef \code{string} in \code{coefs(object)}
 #' @param fit      \code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}
-#' @param p       pvalue cutoff
+#' @param significancevar 'p' or 'fdr'
+#' @param significance     significance cutoff
+#' @param effectsize       effectsize   cutoff
 #' @param n       no of detected genes required (for geneset to be examined)
 #' @param verbose TRUE or FALSE
 #' @param fast    TRUE or FALSE : use fast implementation (or modular)?

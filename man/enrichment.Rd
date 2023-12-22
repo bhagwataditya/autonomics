@@ -32,13 +32,17 @@ enrichment(
 
 \item{fit}{\code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}}
 
+\item{significancevar}{'p' or 'fdr'}
+
+\item{significance}{significance cutoff}
+
+\item{effectsize}{effectsize   cutoff}
+
 \item{n}{no of detected genes required (for geneset to be examined)}
 
 \item{verbose}{TRUE or FALSE}
 
 \item{fast}{TRUE or FALSE : use fast implementation (or modular)?}
-
-\item{p}{pvalue cutoff}
 }
 \description{
 Are up / downregulated genes enriched in geneset?
