@@ -240,11 +240,11 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 
 
 #' Keep intersecting features
-#' @param object       SummarizedExperiment
-#' @param fvar         string
-#' @param sep          string
-#' @param intersection vector
-#' @param verbose      TRUE or FALSE
+#' @param object    SummarizedExperiment
+#' @param fvar      string
+#' @param sep       string
+#' @param features  character vector
+#' @param verbose   TRUE or FALSE
 #' @examples
 #' file <- download_data('atkin.somascan.adat')
 #' object <- read_somascan(file)
