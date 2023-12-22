@@ -868,8 +868,11 @@ pull_level <- function(x, lev){
 #' summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 #' @export
 summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
+# Assert
     assert_is_data.table(fdt)
     statistic <- coefficient <- fit <- variable <- NULL
+    effect <- p <- fdr <- NULL
+# Summarize 
     cols <- names(fdt) %>% extract(stri_detect_fixed(., FITSEP))
     fdt %<>% extract(, c('feature_id', cols), with = FALSE)
     
