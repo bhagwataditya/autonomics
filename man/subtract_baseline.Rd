@@ -11,7 +11,7 @@ subtract_baseline(
   subgroupvar,
   subgroupctr = slevels(object, subgroupvar)[1],
   block = NULL,
-  assaynames = setdiff(assayNames(object), "weights", "pepcounts"),
+  assaynames = setdiff(assayNames(object), c("weights", "pepcounts")),
   verbose = TRUE
 )
 
