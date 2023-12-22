@@ -13,9 +13,9 @@ keep_intersecting_features(object, fvar, sep, features, verbose = TRUE)
 
 \item{sep}{string}
 
-\item{verbose}{TRUE or FALSE}
+\item{features}{character vector}
 
-\item{intersection}{vector}
+\item{verbose}{TRUE or FALSE}
 }
 \description{
 Keep intersecting features

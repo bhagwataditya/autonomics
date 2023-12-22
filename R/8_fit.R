@@ -308,6 +308,7 @@ subgroup_matrix <- function(object, subgroupvar){
 
 #' Get model variable
 #' @param object          SummarizedExperiment
+#' @param quantity        'p', 'effect', 'fdr', 't', or 'se'
 #' @param fit             string (vector)
 #' @param coef            string (vector)
 #' @param fvar            'feature_id' or other fvar for values (pvec) or names (upfeatures)
@@ -342,6 +343,12 @@ subgroup_matrix <- function(object, subgroupvar){
 modelfvar <- function(
     object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
 ){
+# Assert
+    assert_valid_sumexp(object)
+    assert_is_subset(quantity, c('p', 'fdr', 't', 'se'))
+    assert_is_subset(fit,   fits(object))
+    assert_is_subset(coef, coefs(object))
+# Return
     x <- expand.grid(quantity = quantity, fit = fit, coef = coef)
     x <-  paste(x$quantity, x$coef, x$fit, sep = FITSEP)
     x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
@@ -392,9 +399,6 @@ fdrvar <- function(
 modelvec <- function(
     object, quantity, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id'
 ){
-    assert_is_valid_sumexp(object)
-    assert_scalar_subset(fit,   fits(object))
-    assert_scalar_subset(coef, coefs(object))
     valuevar <- modelfvar(object, quantity = quantity, fit = fit, coef = coef)
     if (is.null(valuevar))  return(NULL)
     y        <- fdt(object)  %>%  extract2(valuevar)

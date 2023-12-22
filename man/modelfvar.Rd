@@ -128,6 +128,8 @@ downfeatures(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{quantity}{'p', 'effect', 'fdr', 't', or 'se'}
+
 \item{fit}{string (vector)}
 
 \item{coef}{string (vector)}
