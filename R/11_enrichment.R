@@ -112,6 +112,8 @@ read_msigdt <- function(
     msigdt
 }
 
+
+utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 # # Lower-level function
 #     # selected 
 #         file <- download_data('atkin.somascan.adat')
