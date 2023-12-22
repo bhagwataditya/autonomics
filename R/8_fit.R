@@ -324,21 +324,21 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
 #' # modelfvar
-#'     modelfvar(object, 'p');                        pvar(object)
-#'     modelfvar(object, 'effect');              effectvar(object)
-#'     modelfvar(object, 'fdr');                    fdrvar(object)
+#'     modelfvar(object, 'p');                                          pvar(object)
+#'     modelfvar(object, 'effect');                                effectvar(object)
+#'     modelfvar(object, 'fdr');                                      fdrvar(object)
 #' # modelvec
-#'     modelvec(object, 'p'     )[1:3];               pvec(object)[1:3]
-#'     modelvec(object, 'effect')[1:3];          effectvec(object)[1:3]
-#'     modelvec(object, 'fdr'   )[1:3];             fdrvec(object)[1:3]
+#'     modelvec(object, 'p'     )[1:3];                                 pvec(object)[1:3]
+#'     modelvec(object, 'effect')[1:3];                            effectvec(object)[1:3]
+#'     modelvec(object, 'fdr'   )[1:3];                               fdrvec(object)[1:3]
 #' # modelmatrix
-#'     modelmat(object, 'p'     )[1:3, 1:3];          pmat(object)[1:3, 1:3]
-#'     modelmat(object, 'effect')[1:3, 1:3];     effectmat(object)[1:3, 1:3]
-#'     modelmat(object, 'fdr'   )[1:3, 1:3];        fdrmat(object)[1:3, 1:3]
+#'     modelmat(object, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
+#'     modelmat(object, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]
+#'     modelmat(object, 'fdr'   )[1:3, 1:3];                          fdrmat(object)[1:3, 1:3]
 #' # modelfeatures
 #'     modelfeatures(object      )[1:3]
-#'     modelfeatures(object, '<' )[1:3];      downfeatures(object)[1:3]
-#'     modelfeatures(object, '>' )[1:3];        upfeatures(object)[1:3]
+#'     modelfeatures(object, effectdirection = '<' )[1:3];      downfeatures(object)[1:3]
+#'     modelfeatures(object, effectdirection = '>' )[1:3];        upfeatures(object)[1:3]
 #' @export
 modelfvar <- function(
     object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
