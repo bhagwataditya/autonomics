@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Generifying and intuifying cross-platform omics analysis
-Version: 1.11.16
+Version: 1.11.17
 Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Richard",  "Cotton",     email = "richierocks@gmail.com",            role = "aut"),
              person("Shahina",  "Hayat",      email = "shahina.hayat@hotmail.com",        role = "aut"),
@@ -13,9 +13,11 @@ Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marbur
              person("Karsten",  "Suhre",      email = "kas2049@qatar-med.cornell.edu",    role = "sad"),
              person("Johannes", "Graumann",   email = "johannes.graumann@uni-marburg.de", role = c('aut', 'sad', 'rth')))
 Description:
-  This package offers a generic solution for cross-platform omics data analysis.
-  It offers easy access to general linear modeling across coding systems and modeling engines.
-  It contains functions to read, preprocess, impute, project, general linear model, and analyze enrichment.
+  This package unifies General Linear Modeling for Bioinformatics.
+  It unifies across modeling engines (lm, lme, lmer, limma, and wilcoxon).
+  It unifies across coding systems (treatment, difference, deviation, etc.)
+  It unifies across omics platforms (microarrays, rnaseq, msproteomics, affinity proteomics, metabolomics).
+  It also provides a unified interface across analysis steps (dimension reduction, general linear modeling, enrichment analysis).
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
