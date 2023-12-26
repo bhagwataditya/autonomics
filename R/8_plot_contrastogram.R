@@ -24,8 +24,8 @@ compute_connections <- function(
 # subgroup matrix, difference contrasts, limma
     fdrvalues <- fdrmat(object)
     effects <- effectmat(object)
-    colnames(fdrvalues) %<>% split_extract_fixed(FITSEP, 1)
-    colnames(effects) %<>% split_extract_fixed(FITSEP, 1)
+    colnames(fdrvalues) %<>% split_extract_fixed(FITSEP, 2)
+    colnames(effects)   %<>% split_extract_fixed(FITSEP, 2)
     nsignif <- apply(fdrvalues < 0.05, 2, sum, na.rm=TRUE)
                 #colSums( fdrvalues < 0.05, na.rm=TRUE)  # BREAKS ON SINGLE CONTR!
     nup     <- apply(fdrvalues < 0.05 & effects > 0, 2, sum, na.rm = TRUE)
@@ -96,8 +96,7 @@ plot_contrastogram <- function(
     colnames(design) %<>% stri_replace_first_regex(subgroupvar, '')
     object %<>% fit_limma_contrastogram(subgroupvar = subgroupvar, design = design)
 # Compute connections
-    contrastogram_matrices <- compute_connections(
-        object, design = design, subgroupvar = subgroupvar, colors = colors)
+    contrastogram_matrices <- compute_connections(object, design = design, subgroupvar = subgroupvar, colors = colors)
     arrowsizes  <- contrastogram_matrices$arrowsizes
     arrowcolors <- contrastogram_matrices$arrowcolors
     arrowlabels <- contrastogram_matrices$arrowlabels
