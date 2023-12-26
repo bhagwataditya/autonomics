@@ -18,7 +18,7 @@ Add smiles
 \examples{
 file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file, plot = FALSE)
-add_smiles(object[1:10, ])
+# add_smiles(object[1:10, ]) # seems down
 }
 \references{
 https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial

@@ -91,7 +91,7 @@ kegg_entry_to_pathways <- function(x){
 #' @examples
 #' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file, plot = FALSE)
-#' add_smiles(object[1:10, ])
+#' # add_smiles(object[1:10, ]) # seems down
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
 #' @export
 add_smiles <- function(object){
