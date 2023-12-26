@@ -332,15 +332,16 @@ fit_lmx <- function(
     obj <- object
     if (verbose)  cmessage('\t\tFilter features')
     obj %<>% keep_replicated_features(formula, verbose = verbose)
-    obj %<>% keep_connected_blocks(  block, verbose = verbose) # keep samples from fully connected blocks
-    obj %<>% keep_connected_features(block, verbose = verbose) # keep features with 2+ connected blocks
+    obj %<>% keep_connected_blocks(   block,   verbose = verbose) # keep samples from fully connected blocks
+    obj %<>% keep_connected_features( block,   verbose = verbose) # keep features with 2+ connected blocks
 # Fit
     if (       fit == 'lme'){  block   %<>% block_formula_lme(formula = formula, verbose = verbose); blockvars <- names(block)
     } else if (fit == 'lmer'){ formula %<>% block_formula_lmer( block = block,   verbose = verbose); blockvars <- character(0)
     } else {                                                                                         blockvars <- block }
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
-    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars))
+    assays <- assayNames(object) %>% intersect(c(.[1], 'weights'))
+    dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars), assay = assays)
     lhsformula <- addlhs(formula)
     fitres <- dt[, fitmethod(.SD, formula = lhsformula, block = block, weights = get(weightvar), opt = opt), by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
