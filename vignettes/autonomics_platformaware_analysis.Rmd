@@ -114,11 +114,11 @@ Proper preprocessing leads to increased power:
   colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 # log2cpm
   object <- read_rnaseq_counts(file,
-       cpm = TRUE,  voom = FALSE, fit = 'limma', verbose = FALSE, plot=FALSE)
+       cpm = TRUE,  voom = FALSE, fit = 'limma', verbose = FALSE, plot = FALSE)
   colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 # log2cpm + voom
   object <- read_rnaseq_counts(file,  # log2 cpm + voom
-       cpm = TRUE,  voom = TRUE,  fit = 'limma', verbose = FALSE, plot=FALSE)
+       cpm = TRUE,  voom = TRUE,  fit = 'limma', verbose = FALSE, plot = FALSE)
   colSums(summarize_fit(fdt(object), 'limma')[-1, c(3,4)])
 ```
 
@@ -150,7 +150,7 @@ An **LFQ intensities** example is the **Fukuda et al. (2020)** dataset, which co
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
 file <- download_data('fukuda20.proteingroups.txt')
-object <- read_proteingroups(file = file, plot = TRUE)
+object <- read_maxquant_proteingroups(file = file, plot = TRUE)
 ```
 
 
