@@ -656,21 +656,17 @@ add_affy_fdata <- function(object){
 #' @param celfiles string vector: CEL file paths
 #' @return RangedSummarizedExperiment
 #' @examples
-#' url <- paste0('http://www.bioconductor.org/help/publications/2003/',
-#'                 'Chiaretti/chiaretti2/T33.tgz')
-#' localdir  <- file.path(tools::R_user_dir('autonomics', 'cache'), 'T33')
-#' dir.create(localdir, showWarnings=FALSE)
-#' localfile <- file.path(localdir, basename(url))
-#' if (!file.exists(localfile)){
-#'     download.file(url, destfile = localfile)
-#'     untar(localfile, exdir = path.expand(localdir))
-#' }
-#' localfile %<>% substr(1, nchar(.)-4)
-#' if (!requireNamespace("BiocManager", quietly = TRUE)){
-#'     install.packages('BiocManager') }
-#' if (!requireNamespace("hgu95av2.db", quietly = TRUE)){
-#'     BiocManager::install('hgu95av2.db') }
-#' read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
+#' # Downloading example dataset fails 600s limit - example outcommented.
+#' # url <- paste0('http://www.bioconductor.org/help/publications/2003/Chiaretti/chiaretti2/T33.tgz')
+#' # localdir  <- file.path(tools::R_user_dir('autonomics', 'cache'), 'T33')
+#' # dir.create(localdir, showWarnings = FALSE)
+#' # localfile <- file.path(localdir, basename(url))
+#' # if (!file.exists(localfile)){  download.file(url, destfile = localfile)
+#'                                  untar(localfile, exdir = path.expand(localdir))  }
+#' # localfile %<>% substr(1, nchar(.)-4)
+#' # if (!requireNamespace("BiocManager", quietly = TRUE))  install.packages('BiocManager')
+#' # if (!requireNamespace("hgu95av2.db", quietly = TRUE))  BiocManager::install('hgu95av2.db')
+#' # read_affymetrix(celfiles = list.files(localfile, full.names = TRUE))
 #' @export
 read_affymetrix <- function(celfiles){
 # Assert

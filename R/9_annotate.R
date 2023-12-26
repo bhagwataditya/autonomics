@@ -139,7 +139,7 @@ add_opentargets_by_uniprot <- function(
     canonical <- uniprot <- NULL
 # Read
     file <- file.path(OPENTARGETSDIR, 'targets.tsv')
-    if (!file.exists(file))
+    if (!file.exists(file)){
         cmessage('\tFirst `download_opentargets_targets`. Returning object unchanged.')
         return(object)
     }
