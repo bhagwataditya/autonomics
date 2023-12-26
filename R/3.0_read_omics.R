@@ -662,7 +662,7 @@ add_affy_fdata <- function(object){
 #' # dir.create(localdir, showWarnings = FALSE)
 #' # localfile <- file.path(localdir, basename(url))
 #' # if (!file.exists(localfile)){  download.file(url, destfile = localfile)
-#'                                  untar(localfile, exdir = path.expand(localdir))  }
+#' #                                untar(localfile, exdir = path.expand(localdir))  }
 #' # localfile %<>% substr(1, nchar(.)-4)
 #' # if (!requireNamespace("BiocManager", quietly = TRUE))  install.packages('BiocManager')
 #' # if (!requireNamespace("hgu95av2.db", quietly = TRUE))  BiocManager::install('hgu95av2.db')
