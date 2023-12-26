@@ -4,7 +4,7 @@
 #      .read_maxquant_phosphosites
 #
 #============================================================================
-
+require(testthat)
 context('.read_maxquant_proteingroups/.read_maxquant_phosphosites')
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
