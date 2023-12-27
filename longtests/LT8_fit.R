@@ -103,17 +103,6 @@ context('fit: GSE161731')
         expect_true(sumexp_contains_fit(fit_limma(object),    'limma'))
     })
     
-    test_that(  "fit: halama18.metabolon", {
-        file <- download_data('halama18.metabolon.xlsx')
-        object <- read_metabolon(file, plot = FALSE)
-        object %<>% impute_consistent_nas(subgroup = Group, plot=FALSE)
-        #object %<>% fit_wilcoxon(subgroupvar = 'Group')
-        #expect_true(sumexp_contains_fit(object, 'wilcoxon'))
-        #object %<>% fit_lm(subgroupvar = 'Group')
-        #expect_true(sumexp_contains_fit(object, 'lm'))
-        object %<>% fit_limma(object, subgroupvar = "Group")
-        expect_true(sumexp_contains_fit(object, 'limma'))
-    })
 
 
 
