@@ -115,48 +115,6 @@ context('fit: GSE161731')
         expect_true(sumexp_contains_fit(object, 'limma'))
     })
 
-context('plot_contrastogram')
-    # subgroup vector
-    msg <- 'plot_contrastogram("billing19.proteingroups")'
-    file <-  download_data('billing19.proteingroups.txt')
-    subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-    subgroups %<>% paste0('_STD')
-    object <- read_maxquant_proteingroups(
-                file, subgroups = subgroups, fit = 'limma', plot = FALSE)
-    test_that(msg, expect_error(
-        plot_contrastogram(object, subgroupvar = 'subgroup', curve = 0.8), NA))
-    
-    # Ratios: self-contrasts
-    msg <- 'plot_contrastogram("billing16.proteingroups.txt")'
-    file <- download_data('billing16.proteingroups.txt')
-    invert <- c('EM_E', 'BM_E', 'BM_EM')
-    object <- read_maxquant_proteingroups(
-               file, invert = invert, fit = 'limma', plot = FALSE)
-    test_that(msg, expect_error(
-        plot_contrastogram(object, subgroupvar = 'subgroup'), NA))
 
-        
-context('plot_volcano')
-    # proteingroup group ratios
-    msg  <- 'plot_volcano("billing16.proteingroups.txt")'
-    file <- download_data("billing16.proteingroups.txt")
-    invert <- c('EM_E', 'BM_E', 'BM_EM')
-    object <- read_maxquant_proteingroups(
-        file, invert = invert, fit = 'limma', plot = FALSE)
-    test_that(msg, expect_s3_class(plot_volcano(object), 'gg'))
-    
-    # metabolon intensities: complex design
-    msg  <- 'plot_volcano("halama18.metabolon.xlsx")'
-    file <- download_data('halama18.metabolon.xlsx')
-    object <- read_metabolon(file, fit = 'limma', plot = FALSE)
-    test_that(msg, expect_s3_class(plot_volcano(object, ntop = 0), 'gg'))
 
-    # proteingroup internalstandard ratios
-    msg  <- 'plot_volcano("billing19.proteingroups.txt")'
-    file <-  download_data('billing19.proteingroups.txt')
-    subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-    subgroups %<>% paste0('_STD')
-    object <- read_maxquant_proteingroups(
-                 file, subgroups = subgroups, fit = 'limma', plot = FALSE)
-    test_that(msg, expect_s3_class(plot_volcano(object), 'gg'))
 

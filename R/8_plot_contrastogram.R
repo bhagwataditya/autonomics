@@ -40,7 +40,7 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    contrastmat  <- makeContrasts(contrasts = coefs(object), levels = design)
+    contrastmat  <- makeContrasts(contrasts = default_coefs(object), levels = design)
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
         to   <- true_names(contrastvector>0)
@@ -91,9 +91,7 @@ plot_contrastogram <- function(
     if (!requireNamespace('diagram', quietly = TRUE)){
         stop("BiocManager::install('diagram'). Then re-run.") }
 # Fit limma
-    formula <- as.formula(paste0('~ 0 + ', subgroupvar))
     design <- create_design(object, formula = formula)
-    colnames(design) %<>% stri_replace_first_regex(subgroupvar, '')
     object %<>% fit_limma_contrastogram(subgroupvar = subgroupvar, design = design)
 # Compute connections
     contrastogram_matrices <- compute_connections(object, design = design, subgroupvar = subgroupvar, colors = colors)

@@ -93,9 +93,35 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
 #============================================================================
     
 if (requireNamespace('diagram', quietly = TRUE)){
-    msg <- 'plot_contrastogram("fukuda20.proteingroups.txt")'
-    file <-  download_data('fukuda20.proteingroups.txt')
-    object <- read_maxquant_proteingroups(file)
-    expect_no_error(plot_contrastogram(object, subgroupvar = 'subgroup'))
-}
+    test_that(' plot_contrastogram: fukuda20.proteingroups', {
+        # Read
+            file <-  download_data('fukuda20.proteingroups.txt')
+            object <- read_maxquant_proteingroups(file)
+        # Test
+            expect_no_error(plot_contrastogram(object, subgroupvar = 'subgroup'))
+})}
+
+    
+if (requireNamespace('diagram', quietly = TRUE)){
+    test_that(' plot_contrastogram: billing19.proteingroups', {
+        # Read
+            file <-  download_data('billing19.proteingroups.txt')
+            subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+            subgroups %<>% paste0('_STD')
+            object <- read_maxquant_proteingroups(file, subgroups = subgroups, fit = 'limma')
+        # Test
+            expect_no_error(plot_contrastogram(object, subgroupvar = 'subgroup', curve = 0.8))
+})}
+
+
+if (requireNamespace('diagram', quietly = TRUE)){
+    test_that(' plot_contrastogram: billing16.proteingroups', {  # ratios : self-contrasts
+        # Read
+            file <- download_data('billing16.proteingroups.txt')
+            invert <- c('EM_E', 'BM_E', 'BM_EM')
+            object <- read_maxquant_proteingroups(
+                        file, invert = invert, fit = 'limma', formula = ~ 0 + subgroup)
+        # Test
+            expect_no_error(plot_contrastogram(object, subgroupvar = 'subgroup'))
+})}
 
