@@ -1,64 +1,55 @@
-# Data in examples/vignettes/tests
-CORE_DATASETS  <- c('atkin.somascan.adat',    # new versions
-                    'atkin.metabolon.xlsx',
-                    'atkin18.somascan.adat',  # old versions - backward compatibility
-                    'atkin18.metabolon.xlsx',
-                    'billing16.bam.zip',
-                    'billing16.rnacounts.txt',
-                    'billing16.proteingroups.txt',
-                    'billing16.somascan.adat',
-                    'billing19.rnacounts.txt',
-                    'billing19.proteingroups.txt',
-                    'billing19.phosphosites.txt',
-                    'fukuda20.proteingroups.txt',
-                    'halama18.metabolon.xlsx',
-                    'dilution.report.tsv',
-                    'multiorganism.combined_protein.tsv')
 
 #' Data used in examples/vignette/tests/longtests
 #' @examples 
 #' AUTONOMICS_DATASETS
 #' @export
-AUTONOMICS_DATASETS <- c(CORE_DATASETS,
-                        'integer64.proteinGroups.txt',
-                        'uniprot_hsa_20140515.fasta')
+AUTONOMICS_DATASETS <- c('atkin.somascan.adat',    # new versions
+                         'atkin.metabolon.xlsx',
+                         'atkin18.somascan.adat',  # old versions - backward compatibility
+                         'atkin18.metabolon.xlsx',
+                         'billing16.bam.zip',
+                         'billing16.rnacounts.txt',
+                         'billing16.proteingroups.txt',
+                         'billing16.somascan.adat',
+                         'billing19.rnacounts.txt',
+                         'billing19.proteingroups.txt',
+                         'billing19.phosphosites.txt',
+                         'dilution.report.tsv',
+                         'fukuda20.proteingroups.txt',
+                         'halama18.metabolon.xlsx',
+                         'integer64.proteinGroups.txt',
+                         'multiorganism.combined_protein.tsv',
+                         'uniprot_hsa_20140515.fasta')
+
+#' @rdname download_data
+#' @export
+DATADIR <- file.path(R_user_dir('autonomics', 'cache'), 'datasets')
 
 #' Download autonomics example data
 #' 
 #' @param filename  file name
-#' \itemize{
-#'     \item \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{
-#'                 Billing 2016: stemcell comparison:} E, EM, BM
-#'     \itemize{ 
-#'         \item \code{'billing16.bam.zip'}
-#'         \item \code{'billing16.rnacounts.txt'}
-#'         \item \code{'billing16.somascan.adat'}
-#'         \item \code{'billing16.proteingroups.txt'}
-#'     }
-#'     \item \href{https://pubmed.ncbi.nlm.nih.gov/30525282/}{
-#'                 Atkin 2018: hypoglycemia:} t0, t1, t2, t3
-#'     \itemize{
-#'         \item \code{'atkin.somascan.adat'}
-#'         \item \code{'atkin.metabolon.xlsx'}
-#'     }
-#'     \item \href{https://pubmed.ncbi.nlm.nih.gov/29777783/}{
-#'                 Halama 2018: glutaminase inhibition: } 4 conc, 4 timepoints
-#'     \itemize{
-#'         \item \code{'halama18.metabolon.xlsx'}
-#'     }
-#'     \item \href{https://pubmed.ncbi.nlm.nih.gov/31332097/}{
-#'            Billing 2019: stemcell differentiation:} 
-#'            E00, E01, E02, E05, EM15, EM30, M00
-#'     \itemize{
-#'         \item \code{'billing19.rnacounts.txt'    }
-#'         \item \code{'billing19.proteingroups.txt'}
-#'         \item \code{'billing19.phosphosites.txt'} 
-#'     }
-#'     \item \href{https://pubmed.ncbi.nlm.nih.gov/32648304/}{
-#'           Fukuda 2020: zebrafish development:} X30dpt, Adult
-#'     \itemize{
-#'         \item \code{'fukuda20.proteingroups.txt'}
-#'     }
+#' \itemize{ 
+#' \item \href{https://pubmed.ncbi.nlm.nih.gov/30525282/}{ Atkin 2018: hypoglycemia:              } 
+#'                   4 timepoints (t0, t1, t2, t3)
+#'       \itemize{  \item \code{'atkin.somascan.adat'             }
+#'                  \item \code{'atkin.metabolon.xlsx'            } }
+#' \item \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{ Billing 2016: stemcell comparison:     } 
+#'                   E, EM, BM
+#'       \itemize{ \item \code{'billing16.bam.zip'                }
+#'                 \item \code{'billing16.rnacounts.txt'          }
+#'                 \item \code{'billing16.somascan.adat'          }
+#'                 \item \code{'billing16.proteingroups.txt'      } }
+#' \item \href{https://pubmed.ncbi.nlm.nih.gov/31332097/}{ Billing 2019: stemcell differentiation:} 
+#'                   E00, E01, E02, E05, EM15, EM30, M00
+#'       \itemize{ \item \code{'billing19.rnacounts.txt'          }
+#'                 \item \code{'billing19.proteingroups.txt'      }
+#'                 \item \code{'billing19.phosphosites.txt'       } }
+#' \item \href{https://pubmed.ncbi.nlm.nih.gov/32648304/}{ Fukuda 2020: zebrafish development:    } 
+#'                   X30dpt, Adult
+#'       \itemize{  \item \code{'fukuda20.proteingroups.txt'      } }
+#' \item \href{https://pubmed.ncbi.nlm.nih.gov/29777783/}{ Halama 2018: glutaminase inhibitor:    } 
+#'                   4 conc, 4 timepoints
+#'       \itemize{ \item \code{'halama18.metabolon.xlsx'          } }
 #' }
 #' @param localdir local dir to save file to
 #' @param verbose  TRUE / FALSE
@@ -88,15 +79,17 @@ AUTONOMICS_DATASETS <- c(CORE_DATASETS,
 #' @export
 download_data <- function(
     filename = NULL,
-    localdir = file.path(R_user_dir('autonomics', 'cache'), 'datasets'),
+    localdir = file.path(DATADIR, split_extract_fixed(filename, '.', 1)),
     verbose  = TRUE, 
     force    = FALSE
 ){
+# Assert/Prepare
     . <- NULL
     if (is.null(filename))  return(AUTONOMICS_DATASETS)
     assert_is_subset(filename, AUTONOMICS_DATASETS)
     dir.create(localdir, recursive = TRUE, showWarnings = FALSE)
     filepath <- file.path(localdir, filename)
+# Download
     if (force | !file.exists(filepath)) {
         if(verbose) message( "Downloading ", filename)
         url <- "https://bitbucket.org/graumannlabtools/autonomics/downloads"
@@ -107,11 +100,37 @@ download_data <- function(
                      break   })                                 # dont repeat if successful
         }
     }
+# Unzip
     if (file_ext(filename)=='zip'){
         if (verbose)  message('unzip')
         unzip(filepath, exdir = substr(filepath, 1, nchar(filepath)-4))
         filepath %<>% substr(1, nchar(.)-4)
     }
+# Return
     filepath
 }
 
+
+#' Download mcclain21 data
+#' @param counts_or_samples 'counts' or 'samples'
+#' @param localdir           dirname
+#' @param force              TRUE or FALSE
+#' @details \href{https://pubmed.ncbi.nlm.nih.gov/33597532/}{ Mc clain 2021: COVID19 transcriptomics:} 
+#' @examples
+#' download_mcclain21('counts')
+#' download_mcclain21('samples')
+#' @export
+download_mcclain21 <- function(                   # Integrating into `download_data` not succesful
+    counts_or_samples = 'counts',                 #    - download.file <-> getGEOSuppFiles
+    localdir = file.path(DATADIR, 'GSE161731'),   #    - GSE161731 not an intuitive filename
+    force = FALSE                                 #    - two files : counts + sampledt
+){
+    if (!dir.exists(localdir) | force){
+        dir.create(localdir)
+        GEOquery::getGEOSuppFiles("GSE161731", baseDir = localdir)
+    }
+    file  <- paste0(localdir, '/GSE161731_counts.csv.gz')
+    sfile <- paste0(localdir, '/GSE161731_counts_key.csv.gz')
+    out <- switch(counts_or_samples, counts = file, samples = sfile)
+    return(out)
+}
