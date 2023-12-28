@@ -120,17 +120,17 @@ download_data <- function(
 #' download_mcclain21('counts')
 #' download_mcclain21('samples')
 #' @export
-download_mcclain21 <- function(                   # Integrating into `download_data` not succesful
-    counts_or_samples = 'counts',                 #    - download.file <-> getGEOSuppFiles
-    localdir = file.path(DATADIR, 'GSE161731'),   #    - GSE161731 not an intuitive filename
-    force = FALSE                                 #    - two files : counts + sampledt
+download_mcclain21 <- function(                  # Integrating into `download_data` not succesful
+    counts_or_samples = 'counts',                #    - getGEOSuppFiles <-> download.file
+    localdir = file.path(DATADIR, 'mcclain21'),  #    - GSE161731 not intuitive as filename
+    force = FALSE                                #    - two files : counts + sampledt
 ){
     if (!dir.exists(localdir) | force){
         dir.create(localdir)
-        GEOquery::getGEOSuppFiles("GSE161731", baseDir = localdir)
+        GEOquery::getGEOSuppFiles("GSE161731", baseDir = localdir, makeDirectory = FALSE)
     }
-    file  <- paste0(localdir, '/GSE161731_counts.csv.gz')
-    sfile <- paste0(localdir, '/GSE161731_counts_key.csv.gz')
+    file  <- file.path(localdir, 'GSE161731_counts.csv.gz')
+    sfile <- file.path(localdir, 'GSE161731_counts_key.csv.gz')
     out <- switch(counts_or_samples, counts = file, samples = sfile)
     return(out)
 }
