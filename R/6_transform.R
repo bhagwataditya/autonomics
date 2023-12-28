@@ -61,6 +61,11 @@ rm_singleton_samples <- function(object, subgroupvar = 'subgroup', verbose = TRU
 # mat <- cbind(s1=c(-1,-1), s2=c(-1,1), s3=c(1,-1), s4=c(0.1,0.1))
 # which.medoid(mat)
 which.medoid <- function(mat){
+    idx <- matrixStats::rowAnyNAs(mat)
+    assertive.base::assert_all_are_not_na(idx)
+    if (any(idx))  cmessage('\t\t\t\tUse %d/%d non-NA rows to compute spatial median', 
+                           sum(idx), length(idx))
+    mat %<>% extract(!idx, )
     spatmed <- ICSNP::spatial.median(t(mat))
     which.min(sqrt(colSums((sweep(mat, 1, spatmed))^2)))
 }
@@ -157,6 +162,14 @@ subtract_baseline <- function(
     block = NULL, assaynames = setdiff(assayNames(object), c('weights', 'pepcounts')), 
     verbose = TRUE
 ){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_scalar_subset(subgroupvar, svars(object))
+    assert_scalar_subset(subgroupctr, unique(object[[subgroupvar]]))
+    if (!is.null(block))  assert_scalar_subset(block, svars(object))
+    assert_is_subset(assaynames, assayNames(object))
+    assert_is_a_bool(verbose)
+# Subtract
     if (verbose){ 
         message("\t\tSubtract controls")
         message("\t\t\tcontrols  : ", subgroupvar, "=", subgroupctr," (medoid)")
@@ -167,7 +180,9 @@ subtract_baseline <- function(
     objlist %<>% lapply(.subtract_baseline, 
                         subgroupvar = subgroupvar, subgroupctr = subgroupctr, 
                         assaynames = assaynames)
-    do.call(BiocGenerics::cbind, objlist)
+# Return
+    objlist %<>% do.call(BiocGenerics::cbind, .)
+    objlist
 }
 
 
