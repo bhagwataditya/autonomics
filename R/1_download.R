@@ -101,8 +101,11 @@ download_data <- function(
         if(verbose) message( "Downloading ", filename)
         url <- "https://bitbucket.org/graumannlabtools/autonomics/downloads"
         url %<>% paste0('/', filename)
-        Sys.sleep(abs(rnorm(1, sd = 3)))           # avoid timeout due to coinciding calls
-        download.file(url, filepath, mode = 'wb')  # wb needed to avoid corrupt excel files
+        for (i in 1:10){  # retry to deal with possible server timeout (due to coinciding requests)
+            try({    Sys.sleep(abs(rnorm(1, sd = 2)))           # wait a few seconds
+                     download.file(url, filepath, mode = 'wb')  # prevent corrupt xlsx ('wb')
+                     break   })                                 # dont repeat if successful
+        }
     }
     if (file_ext(filename)=='zip'){
         if (verbose)  message('unzip')
