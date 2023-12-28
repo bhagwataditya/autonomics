@@ -247,18 +247,22 @@ code.factor <- function(object, codingfun, verbose = TRUE, ...){
 #' @rdname code
 #' @export
 code.data.table <- function(object, codingfun, vars = names(object), verbose = TRUE, ...){
-    if (verbose)  cmessage('\t\t code factors')
+# Assert
+    if ( length(vars)==0)   return(object)      # when formula = ~1 
+    if (is.null(codingfun)) return(object)
+# Code
+    if (verbose)  cmessage('\t\tCode factors')
     for (var in vars){
         if (is.character(object[[var]]))  object[[var]] %<>% factor()
         if (is.logical(  object[[var]]))  object[[var]] %<>% factor()
     }
-    if (is.null(codingfun)) return(object)
     for (var in vars){
         if (is.factor(object[[var]])){
             if (verbose)  cmessage('\t\t\t%s', var)
             object[[var]] %<>% code.factor(codingfun, verbose = verbose)
         }
     }
+# Return
     object
 }
 
