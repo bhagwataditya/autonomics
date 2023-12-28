@@ -406,13 +406,20 @@ download_contaminants <-  function(url = CONTAMINANTSURL, overwrite = FALSE){
 #' dt <- read_contaminants(file)
 #' @export
 read_contaminants <-  function(file = download_contaminants()){
+# Assert
     if (!requireNamespace('Biostrings', quietly = TRUE)){
         stop("BiocManager::install('Biostrings'). Then re-run.") }
+    if (is.null(file)){
+        cmessage('\t`file` doesnt exist - return NULL')
+        return(NULL) # download_contaminants returns NULL when offline
+    }
     assert_all_are_existing_files(file)
     assert_is_identical_to_true(substr(file, nchar(file)-4, nchar(file)) == 'fasta')
+# Read
     y <- Biostrings::readAAStringSet(file)
     y %<>% names()
     y %<>% split_extract_fixed(' ', 1)
+# Return
     y
 }
 
@@ -431,7 +438,14 @@ read_contaminants <-  function(file = download_contaminants()){
 rm_diann_contaminants <- function(
     object, contaminants = read_contaminants(), verbose = TRUE
 ){
+# Assert
+    assert_is_valid_sumexp(object)
+    if (is.null(contaminants)){
+        message('\tcontminants is NULL - return object unchanged')
+        return(object)  
+    }
     contaminant <- uniprot <- NULL
+# Rm
     fdt0 <- fdt(object)
     fdt0 %<>% separate_rows(uniprot, sep = ';') %>% data.table()
     fdt0[, contaminant := FALSE]
@@ -440,6 +454,8 @@ rm_diann_contaminants <- function(
     fdt0 %<>% extract(, .(contaminant = any(contaminant)), by = 'feature_id')
     object %<>% merge_fdt(fdt0)
     object %<>% filter_features(!contaminant, verbose = verbose)
+# Return
+    object
 }
 
 has_one_level <- function(x) length(unique(x))==1
