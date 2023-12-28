@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Unified Statistal Modeling of Omics Data
-Version: 1.11.24
+Version: 1.11.25
 Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Richard",  "Cotton",     email = "richierocks@gmail.com",            role = "aut"),
              person("Shahina",  "Hayat",      email = "shahina.hayat@hotmail.com",        role = "aut"),
@@ -19,8 +19,8 @@ Description:
   Across model formulae (with/without intercept, random effect, interaction or nesting).
   Across omics platforms (microarray, rnaseq, msproteomics, affinity proteomics, metabolomics).
   Across projection methods (pca, pls, sma, lda, spls, opls).
-  The enrichment analysis implementation is fast.
-  The contrastogram is intuitive to summarize contrast effects in complex designs.
+  It provides a fast enrichment analysis implementation.
+  And an intuitive contrastogram visualisation to summarize contrast effects in complex designs.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
