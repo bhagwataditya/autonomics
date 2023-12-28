@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Unified Statistal Modeling of Omics Data
-Version: 1.11.26
+Version: 1.11.27
 Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Richard",  "Cotton",     email = "richierocks@gmail.com",            role = "aut"),
              person("Shahina",  "Hayat",      email = "shahina.hayat@hotmail.com",        role = "aut"),
@@ -25,8 +25,11 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
-biocViews: DataImport, DimensionReduction, GeneExpression, MassSpectrometry, 
-            Preprocessing, PrincipalComponent, RNASeq, Software, Transcription
+biocViews:  Software, DataImport, Preprocessing, 
+            DimensionReduction, PrincipalComponent, 
+            Regression, DifferentialExpression, GeneSetEnrichment, 
+            Transcriptomics, Transcription, GeneExpression, RNASeq, Microarray,
+            Proteomics, Metabolomics, MassSpectrometry,
 BugReports: https://github.com/bhagwataditya/autonomics 
 URL: https://github.com/bhagwataditya/autonomics
 RoxygenNote: 7.2.3
