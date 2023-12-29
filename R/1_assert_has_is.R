@@ -276,7 +276,9 @@ assert_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
 #' @export
 is_scalar_subset <- function(x, y, .xname = get_name_in_parent(x), .yname = get_name_in_parent(y)){
     if (!(ok <- is_scalar(x, .xname = .xname)))                       return(ok)
-    if (!(ok <- is_subset(x, y, .xname = .xname, .yname = .yname)))   return(ok)
+    if (!(ok <- is_subset(x, y, .xname = .xname, .yname = .yname))){
+        return(false("%s is not in %s", .xname, .yname))
+    }
     return(TRUE)
 }
 
@@ -348,5 +350,144 @@ is_fraction <- function(x, .xname = get_name_in_parent(x)){
 #' @export
 assert_is_fraction <- function(x, .xname = get_name_in_parent(x)){
     assert_engine(is_fraction, x, .xname = .xname)
+}
+
+
+#---------------------
+
+
+#' Variable has multiple levels?
+#' @param  x      factor 
+#' @param .xname  string
+#' @return  TRUE or false
+#' @examples
+#' # numeric
+#'     a <- numeric();                               has_multiple_levels(a)
+#'     a <- c(1, 1);                                 has_multiple_levels(a)
+#'     a <- c(1, 2);                                 has_multiple_levels(a)
+#' # character
+#'     a <- character();                             has_multiple_levels(a)
+#'     a <- c('A', 'A');                             has_multiple_levels(a)
+#'     a <- c('A', 'B');                             has_multiple_levels(a)
+#' # factor
+#'     a <- factor();                                has_multiple_levels(a)
+#'     a <- factor(c('A', 'A'));                     has_multiple_levels(a)
+#'     a <- factor(c('A', 'B'));                     has_multiple_levels(a)
+#' # data.table
+#'     dt <- data.table(a = factor());               has_multiple_levels(dt, 'b')
+#'     dt <- data.table(a = factor());               has_multiple_levels(dt, 'a')
+#'     dt <- data.table(a = factor());               has_multiple_levels(dt, 'a')
+#'     dt <- data.table(a = factor(c('A', 'A')));    has_multiple_levels(dt, 'a')
+#'     dt <- data.table(a = factor(c('A', 'B')));    has_multiple_levels(dt, 'a')
+#' # sumexp
+#'     object <- matrix(1:9, nrow = 3)
+#'     rownames(object) <- sprintf('f%d', 1:3)
+#'     colnames(object) <- sprintf('s%d', 1:3)
+#'     object <- list(exprs = object)
+#'     object %<>% SummarizedExperiment()
+#'     object$subgroup <- c('A', 'A', 'A');          has_multiple_levels(object, 'group')
+#'     object$subgroup <- c('A', 'A', 'A');          has_multiple_levels(object, 'subgroup')
+#'     object$subgroup <- c('A', 'B', 'A');          has_multiple_levels(object, 'subgroup')
+#' @export     
+has_multiple_levels <- function(x, ...)  UseMethod('has_multiple_levels')
+
+
+#' @rdname has_multiple_levels
+#' @export
+has_multiple_levels.character <- function(x, .xname = get_name_in_parent(x)){
+    n <- length(unique(x))
+    if (! n > 1)  return(false('%s has only %d level(s)', .xname, n))
+    TRUE
+}
+
+
+#' @rdname has_multiple_levels
+#' @export
+has_multiple_levels.factor <- function(x, .xname = get_name_in_parent(x)){
+    has_multiple_levels.character(x = x, .xname = .xname)
+}
+
+
+#' @rdname has_multiple_levels
+#' @export
+has_multiple_levels.numeric <- function(x, .xname = get_name_in_parent(x)){
+    has_multiple_levels.character(x = x, .xname = .xname)
+}
+
+
+#' @rdname has_multiple_levels
+#' @export
+has_multiple_levels.data.table <- function(
+    x,   # data.table
+    y,   # var
+    .xname = get_name_in_parent(x),
+    .yname = get_name_in_parent(y)
+){
+    if (!(ok <- is_scalar_subset(y, names(x), .xname = .yname, .yname = .xname)))  return(ok)
+    if (!(ok <- has_multiple_levels.factor(  x[[y]], .xname = .yname)))            return(ok)
+    TRUE
+}
+
+
+#' @rdname has_multiple_levels
+#' @export
+has_multiple_levels.SummarizedExperiment <- function(
+     x,  # sumexp
+     y,  # svar
+    .xname = get_name_in_parent(x),
+    .yname = get_name_in_parent(y)
+){
+    if(!(ok <- has_multiple_levels.data.table(
+                    sdt(x), y, .xname = .xname, .yname = .yname)))  return(ok)
+    TRUE
+}
+
+
+#---------------------
+
+
+#' Is valid formula
+#' @param x formula
+#' @param y SummarizedExperiment
+#' @param .xname string
+#' @param .yname string
+#' @return TRUE or false
+#' @examples 
+#' object <- matrix(1:9, nrow = 3)
+#' rownames(object) <- sprintf('f%d', 1:3)
+#' colnames(object) <- sprintf('s%d', 1:3)
+#' object <- list(exprs = object)
+#' object %<>% SummarizedExperiment()
+#' object$group    <- 'group0'
+#' object$subgroup <- c('A', 'B', 'C')
+#' svars(object)
+#'     is_valid_formula( 'condition',   object)   # not formula
+#'     is_valid_formula( ~condition,    object)   # not svar
+#'     is_valid_formula( ~group,        object)   # not multilevel
+#'     is_valid_formula( ~subgroup,     object)   # TRUE
+#'     is_valid_formula( ~0+subgroup,   object)   # TRUE
+#'     is_valid_formula( ~1,            object)   # TRUE
+#' assert_valid_formula( ~subgroup,     object)
+#' @export
+is_valid_formula <- function(
+    x,  # formula
+    y,  # object
+    .xname = get_name_in_parent(x), 
+    .yname = get_name_in_parent(y)
+){
+    if (!(ok <- is_one_sided_formula(x, .xname = .xname)))                             return(ok)
+    if (!(ok <- is_subset(all.vars(x), svars(y), .xname = .xname, .yname = .yname)))   return(ok)
+    for (var in all.vars(x)){
+        if (!(ok <- has_multiple_levels(y, var, .xname = .yname, .yname = .xname)))   return(ok)
+    }
+    TRUE
+}
+
+#' @rdname is_valid_formula
+#' @export
+assert_valid_formula <- function(
+    x, y, .xname = get_name_in_parent(x), .yname = get_name_in_parent(y)
+){
+    assert_engine(is_valid_formula, x = x, y = y, .xname = .xname, .yname = .yname)
 }
 

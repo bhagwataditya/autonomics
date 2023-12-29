@@ -771,12 +771,15 @@ explicitly_compute_voom_weights <- function(
 #' object$subgroup
 #' object %<>% preprocess_rnaseq_counts()
 #' @export
-preprocess_rnaseq_counts <- function(object, 
-    formula = ~ subgroup, block = NULL,
-    min_count = 10, pseudo = 0.5, tpm  = FALSE, 
-    cpm = TRUE, voom = TRUE, log2 = TRUE,
+preprocess_rnaseq_counts <- function(
+    object, 
+    formula = ~ subgroup, block = NULL, min_count = 10, pseudo = 0.5, 
+    tpm  = FALSE, cpm = TRUE, voom = TRUE, log2 = TRUE,
     verbose = TRUE, plot = TRUE
 ){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_valid_formula(formula, object)    # used in `filter_by_expr` and `voom` !
 # tpm
     if (verbose) message('\t\tPreprocess')
     if (tpm){   assert_is_subset('genesize', fvars(object))
@@ -824,8 +827,10 @@ preprocess_rnaseq_counts <- function(object,
 
 filter_by_expr <- function(object, formula, min_count, verbose){
     design <- create_design(object, formula = formula, verbose = FALSE)
-    idx <- filterByExpr(counts(object), design = design,#group=object$subgroup,
-                lib.size  = object$libsize, min.count = min_count)
+    idx <- filterByExpr( counts(object), 
+                         design = design, #group = object$subgroup,
+                      lib.size  = object$libsize,
+                      min.count = min_count)
     if (verbose) message('\t\t\tKeep ', sum(idx), '/', length(idx),
             ' features: count >= ', min_count, ' (', formula2str(formula), ')')
     object %<>% extract(idx, )

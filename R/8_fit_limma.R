@@ -777,8 +777,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_is_formula(formula)
-    assert_is_subset(all.vars(formula), svars(object))
+    assert_valid_formula(formula, object)
     assert_is_a_bool(drop)
     assert_is_matrix(design)
     assert_is_subset(coefs, colnames(design))

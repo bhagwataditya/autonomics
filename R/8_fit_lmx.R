@@ -319,8 +319,7 @@ fit_lmx <- function(
 # Assert
     assert_is_valid_sumexp(object)
     assert_scalar_subset(fit, c('lm', 'lme', 'lmer'))
-    assert_is_formula(formula)
-    assert_is_subset(all.vars(formula), svars(object))
+    assert_valid_formula(formula, object)
     assert_is_a_bool(drop)
     if (!is.null(weightvar)){
         assert_is_character(weightvar)

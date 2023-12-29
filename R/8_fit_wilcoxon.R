@@ -99,8 +99,7 @@ fit_wilcoxon <- function(
 ){
 # assert
     assert_is_valid_sumexp(object)
-    assert_is_formula(formula)
-    assert_scalar_subset(all.vars(formula), svars(object))
+    assert_valid_formula(formula)
     subgroupvar <- all_vars(formula)[1]
     if (is.null(contrasts)){
         contrasts <- colnames(create_design(object, formula = formula, drop = TRUE, codingfun = codingfun))[-1]
