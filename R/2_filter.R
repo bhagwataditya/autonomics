@@ -239,6 +239,8 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 }
 
 
+#' Intersect features
+#' 
 #' Tag intersecting features
 #' @param object    SummarizedExperiment
 #' @param keyvar    string´: intersection fvar
@@ -251,9 +253,9 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 #' file <- download_data('atkin.somascan.adat')
 #' object <- read_somascan(file)
 #' features <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = 'SYMBOL')
-#' object %<>% tag_intersecting_features(keyvar = 'EntrezGeneSymbol', sep = ' ', features)
+#' object %<>% intersect_features(keyvar = 'EntrezGeneSymbol', sep = ' ', features)
 #' @export
-tag_intersecting_features <- function(
+intersect_features <- function(
     object, keyvar, sep, features, tagvar = get_name_in_parent(features), verbose = TRUE
 ){
 # Assert
