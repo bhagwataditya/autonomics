@@ -180,9 +180,9 @@ abstract_fit <- function(
 }
 
     
-#' Analyze enrichment
+#' Analyze contrast enrichment
 #' 
-#' Are up / downregulated genes enriched in geneset?
+#' Contrast genes enriched in pathway?
 #' 
 #' @param object   \code{SummarizedExperiment}
 #' @param coldt    \code{data.table}, e.g. \code{\link{read_msigdt}}
@@ -203,8 +203,8 @@ abstract_fit <- function(
 #' fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #' coldt <- read_msigdt(collections = 'gobp')
 #' coldt
-#' enrichdt  <- enrichment(object, coldt, by = 'gene', sep = ' ')
-#' enrichdt2 <- enrichment(object, coldt, by = 'gene', sep = ' ', fast = FALSE)
+#' enrichdt  <- contrast_enrichment(object, coldt, by = 'gene', sep = ' ')
+#' enrichdt2 <- contrast_enrichment(object, coldt, by = 'gene', sep = ' ', fast = FALSE)
 #' @details
 #' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
 #' Results are returned in a data.table
@@ -227,7 +227,7 @@ abstract_fit <- function(
 #' }
 #' @importFrom stats phyper
 #' @export
-enrichment <- function(
+contrast_enrichment <- function(
     object, 
     coldt, 
     by              = 'gene', 
