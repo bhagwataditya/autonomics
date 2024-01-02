@@ -239,36 +239,38 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 }
 
 
-#' Keep intersecting features
+#' Tag intersecting features
 #' @param object    SummarizedExperiment
-#' @param fvar      string
-#' @param sep       string
-#' @param features  character vector
+#' @param keyvar    string´: intersection fvar
+#' @param sep       string : keyvar collapse separator
+#' @param features  character vector : intersection set
+#' @param tagvar    string : 
 #' @param verbose   TRUE or FALSE
+#' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin.somascan.adat')
 #' object <- read_somascan(file)
 #' features <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = 'SYMBOL')
-#' keep_intersecting_features(object, fvar = 'EntrezGeneSymbol', sep = ' ', features)
+#' object %<>% tag_intersecting_features(keyvar = 'EntrezGeneSymbol', sep = ' ', features)
 #' @export
-keep_intersecting_features <- function(object, fvar, sep, features, verbose = TRUE){
+tag_intersecting_features <- function(
+    object, keyvar, sep, features, tagvar = get_name_in_parent(features), verbose = TRUE
+){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_scalar_subset(fvar, fvars(object))
+    assert_scalar_subset(keyvar, fvars(object))
     assert_is_a_string(sep)
     assert_is_character(features)
+    assert_is_a_string(tagvar)
     assert_is_a_bool(verbose)
-    intersection <- NULL
 # Intersect
-    fdt0 <- fdt(object)[, c('feature_id', fvar), with = FALSE ]
-    fdt0 %<>% uncollapse(tidyselect::all_of(fvar), sep = sep)
-    fdt0 %<>% extract(get(fvar) %in% features)
+    fdt0 <- fdt(object)[, c('feature_id', keyvar), with = FALSE ]
+    fdt0 %<>% uncollapse(tidyselect::all_of(keyvar), sep = sep)
+    fdt0 %<>% extract(get(keyvar) %in% features)
 # Filter
     idx <- fdt(object)$feature_id %in% unique(fdt0$feature_id)
-    fdt(object)$intersection <- FALSE
-    fdt(object)$intersection[idx] <- TRUE
-    object %<>% filter_features(intersection == TRUE, verbose = verbose)
-    fdt(object)$intersection <- NULL
+    fdt(object)[[tagvar]]      <- FALSE
+    fdt(object)[[tagvar]][idx] <- TRUE
     object
 }
 

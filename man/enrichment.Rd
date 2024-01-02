@@ -64,7 +64,7 @@ Results are returned in a data.table
    p.coef.upDETECTED     \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
    p.coef.downDETECTED   \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
    p.coef.updownDETECTED \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
-   p.coef.updownGENOME   \tab : prob to randomly select this many (or more) up OR downregulated genes (among genome   genes)      \cr
+   p.coef.updownGENOME   \tab : prob to randomly select this many (or more) up OR downregulated genes (among genome   genes) \cr
    p.detectedgGENOME     \tab : prob to randomly select this many (or more) detected genes (among genome genes)
 }
 }
