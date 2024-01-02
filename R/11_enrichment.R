@@ -145,7 +145,41 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 }
 
 
+#' Abstract model fit
+#' @param object            SummarizedExperiment
+#' @param fit               character vector
+#' @param coef              character vector
+#' @param significancevar  'p' or 'fdr'
+#' @param significance      fraction : pvalue cutoff
+#' @return SummarizedExperiment
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file, fit = 'limma', coef = 't3')
+#' object %<>% abstract_fit()
+#' fdt(object)
+#' @export
+abstract_fit <- function(
+    object, fit = fits(object), coef = coefs(object), 
+    significancevar = 'p', significance = 0.05
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_is_subset(fit,   fits(object))
+    assert_is_subset(coef, coefs(object))
+# Abstract
+    for ( curfit in fit){
+    for (curcoef in coef){
+        abstractvar <- paste('abstract', curcoef, curfit, sep = FITSEP)
+            pvalues <- modelvec(object, 'p',      fit = curfit, coef = curcoef)
+       effectvalues <- modelvec(object, 'effect', fit = curfit, coef = curcoef)
+        fdt(object)[[ abstractvar ]] <- 'flat'
+        fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues<0 ] <- 'down' 
+        fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues>0 ] <- 'up' 
+    }}
+    object
+}
 
+    
 #' Analyze enrichment
 #' 
 #' Are up / downregulated genes enriched in geneset?
@@ -165,7 +199,7 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 
 #' @examples
 #' file <- download_data('atkin.somascan.adat')
-#' object <- read_somascan(file, fit = 'limma')
+#' object <- read_somascan(file, fit = 'limma', coefs = 't1')
 #' fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #' coldt <- read_msigdt(collections = 'gobp')
 #' coldt
@@ -222,17 +256,15 @@ enrichment <- function(
     fdt(object)[[by]] %<>% split_extract_fixed(sep, 1)
     gene <- in.up <- in.detected <- in.down <- in.updown <- `in` <- out <- NULL
 # Function
-     mdlfeatures <- function(direction)  modelfeatures(
-            object = object, fit = fit, coef = coef, fvar = by, 
-            significancevar = significancevar, significance = significance, 
-            effectdirection = direction,         effectsize = effectsize)
+    object %<>% abstract_fit(fit = fit, coef = coef, significancevar = significancevar)
+    abstractvar <- modelfvar(object, 'abstract', fit = fit, coef = coef)
 # Constants
           all <- unique(fdt(object)[[by]])
           all %<>% union(coldt[, unique(gene)])       # 17 987  all
      detected <- unique(fdt(object)[[by]])            #  1 084  detected
-       updown <- mdlfeatures(direction = '<>')        #     59  updown
-         down <- mdlfeatures(direction = '<' )        #     45  down
-           up <- mdlfeatures(direction = '>' )        #     14  up
+       updown <- fdt(object)[ get(abstractvar) %in% c('down', 'up') ][[ by ]] #     59  updown
+         down <- fdt(object)[ get(abstractvar) %in% c('down'      ) ][[ by ]] #     45  down
+           up <- fdt(object)[ get(abstractvar) %in% c('up'        ) ][[ by ]] #     14  up
     NOTdetected <- setdiff(all, detected)             # 16 903  not detected
     NOTupdown   <- setdiff(detected, updown)          #   1025  not updown
     NOTup       <- setdiff(detected, up)              #   1070  not up

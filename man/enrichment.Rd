@@ -70,7 +70,7 @@ Results are returned in a data.table
 }
 \examples{
 file <- download_data('atkin.somascan.adat')
-object <- read_somascan(file, fit = 'limma')
+object <- read_somascan(file, fit = 'limma', coefs = 't1')
 fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
 coldt <- read_msigdt(collections = 'gobp')
 coldt
