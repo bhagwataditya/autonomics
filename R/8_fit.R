@@ -386,7 +386,16 @@ fdrvar <- function(
     object, fit = fits(object), coef = default_coefs(object, fit = fit)
 ){
     modelfvar(object, quantity = 'fdr', fit = fit, coef = coef)
-}                   
+}
+
+#' @rdname modelfvar
+#' @export
+abstractvar <- function(
+    object, fit = fits(object), coef = default_coefs(object, fit = fit)
+){                                          # cant use modelfvar because its
+    y <- paste(coef, fit, sep = FITSEP)     #           t1~limma
+    if (y %in% fvars(object)) y else NULL   #     not p~t1~limma
+}
 
 #------------------------------------------------------------------------------
 #

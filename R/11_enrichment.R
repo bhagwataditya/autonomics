@@ -120,26 +120,26 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 #         object <- read_somascan(file)
 #         detected <- fdt(object)$EntrezGeneSymbol %>% split_extract_fixed(' ', 1) %>% unique()
 #     # universe and set
-#         coldt <- read_msigdt()
-#         universe <- unique(coldt[, gene])  # 19 669
-#         set <- coldt[set == 'GOBP_GLYCOLYTIC_PROCESS', gene]
+#         pathwaydt <- read_msigdt()
+#         universe <- unique(pathwaydt[, gene])  # 19 669
+#         set <- pathwaydt[set == 'GOBP_GLYCOLYTIC_PROCESS', gene]
 #     # enrichment
 #         .enrichdt <- .enrichment(detected, set)
-.enrichment <- function(selected, set, universe){
-    dt <- data.table(`in`         = nintersect(universe, set),
-                      in.selected = nintersect(selected, set),
-                      out         =   nsetdiff(universe, set),
-                      selected    =     length(selected))
+.enrichment <- function(selected, pathway, universe){
+    dt <- data.table(`in`         =  count_in(universe, pathway),
+                      in.selected =  count_in(selected, pathway),
+                      out         = count_out(universe, pathway),
+                      selected    = length(selected))
     dt[, p.selected := 1 - phyper(in.selected, `in`, out, selected)]
     dt[]
 }
 
-.enrichmentVERBOSE <- function(selected, set, universe){
-    dt <- data.table(`in`         = nintersect(universe, set),
-                      in.selected = nintersect(selected, set),
-                      out         =   nsetdiff(universe, set),
+.enrichmentVERBOSE <- function(selected, pathway, universe){
+    dt <- data.table(`in`         =  count_in(universe, pathway),
+                      in.selected =  count_in(selected, pathway),
+                      out         = count_out(universe, pathway),
                       selected    =     length(selected),
-                in.selected.genes = collapse(intersect(selected, set), ' '))
+                in.selected.genes = collapse(intersect(selected, pathway), ' '))
     dt[, p.selected := 1 - phyper(in.selected, `in`, out, selected)]
     dt[]
 }
@@ -169,175 +169,319 @@ abstract_fit <- function(
 # Abstract
     for ( curfit in fit){
     for (curcoef in coef){
-        abstractvar <- paste('abstract', curcoef, curfit, sep = FITSEP)
+        abstractvar <- paste(curcoef, curfit, sep = FITSEP)
             pvalues <- modelvec(object, 'p',      fit = curfit, coef = curcoef)
        effectvalues <- modelvec(object, 'effect', fit = curfit, coef = curcoef)
         fdt(object)[[ abstractvar ]] <- 'flat'
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues<0 ] <- 'down' 
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues>0 ] <- 'up' 
+        fdt(object)[[ abstractvar ]] %<>% factor(c('flat', 'up', 'down'))
     }}
     object
 }
 
+#' Enrichment analysis
+#' 
+#' Are selected genes enriched in pathway?
+#'
+#' @param object     \code{SummarizedExperiment}
+#' @param pathwaydt  pathway \code{data.table}
+#' @param selecvar   selection fvar
+#' @param genevar    gene fvar
+#' @param genesep    gene separator (string)
+#' @param verbose    TRUE or FALSE
+#' @param detailed   whether to report results in detail
+#' @examples
+#' # Read
+#'     file <- download_data('atkin.somascan.adat')
+#'     object <- read_somascan(file, fit = 'limma', coefs = 't1')
+#'     fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
+#'     object %<>% abstract_fit()
+#' # Enrichment Analysis
+#'     pathwaydt <- read_msigdt(collections = 'gobp')
+#'     enrichres <- enrichment(object, pathwaydt)
+#'        altres <-  altenrich(object, pathwaydt)    # alternative implementation
+#'     all(enrichres == altres)                      # both identical
+#' @details
+#' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
+#' Results are returned in a data.table
+#' \tabular{rl}{
+#'    in                \tab :                  genes      in pathway \cr
+#'    in.det            \tab :         detected genes      in pathway \cr
+#'    in.sel            \tab : up/downregulated genes      in pathway \cr
+#'    in.up(.genes)     \tab :      upregulated genes      in pathway \cr
+#'    in.down(.genes)   \tab :    downregulated genes      in pathway \cr
+#'    out               \tab :                  genes outside pathway \cr
+#'    det               \tab :         detected genes (in + out)      \cr
+#'    sel               \tab : up/downregulated genes (in + out)      \cr
+#'    up                \tab :      upregulated genes (in + out)      \cr
+#'    down              \tab :    downregulated genes (in + out)      \cr
+#'    p.coef.upDET      \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
+#'    p.coef.downDET    \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
+#'    p.coef.selDET     \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
+#'    p.coef.selGEN     \tab : prob to randomly select this many (or more) up OR downregulated genes (among genome   genes) \cr
+#'    p.detGEN          \tab : prob to randomly select this many (or more) detected genes (among genome genes)
+#' }
+#' @importFrom stats phyper
+#' @export
+enrichment <- function(
+    object,
+    pathwaydt, 
+    selecvar = abstractvar(object, fit = fits(object)[1], coef = coefs(object)[1]), 
+    genevar  = 'gene', 
+    genesep  = '[ ,;]',
+    n        = 3,
+    verbose  = TRUE,
+    detailed = TRUE
+){
+# Assert
+    assert_is_valid_sumexp(object)
+    assert_is_data.table(pathwaydt)
+    assert_scalar_subset(selecvar, fvars(object))
+    assert_is_factor(fdt(object)[[selecvar]])
+    assert_is_non_scalar(levels(fdt(object)[[selecvar]]))
+    assert_scalar_subset( genevar, fvars(object))
+    assert_scalar_subset( genevar, names(pathwaydt))
+    assert_all_are_non_missing_nor_empty_character(fdt(object)[[genevar]])
+    assert_all_are_non_missing_nor_empty_character(  pathwaydt[[genevar]])
+    if (!is.null(genesep))  assert_is_a_string(genesep)
+    assert_is_a_bool(verbose)
+    if (verbose){
+        cmessage('\tAre pathways enriched in `%s` genes ?', selecvar)
+        cmessage("\t\tfdt(.)$%s  %%<>%%  split_extract_regex('%s', 1)", genevar, genesep) }
+    fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)
+    `in` <- in.detected <- in.selected <- detected <- selected <- out <- NULL
+# Sets
+    select_genes <- function(seleclevel)  fdt(object)[get(selecvar) %in% seleclevel][[genevar]]
+    seleclevels <- levels(fdt(object)[[selecvar]]) %>% extract(-1) %>% set_names(., .)
+    SETall  <- unique(fdt(object)[[genevar]]) %>% union(pathwaydt[, unique(gene)])
+    SETdet  <- unique(fdt(object)[[genevar]])
+    SETSsel <- lapply(seleclevels, select_genes)
+# Counts
+    padcap <- function(x) x %>% stringi::stri_pad_left(8) %>% toupper()
+    if (verbose){
+           npathway <- length(unique(pathwaydt$set))
+        ncollection <- length(unique(pathwaydt$collection))
+       cmessage('\t\t%d pathways from %d collection(s)', npathway, ncollection)
+        message( c(
+            sprintf(        '\t\tAre %s genes enriched in pathway (among DETECTED) ?', padcap(seleclevels[ 1])),
+            sprintf(      '\n\t\t    %s genes enriched in pathway (among DETECTED) ?', padcap(seleclevels[-1])),
+            sprintf('\n\t\t    SELECTED genes enriched in pathway (among DETECTED) ?'), 
+            sprintf('\n\t\t    SELECTED genes enriched in pathway (among   GENOME) ?'), 
+            sprintf('\n\t\t    DETECTED genes enriched in pathway (among   GENOME) ?')))
+    }
+    enrichdt <- pathwaydt[ , c( 
+       `in`    = SETall                 %>%     count_in(gene),
+        in.det = SETdet                 %>%     count_in(gene),
+        in.sel = Reduce(union, SETSsel) %>%     count_in(gene),
+                 SETSsel                %>%     count_in(gene)       %>% set_names(paste0('in.', names(.))),
+                 SETSsel                %>%  collapse_in(gene, ' ')  %>% set_names(paste0('in.', names(.), '.genes')),
+        out    = SETall                 %>%    count_out(gene),
+        det    = SETdet                 %>%     length(),
+        sel    = Reduce(union, SETSsel) %>%     length(),
+                 SETSsel                %>%     lapply(length)
+    ),  by = 'set' ]
+# pvalues
+    pselDET <- sprintf( 'p.%s.selDET', selecvar )
+    pselGEN <- sprintf( 'p.%s.selGEN', selecvar )
+    pdetGEN <- sprintf( 'p.detGEN') 
+    for (selvar in names(SETSsel)){
+        invar <- sprintf('in.%s', selvar )
+        pvar  <- sprintf('p.%s.%sDET', selecvar, selvar )
+        enrichdt[, ( pvar    ) := 1 - phyper(  get(invar),  in.det,  det - in.det, get(selvar)), by = 'set']  
+    }
+        enrichdt[, ( pselDET ) := 1 - phyper( in.sel,  in.det,  det - in.det,    sel ), by = 'set']
+        enrichdt[, ( pselGEN ) := 1 - phyper( in.sel, `in`,     out,             sel ), by = 'set']
+        enrichdt[, ( pdetGEN ) := 1 - phyper( in.det, `in`,     out,             det ), by = 'set']
+# Return
+    if (!detailed){
+        pcols    <- names(enrichdt) %>% extract(stri_startswith_fixed(., 'p.'))
+        genecols <- names(enrichdt) %>% extract(stri_endswith_fixed(., '.genes'))
+        enrichdt %<>% extract(, c('set', pcols, genecols), with = FALSE)
+    }                                          # n=0 -> p=0 always (1 way  only to choose 0 from 0)
+    enrichdt %<>% extract(in.det >= n)         # n=1 -> p=0 always (1 way  only to choose 1 from 1)
+    enrichdt %<>% extract(order(get(pselDET))) # n=2 -> p=0 often  (2 ways only to choose 2 from 2)
+    enrichdt[]
+}
+
     
-#' Analyze contrast enrichment
-#' 
-#' Contrast genes enriched in pathway?
-#' 
-#' @param object   \code{SummarizedExperiment}
-#' @param coldt    \code{data.table}, e.g. \code{\link{read_msigdt}}
-#' @param by       \code{fvar}
-#' @param sep      \code{string} or \code{NULL}
-#' @param coef \code{string} in \code{coefs(object)}
-#' @param fit      \code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}
+#' Alternative Enrichment Analysis
+#' @details
+#' This is an alternative enrichent analysis implementation.
+#' It is more modular: uses four times \code{.enrichment(VERBOSE)?} as backend.
+#' But also four times slower than \code{enrichment}, so not recommended.
+#' It is retaind for testing purposes.
+#' @details This alternative enrichment implementation
+#' @param object     \code{SummarizedExperiment}
+#' @param pathwaydt  \code{data.table}, e.g. \code{\link{read_msigdt}}
+#' @param genevar    \code{gene fvar}
+#' @param genesep    \code{string} or \code{NULL}
+#' @param coef       \code{string} in \code{coefs(object)}
+#' @param fit        \code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}
 #' @param significancevar 'p' or 'fdr'
 #' @param significance     significance cutoff
 #' @param effectsize       effectsize   cutoff
 #' @param n       no of detected genes required (for geneset to be examined)
 #' @param verbose TRUE or FALSE
-#' @param fast    TRUE or FALSE : use fast implementation (or modular)?
-
-#' @examples
-#' file <- download_data('atkin.somascan.adat')
-#' object <- read_somascan(file, fit = 'limma', coefs = 't1')
-#' fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
-#' coldt <- read_msigdt(collections = 'gobp')
-#' coldt
-#' enrichdt  <- contrast_enrichment(object, coldt, by = 'gene', sep = ' ')
-#' enrichdt2 <- contrast_enrichment(object, coldt, by = 'gene', sep = ' ', fast = FALSE)
-#' @details
-#' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
-#' Results are returned in a data.table
-#' \tabular{rl}{
-#'    in                    \tab :                  genes      in pathway \cr
-#'    in.detected           \tab :         detected genes      in pathway \cr
-#'    in.updown             \tab : up/downregulated genes      in pathway \cr
-#'    in.up(.genes)         \tab :      upregulated genes      in pathway \cr
-#'    in.down(.genes)       \tab :    downregulated genes      in pathway \cr
-#'    out                   \tab :                  genes outside pathway \cr
-#'    detected              \tab :         detected genes (in + out)      \cr
-#'    updown                \tab : up/downregulated genes (in + out)      \cr
-#'    up                    \tab :      upregulated genes (in + out)      \cr
-#'    down                  \tab :    downregulated genes (in + out)      \cr
-#'    p.coef.upDETECTED     \tab : prob to randomly select this many (or more)   upregulated genes (among detected genes)       \cr
-#'    p.coef.downDETECTED   \tab : prob to randomly select this many (or more) downregulated genes (among detected genes)       \cr
-#'    p.coef.updownDETECTED \tab : prob to randomly select this many (or more) up OR downregulated genes (among detected genes) \cr
-#'    p.coef.updownGENOME   \tab : prob to randomly select this many (or more) up OR downregulated genes (among genome   genes) \cr
-#'    p.detectedgGENOME     \tab : prob to randomly select this many (or more) detected genes (among genome genes)
-#' }
+#' @seealso [enrichment()]
 #' @importFrom stats phyper
 #' @export
-contrast_enrichment <- function(
+altenrich <- function(
     object, 
-    coldt, 
-    by              = 'gene', 
-    sep, 
+    pathwaydt, 
+    genevar         = 'gene', 
+    genesep         = '[ ,;]',
     coef            = default_coefs(object)[1], 
     fit             = fits(object)[1],
     significancevar = 'p',
     significance    = 0.05,
     effectsize      = 0,
     n               = 3, 
-    verbose         = TRUE, 
-    fast            = TRUE
+    verbose         = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    if (is.null(coldt)) return(object)
-    assert_is_data.table(   coldt)
-    assert_scalar_subset(by, fvars(object))
-    assert_scalar_subset(by, names(coldt ))
-    assert_all_are_non_missing_nor_empty_character(fdt(object)[[by]])
-    assert_all_are_non_missing_nor_empty_character(      coldt[[by]])
-    if (!is.null(sep))  assert_is_a_string(sep)
+    if (is.null(pathwaydt)) return(object)
+    assert_is_data.table(   pathwaydt)
+    assert_scalar_subset(genevar, fvars(object))
+    assert_scalar_subset(genevar, names(pathwaydt ))
+    assert_all_are_non_missing_nor_empty_character(fdt(object)[[genevar]])
+    assert_all_are_non_missing_nor_empty_character(  pathwaydt[[genevar]])
+    if (!is.null(genesep))  assert_is_a_string(genesep)
     assert_scalar_subset(coef, coefs(object))
     assert_scalar_subset(fit, fits(object))
-    genes0 <- fdt(object)[[by]]
-    fdt(object)[[by]] %<>% split_extract_fixed(sep, 1)
-    gene <- in.up <- in.detected <- in.down <- in.updown <- `in` <- out <- NULL
+    genes0 <- fdt(object)[[genevar]]
+    fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)
+    gene <- in.up <- in.detected <- in.down <- in.selected <- `in` <- out <- NULL
 # Function
     object %<>% abstract_fit(fit = fit, coef = coef, significancevar = significancevar)
-    abstractvar <- modelfvar(object, 'abstract', fit = fit, coef = coef)
+    abstractvar <- abstractvar(object, fit = fit, coef = coef)
 # Constants
-          all <- unique(fdt(object)[[by]])
-          all %<>% union(coldt[, unique(gene)])       # 17 987  all
-     detected <- unique(fdt(object)[[by]])            #  1 084  detected
-       updown <- fdt(object)[ get(abstractvar) %in% c('down', 'up') ][[ by ]] #     59  updown
-         down <- fdt(object)[ get(abstractvar) %in% c('down'      ) ][[ by ]] #     45  down
-           up <- fdt(object)[ get(abstractvar) %in% c('up'        ) ][[ by ]] #     14  up
-    NOTdetected <- setdiff(all, detected)             # 16 903  not detected
-    NOTupdown   <- setdiff(detected, updown)          #   1025  not updown
-    NOTup       <- setdiff(detected, up)              #   1070  not up
-    NOTdown     <- setdiff(detected, down)            #   1039  not down
-    upvar     <- sprintf('p.%s.upDETECTED',     coef)
-    downvar   <- sprintf('p.%s.downDETECTED',   coef)
-    updownvar <- sprintf('p.%s.updownDETECTED', coef)
-    naivevar  <- sprintf('p.%s.updownGENOME',   coef)
-    detectedvar <- 'p.detectedGENOME'
+     all <- unique(fdt(object)[[genevar]])
+     all %<>% union(pathwaydt[, unique(gene)])                                 # 17 987  all
+     det <- unique(fdt(object)[[genevar]])                                     #  1 084  detected
+     sel <- fdt(object)[ get(abstractvar) %in% c('down', 'up') ][[ genevar ]]  #     59  selected
+    down <- fdt(object)[ get(abstractvar) %in% c('down'      ) ][[ genevar ]]  #     45  down
+      up <- fdt(object)[ get(abstractvar) %in% c('up'        ) ][[ genevar ]]  #     14  up
+          upvar <- sprintf('p.%s~%s.upDET',   coef, fit)
+        downvar <- sprintf('p.%s~%s.downDET', coef, fit)
+    selectedvar <- sprintf('p.%s~%s.selDET',  coef, fit)
+       naivevar <- sprintf('p.%s~%s.selGEN',  coef, fit)
+    detectedvar <- 'p.detGEN'
 # Message
     if (verbose){ 
-        if (fast)  cmessage('\tAnalyze enrichment (fast)') else cmessage('\tAnalyze enrichment (modular)')
+        cmessage('\tAnalyze enrichment (modular)')
         cmessage( '\t\tIs pathway enriched in       UP genes (among DETECTED genes) ?')
         cmessage( '\t\tIs pathway enriched in     DOWN genes (among DETECTED genes) ?')
         cmessage( '\t\tIs pathway enriched in  UP/DOWN genes (among DETECTED genes) ?')
         cmessage( '\t\tIs pathway enriched in  UP/DOWN genes (among GENOME   genes) ?')
         cmessage( '\t\tIs pathway enriched in DETECTED genes (among GENOME   genes) ?')  }
 # Enrichment
-    if (fast){
-        enrichdt <- coldt[,  .( `in`             =          nintersect(all,      gene),       # in
-                                 in.detected     =          nintersect(detected, gene),       # in: detected
-                                 in.updown       =          nintersect(updown,   gene),       # in: updown
-                                 in.up           =          nintersect(up,       gene),       # in: up
-                                 in.down         =          nintersect(down,     gene),       # in: down
-                                 in.up.genes     =  collapse(intersect(up,       gene), ' '), #
-                                 in.down.genes   =  collapse(intersect(down,     gene), ' '), #
-                                 out             =            nsetdiff(all,      gene),       # out
-                                 detected        = length(detected),                          # detected
-                                 updown          = length(updown),                            # updown
-                                 up              = length(up),                                # up
-                                 down            = length(down)),                             # down
-                        by = 'set'  ]
-        enrichdt[, (      upvar) := 1- phyper(in.up,        in.detected, detected - in.detected,     up),  by = 'set']
-        enrichdt[, (    downvar) := 1- phyper(in.down,      in.detected, detected - in.detected,   down),  by = 'set']
-        enrichdt[, (  updownvar) := 1- phyper(in.updown,    in.detected, detected - in.detected, updown),  by = 'set']
-        enrichdt[, (   naivevar) := 1- phyper(in.updown,   `in`,         out,                    updown),  by = 'set']
-        enrichdt[, (detectedvar) := 1- phyper(in.detected, `in`,         out,                  detected),  by = 'set']
-    } else {
-              upDT <- coldt[, .enrichmentVERBOSE(  up, gene, detected), by = 'set']
-            downDT <- coldt[, .enrichmentVERBOSE(down, gene, detected), by = 'set']
-          updownDT <- coldt[, .enrichment(     updown, gene, detected), by = 'set']
-          updownGN <- coldt[, .enrichment(     updown, gene,      all), by = 'set']
-        detectedGN <- coldt[, .enrichment(   detected, gene,      all), by = 'set']
-        assert_are_identical(upDT$set,     downDT$set)
-        assert_are_identical(upDT$set,   updownDT$set)
-        assert_are_identical(upDT$set,   updownGN$set)
-        assert_are_identical(upDT$set, detectedGN$set)
-        enrichdt <- data.table( set           =       upDT$set,
-                               `in`           = detectedGN$`in`, 
-                                in.detected   = detectedGN$in.selected,
-                                in.updown     =   updownDT$in.selected,
-                                in.up         =       upDT$in.selected,
-                                in.down       =     downDT$selected,
-                                in.up.genes   =       upDT$in.selected.genes,
-                                in.down.genes =     downDT$in.selected.genes,
-                                out           = detectedGN$out,
-                                detected      = detectedGN$selected,
-                                updown        =   updownDT$selected,
-                                up            =       upDT$selected,
-                                down          =     downDT$selected )
-        enrichdt[, (      upvar) :=       upDT$p.selected]
-        enrichdt[, (    downvar) :=     downDT$p.selected]
-        enrichdt[, (  updownvar) :=   updownDT$p.selected]
-        enrichdt[, (   naivevar) :=   updownGN$p.selected]
-        enrichdt[, (detectedvar) := detectedGN$p.selected]
-    }
+         upDT <- pathwaydt[ , .enrichmentVERBOSE(   up, gene, det ), by = 'set' ]
+       downDT <- pathwaydt[ , .enrichmentVERBOSE( down, gene, det ), by = 'set' ]
+        selDT <- pathwaydt[ , .enrichment(         sel, gene, det ), by = 'set' ]
+        selGN <- pathwaydt[ , .enrichment(         sel, gene, all ), by = 'set' ]
+        detGN <- pathwaydt[ , .enrichment(         det, gene, all ), by = 'set' ]
+        assert_are_identical(upDT$set, downDT$set)
+        assert_are_identical(upDT$set,  selDT$set)
+        assert_are_identical(upDT$set,  selGN$set)
+        assert_are_identical(upDT$set,  detGN$set)
+        enrichdt <- data.table( set           =    upDT$set,
+                               `in`           =   detGN$`in`, 
+                                in.det        =   detGN$in.selected,
+                                in.sel        =   selDT$in.selected,
+                                in.up         =    upDT$in.selected,
+                                in.down       =  downDT$in.selected,
+                                in.up.genes   =    upDT$in.selected.genes,
+                                in.down.genes =  downDT$in.selected.genes,
+                                out           =   detGN$out,
+                                det           =   detGN$selected,
+                                sel           =   selDT$selected,
+                                up            =    upDT$selected,
+                                down          =  downDT$selected )
+        enrichdt[, (      upvar) :=   upDT$p.selected]
+        enrichdt[, (    downvar) := downDT$p.selected]
+        enrichdt[, (selectedvar) :=  selDT$p.selected]
+        enrichdt[, (   naivevar) :=  selGN$p.selected]
+        enrichdt[, (detectedvar) :=  detGN$p.selected]
 # Return
-    usefuldt  <- enrichdt[in.detected >= n]
-    uselessdt <- enrichdt[in.detected <  n]
-    usefuldt %<>% extract(order(get(updownvar)))
+    usefuldt  <- enrichdt[in.det >= n]
+    uselessdt <- enrichdt[in.det <  n]
+    usefuldt %<>% extract(order(get(selectedvar)))
     usefuldt[]
 }
 
-    nsetdiff <- function(x, y)    length(base::setdiff(  x, y))
-  nintersect <- function(x, y)    length(base::intersect(x, y))
     collapse <- function(x, sep)  paste0(x, collapse = sep)
+
+
+#' Count/Collapse in/outside intersection
+#' @param x character OR list
+#' @param y character 
+#' @param ... used for S3 dispatch
+#' @return number OR numeric
+#' @examples
+#' # Sets
+#'    contrast1 <- c('a', 'b', 'c', 'd')
+#'      pathway <- c('c', 'd', 'e', 'f')
+#'    contrast2 <- c('e', 'f', 'g', 'h')
+#'
+#' # Count outside
+#'    count_out(contrast1, pathway)
+#'    count_out(list(contrast1 = contrast1, contrast2 = contrast2), pathway)
+#'
+#' # Count inside
+#'    count_in(contrast1, pathway)
+#'    count_in(list(contrast1 = contrast1, contrast2 = contrast2), pathway)
+#'
+#' # Collapse inside
+#'    collapse_in(contrast1, pathway, sep = ' ')
+#'    collapse_in(list(contrast1 = contrast1, contrast2 = contrast2), pathway, sep = ' ')
+#' @export
+count_in <- function(x, ...)  UseMethod('count_in', x)
+
+#' @rdname count_in
+#' @export
+count_in.character <- function(x, y)  length(intersect(x, y))
+
+#' @rdname count_in
+#' @export
+count_in.factor <- function(x, y)  count_in.character(x,y)
+
+#' @rdname count_in
+#' @export
+count_in.list <- function(x, y)    lapply(x, count_in, y = y)
+                            # dont vapply, list form required in data.table env
+
+#' @rdname count_in
+#' @export
+collapse_in <- function(x, ...) UseMethod('collapse_in')
+
+#' @rdname count_in
+#' @export
+collapse_in.character <- function(x, y, sep)  collapse(intersect(x, y), sep)
+
+#' @rdname count_in
+#' @export
+collapse_in.factor <- function(x, y, sep)  collapse_in.character(x, y, sep)
+
+#' @rdname count_in
+#' @export                         
+collapse_in.list <- function(x, y, sep)   lapply(x, collapse_in, y = y, sep = sep)
+                                   # dont vapply, list form required in data.table env
+
+#' @rdname count_in
+#' @export
+count_out <- function(x, ...)  UseMethod('count_out', x)
+
+#' @rdname count_in
+#' @export
+count_out.character <- function(x, y)  length(setdiff(x, y))
+
+#' @rdname count_in
+#' @export
+count_out.factor <- function(x, y)  count_setdiff.character(x,y)
+
+#' @rdname count_in
+#' @export
+count_out.list <- function(x, y)    lapply(x, count_out, y = y)
+                             # dont vapply, list form required in data.table env

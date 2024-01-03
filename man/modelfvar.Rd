@@ -6,6 +6,7 @@
 \alias{tvar}
 \alias{pvar}
 \alias{fdrvar}
+\alias{abstractvar}
 \alias{modelvec}
 \alias{effectvec}
 \alias{tvec}
@@ -36,6 +37,12 @@ tvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 pvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
 fdrvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+
+abstractvar(
+  object,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
 modelvec(
   object,
