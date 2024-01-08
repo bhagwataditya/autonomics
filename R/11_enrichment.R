@@ -180,28 +180,117 @@ abstract_fit <- function(
     object
 }
 
+
+#' group by level
+#' @param x named logical/character/factor
+#' @param ... S3 dispatch
+#' @return unnamed character
+#' @examples
+#' t1 <- c( KLF5 = 'up',  F11 = 'up', RIG = 'flat',   ABT1 = 'down')
+#' dt <- data.table( gene = c( 'KL5', 'F11', 'RIG',  'ABT1' ), 
+#'                     t1 = c( 'up',  'up',  'flat', 'down' ) )
+#' group_by_level(t1)                #  character
+#' group_by_level(factor(t1))        #     factor
+#' group_by_level(dt, 't1', 'gene')  # data.table
+#' @export
+group_by_level <- function(x, ...)  UseMethod('group_by_level', x)
+
+
+#' @rdname group_by_level
+#' @export
+group_by_level.character <- function(x){
+    fun <- function(y) names(x)[x == y]
+    Map(fun, unique(x))                          
+}
+
+#' @rdname group_by_level
+#' @export
+group_by_level.factor <- function(x){
+    y <- x
+    y %<>% as.character() 
+    y %<>% set_names(names(x))
+    group_by_level.character(y)
+}
+
+#' @rdname group_by_level
+#' @export
+group_by_level.data.table <- function(x, var, idvar){
+    y <- x[[var]]
+    names(y) <- x[[idvar]]
+    group_by_level(y)
+}
+
+#' logical to factor
+#' 
+#' switch between factor representations
+#' @param x           vector
+#' @param var         string
+#' @param falseprefix string
+#' @examples
+#' t1up <- c( TRUE,   FALSE,  TRUE)
+#' t1   <- c('flat', 'down', 'up' )  %>%  factor(., .)
+#' t1up
+#' logical2factor(t1up)
+#' factor2logical(t1)
+#' @export
+logical2factor <- function(
+    x, 
+    truelevel = get_name_in_parent(x),
+    falselevel = paste0('not', truelevel)
+){
+# Assert
+    assert_is_logical(x)
+# Convert
+    y <- rep(falselevel, length(x))
+    y[x] <- truelevel
+    y%<>% factor(c(truelevel, falselevel)) # level1 = (noninteresting) baseline
+# Return
+    y
+}
+
+#' @rdname logical2factor
+#' @export
+factor2logical <- function(x){
+# Assert
+    assert_is_factor(x)
+# Convert
+    y <- rep(FALSE, length(x))
+    y[x==x[1]] <- TRUE
+    y
+}
+
+
 #' Enrichment analysis
 #' 
 #' Are selected genes enriched in pathway?
 #'
-#' @param object     \code{SummarizedExperiment}
-#' @param pathwaydt  pathway \code{data.table}
-#' @param selecvar   selection fvar
-#' @param genevar    gene fvar
-#' @param genesep    gene separator (string)
-#' @param verbose    TRUE or FALSE
-#' @param detailed   whether to report results in detail
+#' @param object    \code{SummarizedExperiment}
+#' @param pathwaydt pathway \code{data.table}
+#' @param var       selection fvar
+#' @param levels    selection levels
+#' @param genevar   gene fvar
+#' @param genesep   gene separator (string)
+#' @param verbose   whether to msg
+#' @param genes     whether to report genes
 #' @examples
 #' # Read
 #'     file <- download_data('atkin.somascan.adat')
 #'     object <- read_somascan(file, fit = 'limma', coefs = 't1')
 #'     fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #'     object %<>% abstract_fit()
-#' # Enrichment Analysis
+#'     fdt(object)$flat <- fdt(object)$`t1~limma`
+#'     fdt(object)$flat %<>% factor2logical() %>% logical2factor('flat', 'updown')
+#' # Three usecases
 #'     pathwaydt <- read_msigdt(collections = 'gobp')
-#'     enrichres <- enrichment(object, pathwaydt)
-#'        altres <-  altenrich(object, pathwaydt)    # alternative implementation
-#'     all(enrichres == altres)                      # both identical
+#'     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(object))                                      # 2:n factor 
+#'     enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                   #     logical
+#'     enrichdt3 <- enrichment(object, pathwaydt, var = abstractvar(object), levels = c('flat', 'down', 'up'))    # 1:n factor
+#'     enrichdt4 <- enrichment(object, pathwaydt, var = 'flat', levels = c('flat', 'updown'))                     #     logical
+#' # Alternative implementation
+#'     enrichdt5 <-  altenrich(object, pathwaydt)   # alternative implementation
+#'     cols <- intersect(names(enrichdt1), names(enrichdt5))
+#'     all(enrichdt1[, cols, with = FALSE]  ==  
+#'         enrichdt5[, cols, with = FALSE])       # identical
 #' @details
 #' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
 #' Results are returned in a data.table
@@ -226,54 +315,57 @@ abstract_fit <- function(
 #' @export
 enrichment <- function(
     object,
-    pathwaydt, 
-    selecvar = abstractvar(object, fit = fits(object)[1], coef = coefs(object)[1]), 
+    pathwaydt,
+    fit      = fits(object)[1],
+    coef     = coefs(object, fit = fit)[1],
+    var      = abstractvar(object, fit = fit, coef = coef),
+    levels   = fdt(object)[[var]] %>% base::levels() %>% extract(-1),
     genevar  = 'gene', 
     genesep  = '[ ,;]',
     n        = 3,
     verbose  = TRUE,
-    detailed = TRUE
+    genes    = FALSE
 ){
 # Assert
     assert_is_valid_sumexp(object)
     assert_is_data.table(pathwaydt)
-    assert_scalar_subset(selecvar, fvars(object))
-    assert_is_factor(fdt(object)[[selecvar]])
-    assert_is_non_scalar(levels(fdt(object)[[selecvar]]))
-    assert_scalar_subset( genevar, fvars(object))
+    if (!is.null(fit ))  assert_scalar_subset(fit,  fits(object))
+    if (!is.null(coef))  assert_scalar_subset(coef, coefs(object))
+    assert_scalar_subset(var, fvars(object))
+    assert_is_factor(fdt(object)[[var]])
+    # assert_is_vector(levels(fdt(object)[[var]]))
+    assert_is_subset(levels, levels(fdt(object)[[var]]))
     assert_scalar_subset( genevar, names(pathwaydt))
     assert_all_are_non_missing_nor_empty_character(fdt(object)[[genevar]])
     assert_all_are_non_missing_nor_empty_character(  pathwaydt[[genevar]])
     if (!is.null(genesep))  assert_is_a_string(genesep)
     assert_is_a_bool(verbose)
     if (verbose){
-        cmessage('\tAre pathways enriched in `%s` genes ?', selecvar)
+        cmessage('\tAre pathways enriched in `%s` genes ?', var)
         cmessage("\t\tfdt(.)$%s  %%<>%%  split_extract_regex('%s', 1)", genevar, genesep) }
     fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)
     `in` <- in.detected <- in.selected <- detected <- selected <- out <- NULL
 # Sets
-    select_genes <- function(seleclevel)  fdt(object)[get(selecvar) %in% seleclevel][[genevar]]
-    seleclevels <- levels(fdt(object)[[selecvar]]) %>% extract(-1) %>% set_names(., .)
     SETall  <- unique(fdt(object)[[genevar]]) %>% union(pathwaydt[, unique(gene)])
     SETdet  <- unique(fdt(object)[[genevar]])
-    SETSsel <- lapply(seleclevels, select_genes)
+    SETSsel <- group_by_level(fdt(object), var, genevar) %>% extract(levels)
 # Counts
-    padcap <- function(x) x %>% stringi::stri_pad_left(8) %>% toupper()
+    pad <- function(x) x %>% stringi::stri_pad_left(8)
     if (verbose){
            npathway <- length(unique(pathwaydt$set))
         ncollection <- length(unique(pathwaydt$collection))
        cmessage('\t\t%d pathways from %d collection(s)', npathway, ncollection)
         message( c(
-            sprintf(        '\t\tAre %s genes enriched in pathway (among DETECTED) ?', padcap(seleclevels[ 1])),
-            sprintf(      '\n\t\t    %s genes enriched in pathway (among DETECTED) ?', padcap(seleclevels[-1])),
-            sprintf('\n\t\t    SELECTED genes enriched in pathway (among DETECTED) ?'), 
-            sprintf('\n\t\t    SELECTED genes enriched in pathway (among   GENOME) ?'), 
-            sprintf('\n\t\t    DETECTED genes enriched in pathway (among   GENOME) ?')))
+            sprintf(        '\t\tAre %s genes enriched in pathway (among DETECTED) ?', pad(levels[ 1])),
+            sprintf(      '\n\t\t    %s genes enriched in pathway (among DETECTED) ?', pad(levels[-1])),
+            sprintf('\n\t\t    selected genes enriched in pathway (among DETECTED) ?'), 
+            sprintf('\n\t\t    selected genes enriched in pathway (among   GENOME) ?'), 
+            sprintf('\n\t\t    detected genes enriched in pathway (among   GENOME) ?')))
     }
-    enrichdt <- pathwaydt[ , c( 
-       `in`    = SETall                 %>%     count_in(gene),
-        in.det = SETdet                 %>%     count_in(gene),
-        in.sel = Reduce(union, SETSsel) %>%     count_in(gene),
+    enrichdt <- pathwaydt[ , c(                                 # Tried to drop `(in.)sel` and sum (in.)up and (in.)down later
+       `in`    = SETall                 %>%     count_in(gene), # That saves two computations, which always improves speed further.
+        in.det = SETdet                 %>%     count_in(gene), # But it ignores the fact that multiple proteins can map to the same gene.
+        in.sel = Reduce(union, SETSsel) %>%     count_in(gene), # Which leads to double counting. So rolled back that approach
                  SETSsel                %>%     count_in(gene)       %>% set_names(paste0('in.', names(.))),
                  SETSsel                %>%  collapse_in(gene, ' ')  %>% set_names(paste0('in.', names(.), '.genes')),
         out    = SETall                 %>%    count_out(gene),
@@ -282,28 +374,29 @@ enrichment <- function(
                  SETSsel                %>%     lapply(length)
     ),  by = 'set' ]
 # pvalues
-    pselDET <- sprintf( 'p.%s.selDET', selecvar )
-    pselGEN <- sprintf( 'p.%s.selGEN', selecvar )
-    pdetGEN <- sprintf( 'p.detGEN') 
-    for (selvar in names(SETSsel)){
-        invar <- sprintf('in.%s', selvar )
-        pvar  <- sprintf('p.%s.%sDET', selecvar, selvar )
-        enrichdt[, ( pvar    ) := 1 - phyper(  get(invar),  in.det,  det - in.det, get(selvar)), by = 'set']  
-    }
-        enrichdt[, ( pselDET ) := 1 - phyper( in.sel,  in.det,  det - in.det,    sel ), by = 'set']
-        enrichdt[, ( pselGEN ) := 1 - phyper( in.sel, `in`,     out,             sel ), by = 'set']
-        enrichdt[, ( pdetGEN ) := 1 - phyper( in.det, `in`,     out,             det ), by = 'set']
-# Return
-    if (!detailed){
-        pcols    <- names(enrichdt) %>% extract(stri_startswith_fixed(., 'p.'))
-        genecols <- names(enrichdt) %>% extract(stri_endswith_fixed(., '.genes'))
-        enrichdt %<>% extract(, c('set', pcols, genecols), with = FALSE)
-    }                                          # n=0 -> p=0 always (1 way  only to choose 0 from 0)
-    enrichdt %<>% extract(in.det >= n)         # n=1 -> p=0 always (1 way  only to choose 1 from 1)
-    enrichdt %<>% extract(order(get(pselDET))) # n=2 -> p=0 often  (2 ways only to choose 2 from 2)
+    #one <- length(levels) == 1
+    twoplus <- length(levels) >= 2
+    nminus  <- length(levels) < length(flevels(object, var))
+    invar <- function(levs)  sprintf('in.%s', levs)
+                                enrichdt[ , ( sprintf( 'p.%s.DET', levels[1] )) := 1 - phyper( get(invar(levels[1])),  in.det,  det-in.det,  get(levels[1])), by = 'set' ]
+                                enrichdt[ , ( sprintf( 'p.%s.GEN', levels[1] )) := 1 - phyper( get(invar(levels[1])),  in.det,         out,  get(levels[1])), by = 'set' ]
+    for (level in levels[-1]){  enrichdt[ , ( sprintf( 'p.%s.DET', level     )) := 1 - phyper( get(invar(level    )),  in.det,  det-in.det,  get(level    )), by = 'set' ]
+                                enrichdt[ , ( sprintf( 'p.%s.GEN', level     )) := 1 - phyper( get(invar(level    )),  in.det,         out,  get(level    )), by = 'set' ] }
+    if (twoplus & nminus)       enrichdt[ , ( sprintf( 'p.sel.DET'           )) := 1 - phyper(                in.sel,  in.det,  det-in.det,  sel           ), by = 'set' ]
+    if (twoplus & nminus)       enrichdt[ , ( sprintf( 'p.sel.GEN'           )) := 1 - phyper(                in.sel, `in`,            out,  sel           ), by = 'set' ]
+                                enrichdt[ , ( sprintf( 'p.det.GEN'           )) := 1 - phyper(                in.det, `in`,            out,  det           ), by = 'set' ]
+# Return                                
+    if ( !(twoplus & nminus))   enrichdt[, c('in.sel', 'sel') := NULL]  # n=0 -> p=0 always (1 way  only to choose 0 from 0)
+    enrichdt %<>% extract(in.det >= n)                             
+    pvar1 <- c('p.sel.DET', sprintf('p.%s.DET', levels[1]))        # NOTE `p.sel.DET` available only when  1 < length(levels) < nlevel
+    pvar1 %<>% intersect(names(enrichdt))
+    pvar1 %<>% extract(1)                                          
+    enrichdt %<>% extract(order(get(pvar1)))
+    if (!genes)  enrichdt %<>% extract(, .SD, .SDcols = !patterns('genes'))
     enrichdt[]
-}
-
+        # Note : n=0 -> p=0 always (1 way  only to choose 0 from 0)
+}       #        n=1 -> p=0 always (1 way  only to choose 1 from 1)
+        #        n=2 -> p=0 often  (2 ways only to choose 2 from 2)
     
 #' Alternative Enrichment Analysis
 #' @details
@@ -321,8 +414,9 @@ enrichment <- function(
 #' @param significancevar 'p' or 'fdr'
 #' @param significance     significance cutoff
 #' @param effectsize       effectsize   cutoff
-#' @param n       no of detected genes required (for geneset to be examined)
-#' @param verbose TRUE or FALSE
+#' @param n        no of detected genes required (for geneset to be examined)
+#' @param genes    whether to record genes
+#' @param verbose  whether to msg
 #' @seealso [enrichment()]
 #' @importFrom stats phyper
 #' @export
@@ -337,6 +431,7 @@ altenrich <- function(
     significance    = 0.05,
     effectsize      = 0,
     n               = 3, 
+    genes           = FALSE,
     verbose         = TRUE
 ){
 # Assert
@@ -363,11 +458,11 @@ altenrich <- function(
      sel <- fdt(object)[ get(abstractvar) %in% c('down', 'up') ][[ genevar ]]  #     59  selected
     down <- fdt(object)[ get(abstractvar) %in% c('down'      ) ][[ genevar ]]  #     45  down
       up <- fdt(object)[ get(abstractvar) %in% c('up'        ) ][[ genevar ]]  #     14  up
-          upvar <- sprintf('p.%s~%s.upDET',   coef, fit)
-        downvar <- sprintf('p.%s~%s.downDET', coef, fit)
-    selectedvar <- sprintf('p.%s~%s.selDET',  coef, fit)
-       naivevar <- sprintf('p.%s~%s.selGEN',  coef, fit)
-    detectedvar <- 'p.detGEN'
+          upvar <- sprintf('p.%s.up.DET',   coef)
+        downvar <- sprintf('p.%s.down.DET', coef)
+    selectedvar <- sprintf('p.%s.sel.DET',  coef)
+       naivevar <- sprintf('p.%s.sel.GEN',  coef)
+    detectedvar <- 'p.det.GEN'
 # Message
     if (verbose){ 
         cmessage('\tAnalyze enrichment (modular)')
@@ -405,10 +500,10 @@ altenrich <- function(
         enrichdt[, (   naivevar) :=  selGN$p.selected]
         enrichdt[, (detectedvar) :=  detGN$p.selected]
 # Return
-    usefuldt  <- enrichdt[in.det >= n]
-    uselessdt <- enrichdt[in.det <  n]
-    usefuldt %<>% extract(order(get(selectedvar)))
-    usefuldt[]
+    enrichdt %<>% extract(in.det >= n)
+    enrichdt %<>% extract(order(get(selectedvar)))
+    if (!genes)  enrichdt %<>% extract(, .SD, .SDcols = !patterns('genes'))
+    enrichdt[]
 }
 
     collapse <- function(x, sep)  paste0(x, collapse = sep)
@@ -445,7 +540,7 @@ count_in.character <- function(x, y)  length(intersect(x, y))
 
 #' @rdname count_in
 #' @export
-count_in.factor <- function(x, y)  count_in.character(x,y)
+count_in.factor <- function(x, y)     length(intersect(x, y))
 
 #' @rdname count_in
 #' @export
@@ -462,7 +557,7 @@ collapse_in.character <- function(x, y, sep)  collapse(intersect(x, y), sep)
 
 #' @rdname count_in
 #' @export
-collapse_in.factor <- function(x, y, sep)  collapse_in.character(x, y, sep)
+collapse_in.factor    <- function(x, y, sep)  collapse(intersect(x, y), sep)
 
 #' @rdname count_in
 #' @export                         
@@ -479,7 +574,7 @@ count_out.character <- function(x, y)  length(setdiff(x, y))
 
 #' @rdname count_in
 #' @export
-count_out.factor <- function(x, y)  count_setdiff.character(x,y)
+count_out.factor    <- function(x, y)  length(setdiff(x, y))
 
 #' @rdname count_in
 #' @export

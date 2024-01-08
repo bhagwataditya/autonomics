@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Unified Statistal Modeling of Omics Data
-Version: 1.11.36
+Version: 1.11.37
 Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Richard",  "Cotton",     email = "richierocks@gmail.com",            role = "aut"),
              person("Shahina",  "Hayat",      email = "shahina.hayat@hotmail.com",        role = "aut"),
@@ -13,7 +13,7 @@ Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marbur
              person("Karsten",  "Suhre",      email = "kas2049@qatar-med.cornell.edu",    role = "sad"),
              person("Johannes", "Graumann",   email = "johannes.graumann@uni-marburg.de", role = c('aut', 'sad', 'rth')))
 Description:
-  This package brings unifies access to Statistal Modeling of Omics Data.
+  This package unifies access to Statistal Modeling of Omics Data.
   Across linear modeling engines (lm, lme, lmer, limma, and wilcoxon).
   Across coding systems (treatment, difference, deviation, etc).
   Across model formulae (with/without intercept, random effect, interaction or nesting).
