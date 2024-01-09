@@ -15,6 +15,7 @@ altenrich(
   significance = 0.05,
   effectsize = 0,
   n = 3,
+  genes = FALSE,
   verbose = TRUE
 )
 }
@@ -39,7 +40,9 @@ altenrich(
 
 \item{n}{no of detected genes required (for geneset to be examined)}
 
-\item{verbose}{TRUE or FALSE}
+\item{genes}{whether to record genes}
+
+\item{verbose}{whether to msg}
 }
 \description{
 Alternative Enrichment Analysis

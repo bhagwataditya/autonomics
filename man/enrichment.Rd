@@ -7,12 +7,15 @@
 enrichment(
   object,
   pathwaydt,
-  selecvar = abstractvar(object, fit = fits(object)[1], coef = coefs(object)[1]),
+  fit = fits(object)[1],
+  coef = coefs(object, fit = fit)[1],
+  var = abstractvar(object, fit = fit, coef = coef),
+  levels = fdt(object)[[var]] \%>\% base::levels() \%>\% extract(-1),
   genevar = "gene",
   genesep = "[ ,;]",
   n = 3,
   verbose = TRUE,
-  detailed = TRUE
+  genes = FALSE
 )
 }
 \arguments{
@@ -20,15 +23,17 @@ enrichment(
 
 \item{pathwaydt}{pathway \code{data.table}}
 
-\item{selecvar}{selection fvar}
+\item{var}{selection fvar}
+
+\item{levels}{selection levels}
 
 \item{genevar}{gene fvar}
 
 \item{genesep}{gene separator (string)}
 
-\item{verbose}{TRUE or FALSE}
+\item{verbose}{whether to msg}
 
-\item{detailed}{whether to report results in detail}
+\item{genes}{whether to report genes}
 }
 \description{
 Are selected genes enriched in pathway?
@@ -60,9 +65,17 @@ Results are returned in a data.table
     object <- read_somascan(file, fit = 'limma', coefs = 't1')
     fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
     object \%<>\% abstract_fit()
-# Enrichment Analysis
+    fdt(object)$flat <- fdt(object)$`t1~limma`
+    fdt(object)$flat \%<>\% factor2logical() \%>\% logical2factor('flat', 'updown')
+# Four flavours
     pathwaydt <- read_msigdt(collections = 'gobp')
-    enrichres <- enrichment(object, pathwaydt)
-       altres <-  altenrich(object, pathwaydt)    # alternative implementation
-    all(enrichres == altres)                      # both identical
+    enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(object))                                      # 2:n factor 
+    enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                   #     logical
+    enrichdt3 <- enrichment(object, pathwaydt, var = abstractvar(object), levels = c('flat', 'down', 'up'))    # 1:n factor
+    enrichdt4 <- enrichment(object, pathwaydt, var = 'flat', levels = c('flat', 'updown'))                     #     logical
+# Alternative implementation
+    enrichdt5 <-  altenrich(object, pathwaydt)   # alternative implementation
+    cols <- intersect(names(enrichdt1), names(enrichdt5))
+    all(enrichdt1[, cols, with = FALSE]  ==  
+        enrichdt5[, cols, with = FALSE])       # identical
 }

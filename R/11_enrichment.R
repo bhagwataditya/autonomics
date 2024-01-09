@@ -221,11 +221,10 @@ group_by_level.data.table <- function(x, var, idvar){
 }
 
 #' logical to factor
-#' 
-#' switch between factor representations
-#' @param x           vector
-#' @param var         string
-#' @param falseprefix string
+#' @param x     logical vector
+#' @param true  string : truelevel
+#' @param false string : falselevel
+#' @return factor
 #' @examples
 #' t1up <- c( TRUE,   FALSE,  TRUE)
 #' t1   <- c('flat', 'down', 'up' )  %>%  factor(., .)
@@ -235,15 +234,15 @@ group_by_level.data.table <- function(x, var, idvar){
 #' @export
 logical2factor <- function(
     x, 
-    truelevel = get_name_in_parent(x),
-    falselevel = paste0('not', truelevel)
+    true = get_name_in_parent(x),
+    false = paste0('not', true)
 ){
 # Assert
     assert_is_logical(x)
 # Convert
-    y <- rep(falselevel, length(x))
-    y[x] <- truelevel
-    y%<>% factor(c(truelevel, falselevel)) # level1 = (noninteresting) baseline
+    y <- rep(false, length(x))
+    y[x] <- true
+    y%<>% factor(c(true, false)) # level1 = (noninteresting) baseline
 # Return
     y
 }
@@ -280,7 +279,7 @@ factor2logical <- function(x){
 #'     object %<>% abstract_fit()
 #'     fdt(object)$flat <- fdt(object)$`t1~limma`
 #'     fdt(object)$flat %<>% factor2logical() %>% logical2factor('flat', 'updown')
-#' # Three usecases
+#' # Four flavours
 #'     pathwaydt <- read_msigdt(collections = 'gobp')
 #'     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(object))                                      # 2:n factor 
 #'     enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                   #     logical

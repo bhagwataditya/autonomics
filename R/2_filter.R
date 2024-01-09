@@ -242,7 +242,7 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 #' Tag features
 #' 
 #' @param object    SummarizedExperiment
-#' @param keyvar    string´: intersection fvar
+#' @param keyvar    string : intersection fvar
 #' @param sep       string : keyvar collapse separator
 #' @param features  character vector : intersection set
 #' @param tagvar    string : 

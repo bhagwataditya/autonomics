@@ -631,6 +631,7 @@ coefs.factor <- function(object, ...)   colnames(contrasts(object))
 #' @rdname coefs
 #' @export
 coefs.SummarizedExperiment <- function(object, fit = fits(object), svars = NULL, ...){
+    if (is.null(fit))  return(NULL)
     . <- NULL
     coefs0 <- split_extract_fixed(.effectvars(object), FITSEP, 2)
     fits0  <- split_extract_fixed(.effectvars(object), FITSEP, 3)
