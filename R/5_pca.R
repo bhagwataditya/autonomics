@@ -688,10 +688,10 @@ biplot <- function(
     shape         = NULL, 
     size          = NULL, 
     alpha         = NULL,
-    group         = NULL, 
-    linetype      = NULL,
-    label         = NULL, 
-    feature_label = if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
+    group         = NULL,         # Use 'feature_id' (not 'gene')
+    linetype      = NULL,         # To align with `plot_exprs` and `plot_volcano`
+    label         = NULL,         # Which use 'feature_id' to guarantee uniqueness
+    feature_label = 'feature_id', # if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
     fixed         = list(shape = 15, size = 3), 
     nx    = 0,
     ny    = 0,

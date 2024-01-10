@@ -16,7 +16,7 @@ biplot(
   group = NULL,
   linetype = NULL,
   label = NULL,
-  feature_label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
+  feature_label = "feature_id",
   fixed = list(shape = 15, size = 3),
   nx = 0,
   ny = 0,
