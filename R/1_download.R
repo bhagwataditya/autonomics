@@ -19,6 +19,7 @@ AUTONOMICS_DATASETS <- c('atkin.somascan.adat',    # new versions
                          'halama18.metabolon.xlsx',
                          'integer64.proteinGroups.txt',
                          'multiorganism.combined_protein.tsv',
+                         'ddglucose.proteingroups.txt',
                          'uniprot_hsa_20140515.fasta')
 
 #' @rdname download_data
