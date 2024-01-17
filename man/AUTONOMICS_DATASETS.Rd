@@ -5,7 +5,7 @@
 \alias{AUTONOMICS_DATASETS}
 \title{Data used in examples/vignette/tests/longtests}
 \format{
-An object of class \code{character} of length 17.
+An object of class \code{character} of length 18.
 }
 \usage{
 AUTONOMICS_DATASETS

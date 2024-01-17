@@ -20,28 +20,19 @@ download_data(
 }
 \arguments{
 \item{filename}{file name
-\itemize{ 
-\item \href{https://pubmed.ncbi.nlm.nih.gov/30525282/}{ Atkin 2018: hypoglycemia:              } 
-                  4 timepoints (t0, t1, t2, t3)
-      \itemize{  \item \code{'atkin.somascan.adat'             }
-                 \item \code{'atkin.metabolon.xlsx'            } }
-\item \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{ Billing 2016: stemcell comparison:     } 
-                  E, EM, BM
-      \itemize{ \item \code{'billing16.bam.zip'                }
-                \item \code{'billing16.rnacounts.txt'          }
-                \item \code{'billing16.somascan.adat'          }
-                \item \code{'billing16.proteingroups.txt'      } }
-\item \href{https://pubmed.ncbi.nlm.nih.gov/31332097/}{ Billing 2019: stemcell differentiation:} 
-                  E00, E01, E02, E05, EM15, EM30, M00
-      \itemize{ \item \code{'billing19.rnacounts.txt'          }
-                \item \code{'billing19.proteingroups.txt'      }
-                \item \code{'billing19.phosphosites.txt'       } }
-\item \href{https://pubmed.ncbi.nlm.nih.gov/32648304/}{ Fukuda 2020: zebrafish development:    } 
-                  X30dpt, Adult
-      \itemize{  \item \code{'fukuda20.proteingroups.txt'      } }
-\item \href{https://pubmed.ncbi.nlm.nih.gov/29777783/}{ Halama 2018: glutaminase inhibitor:    } 
-                  4 conc, 4 timepoints
-      \itemize{ \item \code{'halama18.metabolon.xlsx'          } }
+\tabular{rlr}{
+        'atkin.somascan.adat'      \tab   \href{https://pubmed.ncbi.nlm.nih.gov/30525282/}{Halama, 2018}   \tab  effects of hypoglycemia     \cr
+        'atkin.metabolon.xlsx'     \tab                                                                    \tab                              \cr
+    'billing16.bam.zip'            \tab   \href{https://pubmed.ncbi.nlm.nih.gov/26857143/}{Billing, 2016}  \tab  stemcell comparison         \cr
+    'billing16.rnacounts.txt'      \tab                                                                    \tab                              \cr
+    'billing16.somascan.adat'      \tab                                                                    \tab                              \cr
+    'billing16.proteingroups.txt'  \tab                                                                    \tab                              \cr
+    'billing19.rnacounts.txt'      \tab   \href{https://pubmed.ncbi.nlm.nih.gov/31332097/}{Billing, 2016}  \tab  stemcell differentiation    \cr
+    'billing19.proteingroups.txt'  \tab                                                                    \tab                              \cr
+    'billing19.phosphosites.txt'   \tab                                                                    \tab                              \cr
+    'ddglucose.proteingroups.txt'  \tab   Omics Module                                                     \tab  glycolysis inhibitor        \cr
+     'fukuda20.proteingroups.txt'  \tab   \href{https://pubmed.ncbi.nlm.nih.gov/32648304/}{Fukuda, 2020}   \tab  zebrafish development       \cr 
+     'halama18.metabolon.xlsx'     \tab   \href{https://pubmed.ncbi.nlm.nih.gov/29777783/}{Halama, 2018}   \tab  glutaminase inhibitor
 }}
 
 \item{localdir}{local dir to save file to}
