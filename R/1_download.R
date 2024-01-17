@@ -48,6 +48,9 @@ DATADIR <- file.path(R_user_dir('autonomics', 'cache'), 'datasets')
 #' @param force    TRUE / FALSE
 #' @return local file path
 #' @examples
+#' # Show available datasets
+#'     download_data()
+#'     
 #' # atkin 2018 - hypoglycemia - pubmed 30525282
 #'     download_data('atkin.somascan.adat')            # somascan  intensities
 #'     download_data('atkin.metabolon.xlsx')           # metabolon intensities
