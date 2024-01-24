@@ -19,7 +19,23 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         # expect_true(sumexp_contains_fit(fit_lm(object),       'lm'))         # slow
         # expect_true(sumexp_contains_fit(fit_wilcoxon(object), 'wilcoxon'))   # slow
     })
-    
+
+
+    test_that(  " fit: billing19.proteingroups ", {
+        # original
+            file <- download_data('billing19.proteingroups.txt')
+            select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
+            select %<>% paste0('_STD')
+            object <- read_maxquant_proteingroups(file, subgroups = select)
+            expect_true(sumexp_contains_fit(fit_wilcoxon(object), 'wilcoxon'))
+            expect_true(sumexp_contains_fit(fit_lm(object),       'lm'))
+            expect_true(sumexp_contains_fit(fit_limma(object),    'limma'))
+        # subtracted
+            obj <- object
+            obj %<>% subtract_baseline('subgroup', 'E00_STD')
+            expect_true(sumexp_contains_fit(fit_limma(object, ~1), 'limma'))
+    })
+
     test_that( " fit: fukuda20.proteingroups ", {
         file <- download_data('fukuda20.proteingroups.txt') 
         object <- read_maxquant_proteingroups(file)
@@ -67,7 +83,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
                            fit_wilcoxon(object, ~ subgroup,        block = 'Subject'),  'wilcoxon'))
     })
     
-    test_that(  " fit: halama18.metabolon ", {
+    test_that( " fit: halama18.metabolon ", {
         file <- download_data('halama18.metabolon.xlsx')
         object <- read_metabolon(file)
         expect_true(sumexp_contains_fit(   fit_limma(object), 'limma'))
@@ -75,6 +91,11 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         expect_true(sumexp_contains_fit(      fit_lm(object), 'lm'))
     })
     
+    test_that( " fit: mcclain21 ", {
+        file  <- download_mcclain21('counts')
+        sfile <- download_mcclain21('samples')
+        object <- .read_rnaseq_counts(file, sfile = sfile, by.y = 'rna_id')
+    })
 
         
 #============================================================================

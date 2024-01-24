@@ -12,11 +12,6 @@ context('fit: GSE161731')
 
     # Prepare minimal full-feature datset: subgroup, block, weights
         require(magrittr)
-        basedir <- tools::R_user_dir('autonomics', 'cache')
-        subdir  <- file.path(basedir, 'GSE161731')
-        if (!dir.exists(subdir))  GEOquery::getGEOSuppFiles("GSE161731", baseDir = basedir)
-        file  <- paste0(subdir,'/GSE161731_counts.csv.gz')
-        sfile <- paste0(subdir,'/GSE161731_counts_key.csv.gz')
         object <- .read_rnaseq_counts(file, sfile = sfile, by.y = 'rna_id')
         object %<>% rm_singleton_samples('subject_id')
         object %<>% filter_samples(cohort == 'COVID-19', verbose = TRUE)
@@ -87,22 +82,7 @@ context('fit: GSE161731')
     #})
 
 
-#==============================================================================
 
-# UNPAIRED: wilcoxon generally fails
-    
-    test_that(  "fit: billing19.proteingroups", {
-        file <- download_data('billing19.proteingroups.txt')
-        select <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
-        select %<>% paste0('_STD')
-        object <- read_maxquant_proteingroups(
-                    file, select_subgroups = select, plot = FALSE)
-        values(object) %<>% na_to_zero()
-        expect_true(sumexp_contains_fit(fit_wilcoxon(object), 'wilcoxon'))
-        expect_true(sumexp_contains_fit(fit_lm(object),       'lm'))
-        expect_true(sumexp_contains_fit(fit_limma(object),    'limma'))
-    })
-    
 
 
 

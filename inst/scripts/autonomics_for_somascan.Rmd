@@ -1,0 +1,169 @@
+---
+title: "Autonomics: cross-omics analysis"
+author: "Aditya M Bhagwat"
+date: "`r Sys.Date()`"
+output: BiocStyle::html_document
+bibliography: references.bib
+vignette: >
+  %\VignetteIndexEntry{autonomics_for_proteomics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
+```
+
+# Example Dataset
+
+**@Halama2019** used SOMAScan to profile the blood proteome of 16 individuals subjected to 
+induced hypoglycemia at four subsequent time points: t0 = baseline, t1 = normoglycemia, t2 = induced hypoglycemia, t3 = day after.
+
+```{r}
+require(ggplot2)
+require(data.table)
+ggplot(data.table(x = 1:5, y = c(4, 3.5, 2, 2, 4 )), aes(x = x, y = y)) + 
+theme_void()   + 
+annotate(geom = 'line',  x = c(1,2,3,4, 5), y = c(4, 3.5, 2, 2, 4))  + 
+annotate(geom = 'point', x = c(1,2,3,5), y = c(4, 3.5, 2, 4)) + 
+annotate(geom = 'text',  x = c(1,2,3,5), y = c(4, 3.5, 1.9, 4), hjust = c(-0.15, -0.1, 0, 1.1),
+         label = c('t0: baseline', 't1: normoglycemia', 't2: hypoglycemia', 't3: day.after'), parse = TRUE) + 
+theme(panel.grid = element_blank(), 
+       axis.text = element_blank(), 
+      axis.title = element_blank(), 
+      plot.title = element_text(hjust = 0.5)) 
+```
+
+# Read
+
+`read_somascan` reads SOMAScan adat files into a SummarizedExperiment, of which the various components can be accessed easily: 
+
+```{r}
+require(autonomics)
+require(data.table)
+file <- download_data('atkin18.somascan.adat')
+object <- read_somascan(file, plot = FALSE)
+values(object)[1:3, 1:5]                        # expression values
+sdt(object)[1:3, c(1, 11, 12, 15, 16, 17, 23)]  # sample data
+fdt(object)[1:3, c(1, 2, 8)]                    # feature data
+(n <- analysis(object)$nfeature)
+print(data.table(Filter = names(n), n = n))     # Filtering details
+```
+
+# Distributions
+
+## Features
+
+A feature (protein) distribution shows how the values of a **single feature** (protein) are distributed **across all samples**. Feature distributions can be visualized with density, violin, or box plots, as shown below.
+
+```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
+require(ggplot2)
+d <- plot_feature_densities(object, n = 4, group = 'Target') + guides(fill = 'none')
+v <- plot_feature_violins(  object, n = 4,     x = 'Target') + guides(fill = 'none')
+b <- plot_feature_boxplots( object, n = 4,     x = 'Target') + guides(fill = 'none')
+gridExtra::grid.arrange(d, v, b, nrow = 1)
+```
+
+## Samples
+
+A sample distribution shows how the values of a **single sample** are distributed **across all features** (proteins). Sample distributions can also be visualized with density, violin, or box plots:
+
+```{r, message = FALSE, fig.with = 10, fig.height = 2.75}
+require(ggplot2)
+d <- plot_sample_densities(object, n = 4) + guides(fill = 'none')
+v <- plot_sample_violins(object,   n = 4) + guides(fill = 'none')
+b <- plot_sample_boxplots(object,  n = 4) + guides(fill = 'none')
+gridExtra::grid.arrange(d, v, b, nrow = 1)
+```
+
+# Dimension Reduction
+
+Each sample with $p$ proteins measured can be thought of as a point in p-dimensional space (three proteins span a three-dimensional space). Dimension Reduction Techniques project these points onto a lower-dimensional subspace (three dimensions e.g. can be projected onto two dimensions) in a way that maximizes an objective. Principle Component Analysis [@Pearson1901] maximizes the variance between samples [@Frank1993, @Debie2005], Partial Least Squares [@Wold1975] the sample/subgroup covariance [@Frank1993, @Debie2005], Linear Discriminant Analysis [@Fisher1936, @Rao1948] the ratio of between-subgroup-differences to within-subgroup variance.
+
+
+**Principal Component Analysis** [@Pearson1901] projects these sample points onto that lower (e.g. 2) dimensional space which maximizes the variance between samples. This two-dimensional biplot greatly aids in comprehending the overall sample similarity structure, as shown below for the dataset under consideration, where subgroup is reassuringly observed to be the major source of variation.
+
+```{r, message = FALSE, fig.width = 3.5, fig.height = 2.5, out.width = '50%', out.height = '50%'}
+biplot(pca(object), color = 'Subject_ID', group = 'Subject_ID', shape = 'subgroup')
+```
+
+
+# Impute
+
+## Systematic versus Random
+
+```{r}
+systematic <- sum(systematic_nas(object))
+random     <-     sum(random_nas(object))
+no         <-         sum(no_nas(object))
+```
+
+**`r systematic`** proteingroups have **systematic** NAs: missing completely in some subgroups but detected in others (for at least half of the samples). These represent potential switch-like responses. They require prior imputation for statistical analysis to return p (rather than NA) values. Note that the apparent systematic nature of these NAs can arise due to chance. Increasing sample size gives greater confidence into the systematic nature of these NA values.
+
+**`r random`** proteingroups have **random** NAs. They are missing in some samples, but the missingness is unrelated to subgroup. These samples do not require require imputation for statistical analyis to return pvalues.
+
+**`r no`** proteingroups have **no** NAs. They are present in all samples.
+
+# Analyze
+
+## `fit_lm`: General Linear Model
+
+### $t$ statistic and $p$ value {.unnumbered}
+
+Diffferential Expression Analysis quantifies whether subgroup differences are significant. The current example dataset has two subgroups (X30dpt and Adults), each with three replicates.
+
+```{r}
+table(object$subgroup)
+```
+
+The t-statistic expresses the **difference** between two subgroups in **standard errors (SE)** (i.e. standard devation, normalized for sample size):
+
+$$t = \frac{\textrm{difference}}{\frac{\textrm{sd}}{\sqrt n}}$$ When samples from two subgroups are many standard errors away from each other, the $t$ value will be large, and the difference likely arose due to true subgroup differences.\
+When samples from two different subgroups are close to each other, on the other hand, the $t$ value will be small, and the probability that the difference arose due to random sampling is high. This probability (that the difference arose due to random sampling) is known as the **p value**. The p value expresses a signal (difference) to noise (standard error) ratio, and is very useful for feature (protein) prioritization. A general convention is to call $p$ \< 0.05 differences significant.
+
+### General Linear Model and `lm` {.unnumbered}
+
+The General Linear Model generalizes the (two-subgroup) t-test to multiple subgroups (e.g. $t_0$, $t_1$, $t_2$), multiple factors (e.g. time and concentration), as well as numerical covariates (e.g. age and bmi) in a unified modeling framework. In R its classical implementation is the `lm` modeling engine, to which autonomics offers direct access:
+
+```{r}
+  require(magrittr)
+  object %<>% fit_lm()
+```
+
+```{r, echo = FALSE, message = FALSE}
+  summary <- summarize_fit(object, 'lm')[contrast=='Adult']
+  systime <- system.time(object %<>% fit_lm())
+```
+
+In the example dataset `lm` found `r summary$ndown` age-associated downregulations and `r summary$nup` upregulations. Running `lm` on `r nrow(object)` proteins took no more that `r systime[[3]]` seconds, a feat achieved through a performant backend that integrates `lm` into a `data.table` environment.
+
+### Defining the model: from simple to advanced {.unnumbered}
+
+Autonomics provides two ways to specify the model.
+The simplest approach is to rely on the automated **defaults**, which build a model (with intercept) using the sample variable 'subgroup'. A more flexible option is to specify the modeling **formula**, allowing to drop intercept, include multiple factors, or numeric covariates.
+
+```{r, eval = FALSE}
+require(magrittr)
+object %<>% fit_lm()
+object %<>% fit_lm(formula = ~ subgroup)
+```
+
+
+## `fit_limma`: Generalized Contrasts and Moderated GLM
+
+Alternative coding schemes are a more advanced topic. And though several such alternative coding are available in R (`contr.sum` compares each subgroup to the global mean, `contr.helmert` compares each subgroup level to the average of the previous levels, etc.) it is not always straightforward to find the coding scheme that is appropriate for the scientific question under focus. The coding is also a bit verbose. All of that was made much easier with the arrival of `limma` [@Smyth2004], to which autonomics offers direct access through `fit_limma`. The development of limma was motivated by the shifting nature of data in Bioinformatics Studies: a sample was no longer associated with a single value but rather with thousands of values for many different features being measured in parallel (genes, transcripts, proteins, ...). This brought challenges, such as false discoveries became much more likely. It also brought wonderful opportunities: since most of the features are typically not differential expressed between two samples (and only a minority are), this background can be used to estimate a residual standard deviation, which is then used to 'moderate' the t-statistic: adding this residual standard devation sd0 creates a moderated $t$ statistic less subject to inflation due to small standard deviation (rather than decent effect sizes).
+
+$$t = \frac{\textrm{difference}}{\frac{\textrm{sd + sd0}}{\sqrt n}}$$
+
+This moderated t statistic was then extended into a General Linear Model. Very interestingly this moderated General Linear Model was formulated in terms of generalized contrasts rather than original coefficients, and an interface was offered to express any scientific question as a custom contrasts of model coefficients. Returning to the simpler zebrafish dataset (Fukuda 2020), `limma` offers an very intuitive way to formulate custom contrasts, in combination with a model with no intercept:
+
+```{r, message = FALSE}
+file <- download_data('atkin18.metabolon.xlsx')
+object <- read_proteingroups(file)
+object %<>% fit_limma(formula   = ~ 0 + subgroup, 
+                      contrasts = c('Adult - X30dpt'))
+```
+
+Another advantage of limma is its performance:
+
+# References
