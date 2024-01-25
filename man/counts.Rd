@@ -19,7 +19,7 @@ counts(object) <- value
 
 \S4method{counts}{SummarizedExperiment,numeric}(object) <- value
 
-\S4method{counts}{SummarizedExperiment,`NULL`}(object) <- value
+\S4method{counts}{SummarizedExperiment,NULL}(object) <- value
 }
 \arguments{
 \item{object}{SummarizedExperiment}

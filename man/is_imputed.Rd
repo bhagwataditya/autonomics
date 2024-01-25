@@ -16,7 +16,7 @@ is_imputed(object) <- value
 
 \S4method{is_imputed}{SummarizedExperiment,matrix}(object) <- value
 
-\S4method{is_imputed}{SummarizedExperiment,`NULL`}(object) <- value
+\S4method{is_imputed}{SummarizedExperiment,NULL}(object) <- value
 }
 \arguments{
 \item{object}{SummarizedExperiment}

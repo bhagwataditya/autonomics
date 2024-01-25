@@ -19,7 +19,7 @@ weights(object) <- value
 
 \S4method{weights}{SummarizedExperiment,numeric}(object) <- value
 
-\S4method{weights}{SummarizedExperiment,`NULL`}(object) <- value
+\S4method{weights}{SummarizedExperiment,NULL}(object) <- value
 }
 \arguments{
 \item{object}{SummarizedExperiment}

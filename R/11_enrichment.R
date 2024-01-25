@@ -1,9 +1,3 @@
-#' msig collections
-#' @param organism 'human' or 'mouse'
-#' @examples
-#' msigcollections('human')
-#' msigcollections('mouse')
-#' @export
 msigcollections <- function(organism){
     switch(
         organism, 
@@ -13,6 +7,8 @@ msigcollections <- function(organism){
 }
 
 
+#' @rdname msigfile
+#' @export
 MSIGHUMAN <- c(
     positional          = 'C1',                   # positional    : - genes in same cytogenetic band 
     perturbation        = 'C2:CGP',               # curated       : + genes with altered expression upon (chemical/genetic) perturbation
@@ -41,6 +37,9 @@ MSIGHUMAN <- c(
     hallmark            = 'H'                     # hallmark      : + shared hallmark
  )
 
+
+#' @rdname msigfile
+#' @export
 MSIGMOUSE <- c(
     positional          = 'M1',                   # positional    : - genes in same cytogenetic band 
     perturbation        = 'M2:CGP',               # curated       : + genes with altered expression upon (chemical/genetic) perturbation
@@ -62,8 +61,12 @@ MSIGMOUSE <- c(
 #' @param year      number
 #' @param release   number
 #' @examples
-#' msigfile('human')
-#' msigfile('mouse')
+# # Collection names
+#'    MSIGHUMAN
+#'    MSIGMOUSE
+#' # Collection file
+#'    msigfile('human')
+#'    msigfile('mouse')
 #' @export
 msigfile <- function(organism, year = 2023, release = 2){
     assert_scalar_subset(organism, c('human', 'mouse'))
@@ -79,8 +82,8 @@ msigfile <- function(organism, year = 2023, release = 2){
 #' @param collections  subset of names(MSIGCOLLECTIONS)
 #' @examples
 #' dir <- file.path(tools::R_user_dir('autonomics', 'cache'), 'msigdb')
-#' read_msigdt(file = file.path(dir, 'msigdb_v2023.2.Hs.db'))
-#' read_msigdt(file = file.path(dir, 'msigdb_v2023.2.Mm.db'))
+#' read_msigdt(organism = 'human')
+#' read_msigdt(organism = 'mouse')
 #' @export
 read_msigdt <- function(
     organism    = 'human',
@@ -88,6 +91,8 @@ read_msigdt <- function(
     collections = c('gobp', 'gomf', 'gocc', 'reactome', 'wiki')
 ){
 # Assert
+    assert_scalar_subset(organism, c('human', 'mouse'))
+    assert_subset(collections, msigcollections(organism))
     if (!requireNamespace('DBI',     quietly = TRUE))  message("BiocManager::install('DBI'). Then re-run.")
     if (!requireNamespace('RSQLite', quietly = TRUE))  message("BiocManager::install('RSQLite'). Then re-run.")
     if (!file.exists(file))  return(NULL)
