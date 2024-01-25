@@ -92,7 +92,7 @@ read_msigdt <- function(
 ){
 # Assert
     assert_scalar_subset(organism, c('human', 'mouse'))
-    assert_subset(collections, msigcollections(organism))
+    assert_is_subset(collections, msigcollections(organism))
     if (!requireNamespace('DBI',     quietly = TRUE))  message("BiocManager::install('DBI'). Then re-run.")
     if (!requireNamespace('RSQLite', quietly = TRUE))  message("BiocManager::install('RSQLite'). Then re-run.")
     if (!file.exists(file))  return(NULL)
