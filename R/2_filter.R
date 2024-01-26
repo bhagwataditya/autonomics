@@ -265,7 +265,8 @@ tag_features <- function(
     assert_is_a_string(tagvar)
     assert_is_a_bool(verbose)
 # Intersect
-    fdt0 <- fdt(object)[, c('feature_id', keyvar), with = FALSE ]
+    cols <- unique(c('feature_id', keyvar))
+    fdt0 <- fdt(object)[, cols, with = FALSE ]
     fdt0 %<>% uncollapse(tidyselect::all_of(keyvar), sep = sep)
     fdt0 %<>% extract(get(keyvar) %in% features)
 # Filter
