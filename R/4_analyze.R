@@ -96,8 +96,12 @@ plot_summary <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_is_subset(c('pca1', 'pca2'), fits(object))
-    assert_is_subset(c('pls1', 'pls2'), fits(object))
+    cmessage('\t\tPlot summary')
+    if (!all(c('pca1', 'pca2') %in% fits(object))){ 
+        cmessage('\t\t\tFirst `pca(object)`, then `plot_summary(object)`'); return(NULL) }
+    if (!all(c('pls1', 'pls2') %in% fits(object))){
+        cmessage('\t\t\tFirst `pls(object)`, then `plot_summary(object)`'); return(NULL) }
+    assert_is_subset(fit, fits(object))
     assert_any_are_matching_regex(fvars(object), fit)
     assert_is_formula(formula)
 # Plot
