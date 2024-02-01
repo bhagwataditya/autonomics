@@ -523,16 +523,6 @@ vectorize_contrasts <- function(contrasts){
     unname(unlist(lapply(contrasts, function(x) na.exclude(c(t(x))))))
 }
 
-add_fdr <- function(fitres){
-    . <- NULL
-    fdr <- fitres %>% extract(, stri_startswith_fixed(
-                                    names(.), paste0('p', FITSEP)), with=FALSE)
-    fdr[] %<>% lapply(p.adjust, method='fdr')
-    names(fdr) %<>% stri_replace_first_fixed(
-                paste0('p', FITSEP), paste0('fdr', FITSEP))
-    fitres %<>% cbind(fdr)
-    fitres
-}
 
 #' Reset fit
 #' @param object  SummarizedExperiment
@@ -665,7 +655,7 @@ fit <- function(
     coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
     block     = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    statvars  = c('effect', 'p', 'fdr'),
+    statvars  = c('effect', 'p'),
     sep       = FITSEP,
     suffix    = paste0(sep, 'limma'),
     verbose   = TRUE, 
@@ -693,7 +683,7 @@ fit_limma <- function(
     coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
     block     = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    statvars  = c('effect', 'p', 'fdr'),
+    statvars  = c('effect', 'p'),
     sep       = FITSEP,
     suffix    = paste0(sep, 'limma'),
     verbose   = TRUE, 
@@ -769,7 +759,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     coefs     = if (is.null(contrasts))  colnames(design) else NULL,
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars  = c('effect', 'p', 'fdr'),
+    statvars  = c('effect', 'p'),
     sep       = FITSEP,
     suffix    = paste0(sep, 'limma'),
     verbose   = TRUE, 
@@ -783,7 +773,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     assert_is_subset(coefs, colnames(design))
     if (!is.null(block))      assert_is_subset(block, svars(object))
     if (!is.null(weightvar))  assert_scalar_subset(weightvar, assayNames(object))
-    assert_is_subset(statvars, c('effect', 'p', 'fdr', 't', 'se'))
+    assert_is_subset(statvars, c('effect', 'p', 't', 'se'))
 # Design/contrasts/block/weights
     . <- NULL
     if (verbose)  message('\t\tlmFit(', formula2str(formula),
@@ -824,26 +814,9 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 # p/t/fdr
     if (!all(limmafit$df.residual==0)){
         limmafit %<>% eBayes()
-        if ('p' %in% statvars){ 
-            dt0 <- data.table(limmafit$p.value)
-            names(dt0) %<>% paste0('p', sep, ., suffix)
-            limmadt %<>% cbind(dt0)  
-        } 
-        if ('t' %in% statvars){ 
-            dt0 <- data.table(limmafit$t)
-            names(dt0) %<>% paste0('t', sep, ., suffix)
-            limmadt %<>% cbind(dt0)  
-        } 
-        if ('fdr' %in% statvars){
-            dt0 <- data.table(apply(limmafit$p.value, 2, p.adjust, 'fdr') )
-            names(dt0) %<>% paste0('fdr', sep, ., suffix)
-            limmadt %<>% cbind(dt0)  
-        }
-        if ('se' %in% statvars){
-            dt0 <- data.table(sqrt(limmafit$s2.post) * limmafit$stdev.unscaled)
-            names(dt0) %<>% paste0('se', sep, ., suffix)
-            limmadt %<>% cbind(dt0)
-        }
+        if ('p'  %in% statvars){ dt0 <- data.table(limmafit$p.value);                                 names(dt0) %<>% paste0('p',  sep, ., suffix); limmadt %<>% cbind(dt0) } 
+        if ('t'  %in% statvars){ dt0 <- data.table(limmafit$t);                                       names(dt0) %<>% paste0('t',  sep, ., suffix); limmadt %<>% cbind(dt0) } 
+        if ('se' %in% statvars){ dt0 <- data.table(sqrt(limmafit$s2.post) * limmafit$stdev.unscaled); names(dt0) %<>% paste0('se', sep, ., suffix); limmadt %<>% cbind(dt0) }
     }
 # Return
     if (verbose)  message_df('\t\t\t%s',  summarize_fit(limmadt, fit = 'limma'))
@@ -859,7 +832,7 @@ pull_level <- function(x, lev){
 }
 
 #' Summarize fit
-#' @param fdt  fdt(object)
+#' @param featuredt  fdt(object)
 #' @param fit  'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL
 #' @param coefs string vector
 #' @return data.table(contrast, nup, ndown)
@@ -870,21 +843,21 @@ pull_level <- function(x, lev){
 #' object %<>% fit_lm()
 #' summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 #' @export
-summarize_fit <- function(fdt, fit = NULL, coefs = NULL){
+summarize_fit <- function(featuredt, fit = NULL, coefs = NULL){
 # Assert
-    assert_is_data.table(fdt)
+    assert_is_data.table(featuredt)
     statistic <- coefficient <- fit <- variable <- NULL
     effect <- p <- fdr <- NULL
-# Summarize 
-    cols <- names(fdt) %>% extract(stri_detect_fixed(., FITSEP))
-    fdt %<>% extract(, c('feature_id', cols), with = FALSE)
-    
-    longdt <- fdt %>% melt.data.table(id.vars = 'feature_id')
+# Summarize
+    cols <- names(featuredt) %>% extract(stri_detect_fixed(., FITSEP))
+    featuredt %<>% extract(, c('feature_id', cols), with = FALSE)
+    featuredt %<>% add_adjusted_pvalues('fdr')
+
+    longdt <- featuredt %>% melt.data.table(id.vars = 'feature_id')
     longdt[, statistic    := split_extract_fixed(variable, FITSEP, 1) %>% factor(unique(.))]
     longdt[,  coefficient := split_extract_fixed(variable, FITSEP, 2) %>% factor(unique(.))]
     longdt[,       fit    := split_extract_fixed(variable, FITSEP, 3) %>% factor(unique(.))]
     longdt[, variable := NULL]
-    
     
     sumdt <- dcast.data.table(longdt, feature_id + coefficient + fit ~ statistic, value.var = 'value')
     sumdt <- sumdt[, .(

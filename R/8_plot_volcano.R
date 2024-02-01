@@ -100,41 +100,44 @@ add_assay_means <- function(
  
 #' Add adjusted pvalues
 #' 
-#' @param object  SummarizedExperiment
-#' @param method 'fdr', 'bonferroni', ... (see `p.adjust.methods`)
-#' @param fit    'limma', 'lm', 'lme', 'lmer'
-#' @param coefs   coefficient (string)
+#' @param featuredt  fdt(object)
+#' @param method    'fdr', 'bonferroni', ... (see `p.adjust.methods`)
+#' @param fit       'limma', 'lm', 'lme', 'lmer'
+#' @param coefs      coefficient (string)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_limma()
 #' object %<>% extract(order(fdt(.)$`p~Adult~limma`), )
 #' fdt(object)
-#' fdt(object %>% add_adjusted_pvalues('bonferroni'))
+#' fdt(object) %>% add_adjusted_pvalues('fdr')
+#' fdt(object) %>% add_adjusted_pvalues('bonferroni')
 #' @return SummarizedExperiment
 #' @export
 add_adjusted_pvalues <- function(
-    object, 
+    featuredt, 
     method, 
-    fit   = fits(object)[1], 
-    coefs = default_coefs(object, fit)[1]
+    fit   = grep('^p~', names(featuredt), value = TRUE) %>% split_extract_fixed(FITSEP, 3) %>% unique(),
+    coefs = grep('^p~', names(featuredt), value = TRUE) %>% split_extract_fixed(FITSEP, 2) %>% unique()
 ){
 # Assert
-    assert_is_all_of(object, 'SummarizedExperiment')
+    assert_is_data.table(featuredt)
     assert_is_subset(method, stats::p.adjust.methods)
-    assert_is_subset(fit,   fits(object))
-    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
 # Compute
     for (.fit  in fit){
     for (.coef in coefs){
     for (.method in method){
-        pdt <- fdt(object)[ , pvar(object, coef = .coef, fit = .fit) , with = FALSE]
+        pvars <- grep('^p~', names(featuredt), value = TRUE)
+        pvars %<>% extract(split_extract_fixed(., '~', 3) %in% fit)
+        pvars %<>% extract(split_extract_fixed(., '~', 2) %in% coefs)
+        
+        pdt <- featuredt[ , pvars , with = FALSE]
         pdt[, names(pdt) := lapply(.SD, p.adjust, method = .method), .SDcols = names(pdt)]
         names(pdt) %<>% stri_replace_first_fixed('p~', paste0(method, '~'))
     }}}
 # Add
-    fdt(object) %<>% cbind(pdt)
-    object
+    featuredt %<>% cbind(pdt)
+    featuredt[]
 }
 
     
@@ -170,7 +173,7 @@ make_volcano_dt <- function(
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
     if (!is.null(alpha)){ assert_is_subset(alpha, fvars(object)); object %<>% bin(alpha) }
     if (!is.null(label))  assert_is_subset(label, fvars(object))
-    object %<>% add_adjusted_pvalues('bonferroni', fit, coefs)
+    fdt(object) %<>% add_adjusted_pvalues('bonferroni', fit, coefs)
 # Prepare
     bon <- direction <- effect <- fdr <- mlp <- p <- significance <- NULL
     idvars <- 'feature_id'
@@ -245,7 +248,6 @@ make_volcano_dt <- function(
 #'     plot_volcano(object, label = 'gene', size = 'log2maxlfq')
 #'     plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
 #'     plot_volcano(object, label = 'gene', features = c('hmbsb'))
-#'
 #' @export
 plot_volcano <- function(
     object,
@@ -267,6 +269,8 @@ plot_volcano <- function(
     title         = NULL
 ){
 # Assert
+    assert_is_valid_sumexp(object)
+    if (nrow(object)==0){  cmessage('nrow(object)=0 : return NULL');   return(NULL) }
     assert_is_a_number(nrow)
     bon <- effect <- direction <- mlp <- ndown <- nup <- significance <- NULL
     singlefeature <- yintercept <- NULL

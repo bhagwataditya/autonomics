@@ -224,6 +224,7 @@ write_xl <- function(object, xlfile, fitcoefs = autonomics::fitcoefs(object)){
     assert_is_valid_sumexp(object)
     assert_all_are_dirs(dirname(xlfile))
 # Write
+    fdt(object) %<>% add_adjusted_pvalues('fdr')
     list0 <- mapply(extract_contrast_fdt, 
                     fitcoef = fitcoefs,
                     MoreArgs = list(object = object), SIMPLIFY = FALSE)
@@ -244,6 +245,7 @@ write_ods <- function(object, odsfile, fitcoefs = autonomics::fitcoefs(object)){
     assert_is_valid_sumexp(object)
     assert_all_are_dirs(dirname(odsfile))
 # Write    
+    fdt(object) %<>% add_adjusted_pvalues('fdr')
     list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs, 
                     MoreArgs = list(object = object), SIMPLIFY = FALSE)
     if (file.exists(odsfile))  unlink(odsfile)

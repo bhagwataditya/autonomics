@@ -867,6 +867,7 @@ extract_coef_features <- function(
 ){
 # Assert
 # Filter
+    fdt(object) %<>% add_adjusted_pvalues('fdr', fit = fit, coefs = coefs)
     object %<>% .extract_p_features(         coefs = coefs, p = p,                   fit = fit, combiner = combiner, verbose = verbose)
     object %<>% .extract_fdr_features(       coefs = coefs, fdr = fdr,               fit = fit, combiner = combiner, verbose = verbose)
     object %<>% .extract_effectsize_features(coefs = coefs, effectsize = effectsize, fit = fit, combiner = combiner, verbose = verbose)
@@ -1093,12 +1094,12 @@ add_facetvars <- function(
 #' @export
 plot_exprs <- function(
     object, 
-    dim          = 'both', 
-    assay        = assayNames(object)[1], 
-    fit          = fits(object)[1], 
+    dim          = 'both',
+    assay        = assayNames(object)[1],
+    fit          = fits(object)[1],
     coefs        = default_coefs(object, fit = fit),
-    block        = NULL, 
-    x            = default_x(object, dim),  
+    block        = NULL,
+    x            = default_x(object, dim),
     geom         = default_geom(object, x = x, block = block),
     color        = x, # points/lines
     fill         = x, # boxplots
@@ -1109,25 +1110,25 @@ plot_exprs <- function(
     highlight    = NULL, 
     combiner     = '|',
     p            = 1,
-    fdr          = 1, 
+    fdr          = 1,
     facet        = if (dim=='both')  'feature_id' else NULL,
     n            = 4,
     ncol         = NULL,
     nrow         = NULL,
-    scales       = 'free_y', 
-    labeller     = 'label_value', 
-    pointsize    = if (is.null(block)) 0 else 0.5, 
+    scales       = 'free_y',
+    labeller     = 'label_value',
+    pointsize    = if (is.null(block)) 0 else 0.5,
     jitter       = if (is.null(block)) 0.1 else 0,
-    fillpalette  = make_var_palette(object, fill), 
+    fillpalette  = make_var_palette(object, fill),
     colorpalette = make_var_palette(object, color),
-    hlevels      = NULL, 
-    title        = switch(dim, both = x, features = 'Feature Boxplots', samples  =  'Sample Boxplots'), 
+    hlevels      = NULL,
+    title        = switch(dim, both = x, features = 'Feature Boxplots', samples  =  'Sample Boxplots'),
     subtitle     = if (!is.null(fit)) coefs else '',
-    xlab         = NULL, 
-    ylab         = 'value', 
-    theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)), 
+    xlab         = NULL,
+    ylab         = 'value',
+    theme        = ggplot2::theme(plot.title = element_text(hjust = 0.5)),
     file         = NULL,
-    width        = 7, 
+    width        = 7,
     height       = 7,
     verbose      = TRUE
 ){
@@ -1193,19 +1194,6 @@ plot_exprs <- function(
 }
 
 
-#' @rdname plot_exprs
-#' @export
-plot_boxplots <- function(...){
-    .Deprecated('plot_exprs')
-    plot_exprs(...)
-}
-
-#' @rdname plot_exprs
-#' @export
-boxplot_subgroups <- function(...){
-    .Deprecated('plot_exprs')
-    plot_exprs(...)
-}
 
 #' @rdname plot_exprs
 #' @export

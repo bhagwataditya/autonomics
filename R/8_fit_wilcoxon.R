@@ -93,7 +93,7 @@ fit_wilcoxon <- function(
     coefs       = NULL, 
     block       = NULL, 
     weightvar   = NULL, 
-    statvars    = c('effect', 'p', 'fdr'),
+    statvars    = c('effect', 'p'),
     verbose     = TRUE, 
     plot        = FALSE
 ){
@@ -117,7 +117,6 @@ fit_wilcoxon <- function(
     fitres %<>% Reduce(function(x, y)  merge(x, y, by = 'feature_id', all = TRUE), .)
     pattern <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
     fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
-    fitres %<>% add_fdr()
     object %<>% reset_fit('wilcoxon')
     object %<>% merge_fit(fitres, fit = 'wilcoxon')
 # extract

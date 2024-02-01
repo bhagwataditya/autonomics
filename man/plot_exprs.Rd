@@ -2,8 +2,6 @@
 % Please edit documentation in R/4_plot.R
 \name{plot_exprs}
 \alias{plot_exprs}
-\alias{plot_boxplots}
-\alias{boxplot_subgroups}
 \alias{plot_sample_boxplots}
 \alias{plot_feature_boxplots}
 \title{Plot exprs for coef}
@@ -49,10 +47,6 @@ plot_exprs(
   height = 7,
   verbose = TRUE
 )
-
-plot_boxplots(...)
-
-boxplot_subgroups(...)
 
 plot_sample_boxplots(
   object,

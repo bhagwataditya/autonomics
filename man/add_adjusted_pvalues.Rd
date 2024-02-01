@@ -5,14 +5,16 @@
 \title{Add adjusted pvalues}
 \usage{
 add_adjusted_pvalues(
-  object,
+  featuredt,
   method,
-  fit = fits(object)[1],
-  coefs = default_coefs(object, fit)[1]
+  fit = grep("^p~", names(featuredt), value = TRUE) \%>\% split_extract_fixed(FITSEP, 3)
+    \%>\% unique(),
+  coefs = grep("^p~", names(featuredt), value = TRUE) \%>\% split_extract_fixed(FITSEP,
+    2) \%>\% unique()
 )
 }
 \arguments{
-\item{object}{SummarizedExperiment}
+\item{featuredt}{fdt(object)}
 
 \item{method}{'fdr', 'bonferroni', ... (see `p.adjust.methods`)}
 
@@ -32,5 +34,6 @@ object <- read_maxquant_proteingroups(file)
 object \%<>\% fit_limma()
 object \%<>\% extract(order(fdt(.)$`p~Adult~limma`), )
 fdt(object)
-fdt(object \%>\% add_adjusted_pvalues('bonferroni'))
+fdt(object) \%>\% add_adjusted_pvalues('fdr')
+fdt(object) \%>\% add_adjusted_pvalues('bonferroni')
 }

@@ -312,7 +312,7 @@ fit_lmx <- function(
     block     = NULL, 
     opt       = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars  = c('effect', 'p', 'fdr'),
+    statvars  = c('effect', 'p'),
     verbose   = TRUE, 
     plot      = FALSE
 ){
@@ -349,7 +349,6 @@ fit_lmx <- function(
     pattern2 <- sprintf( '(feature_id|%s)$', paste0(coefs,    collapse = '|'))   # select coefs
     fitres <- fitres[, .SD, .SDcols = patterns(pattern1) ]
     fitres <- fitres[, .SD, .SDcols = patterns(pattern2) ]
-    fitres %<>% add_fdr()
 # Merge back
     object %<>% reset_fit(fit)
     object %<>% merge_fit(fitres, fit = fit)
@@ -372,7 +371,7 @@ fit_lm <- function(
     codingfun = contr.treatment,
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars  = c('effect', 'p', 'fdr'),
+    statvars  = c('effect', 'p'),
     coefs     = NULL, 
     contrasts = NULL,
     verbose   = TRUE, 
@@ -401,7 +400,7 @@ fit_lme <- function(
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     opt       = 'optim',
-    statvars  = c('effect', 'p', 'fdr'),
+    statvars  = c('effect', 'p'),
     coefs     = NULL, 
     contrasts = NULL,
     verbose   = TRUE, 
@@ -433,7 +432,7 @@ fit_lmer <- function(
     codingfun = contr.treatment,
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars  = c('effect', 'p', 'fdr'),
+    statvars  = c('effect', 'p'),
     coefs     = NULL, 
     contrasts = NULL,
     verbose   = TRUE, 

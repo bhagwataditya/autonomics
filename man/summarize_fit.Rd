@@ -4,10 +4,10 @@
 \alias{summarize_fit}
 \title{Summarize fit}
 \usage{
-summarize_fit(fdt, fit = NULL, coefs = NULL)
+summarize_fit(featuredt, fit = NULL, coefs = NULL)
 }
 \arguments{
-\item{fdt}{fdt(object)}
+\item{featuredt}{fdt(object)}
 
 \item{fit}{'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL}
 

@@ -86,5 +86,4 @@ Plot volcano
     plot_volcano(object, label = 'gene', size = 'log2maxlfq')
     plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
     plot_volcano(object, label = 'gene', features = c('hmbsb'))
-
 }
