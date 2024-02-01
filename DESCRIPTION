@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Unified Statistal Modeling of Omics Data
-Version: 1.11.48
+Version: 1.11.49
 Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Richard",  "Cotton",     email = "richierocks@gmail.com",            role = "aut"),
              person("Shahina",  "Hayat",      email = "shahina.hayat@hotmail.com",        role = "aut"),
@@ -62,7 +62,6 @@ Imports:
   methods,
   MultiAssayExperiment,
   parallel,
-  pcaMethods,
   RColorBrewer,
   rlang,
   R.utils,
@@ -103,6 +102,7 @@ Suggests:
   OlinkAnalyze,
   org.Hs.eg.db, 
   org.Mm.eg.db,
+  pcaMethods,
   pheatmap,
   progeny,
   RCurl,

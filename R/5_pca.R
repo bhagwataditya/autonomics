@@ -192,6 +192,9 @@ pca <- function(
     center_samples = TRUE, verbose = TRUE, plot = FALSE, ...
 ){
 # Assert
+    if (!requireNamespace('pcaMethods', quietly = TRUE)){
+        message("\t\t\tBiocManager::install('pcaMethods'). Then re-run.") 
+        return(object) }   # tabs: align with other msgs in read_xxx
     assert_is_valid_sumexp(object)
     assert_is_scalar(assay); assert_is_subset(assay, assayNames(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
@@ -247,8 +250,8 @@ pls <- function(
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
-        message("BiocManager::install('mixOmics'). Then re-run.")
-        return(object) }
+        message("\t\t\tBiocManager::install('mixOmics'). Then re-run.")
+        return(object) }   # tabs : align with other msgs in read_xxx
     assert_is_valid_sumexp(object)
     assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     assert_is_subset(by, svars(object))
@@ -290,8 +293,8 @@ sma <- function(
 ){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
-        message("First Biocinstaller::install('mpm'). Then re-run.")
-        return(object)}
+        message("\t\t\tFirst Biocinstaller::install('mpm'). Then re-run.")
+        return(object) }   # tabs: align with other msgs in read_xxx
     assert_is_valid_sumexp(object)
     assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     if (is.infinite(ndim)) ndim <- ncol(object)
@@ -347,8 +350,8 @@ lda <- function(
 ){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
-        message("BiocManager::install('MASS'). Then re-run.")
-        return(object)}
+        message("\t\t\tBiocManager::install('MASS'). Then re-run.")
+        return(object) }  # tabs: align with other msgs in read_xxx
     assert_is_valid_sumexp(object)
     assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
     assert_is_subset(by, svars(object))
@@ -405,8 +408,8 @@ spls <- function(
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
-        message("BiocManager::install('mixOmics'). Then re-run.")
-        return(object)
+        message("\t\t\tBiocManager::install('mixOmics'). Then re-run.")
+        return(object)   # tabs: align with other msgs in read_xxx
     }
     assert_is_valid_sumexp(object);  assert_is_scalar(assay)
     assert_is_subset(assay, assayNames(object))
@@ -448,8 +451,8 @@ opls <- function(
 ){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
-        message("BiocManager::install('ropls'). Then re-run.")
-        return(object)
+        message("\t\t\tBiocManager::install('ropls'). Then re-run.")
+        return(object)   # tabs: align with other msgs in read_xxx
     }
     assert_is_valid_sumexp(object)
     assert_is_scalar(assay);  assert_is_subset(assay, assayNames(object))
