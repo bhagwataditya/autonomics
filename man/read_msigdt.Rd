@@ -2,26 +2,23 @@
 % Please edit documentation in R/11_enrichment.R
 \name{read_msigdt}
 \alias{read_msigdt}
-\title{Read msig datatable}
+\title{Read msigdb datatable}
 \usage{
 read_msigdt(
-  organism = "human",
-  file = msigfile(organism),
-  collections = c("gobp", "gomf", "gocc", "reactome", "wiki")
+  file = list_files(MSIGDIR, full.names = TRUE)[1],
+  collections = if (is.null(file)) NULL else switch(basename(file) \%>\% substr(nchar(.)
+    - 4, nchar(.) - 3), Hs = c("C2:CP:REACTOME", "C5:GO:BP", "C5:GO:MF", "C5:GO:CC"), Mm
+    = c("M2:CP:REACTOME", "M5:GO:BP", "M5:GO:MF", "M5:GO:CC"))
 )
 }
 \arguments{
-\item{organism}{'human' or 'mouse'}
-
-\item{file}{sqlite file}
+\item{file}{msigdb file: one of the files in dir(MSIGDB).}
 
 \item{collections}{subset of names(MSIGCOLLECTIONS)}
 }
 \description{
-Read msig datatable
+Read msigdb datatable
 }
 \examples{
-dir <- file.path(tools::R_user_dir('autonomics', 'cache'), 'msigdb')
-read_msigdt(organism = 'human')
-read_msigdt(organism = 'mouse')
+read_msigdt()
 }

@@ -65,8 +65,6 @@ Results are returned in a data.table
     object <- read_somascan(file, fit = 'limma', coefs = 't1')
     fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
     object \%<>\% abstract_fit()
-    fdt(object)$flat <- fdt(object)$`t1~limma`
-    fdt(object)$flat \%<>\% factor2logical() \%>\% logical2factor('flat', 'updown')
 # Four flavours
     pathwaydt <- read_msigdt(collections = 'gobp')
     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(object))                                      # 2:n factor 
@@ -76,6 +74,5 @@ Results are returned in a data.table
 # Alternative implementation
     enrichdt5 <-  altenrich(object, pathwaydt)   # alternative implementation
     cols <- intersect(names(enrichdt1), names(enrichdt5))
-    all(enrichdt1[, cols, with = FALSE]  ==  
-        enrichdt5[, cols, with = FALSE])       # identical
+    all(enrichdt1[, cols, with = FALSE]  ==  enrichdt5[, cols, with = FALSE])   # identical
 }

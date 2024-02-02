@@ -1,101 +1,102 @@
-msigcollections <- function(organism){
-    switch(
-        organism, 
-        human = MSIGHUMAN,
-        mouse = MSIGMOUSE
-    )
-}
 
 
-#' @rdname msigfile
+#' Human/Mouse Msigdb Collections
 #' @export
-MSIGHUMAN <- c(
-    positional          = 'C1',                   # positional    : - genes in same cytogenetic band 
-    perturbation        = 'C2:CGP',               # curated       : + genes with altered expression upon (chemical/genetic) perturbation
-    otherpathway        = 'C2:CP',                #
-    biocarta            = 'C2:CP:BIOCARTA',       #                 + genes in same biocarta pathway
-    kegglegacy          = 'C2:CP:KEGG_LEGACY',    #                 -                   kegg pathway (legacy)
-    keggmedicus         = 'C2:CP:KEGG_MEDICUS',   #                 +           kegg medicus pathway
-    pid                 = 'C2:CP:PID',            #                 -        prot interac db pathway
-    reactome            = 'C2:CP:REACTOME',       #                 +               reactome pathway
-    wiki                = 'C2:CP:WIKIPATHWAYS',   #                 +                   wiki pathway
-    mirlegacy           = 'C3:MIR:MIR_LEGACY',    # regulatory    : + genes with shared mir site (mirdb 6.0, 2020)
-    mir                 = 'C3:MIR:MIRDB',         #                 -                            (legacy)
-    tfbs                = 'C3:TFT:GTRD',          #                 +                   tfb site (Gene Transcr Reg Db, 2021)
-    tfbslegacy          = 'C3:TFT:TFT_LEGACY',    #                 -                            (legacy, 2005)
-    cancersubtype       = 'C4:3CA',               # computational : ? genes upregulated in tumor subpopulation  (2023)
-    cancerneighbourhood = 'C4:CGN',               #                 ? genes in same cancer driver neighbourhood (2005)
-    cancercondition     = 'C4:CM',                #                 ? genes with altered expression in (same) cancer condition (2004)
-    gobp                = 'C5:GO:BP',             # ontological   : + genes in same biological process
-    gocc                = 'C5:GO:CC',             #                 +             cellular compartment
-    gomf                = 'C5:GO:MF',             #                 +     with same molecular function
-    humanphenotype      = 'C5:HPO',               #                 + with altered expression in (same) human phenotype
-    cancerpathway       = 'C6',                   # oncogenic     : ? genes in cancer-dysregulated pathway
-    immuneperturbation  = 'C7:IMMUNESIGDB',       # immunologic   : ? genes with altered expression upon (same) immune system perturbation
-    vaccination         = 'C7:VAX',               #                 ? genes with altered expression upon (same) vaccination
-    celltype            = 'C8',                   # celltype      : + genes with celltype-specific expression
-    hallmark            = 'H'                     # hallmark      : + shared hallmark
+MSIGCOLLECTIONSHUMAN <- c( 
+    'C1',                   # positional    : - genes in same cytogenetic band 
+    'C2:CGP',               # curated       : + genes with altered expression upon (chemical/genetic) perturbation
+    'C2:CP',                #
+    'C2:CP:BIOCARTA',       #                 + genes in same biocarta pathway
+    'C2:CP:KEGG_LEGACY',    #                 -                   kegg pathway (legacy)
+    'C2:CP:KEGG_MEDICUS',   #                 +           kegg medicus pathway
+    'C2:CP:PID',            #                 -        prot interac db pathway
+    'C2:CP:REACTOME',       #                 +               reactome pathway
+    'C2:CP:WIKIPATHWAYS',   #                 +                   wiki pathway
+    'C3:MIR:MIR_LEGACY',    # regulatory    : + genes with shared mir site (mirdb 6.0, 2020)
+    'C3:MIR:MIRDB',         #                 -                            (legacy)
+    'C3:TFT:GTRD',          #                 +                   tfb site (Gene Transcr Reg Db, 2021)
+    'C3:TFT:TFT_LEGACY',    #                 -                            (legacy, 2005)
+    'C4:3CA',               # computational : ? genes upregulated in tumor subpopulation  (2023)
+    'C4:CGN',               #                 ? genes in same cancer driver neighbourhood (2005)
+    'C4:CM',                #                 ? genes with altered expression in (same) cancer condition (2004)
+    'C5:GO:BP',             # ontological   : + genes in same biological process
+    'C5:GO:CC',             #                 +             cellular compartment
+    'C5:GO:MF',             #                 +     with same molecular function
+    'C5:HPO',               #                 + with altered expression in (same) human phenotype
+    'C6',                   # oncogenic     : ? genes in cancer-dysregulated pathway
+    'C7:IMMUNESIGDB',       # immunologic   : ? genes with altered expression upon (same) immune system perturbation
+    'C7:VAX',               #                 ? genes with altered expression upon (same) vaccination
+    'C8',                   # celltype      : + genes with celltype-specific expression
+    'H'                     # hallmark      : + shared hallmark
  )
 
 
-#' @rdname msigfile
+#' @rdname MSIGCOLLECTIONSHUMAN
 #' @export
-MSIGMOUSE <- c(
-    positional          = 'M1',                   # positional    : - genes in same cytogenetic band 
-    perturbation        = 'M2:CGP',               # curated       : + genes with altered expression upon (chemical/genetic) perturbation
-    biocarta            = 'M2:CP:BIOCARTA',       #                 + genes in same biocarta pathway
-    reactome            = 'M2:CP:REACTOME',       #                 +               reactome pathway
-    wiki                = 'M2:CP:WIKIPATHWAYS',   #                 +                   wiki pathway
-    tfbs                = 'M3:GTRD',              #                 +                   tfb site (Gene Transcr Reg Db, 2021)
-    mir                 = 'M3:MIRDB',             #                 -                            (legacy)
-    gobp                = 'M5:GO:BP',             # ontological   : + genes in same biological process
-    gocc                = 'M5:GO:CC',             #                 +             cellular compartment
-    gomf                = 'M5:GO:MF',             #                 +     with same molecular function
-    tumorphenotype      = 'M5:MPT',               #                 + tumor phenotype ontology 
-    celltype            = 'C8',                   # celltype      : + genes with celltype-specific expression
-    hallmark            = 'MH'                    # hallmark      : + shared hallmark
+MSIGCOLLECTIONSMOUSE <- c( 
+    'M1',                   # positional    : - genes in same cytogenetic band 
+    'M2:CGP',               # curated       : + genes with altered expression upon (chemical/genetic) perturbation
+    'M2:CP:BIOCARTA',       #                 + genes in same biocarta pathway
+    'M2:CP:REACTOME',       #                 +               reactome pathway
+    'M2:CP:WIKIPATHWAYS',   #                 +                   wiki pathway
+    'M3:GTRD',              #                 +                   tfb site (Gene Transcr Reg Db, 2021)
+    'M3:MIRDB',             #                 -                            (legacy)
+    'M5:GO:BP',             # ontological   : + genes in same biological process
+    'M5:GO:CC',             #                 +             cellular compartment
+    'M5:GO:MF',             #                 +     with same molecular function
+    'M5:MPT',               #                 + tumor phenotype ontology 
+    'C8',                   # celltype      : + genes with celltype-specific expression
+    'MH'                    # hallmark      : + shared hallmark
 )
 
-#' Get path to msigfile
-#' @param organism 'human' or 'mouse'
-#' @param year      number
-#' @param release   number
-#' @examples
-# # Collection names
-#'    MSIGHUMAN
-#'    MSIGMOUSE
-#' # Collection file
-#'    msigfile('human')
-#'    msigfile('mouse')
+
+#' local msigdb dir
 #' @export
-msigfile <- function(organism, year = 2023, release = 2){
-    assert_scalar_subset(organism, c('human', 'mouse'))
-    dir <- file.path(R_user_dir('autonomics', 'cache'), 'msigdb')
-    file <- sprintf('msigdb_v%d.%d.%s.db', year, release, switch(organism, human = 'Hs', mouse = 'Mm'))
-    file <- file.path(dir, file)
-    file
+MSIGDIR <- file.path(R_user_dir('autonomics', 'cache'), 'msigdb')
+
+
+#' @title       list files
+#' @description list.files for programming
+#' @details
+#' Adds a small layer on list.files.
+#' Returning NULL rather than character(0) when no files.
+#' Making it better suited for programming.
+#' @param dir         directory
+#' @param full.names  TRUE or FALSE
+#' @export
+list_files <- function(dir, full.names){
+    y <- list.files(dir, full.names = full.names)
+    if (length(y)==0)  return(NULL)  else  return(y)
 }
 
-#' Read msig datatable
-#' @param organism    'human' or 'mouse'
-#' @param file         sqlite file
+
+#' Read msigdb datatable
+#' @param file         msigdb file: one of the files in dir(MSIGDB).
 #' @param collections  subset of names(MSIGCOLLECTIONS)
 #' @examples
-#' dir <- file.path(tools::R_user_dir('autonomics', 'cache'), 'msigdb')
-#' read_msigdt(organism = 'human')
-#' read_msigdt(organism = 'mouse')
+#' read_msigdt()
 #' @export
 read_msigdt <- function(
-    organism    = 'human',
-    file        = msigfile(organism), 
-    collections = c('gobp', 'gomf', 'gocc', 'reactome', 'wiki')
+    file = list_files(MSIGDIR, full.names = TRUE)[1], 
+    collections = if (is.null(file))  NULL else 
+                  switch( basename(file) %>% substr(nchar(.)-4, nchar(.)-3) , 
+                          Hs = c( 'C2:CP:REACTOME', 'C5:GO:BP', 'C5:GO:MF', 'C5:GO:CC' ), 
+                          Mm = c( 'M2:CP:REACTOME', 'M5:GO:BP', 'M5:GO:MF', 'M5:GO:CC' ))
 ){
 # Assert
-    assert_scalar_subset(organism, c('human', 'mouse'))
-    assert_is_subset(collections, names(msigcollections(organism)))
+    if (is.null(file)){
+        cmessage("\t\tVisit https://www.gsea-msigdb.org/gsea/downloads.jsp")
+        cmessage("\t\tScrolldown. Locate SQLite database (not jason or xml!)")
+        cmessage("\t\tDownload Human or Mouse SQLite database")
+        cmessage("\t\tCreate %s", MSIGDIR)
+        cmessage("\t\tUnzip into this dir")  
+        cmessage("\t\tNow rerun `read_msigdt()`")
+        return(NULL)
+    }
     if (!requireNamespace('DBI',     quietly = TRUE))  message("BiocManager::install('DBI'). Then re-run.")
     if (!requireNamespace('RSQLite', quietly = TRUE))  message("BiocManager::install('RSQLite'). Then re-run.")
-    if (!file.exists(file))  return(NULL)
+    assert_all_are_existing_files(file)
+    assert_is_subset(collections, c(MSIGCOLLECTIONSHUMAN, MSIGCOLLECTIONSMOUSE))
     gene_set_id <- gene_symbol_id <- id <- symbol <- NULL
     standard_name <- collection_name <- collection <- NULL
 # Read
@@ -107,13 +108,13 @@ read_msigdt <- function(
     dt2 %<>% extract(, .(geneid = id, gene = symbol))
     dt3 %<>% extract(, .(setid  = id, set = standard_name, collection = collection_name))
     DBI::dbDisconnect(con)
-    
+# Merge
     msigdt <- dt1
     msigdt %<>% merge(dt2, by = 'geneid')
     msigdt %<>% merge(dt3, by = 'setid')
     msigdt %<>% extract(, c('collection', 'set', 'gene'), with = FALSE)
 # Return
-    msigdt %<>% extract(collection %in% msigcollections(organism)[collections])
+    msigdt %<>% extract(collection %in% collections)
     msigdt
 }
 
@@ -282,8 +283,6 @@ factor2logical <- function(x){
 #'     object <- read_somascan(file, fit = 'limma', coefs = 't1')
 #'     fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #'     object %<>% abstract_fit()
-#'     fdt(object)$flat <- fdt(object)$`t1~limma`
-#'     fdt(object)$flat %<>% factor2logical() %>% logical2factor('flat', 'updown')
 #' # Four flavours
 #'     pathwaydt <- read_msigdt(collections = 'gobp')
 #'     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(object))                                      # 2:n factor 
@@ -293,8 +292,7 @@ factor2logical <- function(x){
 #' # Alternative implementation
 #'     enrichdt5 <-  altenrich(object, pathwaydt)   # alternative implementation
 #'     cols <- intersect(names(enrichdt1), names(enrichdt5))
-#'     all(enrichdt1[, cols, with = FALSE]  ==  
-#'         enrichdt5[, cols, with = FALSE])       # identical
+#'     all(enrichdt1[, cols, with = FALSE]  ==  enrichdt5[, cols, with = FALSE])   # identical
 #' @details
 #' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
 #' Results are returned in a data.table
@@ -335,18 +333,17 @@ enrichment <- function(
     assert_is_data.table(pathwaydt)
     if (!is.null(fit ))  assert_scalar_subset(fit,  fits(object))
     if (!is.null(coef))  assert_scalar_subset(coef, coefs(object))
+    # assert_is_vector(levels(fdt(object)[[var]]))
     assert_scalar_subset(var, fvars(object))
     assert_is_factor(fdt(object)[[var]])
-    # assert_is_vector(levels(fdt(object)[[var]]))
     assert_is_subset(levels, levels(fdt(object)[[var]]))
     assert_scalar_subset( genevar, names(pathwaydt))
     assert_all_are_non_missing_nor_empty_character(fdt(object)[[genevar]])
     assert_all_are_non_missing_nor_empty_character(  pathwaydt[[genevar]])
     if (!is.null(genesep))  assert_is_a_string(genesep)
     assert_is_a_bool(verbose)
-    if (verbose){
-        cmessage('\tAre pathways enriched in `%s` genes ?', var)
-        cmessage("\t\tfdt(.)$%s  %%<>%%  split_extract_regex('%s', 1)", genevar, genesep) }
+    if (verbose)  cmessage('\tAre pathways enriched in `%s` genes ?', var)
+    if (verbose)  cmessage("\t\tfdt(.)$%s  %%<>%%  split_extract_regex('%s', 1)", genevar, genesep)
     fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)
     `in` <- in.detected <- in.selected <- detected <- selected <- out <- NULL
 # Sets
@@ -440,7 +437,7 @@ altenrich <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    if (is.null(pathwaydt)) return(object)
+    if (is.null(pathwaydt)) return(NULL)
     assert_is_data.table(   pathwaydt)
     assert_scalar_subset(genevar, fvars(object))
     assert_scalar_subset(genevar, names(pathwaydt ))
