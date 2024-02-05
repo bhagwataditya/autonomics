@@ -580,14 +580,12 @@ PPATTERN <- paste0('p', FITSEP)
 # object: SumExp
 # fitres: data.table(p.contr1, p.contr2, effect.contr1, effect.contr2)
 # stat:  'p', 'effect', 'fdr', 't'
-# fit:   'limma', 'wilcoxon'
-merge_fit <- function(object, fitres, fit, statistic = NULL){
+merge_fit <- function(object, fitres, statistic = NULL){
     . <- NULL
     fitresdt <- data.table::copy(fitres)   # dont change in original
     firstcols <- intersect(c('feature_id', 'Intercept'), names(fitresdt))
     fitresdt %<>% extract(,c(firstcols, sort(setdiff(names(.), firstcols))), with = FALSE)
     if (!is.null(statistic)) names(fitresdt)[-1] %<>% paste0(statistic,FITSEP,.)
-    names(fitresdt)[-1] %<>% paste0(FITSEP, fit)
     object %<>% merge_fdt(fitresdt)
     object
 }
@@ -626,30 +624,41 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @param plot      whether to plot
 #' @return Updated SummarizedExperiment
 #' @examples
-#' # Default
+#' # Read
 #'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
-#'     object %<>% fit(~ subgroup)
+#'     
 #' # Standard
-#'     object %<>% fit_lm(        ~ subgroup)                 #     statistics default
-#'     object %<>% fit_limma(     ~ subgroup)                 # bioinformatics default
+#'     fdt(object) %<>% extract(, 'feature_id')
+#'     object %<>% fit_lm(        ~ subgroup)                     #     statistics default
+#'     object %<>% fit_limma(     ~ subgroup)                     # bioinformatics default
+#'     summarize_fit(fdt(object))
+#'     
 #' # Blocked
+#'     fdt(object) %<>% extract(, 'feature_id')
 #'     object %<>% fit_limma(     ~ subgroup, block = 'Subject')  #        simple random effects
 #'     object %<>% fit_lme(       ~ subgroup, block = 'Subject')  #      powerful random effects
 #'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject')  # more powerful random effects
-#' # Intuitive : alternative coding
-#'     object %<>% fit_lme(       ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
-#'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
-#'     object %<>% fit_limma(     ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
-#' # Flexible : limma contrasts
-#'     object %<>% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = c('t1-t0'))
+#'     summarize_fit(fdt(object))
+#'     
+#' # Alternative coding: e.g. grand mean intercept
+#'     fdt(object) %<>% extract(, 'feature_id')
+#'     object %<>% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control)
+#'     object %<>% fit_lme(       ~ subgroup, block = 'Subject', codingfun = code_control)
+#'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = code_control)
+#'     summarize_fit(fdt(object))
+#'     
+#' # Flexible : posthoc contrasts (only limma!)
+#'     fdt(object) %<>% extract(, 'feature_id')
+#'     object %<>% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control, coefs = 't1-t0')
+#'     object %<>% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = 't1-t0')
 #'         # flexible, but only approximate
 #'         # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
+#'         
 #' # Non-parametric: wilcoxon
-#'     object %<>% fit_wilcoxon( ~ subgroup)                # unpaired
+#'     fdt(object) %<>% extract(, 'feature_id')
+#'     object %<>% fit_wilcoxon( ~ subgroup)                    # unpaired
 #'     object %<>% fit_wilcoxon( ~ subgroup, block = 'Subject') # paired
-#'     plot_contrast_venn(is_sig(object, contrast = 't2', fit = c('lm', 'limma')))
-#'    #plot_contrast_venn(is_sig(object, contrast = 't3', fit = c('limma', 'lme')))
 #' @export
 fit <- function(
     object, 

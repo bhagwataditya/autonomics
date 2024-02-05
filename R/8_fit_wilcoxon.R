@@ -44,7 +44,7 @@
 ){
     . <- NULL
     dt <- data.table::dcast(dt, as.formula(sprintf(
-            'feature_id + feature_name + %s ~ %s', block, subgroupvar)),
+            'feature_id + %s ~ %s', block, subgroupvar)),
             value.var = 'value')
     xx <- subgrouplevels[[1]]
     yy <- subgrouplevels[[2]]
@@ -117,8 +117,10 @@ fit_wilcoxon <- function(
     fitres %<>% Reduce(function(x, y)  merge(x, y, by = 'feature_id', all = TRUE), .)
     pattern <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
     fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
+    names(fitres)[-1] %<>% paste0('~wilcoxon')
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres,'wilcoxon'))
     object %<>% reset_fit('wilcoxon')
-    object %<>% merge_fit(fitres, fit = 'wilcoxon')
+    object %<>% merge_fit(fitres)
 # extract
     extract_quantity <- function(quantity, fitres){
         quantitydot <- paste0(quantity, FITSEP)
@@ -130,7 +132,6 @@ fit_wilcoxon <- function(
         quantitymat }
 # Return
     if (plot)  print(plot_volcano(object, fit = 'wilcoxon')) 
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object),'wilcoxon'))
     object
 }
 

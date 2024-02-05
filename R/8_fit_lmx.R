@@ -349,13 +349,14 @@ fit_lmx <- function(
     pattern2 <- sprintf( '(feature_id|%s)$', paste0(coefs,    collapse = '|'))   # select coefs
     fitres <- fitres[, .SD, .SDcols = patterns(pattern1) ]
     fitres <- fitres[, .SD, .SDcols = patterns(pattern2) ]
+    names(fitres)[-1] %<>% paste0('~', fit)
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres, fit = fit, coefs = coefs))
 # Merge back
     object %<>% reset_fit(fit)
-    object %<>% merge_fit(fitres, fit = fit)
+    object %<>% merge_fit(fitres)
     formula %<>% droplhs() %<>% formula2str()
     
     if (!is.null(weights))  formula %<>% paste0(', weights = assays(object)$', weightvar)
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(fdt(object), fit = fit, coefs = coefs))
     if (length(coefs) > 1)  coefs %<>% setdiff('Intercept')
     if (plot)  print(plot_volcano(object, fit = fit, coefs = coefs))
     object 
