@@ -117,8 +117,8 @@ add_assay_means <- function(
 add_adjusted_pvalues <- function(
     featuredt, 
     method, 
-    fit   = grep('^p~', names(featuredt), value = TRUE) %>% split_extract_fixed(FITSEP, 3) %>% unique(),
-    coefs = grep('^p~', names(featuredt), value = TRUE) %>% split_extract_fixed(FITSEP, 2) %>% unique()
+    fit   = names(featuredt) %>% extract(stri_detect_fixed(., PPATTERN)) %>%  split_extract_fixed(FITSEP, 3) %>% unique(),
+    coefs = names(featuredt) %>% extract(stri_detect_fixed(., PPATTERN)) %>%  split_extract_fixed(FITSEP, 2) %>% unique()
 ){
 # Assert
     assert_is_data.table(featuredt)
@@ -127,18 +127,19 @@ add_adjusted_pvalues <- function(
     for (.fit  in fit){
     for (.coef in coefs){
     for (.method in method){
-        pvars <- grep('^p~', names(featuredt), value = TRUE)
-        pvars %<>% extract(split_extract_fixed(., '~', 3) %in% fit)
-        pvars %<>% extract(split_extract_fixed(., '~', 2) %in% coefs)
+        pvars <- grep(PPATTERN, names(featuredt), value = TRUE)
+        pvars %<>% extract(split_extract_fixed(., FITSEP, 3) %in% .fit)
+        pvars %<>% extract(split_extract_fixed(., FITSEP, 2) %in% .coef)
         
         pdt <- featuredt[ , pvars , with = FALSE]
         pdt[, names(pdt) := lapply(.SD, p.adjust, method = .method), .SDcols = names(pdt)]
-        names(pdt) %<>% stri_replace_first_fixed('p~', paste0(method, '~'))
+        names(pdt) %<>% stri_replace_first_fixed(PPATTERN, paste0(.method, FITSEP))
+        featuredt %<>% cbind(pdt)
     }}}
 # Add
-    featuredt %<>% cbind(pdt)
     featuredt[]
 }
+
 
     
 #' Create volcano datatable

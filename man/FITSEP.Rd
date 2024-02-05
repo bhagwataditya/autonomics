@@ -3,12 +3,17 @@
 \docType{data}
 \name{FITSEP}
 \alias{FITSEP}
+\alias{PPATTERN}
 \title{Fit results separator}
 \format{
+An object of class \code{character} of length 1.
+
 An object of class \code{character} of length 1.
 }
 \usage{
 FITSEP
+
+PPATTERN
 }
 \description{
 Fit results separator

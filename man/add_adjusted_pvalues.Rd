@@ -7,10 +7,10 @@
 add_adjusted_pvalues(
   featuredt,
   method,
-  fit = grep("^p~", names(featuredt), value = TRUE) \%>\% split_extract_fixed(FITSEP, 3)
-    \%>\% unique(),
-  coefs = grep("^p~", names(featuredt), value = TRUE) \%>\% split_extract_fixed(FITSEP,
-    2) \%>\% unique()
+  fit = names(featuredt) \%>\% extract(stri_detect_fixed(., PPATTERN)) \%>\%
+    split_extract_fixed(FITSEP, 3) \%>\% unique(),
+  coefs = names(featuredt) \%>\% extract(stri_detect_fixed(., PPATTERN)) \%>\%
+    split_extract_fixed(FITSEP, 2) \%>\% unique()
 )
 }
 \arguments{

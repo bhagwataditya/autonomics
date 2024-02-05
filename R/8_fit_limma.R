@@ -564,11 +564,18 @@ reset_fit <- function(
     object
 }
 
+
 #' Fit results separator
 #' @examples
 #' FITSEP
 #' @export
 FITSEP <- '~'
+
+
+#' @rdname FITSEP
+#' @export
+PPATTERN <- paste0('p', FITSEP)
+
 
 # object: SumExp
 # fitres: data.table(p.contr1, p.contr2, effect.contr1, effect.contr2)
