@@ -26,7 +26,7 @@
     cbind(pvalues, tvalues, effects, stderrs, F = fval, F.p = f.p )
 }
 
-.lm <- function(sd, formula, block, weights, optim = NULL){
+.lm <- function(sd, formula, block, weights, sep, optim = NULL){
     formula <- as.formula(formula)  # stackoverflow.com/questions/51142338
     environment(formula) <- environment()
     fitres <- stats::coefficients(summary(lm(
@@ -43,12 +43,12 @@
     colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times =ncol(fitres)), sep=FITSEP)
+                        rep(rownames(fitres), times = ncol(fitres)), sep = sep)
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
 
-.lme <- function(sd, formula, block, weights, opt = 'optim'){
+.lme <- function(sd, formula, block, weights, sep, opt = 'optim'){
     ctrl <- nlme::lmeControl(opt = opt)  # https://stats.stackexchange.com/a/40664
     fitres <- nlme::lme(
                     fixed     = formula, 
@@ -66,12 +66,12 @@
     #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow = 1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = ncol(fitres)), sep=FITSEP)
+                        rep(rownames(fitres), times = ncol(fitres)), sep = sep )
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
 
-.lmer <- function(sd, formula, block, weights, optim = NULL){
+.lmer <- function(sd, formula, block, weights, sep, optim = NULL){
     fitres <- lme4::lmer(
         formula   = formula,
         data      = sd,
@@ -93,7 +93,7 @@
     #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
-                        rep(rownames(fitres), times = ncol(fitres)), sep=FITSEP)
+                        rep(rownames(fitres), times = ncol(fitres)), sep = sep )
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
@@ -313,6 +313,7 @@ fit_lmx <- function(
     opt       = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p'),
+    sep       = FITSEP,
     verbose   = TRUE, 
     plot      = FALSE
 ){
@@ -342,15 +343,17 @@ fit_lmx <- function(
     assays <- assayNames(object) %>% intersect(c(.[1], 'weights'))
     dt <- sumexp_to_longdt(obj, svars = c(all.vars(formula), blockvars), assay = assays)
     lhsformula <- addlhs(formula)
-    fitres <- dt[, fitmethod(.SD, formula = lhsformula, block = block, weights = get(weightvar), opt = opt), by = 'feature_id' ]
+    fitres <- dt[, 
+         fitmethod(.SD, formula = lhsformula, block = block, weights = get(weightvar), sep = sep, opt = opt), 
+         by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     if (drop)  for (var in all.vars(formula))   names(fitres) %<>% stri_replace_first_fixed(var, '')
     pattern1 <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
     pattern2 <- sprintf( '(feature_id|%s)$', paste0(coefs,    collapse = '|'))   # select coefs
     fitres <- fitres[, .SD, .SDcols = patterns(pattern1) ]
     fitres <- fitres[, .SD, .SDcols = patterns(pattern2) ]
-    names(fitres)[-1] %<>% paste0('~', fit)
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres, fit = fit, coefs = coefs))
+    names(fitres)[-1] %<>% paste0(sep, fit)
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres, fit = fit, coefs = coefs, sep = sep))
 # Merge back
     object %<>% reset_fit(fit)
     object %<>% merge_fit(fitres)
@@ -373,6 +376,7 @@ fit_lm <- function(
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p'),
+    sep       = FITSEP,
     coefs     = colnames(create_design(
                 object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
     contrasts = NULL,
@@ -387,8 +391,8 @@ fit_lm <- function(
         formula      = formula,      drop         = drop,
         codingfun    = codingfun,    block        = block,
         weightvar    = weightvar,    statvars     = statvars,
-        coefs        = coefs,        verbose      = verbose,
-        plot         = plot)
+        sep          = sep,          coefs        = coefs,
+        verbose      = verbose,      plot         = plot)
 }
 
 
@@ -403,6 +407,7 @@ fit_lme <- function(
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     opt       = 'optim',
     statvars  = c('effect', 'p'),
+    sep       = FITSEP,
     coefs     = colnames(create_design(
                 object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
     contrasts = NULL,
@@ -420,8 +425,8 @@ fit_lme <- function(
         object,                      fit          = 'lme', 
         formula      = formula,      drop         = drop,
         codingfun    = codingfun,    block        = block, 
-        weightvar    = weightvar,    opt          = opt,
-        coefs        = coefs, 
+        weightvar    = weightvar,    sep          = sep,
+        opt          = opt,          coefs        = coefs, 
         verbose      = verbose,      plot         = plot)
 }
 
@@ -436,6 +441,7 @@ fit_lmer <- function(
     block     = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
     statvars  = c('effect', 'p'),
+    sep       = FITSEP,
     coefs     = colnames(create_design(
                 object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
     contrasts = NULL,
@@ -456,6 +462,7 @@ fit_lmer <- function(
         object,                    fit        = 'lmer', 
         formula    = formula,      drop       = drop,
         codingfun  = codingfun,    block      = block, 
-        weightvar  = weightvar,    coefs      = coefs, 
+        weightvar  = weightvar,    sep        = sep,
+        coefs      = coefs, 
         verbose    = verbose,      plot       = plot)
 }

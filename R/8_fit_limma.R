@@ -648,7 +648,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     object %<>% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = code_control)
 #'     summarize_fit(fdt(object))
 #'     
-#' # Flexible : posthoc contrasts (only limma!)
+#' # Posthoc contrasts (only limma!)
 #'     fdt(object) %<>% extract(, 'feature_id')
 #'     object %<>% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control, coefs = 't1-t0')
 #'     object %<>% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = 't1-t0')
@@ -659,6 +659,15 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     fdt(object) %<>% extract(, 'feature_id')
 #'     object %<>% fit_wilcoxon( ~ subgroup)                    # unpaired
 #'     object %<>% fit_wilcoxon( ~ subgroup, block = 'Subject') # paired
+#'     
+#' # Custom separator
+#'     fdt(object) %<>% extract(, 'feature_id')
+#'     fdt( fit_lm(      object, sep = '.'))
+#'     fdt( fit_limma(   object, block = 'Subject', sep = '.') )
+#'     fdt( fit_lme(     object, block = 'Subject', sep = '.') )
+#'     fdt( fit_lmer(    object, block = 'Subject', sep = '.') )
+#'     fdt( fit_wilcoxon(object, block = 'Subject', sep = '.') )
+#'     fdt( fit_wilcoxon(object, sep = '.') )
 #' @export
 fit <- function(
     object, 
@@ -835,7 +844,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         if ('se' %in% statvars){ dt0 <- data.table(sqrt(limmafit$s2.post) * limmafit$stdev.unscaled); names(dt0) %<>% paste0('se', sep, ., suffix); limmadt %<>% cbind(dt0) }
     }
 # Return
-    if (verbose)  message_df('\t\t\t%s',  summarize_fit(limmadt, fit = 'limma'))
+    if (verbose)  message_df('\t\t\t%s',  summarize_fit(limmadt, fit = 'limma', sep = sep))
     limmadt
 
 }
@@ -859,20 +868,20 @@ pull_level <- function(x, lev){
 #' object %<>% fit_lm()
 #' summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 #' @export
-summarize_fit <- function(featuredt, fit = NULL, coefs = NULL){
+summarize_fit <- function(featuredt, fit = NULL, coefs = NULL, sep = FITSEP){
 # Assert
     assert_is_data.table(featuredt)
     statistic <- coefficient <- fit <- variable <- NULL
     effect <- p <- fdr <- NULL
 # Summarize
-    cols <- names(featuredt) %>% extract(stri_detect_fixed(., FITSEP))
+    cols <- names(featuredt) %>% extract(stri_detect_fixed(., sep))
     featuredt %<>% extract(, c('feature_id', cols), with = FALSE)
     featuredt %<>% add_adjusted_pvalues('fdr')
 
     longdt <- featuredt %>% melt.data.table(id.vars = 'feature_id')
-    longdt[, statistic    := split_extract_fixed(variable, FITSEP, 1) %>% factor(unique(.))]
-    longdt[,  coefficient := split_extract_fixed(variable, FITSEP, 2) %>% factor(unique(.))]
-    longdt[,       fit    := split_extract_fixed(variable, FITSEP, 3) %>% factor(unique(.))]
+    longdt[, statistic    := split_extract_fixed(variable, sep, 1) %>% factor(unique(.))]
+    longdt[,  coefficient := split_extract_fixed(variable, sep, 2) %>% factor(unique(.))]
+    longdt[,       fit    := split_extract_fixed(variable, sep, 3) %>% factor(unique(.))]
     longdt[, variable := NULL]
     
     sumdt <- dcast.data.table(longdt, feature_id + coefficient + fit ~ statistic, value.var = 'value')

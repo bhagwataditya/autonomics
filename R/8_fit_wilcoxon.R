@@ -59,7 +59,7 @@
 }
 
 
-.wilcoxon <- function(contrastdef, dt, subgroupvar, block, verbose){
+.wilcoxon <- function(contrastdef, dt, subgroupvar, block, sep, verbose){
     subgrouplevels <- stri_split_regex(contrastdef, pattern = '[ ]*[-][ ]*')
     subgrouplevels %<>% unlist()
     subgrouplevels %<>% rev()
@@ -72,7 +72,7 @@
                 subgrouplevels = subgrouplevels, 
                 block = block, verbose = verbose)
     data.table::setnames(resdt, c('p', 't', 'effect'), 
-                        paste(c('p', 't', 'effect'), contrastdef, sep=FITSEP))
+                        paste(c('p', 't', 'effect'), contrastdef, sep = sep ))
     resdt
 }
 
@@ -94,6 +94,7 @@ fit_wilcoxon <- function(
     block       = NULL, 
     weightvar   = NULL, 
     statvars    = c('effect', 'p'),
+    sep         = FITSEP,
     verbose     = TRUE, 
     plot        = FALSE
 ){
@@ -113,12 +114,13 @@ fit_wilcoxon <- function(
     . <- NULL
     dt <- sumexp_to_longdt(obj, svars = c(subgroupvar, block))
     if (verbose)  message('\t\tWilcoxon')
-    fitres <- lapply(vectorize_contrasts(contrasts), .wilcoxon, dt, subgroupvar, block, verbose)
+    fitres <- lapply(vectorize_contrasts(contrasts), .wilcoxon, 
+                     dt, subgroupvar = subgroupvar, block = block, sep = sep, verbose = verbose)
     fitres %<>% Reduce(function(x, y)  merge(x, y, by = 'feature_id', all = TRUE), .)
     pattern <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
     fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
-    names(fitres)[-1] %<>% paste0('~wilcoxon')
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres,'wilcoxon'))
+    names(fitres)[-1] %<>% paste0(sep, 'wilcoxon')
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres, fit = 'wilcoxon', sep = sep))
     object %<>% reset_fit('wilcoxon')
     object %<>% merge_fit(fitres)
 # extract

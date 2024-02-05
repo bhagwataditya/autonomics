@@ -4,7 +4,7 @@
 \alias{summarize_fit}
 \title{Summarize fit}
 \usage{
-summarize_fit(featuredt, fit = NULL, coefs = NULL)
+summarize_fit(featuredt, fit = NULL, coefs = NULL, sep = FITSEP)
 }
 \arguments{
 \item{featuredt}{fdt(object)}

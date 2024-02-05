@@ -69,6 +69,7 @@ fit_wilcoxon(
   block = NULL,
   weightvar = NULL,
   statvars = c("effect", "p"),
+  sep = FITSEP,
   verbose = TRUE,
   plot = FALSE
 )
@@ -147,7 +148,7 @@ Fit model and test for differential expression
     object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = code_control)
     summarize_fit(fdt(object))
     
-# Flexible : posthoc contrasts (only limma!)
+# Posthoc contrasts (only limma!)
     fdt(object) \%<>\% extract(, 'feature_id')
     object \%<>\% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control, coefs = 't1-t0')
     object \%<>\% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = 't1-t0')
@@ -158,4 +159,13 @@ Fit model and test for differential expression
     fdt(object) \%<>\% extract(, 'feature_id')
     object \%<>\% fit_wilcoxon( ~ subgroup)                    # unpaired
     object \%<>\% fit_wilcoxon( ~ subgroup, block = 'Subject') # paired
+    
+# Custom separator
+    fdt(object) \%<>\% extract(, 'feature_id')
+    fdt( fit_lm(      object, sep = '.'))
+    fdt( fit_limma(   object, block = 'Subject', sep = '.') )
+    fdt( fit_lme(     object, block = 'Subject', sep = '.') )
+    fdt( fit_lmer(    object, block = 'Subject', sep = '.') )
+    fdt( fit_wilcoxon(object, block = 'Subject', sep = '.') )
+    fdt( fit_wilcoxon(object, sep = '.') )
 }
