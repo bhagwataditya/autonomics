@@ -37,8 +37,8 @@ download_tcga_example <- function(){
     
     sdtN <- GenomicDataCommons::filter(sdtTN, cases.samples.sample_type == 'Solid Tissue Normal')
     sdtT <- GenomicDataCommons::filter(sdtTN, cases.samples.sample_type == 'Primary Tumor')
-    GenomicDataCommons::manifest(sdtN) %>% nrow()  # 226
-    GenomicDataCommons::manifest(sdtT) %>% nrow()  # 2222
+    GenomicDataCommons::manifest(sdtN) %>% nrow()  #  113 (02.02.2024)   # used to be  226  
+    GenomicDataCommons::manifest(sdtT) %>% nrow()  # 1111 (02.02.2024)   # used to be 2222
     sdtN %<>% GenomicDataCommons::expand(c('cases', 'cases.samples'))
     sdtT %<>% GenomicDataCommons::expand(c('cases', 'cases.samples'))
     sdtN %<>% GenomicDataCommons::results_all()
@@ -88,7 +88,7 @@ download_tcga_example <- function(){
     sampledt %<>% pull_columns(c('sample_id', 'sample_type', 'case_id'))
     
 # counts
-    fnames <- lapply(sampledt$file_id, GenomicDataCommons::gdcdata, progress = FALSE)  # takes a long time :)
+    fnames <- lapply(sampledt$file_id, GenomicDataCommons::gdcdata, progress = FALSE)  # takes some time :)
     fnames %<>% unlist()
     fnames <- data.table(file_id = names(fnames), file_path = unname(fnames))
     sampledt %<>% merge(fnames, by = 'file_id')
@@ -118,15 +118,15 @@ download_tcga_example <- function(){
 # fdt    
     fdt(rna)$ensg <- fdt(rna)$gene_id %>% split_extract_fixed('.', 1)
     ah <- AnnotationHub::AnnotationHub()
-    # AnnotationHub::query(ah, 'Homo sapiens', 'Ensembl', 'hg38')
-    ensdb <- ah[['AH109336']]
+    ensdb <- ah[['AH109336']]  # AnnotationHub::query(ah, 'Homo sapiens', 'Ensembl', 'hg38')
     genesizedt <- ensembldb::lengthOf(ensdb, filter = ensembldb::GeneidFilter(fdt(rna)$ensg))
     genesizedt <- data.table(ensg = names(genesizedt), genesize = genesizedt)
     rna %<>% merge_fdt(genesizedt, by.x = 'ensg', by.y = 'ensg')
     rna %<>% filter_features(!is.na(genesize))
     rna$case_id <- rna$sample_id
     rna$case_id %<>% split_extract_fixed('.', 1)
-    rna %<>% preprocess_rnaseq_counts(formula = ~ sample_type, block = 'case_id', tpm = TRUE, cpm = TRUE, voom = TRUE)
+    rna %<>% preprocess_rnaseq_counts(   # takes some time : )
+        formula = ~ sample_type, block = 'case_id', tpm = TRUE, cpm = TRUE, voom = TRUE)
     saveRDS(rna, file = file)
 }
 
@@ -172,28 +172,24 @@ dichotomize_exprs <- function(dt, percentile){
     
 }
 
-.fit_survival <- function(subdt, samples = FALSE){
+.fit_survival <- function(subdt, sep, samples = FALSE){
     timetoevent <- event <- exprlevel <- NULL
     diff <- survival::survdiff(survival::Surv(timetoevent, event) ~ exprlevel, data = subdt)
     coef <- suppressWarnings(coef(summary( survival::coxph(
                 survival::Surv(subdt$timetoevent, subdt$event)~subdt$value)))[,'coef' ])
     exprlevels <- unique(subdt$exprlevel)
     exprlevels %<>% extract(order(as.numeric(substr(., 1, nchar(.)-1))))
+    dt <- data.table( sign(coef), 1 - pchisq(diff$chisq, 1))   # effect, p
+    setnames(dt, c('V1', 'V2'), paste(c('effect', 'p'), 'surv', 'LR', sep = sep))
     if (samples){
         lo <- unique(subdt[exprlevel == exprlevels[1]])$sample_id
         hi <- unique(subdt[exprlevel == exprlevels[2]])$sample_id
         lo %<>% as.character() %>% commonify_strings()
         hi %<>% as.character() %>% commonify_strings()
-        return(data.table(
-                   `effect~surv~LR` = sign(coef),
-                        `p~surv~LR` = 1 - pchisq(diff$chisq, 1), 
-                       `lo~surv~LR` = lo,
-                       `hi~surv~LR` = hi ))
-    } else {
-        return(data.table(
-                   `effect~surv~LR` = sign(coef),
-                        `p~surv~LR` = 1 - pchisq(diff$chisq, 1)))
+        dt[ , (paste('lo', 'surv', 'LR', sep = sep)) := lo ] #  lower survival samples
+        dt[ , (paste('hi', 'surv', 'LR', sep = sep)) := hi ] # higher survival samples
     }
+    return(dt)
 }
 
 #' @rdname dot-plot_survival
@@ -202,6 +198,7 @@ fit_survival <- function(
     object, 
     assay      = assayNames(object)[1],
     percentile = 25, 
+    sep        = FITSEP,
     samples    = if (ncol(object) < 50) TRUE else FALSE,
     verbose    = TRUE
 ){
@@ -223,9 +220,9 @@ fit_survival <- function(
     dt <- dt[, .SD[    length(unique(exprlevel))==2], by = c('feature_id')             ]   #    2 exprlevels per feature
     if (verbose)  cmessage('\t\t\tp  =  survdiff(Surv(timetoevent, event) ~ exprlevel)')
     if (verbose)  cmessage('\t\t\teffect = coxph(Surv(timetoevent, event) ~ exprvalue)')
-    dt %<>% extract(, .fit_survival(.SD, samples = samples), by = 'feature_id')            # Fit survival
+    dt %<>% extract(, .fit_survival(.SD, sep = sep, samples = samples), by = 'feature_id')            # Fit survival
 # Return
-    oldnames <- names(dt) %>% extract(stri_detect_regex(., '[~]LR$'))
+    oldnames <- names(dt) %>% extract(stri_detect_regex(., sprintf('[%s]LR$', sep)))
     newnames <- paste0(oldnames, percentile)
     setnames(dt, oldnames, newnames) 
     for (col in newnames)  object[[col]] <- NULL
@@ -235,10 +232,11 @@ fit_survival <- function(
 
 
 
-#' Plot survival 
+#' Fit/Plot survival 
 #' @param object      SummarizedExperiment
 #' @param assay       string
 #' @param percentile  percentage (not greater than 50)
+#' @param sep         fvar string separator : e.g. '~' gives p~surv~LR50 
 #' @param samples     TRUE or FALSE : record which samples in which stratum ?
 #' @param verbose     TRUE or FALSE
 #' @param title       string
@@ -259,10 +257,12 @@ fit_survival <- function(
 #'     object %<>% extract(, .$sample_type == 'T')
 #'     object %<>% extract(c('UGT3A2', 'NSUN3', 'XRCC4', 'WNT10A'), )
 #' # Fit
-#'     object %<>% fit_survival()
-#'     object %<>% fit_survival(percentile = 50)
 #'     fdt(object)
+#'     fdt(fit_survival(object))
+#'     fdt(fit_survival(object, percentile = 50))
+#'     fdt(fit_survival(object, percentile = 50, sep = '.'))
 #' # Plot
+#'     object %<>% fit_survival()
 #'     plot_survival(object)
 #'     p1 <- .plot_survival(object[1, ])
 #'     p2 <- .plot_survival(object[2, ])
@@ -291,11 +291,8 @@ fit_survival <- function(
     assert_all_are_less_than_or_equal_to(percentile, 50)
     value <- exprlevel <- NULL
 # Prepare
-    subdt <- sumexp_to_longdt(
-        object, 
-        assay = assay, 
-        svars = c('event', 'timetoevent'))
-    subdt %<>% dichotomize_exprs(percentile = percentile)
+    subdt <- sumexp_to_longdt( object, assay = assay, svars = c('event', 'timetoevent') )
+    subdt %<>% dichotomize_exprs( percentile = percentile )
 # Plot
     fit <- survival::survfit(survival::Surv(timetoevent, event) ~ exprlevel, data = subdt)
     survminer::ggsurvplot(
@@ -304,6 +301,7 @@ fit_survival <- function(
         pval = TRUE, ggtheme = theme_bw(), title = title, subtitle = subtitle,
         legend.labs = unique(subdt$exprlevel), legend.title = assay)
 }
+
 
 #' survival percentiles
 #' @param object SummarizedExperiment
@@ -320,17 +318,17 @@ percentiles <- function(object){
 #' @export
 plot_survival <- function(
     object, 
-    assay = assayNames(object)[1], 
+    assay      = assayNames(object)[1], 
     percentile = percentiles(object),
-    title = paste0(assay, ' ', percentile, '%'),
-    subtitle  = NULL,
-    palette = c("#009999", "#ff5050"),
-    n = 4,
-    ncol = 4, 
-    nrow = length(percentile), 
-    file = NULL, 
-    width  = 7*ncol, 
-    height = 7*nrow
+    title      = paste0(assay, ' ', percentile, '%'),
+    subtitle   = NULL,
+    palette    = c("#009999", "#ff5050"),
+    n          = 4,
+    ncol       = 4, 
+    nrow       = length(percentile), 
+    file       = NULL, 
+    width      = 7*ncol, 
+    height     = 7*nrow
     
 ){
 # Extract

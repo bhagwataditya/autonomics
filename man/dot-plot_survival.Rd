@@ -4,12 +4,13 @@
 \alias{fit_survival}
 \alias{.plot_survival}
 \alias{plot_survival}
-\title{Plot survival}
+\title{Fit/Plot survival}
 \usage{
 fit_survival(
   object,
   assay = assayNames(object)[1],
   percentile = 25,
+  sep = FITSEP,
   samples = if (ncol(object) < 50) TRUE else FALSE,
   verbose = TRUE
 )
@@ -45,6 +46,8 @@ plot_survival(
 
 \item{percentile}{percentage (not greater than 50)}
 
+\item{sep}{fvar string separator : e.g. '~' gives p~surv~LR50}
+
 \item{samples}{TRUE or FALSE : record which samples in which stratum ?}
 
 \item{verbose}{TRUE or FALSE}
@@ -71,7 +74,7 @@ plot_survival(
 ggsurvplot
 }
 \description{
-Plot survival
+Fit/Plot survival
 }
 \examples{
 file <- download_tcga_example()
@@ -81,10 +84,12 @@ if (!is.null(file) & requireNamespace('survminer')){
     object \%<>\% extract(, .$sample_type == 'T')
     object \%<>\% extract(c('UGT3A2', 'NSUN3', 'XRCC4', 'WNT10A'), )
 # Fit
-    object \%<>\% fit_survival()
-    object \%<>\% fit_survival(percentile = 50)
     fdt(object)
+    fdt(fit_survival(object))
+    fdt(fit_survival(object, percentile = 50))
+    fdt(fit_survival(object, percentile = 50, sep = '.'))
 # Plot
+    object \%<>\% fit_survival()
     plot_survival(object)
     p1 <- .plot_survival(object[1, ])
     p2 <- .plot_survival(object[2, ])

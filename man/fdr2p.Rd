@@ -17,12 +17,13 @@ fdr to p
    file <- download_data('atkin.metabolon.xlsx')
    object <- read_metabolon(file)
    object \%<>\% fit_limma()
-   object \%<>\% extract(order(fdt(.)$`p~t3~limma`), )
+   pcol <- pvar(object, fit = 'limma', coef = 't3')
+   object \%<>\% extract(order(fdt(.)[[pcol]]), )
    object \%<>\% extract(1:10, )
    fdt(object) \%<>\% extract(, 1)
    object \%<>\% fit_limma(coefs = 't3')
 # fdr2p
-   fdt(object)$`p~t3~limma`
-   fdt(object)$`p~t3~limma` \%>\% p.adjust(method = 'fdr')
-   fdt(object)$`p~t3~limma` \%>\% p.adjust(method = 'fdr') \%>\% fdr2p()
+   fdt(object)[[pcol]]
+   fdt(object)[[pcol]] \%>\% p.adjust(method = 'fdr')
+   fdt(object)[[pcol]] \%>\% p.adjust(method = 'fdr') \%>\% fdr2p()
 }
