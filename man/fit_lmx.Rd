@@ -31,7 +31,8 @@ fit_lm(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p"),
-  coefs = NULL,
+  coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun =
+    codingfun, verbose = FALSE)),
   contrasts = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -46,7 +47,8 @@ fit_lme(
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   opt = "optim",
   statvars = c("effect", "p"),
-  coefs = NULL,
+  coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun =
+    codingfun, verbose = FALSE)),
   contrasts = NULL,
   verbose = TRUE,
   plot = FALSE
@@ -60,7 +62,8 @@ fit_lmer(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p"),
-  coefs = NULL,
+  coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun =
+    codingfun, verbose = FALSE)),
   contrasts = NULL,
   verbose = TRUE,
   plot = FALSE
