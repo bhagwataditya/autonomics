@@ -226,18 +226,18 @@ make_volcano_dt <- function(
 #' @param title          string or NULL
 #' @return ggplot object
 #' @examples
-#' # Unicontrast, Multicontrast, Multimethod
+#' # Regular Usage
 #'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
-#'     plot_volcano(object, coefs = 't3', fit = 'limma')                   #   unicontrast
-#'     plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multicontrast
-#'     plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multicontrast, multimethod
+#'     plot_volcano(object, coefs = 't3', fit = 'limma')                   # single contrast
+#'     plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multiple contrasts
+#'     plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multiple contrasts and methods
 #' 
 #' # When nothing passes FDR
-#'     plot_volcano(object, coefs = 't3', fit = 'limma')
-#'     object %<>% extract(fdt(.)$`fdr~t3~limma` > 0.05, )
+#'     fdt(object) %<>% add_adjusted_pvalues('fdr', fit = 'limma',coefs = 't3')
+#'     object %<>% extract( fdrvec(object, fit = 'limma', coef = 't3') > 0.05, )
 #'     plot_volcano(object, coefs = 't3', fit = 'limma')
 #' 
 #' # Additional mappings
@@ -418,14 +418,15 @@ map_fvalues <- function(
 #'    file <- download_data('atkin.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    object %<>% fit_limma()
-#'    object %<>% extract(order(fdt(.)$`p~t3~limma`), )
+#'    pcol <- pvar(object, fit = 'limma', coef = 't3')
+#'    object %<>% extract(order(fdt(.)[[pcol]]), )
 #'    object %<>% extract(1:10, )
 #'    fdt(object) %<>% extract(, 1)
 #'    object %<>% fit_limma(coefs = 't3')
 #' # fdr2p
-#'    fdt(object)$`p~t3~limma`
-#'    fdt(object)$`p~t3~limma` %>% p.adjust(method = 'fdr')
-#'    fdt(object)$`p~t3~limma` %>% p.adjust(method = 'fdr') %>% fdr2p()
+#'    fdt(object)[[pcol]]
+#'    fdt(object)[[pcol]] %>% p.adjust(method = 'fdr')
+#'    fdt(object)[[pcol]] %>% p.adjust(method = 'fdr') %>% fdr2p()
 #' @export
 fdr2p <- function(fdr){
     idx <- order(fdr)

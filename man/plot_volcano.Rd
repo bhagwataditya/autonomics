@@ -63,18 +63,18 @@ ggplot object
 Plot volcano
 }
 \examples{
-# Unicontrast, Multicontrast, Multimethod
+# Regular Usage
     file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()
     object \%<>\% fit_lm()
-    plot_volcano(object, coefs = 't3', fit = 'limma')                   #   unicontrast
-    plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multicontrast
-    plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multicontrast, multimethod
+    plot_volcano(object, coefs = 't3', fit = 'limma')                   # single contrast
+    plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multiple contrasts
+    plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multiple contrasts and methods
 
 # When nothing passes FDR
-    plot_volcano(object, coefs = 't3', fit = 'limma')
-    object \%<>\% extract(fdt(.)$`fdr~t3~limma` > 0.05, )
+    fdt(object) \%<>\% add_adjusted_pvalues('fdr', fit = 'limma',coefs = 't3')
+    object \%<>\% extract( fdrvec(object, fit = 'limma', coef = 't3') > 0.05, )
     plot_volcano(object, coefs = 't3', fit = 'limma')
 
 # Additional mappings
