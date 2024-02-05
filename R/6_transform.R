@@ -502,6 +502,9 @@ plot_transformation_violins <- function(
 }
 
 
+# file <- download_data('fukuda20.proteingroups.txt')
+# object <- read_maxquant_proteingroups(file)
+# plot_transformation_biplots(object)
 plot_transformation_biplots <- function(
     object,
     subgroupvar = 'subgroup',
@@ -512,21 +515,21 @@ plot_transformation_biplots <- function(
 ){
     . <- NULL
     assert_is_subset(subgroupvar, svars(object))
-    x <- sprintf('effect~%s~%s%d', by, method, dims[1])
-    y <- sprintf('effect~%s~%s%d', by, method, dims[2])
-    
-    object %<>% get(method)(ndim = max(dims), verbose = FALSE)
-    scoredt <- sdt(object) %>% cbind(transfo = 'input')
-    xvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[1])]])
-    yvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[2])]])
-    scoredt$transfo <- sprintf('input : %d + %d %%', xvar, yvar)
+    x <- paste0('effect', FITSEP, by, FITSEP, method, dims[1])
+    y <- paste0('effect', FITSEP, by, FITSEP, method, dims[2])
+    tmpobj <- object
+    tmpobj %<>% get(method)(ndim = max(dims), verbose = FALSE)
+    scoredt <- sdt(tmpobj) %>% cbind(transfo = 'input')
+    xvariance <- round(metadata(tmpobj)[[paste0(by, FITSEP, method)]][[paste0('effect', dims[1])]])
+    yvariance <- round(metadata(tmpobj)[[paste0(by, FITSEP, method)]][[paste0('effect', dims[2])]])
+    scoredt$transfo <- sprintf('input : %d + %d %%', xvariance, yvariance)
     for (transfo in transformations){
         tmpobj <- get(transfo)(object)
         tmpobj %<>% get(method)(dims = dims, verbose = FALSE)
-        xvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[1])]])
-        yvar <- round(metadata(object)[[sprintf('%s~%s', by, method)]][[sprintf('effect%d', dims[2])]])
+        xvariance <- round(metadata(tmpobj)[[ paste0(by, FITSEP, method) ]][[ paste0('effect', dims[1]) ]])
+        yvariance <- round(metadata(tmpobj)[[ paste0(by, FITSEP, method) ]][[ paste0('effect', dims[2]) ]])
         tmpdt <- sdt(tmpobj)
-        tmpdt$transfo <- sprintf('%s : %d + %d %%', transfo, xvar, yvar)
+        tmpdt$transfo <- sprintf('%s : %d + %d %%', transfo, xvariance, yvariance)
         scoredt %<>% rbind(tmpdt)
     }
     scoredt$transfo %<>% factor(unique(.))
