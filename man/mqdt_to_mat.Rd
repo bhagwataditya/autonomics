@@ -25,7 +25,7 @@ phosphofile <- download_data('billing19.phosphosites.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
 prodt <- .read_maxquant_proteingroups(file = proteinfile)
 fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinfile)
-prodt \%<>\% curate_annotate_maxquant()
+prodt \%<>\% annotate_maxquantdt()
 prodt \%<>\% add_feature_id()
 quantity <- guess_maxquant_quantity(proteinfile)
 pattern <- MAXQUANT_PATTERNS[[quantity]]

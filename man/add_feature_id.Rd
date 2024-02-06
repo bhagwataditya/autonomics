@@ -19,6 +19,6 @@ Add feature_id
 file <- download_data('billing19.proteingroups.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
 prodt <- .read_maxquant_proteingroups(file = file)
-prodt \%<>\% curate_annotate_maxquant()
+prodt \%<>\% annotate_maxquantdt()
 prodt \%<>\% add_feature_id()
 }

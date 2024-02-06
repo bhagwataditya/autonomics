@@ -459,13 +459,10 @@ drop_inferior <- function(anndt, verbose = TRUE){
 
 CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism')
 
-#' Curate and Annotate.
+#' Annotate maxquantdt
 #'
 #' Using Fastafile/MaxQuant fastahdrs
 #' 
-#' `curate_annotate_maxquant`: MaxQuant  fastahdrs \cr
-#' `curate_annotate_fastafile` Fastafile fastahdrs \cr
-#' `curate`: Fastafile + (for missing entries) MaxQuant fastahdrs \cr
 #' Steps: \cr
 #' Within proteingroup
 #'   1. Uncollapse
@@ -485,9 +482,8 @@ CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism
 #' # Fukuda 2020: MaxQuant 
 #'     file <- download_data('fukuda20.proteingroups.txt')
 #'     dt <- .read_maxquant_proteingroups(file)
-#'     curate_annotate_maxquant(dt)[, 1:7]
-#'     curate_annotate_fastafile(dt, fastadt = NULL)[, 1:2]
-#'     curate_annotate(dt, fastadt = NULL)[, 1:7]
+#'     annotate_maxquantdt(dt, fastadt = NULL   )[, 1:2]
+#'     annotate_maxquantdt(dt, fastadt = fastadt)[, 1:7]
 #'     
 #' # Billing 2019: Fastafile + MaxQuant
 #'     file <- download_data('billing19.proteingroups.txt')
@@ -496,57 +492,43 @@ CURATEDCOLS <- c('protein', 'isoform', 'uniprot', 'canonical', 'gene', 'organism
 #'     fastadt <-  read_fastahdrs(fastafile)
 #'     dt <- .read_maxquant_proteingroups(file, verbose = TRUE)
 #'     dt[, 1:4]
-#'     curate_annotate_maxquant( dt)[, 1:7]
-#'     curate_annotate_fastafile(dt, fastadt = NULL)[, 1:7]
-#'     curate_annotate_fastafile(dt, fastadt)[, 1:7]
-#'     curate_annotate(dt, fastadt)[, 1:7]
+#'     annotate_maxquantdt(dt, fastadt = NULL   )[, 1:7]
+#'     annotate_maxquantdt(dt, fastadt = fastadt)[, 1:7]
 #' @md
 #' @export
-curate_annotate <- function(dt, fastadt = NULL, verbose = TRUE){
+annotate_maxquantdt <- function(dt, fastadt = NULL, verbose = TRUE){
+# Assert
+    dt %<>% copy()
+    assert_fastadt_or_null(fastadt)
+    if (is.null(fastadt)){
+        fastadt <- dt$fastahdrs 
+        fastadt %<>% stri_split_fixed(';') %>% unlist()
+        fastadt %<>% parse_fastahdrs()
+    }
     contaminant <- fastahdrs <- NULL
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
-    dt %<>% copy()
-    dt %<>% curate_annotate_fastafile(fastadt, verbose = verbose)
-    dt[, contaminant := as.character(contaminant)]  # deal with 'all contaminants NA' case
-    dt[is.na(contaminant), contaminant := '']
-    idx <- dt$reverse == '' & dt$contaminant == '' & is.na(dt$protein)
-    dt1 <- dt[ idx] %>% curate_annotate_maxquant(verbose = verbose)
-    dt  <- dt[!idx]
-    dt %<>% rbind(dt1)
-    dt %<>% extract(order(as.integer(get(idcol))))
-    dt[, fastahdrs := NULL]
-    dt[]
-}
-
-
-#' @rdname curate_annotate
-#' @export
-curate_annotate_fastafile <- function(dt, fastadt, verbose = TRUE){
-# Assert
-    assert_fastadt_or_null(fastadt)
-    dt %<>% copy()
-    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
-    if (is.null(fastadt)){
-        dt[, (CURATEDCOLS) := NA_character_]
-        dt %<>% pull_columns(c(idcol, CURATEDCOLS))
-        return(dt[])
-    }
-    uniprot <- Original <- NULL
 # Drop Curated / contaminants / reverse
     idxdrop <- dt$contaminant=='+'  |  dt$reverse=='+'
     if (sum(idxdrop)==length(idxdrop))  return(dt)
     dropdt <- dt[ idxdrop]
     dt     <- dt[!idxdrop]
-# Curate
+# Uncollapse. 
     if (verbose)  message('\t\tFasta data.table')
     if (verbose)  message('\t\t\tUncollapse uniprot accessions')
     anndt <- dt[, c(idcol, 'uniprot'), with = FALSE]
     anndt %<>% extract(, c(idcol, 'uniprot'), with = FALSE)
     anndt %<>% uncollapse(uniprot, sep = ';')
+# Drop REV in mixed groups (i.e. fwd + rev).
+    if (verbose){  txt <- '\t\t\tDrop %d reverse proteins in %d mixed (fwd+rev) proteingroups'
+                   anndt[ stri_detect_fixed(uniprot, 'REV__'), cmessage(txt, .N, length(unique(proId))) ] }
+    anndt %<>% extract(!stri_detect_fixed(uniprot, 'REV__'))
+# Curate                            
     anndt %<>% merge(fastadt, by = 'uniprot', sort = FALSE)
-    anndt %<>% drop_inferior(verbose = verbose)
-    #setnames(anndt, 'uniprot', 'Curated')
+    anndt[, ok := stri_count_fixed(fastahdrs, '|'          )            ]; anndt <- anndt[, .SD[ok==max(ok)], by = idcol]; anndt[, ok := NULL] # prefer non-truncated fastahdrs: starting with 'tr|F1Q6Z9|F1Q6Z9_DANRE'
+    anndt[, ok := stri_count_regex(fastahdrs, '.+SV=[0-9]+'), by = idcol]; anndt <- anndt[, .SD[ok==max(ok)], by = idcol]; anndt[, ok := NULL] # prefer non-truncated fastahdrs: ending with SV=1
+    anndt %<>% drop_inferior(verbose = verbose)                                                                                                # prefer superior annotations
     setnames(dt, 'uniprot', 'Original')
+# Recollapse and merge
     if (verbose)  message('\t\t\tCollapse')
     anndt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idcol)
     dt %<>% .merge(anndt, by = idcol)
@@ -555,48 +537,12 @@ curate_annotate_fastafile <- function(dt, fastadt, verbose = TRUE){
     dt[is.na(uniprot), uniprot := Original]
     dt[, Original := NULL]
     dt %<>% pull_columns(c(idcol, intersect(CURATEDCOLS, names(.))))
+    dt[, contaminant := as.character(contaminant)]  # deal with 'all contaminants NA' case
+    dt[is.na(contaminant), contaminant := '']
+    dt %<>% extract(order(as.integer(get(idcol))))
+    dt[, fastahdrs := NULL]
     dt[]
 }
-
-
-#' @rdname curate_annotate
-#' @export
-curate_annotate_maxquant <- function(dt, verbose = TRUE){
-# Drop Curated / contaminants / reverse
-    dt %<>% copy()
-    idxdrop <- dt$contaminant=='+'  |  dt$reverse=='+'
-    if (sum(idxdrop)==length(idxdrop))  return(dt)
-    dropdt <- dt[ idxdrop]
-    dt     <- dt[!idxdrop]
-    fastahdrs <- ok <- Original <- uniprot <- NULL
-# Curate
-    idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'           # Maxquant doesnt provide protein entries
-    if (verbose)  message('\t\tMaxQuant Fastahdrs')                     # They can be inferred from the fastahdrs
-    if (verbose)  message('\t\t\tUncollapse, Drop truncated, Parse')    # These fastahdrs are sometimes truncated
-    anndt <- dt[, c(idcol, 'fastahdrs'), with = FALSE]
-    anndt %<>% uncollapse(fastahdrs, sep = ';')
-    
-    anndt[, ok := stri_count_fixed(fastahdrs, '|')]                            # prefer non-truncated fastahdrs: starting with 'tr|F1Q6Z9|F1Q6Z9_DANRE'
-    anndt <- anndt[, .SD[ok==max(ok)], by = idcol]
-    anndt[, ok := NULL]
-    
-    anndt[, ok := fastahdrs %>% stri_count_regex('.+SV=[0-9]+'), by = idcol]   # prefer non-trnuncated fastahdrs: ending with SV=1
-    anndt <- anndt[, .SD[ok==max(ok)], by = idcol]
-    anndt[, ok := NULL]
-    
-    anndt %<>% cbind(parse_fastahdrs(anndt$fastahdrs))
-    anndt %<>% drop_inferior(verbose = verbose)
-    setnames(dt, 'uniprot', 'Original')
-    if (verbose)  message('\t\t\tCollapse')
-    anndt %<>% extract(, lapply(.SD, paste_unique, collapse = ';'), by = idcol)
-    dt %<>% .merge(anndt, by = idcol)
-    dt %<>% .rbind(dropdt, sortby = idcol, as.integer = TRUE)
-    dt[is.na(uniprot), uniprot := Original]
-    dt[, Original := NULL]
-    dt %<>% pull_columns(c(idcol, intersect(CURATEDCOLS, names(dt))))
-    dt[]
-}
-
 
 
 #--------------------------------------------------------------------------
@@ -613,7 +559,7 @@ curate_annotate_maxquant <- function(dt, verbose = TRUE){
 #' file <- download_data('billing19.proteingroups.txt')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' prodt <- .read_maxquant_proteingroups(file = file)
-#' prodt %<>% curate_annotate_maxquant()
+#' prodt %<>% annotate_maxquantdt()
 #' prodt %<>% add_feature_id()
 #' @export
 add_feature_id <- function(dt){
@@ -670,7 +616,7 @@ add_feature_id <- function(dt){
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' prodt <- .read_maxquant_proteingroups(file = proteinfile)
 #' fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinfile)
-#' prodt %<>% curate_annotate_maxquant()
+#' prodt %<>% annotate_maxquantdt()
 #' prodt %<>% add_feature_id()
 #' quantity <- guess_maxquant_quantity(proteinfile)
 #' pattern <- MAXQUANT_PATTERNS[[quantity]]
@@ -853,7 +799,7 @@ read_maxquant_proteingroups <- function(
     assert_is_a_bool(verbose)
 # Read/Curate
     prodt <- .read_maxquant_proteingroups(file = file, quantity = quantity, verbose = verbose)
-    prodt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
+    prodt %<>% annotate_maxquantdt(fastadt = fastadt, verbose = verbose)
     prodt %<>% add_feature_id()
 # SumExp
     if (verbose)  message('\tCreate SummarizedExperiment')
@@ -960,7 +906,7 @@ read_maxquant_phosphosites <- function(
     prodt <- .read_maxquant_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
     fosdt <- .read_maxquant_phosphosites(file = phosphofile, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
-    fosdt %<>% curate_annotate(fastadt = fastadt, verbose = verbose)
+    fosdt %<>% annotate_maxquantdt(fastadt = fastadt, verbose = verbose)
     fosdt %<>% add_feature_id()
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp
