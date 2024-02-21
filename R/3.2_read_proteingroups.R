@@ -227,11 +227,11 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 #' prodt <- .read_maxquant_proteingroups(file = proteinfile)
 #' fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinfile)
 #' prodt %<>% annotate_maxquantdt()
-#' prodt %<>% add_feature_id()
+#' prodt %<>% .name()
 #' quantity <- guess_maxquant_quantity(proteinfile)
 #' pattern <- MAXQUANT_PATTERNS[[quantity]]
 #' mqdt_to_mat(prodt, pattern = pattern)[1:2, 1:2]
-#' @export
+#' @noRd
 mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
     mat <- dt[, .SD, .SDcols = patterns(pattern)]
     mat %<>% data.matrix()
@@ -413,7 +413,6 @@ read_maxquant_proteingroups <- function(
 # Read/Curate
     prodt <- .read_maxquant_proteingroups(file = file, quantity = quantity, verbose = verbose)
     prodt %<>% annotate_maxquant(uniprotdt = uniprotdt, restapi = restapi, verbose = verbose)
-    prodt %<>% add_feature_id()
 # SumExp
     if (verbose)  message('\tCreate SummarizedExperiment')
     pattern <- MAXQUANT_PATTERNS[[quantity]]
@@ -519,7 +518,6 @@ read_maxquant_phosphosites <- function(
     fosdt <- .read_maxquant_phosphosites(file = phosphofile, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
     fosdt %<>% annotate_maxquant(fastadt = fastadt, restapi = restapi, verbose = verbose)
-    fosdt %<>% add_feature_id()
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp
     if (verbose)  message('\tCreate SummarizedExperiment')
