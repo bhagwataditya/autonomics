@@ -14,6 +14,7 @@ AUTONOMICS_DATASETS <- c('atkin.somascan.adat',    # new versions
                          'billing19.rnacounts.txt',
                          'billing19.proteingroups.txt',
                          'billing19.phosphosites.txt',
+                         'contaminants.tsv',
                          'dilution.report.tsv',
                          'fukuda20.proteingroups.txt',
                          'halama18.metabolon.xlsx',

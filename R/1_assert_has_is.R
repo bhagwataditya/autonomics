@@ -236,27 +236,24 @@ assert_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
 
 #--------
 
-#' Is fastadt or NULL
+#' Is fastadt
 #' @param x   fasta data.table
 #' @param .xname string
 #' @examples
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#' x <- read_fastahdrs(fastafile)
-#' # is_fastadt_or_null(x)  # slow
+#' x <- read_uniprotdt(fastafile)
+#' # is_fastadt(x)  # slow
 #' @export
-is_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
-    if (is.null(x))                  return(TRUE)
-    if (!is.data.table(x))           return(false('%s is not a data.table', .xname))
-    if (names(x)[1] != 'uniprot')    return(false('col1(%s) != "uniprot"', .xname))
-    if (names(x)[2] != 'reviewed')   return(false('col2(%s) != "reviewed"', .xname))
-    if (names(x)[3] != 'protein')    return(false('col3(%s) != "protein"',  .xname))
+is_fastadt <- function(x, .xname = get_name_in_parent(x)){
+    if (!is.data.table(x))       return(false('%s is not a data.table', .xname))
+    if (names(x)[1] != 'dbid')   return(false('col1(%s) != "uniprot"', .xname))
     return(TRUE)
 }
 
-#' @rdname is_fastadt_or_null
+#' @rdname is_fastadt
 #' @export
-assert_fastadt_or_null <- function(x, .xname = get_name_in_parent(x)){
-    assert_engine(is_fastadt_or_null, x, .xname = .xname)
+assert_fastadt <- function(x, .xname = get_name_in_parent(x)){
+    assert_engine(is_fastadt, x, .xname = .xname)
 }
 
 
