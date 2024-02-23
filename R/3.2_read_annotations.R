@@ -151,7 +151,7 @@ read_uniprotdt <- function(
     if (!requireNamespace('Biostrings', quietly = TRUE)){
         stop("BiocManager::install('Biostrings'). Then re-run.") }
 # Read
-    if (verbose) message('\tRead fastahdrs       ', paste0(fastafile, collapse = '\n\t     '))
+    if (verbose) message('\t     fastahdrs       ', paste0(fastafile, collapse = '\n\t     '))
     fastahdrs <- Biostrings::readAAStringSet(fastafile)
     fastahdrs %<>% names()
     fastahdrs %<>% parse_uniprot_hdrs(fastafields = fastafields)
@@ -163,7 +163,7 @@ read_uniprotdt <- function(
 #' @rdname read_uniprotdt
 #' @export
 parse_maxquant_hdrs <- function(fastahdrs){
-    message('\tRead maxquanthdrs   ') # Write Read rather than Parse to align with contaminantdt
+    message('\t     maxquanthdrs   ') # Write Read rather than Parse to align with contaminantdt
     fastahdrs %<>% stri_split_fixed(';') %>% unlist() %>% unique()
     fastahdrs %<>% extract(. != '' )
     fastahdrs %<>% extract(stri_count_fixed(., '|')==2 ) # minimum requirement: >sp|A0AV96-2|RBM47_HUMAN
@@ -455,7 +455,7 @@ save_contaminant_hdrs <- function(confile = download_contaminants(), verbose = T
 #' @export
 read_contaminantdt <- function(force = FALSE, verbose = TRUE){
     file <- download_data('contaminants.tsv', force = force)
-    if (verbose)  message('\tRead contaminanthdrs ', file)
+    if (verbose)  message('\t     contaminanthdrs ', file)
     fread(file)
 }
 
@@ -516,12 +516,12 @@ nastring_to_0 <- function(x){
 }
 
 
-.uncollapse <- function(anndt, verbose){
+.uncollapse <- function(anndt, idcol, verbose){
     anndt %<>% uncollapse(dbid, sep = ';')
     
-         nproteins <- length(unique(anndt$dbid))
-    nproteingroups <- length(unique(anndt$proId))
-    if (verbose)      cmessage('\tAnnotate  Uncollapse %5d proIds into  %5d  proteins', nproteingroups, nproteins )
+    nproteins <- length(unique(anndt$dbid))
+    nfeatures <- length(unique(anndt[[idcol]]))
+    if (verbose)      cmessage('\tAnnotate  Uncollapse %5d %ss into  %5d  proteins', nfeatures, idcol, nproteins )
         
     idx <- anndt[ , !stri_detect_fixed(dbid, 'H-INV') ]
     anndt[!idx, isoform := 0 ]
@@ -746,19 +746,19 @@ annotate_maxquant <- function(
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
 # Annotate
     anndt  <-  .initialize( dt, idcol )
-    anndt %<>% .uncollapse(         verbose = verbose )
-    anndt %<>% .drop_rev(    idcol, verbose = verbose )   # drops REV__ and drops rev in mixed groups
-    anndt %<>% .annotate(       uniprothdrs = uniprothdrs,
-                            contaminanthdrs = contaminanthdrs,
-                               maxquanthdrs = maxquanthdrs, 
-                                    restapi = restapi, 
-                                      idcol = idcol, 
-                                    verbose = verbose)
-    anndt %<>% .curate(      idcol, verbose = verbose )
-    anndt %<>% .restore_rev( idcol, verbose = verbose)
-    anndt %<>% .recollapse(  idcol, verbose = verbose)
-       dt %<>% .join( anndt, idcol )
-       dt %<>% .name(idcol)
+    anndt %<>% .uncollapse(     idcol,   verbose = verbose )
+    anndt %<>% .drop_rev(       idcol,   verbose = verbose )   # drops REV__ and drops rev in mixed groups
+    anndt %<>% .annotate(            uniprothdrs = uniprothdrs,
+                                 contaminanthdrs = contaminanthdrs,
+                                    maxquanthdrs = maxquanthdrs, 
+                                         restapi = restapi, 
+                                           idcol = idcol, 
+                                         verbose = verbose)
+    anndt %<>% .curate(         idcol,   verbose = verbose )
+    anndt %<>% .restore_rev(    idcol,   verbose = verbose)
+    anndt %<>% .recollapse(     idcol,   verbose = verbose)
+       dt %<>% .join(    anndt, idcol )
+       dt %<>% .name(           idcol)
 # Return
     dt[]
 }

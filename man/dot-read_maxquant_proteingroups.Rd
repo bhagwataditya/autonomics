@@ -13,7 +13,7 @@
 
 .read_maxquant_phosphosites(
   file,
-  proteinfile,
+  profile,
   quantity = guess_maxquant_quantity(file),
   verbose = TRUE
 )
@@ -25,7 +25,7 @@
 
 \item{verbose}{TRUE / FALSE}
 
-\item{proteinfile}{proteingroups file}
+\item{profile}{proteingroups file}
 }
 \value{
 data.table
@@ -34,8 +34,8 @@ data.table
 Read proteingroups/phosphosites as-is
 }
 \examples{
-proteinfile <- download_data('billing19.proteingroups.txt')
-phosphofile <- download_data('billing19.phosphosites.txt')
-prodt <- .read_maxquant_proteingroups(file = proteinfile)
-fosdt <- .read_maxquant_phosphosites( file = phosphofile, proteinfile = proteinfile)
+profile <- download_data('billing19.proteingroups.txt')
+fosfile <- download_data('billing19.phosphosites.txt')
+prodt <- .read_maxquant_proteingroups(file = profile)
+fosdt <- .read_maxquant_phosphosites( file = fosfile, profile = profile)
 }

@@ -7,8 +7,8 @@
 \usage{
 read_maxquant_phosphosites(
   dir = getwd(),
-  phosphofile = if (is_file(dir)) dir else file.path(dir, "phospho (STY)Sites.txt"),
-  proteinfile = file.path(dirname(phosphofile), "proteinGroups.txt"),
+  fosfile = if (is_file(dir)) dir else file.path(dir, "phospho (STY)Sites.txt"),
+  profile = file.path(dirname(fosfile), "proteinGroups.txt"),
   fastafile = NULL,
   restapi = FALSE,
   quantity = NULL,
@@ -36,9 +36,9 @@ read_phosphosites(...)
 \arguments{
 \item{dir}{proteingroups directory}
 
-\item{phosphofile}{phosphosites  file}
+\item{fosfile}{phosphosites  file}
 
-\item{proteinfile}{proteingroups file}
+\item{profile}{proteingroups file}
 
 \item{fastafile}{uniprot fastafile}
 
@@ -91,11 +91,11 @@ SummarizedExperiment
 Read maxquant phosphosites
 }
 \examples{
-proteinfile <- download_data('billing19.proteingroups.txt')
-phosphofile <- download_data('billing19.phosphosites.txt')
+  profile <- download_data('billing19.proteingroups.txt')
+  fosfile <- download_data('billing19.phosphosites.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
 subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
-fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
-fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastafile = fastafile, subgroups = subgroups)
+pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
+fos <- read_maxquant_phosphosites( fosfile = fosfile, profile = profile, subgroups = subgroups)
+fos <- read_maxquant_phosphosites( fosfile = fosfile, profile = profile, fastafile = fastafile, subgroups = subgroups)
 }
