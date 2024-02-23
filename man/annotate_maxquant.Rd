@@ -6,9 +6,9 @@
 \usage{
 annotate_maxquant(
   dt,
-  uniprotdt,
-  contaminantdt,
-  maxquantdt,
+  uniprothdrs,
+  contaminanthdrs,
+  maxquanthdrs,
   restapi = FALSE,
   verbose = TRUE
 )
@@ -16,7 +16,7 @@ annotate_maxquant(
 \arguments{
 \item{dt}{\code{data.table} : output of \code{read_maxquant_(proteingroups|phosphosites)}}
 
-\item{uniprotdt}{\code{data.table} : output of \code{read_uniprotdt}}
+\item{uniprothdrs}{\code{data.table} : output of \code{read_uniprotdt}}
 
 \item{restapi}{\code{logical(1)} : use uniprot restapi to complete missing annotations ?}
 
@@ -37,10 +37,10 @@ Uncollapse, annotate, curate, recollapse, name
           file <- download_data('fukuda20.proteingroups.txt')
             dt <- .read_maxquant_proteingroups(file)
             dt[, 1:2]
-     uniprotdt <- NULL
- contaminantdt <- read_contaminantdt()
-    maxquantdt <- parse_maxquant_hdrs(dt$`Fasta headers`); dt$`Fasta headers` <- NULL
-          dt \%<>\% annotate_maxquant(uniprotdt, contaminantdt, maxquantdt)
+     uniprothdrs <- NULL
+ contaminanthdrs <- read_contaminantdt()
+    maxquanthdrs <- parse_maxquant_hdrs(dt$`Fasta headers`); dt$`Fasta headers` <- NULL
+          dt \%<>\% annotate_maxquant(uniprothdrs, contaminanthdrs, maxquanthdrs)
           dt[                 , 1:9]
           dt[    reverse== '+', 1:9]
           dt[contaminant== '+', 1:9]
@@ -50,12 +50,12 @@ Uncollapse, annotate, curate, recollapse, name
     profile <- download_data('billing19.proteingroups.txt')
     fosfile <- download_data('billing19.phosphosites.txt')
 uniprotfile <- download_data('uniprot_hsa_20140515.fasta')
-  uniprotdt <-  read_uniprotdt(uniprotfile)
+  uniprothdrs <-  read_uniprotdt(uniprotfile)
       prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
       fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
 annotate_maxquant(prodt                                           )[, 1:8]
 annotate_maxquant(fosdt                                           )[, 1:8]
-annotate_maxquant(prodt, uniprotdt = uniprotdt                    )[, 1:8]
-annotate_maxquant(fosdt, uniprotdt = uniprotdt                    )[, 1:8]
-annotate_maxquant(prodt, uniprotdt = uniprotdt, restapi = TRUE    )[, 1:8]
+annotate_maxquant(prodt, uniprothdrs = uniprothdrs                    )[, 1:8]
+annotate_maxquant(fosdt, uniprothdrs = uniprothdrs                    )[, 1:8]
+annotate_maxquant(prodt, uniprothdrs = uniprothdrs, restapi = TRUE    )[, 1:8]
 }

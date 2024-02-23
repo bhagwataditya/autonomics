@@ -94,9 +94,8 @@ Read maxquant phosphosites
 proteinfile <- download_data('billing19.proteingroups.txt')
 phosphofile <- download_data('billing19.phosphosites.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
-uniprotdt <- read_uniprotdt(fastafile)
 subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
 fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
-fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, uniprotdt = uniprotdt, subgroups = subgroups)
+fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastafile = fastafile, subgroups = subgroups)
 }

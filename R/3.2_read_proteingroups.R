@@ -410,14 +410,14 @@ read_maxquant_proteingroups <- function(
     assert_is_a_bool(verbose)
 # Read/Annotate
     prodt <- .read_maxquant_proteingroups(file = file, quantity = quantity, verbose = verbose)
-    uniprotdt <- read_uniprotdt(fastafile)
-    contaminantdt <- read_contaminantdt()
-    maxquantdt <- parse_maxquant_hdrs(prodt$`Fasta headers`); prodt[, `Fasta headers` := NULL ]
-    prodt %<>% annotate_maxquant( uniprotdt = uniprotdt, 
-                              contaminantdt = contaminantdt, 
-                                 maxquantdt = maxquantdt, 
-                                    restapi = restapi,
-                                    verbose = verbose )
+        uniprothdrs <- read_uniprotdt(fastafile)
+    contaminanthdrs <- read_contaminantdt()
+       maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`); prodt[, `Fasta headers` := NULL ]
+    prodt %<>% annotate_maxquant( uniprothdrs = uniprothdrs, 
+                              contaminanthdrs = contaminanthdrs, 
+                                 maxquanthdrs = maxquanthdrs, 
+                                      restapi = restapi,
+                                      verbose = verbose )
 # SumExp
     if (verbose)  message('\tSummarizedExperiment')
     pattern <- MAXQUANT_PATTERNS[[quantity]]
@@ -492,11 +492,10 @@ read_proteingroups <- function(...){
 #' proteinfile <- download_data('billing19.proteingroups.txt')
 #' phosphofile <- download_data('billing19.phosphosites.txt')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#' uniprotdt <- read_uniprotdt(fastafile)
 #' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
 #' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
-#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, uniprotdt = uniprotdt, subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, fastafile = fastafile, subgroups = subgroups)
 #' @export
 read_maxquant_phosphosites <- function(
     dir = getwd(), 
@@ -521,14 +520,14 @@ read_maxquant_phosphosites <- function(
     prodt <- .read_maxquant_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
     fosdt <- .read_maxquant_phosphosites(file = phosphofile, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
-    uniprotdt <- read_uniprotdt(fastafile)
-    contaminantdt <- read_contaminantdt()
-    maxquantdt <- parse_maxquant_hdrs(prodt$`Fasta headers`); prodt[, `Fasta headers` := NULL ]
-    fosdt %<>% annotate_maxquant( uniprotdt = uniprotdt, 
-                              contaminantdt = contaminantdt, 
-                                 maxquantdt = maxquantdt, 
-                                    restapi = restapi,
-                                    verbose = verbose )
+        uniprothdrs <- read_uniprotdt(fastafile)
+    contaminanthdrs <- read_contaminantdt()
+       maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`); prodt[, `Fasta headers` := NULL ]
+    fosdt %<>% annotate_maxquant( uniprothdrs = uniprothdrs, 
+                              contaminanthdrs = contaminanthdrs, 
+                                 maxquanthdrs = maxquanthdrs, 
+                                      restapi = restapi,
+                                      verbose = verbose )
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp
     if (verbose)  message('\tSummarizedExperiment')

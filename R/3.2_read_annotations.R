@@ -570,13 +570,13 @@ nastring_to_0 <- function(x){
 
 
 
-.annotate <- function(anndt, uniprotdt, contaminantdt, maxquantdt, restapi, idcol, verbose){
+.annotate <- function(anndt, uniprothdrs, contaminanthdrs, maxquanthdrs, restapi, idcol, verbose){
     anndt %<>% cbind( uniprot = NA_character_,  reviewed = NA_integer_,    protein = NA_character_,
                          gene = NA_character_,  fragment = NA_integer_,  existence = NA_integer_,   
                      organism = NA_character_)
-    anndt %<>% ..merge_hdrdt(uniprotdt,     idcol = idcol, verbose = verbose, first = TRUE)
-    anndt %<>% ..merge_hdrdt(contaminantdt, idcol = idcol, verbose = verbose)
-    anndt %<>% ..merge_hdrdt(maxquantdt,    idcol = idcol, verbose = verbose)
+    anndt %<>% ..merge_hdrdt(uniprothdrs,     idcol = idcol, verbose = verbose, first = TRUE)
+    anndt %<>% ..merge_hdrdt(contaminanthdrs, idcol = idcol, verbose = verbose)
+    anndt %<>% ..merge_hdrdt(maxquanthdrs,    idcol = idcol, verbose = verbose)
     
     uniprots <- if (restapi)                anndt[is.na(uniprot), dbid]       else NULL
      ngroups <- if (restapi)  length(unique(anndt[is.na(uniprot)][[idcol]]))  else 0
@@ -604,14 +604,14 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 # Prefer full proteins (over fragments)
     n0 <- nrow(anndt)
     anndt <- anndt[, .SD[ fragment == min(fragment) ], by = idcol]
-    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t    %s%s%5d proteins   fullseqs > fragments', 
+    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t    %s%s%5d proteins  fullseq   > fragment', 
                                                   idcol, spaces(20), length(unique(anndt$dbid)))
 # Prefer better existences (over worse)
     n0 <- nrow(anndt)
     anndt <- anndt[, .SD[existence == min(existence)], by = idcol]
     if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t%s%5d proteins  %s', spaces(29), 
                                                             length(unique(anndt$dbid)), 
-                           '  protein > transcript > homolog > prediction > uncertain')
+                           'protein   > transcript > homolog > prediction > uncertain')
 # Order
     anndt[, c('reviewed', 'fragment', 'existence') := NULL]
     idnumeric <- is_numeric_string(anndt[[idcol]][1])
@@ -705,7 +705,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #' 
 #' Uncollapse, annotate, curate, recollapse, name
 #' @param dt         `data.table` : output of `read_maxquant_(proteingroups|phosphosites)`
-#' @param uniprotdt  `data.table` : output of `read_uniprotdt`
+#' @param uniprothdrs  `data.table` : output of `read_uniprotdt`
 #' @param restapi    `logical(1)` : use uniprot restapi to complete missing annotations ?
 #' @param verbose    `logical(1)` : message ?
 #' @return \code{data.table}
@@ -715,10 +715,10 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #'           file <- download_data('fukuda20.proteingroups.txt')
 #'             dt <- .read_maxquant_proteingroups(file)
 #'             dt[, 1:2]
-#'      uniprotdt <- NULL
-#'  contaminantdt <- read_contaminantdt()
-#'     maxquantdt <- parse_maxquant_hdrs(dt$`Fasta headers`); dt$`Fasta headers` <- NULL
-#'           dt %<>% annotate_maxquant(uniprotdt, contaminantdt, maxquantdt)
+#'      uniprothdrs <- NULL
+#'  contaminanthdrs <- read_contaminantdt()
+#'     maxquanthdrs <- parse_maxquant_hdrs(dt$`Fasta headers`); dt$`Fasta headers` <- NULL
+#'           dt %<>% annotate_maxquant(uniprothdrs, contaminanthdrs, maxquanthdrs)
 #'           dt[                 , 1:9]
 #'           dt[    reverse== '+', 1:9]
 #'           dt[contaminant== '+', 1:9]
@@ -728,31 +728,31 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #'     profile <- download_data('billing19.proteingroups.txt')
 #'     fosfile <- download_data('billing19.phosphosites.txt')
 #' uniprotfile <- download_data('uniprot_hsa_20140515.fasta')
-#'   uniprotdt <-  read_uniprotdt(uniprotfile)
+#'   uniprothdrs <-  read_uniprotdt(uniprotfile)
 #'       prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
 #'       fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
 #' annotate_maxquant(prodt                                           )[, 1:8]
 #' annotate_maxquant(fosdt                                           )[, 1:8]
-#' annotate_maxquant(prodt, uniprotdt = uniprotdt                    )[, 1:8]
-#' annotate_maxquant(fosdt, uniprotdt = uniprotdt                    )[, 1:8]
-#' annotate_maxquant(prodt, uniprotdt = uniprotdt, restapi = TRUE    )[, 1:8]
+#' annotate_maxquant(prodt, uniprothdrs = uniprothdrs                    )[, 1:8]
+#' annotate_maxquant(fosdt, uniprothdrs = uniprothdrs                    )[, 1:8]
+#' annotate_maxquant(prodt, uniprothdrs = uniprothdrs, restapi = TRUE    )[, 1:8]
 #' @md
 #' @export
 annotate_maxquant <- function(
-    dt, uniprotdt, contaminantdt, maxquantdt, restapi = FALSE, verbose = TRUE
+    dt, uniprothdrs, contaminanthdrs, maxquanthdrs, restapi = FALSE, verbose = TRUE
 ){
 # Assert
     dt %<>% copy()
-    if (!is.null(uniprotdt))  assert_fastadt(uniprotdt)
+    if (!is.null(uniprothdrs))  assert_fastadt(uniprothdrs)
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
 # Annotate
     if (verbose)  cmessage('\tAnnotate')
     anndt  <-  .initialize( dt, idcol )
     anndt %<>% .uncollapse(         verbose = verbose )
     anndt %<>% .drop_rev(    idcol, verbose = verbose )   # drops REV__ and drops rev in mixed groups
-    anndt %<>% .annotate(         uniprotdt = uniprotdt,
-                              contaminantdt = contaminantdt,
-                                 maxquantdt = maxquantdt, 
+    anndt %<>% .annotate(       uniprothdrs = uniprothdrs,
+                            contaminanthdrs = contaminanthdrs,
+                               maxquanthdrs = maxquanthdrs, 
                                     restapi = restapi, 
                                       idcol = idcol, 
                                     verbose = verbose)
