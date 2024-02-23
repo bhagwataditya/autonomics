@@ -9,7 +9,7 @@ read_maxquant_phosphosites(
   dir = getwd(),
   phosphofile = if (is_file(dir)) dir else file.path(dir, "phospho (STY)Sites.txt"),
   proteinfile = file.path(dirname(phosphofile), "proteinGroups.txt"),
-  uniprotdt = NULL,
+  fastafile = NULL,
   restapi = FALSE,
   quantity = NULL,
   subgroups = NULL,
@@ -40,7 +40,7 @@ read_phosphosites(...)
 
 \item{proteinfile}{proteingroups file}
 
-\item{uniprotdt}{data.table with uniprot annotations}
+\item{fastafile}{uniprot fastafile}
 
 \item{restapi}{TRUE or FALSE : annotate non-fastadt uniprots using uniprot restapi}
 
@@ -96,7 +96,6 @@ phosphofile <- download_data('billing19.phosphosites.txt')
 fastafile <- download_data('uniprot_hsa_20140515.fasta')
 uniprotdt <- read_uniprotdt(fastafile)
 subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
 pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
 fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
 fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, uniprotdt = uniprotdt, subgroups = subgroups)

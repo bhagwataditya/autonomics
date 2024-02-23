@@ -8,7 +8,7 @@
 read_maxquant_proteingroups(
   dir = getwd(),
   file = if (is_file(dir)) dir else file.path(dir, "proteinGroups.txt"),
-  uniprotdt = NULL,
+  fastafile = NULL,
   restapi = FALSE,
   quantity = NULL,
   subgroups = NULL,
@@ -36,7 +36,7 @@ read_proteingroups(...)
 
 \item{file}{proteingroups file}
 
-\item{uniprotdt}{data.table with uniprot annotations}
+\item{fastafile}{uniprot fastafile}
 
 \item{restapi}{TRUE or FALSE : use uniprot restapi to annotate uniprots not in fastadt ?}
 
@@ -92,7 +92,7 @@ Read maxquant proteingroups
 # billing19 - Normalized Ratios
     file <- download_data('billing19.proteingroups.txt')
     fastafile <- download_data('uniprot_hsa_20140515.fasta')
-    uniprotdt <- read_uniprotdt(fastafile)
     subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
+    pro <- read_maxquant_proteingroups(file = file, fastafile = fastfile, subgroups = subgroups)
 }

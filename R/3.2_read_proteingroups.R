@@ -96,7 +96,7 @@ un_int64 <- function(x) {
     assert_maxquant_proteingroups(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
 # Read
-    if (verbose)  message('\tRead ', file)
+    if (verbose)  message('\tRead proteingroups   ', file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
     n0 <- nrow(prodt)
@@ -108,7 +108,7 @@ un_int64 <- function(x) {
     pepcols <- grep('Razor + unique peptides ', names(prodt), fixed = TRUE, value = TRUE)
     prodt %<>% extract(, c(anncols, pepcols, valcols), with = FALSE)
     digits <- ceiling(log10(nrow(prodt)))
-    if (verbose)  message('\t\t', nrow(prodt), ' proteins, contaminants, reverse')
+  # if (verbose)  message('\t\t', nrow(prodt), ' proteins, contaminants, reverse')
 # Return
     names(prodt) %<>% stri_replace_first_fixed(          'Reverse',     'reverse')
     names(prodt) %<>% stri_replace_first_fixed(          'Contaminant', 'contaminant') # older MaxQuant
@@ -129,7 +129,7 @@ un_int64 <- function(x) {
     assert_maxquant_phosphosites(file)
     `Protein group IDs` <- NULL
 # Read    
-    if (verbose)  message('\tRead ', file)
+    if (verbose)  message('\tRead phosphosites ', file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     fosdt %<>% un_int64()
     pattern <- MAXQUANT_PATTERNS[[quantity]]
@@ -356,7 +356,7 @@ is_file <- function(file){
 #' Read maxquant proteingroups
 #' @param dir           proteingroups directory
 #' @param file          proteingroups file
-#' @param uniprotdt     data.table with uniprot annotations
+#' @param fastafile     uniprot fastafile
 #' @param restapi       TRUE or FALSE : use uniprot restapi to annotate uniprots not in fastadt ?
 #' @param quantity     'normalizedratio', 'ratio', 'correctedreporterintensity', 
 #'                     'reporterintensity', 'maxlfq', 'labeledintensity', 
@@ -387,17 +387,15 @@ is_file <- function(file){
 #' # billing19 - Normalized Ratios
 #'     file <- download_data('billing19.proteingroups.txt')
 #'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
-#'     uniprotdt <- read_uniprotdt(fastafile)
 #'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
+#'     pro <- read_maxquant_proteingroups(file = file, fastafile = fastfile, subgroups = subgroups)
 #' @export
 read_maxquant_proteingroups <- function(
     dir = getwd(), 
     file = if (is_file(dir)) dir else file.path(dir, 'proteinGroups.txt'), 
-    uniprotdt = NULL, 
-    restapi = FALSE,
-    quantity = NULL, 
-    subgroups = NULL, invert = character(0),
+    fastafile = NULL,  restapi = FALSE,
+    quantity = NULL, subgroups = NULL, invert = character(0),
     contaminants = FALSE, reverse = FALSE, impute = FALSE,
     plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
     fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL, 
@@ -410,11 +408,18 @@ read_maxquant_proteingroups <- function(
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     assert_is_a_bool(verbose)
-# Read/Curate
+# Read/Annotate
     prodt <- .read_maxquant_proteingroups(file = file, quantity = quantity, verbose = verbose)
-    prodt %<>% annotate_maxquant(uniprotdt = uniprotdt, restapi = restapi, verbose = verbose)
+    uniprotdt <- read_uniprotdt(fastafile)
+    contaminantdt <- read_contaminantdt()
+    maxquantdt <- parse_maxquant_hdrs(prodt$`Fasta headers`); prodt[, `Fasta headers` := NULL ]
+    prodt %<>% annotate_maxquant( uniprotdt = uniprotdt, 
+                              contaminantdt = contaminantdt, 
+                                 maxquantdt = maxquantdt, 
+                                    restapi = restapi,
+                                    verbose = verbose )
 # SumExp
-    if (verbose)  message('\tCreate SummarizedExperiment')
+    if (verbose)  message('\tSummarizedExperiment')
     pattern <- MAXQUANT_PATTERNS[[quantity]]
     promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
@@ -459,7 +464,7 @@ read_proteingroups <- function(...){
 #' @param dir           proteingroups directory
 #' @param phosphofile   phosphosites  file
 #' @param proteinfile   proteingroups file
-#' @param uniprotdt     data.table with uniprot annotations
+#' @param fastafile     uniprot fastafile
 #' @param restapi       TRUE or FALSE : annotate non-fastadt uniprots using uniprot restapi
 #' @param quantity     'normalizedratio', 'ratio', 'correctedreporterintensity', 
 #'                     'reporterintensity', 'maxlfq', 'labeledintensity', 
@@ -489,7 +494,6 @@ read_proteingroups <- function(...){
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' uniprotdt <- read_uniprotdt(fastafile)
 #' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-#' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups, plot = TRUE)
 #' pro <- read_maxquant_proteingroups(file = proteinfile, subgroups = subgroups)
 #' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
 #' fos <- read_maxquant_phosphosites( phosphofile = phosphofile, proteinfile = proteinfile, uniprotdt = uniprotdt, subgroups = subgroups)
@@ -498,7 +502,7 @@ read_maxquant_phosphosites <- function(
     dir = getwd(), 
     phosphofile = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
     proteinfile = file.path(dirname(phosphofile), 'proteinGroups.txt'), 
-    uniprotdt = NULL, restapi = FALSE,
+    fastafile = NULL,restapi = FALSE,
     quantity = NULL, 
     subgroups = NULL, invert = character(0), 
     contaminants = FALSE, reverse = FALSE, localization = 0.75, 
@@ -517,10 +521,17 @@ read_maxquant_phosphosites <- function(
     prodt <- .read_maxquant_proteingroups(file = proteinfile, quantity = quantity, verbose = verbose)
     fosdt <- .read_maxquant_phosphosites(file = phosphofile, quantity = quantity, proteinfile = proteinfile, verbose = verbose)
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
-    fosdt %<>% annotate_maxquant(fastadt = fastadt, restapi = restapi, verbose = verbose)
+    uniprotdt <- read_uniprotdt(fastafile)
+    contaminantdt <- read_contaminantdt()
+    maxquantdt <- parse_maxquant_hdrs(prodt$`Fasta headers`); prodt[, `Fasta headers` := NULL ]
+    fosdt %<>% annotate_maxquant( uniprotdt = uniprotdt, 
+                              contaminantdt = contaminantdt, 
+                                 maxquantdt = maxquantdt, 
+                                    restapi = restapi,
+                                    verbose = verbose )
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp
-    if (verbose)  message('\tCreate SummarizedExperiment')
+    if (verbose)  message('\tSummarizedExperiment')
     pattern <- MAXQUANT_PATTERNS[[quantity]]
     promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))

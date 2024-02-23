@@ -4,7 +4,14 @@
 \alias{annotate_maxquant}
 \title{Annotate maxquant}
 \usage{
-annotate_maxquant(dt, uniprotdt = NULL, restapi = FALSE, verbose = TRUE)
+annotate_maxquant(
+  dt,
+  uniprotdt,
+  contaminantdt,
+  maxquantdt,
+  restapi = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{dt}{\code{data.table} : output of \code{read_maxquant_(proteingroups|phosphosites)}}
@@ -27,11 +34,16 @@ Uncollapse, annotate, curate, recollapse, name
 \examples{
 # Fukuda 2020: contaminants + maxquanthdrs
 #-----------------------------------------
-    file <- download_data('fukuda20.proteingroups.txt')
-    dt <- .read_maxquant_proteingroups(file); dt[                 , 1:2]
-    dt \%<>\% annotate_maxquant();              dt[                 , 1:9]
-                                              dt[    reverse== '+', 1:9]
-                                              dt[contaminant== '+', 1:9]
+          file <- download_data('fukuda20.proteingroups.txt')
+            dt <- .read_maxquant_proteingroups(file)
+            dt[, 1:2]
+     uniprotdt <- NULL
+ contaminantdt <- read_contaminantdt()
+    maxquantdt <- parse_maxquant_hdrs(dt$`Fasta headers`); dt$`Fasta headers` <- NULL
+          dt \%<>\% annotate_maxquant(uniprotdt, contaminantdt, maxquantdt)
+          dt[                 , 1:9]
+          dt[    reverse== '+', 1:9]
+          dt[contaminant== '+', 1:9]
                                               
 # Billing 2019: uniprothdrs + contaminants + maxquanthdrs
 #--------------------------------------------------------
