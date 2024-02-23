@@ -299,7 +299,7 @@ filter_samples <- function(object, condition, verbose = TRUE, record = TRUE){
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
     if (verbose & sum(idx)<length(idx)){
-        message('\t\t\tRetain ', sum(idx), '/', length(idx), ' samples: ', 
+        message('\t\tRetain ', sum(idx), '/', length(idx), ' samples: ', 
                 expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()

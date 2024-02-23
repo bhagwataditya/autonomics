@@ -151,7 +151,7 @@ read_uniprotdt <- function(
     if (!requireNamespace('Biostrings', quietly = TRUE)){
         stop("BiocManager::install('Biostrings'). Then re-run.") }
 # Read
-    if (verbose) message('\tRead fastahdrs in ', paste0(fastafile, collapse = '\n\t     '))
+    if (verbose) message('\tRead fastahdrs       ', paste0(fastafile, collapse = '\n\t     '))
     fastahdrs <- Biostrings::readAAStringSet(fastafile)
     fastahdrs %<>% names()
     fastahdrs %<>% parse_uniprot_hdrs(fastafields = fastafields)
@@ -521,7 +521,7 @@ nastring_to_0 <- function(x){
     
          nproteins <- length(unique(anndt$dbid))
     nproteingroups <- length(unique(anndt$proId))
-    if (verbose)      cmessage('\t\tUncollapse %5d proIds into %5d proteins', nproteingroups, nproteins )
+    if (verbose)      cmessage('\tAnnotate  Uncollapse %5d proIds into  %5d  proteins', nproteingroups, nproteins )
         
     idx <- anndt[ , !stri_detect_fixed(dbid, 'H-INV') ]
     anndt[!idx, isoform := 0 ]
@@ -536,13 +536,12 @@ nastring_to_0 <- function(x){
     anndt[ stri_detect_fixed(dbid, 'REV__') ,  reverse := '+'   ]
     anndt[, dbid := stri_replace_first_fixed(dbid, 'REV__', '') ]
     if (verbose){
-        cmessage('\t\tDrop REV_%s%5d proteins', spaces(20), length(unique(anndt$dbid)))
+        cmessage('\t\t  Drop REV_%s%5d  proteins', spaces(21), length(unique(anndt$dbid)))
     }
     anndt[, mixedgroup := any(reverse == '+') & any(reverse == ''), by = idcol]  # Drop revs in mixed groups
-    nmixedrev    <- anndt[mixedgroup == TRUE, sum(reverse == '+')]
     nmixedgroups <- anndt[mixedgroup == TRUE, length(unique(get(idcol)))]
-    if (verbose & nmixedrev > 0)  cmessage(
-        '\t\tDrop %d rev proteins in %d mixed groups', nmixedrev, nmixedgroups)
+    if (verbose & nmixedgroups > 0)  cmessage(
+        '\t\t  Drop rev in %d mixed groups', nmixedgroups)
     anndt <- anndt[ mixedgroup == FALSE | (mixedgroup == TRUE & reverse == '') ,  ]
     anndt[, mixedgroup := NULL]
     anndt[]
@@ -552,8 +551,8 @@ nastring_to_0 <- function(x){
 ..merge_hdrdt <- function(anndt, hdrdt, idcol, verbose, first = FALSE){
     if (is.null(hdrdt)){
         if (verbose){
-            if (first)  cmessage('\t\tAnnotate%s%5d using %s', spaces(27), 0, get_name_in_parent(hdrdt)) 
-            else        cmessage('\t\t%s%5d using %s', spaces(35), 0, get_name_in_parent(hdrdt))
+            if (first)  cmessage('\t\t  Annotate%s%5d using %s', spaces(27), 0, get_name_in_parent(hdrdt)) 
+            else        cmessage('\t\t  %s%5d using %s', spaces(35), 0, get_name_in_parent(hdrdt))
         }
         return(anndt)
     }
@@ -563,7 +562,7 @@ nastring_to_0 <- function(x){
     anndt1 %<>% merge(hdrdt, by = 'dbid', sort = FALSE, all.x = TRUE)
     anndt <- rbind(anndt0, anndt1, fill = TRUE)
     if (verbose)       cmessage('\t\t%s%5d using %s', 
-                                spaces(35), length(unique(anndt1$dbid)), get_name_in_parent(hdrdt))
+                                spaces(37), length(unique(anndt1$dbid)), get_name_in_parent(hdrdt))
     anndt[]
 }
 
@@ -595,21 +594,21 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 # Assert
     canonical <- existence <- fragment <- isoform <- protein <- reviewed <- NULL
     anndt %<>% copy()
-    if (verbose)   cmessage('\t\tFilter%s%5d proteins', spaces(23), length(unique(anndt$dbid)))
+    if (verbose)   cmessage('\t\t  Filter within %s%s%5d  proteins', idcol, spaces(11), length(unique(anndt$dbid)))
 # Prefer swissprot (over trembl)
     n0 <- nrow(anndt)
     anndt <- anndt[, .SD[ reviewed == max(reviewed) ], by = idcol]
-    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t    within%s%5d proteins  swissprot > trembl', 
-                                                  spaces(19), length(unique(anndt$dbid))) 
+    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t%s%5d  proteins  swissprot > trembl', 
+                                                  spaces(32), length(unique(anndt$dbid))) 
 # Prefer full proteins (over fragments)
     n0 <- nrow(anndt)
     anndt <- anndt[, .SD[ fragment == min(fragment) ], by = idcol]
-    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t    %s%s%5d proteins  fullseq   > fragment', 
-                                                  idcol, spaces(20), length(unique(anndt$dbid)))
+    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t%s%5d  proteins  fullseq   > fragment', 
+                                                  spaces(32), length(unique(anndt$dbid)))
 # Prefer better existences (over worse)
     n0 <- nrow(anndt)
     anndt <- anndt[, .SD[existence == min(existence)], by = idcol]
-    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t%s%5d proteins  %s', spaces(29), 
+    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t%s%5d  proteins  %s', spaces(32), 
                                                             length(unique(anndt$dbid)), 
                            'protein   > transcript > homolog > prediction > uncertain')
 # Order
@@ -622,7 +621,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 }
 
 .restore_rev <- function(anndt, idcol, verbose){
-    if (verbose)  cmessage('\t\tAdd REV__                    %5d proteins', length(unique(anndt$dbid)))
+    if (verbose)  cmessage('\t\t  Add REV__%s%5d  proteins', spaces(21), length(unique(anndt$dbid)))
     anndt[ reverse == '+',    uniprot := paste0('REV__', uniprot   ) ]
     anndt[ reverse == '+',    protein := paste0('REV__', protein   ) ]
     anndt[ reverse == '+',       gene := paste0('REV__', gene      ) ]
@@ -635,7 +634,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
     anndt %<>% extract(order(uniprot, isoform)) # we want the isoforms to be pasted in order!
     anndt %<>% recollapse(by = idcol, sep = ';')
     anndt %<>% pull_columns(c(idcol, 'uniprot', 'isoform', 'protein'))
-    if (verbose)  cmessage('\t\tRecollapse %5d %ss', 
+    if (verbose)  cmessage('\t\t  Recollapse %5d %ss', 
                            length(unique(anndt[[idcol]])), idcol)
     anndt
 }
@@ -746,7 +745,6 @@ annotate_maxquant <- function(
     if (!is.null(uniprothdrs))  assert_fastadt(uniprothdrs)
     idcol <- if ('fosId' %in% names(dt)) 'fosId' else 'proId'
 # Annotate
-    if (verbose)  cmessage('\tAnnotate')
     anndt  <-  .initialize( dt, idcol )
     anndt %<>% .uncollapse(         verbose = verbose )
     anndt %<>% .drop_rev(    idcol, verbose = verbose )   # drops REV__ and drops rev in mixed groups
