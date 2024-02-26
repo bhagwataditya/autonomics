@@ -814,12 +814,11 @@ paste_unique <- function(x, collapse) paste0(unique(x), collapse=collapse)
 #'     fdt(x)[1:3, ]
 #'     # x %<>% annotate_uniprot_ws(upws)
 #'     # fdt(x)[1:3, ]
-#' @export
+#' @noRd
 annotate_uniprot_ws <- function(x, ...)  UseMethod('annotate_uniprot_ws')
 
 
-#' @rdname annotate_uniprot_ws
-#' @export
+#' @noRd
 annotate_uniprot_ws.data.table <- function(
     x, upws, columns=c('xref_ensembl'), collapse=';', ...
 ){
@@ -849,8 +848,8 @@ annotate_uniprot_ws.data.table <- function(
         x[]
 }
 
-#' @rdname annotate_uniprot_ws
-#' @export
+
+#' @noRd
 annotate_uniprot_ws.SummarizedExperiment <- function(
     x, upws, columns = c('ENSEMBL'), collapse=';', ...
 ){
