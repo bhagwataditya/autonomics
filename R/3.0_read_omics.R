@@ -599,7 +599,7 @@ add_subgroup <- function(
         sep <- guess_sep(x)
         if (sep!='NOSEP'){
             nfactor <- nfactors(x, sep)
-            if (verbose)  message('\t\tInfer subgroup from sample_ids')
+            if (verbose)  message('\t\t  Infer subgroup from sample_ids')
             object$subgroup  <- split_extract_fixed(x, sep, seq_len(nfactor-1))
             object$replicate <- split_extract_fixed(x, sep, nfactor)
         } else {

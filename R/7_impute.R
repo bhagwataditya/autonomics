@@ -44,7 +44,7 @@ zero_to_na <- function(x, verbose = FALSE){
 nan_to_na <- function(x, verbose = FALSE){
     selector <- is.nan(x)
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose)  message('\t\tReplace NaN->NA for ', 
+        if (verbose)  message('\t\t  Replace NaN->NA for ', 
             sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
             ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
             ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
@@ -59,7 +59,7 @@ nan_to_na <- function(x, verbose = FALSE){
 na_to_zero <- function(x, verbose = FALSE){
     selector <- is.na(x)
     if (any(selector)){
-        if (verbose)  message('\t\tReplace NA->0 for ', 
+        if (verbose)  message('\t\t  Replace NA->0 for ', 
             sum(selector), '/', nrow(selector)*ncol(selector), 
             ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
             ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')

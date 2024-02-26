@@ -96,7 +96,7 @@ un_int64 <- function(x) {
     assert_maxquant_proteingroups(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
 # Read
-    if (verbose)  message('\tRead proteingroups   ', file)
+    if (verbose)  cmessage('\tRead%sproteingroups   %s', spaces(6), file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
     n0 <- nrow(prodt)
@@ -129,7 +129,7 @@ un_int64 <- function(x) {
     assert_maxquant_phosphosites(file)
     `Protein group IDs` <- NULL
 # Read    
-    if (verbose)  message('\t     phosphosites    ', file)
+    if (verbose)  cmessage('\t%sphosphosites    %s', spaces(10), file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     fosdt %<>% un_int64()
     pattern <- MAXQUANT_PATTERNS[[quantity]]
@@ -141,18 +141,18 @@ un_int64 <- function(x) {
     valcols %<>% extract(stri_detect_fixed(., '___1'))
     fosdt %<>% extract(, c(anncols, valcols), with = FALSE)
     digits <- ceiling(log10(nrow(fosdt)))
-    if (verbose)  message('\t\tRead   ', formatC(nrow(fosdt), digits = digits), 
+    if (verbose)  message(spaces(38), 'Read   ', formatC(nrow(fosdt), digits = digits), 
                           ' phosphosites in proteins, contaminants, reverse')
     names(fosdt) %<>% stri_replace_first_fixed(          'Reverse',     'reverse')
     names(fosdt) %<>% stri_replace_first_fixed(          'Contaminant', 'contaminant') # older MaxQuant
     names(fosdt) %<>% stri_replace_first_fixed('Potential contaminant', 'contaminant') # newer MaxQuant
 # Filter
     fosdt <- fosdt[stri_count_fixed(`Protein group IDs`, ';') == 0]
-    if (verbose)  message('\t\tRetain ', formatC(nrow(fosdt), digits = digits), 
+    if (verbose)  message(spaces(38), 'Retain ', formatC(nrow(fosdt), digits = digits), 
                           ' phosphosites in single proteingroup')
     idx <- rowSums(fosdt[, valcols, with = FALSE], na.rm = TRUE) > 0
     fosdt <- fosdt[which(idx)]
-    if (verbose)  message('\t\tRetain ', formatC(nrow(fosdt), digits = digits), 
+    if (verbose)  message(spaces(38), 'Retain ', formatC(nrow(fosdt), digits = digits), 
                           ' phosphosites with signal in some sample')
 # Rename 
     names(fosdt) %<>% stri_replace_first_fixed('___1', '')
@@ -178,7 +178,7 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
     prodt %<>% copy()
     fosdt %<>% copy()
 # Extract annotation cols
-    if (verbose)  message('\t\tKeep proteingroup uniprots')
+    if (verbose)  message(spaces(38), 'Keep proteingroup uniprots')
     proanncols <- c('proId', 'uniprot', 'reverse', 'contaminant')
     fosanncols <- c('fosId', 'proId', 'uniprot', 'Positions within proteins', 'reverse', 'contaminant')
     proanndt <- prodt[, proanncols, with = FALSE]
@@ -419,7 +419,7 @@ read_maxquant_proteingroups <- function(
                                       restapi = restapi,
                                       verbose = verbose )
 # SumExp
-    if (verbose)  message('\tSummarizedExperiment')
+    if (verbose)  message('\tSumExp')
     pattern <- MAXQUANT_PATTERNS[[quantity]]
     promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
@@ -529,7 +529,7 @@ read_maxquant_phosphosites <- function(
                                       verbose = verbose )
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp
-    if (verbose)  message('\tSummarizedExperiment')
+    if (verbose)  message('\tSumExp')
     pattern <- MAXQUANT_PATTERNS[[quantity]]
     promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
@@ -760,7 +760,6 @@ process_maxquant <- function(
     }
     object %<>% invert_subgroups(invert)
 # Features
-    if (verbose) message('\tFilter features')
     analysis(object)$nfeatures <- c(nrow(object))
     if (!reverse)       object %<>% filter_features(reverse == '', verbose = verbose)
     if (!contaminants)  object %<>% filter_features(contaminant== '', verbose = verbose)
