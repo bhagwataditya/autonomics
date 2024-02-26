@@ -96,7 +96,7 @@ un_int64 <- function(x) {
     assert_maxquant_proteingroups(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
 # Read
-    if (verbose)  cmessage('\tRead%sproteingroups   %s', spaces(6), file)
+    if (verbose)  cmessage('%sRead%sproteingroups   %s', spaces(4), spaces(6), file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
     n0 <- nrow(prodt)
@@ -129,7 +129,7 @@ un_int64 <- function(x) {
     assert_maxquant_phosphosites(file)
     `Protein group IDs` <- NULL
 # Read    
-    if (verbose)  cmessage('\t%sphosphosites    %s', spaces(10), file)
+    if (verbose)  cmessage('%sphosphosites    %s', spaces(14), file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     fosdt %<>% un_int64()
     pattern <- MAXQUANT_PATTERNS[[quantity]]
@@ -419,7 +419,7 @@ read_maxquant_proteingroups <- function(
                                       restapi = restapi,
                                       verbose = verbose )
 # SumExp
-    if (verbose)  message('\tSumExp')
+    if (verbose)  cmessage('%sSumExp', spaces(4))
     pattern <- MAXQUANT_PATTERNS[[quantity]]
     promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))
@@ -529,7 +529,7 @@ read_maxquant_phosphosites <- function(
                                       verbose = verbose )
     prodt %<>% extract(fosdt$proId, on = 'proId')
 # SumExp
-    if (verbose)  message('\tSumExp')
+    if (verbose)  cmessage('%sSumExp', spaces(4))
     pattern <- MAXQUANT_PATTERNS[[quantity]]
     promat <- mqdt_to_mat(prodt, pattern, verbose = verbose)
     pepcols <- names(prodt) %>% extract(stri_detect_fixed(., 'eptides'))

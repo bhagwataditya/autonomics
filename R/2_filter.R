@@ -19,7 +19,7 @@ filter_features <- function(object, condition, verbose = TRUE){
     idx <- eval_tidy(condition, fdata(object))
     idx <- idx & !is.na(idx)
     if (verbose & sum(idx) < length(idx)){
-        cmessage('\t\t  Retain %d/%d features: %s', sum(idx), length(idx),
+        cmessage('%sRetain %d/%d features: %s', spaces(14), sum(idx), length(idx),
                 expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(idx,)
     fdata(object) %<>% droplevels()
@@ -299,7 +299,7 @@ filter_samples <- function(object, condition, verbose = TRUE, record = TRUE){
     idx <- eval_tidy(condition, sdata(object))
     idx <- idx & !is.na(idx)
     if (verbose & sum(idx)<length(idx)){
-        cmessage('\t\t  Retain %d/%d samples: %s', sum(idx), length(idx), 
+        cmessage('%sRetain %d/%d samples: %s', spaces(14), sum(idx), length(idx), 
                 expr_text(condition) %>% substr(1, min(120, nchar(.))))}
     object %<>% extract(, idx)
     sdata(object) %<>% droplevels()

@@ -163,7 +163,7 @@ read_uniprotdt <- function(
 #' @rdname read_uniprotdt
 #' @export
 parse_maxquant_hdrs <- function(fastahdrs){
-    cmessage('\t%smaxquanthdrs   ', spaces(10)) # Write Read rather than Parse to align with contaminantdt
+    cmessage('%smaxquanthdrs   ', spaces(14)) # Write Read rather than Parse to align with contaminantdt
     fastahdrs %<>% stri_split_fixed(';') %>% unlist() %>% unique()
     fastahdrs %<>% extract(. != '' )
     fastahdrs %<>% extract(stri_count_fixed(., '|')==2 ) # minimum requirement: >sp|A0AV96-2|RBM47_HUMAN
@@ -455,7 +455,7 @@ save_contaminant_hdrs <- function(confile = download_contaminants(), verbose = T
 #' @export
 read_contaminantdt <- function(force = FALSE, verbose = TRUE){
     file <- download_data('contaminants.tsv', force = force)
-    if (verbose)  cmessage('\t%scontaminanthdrs %s', spaces(10), file)
+    if (verbose)  cmessage('%scontaminanthdrs %s', spaces(14), file)
     fread(file)
 }
 
@@ -521,7 +521,7 @@ nastring_to_0 <- function(x){
     
     nproteins <- length(unique(anndt$dbid))
     nfeatures <- length(unique(anndt[[idcol]]))
-    if (verbose)      cmessage('\tAnnotate  Uncollapse%s%5d %ss into  %5d  proteins', spaces(5), nfeatures, idcol, nproteins )
+    if (verbose)      cmessage('%sAnnotate  Uncollapse%s%5d %ss into  %5d  proteins', spaces(4), spaces(5), nfeatures, idcol, nproteins )
         
     idx <- anndt[ , !stri_detect_fixed(dbid, 'H-INV') ]
     anndt[!idx, isoform := 0 ]
@@ -536,7 +536,7 @@ nastring_to_0 <- function(x){
     anndt[ stri_detect_fixed(dbid, 'REV__') ,  reverse := '+'   ]
     anndt[, dbid := stri_replace_first_fixed(dbid, 'REV__', '') ]
     if (verbose){
-        cmessage('\t\t  Drop REV_%s%5d  proteins', spaces(25), length(unique(anndt$dbid)))
+        cmessage('%sDrop REV_%s%5d  proteins', spaces(14), spaces(25), length(unique(anndt$dbid)))
     }
     anndt[, mixedgroup := any(reverse == '+') & any(reverse == ''), by = idcol]  # Drop revs in mixed groups
     nmixedgroups <- anndt[mixedgroup == TRUE, length(unique(get(idcol)))]
@@ -551,8 +551,8 @@ nastring_to_0 <- function(x){
 ..merge_hdrdt <- function(anndt, hdrdt, idcol, verbose, first = FALSE){
     if (is.null(hdrdt)){
         if (verbose){
-            if (first)  cmessage('\t\t  Annotate%s%5d using %s', spaces(33), 0, get_name_in_parent(hdrdt)) 
-            else        cmessage('\t\t  %s%5d using %s',         spaces(41), 0, get_name_in_parent(hdrdt))
+            if (first)  cmessage('%sAnnotate%s%5d using %s', spaces(14), spaces(33), 0, get_name_in_parent(hdrdt)) 
+            else        cmessage(          '%s%5d using %s',             spaces(55), 0, get_name_in_parent(hdrdt))
         }
         return(anndt)
     }
@@ -561,8 +561,8 @@ nastring_to_0 <- function(x){
     anndt1 <- anndt[ dbid %in% intersect, c(idcol, 'dbid', 'reverse', 'isoform'), with = FALSE]
     anndt1 %<>% merge(hdrdt, by = 'dbid', sort = FALSE, all.x = TRUE)
     anndt <- rbind(anndt0, anndt1, fill = TRUE)
-    if (verbose)       cmessage('\t\t%s%5d using %s', 
-                                spaces(43), length(unique(anndt1$dbid)), get_name_in_parent(hdrdt))
+    if (verbose)  cmessage('%s%5d using %s', 
+                                spaces(55), length(unique(anndt1$dbid)), get_name_in_parent(hdrdt))
     anndt[]
 }
 
@@ -594,21 +594,21 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 # Assert
     canonical <- existence <- fragment <- isoform <- protein <- reviewed <- NULL
     anndt %<>% copy()
-    if (verbose)   cmessage('\t\t  Filter%s%5d  proteins', spaces(28), length(unique(anndt$dbid)))
+    if (verbose)   cmessage('%sFilter%s%5d  proteins', spaces(14), spaces(28), length(unique(anndt$dbid)))
 # Prefer swissprot (over trembl)
     n0 <- nrow(anndt)
     anndt <- anndt[, .SD[ reviewed == max(reviewed) ], by = idcol]
-    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t  within %s%s%5d  proteins  swissprot > trembl', 
-                                                  idcol, spaces(22), length(unique(anndt$dbid))) 
+    if ( nrow(anndt) < n0 & verbose )    cmessage('%swithin %s%s%5d  proteins  swissprot > trembl', 
+                                                  spaces(14), idcol, spaces(22), length(unique(anndt$dbid))) 
 # Prefer full proteins (over fragments)
     n0 <- nrow(anndt)
     anndt <- anndt[, .SD[ fragment == min(fragment) ], by = idcol]
-    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t%s%5d  proteins  fullseq   > fragment', 
-                                                  spaces(36), length(unique(anndt$dbid)))
+    if ( nrow(anndt) < n0 & verbose )    cmessage('%s%5d  proteins  fullseq   > fragment', 
+                                                  spaces(48), length(unique(anndt$dbid)))
 # Prefer better existences (over worse)
     n0 <- nrow(anndt)
     anndt <- anndt[, .SD[existence == min(existence)], by = idcol]
-    if ( nrow(anndt) < n0 & verbose )    cmessage('\t\t%s%5d  proteins  %s', spaces(36), 
+    if ( nrow(anndt) < n0 & verbose )    cmessage('%s%5d  proteins  %s', spaces(48), 
                                                             length(unique(anndt$dbid)), 
                            'protein   > transcript > homolog > prediction > uncertain')
 # Order
@@ -621,7 +621,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 }
 
 .restore_rev <- function(anndt, idcol, verbose){
-    if (verbose)  cmessage('\t\t  Add REV__%s%5d  proteins', spaces(25), length(unique(anndt$dbid)))
+    if (verbose)  cmessage('%sAdd REV__%s%5d  proteins', spaces(14), spaces(25), length(unique(anndt$dbid)))
     anndt[ reverse == '+',    uniprot := paste0('REV__', uniprot   ) ]
     anndt[ reverse == '+',    protein := paste0('REV__', protein   ) ]
     anndt[ reverse == '+',       gene := paste0('REV__', gene      ) ]
@@ -634,7 +634,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
     anndt %<>% extract(order(uniprot, isoform)) # we want the isoforms to be pasted in order!
     anndt %<>% recollapse(by = idcol, sep = ';')
     anndt %<>% pull_columns(c(idcol, 'uniprot', 'isoform', 'protein'))
-    if (verbose)  cmessage('\t\t  Recollapse%s%5d %ss', spaces(5), 
+    if (verbose)  cmessage('%sRecollapse%s%5d %ss', spaces(14), spaces(5), 
                            length(unique(anndt[[idcol]])), idcol)
     anndt
 }

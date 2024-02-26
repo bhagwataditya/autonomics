@@ -28,11 +28,12 @@
 zero_to_na <- function(x, verbose = FALSE){
     selector <- x == 0
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose)  message('\t\tReplace 0->NA for ', 
-            sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
-            ' values (in ',  sum(rowAnys(selector), na.rm=TRUE), '/', nrow(x), 
-            ' features of ', sum(colAnys(selector), na.rm=TRUE), '/', ncol(x), 
-            ' samples)')
+        if (verbose)   cmessage('%sReplace 0->NA for %d/%d values (in %d/%d features of %d/%d samples)', 
+                                spaces(14),
+                                sum(selector, na.rm=TRUE), 
+                                nrow(selector)*ncol(selector), 
+                                sum(rowAnys(selector), na.rm=TRUE), nrow(x), 
+                                sum(colAnys(selector), na.rm=TRUE), ncol(x))
         x[selector] <- NA_real_
     }
     x
@@ -44,10 +45,12 @@ zero_to_na <- function(x, verbose = FALSE){
 nan_to_na <- function(x, verbose = FALSE){
     selector <- is.nan(x)
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose)  message('\t\t  Replace NaN->NA for ', 
-            sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
-            ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
-            ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
+        if (verbose)   cmessage('%sReplace NaN->NA for %d/%d values (in %d/%d features of %d/%d samples)', 
+                                spaces(14), 
+                                sum(selector, na.rm=TRUE), 
+                                nrow(selector)*ncol(selector), 
+                                sum(rowAnys(selector)), nrow(x), 
+                                sum(colAnys(selector)), ncol(x))
         x[selector] <- NA_real_
     }
     x
@@ -59,10 +62,12 @@ nan_to_na <- function(x, verbose = FALSE){
 na_to_zero <- function(x, verbose = FALSE){
     selector <- is.na(x)
     if (any(selector)){
-        if (verbose)  message('\t\t  Replace NA->0 for ', 
-            sum(selector), '/', nrow(selector)*ncol(selector), 
-            ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
-            ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
+        if (verbose)   cmessage('%sReplace NA->0 for %d/%d values (in %d/%d features of %d/%d samples)', 
+                                spaces(14),
+                                sum(selector), 
+                                nrow(selector)*ncol(selector), 
+                                sum(rowAnys(selector)), nrow(x), 
+                                sum(colAnys(selector)), ncol(x))
         x[selector] <- 0
     }
     x
@@ -74,10 +79,14 @@ na_to_zero <- function(x, verbose = FALSE){
 inf_to_na <- function(x, verbose = FALSE){
     selector <- is.infinite(x)
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose)  message('\t\tReplace -Inf->NA for ', 
-            sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
-            ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
-            ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
+        if (verbose)   cmessage('%sReplace -Inf->NA for %d/%d values (in %d/%d features of %d/%d samples)', 
+                                spaces(14),
+                                sum(selector, na.rm=TRUE), 
+                                nrow(selector)*ncol(selector), 
+                                sum(rowAnys(selector)), 
+                                nrow(x), 
+                                sum(colAnys(selector)), 
+                                ncol(x))
         x[selector] <- NA_real_
     }
     x
@@ -89,10 +98,14 @@ inf_to_na <- function(x, verbose = FALSE){
 minusinf_to_na <- function(x, verbose = FALSE){
     selector <- x==-Inf
     if (any(c(selector), na.rm = TRUE)){
-        if (verbose)  message('\t\tReplace -Inf->NA for ', 
-            sum(selector, na.rm=TRUE), '/', nrow(selector)*ncol(selector), 
-            ' values (in ',  sum(rowAnys(selector)), '/', nrow(x), 
-            ' features of ', sum(colAnys(selector)), '/', ncol(x), ' samples)')
+        if (verbose)   cmessage('%sReplace -Inf->NA for %d/%d values (in %d/%d features of %d/%d samples)', 
+                                spaces(14),
+                                sum(selector, na.rm=TRUE), 
+                                nrow(selector)*ncol(selector), 
+                                sum(rowAnys(selector)), 
+                                nrow(x), 
+                                sum(colAnys(selector)), 
+                                ncol(x))
         x[selector] <- NA_real_
     }
     x
