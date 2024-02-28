@@ -151,7 +151,7 @@ read_uniprotdt <- function(
     if (!requireNamespace('Biostrings', quietly = TRUE)){
         stop("BiocManager::install('Biostrings'). Then re-run.") }
 # Read
-    if (verbose)   cmessage('\t%sfastahdrs       %s', spaces(10), fastafile)
+    if (verbose)   cmessage('%sfastahdrs       %s', spaces(14), fastafile)
     fastahdrs <- Biostrings::readAAStringSet(fastafile)
     fastahdrs %<>% names()
     fastahdrs %<>% parse_uniprot_hdrs(fastafields = fastafields)

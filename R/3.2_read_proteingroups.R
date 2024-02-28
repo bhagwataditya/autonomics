@@ -297,7 +297,7 @@ dequantify <- function(
     } else {
         cleanx <- sprintf('%s{%s}', multiplex, channel)
     }
-    if (verbose) message('\t\tStandardize snames: ', x[1], '  ->  ', cleanx[1])
+    if (verbose)  cmessage('%sStandardize snames: %s  ->  %s', spaces(14), x[1], cleanx[1])
     return(cleanx)
 }
 
@@ -618,12 +618,12 @@ invert_subgroups <- function(
     idx <- which(object$subgroup %in% subgroups)
     first <- values(object)[, idx[1]] %>% (function(y) which(!is.na(y))[[1]])
     oldvalue <- values(object)[first, idx[1]] %>% round(2) %>% as.character()
-    message('\t\tInvert subgroups ', paste0(subgroups, collapse = ', '))
+    cmessage('%sInvert subgroups %s', spaces(14), paste0(subgroups, collapse = ', '))
 # Invert (log) ratios
     if (all(values(object)>0, na.rm=TRUE)){ values(object)[, idx] %<>% (function(object){1/object})
     } else {                                values(object)[, idx] %<>% (function(object){ -object})}
     newvalue <- as.character(round(values(object)[first, idx[1]], 2))
-    message('\t\t\texprs    : ', as.character(oldvalue), ' -> ', 
+    cmessage('%sexprs    : %s -> %s', spaces(21), as.character(oldvalue), 
             as.character(newvalue))
 # Invert subgroup and sampleid values
     oldsubgroups <- sdata(object)$subgroup[idx]
@@ -635,11 +635,11 @@ invert_subgroups <- function(
         snames(object)[         idx[i]] %<>% stri_replace_first_fixed(oldsubgroups[i], newsubgroups[i])
     }
     newsampleids <- sdata(object)$sample_id[idx]
-    message('\t\t\tsubgroups: ', oldsubgroups[1], ' -> ', newsubgroups[1])
-    message('\t\t\tsampleids: ', oldsampleids[1], ' -> ', newsampleids[1])
+    cmessage('%ssubgroups: %s -> %s', spaces(21), oldsubgroups[1], newsubgroups[1])
+    cmessage('%ssampleids: %s -> %s', spaces(21), oldsampleids[1], newsampleids[1])
 # Order on subgroup
     object %<>% arrange_samples_('subgroup')
-    message('\t\tOrder on subgroup')
+    cmessage('%sOrder on subgroup', spaces(14))
     object$subgroup %<>% droplevels()
 
 # Return

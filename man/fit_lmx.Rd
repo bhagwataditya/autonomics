@@ -109,11 +109,11 @@ Fit lm, lme, or lmer
 \examples{
 file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file)
-fit_lm(    object, formula = ~subgroup)
-fit_limma( object, formula = ~subgroup)
-fit_limma( object, formula = ~subgroup, block = 'Subject')
-fit_lme(   object, formula = ~subgroup, block = 'Subject')
-fit_lmer(  object, formula = ~subgroup, block = 'Subject')
-# fit_lme( object, formula = ~subgroup, block = ~1|Subject) # needs fine-tuning
-# fit_lmer(object, formula = ~subgroup + (1|Subject))       # needs fine-tuning
+fit_lm(     object, formula = ~subgroup)
+fit_limma(  object, formula = ~subgroup)
+fit_limma(  object, formula = ~subgroup, block = 'Subject' )
+fit_lme(    object, formula = ~subgroup, block = 'Subject' )
+fit_lmer(   object, formula = ~subgroup, block = 'Subject' )
+# fit_lme(  object, formula = ~subgroup, block = ~1|Subject) # needs fine-tuning
+# fit_lmer( object, formula = ~subgroup + (1|Subject))       # needs fine-tuning
 }

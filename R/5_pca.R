@@ -205,7 +205,7 @@ pca <- function(
     assert_is_a_bool(center_samples)
     assert_is_a_bool(verbose)
     assert_is_a_bool(plot)
-    if (verbose)  message('\t\tAdd PCA')
+    if (verbose)  cmessage('%sAdd PCA', spaces(14))
     . <- NULL
 # Prepare
     tmpobj <- object

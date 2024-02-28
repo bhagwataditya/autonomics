@@ -49,7 +49,7 @@ test_that(" `drop_differing_uniprots` ", {
         proteinfile <- download_data('billing19.proteingroups.txt')
         phosphofile <- download_data('billing19.phosphosites.txt')
         prodt <- .read_maxquant_proteingroups(proteinfile)
-        fosdt <- .read_maxquant_phosphosites( phosphofile, proteinfile, quantity = quantity)
+        fosdt <- .read_maxquant_phosphosites( phosphofile, proteinfile)
         fosdt1 <- drop_differing_uniprots(fosdt, prodt, verbose = TRUE)
     # colnames
         expect_setequal(names(fosdt), names(fosdt1))
@@ -88,8 +88,10 @@ test_that(" `mqdt_to_mat` ", {
         proteinfile <- download_data('billing19.proteingroups.txt')
         phosphofile <- download_data('billing19.phosphosites.txt')
         prodt <- .read_maxquant_proteingroups(proteinfile)
-        prodt %<>% curate_annotate()
-        prodt %<>% add_feature_id()
+        uniprothdrs <- NULL
+        contaminanthdrs <- read_contaminantdt()
+        maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`);   prodt[, `Fasta headers` := NULL ]
+        prodt %<>% annotate_maxquant(uniprothdrs = uniprothdrs, contaminanthdrs = contaminanthdrs, maxquanthdrs = maxquanthdrs, restapi = FALSE)
         quantity <- guess_maxquant_quantity(proteinfile)
         pattern <- MAXQUANT_PATTERNS[[quantity]]
         mat <- 2^mqdt_to_mat(prodt, pattern = pattern)
@@ -262,7 +264,6 @@ test_that( " read_proteingroups: fukuda20, fit = 'lm' ", {
     object <- read_maxquant_proteingroups(file, fit = 'lm', plot = TRUE, label = NULL)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP,  'lm'))))
-    expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })
 
 
@@ -272,7 +273,6 @@ test_that( " read_proteingroups: fukuda20, fit = 'wilcoxon' ", {
     object <- read_maxquant_proteingroups(file, fit = 'wilcoxon')
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'wilcoxon'))))
-    expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
 })
 
 
@@ -285,20 +285,16 @@ test_that( " read_proteingroups: fukuda20, fit = 'wilcoxon' ", {
 
 
 test_that(" read_proteingroups: billing16 ", {
-    # Read
         file <- download_data('billing16.proteingroups.txt')
         object <- read_maxquant_proteingroups(file)
-    # Test
         expect_s4_class(object, 'SummarizedExperiment')
         expect_true( 'subgroup'    %in% svars(object))
 })
 
 
 test_that(" read_proteingroups: billing16 , quantity = 'labeledintensity' ", {
-    # Read
         file <- download_data('billing16.proteingroups.txt')
         object <- read_maxquant_proteingroups(file, quantity = 'labeledintensity')
-    # Test
         expect_s4_class(object, 'SummarizedExperiment')
         expect_true('log2labeledintensity' %in% assayNames(object))
 })
@@ -326,14 +322,14 @@ test_that(" read_proteingroups: billing16, fastafile = uniprot_hsa_20140515.fast
     # Read
         file <- download_data('billing16.proteingroups.txt')
         fastafile <- download_data('uniprot_hsa_20140515.fasta')
-        fastadt <- read_fastahdrs(fastafile)
         invert <- c('EM_E', 'BM_E', 'BM_EM')
-        object0 <- read_maxquant_proteingroups(file, invert = invert)
-        object  <- read_maxquant_proteingroups(file, invert = invert, fastadt = fastadt)
+        object <- read_maxquant_proteingroups(file, invert = invert, fastafile = fastafile)
+        dt <- .read_maxquant_proteingroups(file)
+        dt %<>% extract(match(fdt(object)$proId, proId))
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
-        expect_true('canonical' %in% fvars(object))
-        expect_true(any(nchar(fdt(object)$uniprot) < nchar(fdt(object0)$uniprot)))
+        expect_true('protein' %in% fvars(object))
+        expect_true(any(nchar(fdt(object)$uniprot) < nchar(dt$uniprot)))
 })}
 
 

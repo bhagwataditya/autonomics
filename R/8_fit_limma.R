@@ -238,7 +238,7 @@ code.factor <- function(object, codingfun, verbose = TRUE, ...){
         colnames(contrastmat) <- levels(object)
         rownames(contrastmat)[1] <- 'Intercept'
         names(dimnames(contrastmat)) <- c('coefficient', 'level')
-        message_df('\t\t\t\t%s', contrastmat)
+        message_df('                    %s', contrastmat)
     }
     object
 }
@@ -251,14 +251,14 @@ code.data.table <- function(object, codingfun, vars = names(object), verbose = T
     if ( length(vars)==0)   return(object)      # when formula = ~1 
     if (is.null(codingfun)) return(object)
 # Code
-    if (verbose)  cmessage('\t\tCode factors')
+    if (verbose)  cmessage('%sLinMod', spaces(4))
     for (var in vars){
         if (is.character(object[[var]]))  object[[var]] %<>% factor()
         if (is.logical(  object[[var]]))  object[[var]] %<>% factor()
     }
     for (var in vars){
         if (is.factor(object[[var]])){
-            if (verbose)  cmessage('\t\t\t%s', var)
+            if (verbose)  cmessage('              Code %s', var)
             object[[var]] %<>% code.factor(codingfun, verbose = verbose)
         }
     }
@@ -778,7 +778,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     object, 
     formula   = default_formula(object),
     drop      = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun    = 'treatment',
+    codingfun = 'treatment',
     design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
     coefs     = if (is.null(contrasts))  colnames(design) else NULL,
@@ -801,19 +801,15 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     assert_is_subset(statvars, c('effect', 'p', 't', 'se'))
 # Design/contrasts/block/weights
     . <- NULL
-    if (verbose)  message('\t\tlmFit(', formula2str(formula),
-        if(is.null(block))     '' else paste0(' | ',block),
-        if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', 
-                                            weightvar), ')')
+    blockvar <- NULL
     if (!is.null(block)){
         assert_is_subset(block, svars(object))
         blockvar <- block
         block <- sdata(object)[[block]]
         if (is.null(metadata(object)$dupcor)){
-            if (verbose)  message('\t\t\t\tdupcor `', blockvar, '`')
-            metadata(object)$dupcor <- duplicateCorrelation(
-                values(object), design = design, block = block
-            )$consensus.correlation }}
+            if (verbose)  cmessage('%sDupcor `%s`', spaces(14), blockvar)
+            metadata(object)$dupcor <- duplicateCorrelation(values(object), design = design, block = block)$consensus.correlation }
+    }
     design %<>% extract(intersect(snames(object), rownames(.)), , drop = FALSE) # required in mae
     exprmat <-  values(object)[, rownames(design)]
     weightmat <- if (is.null(weightvar)){ NULL 
@@ -821,6 +817,11 @@ varlevels_dont_clash.SummarizedExperiment <- function(
                     assert_is_subset(weightvar, assayNames(object))
                     assays(object)[[weightvar]][, rownames(design)] }
 # Fit
+    if (verbose)  cmessage('%slmFit(%s%s%s)', 
+                    spaces(14),
+                    formula2str(formula),
+                    if(is.null(blockvar))  '' else paste0(' | ',blockvar),
+                    if(is.null(weightvar)) '' else paste0(', weights = assays(object)$', weightvar))
     limmafit <- suppressWarnings(lmFit(
                     object = exprmat, design = design, 
                     block = block, correlation = metadata(object)$dupcor,
@@ -844,7 +845,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         if ('se' %in% statvars){ dt0 <- data.table(sqrt(limmafit$s2.post) * limmafit$stdev.unscaled); names(dt0) %<>% paste0('se', sep, ., suffix); limmadt %<>% cbind(dt0) }
     }
 # Return
-    if (verbose)  message_df('\t\t\t%s',  summarize_fit(limmadt, fit = 'limma', sep = sep))
+    if (verbose)  message_df('                  %s',  summarize_fit(limmadt, fit = 'limma', sep = sep))
     limmadt
 
 }

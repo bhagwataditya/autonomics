@@ -311,7 +311,7 @@ log2transform <- function(
         if (verbose)  if (pseudo != 0)  message('\t\tAdd pseudo value ', pseudo)
         assays(object)[[i]] %<>% add(pseudo) 
          
-        if (verbose)  message('\t\tlog2 ', ass)
+        if (verbose)  cmessage('%slog2 %s', spaces(14), ass)
         assays(object)[[i]] %<>% log2()
         assayNames(object)[i] %<>% paste0('log2', .)
     }
