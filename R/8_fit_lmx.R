@@ -46,8 +46,9 @@
         fitres <- lm( formula = formula, data = sd,  weights = weights, na.action = stats::na.omit )
         fitres %<>% summary()                      # weights: stackoverflow.com/questions/51142338
         fitres %<>% stats::coefficients()
-        fitres %<>% rbind( fitres0[ setdiff(rownames(fitres0), rownames(fitres)) , , drop = FALSE]  ) 
-        fitres %<>% extract(rownames(fitres0), )
+        rows <- setdiff(rownames(fitres0), rownames(fitres))
+        if (!is.null(rows)){  fitres %<>% rbind( fitres0[ rows , , drop = FALSE]  ) 
+                              fitres %<>% extract(rownames(fitres0), )  }
         fitres %<>% extract(, c('Estimate', 'Pr(>|t|)', 't value'), drop = FALSE)
     
     # Add F rest results

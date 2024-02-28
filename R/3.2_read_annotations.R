@@ -540,8 +540,7 @@ nastring_to_0 <- function(x){
     }
     anndt[, mixedgroup := any(reverse == '+') & any(reverse == ''), by = idcol]  # Drop revs in mixed groups
     nmixedgroups <- anndt[mixedgroup == TRUE, length(unique(get(idcol)))]
-    if (verbose & nmixedgroups > 0)  cmessage(
-        '\t\t  Drop rev in %d mixed groups', nmixedgroups)
+    if (verbose & nmixedgroups > 0)  cmessage('%sDrop rev in %d mixed groups', spaces(14), nmixedgroups)
     anndt <- anndt[ mixedgroup == FALSE | (mixedgroup == TRUE & reverse == '') ,  ]
     anndt[, mixedgroup := NULL]
     anndt[]

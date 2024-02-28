@@ -751,7 +751,9 @@ process_maxquant <- function(
     colnames(object) %<>% demultiplex(verbose = verbose)
     object$sample_id <- colnames(object)
     object %<>% add_subgroup(verbose = verbose)
-    sdt(object) %<>% pull_columns(c('sample_id', 'subgroup', 'replicate', 'mqcol'))
+    cols <- c('sample_id', 'subgroup', 'replicate', 'mqcol')
+    cols %<>% intersect(svars(object))
+    sdt(object) %<>% pull_columns(cols)
 # Samples
     object %<>% filter_samples_available_for_some_feature(verbose = verbose)
     if (!is.null(subgroups)){
