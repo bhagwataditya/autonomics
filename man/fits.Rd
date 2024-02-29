@@ -4,10 +4,12 @@
 \alias{fits}
 \title{Get fit models}
 \usage{
-fits(object)
+fits(object, sep = FITSEP)
 }
 \arguments{
 \item{object}{SummarizedExperiment}
+
+\item{sep}{string}
 }
 \value{
 character vector

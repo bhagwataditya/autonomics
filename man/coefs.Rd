@@ -10,12 +10,14 @@ coefs(object, ...)
 
 \method{coefs}{factor}(object, ...)
 
-\method{coefs}{SummarizedExperiment}(object, fit = fits(object), svars = NULL, ...)
+\method{coefs}{SummarizedExperiment}(object, sep = FITSEP, fit = fits(object, sep = sep), svars = NULL, ...)
 }
 \arguments{
 \item{object}{SummarizedExperiment or factor}
 
 \item{...}{required for s3 dispatch}
+
+\item{sep}{string}
 
 \item{fit}{string: 'limma', 'lm', 'lme', 'lmer'}
 

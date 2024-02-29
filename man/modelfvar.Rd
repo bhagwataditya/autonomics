@@ -26,85 +26,135 @@
 modelfvar(
   object,
   quantity,
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
+)
+
+effectvar(
+  object,
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, fit = fit, sep = sep)
+)
+
+tvar(
+  object,
   fit = fits(object),
+  sep = FITSEP,
   coef = default_coefs(object, fit = fit)
 )
 
-effectvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+pvar(
+  object,
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
+)
 
-tvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
-
-pvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
-
-fdrvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+fdrvar(
+  object,
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
+)
 
 abstractvar(
   object,
-  fit = fits(object),
-  coef = default_coefs(object, fit = fit)
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 modelvec(
   object,
   quantity,
-  fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(object, sep = sep)[1],
+  coef = default_coefs(object, fit = fit, sep = sep)[1],
   fvar = "feature_id"
 )
 
 effectvec(
   object,
-  fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(object, sep = sep)[1],
+  coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id"
 )
 
 tvec(
   object,
-  fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(object, sep = sep)[1],
+  coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id"
 )
 
 pvec(
   object,
-  fit = fits(object)[1],
+  sep = FITSEP,
+  fit = fits(object, sep = sep)[1],
   coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id"
 )
 
 fdrvec(
   object,
-  fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(object, sep = sep)[1],
+  coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id"
 )
 
 modelmat(
   object,
   quantity,
-  fit = fits(object),
-  coef = default_coefs(object, fit = fit)
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
 )
 
-effectmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+effectmat(
+  object,
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
+)
 
 effectsizemat(
   object,
-  fit = fits(object),
-  coef = default_coefs(object, fit = fit)
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
 )
 
-tmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+tmat(
+  object,
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
+)
 
-pmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+pmat(
+  object,
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
+)
 
-fdrmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+fdrmat(
+  object,
+  sep = FITSEP,
+  fit = fits(object, sep = sep),
+  coef = default_coefs(object, sep = sep, fit = fit)
+)
 
 modelfeatures(
   object,
-  fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(object, sep = sep)[1],
+  coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,
@@ -114,8 +164,9 @@ modelfeatures(
 
 upfeatures(
   object,
-  fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(object, sep = sep)[1],
+  coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,
@@ -124,8 +175,9 @@ upfeatures(
 
 downfeatures(
   object,
-  fit = fits(object)[1],
-  coef = default_coefs(object, fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(object, sep = sep)[1],
+  coef = default_coefs(object, fit = fit, sep = sep)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,

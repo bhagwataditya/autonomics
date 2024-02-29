@@ -715,17 +715,16 @@ fit_limma <- function(
     plot      = FALSE
 ){
     object %<>% reset_fit(fit = 'limma', coefs = coefs)
-    limmadt <- .fit_limma(
-        object       = object,        formula      = formula,
-        drop         = drop,          codingfun    = codingfun,
-        design       = design,        contrasts    = contrasts, 
-        coefs        = coefs,         block        = block,
-        weightvar    = weightvar,     statvars     = statvars,
-        sep          = sep,           suffix       = suffix,
-        verbose      = verbose)
+    limmadt <- .fit_limma(  object       = object,        formula      = formula,
+                            drop         = drop,          codingfun    = codingfun,
+                            design       = design,        contrasts    = contrasts, 
+                            coefs        = coefs,         block        = block,
+                            weightvar    = weightvar,     statvars     = statvars,
+                            sep          = sep,           suffix       = suffix,
+                            verbose      = verbose )
     object %<>% merge_fdt(limmadt)
-        #fdata(object)$F.limma   <- limmares$F
-        #fdata(object)$F.p.limma <- limmares$F.p
+  # fdt(object)$F.limma   <- limmares$F
+  # fdt(object)$F.p.limma <- limmares$F.p
     if (plot)  print(plot_volcano(object, fit = 'limma')) 
     object
 }
@@ -810,7 +809,6 @@ varlevels_dont_clash.SummarizedExperiment <- function(
             if (verbose)  cmessage('%sDupcor `%s`', spaces(14), blockvar)
             metadata(object)$dupcor <- duplicateCorrelation(values(object), design = design, block = block)$consensus.correlation }
     }
-    design %<>% extract(intersect(snames(object), rownames(.)), , drop = FALSE) # required in mae
     exprmat <-  values(object)[, rownames(design)]
     weightmat <- if (is.null(weightvar)){ NULL 
             } else {assert_is_a_string(weightvar)
@@ -827,10 +825,8 @@ varlevels_dont_clash.SummarizedExperiment <- function(
                     block = block, correlation = metadata(object)$dupcor,
                     weights = weightmat))
 # Effect
-    if (is.null(contrasts)){  
-                limmafit %<>% contrasts.fit(coefficients = coefs) 
-    } else {    limmafit %<>% contrasts.fit(contrasts = makeContrasts(
-                                    contrasts = contrasts, levels = design)) }
+    if (is.null(contrasts)){  limmafit %<>% contrasts.fit(coefficients = coefs) 
+    } else {                  limmafit %<>% contrasts.fit(contrasts = makeContrasts(contrasts = contrasts, levels = design)) }
     limmadt <- data.table(feature_id = rownames(limmafit))
     if ('effect' %in% statvars){
         dt0 <- data.table(limmafit$coefficients)

@@ -7,16 +7,19 @@
 add_adjusted_pvalues(
   featuredt,
   method,
-  fit = names(featuredt) \%>\% extract(stri_detect_fixed(., PPATTERN)) \%>\%
-    split_extract_fixed(FITSEP, 3) \%>\% unique(),
-  coefs = names(featuredt) \%>\% extract(stri_detect_fixed(., PPATTERN)) \%>\%
-    split_extract_fixed(FITSEP, 2) \%>\% unique()
+  sep = FITSEP,
+  fit = names(featuredt) \%>\% extract(stri_detect_regex(., sprintf("^p[\%s]", sep)))
+    \%>\% split_extract_fixed(sep, 3) \%>\% unique(),
+  coefs = names(featuredt) \%>\% extract(stri_detect_regex(., sprintf("^p[\%s]", sep)))
+    \%>\% split_extract_fixed(sep, 2) \%>\% unique()
 )
 }
 \arguments{
 \item{featuredt}{fdt(object)}
 
 \item{method}{'fdr', 'bonferroni', ... (see `p.adjust.methods`)}
+
+\item{sep}{string}
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer'}
 

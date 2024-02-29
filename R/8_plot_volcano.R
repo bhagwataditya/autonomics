@@ -5,9 +5,9 @@
 #
 #==============================================================================
 
-default_coefs <- function(object, fit = fits(object)){
+default_coefs <- function(object, sep = FITSEP, fit = fits(object, sep = sep)){
     if (length(fit)==0) return(NULL)    # none
-    y <- autonomics::coefs(object, fit = fit)   # intercept
+    y <- autonomics::coefs(object, sep = sep, fit = fit)   # intercept
     if (length(y)==1)   return(y)
     y %<>% setdiff('Intercept')                 # intercept + others
     y
@@ -97,11 +97,13 @@ add_assay_means <- function(
     object
 }
 
- 
+
+
 #' Add adjusted pvalues
 #' 
 #' @param featuredt  fdt(object)
 #' @param method    'fdr', 'bonferroni', ... (see `p.adjust.methods`)
+#' @param sep        string
 #' @param fit       'limma', 'lm', 'lme', 'lmer'
 #' @param coefs      coefficient (string)
 #' @examples
@@ -116,9 +118,10 @@ add_assay_means <- function(
 #' @export
 add_adjusted_pvalues <- function(
     featuredt, 
-    method, 
-    fit   = names(featuredt) %>% extract(stri_detect_fixed(., PPATTERN)) %>%  split_extract_fixed(FITSEP, 3) %>% unique(),
-    coefs = names(featuredt) %>% extract(stri_detect_fixed(., PPATTERN)) %>%  split_extract_fixed(FITSEP, 2) %>% unique()
+    method,
+    sep   = FITSEP, 
+    fit   = names(featuredt) %>% extract(stri_detect_regex(., sprintf('^p[%s]', sep))) %>%  split_extract_fixed(sep, 3) %>% unique(),
+    coefs = names(featuredt) %>% extract(stri_detect_regex(., sprintf('^p[%s]', sep))) %>%  split_extract_fixed(sep, 2) %>% unique()
 ){
 # Assert
     assert_is_data.table(featuredt)
