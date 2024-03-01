@@ -539,14 +539,14 @@ vectorize_contrasts <- function(contrasts){
 #' @export
 reset_fit <- function(
     object, 
-    fit     = fits(object), 
+    fit     = fits(fdt(object)), 
     coefs   = autonomics::coefs(object, fit = fit), 
     verbose = TRUE
 ){
 # Assert
     . <- NULL
     assert_is_valid_sumexp(object)
-    if (is.null(fits(object)))  return(object)
+    if (is.null(fits(fdt(object))))  return(object)
     assert_is_a_bool(verbose)
 # Reset
     vars <- c('effect', 'p', 'fdr', 't')

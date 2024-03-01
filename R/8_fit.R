@@ -344,13 +344,13 @@ modelfvar <- function(
      object, 
      quantity, 
      sep = FITSEP, 
-     fit = fits(object, sep = sep),
+     fit = fits(fdt(object), sep = sep),
     coef = default_coefs(object, sep = sep, fit = fit)
 ){
 # Assert
     assert_is_valid_sumexp(object)
     assert_is_subset(quantity, c('fdr', 'p', 't', 'effect', 'se', 'abstract'))
-    assert_is_subset(fit,   fits(object))
+    assert_is_subset(fit,   fits(fdt(object)))
     assert_is_subset(coef, coefs(object))
 # Return
     x <- expand.grid(quantity = quantity, fit = fit, coef = coef)
@@ -365,7 +365,7 @@ modelfvar <- function(
 effectvar <- function( 
      object, 
      sep = FITSEP,
-     fit = fits(object, sep = sep),
+     fit = fits(fdt(object), sep = sep),
     coef = default_coefs(object, fit = fit, sep = sep) 
 ){
     modelfvar(object, quantity = 'effect', sep = sep, fit = fit, coef = coef)
@@ -375,7 +375,7 @@ effectvar <- function(
 #' @export
 tvar <- function(
      object, 
-     fit = fits(object),
+     fit = fits(fdt(object)),
      sep = FITSEP,
     coef = default_coefs(object, fit = fit) 
 ){
@@ -387,7 +387,7 @@ tvar <- function(
 pvar <- function( 
      object, 
      sep = FITSEP,
-     fit = fits(object, sep = sep),
+     fit = fits(fdt(object), sep = sep),
     coef = default_coefs(object, sep = sep, fit = fit) 
 ){
     modelfvar(object, quantity = 'p', sep = sep, fit = fit, coef = coef)
@@ -398,7 +398,7 @@ pvar <- function(
 fdrvar <- function( 
     object, 
     sep = FITSEP, 
-    fit = fits(object, sep = sep), 
+    fit = fits(fdt(object), sep = sep), 
    coef = default_coefs(object, sep = sep, fit = fit)){
     modelfvar(object, quantity = 'fdr', sep = sep, fit = fit, coef = coef)
 }
@@ -408,7 +408,7 @@ fdrvar <- function(
 abstractvar <- function(
      object, 
      sep = FITSEP,
-     fit = fits(object, sep = sep),
+     fit = fits(fdt(object), sep = sep),
     coef = default_coefs(object, sep = sep, fit = fit) 
 ){
     # cant use modelfvar because its
@@ -428,7 +428,7 @@ modelvec <- function(
     object, 
     quantity, 
      sep = FITSEP, 
-     fit = fits(object, sep = sep)[1], 
+     fit = fits(fdt(object), sep = sep)[1], 
     coef = default_coefs(object, fit = fit, sep = sep)[1], 
     fvar = 'feature_id'
 ){
@@ -444,7 +444,7 @@ modelvec <- function(
 effectvec <- function(
     object, 
     sep  = FITSEP,
-    fit  = fits(object, sep = sep)[1], 
+    fit  = fits(fdt(object), sep = sep)[1], 
     coef = default_coefs(object, sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
@@ -456,7 +456,7 @@ effectvec <- function(
 tvec <- function(
     object, 
     sep  = FITSEP,
-    fit  = fits(object, sep = sep)[1],
+    fit  = fits(fdt(object), sep = sep)[1],
     coef = default_coefs(object, sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
@@ -468,7 +468,7 @@ tvec <- function(
 pvec <- function(
      object, 
      sep = FITSEP,
-     fit = fits(object, sep = sep)[1], 
+     fit = fits(fdt(object), sep = sep)[1], 
     coef = default_coefs(object, fit = fit)[1], 
     fvar = 'feature_id'
 ){
@@ -480,7 +480,7 @@ pvec <- function(
 fdrvec <- function(
      object, 
      sep = FITSEP, 
-     fit = fits(object, sep = sep)[1],
+     fit = fits(fdt(object), sep = sep)[1],
     coef = default_coefs(object, sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
@@ -500,7 +500,7 @@ modelmat <- function(
      object, 
      quantity,
      sep = FITSEP,
-     fit = fits(object, sep = sep), 
+     fit = fits(fdt(object), sep = sep), 
     coef = default_coefs(object, sep = sep, fit = fit)
 ){
     var <- modelfvar(object, quantity, sep = sep, coef = coef, fit = fit)
@@ -517,7 +517,7 @@ modelmat <- function(
 effectmat <- function(
      object, 
      sep = FITSEP,
-     fit = fits(object, sep = sep), 
+     fit = fits(fdt(object), sep = sep), 
     coef = default_coefs(object, sep = sep, fit = fit)
 ){
     modelmat(object, quantity = 'effect', sep = sep, fit = fit, coef = coef)
@@ -528,7 +528,7 @@ effectmat <- function(
 effectsizemat <- function(
      object, 
      sep = FITSEP,
-     fit = fits(object, sep = sep),
+     fit = fits(fdt(object), sep = sep),
     coef = default_coefs(object, sep = sep, fit = fit)
 ){
     abs(modelmat(object, quantity = 'effect', sep = sep, fit = fit, coef = coef))
@@ -540,7 +540,7 @@ effectsizemat <- function(
 tmat <- function(
      object, 
      sep = FITSEP,
-     fit = fits(object, sep = sep), 
+     fit = fits(fdt(object), sep = sep), 
     coef = default_coefs(object, sep = sep, fit = fit)
 ){
     modelmat(object, quantity = 't', sep = sep, fit = fit, coef = coef)
@@ -551,7 +551,7 @@ tmat <- function(
 pmat <- function(
      object, 
      sep = FITSEP, 
-     fit = fits(object, sep = sep),
+     fit = fits(fdt(object), sep = sep),
     coef = default_coefs(object, sep = sep, fit = fit)
 ){
     modelmat(object, quantity = 'p', sep = sep, fit = fit, coef = coef)
@@ -562,7 +562,7 @@ pmat <- function(
 fdrmat <- function(
      object, 
      sep = FITSEP,
-     fit = fits(object, sep = sep),
+     fit = fits(fdt(object), sep = sep),
     coef = default_coefs(object, sep = sep, fit = fit)
 ){
     modelmat(object, quantity = 'fdr', sep = sep, fit = fit, coef = coef)
@@ -581,7 +581,7 @@ fdrmat <- function(
 modelfeatures <- function(
     object,
     sep             = FITSEP,
-    fit             = fits(object, sep = sep)[1],
+    fit             = fits(fdt(object), sep = sep)[1],
     coef            = default_coefs(object, sep = sep, fit = fit)[1], 
     fvar            = 'feature_id', 
     significancevar = 'p',
@@ -605,7 +605,7 @@ modelfeatures <- function(
 upfeatures <- function(
     object, 
     sep             = FITSEP,
-    fit             = fits(object, sep = sep)[1], 
+    fit             = fits(fdt(object), sep = sep)[1], 
     coef            = default_coefs(object, sep = sep, fit = fit)[1], 
     fvar            = 'feature_id',
     significancevar = 'p',
@@ -622,7 +622,7 @@ upfeatures <- function(
 downfeatures <- function(
     object,
     sep             = FITSEP, 
-    fit             = fits(object, sep = sep)[1], 
+    fit             = fits(fdt(object), sep = sep)[1], 
     coef            = default_coefs(object, fit = fit, sep = sep)[1], 
     fvar            = 'feature_id',
     significancevar = 'p',
@@ -646,16 +646,16 @@ downfeatures <- function(
 
 #' Get fit models
 #' 
-#' @param object SummarizedExperiment
+#' @param featuredt feature data.table
 #' @param sep  string
 #' @return  character vector
 #' @examples 
 #' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma')
-#' fits(object)
+#' fits(fdt(object))
 #' @export
-fits <- function(object, sep = FITSEP){
-    x <- .effectvars(fdt(object))
+fits <- function(featuredt, sep = FITSEP){
+    x <- .effectvars(featuredt)
     x %<>% split_extract_fixed(sep, 3)
     x %<>% unique()
     if (length(x)==0)  x <- NULL
@@ -691,7 +691,7 @@ coefs.factor <- function(object, ...)   colnames(contrasts(object))
 #' @rdname coefs
 #' @export
 coefs.SummarizedExperiment <- function(
-    object, sep = FITSEP, fit = fits(object, sep = sep), svars = NULL, ...
+    object, sep = FITSEP, fit = fits(fdt(object), sep = sep), svars = NULL, ...
 ){
     if (is.null(fit))  return(NULL)
     . <- NULL
@@ -741,7 +741,7 @@ coefs.SummarizedExperiment <- function(
 #' @export
 is_sig <- function(
     object,
-    fit = fits(object)[1],
+    fit = fits(fdt(object))[1],
     contrast = coefs(object),
     quantity = 'fdr'
 ){
@@ -749,7 +749,7 @@ is_sig <- function(
     . <- NULL
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_character(fit)
-    assert_is_subset(fit, fits(object))
+    assert_is_subset(fit, fits(fdt(object)))
     if (is.character(contrast))  for (fi in fit){
         assert_is_subset(contrast, coefs(object, fit = fi)) }
 # Run across models

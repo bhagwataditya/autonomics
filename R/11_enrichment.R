@@ -165,12 +165,12 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 #' fdt(object)
 #' @export
 abstract_fit <- function(
-    object, fit = fits(object), coef = coefs(object), 
+    object, fit = fits(fdt(object)), coef = coefs(object), 
     significancevar = 'p', significance = 0.05
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_is_subset(fit,   fits(object))
+    assert_is_subset(fit,   fits(fdt(object)))
     assert_is_subset(coef, coefs(object))
 # Abstract
     for ( curfit in fit){
@@ -318,7 +318,7 @@ factor2logical <- function(x){
 enrichment <- function(
     object,
     pathwaydt,
-    fit      = fits(object)[1],
+    fit      = fits(fdt(object))[1],
     coef     = coefs(object, fit = fit)[1],
     var      = abstractvar(object, fit = fit, coef = coef),
     levels   = fdt(object)[[var]] %>% base::levels() %>% extract(-1),
@@ -331,7 +331,7 @@ enrichment <- function(
 # Assert
     assert_is_valid_sumexp(object)
     assert_is_data.table(pathwaydt)
-    if (!is.null(fit ))  assert_scalar_subset(fit,  fits(object))
+    if (!is.null(fit ))  assert_scalar_subset(fit,  fits(fdt(object)))
     if (!is.null(coef))  assert_scalar_subset(coef, coefs(object))
     # assert_is_vector(levels(fdt(object)[[var]]))
     assert_scalar_subset(var, fvars(object))
@@ -427,7 +427,7 @@ altenrich <- function(
     genevar         = 'gene', 
     genesep         = '[ ,;]',
     coef            = default_coefs(object)[1], 
-    fit             = fits(object)[1],
+    fit             = fits(fdt(object))[1],
     significancevar = 'p',
     significance    = 0.05,
     effectsize      = 0,
@@ -445,7 +445,7 @@ altenrich <- function(
     assert_all_are_non_missing_nor_empty_character(  pathwaydt[[genevar]])
     if (!is.null(genesep))  assert_is_a_string(genesep)
     assert_scalar_subset(coef, coefs(object))
-    assert_scalar_subset(fit, fits(object))
+    assert_scalar_subset(fit, fits(fdt(object)))
     genes0 <- fdt(object)[[genevar]]
     fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)
     gene <- in.up <- in.detected <- in.down <- in.selected <- `in` <- out <- NULL

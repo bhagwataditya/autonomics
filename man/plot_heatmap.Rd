@@ -10,7 +10,7 @@ plot_top_heatmap(...)
 plot_heatmap(
   object,
   assay = assayNames(object)[1],
-  fit = fits(object)[1],
+  fit = fits(fdt(object))[1],
   coef = default_coefs(object, fit = fit)[1],
   effectsize = 0,
   p = 1,

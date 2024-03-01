@@ -6,7 +6,7 @@
 \usage{
 reset_fit(
   object,
-  fit = fits(object),
+  fit = fits(fdt(object)),
   coefs = autonomics::coefs(object, fit = fit),
   verbose = TRUE
 )

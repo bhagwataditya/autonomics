@@ -7,7 +7,7 @@
 enrichment(
   object,
   pathwaydt,
-  fit = fits(object)[1],
+  fit = fits(fdt(object))[1],
   coef = coefs(object, fit = fit)[1],
   var = abstractvar(object, fit = fit, coef = coef),
   levels = fdt(object)[[var]] \%>\% base::levels() \%>\% extract(-1),

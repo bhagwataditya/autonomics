@@ -6,7 +6,7 @@
 \usage{
 abstract_fit(
   object,
-  fit = fits(object),
+  fit = fits(fdt(object)),
   coef = coefs(object),
   significancevar = "p",
   significance = 0.05

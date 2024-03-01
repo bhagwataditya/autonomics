@@ -5,7 +5,7 @@
 #
 #==============================================================================
 
-default_coefs <- function(object, sep = FITSEP, fit = fits(object, sep = sep)){
+default_coefs <- function(object, sep = FITSEP, fit = fits(fdt(object), sep = sep)){
     if (length(fit)==0) return(NULL)    # none
     y <- autonomics::coefs(object, sep = sep, fit = fit)   # intercept
     if (length(y)==1)   return(y)
@@ -161,7 +161,7 @@ add_adjusted_pvalues <- function(
 #' @export
 make_volcano_dt <- function(
     object, 
-    fit   = fits(object)[1], 
+    fit   = fits(fdt(object))[1], 
     coefs = default_coefs(object, fit = fit)[1],
     shape = 'imputed', 
     size  = NULL, 
@@ -171,7 +171,7 @@ make_volcano_dt <- function(
 # Assert    
     assert_is_all_of(object, "SummarizedExperiment")
     assert_any_are_matching_regex(fvars(object), paste0('^p', FITSEP))
-    assert_is_subset(fit, fits(object))
+    assert_is_subset(fit, fits(fdt(object)))
     assert_is_subset(coefs, autonomics::coefs(object, fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
@@ -255,7 +255,7 @@ make_volcano_dt <- function(
 #' @export
 plot_volcano <- function(
     object,
-    fit           = fits(object)[1], 
+    fit           = fits(fdt(object))[1], 
     coefs         = default_coefs(object, fit)[1],
     facet         = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
     shape         = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 

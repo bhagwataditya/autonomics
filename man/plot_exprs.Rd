@@ -10,7 +10,7 @@ plot_exprs(
   object,
   dim = "both",
   assay = assayNames(object)[1],
-  fit = fits(object)[1],
+  fit = fits(fdt(object))[1],
   coefs = default_coefs(object, fit = fit),
   block = NULL,
   x = default_x(object, dim),

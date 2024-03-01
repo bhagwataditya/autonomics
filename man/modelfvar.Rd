@@ -27,20 +27,20 @@ modelfvar(
   object,
   quantity,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 effectvar(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, fit = fit, sep = sep)
 )
 
 tvar(
   object,
-  fit = fits(object),
+  fit = fits(fdt(object)),
   sep = FITSEP,
   coef = default_coefs(object, fit = fit)
 )
@@ -48,21 +48,21 @@ tvar(
 pvar(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 fdrvar(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 abstractvar(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
@@ -70,7 +70,7 @@ modelvec(
   object,
   quantity,
   sep = FITSEP,
-  fit = fits(object, sep = sep)[1],
+  fit = fits(fdt(object), sep = sep)[1],
   coef = default_coefs(object, fit = fit, sep = sep)[1],
   fvar = "feature_id"
 )
@@ -78,7 +78,7 @@ modelvec(
 effectvec(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep)[1],
+  fit = fits(fdt(object), sep = sep)[1],
   coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id"
 )
@@ -86,7 +86,7 @@ effectvec(
 tvec(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep)[1],
+  fit = fits(fdt(object), sep = sep)[1],
   coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id"
 )
@@ -94,7 +94,7 @@ tvec(
 pvec(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep)[1],
+  fit = fits(fdt(object), sep = sep)[1],
   coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id"
 )
@@ -102,7 +102,7 @@ pvec(
 fdrvec(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep)[1],
+  fit = fits(fdt(object), sep = sep)[1],
   coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id"
 )
@@ -111,49 +111,49 @@ modelmat(
   object,
   quantity,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 effectmat(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 effectsizemat(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 tmat(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 pmat(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 fdrmat(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep),
+  fit = fits(fdt(object), sep = sep),
   coef = default_coefs(object, sep = sep, fit = fit)
 )
 
 modelfeatures(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep)[1],
+  fit = fits(fdt(object), sep = sep)[1],
   coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
@@ -165,7 +165,7 @@ modelfeatures(
 upfeatures(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep)[1],
+  fit = fits(fdt(object), sep = sep)[1],
   coef = default_coefs(object, sep = sep, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
@@ -176,7 +176,7 @@ upfeatures(
 downfeatures(
   object,
   sep = FITSEP,
-  fit = fits(object, sep = sep)[1],
+  fit = fits(fdt(object), sep = sep)[1],
   coef = default_coefs(object, fit = fit, sep = sep)[1],
   fvar = "feature_id",
   significancevar = "p",

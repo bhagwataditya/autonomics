@@ -4,10 +4,10 @@
 \alias{fits}
 \title{Get fit models}
 \usage{
-fits(object, sep = FITSEP)
+fits(featuredt, sep = FITSEP)
 }
 \arguments{
-\item{object}{SummarizedExperiment}
+\item{featuredt}{feature data.table}
 
 \item{sep}{string}
 }
@@ -20,5 +20,5 @@ Get fit models
 \examples{
 file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file, fit = 'limma')
-fits(object)
+fits(fdt(object))
 }

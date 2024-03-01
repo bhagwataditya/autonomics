@@ -10,7 +10,13 @@ coefs(object, ...)
 
 \method{coefs}{factor}(object, ...)
 
-\method{coefs}{SummarizedExperiment}(object, sep = FITSEP, fit = fits(object, sep = sep), svars = NULL, ...)
+\method{coefs}{SummarizedExperiment}(
+  object,
+  sep = FITSEP,
+  fit = fits(fdt(object), sep = sep),
+  svars = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment or factor}
