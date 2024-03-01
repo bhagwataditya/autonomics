@@ -333,9 +333,9 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     modelvec(featuredt, 'effect')[1:3];                            effectvec(featuredt)[1:3]
 #'     modelvec(featuredt, 'fdr'   )[1:3];                               fdrvec(object)[1:3]
 #' # modelmatrix
-#'     modelmat(object, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
-#'     modelmat(object, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]
-#'     modelmat(object, 'fdr'   )[1:3, 1:3];                          fdrmat(object)[1:3, 1:3]
+#'     modelmat(featuredt, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
+#'     modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]
+#'     modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(object)[1:3, 1:3]
 #' # modelfeatures
 #'     modelfeatures(object      )[1:3]
 #'     modelfeatures(object, effectdirection = '<' )[1:3];      downfeatures(object)[1:3]
@@ -498,18 +498,18 @@ fdrvec <- function(
 #' @rdname modelvar
 #' @export
 modelmat <- function(
-     object, 
-     quantity,
-     sep = FITSEP,
-     fit = fits(fdt(object), sep = sep), 
-    coef = default_coefs(fdt(object), sep = sep, fit = fit)
+    featuredt, 
+    quantity,
+    sep  = FITSEP,
+    fit  = fits(featuredt, sep = sep), 
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
 ){
-    var <- modelvar(object, quantity, sep = sep, coef = coef, fit = fit)
+    var <- modelvar(featuredt, quantity, sep = sep, coef = coef, fit = fit)
     if (is.null(var))  return(NULL)
-    dt <- fdt(object)[, var, with = FALSE]
+    dt <- featuredt[, var, with = FALSE]
     names(dt) %<>% stri_replace_first_fixed(paste0(var, sep), '')
     mat <- as.matrix(dt)
-    rownames(mat) <- rownames(object)
+    rownames(mat) <- featuredt$feature_id
     mat
 }
 
@@ -521,7 +521,7 @@ effectmat <- function(
     fit  = fits(fdt(object), sep = sep), 
     coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
-    modelmat(object, quantity = 'effect', sep = sep, fit = fit, coef = coef)
+    modelmat(fdt(object), quantity = 'effect', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar
@@ -532,7 +532,7 @@ effectsizemat <- function(
     fit  = fits(fdt(object), sep = sep),
     coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
-    abs(modelmat(object, quantity = 'effect', sep = sep, fit = fit, coef = coef))
+    abs(modelmat(fdt(object), quantity = 'effect', sep = sep, fit = fit, coef = coef))
 } # dont rm: used in ..extract_statistic_features : 
   # getFromNamespace(sprintf('%smat', statistic), 'autonomics')
 
@@ -544,7 +544,7 @@ tmat <- function(
     fit = fits(fdt(object), sep = sep), 
     coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
-    modelmat(object, quantity = 't', sep = sep, fit = fit, coef = coef)
+    modelmat(fdt(object), quantity = 't', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar
@@ -555,7 +555,7 @@ pmat <- function(
     fit  = fits(fdt(object), sep = sep),
     coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
-    modelmat(object, quantity = 'p', sep = sep, fit = fit, coef = coef)
+    modelmat(fdt(object), quantity = 'p', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar

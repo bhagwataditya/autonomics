@@ -108,11 +108,11 @@ fdrvec(
 )
 
 modelmat(
-  object,
+  featuredt,
   quantity,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep),
-  coef = default_coefs(fdt(object), sep = sep, fit = fit)
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
 )
 
 effectmat(
@@ -225,9 +225,9 @@ Get model variable
     modelvec(featuredt, 'effect')[1:3];                            effectvec(featuredt)[1:3]
     modelvec(featuredt, 'fdr'   )[1:3];                               fdrvec(object)[1:3]
 # modelmatrix
-    modelmat(object, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
-    modelmat(object, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]
-    modelmat(object, 'fdr'   )[1:3, 1:3];                          fdrmat(object)[1:3, 1:3]
+    modelmat(featuredt, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
+    modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]
+    modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(object)[1:3, 1:3]
 # modelfeatures
     modelfeatures(object      )[1:3]
     modelfeatures(object, effectdirection = '<' )[1:3];      downfeatures(object)[1:3]
