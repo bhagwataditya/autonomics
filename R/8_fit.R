@@ -396,11 +396,11 @@ pvar <- function(
 #' @rdname modelvar
 #' @export
 fdrvar <- function( 
-    object, 
+    featuredt, 
     sep  = FITSEP, 
-    fit  = fits(fdt(object), sep = sep), 
-    coef = default_coefs(fdt(object), sep = sep, fit = fit)){
-    modelvar(object, quantity = 'fdr', sep = sep, fit = fit, coef = coef)
+    fit  = fits(featuredt, sep = sep), 
+    coef = default_coefs(featuredt, sep = sep, fit = fit)){
+    modelvar(featuredt, quantity = 'fdr', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar
