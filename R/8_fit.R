@@ -539,12 +539,12 @@ effectsizemat <- function(
 #' @rdname modelvar
 #' @export
 tmat <- function(
-    object, 
+    featuredt, 
     sep = FITSEP,
-    fit = fits(fdt(object), sep = sep), 
-    coef = default_coefs(fdt(object), sep = sep, fit = fit)
+    fit = fits(featuredt, sep = sep), 
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
 ){
-    modelmat(fdt(object), quantity = 't', sep = sep, fit = fit, coef = coef)
+    modelmat(featuredt, quantity = 't', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar

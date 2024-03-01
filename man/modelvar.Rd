@@ -130,10 +130,10 @@ effectsizemat(
 )
 
 tmat(
-  object,
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep),
-  coef = default_coefs(fdt(object), sep = sep, fit = fit)
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
 )
 
 pmat(
