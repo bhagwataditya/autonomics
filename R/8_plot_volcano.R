@@ -187,7 +187,7 @@ make_volcano_dt <- function(
     if (!is.null(size))   idvars %<>% union(size)
     if (!is.null(alpha))  idvars %<>% union(alpha)
     valuevars  <-  effectvar(fdt(object), coef = coefs, fit = fit)  # elminate similar function pvars etc.
-    valuevars %<>%  c(  pvar(object, coef = coefs, fit = fit))
+    valuevars %<>%  c(  pvar(fdt(object), coef = coefs, fit = fit))
 
     dt <- fdt(object)[, c(idvars, valuevars), with = FALSE]
     dt %<>% melt.data.table(id.vars = idvars)
@@ -420,7 +420,7 @@ map_fvalues <- function(
 #'    file <- download_data('atkin.metabolon.xlsx')
 #'    object <- read_metabolon(file)
 #'    object %<>% fit_limma()
-#'    pcol <- pvar(object, fit = 'limma', coef = 't3')
+#'    pcol <- pvar(fdt(object), fit = 'limma', coef = 't3')
 #'    object %<>% extract(order(fdt(.)[[pcol]]), )
 #'    object %<>% extract(1:10, )
 #'    fdt(object) %<>% extract(, 1)

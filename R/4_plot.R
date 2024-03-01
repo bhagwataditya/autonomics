@@ -885,7 +885,7 @@ format_coef_vars <- function(
     object, fit = fits(fdt(object))[1], coef = default_coefs(fdt(object), fit = fit)[1]
 ){
     effectvars <- effectvar(fdt(object), coef = coef, fit = fit)
-    pvars      <- pvar(     object, coef = coef, fit = fit)
+    pvars      <- pvar(     fdt(object), coef = coef, fit = fit)
     fdrvars    <- fdrvar(   object, coef = coef, fit = fit)
     for (var in c(effectvars, pvars, fdrvars)){
         fdt(object)[[var]] %<>% formatC(format='e', digits=0)
@@ -914,7 +914,7 @@ add_facetvars <- function(object, fit = fits(fdt(object))[1], coefs = default_co
     assert_is_subset(coefs, autonomics::coefs(fdt(object)))
 # Add
     for (i in seq_along(coefs)){
-               pvar <- autonomics::pvar(     object, fit = fit, coef = coefs[i])
+               pvar <- autonomics::pvar(     fdt(object), fit = fit, coef = coefs[i])
              fdrvar <- autonomics::fdrvar(   object, fit = fit, coef = coefs[i])
           effectvar <- autonomics::effectvar(fdt(object), fit = fit, coef = coefs[i])
            facetvar <- paste0('facet.', coefs[[i]])

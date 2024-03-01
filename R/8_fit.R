@@ -385,12 +385,12 @@ tvar <- function(
 #' @rdname modelvar
 #' @export
 pvar <- function( 
-    object, 
+    featuredt, 
     sep = FITSEP,
-    fit = fits(fdt(object), sep = sep),
-    coef = default_coefs(fdt(object), sep = sep, fit = fit) 
+    fit = fits(featuredt, sep = sep),
+    coef = default_coefs(featuredt, sep = sep, fit = fit) 
 ){
-    modelvar(object, quantity = 'p', sep = sep, fit = fit, coef = coef)
+    modelvar(featuredt, quantity = 'p', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar
