@@ -208,7 +208,6 @@ make_volcano_dt <- function(
     dt[]
 }
 
-    
 
 #' Plot volcano
 #' @param object         SummarizedExperiment

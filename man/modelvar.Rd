@@ -39,10 +39,10 @@ effectvar(
 )
 
 tvar(
-  object,
-  fit = fits(fdt(object)),
+  featuredt,
+  fit = fits(featuredt),
   sep = FITSEP,
-  coef = default_coefs(fdt(object), fit = fit)
+  coef = default_coefs(featuredt, fit = fit)
 )
 
 pvar(
