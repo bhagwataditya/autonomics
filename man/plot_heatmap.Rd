@@ -31,7 +31,7 @@ plot_heatmap(
 
 \item{fit}{'limma', 'lm', 'lme(r)', 'wilcoxon'}
 
-\item{coef}{string: one of coefs(object)}
+\item{coef}{string: one of coefs(fdt(object))}
 
 \item{effectsize}{number: effectsize filter}
 

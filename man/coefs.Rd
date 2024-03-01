@@ -3,23 +3,23 @@
 \name{coefs}
 \alias{coefs}
 \alias{coefs.factor}
-\alias{coefs.SummarizedExperiment}
+\alias{coefs.data.table}
 \title{Get coefs}
 \usage{
-coefs(object, ...)
+coefs(featuredt, ...)
 
-\method{coefs}{factor}(object, ...)
+\method{coefs}{factor}(featuredt, ...)
 
-\method{coefs}{SummarizedExperiment}(
-  object,
+\method{coefs}{data.table}(
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep),
+  fit = fits(featuredt, sep = sep),
   svars = NULL,
   ...
 )
 }
 \arguments{
-\item{object}{SummarizedExperiment or factor}
+\item{featuredt}{data.table or factor}
 
 \item{...}{required for s3 dispatch}
 
@@ -37,13 +37,13 @@ Get coefs
 }
 \examples{
 # Factor
-    object <- factor(c('A', 'B', 'C'))
-    coefs(object)
-    coefs(code(object, contr.treatment.explicit))
-    coefs(code(object, code_control))
+    x <- factor(c('A', 'B', 'C'))
+    coefs(x)
+    coefs(code(x, contr.treatment.explicit))
+    coefs(code(x, code_control))
     
 # SummarizedExperiment
     file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file, fit = 'limma')
-    coefs(object)
+    coefs(fdt(object))
 }

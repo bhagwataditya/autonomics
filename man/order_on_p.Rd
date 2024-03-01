@@ -8,7 +8,7 @@
 order_on_p(
   object,
   fit = autonomics::fits(fdt(object)),
-  coefs = autonomics::coefs(object, fit = fit),
+  coefs = autonomics::coefs(fdt(object), fit = fit),
   combiner = "|",
   verbose = TRUE
 )
@@ -16,7 +16,7 @@ order_on_p(
 order_on_effect(
   object,
   fit = autonomics::fits(fdt(object)),
-  coefs = autonomics::coefs(object, fit = fit),
+  coefs = autonomics::coefs(fdt(object), fit = fit),
   combiner = "|",
   verbose = TRUE
 )
@@ -26,7 +26,7 @@ order_on_effect(
 
 \item{fit}{string vector: subset of `fits(fdt(object))`}
 
-\item{coefs}{string vector: subset of `coefs(object)`}
+\item{coefs}{string vector: subset of `coefs(fdt(object))`}
 
 \item{combiner}{'|' or '&'}
 

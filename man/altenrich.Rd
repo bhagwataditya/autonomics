@@ -28,7 +28,7 @@ altenrich(
 
 \item{genesep}{\code{string} or \code{NULL}}
 
-\item{coef}{\code{string} in \code{coefs(object)}}
+\item{coef}{\code{string} in \code{coefs(fdt(object))}}
 
 \item{fit}{\code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}}
 

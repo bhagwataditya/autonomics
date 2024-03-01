@@ -165,13 +165,13 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 #' fdt(object)
 #' @export
 abstract_fit <- function(
-    object, fit = fits(fdt(object)), coef = coefs(object), 
+    object, fit = fits(fdt(object)), coef = coefs(fdt(object)), 
     significancevar = 'p', significance = 0.05
 ){
 # Assert
     assert_is_valid_sumexp(object)
     assert_is_subset(fit,   fits(fdt(object)))
-    assert_is_subset(coef, coefs(object))
+    assert_is_subset(coef, coefs(fdt(object)))
 # Abstract
     for ( curfit in fit){
     for (curcoef in coef){
@@ -319,7 +319,7 @@ enrichment <- function(
     object,
     pathwaydt,
     fit      = fits(fdt(object))[1],
-    coef     = coefs(object, fit = fit)[1],
+    coef     = coefs(fdt(object), fit = fit)[1],
     var      = abstractvar(object, fit = fit, coef = coef),
     levels   = fdt(object)[[var]] %>% base::levels() %>% extract(-1),
     genevar  = 'gene', 
@@ -332,7 +332,7 @@ enrichment <- function(
     assert_is_valid_sumexp(object)
     assert_is_data.table(pathwaydt)
     if (!is.null(fit ))  assert_scalar_subset(fit,  fits(fdt(object)))
-    if (!is.null(coef))  assert_scalar_subset(coef, coefs(object))
+    if (!is.null(coef))  assert_scalar_subset(coef, coefs(fdt(object)))
     # assert_is_vector(levels(fdt(object)[[var]]))
     assert_scalar_subset(var, fvars(object))
     assert_is_factor(fdt(object)[[var]])
@@ -410,7 +410,7 @@ enrichment <- function(
 #' @param pathwaydt  \code{data.table}, e.g. \code{\link{read_msigdt}}
 #' @param genevar    \code{gene fvar}
 #' @param genesep    \code{string} or \code{NULL}
-#' @param coef       \code{string} in \code{coefs(object)}
+#' @param coef       \code{string} in \code{coefs(fdt(object))}
 #' @param fit        \code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}
 #' @param significancevar 'p' or 'fdr'
 #' @param significance     significance cutoff
@@ -444,7 +444,7 @@ altenrich <- function(
     assert_all_are_non_missing_nor_empty_character(fdt(object)[[genevar]])
     assert_all_are_non_missing_nor_empty_character(  pathwaydt[[genevar]])
     if (!is.null(genesep))  assert_is_a_string(genesep)
-    assert_scalar_subset(coef, coefs(object))
+    assert_scalar_subset(coef, coefs(fdt(object)))
     assert_scalar_subset(fit, fits(fdt(object)))
     genes0 <- fdt(object)[[genevar]]
     fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)

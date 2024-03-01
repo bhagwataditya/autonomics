@@ -7,7 +7,7 @@
 reset_fit(
   object,
   fit = fits(fdt(object)),
-  coefs = autonomics::coefs(object, fit = fit),
+  coefs = autonomics::coefs(fdt(object), fit = fit),
   verbose = TRUE
 )
 }

@@ -7,7 +7,7 @@
 abstract_fit(
   object,
   fit = fits(fdt(object)),
-  coef = coefs(object),
+  coef = coefs(fdt(object)),
   significancevar = "p",
   significance = 0.05
 )

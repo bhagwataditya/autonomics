@@ -351,7 +351,7 @@ modelfvar <- function(
     assert_is_valid_sumexp(object)
     assert_is_subset(quantity, c('fdr', 'p', 't', 'effect', 'se', 'abstract'))
     assert_is_subset(fit,   fits(fdt(object)))
-    assert_is_subset(coef, coefs(object))
+    assert_is_subset(coef, coefs(fdt(object)))
 # Return
     x <- expand.grid(quantity = quantity, fit = fit, coef = coef)
     x <-  paste(x$quantity, x$coef, x$fit, sep = sep)
@@ -664,7 +664,7 @@ fits <- function(featuredt, sep = FITSEP){
 
 #' Get coefs
 #' 
-#' @param object  SummarizedExperiment or factor
+#' @param featuredt  data.table or factor
 #' @param sep     string
 #' @param fit     string: 'limma', 'lm', 'lme', 'lmer'
 #' @param svars   NULL or charactervector (svar for which to return coefs)
@@ -672,34 +672,34 @@ fits <- function(featuredt, sep = FITSEP){
 #' @return  character vector
 #' @examples
 #' # Factor
-#'     object <- factor(c('A', 'B', 'C'))
-#'     coefs(object)
-#'     coefs(code(object, contr.treatment.explicit))
-#'     coefs(code(object, code_control))
+#'     x <- factor(c('A', 'B', 'C'))
+#'     coefs(x)
+#'     coefs(code(x, contr.treatment.explicit))
+#'     coefs(code(x, code_control))
 #'     
 #' # SummarizedExperiment
 #'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file, fit = 'limma')
-#'     coefs(object)
+#'     coefs(fdt(object))
 #' @export
-coefs <- function(object, ...)  UseMethod('coefs')
+coefs <- function(featuredt, ...)  UseMethod('coefs')
 
 #' @rdname coefs
 #' @export
-coefs.factor <- function(object, ...)   colnames(contrasts(object))
+coefs.factor <- function(featuredt, ...)   colnames(contrasts(featuredt))
 
 #' @rdname coefs
 #' @export
-coefs.SummarizedExperiment <- function(
-    object, sep = FITSEP, fit = fits(fdt(object), sep = sep), svars = NULL, ...
+coefs.data.table <- function(
+    featuredt, sep = FITSEP, fit = fits(featuredt, sep = sep), svars = NULL, ...
 ){
     if (is.null(fit))  return(NULL)
     . <- NULL
-    coefs0 <- split_extract_fixed(.effectvars(fdt(object)), sep, 2)
-    fits0  <- split_extract_fixed(.effectvars(fdt(object)), sep, 3)
+    coefs0 <- split_extract_fixed(.effectvars(featuredt), sep, 2)
+    fits0  <- split_extract_fixed(.effectvars(featuredt), sep, 3)
     coefs0 %<>% extract(fits0 %in% fit)
     coefs0 %<>% unique()
-    if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))
+    #if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))
     coefs0 
 }
 
@@ -741,8 +741,8 @@ coefs.SummarizedExperiment <- function(
 #' @export
 is_sig <- function(
     object,
-    fit = fits(fdt(object))[1],
-    contrast = coefs(object),
+    fit      = fits(fdt(object))[1],
+    contrast = coefs(fdt(object)),
     quantity = 'fdr'
 ){
 # Assert
@@ -750,8 +750,7 @@ is_sig <- function(
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_character(fit)
     assert_is_subset(fit, fits(fdt(object)))
-    if (is.character(contrast))  for (fi in fit){
-        assert_is_subset(contrast, coefs(object, fit = fi)) }
+    if (is.character(contrast))  for (fi in fit)  assert_is_subset(contrast, coefs(fdt(object), fit = fi))
 # Run across models
     res <-  mapply(.is_sig, fit, 
                     MoreArgs = list(object = object, contrast = contrast, quantity = quantity),

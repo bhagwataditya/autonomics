@@ -68,7 +68,7 @@ plot_feature_boxplots(object, ...)
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
-\item{coefs}{subset of coefs(object) to consider in selecting top}
+\item{coefs}{subset of coefs(fdt(object)) to consider in selecting top}
 
 \item{block}{group svar}
 

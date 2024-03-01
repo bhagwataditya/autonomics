@@ -626,7 +626,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     assert_scalar_subset(comparer,  c('<', '>', '=='))
     assert_is_a_number(threshold)
     assert_is_subset(fit, fits(fdt(object)))
-    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_is_subset(coefs, autonomics::coefs(fdt(object), fit = fit))
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool(verbose)
 # Filter
@@ -722,7 +722,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
 #' Order on p 
 #' @param object   SummarizedExperiment
 #' @param fit      string vector: subset of `fits(fdt(object))`
-#' @param coefs    string vector: subset of `coefs(object)`
+#' @param coefs    string vector: subset of `coefs(fdt(object))`
 #' @param combiner '|' or '&'
 #' @param verbose  TRUE or FALSE
 #' @examples 
@@ -739,7 +739,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
 order_on_p <- function(
     object, 
     fit = autonomics::fits(fdt(object)), 
-    coefs = autonomics::coefs(object, fit = fit), 
+    coefs = autonomics::coefs(fdt(object), fit = fit), 
     combiner = '|',
     verbose = TRUE
 ){
@@ -747,7 +747,7 @@ order_on_p <- function(
     assert_is_valid_sumexp(object)
     if (is.null(fit))  return(object)
     assert_is_subset(fit,   autonomics::fits( fdt(object)))
-    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_is_subset(coefs, autonomics::coefs(fdt(object), fit = fit))
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool(verbose)
 # Order    
@@ -767,16 +767,16 @@ order_on_p <- function(
 #' @export
 order_on_effect <- function(
     object, 
-    fit = autonomics::fits(fdt(object)),
-    coefs = autonomics::coefs(object, fit = fit),
+    fit      = autonomics::fits(fdt(object)),
+    coefs    = autonomics::coefs(fdt(object), fit = fit),
     combiner = '|', 
-    verbose = TRUE
+    verbose  = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
     if (is.null(fit))  return(object)
     assert_is_subset(fit,   autonomics::fits( fdt(object)))
-    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
+    assert_is_subset(coefs, autonomics::coefs(fdt(object), fit = fit))
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool((verbose))
 # Order
@@ -911,7 +911,7 @@ add_facetvars <- function(object, fit = fits(fdt(object))[1], coefs = default_co
 # Assert
     assert_is_valid_sumexp(object)
     assert_scalar_subset(fit, fits(object))
-    assert_is_subset(coefs, autonomics::coefs(object))
+    assert_is_subset(coefs, autonomics::coefs(fdt(object)))
 # Add
     for (i in seq_along(coefs)){
                pvar <- autonomics::pvar(     object, fit = fit, coef = coefs[i])
@@ -1044,7 +1044,7 @@ add_facetvars <- function(object, fit = fits(fdt(object))[1], coefs = default_co
 #' @param highlight     highlight svar
 #' @param combiner     '&' or '|'
 #' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param coefs         subset of coefs(object) to consider in selecting top
+#' @param coefs         subset of coefs(fdt(object)) to consider in selecting top
 #' @param p             fraction: p   cutoff
 #' @param fdr           fraction: fdr cutoff
 #' @param facet         string: fvar mapped to facet
@@ -1218,7 +1218,7 @@ plot_feature_boxplots <- function(object, ...){
 #' @param geom          'boxplot' or 'point'
 #' @param block             group svar
 #' @param fit          'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
-#' @param coefs         subset of coefs(object) to consider in selecting top
+#' @param coefs         subset of coefs(fdt(object)) to consider in selecting top
 #' @param orderbyp      TRUE or FALSE
 #' @param title         string
 #' @param subtitle      string
@@ -1562,7 +1562,7 @@ plot_top_heatmap <- function(...){
 #' @param object           SummarizedExperiment
 #' @param assay            string: one of assayNames(object)
 #' @param fit             'limma', 'lm', 'lme(r)', 'wilcoxon'
-#' @param coef             string: one of coefs(object)
+#' @param coef             string: one of coefs(fdt(object))
 #' @param effectsize       number: effectsize filter
 #' @param p                number: p    filter
 #' @param fdr              number: fdr  filter
@@ -1598,7 +1598,7 @@ plot_heatmap <- function(
     assert_is_a_string(fit)
     assert_is_subset(  fit, fits(fdt(object)))
     if (!is.null(coef))  assert_is_a_string(coef)
-    if (!is.null(coef))  assert_is_subset(  coef, coefs(object))
+    if (!is.null(coef))  assert_is_subset(  coef, coefs(fdt(object)))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)

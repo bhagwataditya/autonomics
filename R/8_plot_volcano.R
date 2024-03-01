@@ -7,7 +7,7 @@
 
 default_coefs <- function(object, sep = FITSEP, fit = fits(fdt(object), sep = sep)){
     if (length(fit)==0) return(NULL)    # none
-    y <- autonomics::coefs(object, sep = sep, fit = fit)   # intercept
+    y <- autonomics::coefs(fdt(object), sep = sep, fit = fit)   # intercept
     if (length(y)==1)   return(y)
     y %<>% setdiff('Intercept')                 # intercept + others
     y
@@ -172,7 +172,7 @@ make_volcano_dt <- function(
     assert_is_all_of(object, "SummarizedExperiment")
     assert_any_are_matching_regex(fvars(object), paste0('^p', FITSEP))
     assert_is_subset(fit, fits(fdt(object)))
-    assert_is_subset(coefs, autonomics::coefs(object, fit))
+    assert_is_subset(coefs, autonomics::coefs(fdt(object), fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
     if (!is.null(alpha)){ assert_is_subset(alpha, fvars(object)); object %<>% bin(alpha) }

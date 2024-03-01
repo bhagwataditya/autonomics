@@ -540,7 +540,7 @@ vectorize_contrasts <- function(contrasts){
 reset_fit <- function(
     object, 
     fit     = fits(fdt(object)), 
-    coefs   = autonomics::coefs(object, fit = fit), 
+    coefs   = autonomics::coefs(fdt(object), fit = fit), 
     verbose = TRUE
 ){
 # Assert

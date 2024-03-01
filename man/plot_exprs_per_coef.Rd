@@ -26,7 +26,7 @@ plot_exprs_per_coef(
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
-\item{coefs}{subset of coefs(object) to consider in selecting top}
+\item{coefs}{subset of coefs(fdt(object)) to consider in selecting top}
 
 \item{x}{x svar}
 
