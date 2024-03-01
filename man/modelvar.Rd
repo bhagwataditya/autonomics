@@ -92,10 +92,10 @@ tvec(
 )
 
 pvec(
-  object,
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep)[1],
-  coef = default_coefs(fdt(object), fit = fit)[1],
+  fit = fits(featuredt, sep = sep)[1],
+  coef = default_coefs(featuredt, fit = fit)[1],
   fvar = "feature_id"
 )
 
@@ -215,14 +215,15 @@ Get model variable
     object <- read_metabolon(file)
     object \%<>\% fit_limma()
     object \%<>\% fit_lm()
+    featuredt <- fdt(object)
 # modelvar
-    modelvar(fdt(object), 'p');                                          pvar(fdt(object))
-    modelvar(fdt(object), 'effect');                                effectvar(fdt(object))
-    modelvar(fdt(object), 'fdr');                                      fdrvar(fdt(object))
+    modelvar(featuredt, 'p');                                          pvar(featuredt)
+    modelvar(featuredt, 'effect');                                effectvar(featuredt)
+    modelvar(featuredt, 'fdr');                                      fdrvar(featuredt)
 # modelvec
-    modelvec(fdt(object), 'p'     )[1:3];                                 pvec(object)[1:3]
-    modelvec(fdt(object), 'effect')[1:3];                            effectvec(object)[1:3]
-    modelvec(fdt(object), 'fdr'   )[1:3];                               fdrvec(object)[1:3]
+    modelvec(featuredt, 'p'     )[1:3];                                 pvec(featuredt)[1:3]
+    modelvec(featuredt, 'effect')[1:3];                            effectvec(object)[1:3]
+    modelvec(featuredt, 'fdr'   )[1:3];                               fdrvec(object)[1:3]
 # modelmatrix
     modelmat(object, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
     modelmat(object, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]
