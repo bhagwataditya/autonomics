@@ -324,9 +324,9 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
 #' # modelvar
-#'     modelvar(object, 'p');                                          pvar(object)
-#'     modelvar(object, 'effect');                                effectvar(object)
-#'     modelvar(object, 'fdr');                                      fdrvar(object)
+#'     modelvar(fdt(object), 'p');                                          pvar(fdt(object))
+#'     modelvar(fdt(object), 'effect');                                effectvar(fdt(object))
+#'     modelvar(fdt(object), 'fdr');                                      fdrvar(fdt(object))
 #' # modelvec
 #'     modelvec(object, 'p'     )[1:3];                                 pvec(object)[1:3]
 #'     modelvec(object, 'effect')[1:3];                            effectvec(object)[1:3]
@@ -341,21 +341,21 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     modelfeatures(object, effectdirection = '>' )[1:3];        upfeatures(object)[1:3]
 #' @export
 modelvar <- function(
-    object, 
+    featuredt, 
     quantity, 
     sep  = FITSEP, 
-    fit  = fits(fdt(object), sep = sep),
-    coef = default_coefs(fdt(object), sep = sep, fit = fit)
+    fit  = fits(featuredt, sep = sep),
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
 ){
 # Assert
-    assert_is_valid_sumexp(object)
+    assert_is_data.table(featuredt)
     assert_is_subset(quantity, c('fdr', 'p', 't', 'effect', 'se', 'abstract'))
-    assert_is_subset(fit,   fits(fdt(object)))
-    assert_is_subset(coef, coefs(fdt(object)))
+    assert_is_subset(fit,   fits(featuredt))
+    assert_is_subset(coef, coefs(featuredt))
 # Return
     x <- expand.grid(quantity = quantity, fit = fit, coef = coef)
     x <-  paste(x$quantity, x$coef, x$fit, sep = sep)
-    x %<>% intersect(fvars(object))        # fits dont always contain same coefs: 
+    x %<>% intersect(names(featuredt))        # fits dont always contain same coefs: 
     if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
     x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
 }
@@ -368,7 +368,7 @@ effectvar <- function(
     fit  = fits(fdt(object), sep = sep),
     coef = default_coefs(fdt(object), fit = fit, sep = sep) 
 ){
-    modelvar(object, quantity = 'effect', sep = sep, fit = fit, coef = coef)
+    modelvar(fdt(object), quantity = 'effect', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar

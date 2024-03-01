@@ -24,11 +24,11 @@
 \title{Get model variable}
 \usage{
 modelvar(
-  object,
+  featuredt,
   quantity,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep),
-  coef = default_coefs(fdt(object), sep = sep, fit = fit)
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
 )
 
 effectvar(
@@ -185,13 +185,13 @@ downfeatures(
 )
 }
 \arguments{
-\item{object}{SummarizedExperiment}
-
 \item{quantity}{'p', 'effect', 'fdr', 't', or 'se'}
 
 \item{fit}{string (vector)}
 
 \item{coef}{string (vector)}
+
+\item{object}{SummarizedExperiment}
 
 \item{fvar}{'feature_id' or other fvar for values (pvec) or names (upfeatures)}
 
@@ -216,9 +216,9 @@ Get model variable
     object \%<>\% fit_limma()
     object \%<>\% fit_lm()
 # modelvar
-    modelvar(object, 'p');                                          pvar(object)
-    modelvar(object, 'effect');                                effectvar(object)
-    modelvar(object, 'fdr');                                      fdrvar(object)
+    modelvar(fdt(object), 'p');                                          pvar(fdt(object))
+    modelvar(fdt(object), 'effect');                                effectvar(fdt(object))
+    modelvar(fdt(object), 'fdr');                                      fdrvar(fdt(object))
 # modelvec
     modelvec(object, 'p'     )[1:3];                                 pvec(object)[1:3]
     modelvec(object, 'effect')[1:3];                            effectvec(object)[1:3]
