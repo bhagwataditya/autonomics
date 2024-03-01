@@ -7,7 +7,7 @@
 plot_exprs_per_coef(
   object,
   fit = fits(fdt(object))[1],
-  coefs = default_coefs(object, fit = fit),
+  coefs = default_coefs(fdt(object), fit = fit),
   x = default_x(object),
   geom = default_geom(object, x),
   block = NULL,

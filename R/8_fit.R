@@ -341,11 +341,11 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     modelfeatures(object, effectdirection = '>' )[1:3];        upfeatures(object)[1:3]
 #' @export
 modelfvar <- function(
-     object, 
-     quantity, 
-     sep = FITSEP, 
-     fit = fits(fdt(object), sep = sep),
-    coef = default_coefs(object, sep = sep, fit = fit)
+    object, 
+    quantity, 
+    sep  = FITSEP, 
+    fit  = fits(fdt(object), sep = sep),
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -363,10 +363,10 @@ modelfvar <- function(
 #' @rdname modelfvar
 #' @export
 effectvar <- function( 
-     object, 
-     sep = FITSEP,
-     fit = fits(fdt(object), sep = sep),
-    coef = default_coefs(object, fit = fit, sep = sep) 
+    object, 
+    sep  = FITSEP,
+    fit  = fits(fdt(object), sep = sep),
+    coef = default_coefs(fdt(object), fit = fit, sep = sep) 
 ){
     modelfvar(object, quantity = 'effect', sep = sep, fit = fit, coef = coef)
 }
@@ -374,10 +374,10 @@ effectvar <- function(
 #' @rdname modelfvar
 #' @export
 tvar <- function(
-     object, 
-     fit = fits(fdt(object)),
-     sep = FITSEP,
-    coef = default_coefs(object, fit = fit) 
+    object, 
+    fit  = fits(fdt(object)),
+    sep  = FITSEP,
+    coef = default_coefs(fdt(object), fit = fit) 
 ){
     modelfvar(object, quantity = 't', sep = sep, fit = fit, coef = coef)
 }
@@ -385,10 +385,10 @@ tvar <- function(
 #' @rdname modelfvar
 #' @export
 pvar <- function( 
-     object, 
-     sep = FITSEP,
-     fit = fits(fdt(object), sep = sep),
-    coef = default_coefs(object, sep = sep, fit = fit) 
+    object, 
+    sep = FITSEP,
+    fit = fits(fdt(object), sep = sep),
+    coef = default_coefs(fdt(object), sep = sep, fit = fit) 
 ){
     modelfvar(object, quantity = 'p', sep = sep, fit = fit, coef = coef)
 }
@@ -397,19 +397,19 @@ pvar <- function(
 #' @export
 fdrvar <- function( 
     object, 
-    sep = FITSEP, 
-    fit = fits(fdt(object), sep = sep), 
-   coef = default_coefs(object, sep = sep, fit = fit)){
+    sep  = FITSEP, 
+    fit  = fits(fdt(object), sep = sep), 
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)){
     modelfvar(object, quantity = 'fdr', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelfvar
 #' @export
 abstractvar <- function(
-     object, 
-     sep = FITSEP,
-     fit = fits(fdt(object), sep = sep),
-    coef = default_coefs(object, sep = sep, fit = fit) 
+    object, 
+    sep  = FITSEP,
+    fit  = fits(fdt(object), sep = sep),
+    coef = default_coefs(fdt(object), sep = sep, fit = fit) 
 ){
     # cant use modelfvar because its
     y <- paste(coef, fit, sep = sep)        #           t1~limma
@@ -427,9 +427,9 @@ abstractvar <- function(
 modelvec <- function(
     object, 
     quantity, 
-     sep = FITSEP, 
-     fit = fits(fdt(object), sep = sep)[1], 
-    coef = default_coefs(object, fit = fit, sep = sep)[1], 
+    sep  = FITSEP, 
+    fit  = fits(fdt(object), sep = sep)[1], 
+    coef = default_coefs(fdt(object), fit = fit, sep = sep)[1], 
     fvar = 'feature_id'
 ){
     valuevar <- modelfvar(object, quantity = quantity, sep = sep, fit = fit, coef = coef)
@@ -445,7 +445,7 @@ effectvec <- function(
     object, 
     sep  = FITSEP,
     fit  = fits(fdt(object), sep = sep)[1], 
-    coef = default_coefs(object, sep = sep, fit = fit)[1], 
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
     modelvec(object, quantity = 'effect', sep = sep, fit = fit, coef = coef, fvar = fvar)
@@ -457,7 +457,7 @@ tvec <- function(
     object, 
     sep  = FITSEP,
     fit  = fits(fdt(object), sep = sep)[1],
-    coef = default_coefs(object, sep = sep, fit = fit)[1], 
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
     modelvec(object, quantity = 't', sep = sep, fit = fit, coef = coef, fvar = fvar)
@@ -469,7 +469,7 @@ pvec <- function(
      object, 
      sep = FITSEP,
      fit = fits(fdt(object), sep = sep)[1], 
-    coef = default_coefs(object, fit = fit)[1], 
+    coef = default_coefs(fdt(object), fit = fit)[1], 
     fvar = 'feature_id'
 ){
     modelvec(object, quantity = 'p', sep = sep, fit = fit, coef = coef, fvar = fvar)
@@ -481,7 +481,7 @@ fdrvec <- function(
      object, 
      sep = FITSEP, 
      fit = fits(fdt(object), sep = sep)[1],
-    coef = default_coefs(object, sep = sep, fit = fit)[1], 
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
     modelvec(object, quantity = 'fdr', sep = sep, fit = fit, coef = coef, fvar = fvar)
@@ -501,7 +501,7 @@ modelmat <- function(
      quantity,
      sep = FITSEP,
      fit = fits(fdt(object), sep = sep), 
-    coef = default_coefs(object, sep = sep, fit = fit)
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
     var <- modelfvar(object, quantity, sep = sep, coef = coef, fit = fit)
     if (is.null(var))  return(NULL)
@@ -515,10 +515,10 @@ modelmat <- function(
 #' @rdname modelfvar
 #' @export
 effectmat <- function(
-     object, 
-     sep = FITSEP,
-     fit = fits(fdt(object), sep = sep), 
-    coef = default_coefs(object, sep = sep, fit = fit)
+    object, 
+    sep  = FITSEP,
+    fit  = fits(fdt(object), sep = sep), 
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
     modelmat(object, quantity = 'effect', sep = sep, fit = fit, coef = coef)
 }
@@ -526,10 +526,10 @@ effectmat <- function(
 #' @rdname modelfvar
 #' @export
 effectsizemat <- function(
-     object, 
-     sep = FITSEP,
-     fit = fits(fdt(object), sep = sep),
-    coef = default_coefs(object, sep = sep, fit = fit)
+    object, 
+    sep  = FITSEP,
+    fit  = fits(fdt(object), sep = sep),
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
     abs(modelmat(object, quantity = 'effect', sep = sep, fit = fit, coef = coef))
 } # dont rm: used in ..extract_statistic_features : 
@@ -538,10 +538,10 @@ effectsizemat <- function(
 #' @rdname modelfvar
 #' @export
 tmat <- function(
-     object, 
-     sep = FITSEP,
-     fit = fits(fdt(object), sep = sep), 
-    coef = default_coefs(object, sep = sep, fit = fit)
+    object, 
+    sep = FITSEP,
+    fit = fits(fdt(object), sep = sep), 
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
     modelmat(object, quantity = 't', sep = sep, fit = fit, coef = coef)
 }
@@ -549,10 +549,10 @@ tmat <- function(
 #' @rdname modelfvar
 #' @export
 pmat <- function(
-     object, 
-     sep = FITSEP, 
-     fit = fits(fdt(object), sep = sep),
-    coef = default_coefs(object, sep = sep, fit = fit)
+    object, 
+    sep  = FITSEP, 
+    fit  = fits(fdt(object), sep = sep),
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
     modelmat(object, quantity = 'p', sep = sep, fit = fit, coef = coef)
 }
@@ -560,12 +560,12 @@ pmat <- function(
 #' @rdname modelfvar
 #' @export
 fdrmat <- function(
-     object, 
-     sep = FITSEP,
-     fit = fits(fdt(object), sep = sep),
-    coef = default_coefs(object, sep = sep, fit = fit)
+    object, 
+    sep  = FITSEP,
+    fit  = fits(fdt(object), sep = sep),
+    coef = default_coefs(fdt(object), sep = sep, fit = fit)
 ){
-    modelmat(object, quantity = 'fdr', sep = sep, fit = fit, coef = coef)
+    modelmat(fdt(object), quantity = 'fdr', sep = sep, fit = fit, coef = coef)
 }
 
 
@@ -582,7 +582,7 @@ modelfeatures <- function(
     object,
     sep             = FITSEP,
     fit             = fits(fdt(object), sep = sep)[1],
-    coef            = default_coefs(object, sep = sep, fit = fit)[1], 
+    coef            = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
     fvar            = 'feature_id', 
     significancevar = 'p',
     significance    = 0.05,
@@ -606,7 +606,7 @@ upfeatures <- function(
     object, 
     sep             = FITSEP,
     fit             = fits(fdt(object), sep = sep)[1], 
-    coef            = default_coefs(object, sep = sep, fit = fit)[1], 
+    coef            = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
     fvar            = 'feature_id',
     significancevar = 'p',
     significance    = 0.05,
@@ -623,7 +623,7 @@ downfeatures <- function(
     object,
     sep             = FITSEP, 
     fit             = fits(fdt(object), sep = sep)[1], 
-    coef            = default_coefs(object, fit = fit, sep = sep)[1], 
+    coef            = default_coefs(fdt(object), fit = fit, sep = sep)[1], 
     fvar            = 'feature_id',
     significancevar = 'p',
     significance    = 0.05,

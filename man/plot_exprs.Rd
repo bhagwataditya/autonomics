@@ -11,7 +11,7 @@ plot_exprs(
   dim = "both",
   assay = assayNames(object)[1],
   fit = fits(fdt(object))[1],
-  coefs = default_coefs(object, fit = fit),
+  coefs = default_coefs(fdt(object), fit = fit),
   block = NULL,
   x = default_x(object, dim),
   geom = default_geom(object, x = x, block = block),

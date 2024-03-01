@@ -57,7 +57,7 @@
 extract_coef_features(
   object,
   fit = fits(fdt(object))[1],
-  coefs = default_coefs(object, fit = fit),
+  coefs = default_coefs(fdt(object), fit = fit),
   combiner = "|",
   p = 1,
   fdr = 1,

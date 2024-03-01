@@ -858,7 +858,7 @@ order_on_effect <- function(
 extract_coef_features <- function(
     object, 
     fit         = fits(fdt(object))[1], 
-    coefs       = default_coefs(object, fit = fit),
+    coefs       = default_coefs(fdt(object), fit = fit),
     combiner    = '|',
     p           = 1, 
     fdr         = 1, 
@@ -882,7 +882,7 @@ extract_coef_features <- function(
 
 
 format_coef_vars <- function(
-    object, fit = fits(fdt(object))[1], coef = default_coefs(object, fit = fit)[1]
+    object, fit = fits(fdt(object))[1], coef = default_coefs(fdt(object), fit = fit)[1]
 ){
     effectvars <- effectvar(object, coef = coef, fit = fit)
     pvars      <- pvar(     object, coef = coef, fit = fit)
@@ -907,7 +907,7 @@ format_coef_vars <- function(
 #' fdt(object)
 #' fdt(add_facetvars(object))
 #' @export
-add_facetvars <- function(object, fit = fits(fdt(object))[1], coefs = default_coefs(object, fit = fit)){
+add_facetvars <- function(object, fit = fits(fdt(object))[1], coefs = default_coefs(fdt(object), fit = fit)){
 # Assert
     assert_is_valid_sumexp(object)
     assert_scalar_subset(fit, fits(object))
@@ -1097,7 +1097,7 @@ plot_exprs <- function(
     dim          = 'both',
     assay        = assayNames(object)[1],
     fit          = fits(fdt(object))[1],
-    coefs        = default_coefs(object, fit = fit),
+    coefs        = default_coefs(fdt(object), fit = fit),
     block        = NULL,
     x            = default_x(object, dim),
     geom         = default_geom(object, x = x, block = block),
@@ -1243,7 +1243,7 @@ plot_feature_boxplots <- function(object, ...){
 plot_exprs_per_coef <- function(
     object, 
     fit      = fits(fdt(object))[1],
-    coefs    = default_coefs(object, fit = fit),
+    coefs    = default_coefs(fdt(object), fit = fit),
     x        = default_x(object),
     geom     = default_geom(object, x),
     block    = NULL,
@@ -1582,7 +1582,7 @@ plot_heatmap <- function(
     object,
     assay            = assayNames(object)[1],
     fit              = fits(fdt(object))[1],
-    coef             = default_coefs(object, fit = fit)[1],
+    coef             = default_coefs(fdt(object), fit = fit)[1],
     effectsize       = 0,
     p                = 1,
     fdr              = 0.05,

@@ -5,9 +5,9 @@
 #
 #==============================================================================
 
-default_coefs <- function(object, sep = FITSEP, fit = fits(fdt(object), sep = sep)){
+default_coefs <- function(featuredt, sep = FITSEP, fit = fits(featuredt, sep = sep)){
     if (length(fit)==0) return(NULL)    # none
-    y <- autonomics::coefs(fdt(object), sep = sep, fit = fit)   # intercept
+    y <- autonomics::coefs(featuredt, sep = sep, fit = fit)   # intercept
     if (length(y)==1)   return(y)
     y %<>% setdiff('Intercept')                 # intercept + others
     y
@@ -162,7 +162,7 @@ add_adjusted_pvalues <- function(
 make_volcano_dt <- function(
     object, 
     fit   = fits(fdt(object))[1], 
-    coefs = default_coefs(object, fit = fit)[1],
+    coefs = default_coefs(fdt(object), fit = fit)[1],
     shape = 'imputed', 
     size  = NULL, 
     alpha = NULL,
@@ -256,7 +256,7 @@ make_volcano_dt <- function(
 plot_volcano <- function(
     object,
     fit           = fits(fdt(object))[1], 
-    coefs         = default_coefs(object, fit)[1],
+    coefs         = default_coefs(fdt(object), fit)[1],
     facet         = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
     shape         = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
     size          = NULL,

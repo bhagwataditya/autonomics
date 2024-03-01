@@ -11,7 +11,7 @@ plot_heatmap(
   object,
   assay = assayNames(object)[1],
   fit = fits(fdt(object))[1],
-  coef = default_coefs(object, fit = fit)[1],
+  coef = default_coefs(fdt(object), fit = fit)[1],
   effectsize = 0,
   p = 1,
   fdr = 0.05,

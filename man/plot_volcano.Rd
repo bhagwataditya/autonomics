@@ -7,7 +7,7 @@
 plot_volcano(
   object,
   fit = fits(fdt(object))[1],
-  coefs = default_coefs(object, fit)[1],
+  coefs = default_coefs(fdt(object), fit)[1],
   facet = if (is_scalar(fit)) "coef" else c("fit", "coef"),
   shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
   size = NULL,

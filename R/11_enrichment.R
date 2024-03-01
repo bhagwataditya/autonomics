@@ -426,7 +426,7 @@ altenrich <- function(
     pathwaydt, 
     genevar         = 'gene', 
     genesep         = '[ ,;]',
-    coef            = default_coefs(object)[1], 
+    coef            = default_coefs(fdt(object))[1], 
     fit             = fits(fdt(object))[1],
     significancevar = 'p',
     significance    = 0.05,

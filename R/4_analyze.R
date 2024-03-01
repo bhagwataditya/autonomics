@@ -125,7 +125,7 @@ plot_summary <- function(
     pca2exprs <- plot_exprs(object, fit = 'pca2',  block = block, n = 1, subtitle = 'X2', title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
     pls1exprs <- plot_exprs(object, fit = 'pls1',  block = block, n = 1, subtitle = 'X1', title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
     pls2exprs <- plot_exprs(object, fit = 'pls2',  block = block, n = 1, subtitle = 'X2', title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
-    coefs <- default_coefs(object, fit = fit)
+    coefs <- default_coefs(fdt(object), fit = fit)
     glm1exprs <- plot_exprs(object, fit = fit, coefs = coefs[1], block = block, n = 1, nrow = 1, subtitle = coefs[1], title = NULL, verbose = FALSE, color = svar, fill = svar, x = svar)
     pca1exprs <- pca1exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
     pca2exprs <- pca2exprs + guides(color = 'none', fill = 'none') + ylab(NULL)
@@ -158,7 +158,7 @@ plot_top_samples <- function(object, svar, palette = make_svar_palette(object, s
 plot_top_features <- function(object, fit, label){
     idx1 <- order(abs(loadings(object, method = 'pca', dim = 1)), decreasing = TRUE)[1]
     idx2 <- order(abs(loadings(object, method = 'pls', dim = 1)), decreasing = TRUE)[1]
-    pvr <- pvar(object, fit = fit, coef = default_coefs(object, fit = fit))[1]
+    pvr <- pvar(fdt(object), fit = fit, coef = default_coefs(fdt(object), fit = fit))[1]
     idx3 <- order(abs(fdt(object)[[pvr]]))[1]
     idx  <- unique(c(idx1,idx2,idx3))
 
