@@ -163,10 +163,10 @@ modelfeatures(
 )
 
 upfeatures(
-  object,
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep)[1],
-  coef = default_coefs(fdt(object), sep = sep, fit = fit)[1],
+  fit = fits(featuredt, sep = sep)[1],
+  coef = default_coefs(featuredt, sep = sep, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,
@@ -174,10 +174,10 @@ upfeatures(
 )
 
 downfeatures(
-  object,
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep)[1],
-  coef = default_coefs(fdt(object), fit = fit, sep = sep)[1],
+  fit = fits(featuredt, sep = sep)[1],
+  coef = default_coefs(featuredt, fit = fit, sep = sep)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,

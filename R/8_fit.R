@@ -604,16 +604,16 @@ modelfeatures <- function(
 #' @rdname modelvar
 #' @export
 upfeatures <- function(
-    object, 
+    featuredt, 
     sep             = FITSEP,
-    fit             = fits(fdt(object), sep = sep)[1], 
-    coef            = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
+    fit             = fits(featuredt, sep = sep)[1], 
+    coef            = default_coefs(featuredt, sep = sep, fit = fit)[1], 
     fvar            = 'feature_id',
     significancevar = 'p',
     significance    = 0.05,
     effectsize      = 0
 ){
-    modelfeatures(  featuredt = fdt(object), sep = sep, fit = fit, coef = coef, fvar = fvar, 
+    modelfeatures(  featuredt = featuredt, sep = sep, fit = fit, coef = coef, fvar = fvar, 
                     significancevar = significancevar, significance = significance, 
                     effectdirection = '>', effectsize = effectsize )
 }
@@ -621,16 +621,16 @@ upfeatures <- function(
 #' @rdname modelvar
 #' @export
 downfeatures <- function(
-    object,
+    featuredt,
     sep             = FITSEP, 
-    fit             = fits(fdt(object), sep = sep)[1], 
-    coef            = default_coefs(fdt(object), fit = fit, sep = sep)[1], 
+    fit             = fits(featuredt, sep = sep)[1], 
+    coef            = default_coefs(featuredt, fit = fit, sep = sep)[1], 
     fvar            = 'feature_id',
     significancevar = 'p',
     significance    = 0.05,
     effectsize      = 0
 ){
-    modelfeatures(  featuredt = fdt(object), sep = sep, fit = fit, coef = coef, fvar = fvar, 
+    modelfeatures(  featuredt = featuredt, sep = sep, fit = fit, coef = coef, fvar = fvar, 
                     significancevar = significancevar, significance = significance, 
                     effectdirection = '>', effectsize = effectsize )
 }
