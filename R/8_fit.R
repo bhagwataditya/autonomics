@@ -639,9 +639,9 @@ downfeatures <- function(
 
 
 # dont rm - its the lower-level function used by fits() and coefs() !
-.effectvars <- function(object, sep = FITSEP){
+.effectvars <- function(featuredt, sep = FITSEP){
     . <- NULL
-    fvars(object) %>% extract(stri_startswith_fixed(., paste0('effect', sep)))
+    names(featuredt) %>% extract(stri_startswith_fixed(., paste0('effect', sep)))
 }
 
 #' Get fit models
@@ -655,7 +655,7 @@ downfeatures <- function(
 #' fits(object)
 #' @export
 fits <- function(object, sep = FITSEP){
-    x <- .effectvars(object)
+    x <- .effectvars(fdt(object))
     x %<>% split_extract_fixed(sep, 3)
     x %<>% unique()
     if (length(x)==0)  x <- NULL
@@ -695,8 +695,8 @@ coefs.SummarizedExperiment <- function(
 ){
     if (is.null(fit))  return(NULL)
     . <- NULL
-    coefs0 <- split_extract_fixed(.effectvars(object), sep, 2)
-    fits0  <- split_extract_fixed(.effectvars(object), sep, 3)
+    coefs0 <- split_extract_fixed(.effectvars(fdt(object)), sep, 2)
+    fits0  <- split_extract_fixed(.effectvars(fdt(object)), sep, 3)
     coefs0 %<>% extract(fits0 %in% fit)
     coefs0 %<>% unique()
     if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))
