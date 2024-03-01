@@ -751,7 +751,7 @@ order_on_p <- function(
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool(verbose)
 # Order    
-    pmat <- autonomics::pmat(object, fit = fit, coef = coefs)
+    pmat <- autonomics::pmat(fdt(object), fit = fit, coef = coefs)
     if (is.null(pmat))  return(object)
     if (verbose)   cmessage("\t\tp-order features on: %s (%s)", 
                             paste0(fit,   collapse = ', '), 
@@ -1260,7 +1260,7 @@ plot_exprs_per_coef <- function(
 ){
     assert_is_valid_sumexp(object)
     if (orderbyp){
-        idx <- order(vapply(coefs, function(x)  min(pmat(object, fit = fit, coef = x)), numeric(1)))
+        idx <- order(vapply(coefs, function(x)  min(pmat(fdt(object), fit = fit, coef = x)), numeric(1)))
         coefs %<>% extract(idx)
         if (length(x)        > 1)         x %<>% extract(idx)
         if (length(geom)     > 1)      geom %<>% extract(idx)
