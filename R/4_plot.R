@@ -706,7 +706,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     if (is.null(fit))    return(object)
     if (is.null(coefs))  return(object)
 # Filter
-    x <- autonomics::effectmat(object, fit = fit, coef = coefs)
+    x <- autonomics::effectmat(fdt(object), fit = fit, coef = coefs)
     idx <- unname(apply(sign(x), 1, function(y)  Reduce(get(combiner), sign(y) %in% sign) ))
 # Return
     n0 <- length(idx)
@@ -780,7 +780,7 @@ order_on_effect <- function(
     assert_scalar_subset(combiner, c('|', '&'))
     assert_is_a_bool((verbose))
 # Order
-    effectmat <- autonomics::effectmat(object, fit = fit, coef = coefs)
+    effectmat <- autonomics::effectmat(fdt(object), fit = fit, coef = coefs)
     if (verbose)   cmessage("\t\tt-order features on: %s (%s)", 
                             paste0(fit,   collapse = ', '), 
                             paste0(coefs, collapse = ', '))
@@ -1623,8 +1623,8 @@ plot_heatmap <- function(
         object  %<>% extract(  idx , )                          # order features
     }
     if (!is.null(coef)){
-        idx <- effectmat(object, fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
-        idx <- effectmat(object, fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
+        idx <- effectmat(fdt(object), fit = fit, coef = coef)[, 1] < 0; down <- object[idx, ]  # split down/up
+        idx <- effectmat(fdt(object), fit = fit, coef = coef)[, 1] > 0;   up <- object[idx, ]
         object <- rbind(rev(down), rev(up))
     }
 # Add pvalues
@@ -1652,7 +1652,7 @@ plot_heatmap <- function(
     setnames(dt, 'value', 'z-score')
     vlines <- 0.5 + c(0, cumsum(table(object[[group]])))
     if (!is.null(coef)){
-        hlines <- 0.5 + c(0, sum(effectmat(object, fit = fit, coef = coef)[, 1] < 0), nrow(object))
+        hlines <- 0.5 + c(0, sum(effectmat(fdt(object), fit = fit, coef = coef)[, 1] < 0), nrow(object))
     }
 # Plot
     p <- ggplot(data = dt, aes(x = sample_id, y = !!sym(flabel), fill = `z-score`)) +

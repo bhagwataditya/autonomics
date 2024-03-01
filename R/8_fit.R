@@ -334,7 +334,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     modelvec(featuredt, 'fdr'   )[1:3];                               fdrvec(object)[1:3]
 #' # modelmatrix
 #'     modelmat(featuredt, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
-#'     modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]
+#'     modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(featuredt)[1:3, 1:3]
 #'     modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(object)[1:3, 1:3]
 #' # modelfeatures
 #'     modelfeatures(object      )[1:3]
@@ -516,12 +516,12 @@ modelmat <- function(
 #' @rdname modelvar
 #' @export
 effectmat <- function(
-    object, 
+    featuredt, 
     sep  = FITSEP,
-    fit  = fits(fdt(object), sep = sep), 
-    coef = default_coefs(fdt(object), sep = sep, fit = fit)
+    fit  = fits(featuredt, sep = sep), 
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
 ){
-    modelmat(fdt(object), quantity = 'effect', sep = sep, fit = fit, coef = coef)
+    modelmat(featuredt, quantity = 'effect', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar
@@ -714,8 +714,8 @@ coefs.data.table <- function(
 .is_sig <- function(object, fit, contrast, quantity = 'fdr'){
     sigfun <- get(paste0(quantity, 'mat'))
     issig  <- sigfun(object) < 0.05
-    isdown <- issig & effectmat(object) < 0
-    isup   <- issig & effectmat(object) > 0
+    isdown <- issig & effectmat(fdt(object)) < 0
+    isup   <- issig & effectmat(fdt(object)) > 0
     isdown[is.na(isdown)] <- FALSE
     isup[  is.na(isup)  ] <- FALSE
     testmat <- matrix(0, nrow(issig), ncol(issig), dimnames=dimnames(issig))

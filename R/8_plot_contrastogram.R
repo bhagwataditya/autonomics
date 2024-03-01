@@ -23,7 +23,7 @@ compute_connections <- function(
 ){
 # subgroup matrix, difference contrasts, limma
     fdrvalues <- fdrmat(object)
-    effects <- effectmat(object)
+    effects <- effectmat(fdt(object))
     colnames(fdrvalues) %<>% split_extract_fixed(FITSEP, 2)
     colnames(effects)   %<>% split_extract_fixed(FITSEP, 2)
     nsignif <- apply(fdrvalues < 0.05, 2, sum, na.rm=TRUE)
