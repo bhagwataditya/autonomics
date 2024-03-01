@@ -454,13 +454,13 @@ effectvec <- function(
 #' @rdname modelvar
 #' @export
 tvec <- function(
-    object, 
+    featuredt, 
     sep  = FITSEP,
-    fit  = fits(fdt(object), sep = sep)[1],
-    coef = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
+    fit  = fits(featuredt, sep = sep)[1],
+    coef = default_coefs(featuredt, sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
-    modelvec(fdt(object), quantity = 't', sep = sep, fit = fit, coef = coef, fvar = fvar)
+    modelvec(featuredt, quantity = 't', sep = sep, fit = fit, coef = coef, fvar = fvar)
 }
     
 #' @rdname modelvar
