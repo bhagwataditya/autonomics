@@ -151,10 +151,10 @@ fdrmat(
 )
 
 modelfeatures(
-  object,
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep)[1],
-  coef = default_coefs(fdt(object), sep = sep, fit = fit)[1],
+  fit = fits(featuredt, sep = sep)[1],
+  coef = default_coefs(featuredt, sep = sep, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,
@@ -193,8 +193,6 @@ downfeatures(
 
 \item{fvar}{'feature_id' or other fvar for values (pvec) or names (upfeatures)}
 
-\item{object}{SummarizedExperiment}
-
 \item{significancevar}{'p' or 'fdr'}
 
 \item{significance}{p or fdr cutoff (fractional number)}
@@ -202,6 +200,8 @@ downfeatures(
 \item{effectdirection}{'<>', '<' or '>'}
 
 \item{effectsize}{effectsize cutoff (positive number)}
+
+\item{object}{SummarizedExperiment}
 }
 \value{
 string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures)
@@ -229,7 +229,7 @@ Get model variable
     modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(featuredt)[1:3, 1:3]
     modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(featuredt)[1:3, 1:3]
 # modelfeatures
-    modelfeatures(object      )[1:3]
-    modelfeatures(object, effectdirection = '<' )[1:3];      downfeatures(object)[1:3]
-    modelfeatures(object, effectdirection = '>' )[1:3];        upfeatures(object)[1:3]
+    modelfeatures(featuredt      )[1:3]
+    modelfeatures(featuredt, effectdirection = '<' )[1:3];      downfeatures(featuredt)[1:3]
+    modelfeatures(featuredt, effectdirection = '>' )[1:3];        upfeatures(featuredt)[1:3]
 }

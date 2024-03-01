@@ -337,9 +337,9 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(featuredt)[1:3, 1:3]
 #'     modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(featuredt)[1:3, 1:3]
 #' # modelfeatures
-#'     modelfeatures(object      )[1:3]
-#'     modelfeatures(object, effectdirection = '<' )[1:3];      downfeatures(object)[1:3]
-#'     modelfeatures(object, effectdirection = '>' )[1:3];        upfeatures(object)[1:3]
+#'     modelfeatures(featuredt      )[1:3]
+#'     modelfeatures(featuredt, effectdirection = '<' )[1:3];      downfeatures(featuredt)[1:3]
+#'     modelfeatures(featuredt, effectdirection = '>' )[1:3];        upfeatures(featuredt)[1:3]
 #' @export
 modelvar <- function(
     featuredt, 
@@ -580,24 +580,24 @@ fdrmat <- function(
 #' @rdname modelvar
 #' @export
 modelfeatures <- function(
-    object,
+    featuredt,
     sep             = FITSEP,
-    fit             = fits(fdt(object), sep = sep)[1],
-    coef            = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
+    fit             = fits(featuredt, sep = sep)[1],
+    coef            = default_coefs(featuredt, sep = sep, fit = fit)[1], 
     fvar            = 'feature_id', 
     significancevar = 'p',
     significance    = 0.05,
     effectdirection = '<>',
     effectsize      = 0
 ){
-    significancevalues <- modelvec(fdt(object), quantity =  significancevar, sep = sep, fit = fit, coef = coef, fvar = fvar)
-          effectvalues <- modelvec(fdt(object), quantity = 'effect',         sep = sep, fit = fit, coef = coef, fvar = fvar)
+    significancevalues <- modelvec(featuredt, quantity =  significancevar, sep = sep, fit = fit, coef = coef, fvar = fvar)
+          effectvalues <- modelvec(featuredt, quantity = 'effect',         sep = sep, fit = fit, coef = coef, fvar = fvar)
     idx <- switch(effectdirection, 
                   `<>` = (effectvalues < -effectsize) | (effectvalues > +effectsize), 
                   `<`  = (effectvalues < -effectsize), 
                   `>`  = (effectvalues > +effectsize) )
     idx <- idx & (significancevalues < significance)
-    y <- fdt(object)[[fvar]][idx]
+    y <- featuredt[[fvar]][idx]
     unique(y)
 }
 
@@ -613,7 +613,7 @@ upfeatures <- function(
     significance    = 0.05,
     effectsize      = 0
 ){
-    modelfeatures(  object = object, sep = sep, fit = fit, coef = coef, fvar = fvar, 
+    modelfeatures(  featuredt = fdt(object), sep = sep, fit = fit, coef = coef, fvar = fvar, 
                     significancevar = significancevar, significance = significance, 
                     effectdirection = '>', effectsize = effectsize )
 }
@@ -630,7 +630,7 @@ downfeatures <- function(
     significance    = 0.05,
     effectsize      = 0
 ){
-    modelfeatures(  object = object, sep = sep, fit = fit, coef = coef, fvar = fvar, 
+    modelfeatures(  featuredt = fdt(object), sep = sep, fit = fit, coef = coef, fvar = fvar, 
                     significancevar = significancevar, significance = significance, 
                     effectdirection = '>', effectsize = effectsize )
 }
