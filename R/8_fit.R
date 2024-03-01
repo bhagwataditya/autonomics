@@ -335,7 +335,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #' # modelmatrix
 #'     modelmat(featuredt, 'p'     )[1:3, 1:3];                            pmat(featuredt)[1:3, 1:3]
 #'     modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(featuredt)[1:3, 1:3]
-#'     modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(object)[1:3, 1:3]
+#'     modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(featuredt)[1:3, 1:3]
 #' # modelfeatures
 #'     modelfeatures(object      )[1:3]
 #'     modelfeatures(object, effectdirection = '<' )[1:3];      downfeatures(object)[1:3]
@@ -561,12 +561,12 @@ pmat <- function(
 #' @rdname modelvar
 #' @export
 fdrmat <- function(
-    object, 
+    featuredt, 
     sep  = FITSEP,
-    fit  = fits(fdt(object), sep = sep),
-    coef = default_coefs(fdt(object), sep = sep, fit = fit)
+    fit  = fits(featuredt, sep = sep),
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
 ){
-    modelmat(fdt(object), quantity = 'fdr', sep = sep, fit = fit, coef = coef)
+    modelmat(featuredt, quantity = 'fdr', sep = sep, fit = fit, coef = coef)
 }
 
 

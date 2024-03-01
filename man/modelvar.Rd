@@ -137,17 +137,17 @@ tmat(
 )
 
 pmat(
-  object,
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep),
-  coef = default_coefs(fdt(object), sep = sep, fit = fit)
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
 )
 
 fdrmat(
-  object,
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep),
-  coef = default_coefs(fdt(object), sep = sep, fit = fit)
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
 )
 
 modelfeatures(
@@ -223,11 +223,11 @@ Get model variable
 # modelvec
     modelvec(featuredt, 'p'     )[1:3];                                 pvec(featuredt)[1:3]
     modelvec(featuredt, 'effect')[1:3];                            effectvec(featuredt)[1:3]
-    modelvec(featuredt, 'fdr'   )[1:3];                               fdrvec(object)[1:3]
+    modelvec(featuredt, 'fdr'   )[1:3];                               fdrvec(featuredt)[1:3]
 # modelmatrix
-    modelmat(featuredt, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
+    modelmat(featuredt, 'p'     )[1:3, 1:3];                            pmat(featuredt)[1:3, 1:3]
     modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(featuredt)[1:3, 1:3]
-    modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(object)[1:3, 1:3]
+    modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(featuredt)[1:3, 1:3]
 # modelfeatures
     modelfeatures(object      )[1:3]
     modelfeatures(object, effectdirection = '<' )[1:3];      downfeatures(object)[1:3]
