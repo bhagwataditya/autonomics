@@ -631,7 +631,7 @@ cmessage <- function(pattern, ...) message(sprintf(pattern, ...))
     assert_is_a_bool(verbose)
 # Filter
     fun <- getFromNamespace(sprintf('%smat', statistic), 'autonomics')
-    x <- fun(object, fit = fit, coef = coefs)
+    x <- fun(fdt(object), fit = fit, coef = coefs)
     if (is.null(x))  return(object)
     idx <- get(comparer)(x, threshold)
     idx[is.na(idx)] <- FALSE

@@ -527,12 +527,12 @@ effectmat <- function(
 #' @rdname modelvar
 #' @export
 effectsizemat <- function(
-    object, 
+    featuredt, 
     sep  = FITSEP,
-    fit  = fits(fdt(object), sep = sep),
-    coef = default_coefs(fdt(object), sep = sep, fit = fit)
+    fit  = fits(featuredt, sep = sep),
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
 ){
-    abs(modelmat(fdt(object), quantity = 'effect', sep = sep, fit = fit, coef = coef))
+    abs(modelmat(featuredt, quantity = 'effect', sep = sep, fit = fit, coef = coef))
 } # dont rm: used in ..extract_statistic_features : 
   # getFromNamespace(sprintf('%smat', statistic), 'autonomics')
 
