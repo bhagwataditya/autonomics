@@ -60,18 +60,18 @@ fdrvar(
 )
 
 abstractvar(
-  object,
+  featuredt,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep),
-  coef = default_coefs(fdt(object), sep = sep, fit = fit)
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
 )
 
 modelvec(
-  object,
+  featuredt,
   quantity,
   sep = FITSEP,
-  fit = fits(fdt(object), sep = sep)[1],
-  coef = default_coefs(fdt(object), fit = fit, sep = sep)[1],
+  fit = fits(featuredt, sep = sep)[1],
+  coef = default_coefs(featuredt, fit = fit, sep = sep)[1],
   fvar = "feature_id"
 )
 
@@ -191,9 +191,9 @@ downfeatures(
 
 \item{coef}{string (vector)}
 
-\item{object}{SummarizedExperiment}
-
 \item{fvar}{'feature_id' or other fvar for values (pvec) or names (upfeatures)}
+
+\item{object}{SummarizedExperiment}
 
 \item{significancevar}{'p' or 'fdr'}
 
@@ -220,9 +220,9 @@ Get model variable
     modelvar(fdt(object), 'effect');                                effectvar(fdt(object))
     modelvar(fdt(object), 'fdr');                                      fdrvar(fdt(object))
 # modelvec
-    modelvec(object, 'p'     )[1:3];                                 pvec(object)[1:3]
-    modelvec(object, 'effect')[1:3];                            effectvec(object)[1:3]
-    modelvec(object, 'fdr'   )[1:3];                               fdrvec(object)[1:3]
+    modelvec(fdt(object), 'p'     )[1:3];                                 pvec(object)[1:3]
+    modelvec(fdt(object), 'effect')[1:3];                            effectvec(object)[1:3]
+    modelvec(fdt(object), 'fdr'   )[1:3];                               fdrvec(object)[1:3]
 # modelmatrix
     modelmat(object, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
     modelmat(object, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]

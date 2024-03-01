@@ -328,9 +328,9 @@ subgroup_matrix <- function(object, subgroupvar){
 #'     modelvar(fdt(object), 'effect');                                effectvar(fdt(object))
 #'     modelvar(fdt(object), 'fdr');                                      fdrvar(fdt(object))
 #' # modelvec
-#'     modelvec(object, 'p'     )[1:3];                                 pvec(object)[1:3]
-#'     modelvec(object, 'effect')[1:3];                            effectvec(object)[1:3]
-#'     modelvec(object, 'fdr'   )[1:3];                               fdrvec(object)[1:3]
+#'     modelvec(fdt(object), 'p'     )[1:3];                                 pvec(object)[1:3]
+#'     modelvec(fdt(object), 'effect')[1:3];                            effectvec(object)[1:3]
+#'     modelvec(fdt(object), 'fdr'   )[1:3];                               fdrvec(object)[1:3]
 #' # modelmatrix
 #'     modelmat(object, 'p'     )[1:3, 1:3];                            pmat(object)[1:3, 1:3]
 #'     modelmat(object, 'effect')[1:3, 1:3];                       effectmat(object)[1:3, 1:3]
@@ -406,14 +406,14 @@ fdrvar <- function(
 #' @rdname modelvar
 #' @export
 abstractvar <- function(
-    object, 
+    featuredt, 
     sep  = FITSEP,
-    fit  = fits(fdt(object), sep = sep),
-    coef = default_coefs(fdt(object), sep = sep, fit = fit) 
+    fit  = fits(featuredt, sep = sep),
+    coef = default_coefs(featuredt, sep = sep, fit = fit) 
 ){
     # cant use modelvar because its
     y <- paste(coef, fit, sep = sep)        #           t1~limma
-    if (y %in% fvars(object)) y else NULL   #     not p~t1~limma
+    if (y %in% names(featuredt)) y else NULL   #     not p~t1~limma
 }
 
 #------------------------------------------------------------------------------
@@ -425,17 +425,17 @@ abstractvar <- function(
 #' @rdname modelvar
 #' @export
 modelvec <- function(
-    object, 
+    featuredt, 
     quantity, 
     sep  = FITSEP, 
-    fit  = fits(fdt(object), sep = sep)[1], 
-    coef = default_coefs(fdt(object), fit = fit, sep = sep)[1], 
+    fit  = fits(featuredt, sep = sep)[1], 
+    coef = default_coefs(featuredt, fit = fit, sep = sep)[1], 
     fvar = 'feature_id'
 ){
-    valuevar <- modelvar(object, quantity = quantity, sep = sep, fit = fit, coef = coef)
+    valuevar <- modelvar(featuredt, quantity = quantity, sep = sep, fit = fit, coef = coef)
     if (is.null(valuevar))  return(NULL)
-    y        <- fdt(object)  %>%  extract2(valuevar)
-    names(y) <- fdt(object)  %>%  extract2(fvar)
+    y        <- featuredt  %>%  extract2(valuevar)
+    names(y) <- featuredt  %>%  extract2(fvar)
     y
 }
 
@@ -448,7 +448,7 @@ effectvec <- function(
     coef = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
-    modelvec(object, quantity = 'effect', sep = sep, fit = fit, coef = coef, fvar = fvar)
+    modelvec(fdt(object), quantity = 'effect', sep = sep, fit = fit, coef = coef, fvar = fvar)
 }
 
 #' @rdname modelvar
@@ -460,7 +460,7 @@ tvec <- function(
     coef = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
-    modelvec(object, quantity = 't', sep = sep, fit = fit, coef = coef, fvar = fvar)
+    modelvec(fdt(object), quantity = 't', sep = sep, fit = fit, coef = coef, fvar = fvar)
 }
     
 #' @rdname modelvar
@@ -472,7 +472,7 @@ pvec <- function(
     coef = default_coefs(fdt(object), fit = fit)[1], 
     fvar = 'feature_id'
 ){
-    modelvec(object, quantity = 'p', sep = sep, fit = fit, coef = coef, fvar = fvar)
+    modelvec(fdt(object), quantity = 'p', sep = sep, fit = fit, coef = coef, fvar = fvar)
 }
 
 #' @rdname modelvar
@@ -484,7 +484,7 @@ fdrvec <- function(
     coef = default_coefs(fdt(object), sep = sep, fit = fit)[1], 
     fvar = 'feature_id'
 ){
-    modelvec(object, quantity = 'fdr', sep = sep, fit = fit, coef = coef, fvar = fvar)
+    modelvec(fdt(object), quantity = 'fdr', sep = sep, fit = fit, coef = coef, fvar = fvar)
 }
 
 #------------------------------------------------------------------------------
@@ -589,8 +589,8 @@ modelfeatures <- function(
     effectdirection = '<>',
     effectsize      = 0
 ){
-    significancevalues <- modelvec(object, quantity =  significancevar, sep = sep, fit = fit, coef = coef, fvar = fvar)
-          effectvalues <- modelvec(object, quantity = 'effect',         sep = sep, fit = fit, coef = coef, fvar = fvar)
+    significancevalues <- modelvec(fdt(object), quantity =  significancevar, sep = sep, fit = fit, coef = coef, fvar = fvar)
+          effectvalues <- modelvec(fdt(object), quantity = 'effect',         sep = sep, fit = fit, coef = coef, fvar = fvar)
     idx <- switch(effectdirection, 
                   `<>` = (effectvalues < -effectsize) | (effectvalues > +effectsize), 
                   `<`  = (effectvalues < -effectsize), 

@@ -176,8 +176,8 @@ abstract_fit <- function(
     for ( curfit in fit){
     for (curcoef in coef){
         abstractvar <- paste(curcoef, curfit, sep = FITSEP)
-            pvalues <- modelvec(object, 'p',      fit = curfit, coef = curcoef)
-       effectvalues <- modelvec(object, 'effect', fit = curfit, coef = curcoef)
+            pvalues <- modelvec(fdt(object), 'p',      fit = curfit, coef = curcoef)
+       effectvalues <- modelvec(fdt(object), 'effect', fit = curfit, coef = curcoef)
         fdt(object)[[ abstractvar ]] <- 'flat'
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues<0 ] <- 'down' 
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues>0 ] <- 'up' 
@@ -285,10 +285,10 @@ factor2logical <- function(x){
 #'     object %<>% abstract_fit()
 #' # Four flavours
 #'     pathwaydt <- read_msigdt(collections = 'gobp')
-#'     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(object))                                      # 2:n factor 
-#'     enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                   #     logical
-#'     enrichdt3 <- enrichment(object, pathwaydt, var = abstractvar(object), levels = c('flat', 'down', 'up'))    # 1:n factor
-#'     enrichdt4 <- enrichment(object, pathwaydt, var = 'flat', levels = c('flat', 'updown'))                     #     logical
+#'     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)))                                   # 2:n factor 
+#'     enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                     #     logical
+#'     enrichdt3 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)), levels = c('flat', 'down', 'up')) # 1:n factor
+#'     enrichdt4 <- enrichment(object, pathwaydt, var = 'flat', levels = c('flat', 'updown'))                       #     logical
 #' # Alternative implementation
 #'     enrichdt5 <-  altenrich(object, pathwaydt)   # alternative implementation
 #'     cols <- intersect(names(enrichdt1), names(enrichdt5))
@@ -320,7 +320,7 @@ enrichment <- function(
     pathwaydt,
     fit      = fits(fdt(object))[1],
     coef     = coefs(fdt(object), fit = fit)[1],
-    var      = abstractvar(object, fit = fit, coef = coef),
+    var      = abstractvar(fdt(object), fit = fit, coef = coef),
     levels   = fdt(object)[[var]] %>% base::levels() %>% extract(-1),
     genevar  = 'gene', 
     genesep  = '[ ,;]',
@@ -451,7 +451,7 @@ altenrich <- function(
     gene <- in.up <- in.detected <- in.down <- in.selected <- `in` <- out <- NULL
 # Function
     object %<>% abstract_fit(fit = fit, coef = coef, significancevar = significancevar)
-    abstractvar <- abstractvar(object, fit = fit, coef = coef)
+    abstractvar <- abstractvar(fdt(object), fit = fit, coef = coef)
 # Constants
      all <- unique(fdt(object)[[genevar]])
      all %<>% union(pathwaydt[, unique(gene)])                                 # 17 987  all
