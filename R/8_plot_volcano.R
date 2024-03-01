@@ -239,7 +239,7 @@ make_volcano_dt <- function(
 #' 
 #' # When nothing passes FDR
 #'     fdt(object) %<>% add_adjusted_pvalues('fdr', fit = 'limma',coefs = 't3')
-#'     object %<>% extract( fdrvec(object, fit = 'limma', coef = 't3') > 0.05, )
+#'     object %<>% extract( fdrvec(fdt(object), fit = 'limma', coef = 't3') > 0.05, )
 #'     plot_volcano(object, coefs = 't3', fit = 'limma')
 #' 
 #' # Additional mappings
