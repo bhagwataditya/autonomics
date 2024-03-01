@@ -884,7 +884,7 @@ extract_coef_features <- function(
 format_coef_vars <- function(
     object, fit = fits(fdt(object))[1], coef = default_coefs(fdt(object), fit = fit)[1]
 ){
-    effectvars <- effectvar(object, coef = coef, fit = fit)
+    effectvars <- effectvar(fdt(object), coef = coef, fit = fit)
     pvars      <- pvar(     object, coef = coef, fit = fit)
     fdrvars    <- fdrvar(   object, coef = coef, fit = fit)
     for (var in c(effectvars, pvars, fdrvars)){
@@ -916,7 +916,7 @@ add_facetvars <- function(object, fit = fits(fdt(object))[1], coefs = default_co
     for (i in seq_along(coefs)){
                pvar <- autonomics::pvar(     object, fit = fit, coef = coefs[i])
              fdrvar <- autonomics::fdrvar(   object, fit = fit, coef = coefs[i])
-          effectvar <- autonomics::effectvar(object, fit = fit, coef = coefs[i])
+          effectvar <- autonomics::effectvar(fdt(object), fit = fit, coef = coefs[i])
            facetvar <- paste0('facet.', coefs[[i]])
         assert_are_disjoint_sets(facetvar, fvars(object))
         if (!is.null(pvar))            pvalues <- fdt(object)[[     pvar]] %>% formatC(format = 'e', digits = 0) %>% as.character() 

@@ -363,12 +363,12 @@ modelvar <- function(
 #' @rdname modelvar
 #' @export
 effectvar <- function( 
-    object, 
+    featuredt, 
     sep  = FITSEP,
-    fit  = fits(fdt(object), sep = sep),
-    coef = default_coefs(fdt(object), fit = fit, sep = sep) 
+    fit  = fits(featuredt, sep = sep),
+    coef = default_coefs(featuredt, fit = fit, sep = sep) 
 ){
-    modelvar(fdt(object), quantity = 'effect', sep = sep, fit = fit, coef = coef)
+    modelvar(featuredt, quantity = 'effect', sep = sep, fit = fit, coef = coef)
 }
 
 #' @rdname modelvar
