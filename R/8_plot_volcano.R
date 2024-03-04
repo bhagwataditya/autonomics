@@ -162,14 +162,14 @@ make_volcano_dt <- function(
 ){
 # Assert    
     assert_is_all_of(object, "SummarizedExperiment")
-    assert_any_are_matching_regex(fvars(object), paste0('^p', FITSEP))
-    assert_is_subset(fit, fits(fdt(object)))
+    assert_any_are_matching_regex(fvars(object), paste0('^p', sep))
+    assert_is_subset(fit, fits(fdt(object), sep = sep))
     assert_is_subset(coefs, autonomics::coefs(fdt(object), sep = sep, fit = fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
     if (!is.null(alpha)){ assert_is_subset(alpha, fvars(object)); object %<>% bin(alpha) }
     if (!is.null(label))  assert_is_subset(label, fvars(object))
-    fdt(object) %<>% add_adjusted_pvalues('bonferroni', fit, coefs)
+    fdt(object) %<>% add_adjusted_pvalues('bonferroni', sep = sep, fit = fit, coefs = coefs)
 # Prepare
     bon <- direction <- effect <- fdr <- mlp <- p <- significance <- NULL
     idvars <- 'feature_id'
@@ -178,8 +178,8 @@ make_volcano_dt <- function(
     if (!is.null(shape))  idvars %<>% union(shape)
     if (!is.null(size))   idvars %<>% union(size)
     if (!is.null(alpha))  idvars %<>% union(alpha)
-    valuevars  <-  effectvar(fdt(object), coef = coefs, fit = fit)  # elminate similar function pvars etc.
-    valuevars %<>%  c(  pvar(fdt(object), coef = coefs, fit = fit))
+    valuevars  <-  effectvar(fdt(object), sep = sep, coef = coefs, fit = fit)  # elminate similar function pvars etc.
+    valuevars %<>%  c(  pvar(fdt(object), sep = sep, coef = coefs, fit = fit))
 
     dt <- fdt(object)[, c(idvars, valuevars), with = FALSE]
     dt %<>% melt.data.table(id.vars = idvars)
