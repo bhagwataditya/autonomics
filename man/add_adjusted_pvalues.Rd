@@ -8,10 +8,8 @@ add_adjusted_pvalues(
   featuredt,
   method,
   sep = FITSEP,
-  fit = names(featuredt) \%>\% extract(stri_detect_regex(., sprintf("^p[\%s]", sep)))
-    \%>\% split_extract_fixed(sep, 3) \%>\% unique(),
-  coefs = names(featuredt) \%>\% extract(stri_detect_regex(., sprintf("^p[\%s]", sep)))
-    \%>\% split_extract_fixed(sep, 2) \%>\% unique()
+  fit = fits(featuredt, sep = sep),
+  coefs = default_coefs(featuredt, sep = sep, fit = fit)
 )
 }
 \arguments{
@@ -34,7 +32,7 @@ Add adjusted pvalues
 \examples{
 file <- download_data('fukuda20.proteingroups.txt')
 object <- read_maxquant_proteingroups(file)
-object \%<>\% fit_limma()
+object \%<>\% fit_limma(coef = 'Adult')
 object \%<>\% extract(order(fdt(.)$`p~Adult~limma`), )
 fdt(object)
 fdt(object) \%>\% add_adjusted_pvalues('fdr')

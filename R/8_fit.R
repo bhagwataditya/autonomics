@@ -351,8 +351,8 @@ modelvar <- function(
 # Assert
     assert_is_data.table(featuredt)
     assert_is_subset(quantity, c('fdr', 'p', 't', 'effect', 'se', 'abstract'))
-    assert_is_subset(fit,   fits(featuredt))
-    assert_is_subset(coef, coefs(featuredt))
+    assert_is_subset(fit,   fits(featuredt, sep = sep))
+    assert_is_subset(coef, coefs(featuredt, sep = sep, fit = fit))
 # Return
     x <- expand.grid(quantity = quantity, fit = fit, coef = coef)
     x <-  paste(x$quantity, x$coef, x$fit, sep = sep)
@@ -387,8 +387,8 @@ tvar <- function(
 #' @export
 pvar <- function( 
     featuredt, 
-    sep = FITSEP,
-    fit = fits(featuredt, sep = sep),
+    sep  = FITSEP,
+    fit  = fits(featuredt, sep = sep),
     coef = default_coefs(featuredt, sep = sep, fit = fit) 
 ){
     modelvar(featuredt, quantity = 'p', sep = sep, fit = fit, coef = coef)
@@ -490,6 +490,67 @@ fdrvec <- function(
 
 #------------------------------------------------------------------------------
 #
+#                   modeldt
+#
+#------------------------------------------------------------------------------
+
+
+#' @rdname modelvar
+#' @export
+modeldt <- function(
+    featuredt, 
+    quantity, 
+    sep = FITSEP, 
+    fit = fits(featuredt, sep = sep),
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
+){
+    var <- modelvar(featuredt, quantity, sep = sep, coef = coef, fit = fit)
+    if (is.null(var))  return(NULL)
+    dt <- featuredt[, c('feature_id', var), with = FALSE]
+    #names(dt) %<>% stri_replace_first_fixed(paste0(var, sep), '')
+    dt
+}
+
+
+#' @rdname modelvar
+#' @export
+effectdt <- function(
+    featuredt, 
+    sep  = FITSEP,
+    fit  = fits(featuredt, sep = sep), 
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
+){
+    modeldt(featuredt, quantity = 'effect', sep = sep, fit = fit, coef = coef)
+}
+
+
+#' @rdname modelvar
+#' @export
+tdt <- function(
+    featuredt, 
+    sep  = FITSEP,
+    fit  = fits(featuredt, sep = sep), 
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
+){
+    modeldt(featuredt, quantity = 't', sep = sep, fit = fit, coef = coef)
+}
+
+
+#' @rdname modelvar
+#' @export
+pdt <- function(
+    featuredt, 
+    sep  = FITSEP,
+    fit  = fits(featuredt, sep = sep), 
+    coef = default_coefs(featuredt, sep = sep, fit = fit)
+){
+    modeldt(featuredt, quantity = 'p', sep = sep, fit = fit, coef = coef)
+}
+
+
+
+#------------------------------------------------------------------------------
+#
 #                   modelmat
 #
 #------------------------------------------------------------------------------
@@ -504,12 +565,8 @@ modelmat <- function(
     fit  = fits(featuredt, sep = sep), 
     coef = default_coefs(featuredt, sep = sep, fit = fit)
 ){
-    var <- modelvar(featuredt, quantity, sep = sep, coef = coef, fit = fit)
-    if (is.null(var))  return(NULL)
-    dt <- featuredt[, var, with = FALSE]
-    names(dt) %<>% stri_replace_first_fixed(paste0(var, sep), '')
-    mat <- as.matrix(dt)
-    rownames(mat) <- featuredt$feature_id
+    dt <- modeldt(featuredt, quantity, sep = sep, coef = coef, fit = fit)
+    mat <- dt2mat(dt)
     mat
 }
 
@@ -656,7 +713,7 @@ downfeatures <- function(
 #' fits(fdt(object))
 #' @export
 fits <- function(featuredt, sep = FITSEP){
-    x <- .effectvars(featuredt)
+    x <- .effectvars(featuredt, sep = sep)
     x %<>% split_extract_fixed(sep, 3)
     x %<>% unique()
     if (length(x)==0)  x <- NULL
@@ -696,8 +753,8 @@ coefs.data.table <- function(
 ){
     if (is.null(fit))  return(NULL)
     . <- NULL
-    coefs0 <- split_extract_fixed(.effectvars(featuredt), sep, 2)
-    fits0  <- split_extract_fixed(.effectvars(featuredt), sep, 3)
+    coefs0 <- split_extract_fixed(.effectvars(featuredt, sep = sep), sep, 2)
+    fits0  <- split_extract_fixed(.effectvars(featuredt, sep = sep), sep, 3)
     coefs0 %<>% extract(fits0 %in% fit)
     coefs0 %<>% unique()
     #if (!is.null(svars))  coefs0 %<>% extract(Reduce('|', lapply(svars, grepl, .)))

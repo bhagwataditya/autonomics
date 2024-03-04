@@ -12,6 +12,10 @@
 \alias{tvec}
 \alias{pvec}
 \alias{fdrvec}
+\alias{modeldt}
+\alias{effectdt}
+\alias{tdt}
+\alias{pdt}
 \alias{modelmat}
 \alias{effectmat}
 \alias{effectsizemat}
@@ -105,6 +109,35 @@ fdrvec(
   fit = fits(featuredt, sep = sep)[1],
   coef = default_coefs(featuredt, sep = sep, fit = fit)[1],
   fvar = "feature_id"
+)
+
+modeldt(
+  featuredt,
+  quantity,
+  sep = FITSEP,
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
+)
+
+effectdt(
+  featuredt,
+  sep = FITSEP,
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
+)
+
+tdt(
+  featuredt,
+  sep = FITSEP,
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
+)
+
+pdt(
+  featuredt,
+  sep = FITSEP,
+  fit = fits(featuredt, sep = sep),
+  coef = default_coefs(featuredt, sep = sep, fit = fit)
 )
 
 modelmat(

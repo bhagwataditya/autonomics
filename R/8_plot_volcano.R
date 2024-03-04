@@ -109,7 +109,7 @@ add_assay_means <- function(
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
-#' object %<>% fit_limma()
+#' object %<>% fit_limma(coef = 'Adult')
 #' object %<>% extract(order(fdt(.)$`p~Adult~limma`), )
 #' fdt(object)
 #' fdt(object) %>% add_adjusted_pvalues('fdr')
@@ -120,27 +120,18 @@ add_adjusted_pvalues <- function(
     featuredt, 
     method,
     sep   = FITSEP, 
-    fit   = names(featuredt) %>% extract(stri_detect_regex(., sprintf('^p[%s]', sep))) %>%  split_extract_fixed(sep, 3) %>% unique(),
-    coefs = names(featuredt) %>% extract(stri_detect_regex(., sprintf('^p[%s]', sep))) %>%  split_extract_fixed(sep, 2) %>% unique()
+    fit   = fits(featuredt, sep = sep),
+    coefs = default_coefs(featuredt, sep = sep, fit = fit)
 ){
 # Assert
     assert_is_data.table(featuredt)
     assert_is_subset(method, stats::p.adjust.methods)
 # Compute
-    for (.fit  in fit){
-    for (.coef in coefs){
-    for (.method in method){
-        pvars <- grep(PPATTERN, names(featuredt), value = TRUE)
-        pvars %<>% extract(split_extract_fixed(., FITSEP, 3) %in% .fit)
-        pvars %<>% extract(split_extract_fixed(., FITSEP, 2) %in% .coef)
-        
-        pdt <- featuredt[ , pvars , with = FALSE]
-        pdt[, names(pdt) := lapply(.SD, p.adjust, method = .method), .SDcols = names(pdt)]
-        names(pdt) %<>% stri_replace_first_fixed(PPATTERN, paste0(.method, FITSEP))
-        featuredt %<>% cbind(pdt)
-    }}}
-# Add
-    featuredt[]
+    adjdt <- pdt(featuredt, sep = sep, fit = fit, coef = coefs)
+    adjdt <- adjdt[, lapply(.SD, p.adjust, method = .method), .SDcols = names(adjdt)[-1] ]
+    names(adjdt) %<>% stri_replace_first_regex(sprintf('^p%s', sep), sprintf('%s%s', method, sep))
+    featuredt %<>% cbind(adjdt)
+    featuredt
 }
 
 
