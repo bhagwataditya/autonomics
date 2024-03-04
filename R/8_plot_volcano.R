@@ -118,10 +118,10 @@ add_assay_means <- function(
 #' @export
 add_adjusted_pvalues <- function(
     featuredt, 
-    method,
-    sep   = FITSEP, 
-    fit   = fits(featuredt, sep = sep),
-    coefs = default_coefs(featuredt, sep = sep, fit = fit)
+       method,
+          sep = FITSEP, 
+          fit = fits(featuredt, sep = sep),
+        coefs = default_coefs(featuredt, sep = sep, fit = fit)
 ){
 # Assert
     assert_is_data.table(featuredt)
@@ -151,19 +151,20 @@ add_adjusted_pvalues <- function(
 #' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 #' @export
 make_volcano_dt <- function(
-    object, 
-    fit   = fits(fdt(object))[1], 
-    coefs = default_coefs(fdt(object), fit = fit)[1],
-    shape = 'imputed', 
-    size  = NULL, 
-    alpha = NULL,
-    label = 'feature_id'
+    object,
+       sep = FITSEP,
+       fit = fits(fdt(object), sep = sep)[1], 
+     coefs = default_coefs(fdt(object), sep = sep, fit = fit)[1],
+     shape = 'imputed', 
+     size  = NULL, 
+     alpha = NULL,
+     label = 'feature_id'
 ){
 # Assert    
     assert_is_all_of(object, "SummarizedExperiment")
     assert_any_are_matching_regex(fvars(object), paste0('^p', FITSEP))
     assert_is_subset(fit, fits(fdt(object)))
-    assert_is_subset(coefs, autonomics::coefs(fdt(object), fit))
+    assert_is_subset(coefs, autonomics::coefs(fdt(object), sep = sep, fit = fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
     if (!is.null(alpha)){ assert_is_subset(alpha, fvars(object)); object %<>% bin(alpha) }
@@ -202,6 +203,7 @@ make_volcano_dt <- function(
 
 #' Plot volcano
 #' @param object         SummarizedExperiment
+#' @param sep            string
 #' @param fit           'limma', 'lme', 'lm', 'wilcoxon'
 #' @param coefs          character vector
 #' @param facet          character vector
@@ -244,23 +246,23 @@ make_volcano_dt <- function(
 #'     plot_volcano(object, label = 'gene', features = c('hmbsb'))
 #' @export
 plot_volcano <- function(
-    object,
-    fit           = fits(fdt(object))[1], 
-    coefs         = default_coefs(fdt(object), fit)[1],
-    facet         = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
-    shape         = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
-    size          = NULL,
-    alpha         = NULL,
-    label         = 'feature_id', #if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
-    max.overlaps  = 10,
-    features      = NULL,
-    nrow          = length(fit),
-    p             = 0.05, 
-    fdr           = 0.05,
-  # xsignificance = 0,
-    xndown        = NULL,
-    xnup          = NULL,
-    title         = NULL
+          object,
+             sep = FITSEP,
+             fit = fits(fdt(object), sep = sep)[1], 
+           coefs = default_coefs(fdt(object), sep = sep, fit = fit)[1],
+           facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
+           shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
+            size = NULL,
+           alpha = NULL,
+           label = 'feature_id', #if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
+    max.overlaps = 10,
+        features = NULL,
+            nrow = length(fit),
+               p = 0.05, 
+             fdr = 0.05,
+          xndown = NULL,
+            xnup = NULL,
+           title = NULL
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -271,7 +273,7 @@ plot_volcano <- function(
     facet %<>% lapply(sym)
     facet <- vars(!!!facet)
 # Volcano 
-    plotdt <- make_volcano_dt(object, fit = fit, coefs = coefs, 
+    plotdt <- make_volcano_dt(object, sep = sep, fit = fit, coefs = coefs, 
                   label = label, shape = shape, size = size, alpha = alpha)
     g <- ggplot(plotdt) + facet_wrap(facet, nrow = nrow)
     g <- g + theme_bw() + theme(panel.grid = element_blank())
@@ -327,16 +329,29 @@ plot_volcano <- function(
             seldt[, singlefeature := NULL]
             seldt %<>% unique()
         }
-        g <- g + ggrepel::geom_label_repel(data = labeldt, 
-                    aes(x = effect, y = mlp, label = !!sym(label), color = direction), #color = 'black', 
-                    label.size = NA, fill = alpha(c('white'), 0.6),
-                    na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps)
+        g <- g + geom_label_repel(     data = labeldt, 
+                                    mapping = aes(x = effect, y = mlp, label = !!sym(label), color = direction), 
+                                    # color = 'black', 
+                                 label.size = NA, 
+                                       fill = alpha(c('white'), 0.6),
+                                      na.rm = TRUE, 
+                                show.legend = FALSE,
+                               max.overlaps = max.overlaps )
         if (!is.null(features)){
-            g <- g + ggrepel::geom_label_repel(data = seldt, 
-                        aes(x = effect, y = mlp, label = !!sym(label)), color = 'black', 
-                        label.size = NA, fill = alpha(c('white'), 0.6),
-                        na.rm = TRUE, show.legend = FALSE, max.overlaps = max.overlaps)
-            g <- g + geom_point(data = seldt, aes(x = effect, y = mlp), shape = 1, size = 4, color = 'black')
+            g <- g + geom_label_repel( data = seldt, 
+                                    mapping = aes(x = effect, y = mlp, label = !!sym(label)), 
+                                      color = 'black', 
+                                 label.size = NA, 
+                                       fill = alpha(c('white'), 0.6),
+                                      na.rm = TRUE,
+                                show.legend = FALSE,
+                               max.overlaps = max.overlaps )
+            
+            g <- g + geom_point(       data = seldt, 
+                                    mapping = aes(x = effect, y = mlp), 
+                                      shape = 1,
+                                       size = 4,
+                                      color = 'black')
         }
     }
     g

@@ -6,8 +6,9 @@
 \usage{
 make_volcano_dt(
   object,
-  fit = fits(fdt(object))[1],
-  coefs = default_coefs(fdt(object), fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(fdt(object), sep = sep)[1],
+  coefs = default_coefs(fdt(object), sep = sep, fit = fit)[1],
   shape = "imputed",
   size = NULL,
   alpha = NULL,

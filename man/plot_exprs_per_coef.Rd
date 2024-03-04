@@ -6,6 +6,7 @@
 \usage{
 plot_exprs_per_coef(
   object,
+  sep = FITSEP,
   fit = fits(fdt(object))[1],
   coefs = default_coefs(fdt(object), fit = fit),
   x = default_x(object),

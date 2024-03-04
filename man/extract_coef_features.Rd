@@ -12,6 +12,7 @@
 .extract_p_features(
   object,
   coefs,
+  sep = FITSEP,
   p = 0.05,
   fit = fits(fdt(object)),
   combiner = "|",
@@ -21,6 +22,7 @@
 .extract_fdr_features(
   object,
   coefs,
+  sep = FITSEP,
   fdr = 0.05,
   fit = fits(fdt(object)),
   combiner = "|",
@@ -30,6 +32,7 @@
 .extract_effectsize_features(
   object,
   coefs,
+  sep = FITSEP,
   effectsize = 1,
   fit = fits(fdt(object)),
   combiner = "|",
@@ -39,6 +42,7 @@
 .extract_sign_features(
   object,
   coefs,
+  sep = FITSEP,
   sign,
   fit = fits(fdt(object))[1],
   combiner = "|",
@@ -48,6 +52,7 @@
 .extract_n_features(
   object,
   coefs,
+  sep = FITSEP,
   combiner = "|",
   n,
   fit = fits(fdt(object))[1],
@@ -56,8 +61,9 @@
 
 extract_coef_features(
   object,
-  fit = fits(fdt(object))[1],
-  coefs = default_coefs(fdt(object), fit = fit),
+  sep = FITSEP,
+  fit = fits(fdt(object), sep = sep)[1],
+  coefs = default_coefs(fdt(object), sep = sep, fit = fit),
   combiner = "|",
   p = 1,
   fdr = 1,
@@ -71,6 +77,8 @@ extract_coef_features(
 \item{object}{SummarizedXExperiment}
 
 \item{coefs}{subset of coefs(object)}
+
+\item{sep}{string}
 
 \item{p}{p threshold}
 
@@ -107,8 +115,7 @@ Extract coefficient features
     object \%<>\% .extract_sign_features(      coefs = 't1', sign = -1)
     object \%<>\% .extract_n_features(         coefs = 't1', n = 4)
     object <- object0
-    object \%<>\%  extract_coef_features(
-        coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+    object \%<>\%  extract_coef_features(coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
 # Multiple coefs
     object <- object0
     object \%<>\% .extract_p_features(         coefs = c('t1', 't2'), p = 0.05)
@@ -117,6 +124,5 @@ Extract coefficient features
     object \%<>\% .extract_sign_features(      coefs = c('t1', 't2'), sign = -1)
     object \%<>\% .extract_n_features(         coefs = c('t1', 't2'), n = 4)
     object <- object0
-    object \%<>\%  extract_coef_features(
-        coefs = c('t1', 't2'), p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+    object \%<>\%  extract_coef_features(coefs = c('t1', 't2'), p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
 }

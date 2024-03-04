@@ -48,7 +48,7 @@ data.table::data.table
 #' @importFrom edgeR       filterByExpr
 #' @import     ggplot2
 #' @importFrom ggforce     facet_wrap_paginate
-#' @importFrom ggrepel     geom_text_repel
+#' @importFrom ggrepel     geom_text_repel    geom_label_repel
 #' @importFrom graphics    lines    pie    title
 #' @importFrom grDevices   hcl    dev.off   pdf
 #' @importFrom limma       contrasts.fit    duplicateCorrelation   eBayes
@@ -62,7 +62,7 @@ data.table::data.table
 #' @importFrom magrittr    multiply_by   subtract
 #' @importFrom magrittr    set_colnames   set_names   set_rownames
 #' @importFrom matrixStats   rowAnys   colAnys   colWeightedMeans
-#' @importFrom matrixStats   rowAlls   rowSds   rowVars
+#' @importFrom matrixStats   rowAlls   rowMaxs   rowMins   rowSds   rowVars
 #' @importFrom methods       as    is
 #' @importFrom MultiAssayExperiment  colData       colData<-
 #' @importFrom MultiAssayExperiment  experiments   experiments<-

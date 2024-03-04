@@ -10,8 +10,9 @@ plot_top_heatmap(...)
 plot_heatmap(
   object,
   assay = assayNames(object)[1],
-  fit = fits(fdt(object))[1],
-  coef = default_coefs(fdt(object), fit = fit)[1],
+  sep = FITSEP,
+  fit = fits(fdt(object), sep = sep)[1],
+  coef = default_coefs(fdt(object), sep = sep, fit = fit)[1],
   effectsize = 0,
   p = 1,
   fdr = 0.05,
@@ -28,6 +29,8 @@ plot_heatmap(
 \item{object}{SummarizedExperiment}
 
 \item{assay}{string: one of assayNames(object)}
+
+\item{sep}{string}
 
 \item{fit}{'limma', 'lm', 'lme(r)', 'wilcoxon'}
 
