@@ -128,7 +128,7 @@ add_adjusted_pvalues <- function(
     assert_is_subset(method, stats::p.adjust.methods)
 # Compute
     adjdt <- pdt(featuredt, sep = sep, fit = fit, coef = coefs)
-    adjdt <- adjdt[, lapply(.SD, p.adjust, method = .method), .SDcols = names(adjdt)[-1] ]
+    adjdt <- adjdt[, lapply(.SD, p.adjust, method = method), .SDcols = names(adjdt)[-1] ]
     names(adjdt) %<>% stri_replace_first_regex(sprintf('^p%s', sep), sprintf('%s%s', method, sep))
     featuredt %<>% cbind(adjdt)
     featuredt
