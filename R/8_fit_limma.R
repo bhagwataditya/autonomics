@@ -790,20 +790,20 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 #' @rdname fit
 #' @export
 .fit_limma <- function(
-    object, 
-    formula   = default_formula(object),
-    drop      = varlevels_dont_clash(object, all.vars(formula)),
+       object, 
+      formula = default_formula(object),
+         drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = 'treatment',
-    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
+       design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
-    coefs     = if (is.null(contrasts))  colnames(design) else NULL,
-    block     = NULL, 
+        coefs = if (is.null(contrasts))  colnames(design) else NULL,
+        block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars  = c('effect', 'p'),
-    sep       = FITSEP,
-    suffix    = paste0(sep, 'limma'),
-    verbose   = TRUE, 
-    plot      = FALSE
+     statvars = c('effect', 'p'),
+          sep = FITSEP,
+       suffix = paste0(sep, 'limma'),
+      verbose = TRUE, 
+         plot = FALSE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -857,7 +857,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         if ('se' %in% statvars){ dt0 <- data.table(sqrt(limmafit$s2.post) * limmafit$stdev.unscaled); names(dt0) %<>% paste0('se', sep, ., suffix); limmadt %<>% cbind(dt0) }
     }
 # Return
-    sumdt <- summarize_fit(limmadt, sep = sep, fit = 'limma')
+    sumdt <- summarize_fit(limmadt, fit = 'limma')
     if (verbose)  message_df('                  %s', sumdt)
     limmadt
 
@@ -872,7 +872,6 @@ pull_level <- function(x, lev){
 
 #' Summarize fit
 #' @param featuredt  fdt(object)
-#' @param sep  string
 #' @param fit  'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL
 #' @param coefs string vector
 #' @return data.table(contrast, nup, ndown)
@@ -885,9 +884,8 @@ pull_level <- function(x, lev){
 #' @export
 summarize_fit <- function(
     featuredt, 
-          sep = FITSEP, 
-          fit = fits(featuredt, sep = sep),
-        coefs = autonomics::coefs(featuredt, sep = sep, fit = fit)
+          fit = fits(featuredt),
+        coefs = autonomics::coefs(featuredt, fit = fit)
 ){
 # Assert
     assert_is_data.table(featuredt)
@@ -895,9 +893,10 @@ summarize_fit <- function(
     statistic <- coefficient <- variable <- NULL
     effect <- p <- fdr <- NULL
 # Summarize
+     sep <- guess_fitsep(featuredt)
     cols <- names(featuredt) %>% extract(stri_detect_fixed(., sep))
     featuredt %<>% extract(, c('feature_id', cols), with = FALSE)
-    featuredt %<>% add_adjusted_pvalues(method = 'fdr', sep = sep, fit = fit, coefs = coefs)
+    featuredt %<>% add_adjusted_pvalues(method = 'fdr', fit = fit, coefs = coefs)
 
     longdt <- featuredt %>% melt.data.table(id.vars = 'feature_id')
     longdt[, statistic    := split_extract_fixed(variable, sep, 1) %>% factor(unique(.))]

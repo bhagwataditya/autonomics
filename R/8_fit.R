@@ -703,10 +703,10 @@ downfeatures <- function(
 #' @export
 fits <- function(featuredt){
     sep <- guess_fitsep(featuredt)
+    if (is.null(sep))  return(NULL)
     x <- .effectvars(featuredt)
     x %<>% split_extract_fixed(sep, 3)
     x %<>% unique()
-    if (length(x)==0)  x <- NULL
     x
 }
 
@@ -740,9 +740,10 @@ coefs.factor <- function(featuredt, ...)   colnames(contrasts(featuredt))
 coefs.data.table <- function(
     featuredt, fit = fits(featuredt), svars = NULL, ...
 ){
+    sep <- guess_fitsep(featuredt)
+    if (is.null(sep))  return(NULL)
     if (is.null(fit))  return(NULL)
     . <- NULL
-    sep <- guess_fitsep(featuredt)
     coefs0 <- split_extract_fixed(.effectvars(featuredt), sep, 2)
     fits0  <- split_extract_fixed(.effectvars(featuredt), sep, 3)
     coefs0 %<>% extract(fits0 %in% fit)

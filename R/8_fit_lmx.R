@@ -264,19 +264,19 @@ block_vars <- function(formula){
 #' # fit_lmer( object, formula = ~subgroup + (1|Subject))       # needs fine-tuning
 #' @export
 fit_lmx <- function(
-    object, 
-    fit, 
-    formula   = default_formula(object), 
-    drop      = varlevels_dont_clash(object, all.vars(formula)),
+       object, 
+          fit, 
+      formula = default_formula(object), 
+         drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
-    coefs     = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
-    block     = NULL, 
-    opt       = 'optim',
+        coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
+        block = NULL, 
+          opt = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars  = c('effect', 'p'),
-    sep       = FITSEP,
-    verbose   = TRUE, 
-    plot      = FALSE
+     statvars = c('effect', 'p'),
+          sep = FITSEP,
+      verbose = TRUE, 
+         plot = FALSE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -314,7 +314,7 @@ fit_lmx <- function(
     fitres <- fitres[, .SD, .SDcols = patterns(pattern1) ]
     fitres <- fitres[, .SD, .SDcols = patterns(pattern2) ]
     names(fitres)[-1] %<>% paste0(sep, fit)
-    if (verbose)  message_df('                      %s', summarize_fit(fitres, fit = fit, coefs = coefs, sep = sep))
+    if (verbose)  message_df('                      %s', summarize_fit(fitres, fit = fit, coefs = coefs))
 # Merge back
     object %<>% reset_fit(fit)
     object %<>% merge_fit(fitres)

@@ -86,17 +86,17 @@ all_vars <- function(x){
 #' @rdname fit
 fit_wilcoxon <- function(
     object,
-    formula     = default_formula(object), 
-    drop        = NULL,
-    codingfun   = contr.treatment.explicit, # wilcox is the only one where `contr.treatment` doesnt work
-    contrasts   = NULL,
-    coefs       = NULL, 
-    block       = NULL, 
-    weightvar   = NULL, 
-    statvars    = c('effect', 'p'),
-    sep         = FITSEP,
-    verbose     = TRUE, 
-    plot        = FALSE
+      formula = default_formula(object), 
+         drop = NULL,
+    codingfun = contr.treatment.explicit, # wilcox is the only one where `contr.treatment` doesnt work
+    contrasts = NULL,
+        coefs = NULL, 
+        block = NULL, 
+    weightvar = NULL, 
+     statvars = c('effect', 'p'),
+          sep = FITSEP,
+      verbose = TRUE, 
+         plot = FALSE
 ){
 # assert
     assert_is_valid_sumexp(object)
@@ -120,7 +120,7 @@ fit_wilcoxon <- function(
     pattern <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
     fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
     names(fitres)[-1] %<>% paste0(sep, 'wilcoxon')
-    if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres, fit = 'wilcoxon', sep = sep))
+    if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres, fit = 'wilcoxon'))
     object %<>% reset_fit('wilcoxon')
     object %<>% merge_fit(fitres)
 # extract

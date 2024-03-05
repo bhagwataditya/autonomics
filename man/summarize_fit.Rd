@@ -6,15 +6,12 @@
 \usage{
 summarize_fit(
   featuredt,
-  sep = FITSEP,
-  fit = fits(featuredt, sep = sep),
-  coefs = autonomics::coefs(featuredt, sep = sep, fit = fit)
+  fit = fits(featuredt),
+  coefs = autonomics::coefs(featuredt, fit = fit)
 )
 }
 \arguments{
 \item{featuredt}{fdt(object)}
-
-\item{sep}{string}
 
 \item{fit}{'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL}
 

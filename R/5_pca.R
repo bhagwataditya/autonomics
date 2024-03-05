@@ -188,8 +188,15 @@ loadings <- function(
 #' @author Aditya Bhagwat, Laure Cougnaud (LDA)
 #' @export
 pca <- function(
-    object, by = 'sample_id', assay = assayNames(object)[1], ndim = 2, minvar = 0, 
-    center_samples = TRUE, verbose = TRUE, plot = FALSE, ...
+            object, 
+                by = 'sample_id', 
+             assay = assayNames(object)[1], 
+              ndim = 2,
+            minvar = 0, 
+    center_samples = TRUE,
+           verbose = TRUE,
+              plot = FALSE, 
+               ...
 ){
 # Assert
     if (!requireNamespace('pcaMethods', quietly = TRUE)){
@@ -221,14 +228,13 @@ pca <- function(
     if (center_samples)  assays(tmpobj)[[assay]] %<>% add(global_mean)                   # Add doubly subtracted
                          assays(tmpobj)[[assay]] %<>% divide_by(sd(., na.rm=TRUE))       # Normalize
 # Perform PCA
-    pca_res  <- pcaMethods::pca(t(assays(tmpobj)[[assay]]),
-        nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
-    samples   <- pca_res@scores
-    features  <- pca_res@loadings
+    pca_res  <- pcaMethods::pca(t(assays(tmpobj)[[assay]]), nPcs = ndim, scale = 'none', center = FALSE, method = 'nipals')
+      samples <- pca_res@scores
+     features <- pca_res@loadings
     variances <- round(100*pca_res@R2)
-    colnames(samples)  <-    scorenames(method = 'pca', by = by, dims = seq_len(ndim))
+     colnames(samples) <-    scorenames(method = 'pca', by = by, dims = seq_len(ndim))
     colnames(features) <-  loadingnames(method = 'pca', by = by, dims = seq_len(ndim))
-    names(variances)   <- variancenames(seq_len(ndim))
+      names(variances) <- variancenames(seq_len(ndim))
 # Add
     object %<>% merge_sdt(mat2dt(samples,   'sample_id'))
     object %<>% merge_fdt(mat2dt(features, 'feature_id'))
@@ -244,9 +250,14 @@ pca <- function(
 #' @rdname pca
 #' @export
 pls <- function(
-    object,  by = 'subgroup', 
-    assay = assayNames(object)[1], ndim = 2, 
-    minvar = 0, verbose = FALSE, plot = FALSE, ...
+     object,
+         by = 'subgroup', 
+      assay = assayNames(object)[1],
+       ndim = 2, 
+     minvar = 0,
+    verbose = FALSE,
+       plot = FALSE, 
+        ...
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
@@ -288,8 +299,14 @@ pls <- function(
 #' @rdname pca
 #' @export
 sma <- function(
-    object, by = 'sample_id', assay = assayNames(object)[1], ndim = 2, minvar = 0,
-    verbose = TRUE, plot = FALSE, ...
+     object, 
+         by = 'sample_id', 
+      assay = assayNames(object)[1], 
+       ndim = 2, 
+     minvar = 0,
+    verbose = TRUE, 
+       plot = FALSE, 
+        ...
 ){
 # Assert
     if (!requireNamespace('mpm', quietly = TRUE)){
@@ -345,8 +362,14 @@ sma <- function(
 #' @rdname pca
 #' @export
 lda <- function(
-    object, assay = assayNames(object)[1], by = 'subgroup', ndim = 2, 
-    minvar = 0, verbose = TRUE, plot = FALSE, ...
+     object, 
+      assay = assayNames(object)[1], 
+         by = 'subgroup', 
+       ndim = 2, 
+     minvar = 0, 
+    verbose = TRUE, 
+       plot = FALSE, 
+        ...
 ){
 # Assert
     if (!requireNamespace('MASS', quietly = TRUE)){
@@ -403,8 +426,13 @@ lda <- function(
 #' @rdname pca
 #' @export
 spls <- function(
-    object, assay = assayNames(object)[1], by = 'subgroup', ndim = 2, 
-    minvar = 0, plot = FALSE, ...
+    object, 
+     assay = assayNames(object)[1], 
+        by = 'subgroup', 
+      ndim = 2, 
+    minvar = 0, 
+      plot = FALSE, 
+       ...
 ){
 # Assert
     if (!requireNamespace('mixOmics', quietly = TRUE)){
@@ -446,8 +474,14 @@ spls <- function(
 #' @rdname pca
 #' @export
 opls <- function(
-    object, by = 'subgroup', assay = assayNames(object)[1], ndim = 2, minvar = 0, 
-    verbose = FALSE, plot = FALSE, ...
+     object, 
+         by = 'subgroup', 
+      assay = assayNames(object)[1],
+       ndim = 2, 
+     minvar = 0, 
+    verbose = FALSE,
+       plot = FALSE, 
+        ...
 ){
 # Assert
     if (!requireNamespace('ropls', quietly = TRUE)){
@@ -501,10 +535,17 @@ num2char <- function(x){
 }
 
 add_scores <- function(
-    p, object, x = 'pca1', y = 'pca2', color = 'subgroup', 
-    shape = if ('replicate' %in% svars(object)) 'replicate' else NULL,
-    size = NULL, alpha = NULL, group = NULL, linetype = NULL,
-    fixed = list(shape = 15, size = 3, na.rm = TRUE)
+           p, 
+      object, 
+           x = 'pca1',
+           y = 'pca2',
+       color = 'subgroup', 
+       shape = if ('replicate' %in% svars(object)) 'replicate' else NULL,
+        size = NULL, 
+       alpha = NULL, 
+       group = NULL, 
+    linetype = NULL,
+       fixed = list(shape = 15, size = 3, na.rm = TRUE)
 ){
 # manual colors require non-numerics
     if (!is.null(color)){
@@ -522,30 +563,28 @@ add_scores <- function(
     groupsym <- if (is.null(group)) quo(NULL) else sym(group)
     linetypesym <- if (is.null(linetype)) quo(NULL) else sym(linetype)
 # Points    
-    p <- p + layer(  
-                geom     = 'point',
-                mapping  = aes(x = !!xsym, 
-                               y = !!ysym, 
-                           color = !!colorsym, 
-                           shape = !!shapesym, 
-                           size  = !!sizesym, 
-                           alpha = !!alphasym),
-                stat     = "identity", 
-                data     = sdt(object), 
-                params   = fixed,
-                position = 'identity')
+    p <- p + layer( geom     = 'point',
+                    mapping  = aes(x = !!xsym, 
+                                   y = !!ysym, 
+                               color = !!colorsym, 
+                               shape = !!shapesym, 
+                               size  = !!sizesym, 
+                               alpha = !!alphasym),
+                    stat     = "identity", 
+                    data     = sdt(object), 
+                    params   = fixed,
+                    position = 'identity' )
 # Paths
-    if (!is.null(group))  p <- p + layer(
-                geom     = 'path',
-                mapping  = aes(x = !!xsym, 
-                               y = !!ysym, 
-                           color = !!colorsym, 
-                           group = !!groupsym, 
-                           linetype = !!linetypesym),
-                stat     = "identity",
-                data     = sdt(object),
-                params   = list(size = 0.1, na.rm = TRUE),
-                position = 'identity')
+    if (!is.null(group))  p <- p + layer(   geom     = 'path',
+                                            mapping  = aes(x = !!xsym, 
+                                                           y = !!ysym, 
+                                                       color = !!colorsym, 
+                                                       group = !!groupsym, 
+                                                       linetype = !!linetypesym),
+                                            stat     = "identity",
+                                            data     = sdt(object),
+                                            params   = list(size = 0.1, na.rm = TRUE),
+                                            position = 'identity' )
     p
 }
 
@@ -555,7 +594,13 @@ headtail <- function(x, n){
 
 pca1 <- pca2 <- NULL
 add_loadings <- function(
-    p, object, x = 'pca1', y = 'pca2', label = 'feature_name', nx = 1, ny = 1
+         p, 
+    object, 
+         x = 'pca1', 
+         y = 'pca2', 
+     label = 'feature_name', 
+        nx = 1, 
+        ny = 1
 ){
 # Process args
     if (nx==0 & ny==0) return(p)
@@ -590,13 +635,20 @@ add_loadings <- function(
     loadingdt$angle %<>% multiply_by(180/pi)
 
 # Plot
-    p <- p + geom_segment(
-               data = loadingdt, 
-               aes(x = 0, xend = !!sym(x), y = 0, yend = !!sym(y), linetype = axis), color = 'gray85')
-    p <- p + geom_text(
-                data = loadingdt, 
-                aes(x = !!sym(x), y = !!sym(y), label = !!sym(label), angle = angle), 
-                hjust = 'inward', color = 'gray30')
+    p <- p + geom_segment( data = loadingdt, 
+                        mapping = aes( x = 0, 
+                                    xend = !!sym(x),
+                                       y = 0, 
+                                    yend = !!sym(y),
+                                linetype = axis), 
+                                   color = 'gray85' )
+    p <- p + geom_text(   data = loadingdt, 
+                       mapping = aes( x = !!sym(x), 
+                                      y = !!sym(y),
+                                  label = !!sym(label), 
+                                  angle = angle), 
+                                  hjust = 'inward', 
+                                  color = 'gray30' )
     p
 }
 
@@ -683,25 +735,25 @@ biplot_dims <- function(
 #' biplot(object, method = 'pls', dims = 3:4, group = 'Subject')
 #' @export
 biplot <- function(
-    object, 
-    method        = biplot_methods(object)[1],
-    by            = biplot_by(object, method)[1], 
-    dims          = biplot_dims(object, method, by)[1:2],
-    color         = 'subgroup', 
-    shape         = NULL, 
-    size          = NULL, 
-    alpha         = NULL,
-    group         = NULL,         # Use 'feature_id' (not 'gene')
-    linetype      = NULL,         # To align with `plot_exprs` and `plot_volcano`
-    label         = NULL,         # Which use 'feature_id' to guarantee uniqueness
+           object, 
+           method = biplot_methods(object)[1],
+               by = biplot_by(object, method)[1], 
+             dims = biplot_dims(object, method, by)[1:2],
+            color = 'subgroup', 
+            shape = NULL, 
+             size = NULL, 
+            alpha = NULL,
+            group = NULL,         # Use 'feature_id' (not 'gene')
+         linetype = NULL,         # To align with `plot_exprs` and `plot_volcano`
+            label = NULL,         # Which use 'feature_id' to guarantee uniqueness
     feature_label = 'feature_id', # if ('gene' %in% fvars(object)) 'gene' else 'feature_id', 
-    fixed         = list(shape = 15, size = 3), 
-    nx    = 0,
-    ny    = 0,
-    colorpalette  =  make_svar_palette(object, color),
-    alphapalette  = make_alpha_palette(object, alpha), 
-    title         = sprintf('%s~%s', method, by), 
-    theme         = ggplot2::theme(plot.title = element_text(hjust = 0.5), 
+            fixed = list(shape = 15, size = 3), 
+               nx = 0,
+               ny = 0,
+     colorpalette =  make_svar_palette(object, color),
+     alphapalette = make_alpha_palette(object, alpha), 
+            title = sprintf('%s~%s', method, by), 
+            theme = ggplot2::theme(plot.title = element_text(hjust = 0.5), 
                                    panel.grid = element_blank())
 ){
 # Assert / Process
@@ -774,8 +826,13 @@ biplot <- function(
 #' @seealso biplot_covariates
 #' @export
 biplot_corrections <- function(
-    object, method = 'pca', by = 'sample_id', color = 'subgroup', covariates = character(0),
-    varcols = ceiling(sqrt(1+length(covariates))), plot = TRUE
+        object, 
+        method = 'pca', 
+            by = 'sample_id', 
+         color = 'subgroup', 
+    covariates = character(0),
+       varcols = ceiling(sqrt(1+length(covariates))), 
+          plot = TRUE
 ){
     x <- scorenames(method, by = by, dims = 1)
     y <- scorenames(method, by = by, dims = 2)
@@ -825,8 +882,15 @@ biplot_corrections <- function(
 #' @seealso biplot_corrections
 #' @export
 biplot_covariates <- function(
-    object, method = 'pca', by = 'sample_id', block = NULL, 
-    covariates = 'subgroup', ndim = 6, dimcols = 1, varcols = length(covariates), plot = TRUE
+        object, 
+        method = 'pca', 
+            by = 'sample_id', 
+         block = NULL, 
+    covariates = 'subgroup', 
+          ndim = 6,
+       dimcols = 1, 
+       varcols = length(covariates),
+          plot = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -853,7 +917,12 @@ biplot_covariates <- function(
     invisible(pp)
 }
 
-prep_covariates <- function(object, method = 'pca', by = 'sample_id', ndim = 6){
+prep_covariates <- function(
+    object, 
+    method = 'pca',
+        by = 'sample_id',
+      ndim = 6
+){
     # Dimred
         for (var in svars(object))  if (grepl(paste0('~', method), var))  sdt(object)[[var]] <- NULL
         for (var in fvars(object))  if (grepl(paste0('~', method), var))  fdt(object)[[var]] <- NULL
