@@ -77,7 +77,7 @@ list_files <- function(dir, full.names){
 #' read_msigdt()
 #' @export
 read_msigdt <- function(
-    file = list_files(MSIGDIR, full.names = TRUE)[1], 
+           file = list_files(MSIGDIR, full.names = TRUE)[1], 
     collections = if (is.null(file))  NULL else 
                   switch( basename(file) %>% substr(nchar(.)-4, nchar(.)-3) , 
                           Hs = c( 'C2:CP:REACTOME', 'C5:GO:BP', 'C5:GO:MF', 'C5:GO:CC' ), 
@@ -150,6 +150,22 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
     dt[]
 }
 
+#' guess fitsep
+#' @param featuredt data.table
+#' @return string
+#' @examples 
+#' file <- download_data('fukuda20.proteingroups.txt')
+#' object <- read_maxquant_proteingroups(file)
+#' guess_fitsep(fdt(object))
+#' guess_fitsep(fdt(fit_limma(object)))
+#' @export
+guess_fitsep <- function(featuredt){
+    idx <- names(featuredt) %>% stri_detect_regex('^effect')
+    if (all(!idx))  return(NULL)
+    sep <- names(featuredt)[idx][1] %>% substr(7,7)
+    return(sep)
+}
+
 
 #' Abstract model fit
 #' @param object            SummarizedExperiment
@@ -161,12 +177,16 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 #' @examples
 #' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file, fit = 'limma', coef = 't3')
-#' object %<>% abstract_fit()
 #' fdt(object)
+#' fdt(abstract_fit(object))
 #' @export
 abstract_fit <- function(
-    object, fit = fits(fdt(object)), coef = coefs(fdt(object)), 
-    significancevar = 'p', significance = 0.05
+             object, 
+                sep = guess_fitsep(fdt(object)),
+                fit = fits(fdt(object), sep = sep), 
+               coef = coefs(fdt(object), fit = fit, sep = sep), 
+    significancevar = 'p', 
+       significance = 0.05
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -175,9 +195,9 @@ abstract_fit <- function(
 # Abstract
     for ( curfit in fit){
     for (curcoef in coef){
-        abstractvar <- paste(curcoef, curfit, sep = FITSEP)
-            pvalues <- modelvec(fdt(object), 'p',      fit = curfit, coef = curcoef)
-       effectvalues <- modelvec(fdt(object), 'effect', fit = curfit, coef = curcoef)
+        abstractvar <- paste(curcoef, curfit, sep = sep)
+            pvalues <- modelvec(fdt(object), 'p',      sep = sep, fit = curfit, coef = curcoef)
+       effectvalues <- modelvec(fdt(object), 'effect', sep = sep, fit = curfit, coef = curcoef)
         fdt(object)[[ abstractvar ]] <- 'flat'
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues<0 ] <- 'down' 
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues>0 ] <- 'up' 

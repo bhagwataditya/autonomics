@@ -195,12 +195,12 @@ dichotomize_exprs <- function(dt, percentile){
 #' @rdname dot-plot_survival
 #' @export
 fit_survival <- function(
-    object, 
-    assay      = assayNames(object)[1],
+        object, 
+         assay = assayNames(object)[1],
     percentile = 25, 
-    sep        = FITSEP,
-    samples    = if (ncol(object) < 50) TRUE else FALSE,
-    verbose    = TRUE
+           sep = FITSEP,
+       samples = if (ncol(object) < 50) TRUE else FALSE,
+       verbose = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -220,7 +220,7 @@ fit_survival <- function(
     dt <- dt[, .SD[    length(unique(exprlevel))==2], by = c('feature_id')             ]   #    2 exprlevels per feature
     if (verbose)  cmessage('\t\t\tp  =  survdiff(Surv(timetoevent, event) ~ exprlevel)')
     if (verbose)  cmessage('\t\t\teffect = coxph(Surv(timetoevent, event) ~ exprvalue)')
-    dt %<>% extract(, .fit_survival(.SD, sep = sep, samples = samples), by = 'feature_id')            # Fit survival
+    dt %<>% extract(, .fit_survival(.SD, sep = sep, samples = samples), by = 'feature_id') # Fit survival
 # Return
     oldnames <- names(dt) %>% extract(stri_detect_regex(., sprintf('[%s]LR$', sep)))
     newnames <- paste0(oldnames, percentile)
@@ -269,12 +269,12 @@ fit_survival <- function(
 #' }
 #' @export
 .plot_survival <- function(
-    object,
-    assay      = assayNames(object)[1],
+        object,
+         assay = assayNames(object)[1],
     percentile = 25,
-    title      = paste0(assay, ' ', percentile, '%'),
-    subtitle   = NULL, #paste0(assay, ': ', percentile, '% split'),
-    palette    = c("#009999", "#ff5050")
+         title = paste0(assay, ' ', percentile, '%'),
+      subtitle = NULL, #paste0(assay, ': ', percentile, '% split'),
+       palette = c("#009999", "#ff5050")
 ){
 # Assert
     if (!requireNamespace('survminer', quietly = TRUE)){
@@ -317,18 +317,18 @@ percentiles <- function(object){
 #' @rdname dot-plot_survival
 #' @export
 plot_survival <- function(
-    object, 
-    assay      = assayNames(object)[1], 
+        object, 
+         assay = assayNames(object)[1], 
     percentile = percentiles(object),
-    title      = paste0(assay, ' ', percentile, '%'),
-    subtitle   = NULL,
-    palette    = c("#009999", "#ff5050"),
-    n          = 4,
-    ncol       = 4, 
-    nrow       = length(percentile), 
-    file       = NULL, 
-    width      = 7*ncol, 
-    height     = 7*nrow
+         title = paste0(assay, ' ', percentile, '%'),
+      subtitle = NULL,
+       palette = c("#009999", "#ff5050"),
+             n = 4,
+          ncol = 4, 
+          nrow = length(percentile), 
+          file = NULL, 
+         width = 7*ncol, 
+        height = 7*nrow
     
 ){
 # Extract
