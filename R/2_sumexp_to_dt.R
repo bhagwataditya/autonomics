@@ -157,12 +157,15 @@ sumexp_to_tsv <- function(object, assay = assayNames(object)[1], file){
 #' @return string vector
 #' @examples
 #' file <- download_data('atkin.metabolon.xlsx')
-#' object <- read_metabolon(file, fit = 'limma')
+#' object <- read_metabolon(file)
 #' fitvars(object)
-#' fitdt(object)
+#'   fitdt(object)
+#' fitvars(fit_limma(object))
+#'   fitdt(fit_limma(object))
 #' @export
 fitvars <- function(object){
-    fvars(object) %>% extract(stri_detect_fixed(., FITSEP))
+    sep <- guess_fitsep(fdt(object))
+    fvars(object) %>% extract(stri_detect_fixed(., sep))
 }
 
 #' @rdname fitvars
@@ -177,26 +180,33 @@ fitdt <- function(object){
 #' @return string vector
 #' @examples 
 #' file <- download_data('atkin.metabolon.xlsx')
-#' object <- read_metabolon(file, fit = 'limma')
+#' object <- read_metabolon(file)
 #' fitcoefs(object)
+#' fitcoefs(fit_limma(object))
 #' @export
 fitcoefs <- function(object){
-    fitvars(object)  %>%  split_extract_fixed(FITSEP, 2:3) %>%  unique()
+    sep <- guess_fitsep(fdt(object))
+    if (is.null(sep))  return(NULL)
+    
+    fitvars(object)  %>%  
+    split_extract_fixed(sep, 2:3) %>%
+    unique()
 }
 
 
 extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because not all fit have same coefs
 # Order
-    coef <- split_extract_fixed(fitcoef, FITSEP, 1)
-    fit  <- split_extract_fixed(fitcoef, FITSEP, 2)
+    sep <- guess_fitsep(fdt(object))
+    coef <- split_extract_fixed(fitcoef, sep, 1)
+    fit  <- split_extract_fixed(fitcoef, sep, 2)
     object %<>% order_on_p(coefs = coef, fit = fit)
 # Extract
-    allfitcols <- fvars(object) %>% extract(stri_detect_fixed(., FITSEP))
+    allfitcols <- fvars(object) %>% extract(stri_detect_fixed(., sep))
     curfitcols <- allfitcols %>% extract(stri_detect_fixed(., fitcoef))
     annocols <- fvars(object) %>% setdiff('feature_id') %>% setdiff(allfitcols)
     cols <- c('feature_id', curfitcols, annocols)
     fdt0 <- fdt(object)[, cols, with = FALSE]
-    names(fdt0) %<>% stri_replace_first_fixed(paste0(FITSEP, coef, FITSEP, fit), '')
+    names(fdt0) %<>% stri_replace_first_fixed(paste0(sep, coef, sep, fit), '')
     fdt0
 }
 
@@ -215,7 +225,9 @@ extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because n
 #' # write_xl(object,  xlfile)
 #' # write_ods(object, odsfile)
 #' @export
-write_xl <- function(object, xlfile, fitcoefs = autonomics::fitcoefs(object)){
+write_xl <- function(
+    object, xlfile, fitcoefs = autonomics::fitcoefs(object)
+){
 # Assert
     if (!requireNamespace('writexl', quietly = TRUE)){
         message("`BiocManager::install('readxl')`. Then re-run.")
@@ -225,9 +237,7 @@ write_xl <- function(object, xlfile, fitcoefs = autonomics::fitcoefs(object)){
     assert_all_are_dirs(dirname(xlfile))
 # Write
     fdt(object) %<>% add_adjusted_pvalues('fdr')
-    list0 <- mapply(extract_contrast_fdt, 
-                    fitcoef = fitcoefs,
-                    MoreArgs = list(object = object), SIMPLIFY = FALSE)
+    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs, MoreArgs = list(object = object), SIMPLIFY = FALSE)
     writexl::write_xlsx(list0, path = xlfile)
 # Return
     return(xlfile)
@@ -236,7 +246,9 @@ write_xl <- function(object, xlfile, fitcoefs = autonomics::fitcoefs(object)){
 
 #' @rdname write_xl
 #' @export
-write_ods <- function(object, odsfile, fitcoefs = autonomics::fitcoefs(object)){
+write_ods <- function(
+    object, odsfile, fitcoefs = autonomics::fitcoefs(object)
+){
 # Assert
     if (!requireNamespace('readODS', quietly = TRUE)){
         message("`BiocManager::install('readODS')`. Then re-run.")
@@ -244,16 +256,21 @@ write_ods <- function(object, odsfile, fitcoefs = autonomics::fitcoefs(object)){
     }
     assert_is_valid_sumexp(object)
     assert_all_are_dirs(dirname(odsfile))
-# Write    
-    fdt(object) %<>% add_adjusted_pvalues('fdr')
-    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs, 
-                    MoreArgs = list(object = object), SIMPLIFY = FALSE)
-    if (file.exists(odsfile))  unlink(odsfile)
-    mapply(readODS::write_ods, x = list0, sheet = names(list0), 
-           MoreArgs = list(path = odsfile, append = TRUE), 
-           SIMPLIFY = FALSE)
-    
-# Return
+# Prepare    
+    fdt(object) %<>% add_adjusted_pvalues('fdr')                             # add fdr
+    list0 <- mapply(extract_contrast_fdt, fitcoef = fitcoefs,                # extract contrastfdt
+                                         MoreArgs = list(object = object), 
+                                         SIMPLIFY = FALSE)
+    if (file.exists(odsfile))  unlink(odsfile)                               # rm old file
+# Write
+    readODS::write_ods(list0[[1]], sheet = names(list0)[[1]],                # write first sheet (has to be done first)
+                                    path = odsfile)
+    if (length(list0)==1)  return(osfile)
+    mapply(readODS::write_ods, x = list0[-1],                                # then append other sheets
+                           sheet = names(list0[-1]), 
+                        MoreArgs = list(path = odsfile, 
+                                      append = TRUE), 
+                        SIMPLIFY = FALSE)
     return(odsfile)
 }
 

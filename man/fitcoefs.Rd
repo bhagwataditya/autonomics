@@ -17,6 +17,7 @@ fitcoefs
 }
 \examples{
 file <- download_data('atkin.metabolon.xlsx')
-object <- read_metabolon(file, fit = 'limma')
+object <- read_metabolon(file)
 fitcoefs(object)
+fitcoefs(fit_limma(object))
 }

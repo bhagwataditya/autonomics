@@ -20,7 +20,9 @@ Get fit vars/dt
 }
 \examples{
 file <- download_data('atkin.metabolon.xlsx')
-object <- read_metabolon(file, fit = 'limma')
+object <- read_metabolon(file)
 fitvars(object)
-fitdt(object)
+  fitdt(object)
+fitvars(fit_limma(object))
+  fitdt(fit_limma(object))
 }

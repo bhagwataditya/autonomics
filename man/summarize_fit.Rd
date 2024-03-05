@@ -4,10 +4,17 @@
 \alias{summarize_fit}
 \title{Summarize fit}
 \usage{
-summarize_fit(featuredt, fit = NULL, coefs = NULL, sep = FITSEP)
+summarize_fit(
+  featuredt,
+  sep = FITSEP,
+  fit = fits(featuredt, sep = sep),
+  coefs = autonomics::coefs(featuredt, sep = sep, fit = fit)
+)
 }
 \arguments{
 \item{featuredt}{fdt(object)}
+
+\item{sep}{string}
 
 \item{fit}{'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL}
 
