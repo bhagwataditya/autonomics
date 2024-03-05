@@ -12,7 +12,6 @@
 .extract_p_features(
   object,
   coefs,
-  sep = FITSEP,
   p = 0.05,
   fit = fits(fdt(object)),
   combiner = "|",
@@ -22,7 +21,6 @@
 .extract_fdr_features(
   object,
   coefs,
-  sep = FITSEP,
   fdr = 0.05,
   fit = fits(fdt(object)),
   combiner = "|",
@@ -32,7 +30,6 @@
 .extract_effectsize_features(
   object,
   coefs,
-  sep = FITSEP,
   effectsize = 1,
   fit = fits(fdt(object)),
   combiner = "|",
@@ -42,7 +39,6 @@
 .extract_sign_features(
   object,
   coefs,
-  sep = FITSEP,
   sign,
   fit = fits(fdt(object))[1],
   combiner = "|",
@@ -52,7 +48,6 @@
 .extract_n_features(
   object,
   coefs,
-  sep = FITSEP,
   combiner = "|",
   n,
   fit = fits(fdt(object))[1],
@@ -61,9 +56,8 @@
 
 extract_coef_features(
   object,
-  sep = FITSEP,
-  fit = fits(fdt(object), sep = sep)[1],
-  coefs = default_coefs(fdt(object), sep = sep, fit = fit),
+  fit = fits(fdt(object))[1],
+  coefs = default_coefs(fdt(object), fit = fit),
   combiner = "|",
   p = 1,
   fdr = 1,
@@ -77,8 +71,6 @@ extract_coef_features(
 \item{object}{SummarizedXExperiment}
 
 \item{coefs}{subset of coefs(object)}
-
-\item{sep}{string}
 
 \item{p}{p threshold}
 
@@ -95,6 +87,8 @@ extract_coef_features(
 \item{sign}{effect sign}
 
 \item{n}{number of top features (Inf means all)}
+
+\item{sep}{string}
 }
 \value{
 SummarizedExperiment

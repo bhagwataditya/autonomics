@@ -10,20 +10,12 @@ coefs(featuredt, ...)
 
 \method{coefs}{factor}(featuredt, ...)
 
-\method{coefs}{data.table}(
-  featuredt,
-  sep = FITSEP,
-  fit = fits(featuredt, sep = sep),
-  svars = NULL,
-  ...
-)
+\method{coefs}{data.table}(featuredt, fit = fits(featuredt), svars = NULL, ...)
 }
 \arguments{
 \item{featuredt}{data.table or factor}
 
 \item{...}{required for s3 dispatch}
-
-\item{sep}{string}
 
 \item{fit}{string: 'limma', 'lm', 'lme', 'lmer'}
 

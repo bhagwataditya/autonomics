@@ -5,9 +5,9 @@
 #
 #==============================================================================
 
-default_coefs <- function(featuredt, sep = FITSEP, fit = fits(featuredt, sep = sep)){
+default_coefs <- function(featuredt, fit = fits(featuredt)){
     if (length(fit)==0) return(NULL)    # none
-    y <- autonomics::coefs(featuredt, sep = sep, fit = fit)   # intercept
+    y <- autonomics::coefs(featuredt, fit = fit)   # intercept
     if (length(y)==1)   return(y)
     y %<>% setdiff('Intercept')                 # intercept + others
     y
@@ -103,7 +103,6 @@ add_assay_means <- function(
 #' 
 #' @param featuredt  fdt(object)
 #' @param method    'fdr', 'bonferroni', ... (see `p.adjust.methods`)
-#' @param sep        string
 #' @param fit       'limma', 'lm', 'lme', 'lmer'
 #' @param coefs      coefficient (string)
 #' @examples
@@ -119,15 +118,15 @@ add_assay_means <- function(
 add_adjusted_pvalues <- function(
     featuredt, 
        method,
-          sep = FITSEP, 
-          fit = fits(featuredt, sep = sep),
-        coefs = default_coefs(featuredt, sep = sep, fit = fit)
+          fit = fits(featuredt),
+        coefs = default_coefs(featuredt, fit = fit)
 ){
 # Assert
     assert_is_data.table(featuredt)
     assert_is_subset(method, stats::p.adjust.methods)
 # Compute
-    adjdt <- pdt(featuredt, sep = sep, fit = fit, coef = coefs)
+    sep <- guess_fitsep(featuredt)
+    adjdt <- pdt(featuredt, fit = fit, coef = coefs)
     adjdt <- adjdt[, lapply(.SD, p.adjust, method = method), .SDcols = names(adjdt)[-1] ]
     names(adjdt) %<>% stri_replace_first_regex(sprintf('^p%s', sep), sprintf('%s%s', method, sep))
     featuredt %<>% cbind(adjdt)
@@ -152,9 +151,8 @@ add_adjusted_pvalues <- function(
 #' @export
 make_volcano_dt <- function(
     object,
-       sep = FITSEP,
-       fit = fits(fdt(object), sep = sep)[1], 
-     coefs = default_coefs(fdt(object), sep = sep, fit = fit)[1],
+       fit = fits(fdt(object))[1], 
+     coefs = default_coefs(fdt(object), fit = fit)[1],
      shape = 'imputed', 
      size  = NULL, 
      alpha = NULL,
@@ -162,14 +160,15 @@ make_volcano_dt <- function(
 ){
 # Assert    
     assert_is_all_of(object, "SummarizedExperiment")
+    sep <- guess_fitsep(fdt(object))
     assert_any_are_matching_regex(fvars(object), paste0('^p', sep))
-    assert_is_subset(fit, fits(fdt(object), sep = sep))
-    assert_is_subset(coefs, autonomics::coefs(fdt(object), sep = sep, fit = fit))
+    assert_is_subset(fit, fits(fdt(object)))
+    assert_is_subset(coefs, autonomics::coefs(fdt(object), fit = fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
     if (!is.null(alpha)){ assert_is_subset(alpha, fvars(object)); object %<>% bin(alpha) }
     if (!is.null(label))  assert_is_subset(label, fvars(object))
-    fdt(object) %<>% add_adjusted_pvalues('bonferroni', sep = sep, fit = fit, coefs = coefs)
+    fdt(object) %<>% add_adjusted_pvalues('bonferroni', fit = fit, coefs = coefs)
 # Prepare
     bon <- direction <- effect <- fdr <- mlp <- p <- significance <- NULL
     idvars <- 'feature_id'
@@ -178,12 +177,12 @@ make_volcano_dt <- function(
     if (!is.null(shape))  idvars %<>% union(shape)
     if (!is.null(size))   idvars %<>% union(size)
     if (!is.null(alpha))  idvars %<>% union(alpha)
-    valuevars  <-  effectvar(fdt(object), sep = sep, coef = coefs, fit = fit)  # elminate similar function pvars etc.
-    valuevars %<>%  c(  pvar(fdt(object), sep = sep, coef = coefs, fit = fit))
+    valuevars  <-  effectvar(fdt(object), coef = coefs, fit = fit)  # elminate similar function pvars etc.
+    valuevars %<>%  c(  pvar(fdt(object), coef = coefs, fit = fit))
 
     dt <- fdt(object)[, c(idvars, valuevars), with = FALSE]
     dt %<>% melt.data.table(id.vars = idvars)
-    dt %<>% tidyr::separate(.data$variable, into = c('quantity', 'coef', 'fit'), sep = FITSEP)
+    dt %<>% tidyr::separate(.data$variable, into = c('quantity', 'coef', 'fit'), sep = sep)
     idvars %<>% c('coef', 'fit')
     #dt %<>% dcast.data.table(feature_id+feature_name+coef+fit ~ quantity, value.var = 'value')
     dt %<>% tidyr::pivot_wider(id_cols = tidyselect::all_of(idvars), names_from = 'quantity', values_from = 'value')
@@ -203,7 +202,6 @@ make_volcano_dt <- function(
 
 #' Plot volcano
 #' @param object         SummarizedExperiment
-#' @param sep            string
 #' @param fit           'limma', 'lme', 'lm', 'wilcoxon'
 #' @param coefs          character vector
 #' @param facet          character vector
@@ -247,9 +245,8 @@ make_volcano_dt <- function(
 #' @export
 plot_volcano <- function(
           object,
-             sep = FITSEP,
-             fit = fits(fdt(object), sep = sep)[1], 
-           coefs = default_coefs(fdt(object), sep = sep, fit = fit)[1],
+             fit = fits(fdt(object))[1], 
+           coefs = default_coefs(fdt(object), fit = fit)[1],
            facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
            shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
             size = NULL,
@@ -273,7 +270,7 @@ plot_volcano <- function(
     facet %<>% lapply(sym)
     facet <- vars(!!!facet)
 # Volcano 
-    plotdt <- make_volcano_dt(object, sep = sep, fit = fit, coefs = coefs, 
+    plotdt <- make_volcano_dt(object, fit = fit, coefs = coefs, 
                   label = label, shape = shape, size = size, alpha = alpha)
     g <- ggplot(plotdt) + facet_wrap(facet, nrow = nrow)
     g <- g + theme_bw() + theme(panel.grid = element_blank())

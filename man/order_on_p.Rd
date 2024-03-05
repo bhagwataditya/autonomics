@@ -7,26 +7,22 @@
 \usage{
 order_on_p(
   object,
-  sep = FITSEP,
-  fit = autonomics::fits(fdt(object), sep = sep),
-  coefs = autonomics::coefs(fdt(object), sep = sep, fit = fit),
+  fit = autonomics::fits(fdt(object)),
+  coefs = autonomics::coefs(fdt(object), fit = fit),
   combiner = "|",
   verbose = TRUE
 )
 
 order_on_effect(
   object,
-  sep = FITSEP,
-  fit = autonomics::fits(fdt(object), sep = sep),
-  coefs = autonomics::coefs(fdt(object), sep = sep, fit = fit),
+  fit = autonomics::fits(fdt(object)),
+  coefs = autonomics::coefs(fdt(object), fit = fit),
   combiner = "|",
   verbose = TRUE
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{sep}{string}
 
 \item{fit}{string vector: subset of `fits(fdt(object))`}
 

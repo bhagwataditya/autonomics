@@ -183,8 +183,8 @@ guess_fitsep <- function(featuredt){
 abstract_fit <- function(
              object, 
                 sep = guess_fitsep(fdt(object)),
-                fit = fits(fdt(object), sep = sep), 
-               coef = coefs(fdt(object), fit = fit, sep = sep), 
+                fit = fits(fdt(object)), 
+               coef = coefs(fdt(object), fit = fit), 
     significancevar = 'p', 
        significance = 0.05
 ){
@@ -336,17 +336,17 @@ factor2logical <- function(x){
 #' @importFrom stats phyper
 #' @export
 enrichment <- function(
-    object,
+       object,
     pathwaydt,
-    fit      = fits(fdt(object))[1],
-    coef     = coefs(fdt(object), fit = fit)[1],
-    var      = abstractvar(fdt(object), fit = fit, coef = coef),
-    levels   = fdt(object)[[var]] %>% base::levels() %>% extract(-1),
-    genevar  = 'gene', 
-    genesep  = '[ ,;]',
-    n        = 3,
-    verbose  = TRUE,
-    genes    = FALSE
+          fit = fits(fdt(object))[1],
+         coef = coefs(fdt(object), fit = fit)[1],
+          var = abstractvar(fdt(object), fit = fit, coef = coef),
+       levels = fdt(object)[[var]] %>% base::levels() %>% extract(-1),
+      genevar = 'gene', 
+      genesep = '[ ,;]',
+            n = 3,
+      verbose = TRUE,
+        genes = FALSE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -442,18 +442,18 @@ enrichment <- function(
 #' @importFrom stats phyper
 #' @export
 altenrich <- function(
-    object, 
-    pathwaydt, 
-    genevar         = 'gene', 
-    genesep         = '[ ,;]',
-    coef            = default_coefs(fdt(object))[1], 
-    fit             = fits(fdt(object))[1],
+             object, 
+          pathwaydt, 
+            genevar = 'gene', 
+            genesep = '[ ,;]',
+               coef = default_coefs(fdt(object))[1], 
+                fit = fits(fdt(object))[1],
     significancevar = 'p',
-    significance    = 0.05,
-    effectsize      = 0,
-    n               = 3, 
-    genes           = FALSE,
-    verbose         = TRUE
+       significance = 0.05,
+         effectsize = 0,
+                  n = 3, 
+              genes = FALSE,
+            verbose = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)

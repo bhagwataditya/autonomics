@@ -6,15 +6,12 @@
 \usage{
 add_facetvars(
   object,
-  sep = FITSEP,
-  fit = fits(fdt(object), sep = sep)[1],
-  coefs = default_coefs(fdt(object), sep = sep, fit = fit)
+  fit = fits(fdt(object))[1],
+  coefs = default_coefs(fdt(object), fit = fit)
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{sep}{string}
 
 \item{fit}{string}
 

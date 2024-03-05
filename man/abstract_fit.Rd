@@ -6,8 +6,9 @@
 \usage{
 abstract_fit(
   object,
+  sep = guess_fitsep(fdt(object)),
   fit = fits(fdt(object)),
-  coef = coefs(fdt(object)),
+  coef = coefs(fdt(object), fit = fit),
   significancevar = "p",
   significance = 0.05
 )
@@ -32,6 +33,6 @@ Abstract model fit
 \examples{
 file <- download_data('atkin.metabolon.xlsx')
 object <- read_metabolon(file, fit = 'limma', coef = 't3')
-object \%<>\% abstract_fit()
 fdt(object)
+fdt(abstract_fit(object))
 }

@@ -538,9 +538,9 @@ vectorize_contrasts <- function(contrasts){
 #' object %<>% fit_limma() %>% fit_lm() %>% reset_fit('limma')
 #' @export
 reset_fit <- function(
-    object, 
-    fit     = fits(fdt(object)), 
-    coefs   = autonomics::coefs(fdt(object), fit = fit), 
+     object, 
+        fit = fits(fdt(object)), 
+      coefs = autonomics::coefs(fdt(object), fit = fit), 
     verbose = TRUE
 ){
 # Assert
@@ -554,7 +554,7 @@ reset_fit <- function(
     coefpat <- paste0(coefs, collapse = '|')
     fitpat  <- paste0(fit,   collapse = '|')
         
-    pattern <- sprintf('^(%s)%s(%s)%s(%s)$', varpat, FITSEP, coefpat, FITSEP, fitpat)
+    pattern <- sprintf('^(%s)%s(%s)%s(%s)$', varpat, sep, coefpat, sep, fitpat)
     cols <- grep(pattern, fvars(object), value = TRUE)
     if (length(cols)>0){
         if (verbose)  cmessage('\t\tRm from fdt: %s', pattern)
@@ -670,28 +670,38 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #'     fdt( fit_wilcoxon(object, sep = '.') )
 #' @export
 fit <- function(
-    object, 
-    formula   = default_formula(object),
-    engine    = 'limma', 
-    drop      = varlevels_dont_clash(object, all.vars(formula)),
+       object, 
+      formula = default_formula(object),
+       engine = 'limma', 
+         drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment, 
-    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
+       design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
-    coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
-    block     = NULL,
+        coefs = if (is.null(contrasts))  colnames(design)     else NULL,
+        block = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    statvars  = c('effect', 'p'),
-    sep       = FITSEP,
-    suffix    = paste0(sep, 'limma'),
-    verbose   = TRUE, 
-    plot      = FALSE
+     statvars = c('effect', 'p'),
+          sep = FITSEP,
+       suffix = paste0(sep, 'limma'),
+      verbose = TRUE, 
+         plot = FALSE
 ){
     assert_scalar_subset(engine, c('limma', 'lme', 'lmer', 'wilcoxon', 'lm'))
     fitfun <- paste0('fit_', engine)
-    get(fitfun)(object, formula = formula, drop = drop, codingfun = codingfun, 
-                design = design, contrasts = contrasts, coefs = coefs, block = block, 
-                weightvar = weightvar, statvars = statvars, sep = sep, suffix = suffix, 
-                verbose = verbose, plot = plot)
+    get(fitfun)(    object, 
+                   formula = formula,
+                      drop = drop,
+                 codingfun = codingfun, 
+                    design = design,
+                 contrasts = contrasts,
+                     coefs = coefs,
+                     block = block, 
+                 weightvar = weightvar,
+                  statvars = statvars,
+                       sep = sep,
+                    suffix = suffix, 
+                   verbose = verbose,
+                      plot = plot)
 }
 
 
@@ -699,29 +709,35 @@ fit <- function(
 #' @rdname fit
 #' @export
 fit_limma <- function(
-    object, 
-    formula   = default_formula(object),
-    drop      = varlevels_dont_clash(object, all.vars(formula)),
+       object, 
+      formula = default_formula(object),
+         drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
-    design    = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
+       design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
-    coefs     = if (is.null(contrasts))  colnames(design)     else NULL,
-    block     = NULL,
+        coefs = if (is.null(contrasts))  colnames(design)     else NULL,
+        block = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    statvars  = c('effect', 'p'),
-    sep       = FITSEP,
-    suffix    = paste0(sep, 'limma'),
-    verbose   = TRUE, 
-    plot      = FALSE
+     statvars = c('effect', 'p'),
+          sep = FITSEP,
+       suffix = paste0(sep, 'limma'),
+      verbose = TRUE, 
+         plot = FALSE
 ){
     object %<>% reset_fit(fit = 'limma', coefs = coefs)
-    limmadt <- .fit_limma(  object       = object,        formula      = formula,
-                            drop         = drop,          codingfun    = codingfun,
-                            design       = design,        contrasts    = contrasts, 
-                            coefs        = coefs,         block        = block,
-                            weightvar    = weightvar,     statvars     = statvars,
-                            sep          = sep,           suffix       = suffix,
-                            verbose      = verbose )
+    limmadt <- .fit_limma(  object = object,
+                           formula = formula,
+                              drop = drop,
+                         codingfun = codingfun,
+                            design = design,        
+                         contrasts = contrasts, 
+                             coefs = coefs,
+                             block = block,
+                         weightvar = weightvar,
+                          statvars = statvars,
+                               sep = sep,
+                            suffix = suffix,
+                           verbose = verbose )
     object %<>% merge_fdt(limmadt)
   # fdt(object)$F.limma   <- limmares$F
   # fdt(object)$F.p.limma <- limmares$F.p
@@ -841,7 +857,8 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         if ('se' %in% statvars){ dt0 <- data.table(sqrt(limmafit$s2.post) * limmafit$stdev.unscaled); names(dt0) %<>% paste0('se', sep, ., suffix); limmadt %<>% cbind(dt0) }
     }
 # Return
-    if (verbose)  message_df('                  %s',  summarize_fit(limmadt, fit = 'limma', sep = sep))
+    sumdt <- summarize_fit(limmadt, sep = sep, fit = 'limma')
+    if (verbose)  message_df('                  %s', sumdt)
     limmadt
 
 }
@@ -855,6 +872,7 @@ pull_level <- function(x, lev){
 
 #' Summarize fit
 #' @param featuredt  fdt(object)
+#' @param sep  string
 #' @param fit  'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL
 #' @param coefs string vector
 #' @return data.table(contrast, nup, ndown)
@@ -865,15 +883,21 @@ pull_level <- function(x, lev){
 #' object %<>% fit_lm()
 #' summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
 #' @export
-summarize_fit <- function(featuredt, fit = NULL, coefs = NULL, sep = FITSEP){
+summarize_fit <- function(
+    featuredt, 
+          sep = FITSEP, 
+          fit = fits(featuredt, sep = sep),
+        coefs = autonomics::coefs(featuredt, sep = sep, fit = fit)
+){
 # Assert
     assert_is_data.table(featuredt)
-    statistic <- coefficient <- fit <- variable <- NULL
+    featuredt %<>% copy()
+    statistic <- coefficient <- variable <- NULL
     effect <- p <- fdr <- NULL
 # Summarize
     cols <- names(featuredt) %>% extract(stri_detect_fixed(., sep))
     featuredt %<>% extract(, c('feature_id', cols), with = FALSE)
-    featuredt %<>% add_adjusted_pvalues('fdr')
+    featuredt %<>% add_adjusted_pvalues(method = 'fdr', sep = sep, fit = fit, coefs = coefs)
 
     longdt <- featuredt %>% melt.data.table(id.vars = 'feature_id')
     longdt[, statistic    := split_extract_fixed(variable, sep, 1) %>% factor(unique(.))]

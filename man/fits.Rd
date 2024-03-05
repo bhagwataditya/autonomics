@@ -4,12 +4,10 @@
 \alias{fits}
 \title{Get fit models}
 \usage{
-fits(featuredt, sep = FITSEP)
+fits(featuredt)
 }
 \arguments{
 \item{featuredt}{feature data.table}
-
-\item{sep}{string}
 }
 \value{
 character vector

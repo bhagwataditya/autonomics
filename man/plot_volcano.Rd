@@ -6,9 +6,8 @@
 \usage{
 plot_volcano(
   object,
-  sep = FITSEP,
-  fit = fits(fdt(object), sep = sep)[1],
-  coefs = default_coefs(fdt(object), sep = sep, fit = fit)[1],
+  fit = fits(fdt(object))[1],
+  coefs = default_coefs(fdt(object), fit = fit)[1],
   facet = if (is_scalar(fit)) "coef" else c("fit", "coef"),
   shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
   size = NULL,
@@ -26,8 +25,6 @@ plot_volcano(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{sep}{string}
 
 \item{fit}{'limma', 'lme', 'lm', 'wilcoxon'}
 

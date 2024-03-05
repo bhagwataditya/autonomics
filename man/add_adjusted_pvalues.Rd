@@ -7,17 +7,14 @@
 add_adjusted_pvalues(
   featuredt,
   method,
-  sep = FITSEP,
-  fit = fits(featuredt, sep = sep),
-  coefs = default_coefs(featuredt, sep = sep, fit = fit)
+  fit = fits(featuredt),
+  coefs = default_coefs(featuredt, fit = fit)
 )
 }
 \arguments{
 \item{featuredt}{fdt(object)}
 
 \item{method}{'fdr', 'bonferroni', ... (see `p.adjust.methods`)}
-
-\item{sep}{string}
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer'}
 
