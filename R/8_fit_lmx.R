@@ -26,12 +26,10 @@
     cbind(pvalues, tvalues, effects, stderrs, F = fval, F.p = f.p )
 }
 
-.lm <- function(sd, formula, block, weights, sep, optim = NULL){
-    
+.lm <- function(sd, formula, block, weights, statvars, sep, optim = NULL){
     # Initialize
         formula <- as.formula(formula)
         environment(formula) <- environment()
-    
     # Run mock lm on zero-imputed data to get all potential coefnames
     # before any get dropped because of all values in a block being NA (for this feature)
         sd0 <- copy(sd)
@@ -40,7 +38,6 @@
         fitres0 %<>% summary()
         fitres0 %>% stats::coefficients()
         fitres0[] <- NA_real_              # Set coefvalues to NA, this is mock data only
-    
     # Run actual lm on actual data
     # Rbind missing coefficients from mock lm
         fitres <- lm( formula = formula, data = sd,  weights = weights, na.action = stats::na.omit )
@@ -49,65 +46,60 @@
         rows <- setdiff(rownames(fitres0), rownames(fitres))
         if (!is.null(rows)){  fitres %<>% rbind( fitres0[ rows , , drop = FALSE]  ) 
                               fitres %<>% extract(rownames(fitres0), )  }
-        fitres %<>% extract(, c('Estimate', 'Pr(>|t|)', 't value'), drop = FALSE)
-    
     # Add F rest results
         #      F = stats::anova(fitres)[, 'F value'], 
         #    F.p = stats::anova(fitres)[, 'Pr(>F)'])
-    
     # Reformat and Return
         colnames(fitres) %<>% stri_replace_first_fixed('Estimate', 'effect')
-      # colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
+        colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
         colnames(fitres) %<>% stri_replace_first_fixed('t value',  't')
         colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
-        fitmat <- matrix(fitres, nrow=1)
-        colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
+        fitres %<>% extract(, statvars, drop = FALSE)
+        fitmat <- matrix(fitres, nrow = 1)
+        colnames(fitmat) <- paste(rep(colnames(fitres), each = nrow(fitres)), 
                                   rep(rownames(fitres), times = ncol(fitres)), sep = sep)
       # fitmat %<>% cbind(F=0, F.p=1)
         data.table(fitmat)
 }
 
-.lme <- function(sd, formula, block, weights, sep, opt = 'optim'){
+.lme <- function(sd, formula, block, weights, statvars, sep, opt = 'optim'){
     ctrl <- nlme::lmeControl(opt = opt)  # https://stats.stackexchange.com/a/40664
-    fitres <- nlme::lme(
-                    fixed     = formula, 
-                    random    = block, 
-                    data      = sd,
-                    na.action = stats::na.omit, 
-                    control   = ctrl)
+    fitres <- nlme::lme( fixed = formula, 
+                        random = block, 
+                          data = sd,
+                     na.action = stats::na.omit, 
+                       control = ctrl )
     suppressWarnings(fitres %<>% summary())  # only 2 replicates in a group -> df = 0 -> p = NaN -> warning
     fitres %<>% stats::coefficients()
-    fitres %<>% extract(, c('Value', 'p-value', 't-value'), drop = FALSE)
     colnames(fitres) %<>% stri_replace_first_fixed('Value', 'effect')
-    #colnames(fitres) %<>% stri_replace_first_fixed('Std.Error', 'se')
+    colnames(fitres) %<>% stri_replace_first_fixed('Std.Error', 'se')
     colnames(fitres) %<>% stri_replace_first_fixed('t-value', 't')
     colnames(fitres) %<>% stri_replace_first_fixed('p-value', 'p')
-    #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
+    fitres %<>% extract(, statvars, drop = FALSE)
     fitmat <- matrix(fitres, nrow = 1)
-    colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
+    colnames(fitmat) <- paste(rep(colnames(fitres), each = nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep = sep )
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
 }
 
-.lmer <- function(sd, formula, block = NULL, weights, sep, optim = NULL){
-    fitres <- lme4::lmer(formula   = formula,
-                         data      = sd,
-                         weights   = weights,
+.lmer <- function(sd, formula, block = NULL, weights, statvars, sep, optim = NULL){
+    fitres <- lme4::lmer(  formula = formula,
+                              data = sd,
+                           weights = weights,
                          na.action = stats::na.omit, # https://stackoverflow.com/a/55367171
-                         control   = lme4::lmerControl(check.conv.grad     = lme4::.makeCC(action = 'ignore', tol=2e-3),
-                                                       check.conv.singular = lme4::.makeCC(action = "ignore", tol=1e-4),
-                                                       check.conv.hess     = lme4::.makeCC(action = 'ignore', tol=1e-6)))
+                           control = lme4::lmerControl(    check.conv.grad = lme4::.makeCC(action = 'ignore', tol=2e-3 ),
+                                                       check.conv.singular = lme4::.makeCC(action = "ignore", tol=1e-4 ),
+                                                           check.conv.hess = lme4::.makeCC(action = 'ignore', tol=1e-6 )))
     fitres %<>% lmerTest::as_lmerModLmerTest()
     fitres %<>% summary() %>% stats::coefficients()
-    fitres %<>% extract(, c('Estimate', 'Pr(>|t|)', 't value'), drop=FALSE)
     colnames(fitres) %<>% stri_replace_first_fixed('Estimate', 'effect')
-    #colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
+    colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
     colnames(fitres) %<>% stri_replace_first_fixed('t value',  't')
     colnames(fitres) %<>% stri_replace_first_fixed('Pr(>|t|)', 'p')
-    #fitres %<>% extract(, c('effect', 'se', 't', 'p'), drop = FALSE) # drop DF
+    fitres %<>% extract(, statvars, drop = FALSE)
     fitmat <- matrix(fitres, nrow=1)
-    colnames(fitmat) <- paste(rep(colnames(fitres), each=nrow(fitres)), 
+    colnames(fitmat) <- paste(rep(colnames(fitres), each = nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep = sep )
     #fitmat %<>% cbind(F=0, F.p=1)
     data.table(fitmat)
@@ -273,7 +265,7 @@ fit_lmx <- function(
         block = NULL, 
           opt = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-     statvars = c('effect', 'p'),
+     statvars = c('effect', 'p', 'se', 't')[1:2],
           sep = FITSEP,
       verbose = TRUE, 
          plot = FALSE
@@ -286,6 +278,7 @@ fit_lmx <- function(
     if (!is.null(weightvar)){   assert_is_character(weightvar)
                                 assert_is_subset(weightvar, assayNames(object)) 
                                 message('\t\t\tweights = assays(object)$', weightvar)  }
+    assert_is_subset(statvars, c('effect', 'se', 't', 'p'))
     N <- value <- V1 <- NULL
 # Filter / Customize
     obj <- object
@@ -306,13 +299,16 @@ fit_lmx <- function(
     assays <- assayNames(object) %>% intersect(c(.[1], 'weights'))
     dt <- sumexp_to_longdt(obj, svars = mdlvars, assay = assays)
     lhsformula <- addlhs(formula)
-    fitres <- dt[, fitmethod(.SD, formula = lhsformula, block = block, weights = get(weightvar), sep = sep, opt = opt), by = 'feature_id' ]
+    fitres <- dt[, fitmethod( .SD,   formula = lhsformula, 
+                                       block = block, 
+                                     weights = get(weightvar),
+                                    statvars = statvars, 
+                                         sep = sep,
+                                         opt = opt ),            by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
     if (drop)  for (var in all.vars(formula))   names(fitres) %<>% stri_replace_first_fixed(var, '')
-    pattern1 <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
-    pattern2 <- sprintf( '(feature_id|%s)$', paste0(coefs,    collapse = '|'))   # select coefs
-    fitres <- fitres[, .SD, .SDcols = patterns(pattern1) ]
-    fitres <- fitres[, .SD, .SDcols = patterns(pattern2) ]
+    pattern <- sprintf( '(feature_id|%s)$', paste0(coefs,    collapse = '|'))   # select coefs
+    fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
     names(fitres)[-1] %<>% paste0(sep, fit)
     if (verbose)  message_df('                      %s', summarize_fit(fitres, fit = fit, coefs = coefs))
 # Merge back
@@ -330,46 +326,52 @@ fit_lmx <- function(
 #' @rdname fit_lmx
 #' @export
 fit_lm <- function(
-    object,
-    formula   = default_formula(object), 
-    drop      = varlevels_dont_clash(object, all.vars(formula)),
+       object,
+      formula = default_formula(object), 
+         drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
-    block     = NULL, 
+        block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars  = c('effect', 'p'),
-    sep       = FITSEP,
-    coefs     = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
+     statvars = c('effect', 'p', 'se', 't')[1:2],
+          sep = FITSEP,
+        coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
     contrasts = NULL,
-    verbose   = TRUE, 
-    plot      = FALSE
+      verbose = TRUE, 
+         plot = FALSE
 ){
     
     sdt(object) %<>% code(codingfun = codingfun, vars = all.vars(formula), verbose = verbose)
-    fit_lmx(object,                      fit          = 'lm', 
-            formula      = formula,      drop         = drop,
-            codingfun    = codingfun,    block        = block,
-            weightvar    = weightvar,    statvars     = statvars,
-            sep          = sep,          coefs        = coefs,
-            verbose      = verbose,      plot         = plot)
+    fit_lmx(    object,
+                   fit = 'lm', 
+               formula = formula,
+                  drop = drop,
+             codingfun = codingfun,
+                 block = block,
+             weightvar = weightvar,
+              statvars = statvars,
+                   sep = sep,
+                 coefs = coefs,
+               verbose = verbose,
+                  plot = plot )
 }
 
 
 #' @rdname fit_lmx
 #' @export
 fit_lme <- function(
-    object, 
-    formula   = default_formula(object), 
-    drop      = varlevels_dont_clash(object, all.vars(formula)),
+       object, 
+      formula = default_formula(object), 
+         drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
-    block     = NULL, 
+        block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    opt       = 'optim',
-    statvars  = c('effect', 'p'),
-    sep       = FITSEP,
-    coefs     = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
+          opt = 'optim',
+     statvars = c('effect', 'p', 'se', 't')[1:2],
+          sep = FITSEP,
+        coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
     contrasts = NULL,
-    verbose   = TRUE, 
-    plot      = FALSE
+      verbose = TRUE, 
+         plot = FALSE
 ){
 # Assert
     . <- NULL
@@ -378,30 +380,37 @@ fit_lme <- function(
         return(object)   }
 # Fit
     sdt(object) %<>% code(codingfun = codingfun, vars = all.vars(formula), verbose = verbose)
-    fit_lmx( object,                      fit          = 'lme', 
-             formula      = formula,      drop         = drop,
-             codingfun    = codingfun,    block        = block, 
-             weightvar    = weightvar,    sep          = sep,
-             opt          = opt,          coefs        = coefs, 
-             verbose      = verbose,      plot         = plot )
+    fit_lmx(    object,
+                   fit = 'lme', 
+               formula = formula,
+                  drop = drop,
+             codingfun = codingfun,
+                 block = block, 
+             weightvar = weightvar,
+              statvars = statvars,
+                   sep = sep,
+                   opt = opt,
+                 coefs = coefs, 
+               verbose = verbose,
+                  plot = plot )
 }
 
 
 #' @rdname fit_lmx
 #' @export
 fit_lmer <- function(
-    object, 
-    formula   = default_formula(object), 
-    drop      = varlevels_dont_clash(object, all.vars(formula)),
+       object, 
+      formula = default_formula(object), 
+         drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
-    block     = NULL, 
+        block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-    statvars  = c('effect', 'p'),
-    sep       = FITSEP,
-    coefs     = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
+     statvars = c('effect', 'p', 'se', 't')[1:2],
+          sep = FITSEP,
+        coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
     contrasts = NULL,
-    verbose   = TRUE, 
-    plot      = FALSE
+      verbose = TRUE, 
+         plot = FALSE
 ){
 # Assert
     . <- NULL
@@ -413,10 +422,16 @@ fit_lmer <- function(
         return(object) }
 # Fit
     sdt(object) %<>% code(codingfun = codingfun, vars = all.vars(formula), verbose = verbose)
-    fit_lmx( object,                    fit        = 'lmer', 
-             formula    = formula,      drop       = drop,
-             codingfun  = codingfun,    block      = block, 
-             weightvar  = weightvar,    sep        = sep,
-             coefs      = coefs, 
-             verbose    = verbose,      plot       = plot )
+    fit_lmx(    object,
+                   fit = 'lmer', 
+               formula = formula,
+                  drop = drop,
+             codingfun = codingfun,
+                 block = block, 
+             weightvar = weightvar,
+              statvars = statvars,
+                   sep = sep,
+                 coefs = coefs, 
+               verbose = verbose,
+                  plot = plot )
 }

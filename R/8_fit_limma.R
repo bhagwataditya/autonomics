@@ -584,7 +584,7 @@ merge_fit <- function(object, fitres, statistic = NULL){
     . <- NULL
     fitresdt <- data.table::copy(fitres)   # dont change in original
     firstcols <- intersect(c('feature_id', 'Intercept'), names(fitresdt))
-    fitresdt %<>% extract(,c(firstcols, sort(setdiff(names(.), firstcols))), with = FALSE)
+    fitresdt %<>% extract(,c(firstcols, setdiff(names(.), firstcols)), with = FALSE)
     if (!is.null(statistic)) names(fitresdt)[-1] %<>% paste0(statistic,FITSEP,.)
     object %<>% merge_fdt(fitresdt)
     object
@@ -680,7 +680,7 @@ fit <- function(
         coefs = if (is.null(contrasts))  colnames(design)     else NULL,
         block = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-     statvars = c('effect', 'p'),
+     statvars = c('effect', 'p', 'se', 't')[1:2],
           sep = FITSEP,
        suffix = paste0(sep, 'limma'),
       verbose = TRUE, 
@@ -799,7 +799,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
         coefs = if (is.null(contrasts))  colnames(design) else NULL,
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
-     statvars = c('effect', 'p'),
+     statvars = c('effect', 'p', 'se', 't')[1:2],
           sep = FITSEP,
        suffix = paste0(sep, 'limma'),
       verbose = TRUE, 
