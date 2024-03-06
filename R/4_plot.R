@@ -1041,7 +1041,7 @@ add_facetvars <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_scalar_subset(fit, fits(object))
+    assert_scalar_subset(fit, fits(fdt(object)))
     assert_is_subset(coefs, autonomics::coefs(fdt(object), fit = fit))
 # Add
     for (i in seq_along(coefs)){
@@ -1286,7 +1286,7 @@ plot_exprs <- function(
     } else if (dim == 'features'){   n %<>% min(nrow(object));  object %<>% extract_features_evenly(n)
     } else if (dim == 'both'){       n %<>% min(nrow(object)); 
         if (is.null(coefs)){         object %<>% extract_features_evenly(n) 
-        } else {                     object %<>% extract_coef_features(fit = fit, coefs = coefs, sep = sep, combiner = combiner, 
+        } else {                     object %<>% extract_coef_features(fit = fit, coefs = coefs, combiner = combiner, 
                                                                        p = p, fdr = fdr, n = n, verbose = verbose)
                                      object %<>% add_facetvars(fit = fit, coefs = coefs)
                                      facet %<>% c(sprintf('facet.%s', coefs))
