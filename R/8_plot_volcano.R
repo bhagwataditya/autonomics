@@ -182,7 +182,7 @@ make_volcano_dt <- function(
 
     dt <- fdt(object)[, c(idvars, valuevars), with = FALSE]
     dt %<>% melt.data.table(id.vars = idvars)
-    dt %<>% tidyr::separate(.data$variable, into = c('quantity', 'coef', 'fit'), sep = sep)
+    dt %<>% tidyr::separate_wider_delim(cols = .data$variable, names = c('quantity', 'coef', 'fit'), delim = sep)
     idvars %<>% c('coef', 'fit')
     #dt %<>% dcast.data.table(feature_id+feature_name+coef+fit ~ quantity, value.var = 'value')
     dt %<>% tidyr::pivot_wider(id_cols = tidyselect::all_of(idvars), names_from = 'quantity', values_from = 'value')
