@@ -7,13 +7,37 @@
 \alias{loadings}
 \title{Extract scores/loadings}
 \usage{
-scoremat(object, method = "pca", by = biplot_by(object, method), dim = 1:2)
+scoremat(
+  object,
+  method = "pca",
+  by = biplot_by(object, method),
+  dim = 1:2,
+  sep = FITSEP
+)
 
-scores(object, method = "pca", by = biplot_by(object, method), dim = 1)
+scores(
+  object,
+  method = "pca",
+  by = biplot_by(object, method),
+  dim = 1,
+  sep = FITSEP
+)
 
-loadingmat(object, method = "pca", by = biplot_by(object, method), dim = 1:2)
+loadingmat(
+  object,
+  method = "pca",
+  by = biplot_by(object, method),
+  dim = 1:2,
+  sep = FITSEP
+)
 
-loadings(object, method = "pca", by = biplot_by(object, method), dim = 1)
+loadings(
+  object,
+  method = "pca",
+  by = biplot_by(object, method),
+  dim = 1,
+  sep = FITSEP
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

@@ -510,24 +510,24 @@ plot_transformation_biplots <- function(
     subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
     method = 'pca', by = 'sample_id',
-    dims = 1:2, color = subgroupvar, ...,
+    dims = 1:2, color = subgroupvar, sep = FITSEP, ...,
     fixed = list(shape = 15, size = 3)
 ){
     . <- NULL
     assert_is_subset(subgroupvar, svars(object))
-    x <- paste0('effect', FITSEP, by, FITSEP, method, dims[1])
-    y <- paste0('effect', FITSEP, by, FITSEP, method, dims[2])
+    x <- paste0('effect', sep, by, sep, method, dims[1])
+    y <- paste0('effect', sep, by, sep, method, dims[2])
     tmpobj <- object
     tmpobj %<>% get(method)(ndim = max(dims), verbose = FALSE)
     scoredt <- sdt(tmpobj) %>% cbind(transfo = 'input')
-    xvariance <- round(metadata(tmpobj)[[paste0(by, FITSEP, method)]][[paste0('effect', dims[1])]])
-    yvariance <- round(metadata(tmpobj)[[paste0(by, FITSEP, method)]][[paste0('effect', dims[2])]])
+    xvariance <- round(metadata(tmpobj)[[paste0(by, sep, method)]][[paste0('effect', dims[1])]])
+    yvariance <- round(metadata(tmpobj)[[paste0(by, sep, method)]][[paste0('effect', dims[2])]])
     scoredt$transfo <- sprintf('input : %d + %d %%', xvariance, yvariance)
     for (transfo in transformations){
         tmpobj <- get(transfo)(object)
         tmpobj %<>% get(method)(dims = dims, verbose = FALSE)
-        xvariance <- round(metadata(tmpobj)[[ paste0(by, FITSEP, method) ]][[ paste0('effect', dims[1]) ]])
-        yvariance <- round(metadata(tmpobj)[[ paste0(by, FITSEP, method) ]][[ paste0('effect', dims[2]) ]])
+        xvariance <- round(metadata(tmpobj)[[ paste0(by, sep, method) ]][[ paste0('effect', dims[1]) ]])
+        yvariance <- round(metadata(tmpobj)[[ paste0(by, sep, method) ]][[ paste0('effect', dims[2]) ]])
         tmpdt <- sdt(tmpobj)
         tmpdt$transfo <- sprintf('%s : %d + %d %%', transfo, xvariance, yvariance)
         scoredt %<>% rbind(tmpdt)
