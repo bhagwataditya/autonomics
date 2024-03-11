@@ -852,9 +852,9 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 # p/t/fdr
     if (!all(limmafit$df.residual==0)){
         limmafit %<>% eBayes()
-        if ('p'  %in% statvars){ dt0 <- data.table(limmafit$p.value);                                 names(dt0) %<>% paste0('p',  sep, ., suffix); limmadt %<>% cbind(dt0) } 
-        if ('t'  %in% statvars){ dt0 <- data.table(limmafit$t);                                       names(dt0) %<>% paste0('t',  sep, ., suffix); limmadt %<>% cbind(dt0) } 
         if ('se' %in% statvars){ dt0 <- data.table(sqrt(limmafit$s2.post) * limmafit$stdev.unscaled); names(dt0) %<>% paste0('se', sep, ., suffix); limmadt %<>% cbind(dt0) }
+        if ('t'  %in% statvars){ dt0 <- data.table(limmafit$t);                                       names(dt0) %<>% paste0('t',  sep, ., suffix); limmadt %<>% cbind(dt0) } 
+        if ('p'  %in% statvars){ dt0 <- data.table(limmafit$p.value);                                 names(dt0) %<>% paste0('p',  sep, ., suffix); limmadt %<>% cbind(dt0) } 
     }
 # Return
     sumdt <- summarize_fit(limmadt, fit = 'limma')
