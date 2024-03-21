@@ -358,7 +358,11 @@ enrichment <- function(
     assert_is_factor(fdt(object)[[var]])
     assert_is_subset(levels, levels(fdt(object)[[var]]))
     assert_scalar_subset( genevar, names(pathwaydt))
-    assert_all_are_non_missing_nor_empty_character(fdt(object)[[genevar]])
+    if (any(is_non_missing_nor_empty_character(fdt(object)[[genevar]]))){
+        cmessage("\t\tFirst run: `object %%<>%% filter_features(gene!='')`")
+        cmessage("\t\t Then run: `enrichdt <- enrichment(object)`")
+        return(NULL)
+    }
     assert_all_are_non_missing_nor_empty_character(  pathwaydt[[genevar]])
     if (!is.null(genesep))  assert_is_a_string(genesep)
     assert_is_a_bool(verbose)
