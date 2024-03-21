@@ -1686,12 +1686,6 @@ plot_design <- function(object, codingfun = contr.treatment){
     #       panel.grid.minor.x = element_blank())
 }
 
-#' @rdname plot_heatmap
-#' @export
-plot_top_heatmap <- function(...){
-    .Deprecated('plot_heatmap')
-    plot_heatmap(...)
-}
 
 #' Plot heatmap
 #' @param object           SummarizedExperiment
@@ -1706,7 +1700,7 @@ plot_top_heatmap <- function(...){
 #' @param cluster_samples  TRUE or FALSE
 #' @param flabel           string: feature label
 #' @param group            sample groupvar
-#' @param ...              used to maintain deprecated functionality
+#' @param verbose          TRUE or FALSE
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
@@ -1715,25 +1709,25 @@ plot_top_heatmap <- function(...){
 #' @export
 plot_heatmap <- function( 
               object,
-               assay = assayNames(object)[1],
                  fit = fits(fdt(object))[1],
                 coef = default_coefs(fdt(object), fit = fit)[1],
           effectsize = 0,
                    p = 1,
                  fdr = 0.05,
                    n = 100,
-    cluster_features = is.null(coef),
+               assay = assayNames(object)[1],
+    cluster_features = FALSE,
      cluster_samples = FALSE,
               flabel = intersect(c('gene', 'feature_id'), fvars(object))[1], 
-               group = 'subgroup'
+               group = 'subgroup', 
+             verbose = TRUE
 ){
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(assay,         assayNames(object))
-    assert_is_a_string(fit)
-    assert_is_subset(  fit, fits(fdt(object)))
+    if (!is.null(fit )){ assert_is_a_string(fit);  assert_is_subset(  fit, fits(fdt(object)))  }
     if (!is.null(coef))  assert_is_a_string(coef)
-    if (!is.null(coef))  assert_is_subset(  coef, coefs(fdt(object)), fit = fit)
+    if (!is.null(coef))  assert_is_subset(  coef, coefs(fdt(object), fit = fit))
     assert_is_a_number(effectsize)
     assert_is_a_number(p)
     assert_is_a_number(fdr)
@@ -1745,8 +1739,7 @@ plot_heatmap <- function(
 # Filter: significant features
     object0 <- object
     if (is.null(coef)){   object %<>% extract_features_evenly(n)
-    } else {              object %<>% extract_coef_features(
-                            fit = fit, coefs = coef, effectsize = effectsize, p = p, fdr = fdr, n = n) }
+    } else {              object %<>% extract_coef_features(fit = fit, coefs = coef, effectsize = effectsize, p = p, fdr = fdr, n = n) }
 # Zscore
     assays(object)[[assay]] %<>% t() %>% scale(center = TRUE, scale = TRUE) %>% t()
     assays(object)[[assay]] %<>% na_to_zero()
@@ -1754,6 +1747,8 @@ plot_heatmap <- function(
     idx <- rowSds(assays(object)[[assay]]) > 0  # still limma::lmFit produced a p value - limma bug ?
     object %<>% extract(idx, )                  # leads to a 0 variance error in the next line
     if (cluster_features){
+      # object %<>% fcluster( verbose = verbose )
+      # object %<>% extract(order(fdt(.)$clustorder), )
         idx <- hclust(as.dist(1-cor(t(assays(object)[[assay]]))))$order
         object  %<>% extract(  idx , )                          # order features
     }

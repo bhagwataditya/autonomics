@@ -66,7 +66,7 @@ Results are returned in a data.table
     fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
     object \%<>\% abstract_fit()
 # Four flavours
-    pathwaydt <- read_msigdt(collections = 'gobp')
+    pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)))                                   # 2:n factor 
     enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                     #     logical
     enrichdt3 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)), levels = c('flat', 'down', 'up')) # 1:n factor

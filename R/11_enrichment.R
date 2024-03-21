@@ -196,8 +196,8 @@ abstract_fit <- function(
     for ( curfit in fit){
     for (curcoef in coef){
         abstractvar <- paste(curcoef, curfit, sep = sep)
-            pvalues <- modelvec(fdt(object), 'p',      sep = sep, fit = curfit, coef = curcoef)
-       effectvalues <- modelvec(fdt(object), 'effect', sep = sep, fit = curfit, coef = curcoef)
+            pvalues <- modelvec(fdt(object), 'p',      fit = curfit, coef = curcoef)
+       effectvalues <- modelvec(fdt(object), 'effect', fit = curfit, coef = curcoef)
         fdt(object)[[ abstractvar ]] <- 'flat'
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues<0 ] <- 'down' 
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues>0 ] <- 'up' 
@@ -304,7 +304,7 @@ factor2logical <- function(x){
 #'     fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #'     object %<>% abstract_fit()
 #' # Four flavours
-#'     pathwaydt <- read_msigdt(collections = 'gobp')
+#'     pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
 #'     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)))                                   # 2:n factor 
 #'     enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                     #     logical
 #'     enrichdt3 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)), levels = c('flat', 'down', 'up')) # 1:n factor
