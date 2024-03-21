@@ -359,7 +359,7 @@ enrichment <- function(
     assert_is_subset(levels, levels(fdt(object)[[var]]))
     assert_scalar_subset( genevar, names(pathwaydt))
     if (any(is_non_missing_nor_empty_character(fdt(object)[[genevar]]))){
-        cmessage("\t\tFirst run: `object %%<>%% filter_features(gene!='')`")
+        cmessage("\t\tFirst run: `object %%<>%% filter_features(%s!='')`", genevar)
         cmessage("\t\t Then run: `enrichdt <- enrichment(object)`")
         return(NULL)
     }
