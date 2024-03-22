@@ -1687,6 +1687,72 @@ plot_design <- function(object, codingfun = contr.treatment){
 }
 
 
+#' Feature cluster
+#' @param object    SummarizedExperiment
+#' @param clusterer clustering engine
+#' @param verbose   TRUE or FALSE
+#' @return SummarizedExperiment. Two new fvars: `cluster` and  `clustorder`
+#' @examples
+#' file <- download_data('atkin.metabolon.xlsx')
+#' object <- read_metabolon(file)
+#' fdt(object) %<>% extract(, 1)
+#' if (require(fpc))        fdt(fcluster(object, method = 'pamk'         ))
+#' if (require(stats))      fdt(fcluster(object, method = 'hclust', k = 3))
+#' if (require(apcluster))  fdt(fcluster(object, method = 'apcluster'    ))
+fcluster <- function( 
+    object,  
+    method = c('pamk', 'hclust', 'apcluster'),
+         k = NULL,  # hclust only
+   verbose = TRUE 
+){
+# Assert    
+    assert_is_valid_sumexp(object)
+# Cormat
+    if (!requireNamespace('propagate', quietly = TRUE)){
+        message("\t\t\tBiocManager::install('propagate'). Then re-run.") 
+        return(object) 
+    }
+    object0 <- object
+    object %<>% extract(rowAlls(!is.na(values(.))))
+    if (verbose)   cmessage('\t\tCluster Features')
+    if (verbose)   cmessage('\t\t\tUse %d/%d NA-free features', nrow(object), nrow(object0))
+    cormat <- propagate::bigcor(t(values(object)))  # ff_matrix
+    cormat %<>% extract(1:nrow(.), 1:ncol(.))       # matrix
+# Cluster
+    if (method == 'pamk'){
+        if (!requireNamespace('apcluster', quietly = TRUE)){
+            message("\t\t\tBiocManager::install('apcluster'). Then re-run.") 
+            return(object)  
+        }
+        distmat <- as.dist(1-cormat)
+        pamkout <- fpc::pamk(distmat)
+        fdt(object)$cluster <- unname(pamkout[[1]]$clustering)
+        fdt(object)$clustorder <- order(fdt(object)$cluster)
+    }
+    if (method == 'hclust'){
+        distmat <- as.dist(1-cormat)
+        hc <- hclust(distmat)
+        fdt(object)$cluster <- cutree(hc, k = k)
+        fdt(object)$clustorder <- hc$order
+    }
+    if (method == 'apcluster'){
+        if (!requireNamespace('apcluster', quietly = TRUE)){
+            message("\t\t\tBiocManager::install('apcluster'). Then re-run.") 
+            return(object)  
+        }
+           apresult <- apcluster::apcluster(s = cormat, details = TRUE, q = 0)
+        aggexresult <- apcluster::heatmap(apresult, cormat, col = rev(heat.colors(12))) # also plots
+        idx <- aggexresult@exemplars %>% extract2(length(.)) %>% extract(aggexresult@order)
+        exemplars <- fdt(object)$feature_id[idx]
+        fdt(object)$cluster <- fdt(object)$feature_id[apresult@idx]
+        fdt(object)$cluster %<>% factor(exemplars)
+        fdt(object)$clustorder <- aggexresult@clusters %>% extract2(length(.)) %>% extract(aggexresult@order) %>% unlist()
+    }
+# Return
+    object
+}
+
+
 #' Plot heatmap
 #' @param object           SummarizedExperiment
 #' @param assay            string: one of assayNames(object)
