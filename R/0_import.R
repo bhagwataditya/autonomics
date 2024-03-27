@@ -16,6 +16,7 @@ data.table::data.table
 
 
 #' @importFrom abind                  adrop
+#' @importFrom assertive.base         safe_deparse   set_cause   is_na   is_not_na   bapply
 #' @importFrom assertive.base         are_identical
 #' @importFrom assertive.base         assert_all_are_true   assert_any_are_true
 #' @importFrom assertive.base         assert_are_identical

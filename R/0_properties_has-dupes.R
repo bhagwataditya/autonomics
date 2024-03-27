@@ -1,22 +1,3 @@
-#' Does the input have duplicates?
-#'
-#' Checks to see if the input has duplicates.
-#'
-#' @param x Input to check.
-#' @param .xname Not intended to be used directly.
-#' @param severity How severe should the consequences of the assertion be?  
-#' Either \code{"stop"}, \code{"warning"}, \code{"message"}, or \code{"none"}.
-#' @return \code{has_duplicates} returns \code{TRUE} if\code{anyDuplicated} 
-#' is \code{TRUE}.  \code{assert_has_duplicates} returns nothing but 
-#' throws an error if \code{has_duplicates} is not \code{TRUE}. 
-#' \code{has_no_duplicates} is the negation of \code{has_duplicates}.
-#' @seealso \code{\link{anyDuplicated}}.
-#' @examples 
-#' x <- sample(10, 100, replace = TRUE)
-#' assert_has_duplicates(x)
-#' has_no_duplicates(x)
-#' @author Richard Cotton
-#' @noRd
 has_duplicates <- function(x, .xname = get_name_in_parent(x))
 {
   if(!anyDuplicated(x)) 
@@ -26,8 +7,6 @@ has_duplicates <- function(x, .xname = get_name_in_parent(x))
   TRUE
 }
 
-#' @rdname has_duplicates
-#' @noRd
 has_no_duplicates <- function(x, .xname = get_name_in_parent(x))
 {
   if(anyDuplicated(x)) 

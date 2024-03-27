@@ -1,5 +1,3 @@
-# @rdname is_matching_fixed
-# @export
 #' @importFrom assertive.base get_name_in_parent
 #' @importFrom assertive.base assert_engine
 assert_all_are_matching_fixed <- function(x, pattern, opts_fixed = NULL, 
@@ -24,8 +22,6 @@ assert_all_are_matching_fixed <- function(x, pattern, opts_fixed = NULL,
   )
 }
 
-# @rdname is_matching_fixed
-# @export
 #' @importFrom assertive.base get_name_in_parent
 #' @importFrom assertive.base assert_engine
 assert_any_are_matching_fixed <- function(x, pattern, opts_fixed = NULL, 
@@ -50,8 +46,6 @@ assert_any_are_matching_fixed <- function(x, pattern, opts_fixed = NULL,
   )
 }
 
-# @rdname is_matching_fixed
-# @export
 #' @importFrom assertive.base get_name_in_parent
 #' @importFrom assertive.base assert_engine
 assert_all_are_not_matching_fixed <- function(x, pattern, opts_fixed = NULL, 
@@ -76,8 +70,6 @@ assert_all_are_not_matching_fixed <- function(x, pattern, opts_fixed = NULL,
   )
 }
 
-# @rdname is_matching_fixed
-# @export
 #' @importFrom assertive.base get_name_in_parent
 #' @importFrom assertive.base assert_engine
 assert_any_are_not_matching_fixed <- function(x, pattern, opts_fixed = NULL, 
@@ -102,8 +94,6 @@ assert_any_are_not_matching_fixed <- function(x, pattern, opts_fixed = NULL,
   )
 }
 
-# @rdname is_matching_fixed
-# @export
 #' @importFrom assertive.base get_name_in_parent
 #' @importFrom assertive.base assert_engine
 assert_all_are_matching_regex <- function(x, pattern, opts_regex = NULL, 
@@ -128,8 +118,6 @@ assert_all_are_matching_regex <- function(x, pattern, opts_regex = NULL,
   )
 }
 
-# @rdname is_matching_fixed
-# @export
 #' @importFrom assertive.base get_name_in_parent
 #' @importFrom assertive.base assert_engine
 assert_any_are_matching_regex <- function(x, pattern, opts_regex = NULL, 
@@ -154,8 +142,6 @@ assert_any_are_matching_regex <- function(x, pattern, opts_regex = NULL,
   )
 }
 
-# @rdname is_matching_fixed
-# @export
 #' @importFrom assertive.base get_name_in_parent
 #' @importFrom assertive.base assert_engine
 assert_all_are_not_matching_regex <- function(x, pattern, opts_regex = NULL, 
@@ -180,8 +166,6 @@ assert_all_are_not_matching_regex <- function(x, pattern, opts_regex = NULL,
   )
 }
 
-# @rdname is_matching_fixed
-# @export
 #' @importFrom assertive.base get_name_in_parent
 #' @importFrom assertive.base assert_engine
 assert_any_are_not_matching_regex <- function(x, pattern, opts_regex = NULL, 

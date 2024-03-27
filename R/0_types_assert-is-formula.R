@@ -1,5 +1,3 @@
-# @rdname is_formula
-# @export
 assert_is_formula <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -11,8 +9,6 @@ assert_is_formula <- function(x,
   )
 }
 
-# @rdname is_formula
-# @export
 assert_is_one_sided_formula <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -24,8 +20,6 @@ assert_is_one_sided_formula <- function(x,
   )
 }
 
-# @rdname is_formula
-# @export
 assert_is_two_sided_formula <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         

@@ -1,5 +1,3 @@
-# @rdname has_duplicates
-# @export
 assert_has_duplicates <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                                
@@ -11,8 +9,6 @@ assert_has_duplicates <- function(x,
   )
 }
 
-# @rdname has_duplicates
-# @export
 assert_has_no_duplicates <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                             

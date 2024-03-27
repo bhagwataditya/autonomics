@@ -1,5 +1,3 @@
-# @rdname is_data.table
-# @export
 assert_is_data.table <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         

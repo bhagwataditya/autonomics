@@ -1,5 +1,3 @@
-# @rdname is_empty_character
-# @export
 assert_is_an_empty_string <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                  
@@ -11,8 +9,6 @@ assert_is_an_empty_string <- function(x,
   )    
 }
 
-# @rdname is_empty_character
-# @export
 assert_is_a_non_empty_string <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                     
@@ -24,8 +20,6 @@ assert_is_a_non_empty_string <- function(x,
   )    
 }  
 
-# @rdname is_empty_character
-# @export
 assert_is_a_missing_or_empty_string <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                  
@@ -37,8 +31,6 @@ assert_is_a_missing_or_empty_string <- function(x,
   ) 
 }
 
-# @rdname is_empty_character
-# @export
 assert_is_a_non_missing_nor_empty_string <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                     

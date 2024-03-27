@@ -1,19 +1,3 @@
-#' Does x belong to these classes?
-#' 
-#' Checks to see if x belongs to any of the classes in classes.
-#' @param x Input to check.
-#' @param classes As for \code{class}. 
-#' @param severity How severe should the consequences of the assertion be?  
-#' Either \code{"stop"}, \code{"warning"}, \code{"message"}, or \code{"none"}.
-#' @return The functions return nothing but throw an error if
-#' \code{x} does not have any/all of the class \code{classes}.
-#' @seealso \code{\link[assertive.base]{is2}}
-#' @examples 
-#' assert_is_all_of(1:10, c("integer", "numeric"))
-#' #These examples should fail.
-#' assertive.base::dont_stop(assert_is_any_of(1:10, c("list", "data.frame")))
-#' @author Richard Cotton
-#' @noRd
 assert_is_all_of <- function(x, classes, 
   severity = getOption("assertive.severity", "stop"))
 {  
@@ -31,8 +15,6 @@ assert_is_all_of <- function(x, classes,
   )
 }
 
-# @rdname assert_is_all_of  
-# @export
 assert_is_any_of <- function(x, classes, 
   severity = getOption("assertive.severity", "stop"))
 {  
@@ -51,8 +33,6 @@ assert_is_any_of <- function(x, classes,
   )
 }
 
-# @rdname is_array
-# @export
 assert_is_array <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -64,8 +44,6 @@ assert_is_array <- function(x,
   )
 }
 
-# @rdname is_language
-# @export
 assert_is_call <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -77,8 +55,6 @@ assert_is_call <- function(x,
   )
 }
 
-# @rdname is_character
-# @export
 assert_is_character <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -90,8 +66,6 @@ assert_is_character <- function(x,
   )
 }
 
-# @rdname is_complex
-# @export
 assert_is_complex <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -103,8 +77,6 @@ assert_is_complex <- function(x,
   )
 }
 
-# @rdname is_data.frame
-# @export
 assert_is_data.frame <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -116,8 +88,6 @@ assert_is_data.frame <- function(x,
   )
 }
 
-# @rdname is_numeric
-# @export
 assert_is_double <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -129,8 +99,6 @@ assert_is_double <- function(x,
   )
 }
 
-# @rdname is_environment
-# @export
 assert_is_environment <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -142,8 +110,6 @@ assert_is_environment <- function(x,
   )
 }
 
-# @rdname is_language
-# @export
 assert_is_expression <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -155,8 +121,6 @@ assert_is_expression <- function(x,
   )
 }
 
-# @rdname is_externalptr
-# @export
 assert_is_externalptr <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -168,8 +132,6 @@ assert_is_externalptr <- function(x,
   )
 }
 
-# @rdname is_factor
-# @export
 assert_is_factor <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -181,8 +143,6 @@ assert_is_factor <- function(x,
   )
 }
 
-# @rdname is_function
-# @export
 assert_is_function <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -194,8 +154,6 @@ assert_is_function <- function(x,
   )
 }
 
-# @rdname is_integer
-# @export
 assert_is_integer <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -207,8 +165,6 @@ assert_is_integer <- function(x,
   )
 }
 
-# @rdname is_language
-# @export
 assert_is_language <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -220,8 +176,6 @@ assert_is_language <- function(x,
   )
 }
 
-# @rdname is_list
-# @export
 assert_is_list <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -233,8 +187,6 @@ assert_is_list <- function(x,
   )
 }
 
-# @rdname is_logical
-# @export
 assert_is_logical <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -246,8 +198,6 @@ assert_is_logical <- function(x,
   )
 }
 
-# @rdname is_array
-# @export
 assert_is_matrix <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -259,8 +209,6 @@ assert_is_matrix <- function(x,
   )
 }
 
-# @rdname is_language
-# @export
 assert_is_name <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -272,8 +220,6 @@ assert_is_name <- function(x,
   )
 }
 
-# @rdname is_numeric
-# @export
 assert_is_numeric <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -285,8 +231,6 @@ assert_is_numeric <- function(x,
   )
 }
 
-# @rdname is_factor
-# @export
 assert_is_ordered <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -298,8 +242,6 @@ assert_is_ordered <- function(x,
   )
 }
 
-# @rdname is_list
-# @export
 assert_is_pairlist <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -311,8 +253,6 @@ assert_is_pairlist <- function(x,
   )
 }
 
-# @rdname is_function
-# @export
 assert_is_primitive <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -324,8 +264,6 @@ assert_is_primitive <- function(x,
   )
 }
 
-# @rdname is_qr
-# @export
 assert_is_qr <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -337,8 +275,6 @@ assert_is_qr <- function(x,
   )
 }
 
-# @rdname is_raw
-# @export
 assert_is_raw <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -350,8 +286,6 @@ assert_is_raw <- function(x,
   )
 }
 
-# @rdname is_s4
-# @export
 assert_is_S4 <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -359,8 +293,6 @@ assert_is_S4 <- function(x,
   assert_is_s4(x)
 }
 
-# @rdname is_s4
-# @export
 assert_is_s4 <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
@@ -372,12 +304,8 @@ assert_is_s4 <- function(x,
   )
 }
 
-# @rdname is_language
-# @export
 assert_is_symbol <- assert_is_name
 
-# @rdname is_table
-# @export
 assert_is_table <- function(x, 
   severity = getOption("assertive.severity", "stop"))
 {                                                         
