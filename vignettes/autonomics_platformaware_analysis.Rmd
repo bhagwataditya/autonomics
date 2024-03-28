@@ -168,11 +168,10 @@ object <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot =
 The phosphosites can be read in a similar fashion:
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
-phosphofile <- download_data('billing19.phosphosites.txt')
-proteinfile <- download_data('billing19.proteingroups.txt')
+fosfile <- download_data('billing19.phosphosites.txt')
+profile <- download_data('billing19.proteingroups.txt')
 subgroups <- c('E00_STD', 'E01_STD', 'E02_STD', 'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
-object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile, 
-                                     subgroups = subgroups, plot = TRUE)
+object <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgroups = subgroups, plot = TRUE)
 ```
 
 # Metabolon

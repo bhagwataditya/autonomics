@@ -356,7 +356,7 @@ modelvar <- function(
     sep <- guess_fitsep(featuredt)
     x <- expand.grid(quantity = quantity, fit = fit, coef = coef)
     x <-  paste(x$quantity, x$coef, x$fit, sep = sep)
-    x %<>% intersect(names(featuredt))        # fits dont always contain same coefs: 
+    x %<>% intersect(names(featuredt))     # fits dont always contain same coefs: 
     if (length(x)==0)  x <- NULL           # `limma(contrasts)` mostly without intercept
     x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
 }
@@ -760,8 +760,8 @@ coefs.data.table <- function(
 #============================================================================
 
 .is_sig <- function(object, fit, contrast, quantity = 'fdr'){
-    sigfun <- get(paste0(quantity, 'mat'))
-    issig  <- sigfun(object) < 0.05
+    sigfun <- paste0(quantity, 'mat')
+    issig  <- get(sigfun)(fdt(object)) < 0.05
     isdown <- issig & effectmat(fdt(object)) < 0
     isup   <- issig & effectmat(fdt(object)) > 0
     isdown[is.na(isdown)] <- FALSE
@@ -769,7 +769,7 @@ coefs.data.table <- function(
     testmat <- matrix(0, nrow(issig), ncol(issig), dimnames=dimnames(issig))
     testmat[isdown] <- -1
     testmat[isup]   <-  1
-    col <- modelvar(object, fit = fit, coef = contrast, quantity = quantity)
+    col <- modelvar(fdt(object), fit = fit, coef = contrast, quantity = quantity)
     testmat[, col, drop = FALSE]
 }
 
@@ -801,6 +801,7 @@ is_sig <- function(
     assert_is_subset(fit, fits(fdt(object)))
     if (is.character(contrast))  for (fi in fit)  assert_is_subset(contrast, coefs(fdt(object), fit = fi))
 # Run across models
+    if (quantity == 'fdr')  fdt(object) %<>% add_adjusted_pvalues('fdr')
     res <-  mapply(.is_sig, fit, 
                     MoreArgs = list(object = object, contrast = contrast, quantity = quantity),
                     SIMPLIFY = FALSE)
@@ -814,4 +815,9 @@ is_sig <- function(
     res
 }
 
+#' Linear Modeling Engines
+#' @examples
+#' LINMOD_ENGINES
+#' @export
+LINMOD_ENGINES <- c('limma', 'lm', 'lme', 'lmer', 'wilcoxon')
 

@@ -22,19 +22,19 @@ Autonomics offers platform-specific readers to import omics data into an analysi
 
 ```{r, message = FALSE}
 require(autonomics)
-file.rnaseq          <- download_data('billing19.rnacounts.txt'    )
-file.proteingroups   <- download_data('billing19.proteingroups.txt')
-file.phosphosites    <- download_data('billing19.phosphosites.txt' )
-file.diann           <- download_data('dilution.report.tsv'     )
-file.somascan        <- download_data('atkin18.somascan.adat'      )
-file.metabolon       <- download_data('atkin18.metabolon.xlsx'     )
+  rnafile <- download_data( 'billing19.rnacounts.txt' )
+  profile <- download_data( 'billing19.proteingroups.txt' )
+  fosfile <- download_data( 'billing19.phosphosites.txt' )
+diannfile <- download_data( 'dilution.report.tsv' )
+ somafile <- download_data( 'atkin18.somascan.adat' )
+ metafile <- download_data( 'atkin18.metabolon.xlsx' )
 
-object.rnaseq        <- read_rnaseq_counts(         file = file.rnaseq)
-object.proteingroups <- read_maxquant_proteingroups(file = file.proteingroups)
-object.phosphosites  <- read_maxquant_phosphosites( phosphofile = file.phosphosites, proteinfile = file.proteingroups)
-object.diann         <- read_diann_proteingroups(   file = file.diann)
-object.somascan      <- read_somascan(              file = file.somascan)
-object.metabolon     <- read_metabolon(             file = file.metabolon)
+  rnaobj <- read_rnaseq_counts(         file = rnafile)
+  proobj <- read_maxquant_proteingroups(file = profile)
+  fosobj <- read_maxquant_phosphosites( fosfile = fosfile, profile = profile)
+diannobj <- read_diann_proteingroups(   file = diannfile)
+ somaobj <- read_somascan(              file = somafile)
+ metaobj <- read_metabolon(             file = metafile)
 ```
 
 ```{r echo=FALSE, fig.height=6, fig.width=6, message=FALSE, out.height='85%', out.width='85%'}

@@ -553,7 +553,8 @@ reset_fit <- function(
     varpat  <- paste0(vars,  collapse = '|')
     coefpat <- paste0(coefs, collapse = '|')
     fitpat  <- paste0(fit,   collapse = '|')
-        
+    
+    sep <- guess_fitsep(fdt(object))
     pattern <- sprintf('^(%s)%s(%s)%s(%s)$', varpat, sep, coefpat, sep, fitpat)
     cols <- grep(pattern, fvars(object), value = TRUE)
     if (length(cols)>0){

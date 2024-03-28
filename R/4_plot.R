@@ -928,8 +928,10 @@ order_on_effect <- function(
     assert_is_valid_sumexp(object)
     assert_positive_number(n)
 # Filter
-    object %<>% order_on_effect(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # pls
-    object %<>% order_on_p(     fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # glm
+    object %<>% order_on_effect(fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # dimred
+    if (fit %in% LINMOD_ENGINES){
+        object %<>% order_on_p(     fit = fit, coefs = coefs, combiner = combiner, verbose = FALSE)  # linmod
+    }
     n %<>% min(nrow(object))
     idx <- c(rep(TRUE, n), rep(FALSE, nrow(object)-n))
     n0 <- length(idx)
@@ -994,9 +996,11 @@ extract_coef_features <- function(
        verbose = TRUE
 ){
 # Filter
-    fdt(object) %<>% add_adjusted_pvalues('fdr', fit = fit, coefs = coefs)
-    object %<>% .extract_p_features(         coefs = coefs,           p = p,          fit = fit, combiner = combiner, verbose = verbose)
-    object %<>% .extract_fdr_features(       coefs = coefs,         fdr = fdr,        fit = fit, combiner = combiner, verbose = verbose)
+    if (fit %in% LINMOD_ENGINES){
+        fdt(object) %<>% add_adjusted_pvalues('fdr', fit = fit, coefs = coefs)
+        object %<>% .extract_p_features(  coefs = coefs,   p = p,   fit = fit, combiner = combiner, verbose = verbose)
+        object %<>% .extract_fdr_features(coefs = coefs, fdr = fdr, fit = fit, combiner = combiner, verbose = verbose)
+    }
     object %<>% .extract_effectsize_features(coefs = coefs,  effectsize = effectsize, fit = fit, combiner = combiner, verbose = verbose)
     object %<>% .extract_sign_features(      coefs = coefs,        sign = sign,       fit = fit, combiner = combiner, verbose = verbose)
     object %<>% .extract_n_features(         coefs = coefs,           n = n,          fit = fit, combiner = combiner, verbose = verbose)

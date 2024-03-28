@@ -57,7 +57,7 @@ The results of lm and limma are quite similar for coefficient (`t3`, i.e. the re
 object <- read_metabolon(file)
 object %<>% fit_lm(   ~ SET)
 object %<>% fit_limma(~ SET) # prefers large effects over small sds
-plot_contrast_venn(is_sig(object, fit = fits(object), contrast = 't3'))
+plot_contrast_venn(is_sig(object, fit = fits(fdt(object)), contrast = 't3'))
 # plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
 ```
 
@@ -73,7 +73,7 @@ object <- read_metabolon(file)
 object %<>% fit_limma(~ SET, block = 'SUB')
 object %<>% fit_lme(  ~ SET, block = 'SUB')
 object %<>% fit_lmer( ~ SET, block = 'SUB') # results identical for this basic 
-plot_contrast_venn(is_sig(object, fit = fits(object), contrast = 't3'))
+plot_contrast_venn(is_sig(object, fit = fits(fdt(object)), contrast = 't3'))
 # plot_contrast_boxplots(object, subgroupvar='SET', contrast='t3', fit = c('lm', 'limma'))
 ```
 
@@ -103,7 +103,7 @@ object %<>% fit_limma(~SET, block = 'SUB', codingfun = code_diff)  # backward di
 object <- read_metabolon(file)
 object %<>% fit_limma(   ~0+SET, contrasts = c('t3-t0'), block = 'SUB')
 object %<>% fit_wilcoxon(~0+SET, contrasts = c('t3-t0'), block = 'SUB')
-plot_contrast_venn(is_sig(object, contrast = 't3-t0', fit = fits(object)))
+plot_contrast_venn(is_sig(object, contrast = 't3-t0', fit = fits(fdt(object))))
 ```
 
 
