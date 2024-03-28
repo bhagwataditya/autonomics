@@ -9,16 +9,20 @@
 \usage{
 group_by_level(x, ...)
 
-\method{group_by_level}{character}(x)
+\method{group_by_level}{character}(x, ...)
 
-\method{group_by_level}{factor}(x)
+\method{group_by_level}{factor}(x, ...)
 
-\method{group_by_level}{data.table}(x, var, idvar)
+\method{group_by_level}{data.table}(x, var, idvar, ...)
 }
 \arguments{
 \item{x}{named logical/character/factor}
 
 \item{...}{S3 dispatch}
+
+\item{var}{string}
+
+\item{idvar}{string}
 }
 \value{
 unnamed character

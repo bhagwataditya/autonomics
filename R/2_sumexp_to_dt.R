@@ -265,7 +265,7 @@ write_ods <- function(
 # Write
     readODS::write_ods(list0[[1]], sheet = names(list0)[[1]],                # write first sheet (has to be done first)
                                     path = odsfile)
-    if (length(list0)==1)  return(osfile)
+    if (length(list0)==1)  return(odsfile)
     mapply(readODS::write_ods, x = list0[-1],                                # then append other sheets
                            sheet = names(list0[-1]), 
                         MoreArgs = list(path = odsfile, 

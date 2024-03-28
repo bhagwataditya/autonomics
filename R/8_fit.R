@@ -307,7 +307,7 @@ subgroup_matrix <- function(object, subgroupvar){
 
 
 #' Get model variable
-#' @param object          SummarizedExperiment
+#' @param featuredt       data.table
 #' @param quantity        'p', 'effect', 'fdr', 't', or 'se'
 #' @param fit             string (vector)
 #' @param coef            string (vector)

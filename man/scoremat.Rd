@@ -7,29 +7,11 @@
 \alias{loadings}
 \title{Extract scores/loadings}
 \usage{
-scoremat(
-  object,
-  method = "pca",
-  by = biplot_by(object, method),
-  dim = 1:2,
-  sep = FITSEP
-)
+scoremat(object, method = "pca", by = biplot_by(object, method), dim = 1:2)
 
-scores(
-  object,
-  method = "pca",
-  by = biplot_by(object, method),
-  dim = 1,
-  sep = FITSEP
-)
+scores(object, method = "pca", by = biplot_by(object, method), dim = 1)
 
-loadingmat(
-  object,
-  method = "pca",
-  by = biplot_by(object, method),
-  dim = 1:2,
-  sep = FITSEP
-)
+loadingmat(object, method = "pca", by = biplot_by(object, method), dim = 1:2)
 
 loadings(
   object,

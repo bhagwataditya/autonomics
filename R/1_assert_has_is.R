@@ -354,8 +354,11 @@ assert_is_fraction <- function(x, .xname = get_name_in_parent(x)){
 
 
 #' Variable has multiple levels?
-#' @param  x      factor 
+#' @param  x      vector, data.table or SummarizedExperiment
 #' @param .xname  string
+#' @param  y      string
+#' @param .yname  string
+#' @param  ...    required for s3 dispatch
 #' @return  TRUE or false
 #' @examples
 #' # numeric
@@ -391,7 +394,7 @@ has_multiple_levels <- function(x, ...)  UseMethod('has_multiple_levels')
 
 #' @rdname has_multiple_levels
 #' @export
-has_multiple_levels.character <- function(x, .xname = get_name_in_parent(x)){
+has_multiple_levels.character <- function(x, .xname = get_name_in_parent(x), ...){
     n <- length(unique(x))
     if (! n > 1)  return(false('%s has only %d level(s)', .xname, n))
     TRUE
@@ -400,14 +403,14 @@ has_multiple_levels.character <- function(x, .xname = get_name_in_parent(x)){
 
 #' @rdname has_multiple_levels
 #' @export
-has_multiple_levels.factor <- function(x, .xname = get_name_in_parent(x)){
+has_multiple_levels.factor <- function(x, .xname = get_name_in_parent(x), ...){
     has_multiple_levels.character(x = x, .xname = .xname)
 }
 
 
 #' @rdname has_multiple_levels
 #' @export
-has_multiple_levels.numeric <- function(x, .xname = get_name_in_parent(x)){
+has_multiple_levels.numeric <- function(x, .xname = get_name_in_parent(x), ...){
     has_multiple_levels.character(x = x, .xname = .xname)
 }
 
@@ -418,7 +421,7 @@ has_multiple_levels.data.table <- function(
     x,   # data.table
     y,   # var
     .xname = get_name_in_parent(x),
-    .yname = get_name_in_parent(y)
+    .yname = get_name_in_parent(y), ...
 ){
     if (!(ok <- is_scalar_subset(y, names(x), .xname = .yname, .yname = .xname)))  return(ok)
     if (!(ok <- has_multiple_levels.factor(  x[[y]], .xname = .yname)))            return(ok)
@@ -432,7 +435,7 @@ has_multiple_levels.SummarizedExperiment <- function(
      x,  # sumexp
      y,  # svar
     .xname = get_name_in_parent(x),
-    .yname = get_name_in_parent(y)
+    .yname = get_name_in_parent(y), ...
 ){
     if(!(ok <- has_multiple_levels.data.table(
                     sdt(x), y, .xname = .xname, .yname = .yname)))  return(ok)

@@ -8,6 +8,8 @@ save_contaminant_hdrs(confile = download_contaminants(), verbose = TRUE)
 }
 \arguments{
 \item{confile}{contaminant confile}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 data.table

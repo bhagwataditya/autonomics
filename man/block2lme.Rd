@@ -12,11 +12,11 @@
 \usage{
 block2lme(block, ...)
 
-\method{block2lme}{list}(block, verbose = TRUE)
+\method{block2lme}{list}(block, verbose = TRUE, ...)
 
-\method{block2lme}{formula}(block, verbose = TRUE)
+\method{block2lme}{formula}(block, verbose = TRUE, ...)
 
-\method{block2lme}{character}(block, verbose = TRUE)
+\method{block2lme}{character}(block, verbose = TRUE, ...)
 
 formula2lmer(formula, block)
 
@@ -26,6 +26,8 @@ block_vars(formula)
 }
 \arguments{
 \item{block}{block: charactervector or formula}
+
+\item{...}{required for s3 dispatch}
 
 \item{verbose}{TRUE or FALSE}
 

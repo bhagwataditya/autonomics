@@ -28,6 +28,7 @@
 
 .lm <- function(sd, formula, block, weights, statvars, sep, optim = NULL){
     # Initialize
+        value <- NULL
         formula <- as.formula(formula)
         environment(formula) <- environment()
     # Run mock lm on zero-imputed data to get all potential coefnames
@@ -129,6 +130,7 @@ droplhs <- function(formula)  as.formula(stri_replace_first_regex(
 #' @param formula  formula
 #' @param block    block: charactervector or formula
 #' @param verbose  TRUE or FALSE
+#' @param ...      required for s3 dispatch
 #' @examples
 #' # lme: ensure lme-compatiblae block specification
 #'     block2lme( block = list(subject = ~1, batch = ~1))
@@ -146,11 +148,11 @@ block2lme <- function(block, ...)  UseMethod('block2lme')
 
 #' @rdname block2lme
 #' @export
-block2lme.list <- function(block, verbose = TRUE)  return(block)
+block2lme.list <- function(block, verbose = TRUE, ...)  return(block)
 
 #' @rdname block2lme
 #' @export
-block2lme.formula <- function(block, verbose = TRUE){
+block2lme.formula <- function(block, verbose = TRUE, ...){
             block0 <- block
             block <- formula2str(block0)
             block %<>% substr(2,nchar(.)) %>% trimws()  # rm ~
@@ -166,7 +168,7 @@ block2lme.formula <- function(block, verbose = TRUE){
 
 #' @rdname block2lme
 #' @export
-block2lme.character <- function(block, verbose = TRUE){
+block2lme.character <- function(block, verbose = TRUE, ...){
     block0 <- block
     block <- rep('~1', length(block0))
     names(block) <- block0
@@ -241,6 +243,7 @@ block_vars <- function(formula){
 #' @param opt          optimizer used in fit_lme: 'optim' (more robust) or 'nlminb'
 #' @param weightvar    NULL or svar
 #' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
+#' @param sep          string
 #' @param verbose      TRUE or FALSE
 #' @param plot         TRUE or FALSE
 #' @return SummarizedExperiment

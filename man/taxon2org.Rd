@@ -9,6 +9,12 @@ ens2org(x)
 
 taxon2org(x)
 }
+\arguments{
+\item{x}{character vector}
+}
+\value{
+character vector
+}
 \description{
 taxon/ens to organism
 }

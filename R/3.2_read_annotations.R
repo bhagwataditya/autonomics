@@ -85,9 +85,8 @@ FASTAFIELDS <- c('reviewed', 'protein', 'gene', 'fragment', 'existence', 'organi
 # UNIPROTHDR <- '(sp|tr)[|][A-Z0-9]+([-][0-9]+)?[|][^=]*[=]([A-Za-z]+ [A-Za-z]+) GN=([A-Z]+) PE=([0-5]) SV=([0-9]+)'
 
 parse_uniprot_hdrs <- function(fastahdrs, fastafields = FASTAFIELDS){
-    reviewed <- protein <- gene <- canonical <- isoform <- fragment <- NULL
-    existence <- organism <- description <- NULL
-    dt <- data.table(dbid = extract_uniprot(    fastahdrs) %>% split_extract_fixed('-', 1), fastahdrs = fastahdrs)
+    reviewed <- protein <- gene <- fragment <- existence <- organism <- dbid <- uniprot <- NULL
+    dt <- data.table(dbid = extract_uniprot(fastahdrs) %>% split_extract_fixed('-', 1), fastahdrs = fastahdrs)
     dt %<>% extract(!duplicated(dbid))
     dt[,  uniprot := dbid ]                                                                 #   0 tr
     if ('reviewed'    %in% fastafields)  dt[, reviewed    := extract_reviewed( fastahdrs)]  #   1 sp
@@ -231,9 +230,11 @@ ens2org <- function(x){
 
 
 #' taxon/ens to organism
+#' @param x character vector
 #' @examples
 #' taxon2org( x = c('9606', '9913') )
 #'   ens2org( x = c('ENSP00000377550', 'ENSBTAP00000038329') )
+#' @return character vector
 #' @export
 taxon2org <- function(x){
     mappings <- c(`9606` = 'HUMAN', `10090` = 'MOUSE', `9913` = 'BOVIN')
@@ -276,7 +277,9 @@ UNIPROTCOLS <- c('accession', 'reviewed', 'id', 'gene_primary', 'protein_existen
 
 
 #' Annotate uniprot/ensp
-#' @param x character vector
+#' @param x        character vector
+#' @param columns  character vector
+#' @param verbose  TRUE or FALSE
 #' @return
 #' data.table(dbid, uniprot, reviewed, protein, gene, canonical, 
 #'            isoform, fragment, existence, organism, full)
@@ -286,6 +289,7 @@ UNIPROTCOLS <- c('accession', 'reviewed', 'id', 'gene_primary', 'protein_existen
 #'     parse_refseq_hdrs( x = "REFSEQ:XP_986630 Tax_Id=10090 Gene_Symbol=Krt33b")
 #' @export
 annotate_uniprot_rest <- function( x, columns = UNIPROTCOLS, verbose = TRUE ){
+    organism <- fragment <- existence <- reviewed <- NULL
     if (is.null(x))  return(NULL)
     if (verbose){            cmessage('\t\t\tAnnotate %d proteins through uniprot restapi', length(x))
         if (length(x) < 10)  cmessage('\t\t\t\t%s', paste0(x, collapse = ', '))
@@ -345,6 +349,7 @@ parse_hinv_contaminants <- function(hdrs){
     # Not worth investing time in. Its also only three ids
     # Parse (whatever can be) from fastahdrs instead
     # Make up a proteinname by concatenating hinvid and org
+     gene <- NULL
       ids <- hdrs %>% split_extract_fixed(' ', 1) %>% split_extract_fixed(':', 2)
      orgs <- hdrs %>% split_extract_fixed(' ', 2) %>% split_extract_fixed('=', 2) %>% taxon2org()
     genes <- hdrs %>% split_extract_fixed(' ', 3) %>% split_extract_fixed('=', 2)
@@ -385,6 +390,7 @@ parse_strep_contaminants <- function(hdrs){
 #' Save contaminant hdrs as data.table
 #' 
 #' @param confile contaminant confile
+#' @param verbose TRUE or FALSE
 #' @return data.table
 #' @examples
 #' save_contaminant_hdrs()
@@ -398,6 +404,7 @@ save_contaminant_hdrs <- function(confile = download_contaminants(), verbose = T
     if (!requireNamespace('Biostrings', quietly = TRUE)){
         message("BiocManager::install('Biostrings'). Then re-run.") 
         return(NULL)  }
+    protein <- organism <- dbid <- NULL
 # Read
     fastahdrs <- Biostrings::readAAStringSet(confile)
     fastahdrs %<>% names()                                          # 245 contaminants
@@ -476,6 +483,7 @@ read_contaminantdt <- function(force = FALSE, verbose = TRUE){
 #---------------------------------------------------------------------------------------
 
 .initialize <- function(dt, idcol){
+    uniprot <- NULL
     anndt <- dt[, .(id = get(idcol), dbid = uniprot, reverse = '')]
     setnames(anndt, 'id', idcol)
     anndt[]
@@ -517,6 +525,8 @@ nastring_to_0 <- function(x){
 
 
 .uncollapse <- function(anndt, idcol, verbose){
+    
+    isoform <- dbid <- NULL
     anndt %<>% uncollapse(dbid, sep = ';')
     
     nproteins <- length(unique(anndt$dbid))
@@ -532,6 +542,7 @@ nastring_to_0 <- function(x){
 }
 
 .drop_rev <- function(anndt, idcol, verbose){
+    reverse <- dbid <- mixedgroup <- NULL
     anndt[, reverse := '' ]
     anndt[ stri_detect_fixed(dbid, 'REV__') ,  reverse := '+'   ]
     anndt[, dbid := stri_replace_first_fixed(dbid, 'REV__', '') ]
@@ -548,6 +559,7 @@ nastring_to_0 <- function(x){
 
 
 ..merge_hdrdt <- function(anndt, hdrdt, idcol, verbose, first = FALSE){
+    uniprot <- dbid <- NULL
     if (is.null(hdrdt)){
         if (verbose){
             if (first)  cmessage('%sAnnotate%s%5d using %s', spaces(14), spaces(33), 0, get_name_in_parent(hdrdt)) 
@@ -569,6 +581,7 @@ nastring_to_0 <- function(x){
 
 
 .annotate <- function(anndt, uniprothdrs, contaminanthdrs, maxquanthdrs, restapi, idcol, verbose){
+    uniprot <- dbid <- reviewed <- fragment <- existence <- NULL
     anndt %<>% cbind( uniprot = NA_character_,  reviewed = NA_integer_,    protein = NA_character_,
                          gene = NA_character_,  fragment = NA_integer_,  existence = NA_integer_,   
                      organism = NA_character_)
@@ -591,7 +604,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 
 .curate <- function(anndt, idcol, verbose = TRUE){
 # Assert
-    canonical <- existence <- fragment <- isoform <- protein <- reviewed <- NULL
+    uniprot <- existence <- fragment <- reviewed <- NULL
     anndt %<>% copy()
     if (verbose)   cmessage('%sFilter%s%5d  proteins', spaces(14), spaces(28), length(unique(anndt$dbid)))
 # Prefer swissprot (over trembl)
@@ -620,6 +633,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 }
 
 .restore_rev <- function(anndt, idcol, verbose){
+    reverse <- uniprot <- protein <- gene <- NULL
     if (verbose)  cmessage('%sAdd REV__%s%5d  proteins', spaces(14), spaces(25), length(unique(anndt$dbid)))
     anndt[ reverse == '+',    uniprot := paste0('REV__', uniprot   ) ]
     anndt[ reverse == '+',    protein := paste0('REV__', protein   ) ]
@@ -630,6 +644,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 
 
 .recollapse <- function(anndt, idcol, verbose){
+    uniprot <- isoform <- NULL
     anndt %<>% extract(order(uniprot, isoform)) # we want the isoforms to be pasted in order!
     anndt %<>% recollapse(by = idcol, sep = ';')
     anndt %<>% pull_columns(c(idcol, 'uniprot', 'isoform', 'protein'))
@@ -663,6 +678,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 
 
 .join <- function(dt, anndt, idcol){
+    uniprot <- Original <- NULL
     setnames(dt, 'uniprot', 'Original')
     dt %<>% .merge(anndt, by = idcol)
     dt[is.na(uniprot), uniprot := Original]
@@ -702,10 +718,12 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #' Annotate maxquant data.table
 #' 
 #' Uncollapse, annotate, curate, recollapse, name
-#' @param dt         `data.table` : output of `read_maxquant_(proteingroups|phosphosites)`
-#' @param uniprothdrs  `data.table` : output of `read_uniprotdt`
-#' @param restapi    `logical(1)` : use uniprot restapi to complete missing annotations ?
-#' @param verbose    `logical(1)` : message ?
+#' @param dt              `data.table` : output of `read_maxquant_(proteingroups|phosphosites)`
+#' @param uniprothdrs     `data.table` : output of `read_uniprotdt`
+#' @param contaminanthdrs `data.table` : output of `read_uniprotdt`
+#' @param maxquanthdrs    `data.table` : output of `read_uniprotdt`
+#' @param restapi         `logical(1)` : use uniprot restapi to complete missing annotations ?
+#' @param verbose         `logical(1)` : message ?
 #' @return \code{data.table}
 #' @examples
 #' # Fukuda 2020: contaminants + maxquanthdrs
@@ -932,34 +950,6 @@ add_psp <- function(
     fdt(object)$AA <- NULL
     object
 }
-
-
-
-#' Uniprot regex pattern
-#' @details
-#' Matches uniprot accessions.
-#' Two capture groups: accession and isoformno.
-#' @examples
-#' x <- c(  'CON__Q9TTE1' , 'REV__Q9Y2B2-3', 'D6R9D6;A0AV96-2;B7Z8Z7' )
-#'    stri_detect_regex(x,    UNIPROT)
-#' stri_match_all_regex(x,    UNIPROT)
-#'                   gsub(    UNIPROT, '\\1', x[2] )
-#' @export
-UNIPROT <- '([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})(?:[-]([0-9]+))?'
-#                   --------------------------                                                
-#                     1    2    345      6     -------------------------------------
-#                                                  1     2       3     45        6  
-#                                              ----------------=====================
-#                                                  1     2       3     45        6
-#                                                                7     89       10
-#                                                              *********************          ***********
-#                                                                 optional repeat             opt isoform
-# This pattern was constructed by
-# 1) Taking the pattern from https://www.uniprot.org/help/accession_numbers
-# 2) Capturing the (full) accession
-# 3) Uncapturing the repeated portion
-# 4) Adding a portion to allow isoform information ('-2')
-# 5) Capturing not the entire added group (-2), but only isoform number (2)
 
 
 

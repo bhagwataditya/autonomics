@@ -17,27 +17,27 @@
 \usage{
 count_in(x, ...)
 
-\method{count_in}{character}(x, y)
+\method{count_in}{character}(x, y, ...)
 
-\method{count_in}{factor}(x, y)
+\method{count_in}{factor}(x, y, ...)
 
-\method{count_in}{list}(x, y)
+\method{count_in}{list}(x, y, ...)
 
 collapse_in(x, ...)
 
-\method{collapse_in}{character}(x, y, sep)
+\method{collapse_in}{character}(x, y, sep, ...)
 
-\method{collapse_in}{factor}(x, y, sep)
+\method{collapse_in}{factor}(x, y, sep, ...)
 
-\method{collapse_in}{list}(x, y, sep)
+\method{collapse_in}{list}(x, y, sep, ...)
 
 count_out(x, ...)
 
-\method{count_out}{character}(x, y)
+\method{count_out}{character}(x, y, ...)
 
-\method{count_out}{factor}(x, y)
+\method{count_out}{factor}(x, y, ...)
 
-\method{count_out}{list}(x, y)
+\method{count_out}{list}(x, y, ...)
 }
 \arguments{
 \item{x}{character OR list}
@@ -45,6 +45,8 @@ count_out(x, ...)
 \item{...}{used for S3 dispatch}
 
 \item{y}{character}
+
+\item{sep}{string}
 }
 \value{
 number OR numeric

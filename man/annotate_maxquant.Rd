@@ -18,6 +18,10 @@ annotate_maxquant(
 
 \item{uniprothdrs}{\code{data.table} : output of \code{read_uniprotdt}}
 
+\item{contaminanthdrs}{\code{data.table} : output of \code{read_uniprotdt}}
+
+\item{maxquanthdrs}{\code{data.table} : output of \code{read_uniprotdt}}
+
 \item{restapi}{\code{logical(1)} : use uniprot restapi to complete missing annotations ?}
 
 \item{verbose}{\code{logical(1)} : message ?}

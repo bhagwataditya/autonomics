@@ -94,6 +94,8 @@ fit_lmer(
 
 \item{statvars}{character vector: subset of c('effect', 'p', 'fdr', 't')}
 
+\item{sep}{string}
+
 \item{verbose}{TRUE or FALSE}
 
 \item{plot}{TRUE or FALSE}

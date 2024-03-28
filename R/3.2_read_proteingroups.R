@@ -408,6 +408,7 @@ read_maxquant_proteingroups <- function(
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     assert_is_a_bool(verbose)
+    `Fasta headers` <- NULL
 # Read/Annotate
     prodt <- .read_maxquant_proteingroups(file = file, quantity = quantity, verbose = verbose)
         uniprothdrs <- read_uniprotdt(fastafile)
@@ -515,6 +516,7 @@ read_maxquant_phosphosites <- function(
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
     assert_is_a_bool(verbose)
+    `Fasta headers` <- NULL
 # Read
     prodt <- .read_maxquant_proteingroups(file = profile, quantity = quantity, verbose = verbose)
     fosdt <- .read_maxquant_phosphosites( file = fosfile, quantity = quantity, profile = profile, verbose = verbose)

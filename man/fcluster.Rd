@@ -14,9 +14,11 @@ fcluster(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{verbose}{TRUE or FALSE}
+\item{method}{'pamk', 'hclust' or 'apcluster'}
 
-\item{clusterer}{clustering engine}
+\item{k}{number (hclust) or NULL}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 SummarizedExperiment. Two new fvars: `cluster` and  `clustorder`

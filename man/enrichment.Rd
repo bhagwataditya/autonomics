@@ -23,6 +23,10 @@ enrichment(
 
 \item{pathwaydt}{pathway \code{data.table}}
 
+\item{fit}{string}
+
+\item{coef}{string}
+
 \item{var}{selection fvar}
 
 \item{levels}{selection levels}
@@ -30,6 +34,8 @@ enrichment(
 \item{genevar}{gene fvar}
 
 \item{genesep}{gene separator (string)}
+
+\item{n}{number}
 
 \item{verbose}{whether to msg}
 

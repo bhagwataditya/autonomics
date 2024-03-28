@@ -1015,6 +1015,7 @@ format_coef_vars <- function(
        fit = fits(fdt(object))[1],
       coef = default_coefs(fdt(object), fit = fit)[1]
 ){
+    sep <- guess_fitsep(fdt(object))
     effectvars <- effectvar(fdt(object), coef = coef, fit = fit)
     pvars      <- pvar(     fdt(object), coef = coef, fit = fit)
     fdrvars    <- fdrvar(   fdt(object), coef = coef, fit = fit)
@@ -1692,9 +1693,10 @@ plot_design <- function(object, codingfun = contr.treatment){
 
 
 #' Feature cluster
-#' @param object    SummarizedExperiment
-#' @param clusterer clustering engine
-#' @param verbose   TRUE or FALSE
+#' @param object   SummarizedExperiment
+#' @param method   'pamk', 'hclust' or 'apcluster'
+#' @param k        number (hclust) or NULL
+#' @param verbose  TRUE or FALSE
 #' @return SummarizedExperiment. Two new fvars: `cluster` and  `clustorder`
 #' @examples
 #' file <- download_data('atkin.metabolon.xlsx')
@@ -1725,7 +1727,7 @@ fcluster <- function(
 # Cluster
     if (method == 'pamk'){
         if (!requireNamespace('apcluster', quietly = TRUE)){
-            message("\t\t\tBiocManager::install('apcluster'). Then re-run.") 
+            message("\t\t\tBiocManager::install('fpc'). Then re-run.") 
             return(object)  
         }
         distmat <- as.dist(1-cormat)
@@ -1736,7 +1738,7 @@ fcluster <- function(
     if (method == 'hclust'){
         distmat <- as.dist(1-cormat)
         hc <- hclust(distmat)
-        fdt(object)$cluster <- cutree(hc, k = k)
+        fdt(object)$cluster <- stats::cutree(hc, k = k)
         fdt(object)$clustorder <- hc$order
     }
     if (method == 'apcluster'){
@@ -1745,7 +1747,7 @@ fcluster <- function(
             return(object)  
         }
            apresult <- apcluster::apcluster(s = cormat, details = TRUE, q = 0)
-        aggexresult <- apcluster::heatmap(apresult, cormat, col = rev(heat.colors(12))) # also plots
+        aggexresult <- apcluster::heatmap(apresult, cormat, col = rev(grDevices::heat.colors(12))) # also plots
         idx <- aggexresult@exemplars %>% extract2(length(.)) %>% extract(aggexresult@order)
         exemplars <- fdt(object)$feature_id[idx]
         fdt(object)$cluster <- fdt(object)$feature_id[apresult@idx]

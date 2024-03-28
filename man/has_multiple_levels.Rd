@@ -11,30 +11,38 @@
 \usage{
 has_multiple_levels(x, ...)
 
-\method{has_multiple_levels}{character}(x, .xname = get_name_in_parent(x))
+\method{has_multiple_levels}{character}(x, .xname = get_name_in_parent(x), ...)
 
-\method{has_multiple_levels}{factor}(x, .xname = get_name_in_parent(x))
+\method{has_multiple_levels}{factor}(x, .xname = get_name_in_parent(x), ...)
 
-\method{has_multiple_levels}{numeric}(x, .xname = get_name_in_parent(x))
+\method{has_multiple_levels}{numeric}(x, .xname = get_name_in_parent(x), ...)
 
 \method{has_multiple_levels}{data.table}(
   x,
   y,
   .xname = get_name_in_parent(x),
-  .yname = get_name_in_parent(y)
+  .yname = get_name_in_parent(y),
+  ...
 )
 
 \method{has_multiple_levels}{SummarizedExperiment}(
   x,
   y,
   .xname = get_name_in_parent(x),
-  .yname = get_name_in_parent(y)
+  .yname = get_name_in_parent(y),
+  ...
 )
 }
 \arguments{
-\item{x}{factor}
+\item{x}{vector, data.table or SummarizedExperiment}
+
+\item{...}{required for s3 dispatch}
 
 \item{.xname}{string}
+
+\item{y}{string}
+
+\item{.yname}{string}
 }
 \value{
 TRUE or false

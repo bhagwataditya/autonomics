@@ -169,6 +169,7 @@ guess_fitsep <- function(featuredt){
 
 #' Abstract model fit
 #' @param object            SummarizedExperiment
+#' @param sep               string
 #' @param fit               character vector
 #' @param coef              character vector
 #' @param significancevar  'p' or 'fdr'
@@ -209,6 +210,8 @@ abstract_fit <- function(
 
 #' group by level
 #' @param x named logical/character/factor
+#' @param var    string
+#' @param idvar  string
 #' @param ... S3 dispatch
 #' @return unnamed character
 #' @examples
@@ -219,19 +222,19 @@ abstract_fit <- function(
 #' group_by_level(factor(t1))        #     factor
 #' group_by_level(dt, 't1', 'gene')  # data.table
 #' @export
-group_by_level <- function(x, ...)  UseMethod('group_by_level', x)
+group_by_level <- function(x, ...)  UseMethod('group_by_level')
 
 
 #' @rdname group_by_level
 #' @export
-group_by_level.character <- function(x){
+group_by_level.character <- function(x, ...){
     fun <- function(y) names(x)[x == y]
     Map(fun, unique(x))                          
 }
 
 #' @rdname group_by_level
 #' @export
-group_by_level.factor <- function(x){
+group_by_level.factor <- function(x, ...){
     y <- x
     y %<>% as.character() 
     y %<>% set_names(names(x))
@@ -240,7 +243,7 @@ group_by_level.factor <- function(x){
 
 #' @rdname group_by_level
 #' @export
-group_by_level.data.table <- function(x, var, idvar){
+group_by_level.data.table <- function(x, var, idvar, ...){
     y <- x[[var]]
     names(y) <- x[[idvar]]
     group_by_level(y)
@@ -291,10 +294,13 @@ factor2logical <- function(x){
 #'
 #' @param object    \code{SummarizedExperiment}
 #' @param pathwaydt pathway \code{data.table}
+#' @param fit       string
+#' @param coef      string
 #' @param var       selection fvar
 #' @param levels    selection levels
 #' @param genevar   gene fvar
 #' @param genesep   gene separator (string)
+#' @param n         number
 #' @param verbose   whether to msg
 #' @param genes     whether to report genes
 #' @examples
@@ -369,7 +375,7 @@ enrichment <- function(
     if (verbose)  cmessage('\tAre pathways enriched in `%s` genes ?', var)
     if (verbose)  cmessage("\t\tfdt(.)$%s  %%<>%%  split_extract_regex('%s', 1)", genevar, genesep)
     fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)
-    `in` <- in.detected <- in.selected <- detected <- selected <- out <- NULL
+    in.det <- in.sel <- det <- sel <- out <- gene <- NULL
 # Sets
     SETall  <- unique(fdt(object)[[genevar]]) %>% union(pathwaydt[, unique(gene)])
     SETdet  <- unique(fdt(object)[[genevar]])
@@ -472,7 +478,7 @@ altenrich <- function(
     assert_scalar_subset(fit, fits(fdt(object)))
     genes0 <- fdt(object)[[genevar]]
     fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)
-    gene <- in.up <- in.detected <- in.down <- in.selected <- `in` <- out <- NULL
+    gene <- in.up <- in.det <- in.down <- in.sel <- `in` <- out <- NULL
 # Function
     object %<>% abstract_fit(fit = fit, coef = coef, significancevar = significancevar)
     abstractvar <- abstractvar(fdt(object), fit = fit, coef = coef)
@@ -535,8 +541,9 @@ altenrich <- function(
 
 
 #' Count/Collapse in/outside intersection
-#' @param x character OR list
-#' @param y character 
+#' @param x   character OR list
+#' @param y   character 
+#' @param sep string
 #' @param ... used for S3 dispatch
 #' @return number OR numeric
 #' @examples
@@ -561,15 +568,15 @@ count_in <- function(x, ...)  UseMethod('count_in', x)
 
 #' @rdname count_in
 #' @export
-count_in.character <- function(x, y)  length(intersect(x, y))
+count_in.character <- function(x, y, ...)  length(intersect(x, y))
 
 #' @rdname count_in
 #' @export
-count_in.factor <- function(x, y)     length(intersect(x, y))
+count_in.factor <- function(x, y, ...)     length(intersect(x, y))
 
 #' @rdname count_in
 #' @export
-count_in.list <- function(x, y)    lapply(x, count_in, y = y)
+count_in.list <- function(x, y, ...)    lapply(x, count_in, y = y)
                             # dont vapply, list form required in data.table env
 
 #' @rdname count_in
@@ -578,15 +585,15 @@ collapse_in <- function(x, ...) UseMethod('collapse_in')
 
 #' @rdname count_in
 #' @export
-collapse_in.character <- function(x, y, sep)  collapse(intersect(x, y), sep)
+collapse_in.character <- function(x, y, sep, ...)  collapse(intersect(x, y), sep)
 
 #' @rdname count_in
 #' @export
-collapse_in.factor    <- function(x, y, sep)  collapse(intersect(x, y), sep)
+collapse_in.factor    <- function(x, y, sep, ...)  collapse(intersect(x, y), sep)
 
 #' @rdname count_in
 #' @export                         
-collapse_in.list <- function(x, y, sep)   lapply(x, collapse_in, y = y, sep = sep)
+collapse_in.list <- function(x, y, sep, ...)   lapply(x, collapse_in, y = y, sep = sep)
                                    # dont vapply, list form required in data.table env
 
 #' @rdname count_in
@@ -595,13 +602,13 @@ count_out <- function(x, ...)  UseMethod('count_out', x)
 
 #' @rdname count_in
 #' @export
-count_out.character <- function(x, y)  length(setdiff(x, y))
+count_out.character <- function(x, y, ...)  length(setdiff(x, y))
 
 #' @rdname count_in
 #' @export
-count_out.factor    <- function(x, y)  length(setdiff(x, y))
+count_out.factor    <- function(x, y, ...)  length(setdiff(x, y))
 
 #' @rdname count_in
 #' @export
-count_out.list <- function(x, y)    lapply(x, count_out, y = y)
+count_out.list <- function(x, y, ...)    lapply(x, count_out, y = y)
                              # dont vapply, list form required in data.table env

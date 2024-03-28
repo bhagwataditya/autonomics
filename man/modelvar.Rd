@@ -194,6 +194,8 @@ downfeatures(
 )
 }
 \arguments{
+\item{featuredt}{data.table}
+
 \item{quantity}{'p', 'effect', 'fdr', 't', or 'se'}
 
 \item{fit}{string (vector)}
@@ -209,8 +211,6 @@ downfeatures(
 \item{effectdirection}{'<>', '<' or '>'}
 
 \item{effectsize}{effectsize cutoff (positive number)}
-
-\item{object}{SummarizedExperiment}
 }
 \value{
 string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures)

@@ -51,7 +51,7 @@ lda(
   assay = assayNames(object)[1],
   by = "subgroup",
   ndim = 2,
-  sep = FTISEP,
+  sep = FITSEP,
   minvar = 0,
   verbose = TRUE,
   plot = FALSE,

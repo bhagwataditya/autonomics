@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Unified statistal Modeling of Omics Data
-Version: 1.11.87
+Version: 1.11.88
 Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Richard",  "Cotton",     email = "richierocks@gmail.com",            role = "aut"),
              person("Shahina",  "Hayat",      email = "shahina.hayat@hotmail.com",        role = "aut"),
@@ -80,12 +80,14 @@ Suggests:
   affy,
   AnnotationDbi,
   AnnotationHub,
+  apcluster,
   BiocManager,
   BiocStyle,
   Biostrings,
   diagram,
   DBI,
   ensembldb,
+  fpc,
   GenomicDataCommons,
   GenomicRanges,
   GEOquery,

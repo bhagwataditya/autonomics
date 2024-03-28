@@ -83,7 +83,7 @@ variances <- function(
     object, method = 'pca', by = biplot_by(object, method), dims = 1:2, sep = FITSEP
 ){
     y <- metadata(object)
-    y %<>% extract2(methodname(method, by, sep = sep))
+    y %<>% extract2(methodname(method, by = by, sep = sep))
     y %<>% extract(variancenames(dims))
     y
 }
@@ -103,10 +103,11 @@ variances <- function(
 #' loadingmat(object)[1:2, ]
 #' @export
 scoremat <- function(
-    object, method = 'pca', by = biplot_by(object, method), dim = 1:2, sep = FITSEP
+    object, method = 'pca', by = biplot_by(object, method), dim = 1:2
 ){
+    sep <- guess_fitsep(fdt(object))
     cols <- 'sample_id'
-    cols %<>% c(scorenames(method = method, by = by, dim = dim, sep = sep))
+    cols %<>% c(scorenames(method = method, by = by, dims = dim, sep = sep))
     mat <- sdt(object)[, cols, with = FALSE]
     mat %<>% dt2mat()
     mat
@@ -115,19 +116,21 @@ scoremat <- function(
 #' @rdname scoremat
 #' @export
 scores <- function(
-    object, method = 'pca', by = biplot_by(object, method), dim = 1, sep = FITSEP
+    object, method = 'pca', by = biplot_by(object, method), dim = 1
 ){
-    cols <- scorenames(method = method, by = by, dim = dim, sep = sep)
+    sep <- guess_fitsep(fdt(object))
+    cols <- scorenames(method = method, by = by, dims = dim, sep = sep)
     sdt(object)[[cols]]
 }
 
 #' @rdname scoremat
 #' @export
 loadingmat <- function(
-    object, method = 'pca', by = biplot_by(object, method), dim = 1:2, sep = FITSEP
+    object, method = 'pca', by = biplot_by(object, method), dim = 1:2
 ){
+    sep <- guess_fitsep(fdt(object))
     cols <- 'feature_id'
-    cols %<>% c(loadingnames(method = method, by = by, dim = dim, sep = sep))
+    cols %<>% c(loadingnames(method = method, by = by, dims = dim, sep = sep))
     mat <- fdt(object)[, cols, with = FALSE]
     mat %<>% dt2mat()
     mat
@@ -138,7 +141,8 @@ loadingmat <- function(
 loadings <- function(
     object, method = 'pca', by = biplot_by(object, method), dim = 1, sep = FITSEP
 ){
-    cols <- loadingnames(method = method, by = by, dim = dim, sep = sep)
+    sep <- guess_fitsep(fdt(object))
+    cols <- loadingnames(method = method, by = by, dims = dim, sep = sep)
     fdt(object)[[cols]]
 }
 
@@ -227,7 +231,7 @@ pca <- function(
 # Filter for minvar
     object %<>% .filter_minvar('pca', minvar)
 # Return
-    if (plot)  print(biplot(object, method = 'pca', dims = seq(1,ndim)[1:2], sep = sep, ...))
+    if (plot)  print(biplot(object, method = 'pca', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -276,7 +280,7 @@ pls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('pls', minvar)
 # Return
-    if (plot)  print(biplot(object, method = 'pls', dims = seq(1,ndim)[1:2], sep = sep, ...))
+    if (plot)  print(biplot(object, method = 'pls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -340,7 +344,7 @@ sma <- function(
 # Filter for minvar
     object %<>% .filter_minvar('sma', minvar)
 # Return
-    if (plot)  print(biplot(object, method = 'sma', dims = seq(1,ndim)[1:2], sep = sep, ...))
+    if (plot)  print(biplot(object, method = 'sma', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -352,7 +356,7 @@ lda <- function(
       assay = assayNames(object)[1], 
          by = 'subgroup', 
        ndim = 2, 
-        sep = FTISEP,
+        sep = FITSEP,
      minvar = 0, 
     verbose = TRUE, 
        plot = FALSE, 
@@ -405,7 +409,7 @@ lda <- function(
     metavar <- methodname(method = 'lda', by = by, sep = sep)
     metadata(object)[[metavar]] <- variances
     object %<>% .filter_minvar('lda', minvar)
-    if (plot)  print(biplot(object, method = 'lda', dims = seq(1,ndim)[1:2], sep = sep, ...))
+    if (plot)  print(biplot(object, method = 'lda', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -454,7 +458,7 @@ spls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('spls', minvar)
 # Return
-    if (plot)  print(biplot(object, method = 'spls', dims = seq(1,ndim)[1:2], sep = sep, ...))
+    if (plot)  print(biplot(object, method = 'spls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 
@@ -503,7 +507,7 @@ opls <- function(
 # Filter for minvar
     object %<>% .filter_minvar('opls', minvar)
 # Return
-    if (plot)  print(biplot(object, method = 'opls', dims = seq(1,ndim)[1:2], sep = sep, ...))
+    if (plot)  print(biplot(object, method = 'opls', dims = seq(1,ndim)[1:2], ...))
     object
 }
 

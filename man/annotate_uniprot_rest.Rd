@@ -8,6 +8,10 @@ annotate_uniprot_rest(x, columns = UNIPROTCOLS, verbose = TRUE)
 }
 \arguments{
 \item{x}{character vector}
+
+\item{columns}{character vector}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 data.table(dbid, uniprot, reviewed, protein, gene, canonical, 

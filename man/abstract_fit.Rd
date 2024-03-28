@@ -16,6 +16,8 @@ abstract_fit(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{sep}{string}
+
 \item{fit}{character vector}
 
 \item{coef}{character vector}
