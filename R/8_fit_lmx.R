@@ -37,7 +37,7 @@
         sd0[is.na(value), value := 0]  
         fitres0 <- lm( formula = formula, data = sd0, weights = weights, na.action = stats::na.omit )
         fitres0 %<>% summary()
-        fitres0 %>% stats::coefficients()
+        fitres0 %<>% stats::coefficients()
         fitres0[] <- NA_real_              # Set coefvalues to NA, this is mock data only
     # Run actual lm on actual data
     # Rbind missing coefficients from mock lm

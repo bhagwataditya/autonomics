@@ -1,21 +1,20 @@
-require(testthat)
 
 
 #============================================================================
 #                                                                           #
-             context('.read_(proteingroups|phosphosites)')                  #
+#             context('.read_(proteingroups|phosphosites)')                 #
 #                                                                           #
 #============================================================================
 
 
 test_that(" .read_(proteingroups|phosphosites) ", {
     # read
-        proteinfile <- download_data('billing19.proteingroups.txt')
-        phosphofile <- download_data('billing19.phosphosites.txt')
-        pro <- .read_maxquant_proteingroups(proteinfile, verbose = TRUE)
-        fos <- .read_maxquant_phosphosites(phosphofile, proteinfile, verbose = TRUE)
-        prodt <- fread(proteinfile, colClasses = c(id = 'character'))
-        fosdt <- fread(phosphofile, colClasses = c(id = 'character'), integer64 = 'numeric')
+        profile <- download_data('billing19.proteingroups.txt')
+        fosfile <- download_data('billing19.phosphosites.txt')
+        pro <- .read_maxquant_proteingroups(profile, verbose = TRUE)
+        fos <- .read_maxquant_phosphosites(fosfile, profile, verbose = TRUE)
+        prodt <- fread(profile, colClasses = c(id = 'character'))
+        fosdt <- fread(fosfile, colClasses = c(id = 'character'), integer64 = 'numeric')
         fosdt %<>% extract(fos$fosId, on = 'id')
     # ids
         expect_identical(pro$proId, prodt$id)
@@ -46,10 +45,10 @@ test_that(" .read_(proteingroups|phosphosites) ", {
 
 test_that(" `drop_differing_uniprots` ", {
     # read
-        proteinfile <- download_data('billing19.proteingroups.txt')
-        phosphofile <- download_data('billing19.phosphosites.txt')
-        prodt <- .read_maxquant_proteingroups(proteinfile)
-        fosdt <- .read_maxquant_phosphosites( phosphofile, proteinfile)
+        profile <- download_data('billing19.proteingroups.txt')
+        fosfile <- download_data('billing19.phosphosites.txt')
+        prodt <- .read_maxquant_proteingroups(profile)
+        fosdt <- .read_maxquant_phosphosites( fosfile, profile)
         fosdt1 <- drop_differing_uniprots(fosdt, prodt, verbose = TRUE)
     # colnames
         expect_setequal(names(fosdt), names(fosdt1))
@@ -85,14 +84,14 @@ test_that(" `drop_differing_uniprots` ", {
 
 test_that(" `mqdt_to_mat` ", {
     # Read
-        proteinfile <- download_data('billing19.proteingroups.txt')
-        phosphofile <- download_data('billing19.phosphosites.txt')
-        prodt <- .read_maxquant_proteingroups(proteinfile)
+        profile <- download_data('billing19.proteingroups.txt')
+        fosfile <- download_data('billing19.phosphosites.txt')
+        prodt <- .read_maxquant_proteingroups(profile)
         uniprothdrs <- NULL
         contaminanthdrs <- read_contaminantdt()
         maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`);   prodt[, `Fasta headers` := NULL ]
         prodt %<>% annotate_maxquant(uniprothdrs = uniprothdrs, contaminanthdrs = contaminanthdrs, maxquanthdrs = maxquanthdrs, restapi = FALSE)
-        quantity <- guess_maxquant_quantity(proteinfile)
+        quantity <- guess_maxquant_quantity(profile)
         pattern <- MAXQUANT_PATTERNS[[quantity]]
         mat <- 2^mqdt_to_mat(prodt, pattern = pattern)
         
@@ -254,7 +253,7 @@ test_that( " read_proteingroups: fukuda20, fit = 'limma' ", {
     object <- read_maxquant_proteingroups(file, fit = 'limma', plot = TRUE, label = NULL)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true(any(stri_detect_fixed(fvars(object), paste0(FITSEP, 'limma'))))
-    expect_true(any(stri_detect_fixed(fvars(object), paste0('fdr', FITSEP))))
+    expect_true(any(stri_detect_fixed(fvars(object), paste0('p', FITSEP))))
 })
 
 
@@ -409,7 +408,8 @@ test_that(" read_proteingroups: billing19 ", {
         expect_s4_class(object, 'SummarizedExperiment')
         expect_true('subgroup' %in% svars(object))
     # values
-        dt <- fread(proteinfile)
+        dt <- fread(file)
+        pattern <- MAXQUANT_PATTERNS[['normalizedratio']]
         mat0 <- mqdt_to_mat(dt, pattern)
         rownames(mat0) <- dt$id
         colnames(mat0) %<>% dequantify()
@@ -419,10 +419,10 @@ test_that(" read_proteingroups: billing19 ", {
         mat0 %<>% extract(rownames(mat), )
         expect_equal(mat, mat0)
     # uniprots
-        fdt0 <- fread(proteinfile,   select = c('id', 'Majority protein IDs'), 
-                                 colClasses = c( id = 'character'))
+        fdt0 <- fread(file, select = c('id', 'Majority protein IDs'), colClasses = c( id = 'character'))
         fdt0 %<>% extract(fdt(object)$proId, on = 'id')
-        expect_true(all(is_collapsed_subset(fdt(object)$uniprot, fdt0$`Majority protein IDs`)))
+        expect_true( all( is_collapsed_subset( fdt(object)$uniprot, 
+                                               fdt0$`Majority protein IDs` %>% stri_replace_all_regex('[-][0-9]+', '') ) ) )
 })
 
 
@@ -502,17 +502,17 @@ test_that( " read_proteingroups: billing19 , fit = 'wilcoxon' ", {
 test_that(" read_phosphosites: billing19 ", {
     # sumexp
         subgroups <- sprintf('%s_STD', c('E00','E01','E02','E05','E15','E30','M00'))
-        proteinfile <- download_data('billing19.proteingroups.txt')
-        phosphofile <- download_data('billing19.phosphosites.txt')
-        object <- read_maxquant_phosphosites(
-            phosphofile = phosphofile, proteinfile = proteinfile, subgroups = subgroups)
+        profile <- download_data('billing19.proteingroups.txt')
+        fosfile <- download_data('billing19.phosphosites.txt')
+        object <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgroups = subgroups)
         expect_s4_class(object, 'SummarizedExperiment')
         expect_true('log2proteins' %in% SummarizedExperiment::assayNames(object))
         expect_true('log2sites'    %in% SummarizedExperiment::assayNames(object))
         expect_true('log2diffs'    %in% SummarizedExperiment::assayNames(object))
     # snames
-        dt <- fread(phosphofile, integer64 = 'numeric', colClasses = c(id = 'character'))
-        dt %<>% extract(fdt(fos)$fosId, on = 'id')
+        pattern <- MAXQUANT_PATTERNS[['normalizedratio']]
+        dt <- fread(fosfile, integer64 = 'numeric', colClasses = c(id = 'character'))
+        dt %<>% extract(fdt(object)$fosId, on = 'id')
         dt <- dt[, .SD, .SDcols = patterns(pattern, '___1')]
         colnames(dt) %<>% stri_replace_first_fixed('___1', '')
         colnames(dt) %<>% dequantify()

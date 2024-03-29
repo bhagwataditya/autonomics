@@ -1,4 +1,3 @@
-require(testthat)
 sumexp_contains_fit <- function(object, fit = 'limma'){
     is(object, 'SummarizedExperiment') &
     any(stri_detect_fixed(fvars(object), paste0('~', fit)))
@@ -6,7 +5,7 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
 
 #============================================================================
 #                                                                           #
-             context(" fit ")                                               #
+#            context(" fit ")                                               #
 #                                                                           #
 #============================================================================
 
@@ -95,12 +94,14 @@ sumexp_contains_fit <- function(object, fit = 'limma'){
         file  <- download_mcclain21('counts')
         sfile <- download_mcclain21('samples')
         object <- .read_rnaseq_counts(file, sfile = sfile, by.y = 'rna_id')
+        expect_s4_class(object, 'SummarizedExperiment')
+        
     })
 
         
 #============================================================================
 #                                                                           #
-             context(" plot_contrastogram ")                                #
+#            context(" plot_contrastogram ")                                #
 #                                                                           #
 #============================================================================
     
