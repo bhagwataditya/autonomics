@@ -747,7 +747,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #'  upfile <- download_data('uniprot_hsa_20140515.fasta')
 #' prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
 #' fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
-#'     uniprothdrs <- read_uniprotdt(uniprotfile)
+#'     uniprothdrs <- read_uniprotdt(upfile)
 #' contaminanthdrs <- read_contaminantdt()
 #'    maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`)
 #' annotate_maxquant(prodt, uniprothdrs, contaminanthdrs, maxquanthdrs)[, 1:8]
