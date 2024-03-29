@@ -51,15 +51,14 @@ Uncollapse, annotate, curate, recollapse, name
                                               
 # Billing 2019: uniprothdrs + contaminants + maxquanthdrs
 #--------------------------------------------------------
-    profile <- download_data('billing19.proteingroups.txt')
-    fosfile <- download_data('billing19.phosphosites.txt')
-uniprotfile <- download_data('uniprot_hsa_20140515.fasta')
-  uniprothdrs <-  read_uniprotdt(uniprotfile)
-      prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
-      fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
-annotate_maxquant(prodt                                           )[, 1:8]
-annotate_maxquant(fosdt                                           )[, 1:8]
-annotate_maxquant(prodt, uniprothdrs = uniprothdrs                    )[, 1:8]
-annotate_maxquant(fosdt, uniprothdrs = uniprothdrs                    )[, 1:8]
-annotate_maxquant(prodt, uniprothdrs = uniprothdrs, restapi = TRUE    )[, 1:8]
+profile <- download_data('billing19.proteingroups.txt')
+fosfile <- download_data('billing19.phosphosites.txt')
+ upfile <- download_data('uniprot_hsa_20140515.fasta')
+prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
+fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
+    uniprothdrs <- read_uniprotdt(uniprotfile)
+contaminanthdrs <- read_contaminantdt()
+   maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`)
+annotate_maxquant(prodt, uniprothdrs, contaminanthdrs, maxquanthdrs)[, 1:8]
+annotate_maxquant(fosdt, uniprothdrs, contaminanthdrs, maxquanthdrs)[, 1:8]
 }

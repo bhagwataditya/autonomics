@@ -191,6 +191,7 @@ formula2lmer <- function(formula, block){
 
 
 #' @rdname block2lme
+#' @export
 formula2lm <- function(formula, block){
     if (is.null(block))  return(formula)
     formula %<>% formula2str()

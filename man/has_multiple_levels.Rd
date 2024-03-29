@@ -74,7 +74,7 @@ Variable has multiple levels?
     rownames(object) <- sprintf('f\%d', 1:3)
     colnames(object) <- sprintf('s\%d', 1:3)
     object <- list(exprs = object)
-    object \%<>\% SummarizedExperiment()
+    object \%<>\% SummarizedExperiment::SummarizedExperiment()
     object$subgroup <- c('A', 'A', 'A');          has_multiple_levels(object, 'group')
     object$subgroup <- c('A', 'A', 'A');          has_multiple_levels(object, 'subgroup')
     object$subgroup <- c('A', 'B', 'A');          has_multiple_levels(object, 'subgroup')

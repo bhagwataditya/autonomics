@@ -18,6 +18,10 @@ read_contaminantdt(force = FALSE, verbose = TRUE)
 \item{fastafields}{charactervector : which fastahdr fields to extract ?}
 
 \item{verbose}{bool}
+
+\item{fastahdrs}{character vector}
+
+\item{force}{whether to overwrite existing file}
 }
 \value{
 data.table(uniprot, protein, gene, uniprot, reviewed, existence)

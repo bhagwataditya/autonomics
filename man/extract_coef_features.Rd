@@ -87,8 +87,6 @@ extract_coef_features(
 \item{sign}{effect sign}
 
 \item{n}{number of top features (Inf means all)}
-
-\item{sep}{string}
 }
 \value{
 SummarizedExperiment
@@ -101,6 +99,7 @@ Extract coefficient features
     file <- download_data('atkin.metabolon.xlsx')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()
+    fdt(object) \%<>\% add_adjusted_pvalues('fdr')
 # Single coef
     object0 <- object
     object \%<>\% .extract_p_features(         coefs = 't1', p = 0.05)

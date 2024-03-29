@@ -305,20 +305,17 @@ factor2logical <- function(x){
 #' @param genes     whether to report genes
 #' @examples
 #' # Read
+#'     pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
 #'     file <- download_data('atkin.somascan.adat')
 #'     object <- read_somascan(file, fit = 'limma', coefs = 't1')
 #'     fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #'     object %<>% abstract_fit()
-#' # Four flavours
-#'     pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
-#'     enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)))                                   # 2:n factor 
-#'     enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                     #     logical
-#'     enrichdt3 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)), levels = c('flat', 'down', 'up')) # 1:n factor
-#'     enrichdt4 <- enrichment(object, pathwaydt, var = 'flat', levels = c('flat', 'updown'))                       #     logical
-#' # Alternative implementation
-#'     enrichdt5 <-  altenrich(object, pathwaydt)   # alternative implementation
-#'     cols <- intersect(names(enrichdt1), names(enrichdt5))
-#'     all(enrichdt1[, cols, with = FALSE]  ==  enrichdt5[, cols, with = FALSE])   # identical
+#'     var <- abstractvar(fdt(object))
+#'     enrichdt1 <- enrichment(object, pathwaydt, var = var)                                   # 2:n factor 
+#'     enrichdt2 <- enrichment(object, pathwaydt, var = var, levels = c('flat', 'down', 'up')) # 1:n factor
+#'     enrichdt3 <-  altenrich(object, pathwaydt)                                              # alternative implementation
+#'     cols <- intersect(names(enrichdt1), names(enrichdt3))
+#'     all(enrichdt1[, cols, with = FALSE]  ==  enrichdt3[, cols, with = FALSE])   # identical
 #' @details
 #' Four enrichment analyses per geneset using the Fisher Exact Test (see four pvalues).
 #' Results are returned in a data.table
@@ -360,11 +357,11 @@ enrichment <- function(
     if (!is.null(fit ))  assert_scalar_subset(fit,  fits(fdt(object)))
     if (!is.null(coef))  assert_scalar_subset(coef, coefs(fdt(object)))
     # assert_is_vector(levels(fdt(object)[[var]]))
-    assert_scalar_subset(var, fvars(object))
+    assert_scalar_subset(var, fvars(object), .xname = get_name_in_parent(var))
     assert_is_factor(fdt(object)[[var]])
     assert_is_subset(levels, levels(fdt(object)[[var]]))
     assert_scalar_subset( genevar, names(pathwaydt))
-    if (any(is_non_missing_nor_empty_character(fdt(object)[[genevar]]))){
+    if (any(is_missing_or_empty_character(fdt(object)[[genevar]]))){
         cmessage("\t\tFirst run: `object %%<>%% filter_features(%s!='')`", genevar)
         cmessage("\t\t Then run: `enrichdt <- enrichment(object)`")
         return(NULL)
@@ -428,7 +425,8 @@ enrichment <- function(
         # Note : n=0 -> p=0 always (1 way  only to choose 0 from 0)
 }       #        n=1 -> p=0 always (1 way  only to choose 1 from 1)
         #        n=2 -> p=0 often  (2 ways only to choose 2 from 2)
-    
+
+
 #' Alternative Enrichment Analysis
 #' @details
 #' This is an alternative enrichent analysis implementation.

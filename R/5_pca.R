@@ -139,7 +139,7 @@ loadingmat <- function(
 #' @rdname scoremat
 #' @export
 loadings <- function(
-    object, method = 'pca', by = biplot_by(object, method), dim = 1, sep = FITSEP
+    object, method = 'pca', by = biplot_by(object, method), dim = 1
 ){
     sep <- guess_fitsep(fdt(object))
     cols <- loadingnames(method = method, by = by, dims = dim, sep = sep)

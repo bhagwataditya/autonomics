@@ -67,18 +67,15 @@ Results are returned in a data.table
 }
 \examples{
 # Read
+    pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
     file <- download_data('atkin.somascan.adat')
     object <- read_somascan(file, fit = 'limma', coefs = 't1')
     fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
     object \%<>\% abstract_fit()
-# Four flavours
-    pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
-    enrichdt1 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)))                                   # 2:n factor 
-    enrichdt2 <- enrichment(object, pathwaydt, var = 'flat')                                                     #     logical
-    enrichdt3 <- enrichment(object, pathwaydt, var = abstractvar(fdt(object)), levels = c('flat', 'down', 'up')) # 1:n factor
-    enrichdt4 <- enrichment(object, pathwaydt, var = 'flat', levels = c('flat', 'updown'))                       #     logical
-# Alternative implementation
-    enrichdt5 <-  altenrich(object, pathwaydt)   # alternative implementation
-    cols <- intersect(names(enrichdt1), names(enrichdt5))
-    all(enrichdt1[, cols, with = FALSE]  ==  enrichdt5[, cols, with = FALSE])   # identical
+    var <- abstractvar(fdt(object))
+    enrichdt1 <- enrichment(object, pathwaydt, var = var)                                   # 2:n factor 
+    enrichdt2 <- enrichment(object, pathwaydt, var = var, levels = c('flat', 'down', 'up')) # 1:n factor
+    enrichdt3 <-  altenrich(object, pathwaydt)                                              # alternative implementation
+    cols <- intersect(names(enrichdt1), names(enrichdt3))
+    all(enrichdt1[, cols, with = FALSE]  ==  enrichdt3[, cols, with = FALSE])   # identical
 }

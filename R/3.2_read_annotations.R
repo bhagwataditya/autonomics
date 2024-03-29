@@ -115,7 +115,9 @@ parse_uniprot_hdrs <- function(fastahdrs, fastafields = FASTAFIELDS){
 
 #' Read fasta hdrs
 #' @param fastafile    string (or charactervector)
+#' @param fastahdrs    character vector
 #' @param fastafields  charactervector : which fastahdr fields to extract ?
+#' @param force        whether to overwrite existing file
 #' @param verbose      bool
 #' @examples
 #' # uniprot hdrs
@@ -286,10 +288,9 @@ UNIPROTCOLS <- c('accession', 'reviewed', 'id', 'gene_primary', 'protein_existen
 #' @examples
 #' annotate_uniprot_rest( x = c('P00761', 'Q32MB2') )
 #' annotate_uniprot_rest( x = c('ENSBTAP00000006074', 'ENSP00000377550') )
-#'     parse_refseq_hdrs( x = "REFSEQ:XP_986630 Tax_Id=10090 Gene_Symbol=Krt33b")
 #' @export
 annotate_uniprot_rest <- function( x, columns = UNIPROTCOLS, verbose = TRUE ){
-    organism <- fragment <- existence <- reviewed <- NULL
+    organism <- fragment <- existence <- reviewed <- protein <- NULL
     if (is.null(x))  return(NULL)
     if (verbose){            cmessage('\t\t\tAnnotate %d proteins through uniprot restapi', length(x))
         if (length(x) < 10)  cmessage('\t\t\t\t%s', paste0(x, collapse = ', '))
@@ -741,17 +742,16 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #'                                               
 #' # Billing 2019: uniprothdrs + contaminants + maxquanthdrs
 #' #--------------------------------------------------------
-#'     profile <- download_data('billing19.proteingroups.txt')
-#'     fosfile <- download_data('billing19.phosphosites.txt')
-#' uniprotfile <- download_data('uniprot_hsa_20140515.fasta')
-#'   uniprothdrs <-  read_uniprotdt(uniprotfile)
-#'       prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
-#'       fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
-#' annotate_maxquant(prodt                                           )[, 1:8]
-#' annotate_maxquant(fosdt                                           )[, 1:8]
-#' annotate_maxquant(prodt, uniprothdrs = uniprothdrs                    )[, 1:8]
-#' annotate_maxquant(fosdt, uniprothdrs = uniprothdrs                    )[, 1:8]
-#' annotate_maxquant(prodt, uniprothdrs = uniprothdrs, restapi = TRUE    )[, 1:8]
+#' profile <- download_data('billing19.proteingroups.txt')
+#' fosfile <- download_data('billing19.phosphosites.txt')
+#'  upfile <- download_data('uniprot_hsa_20140515.fasta')
+#' prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
+#' fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
+#'     uniprothdrs <- read_uniprotdt(uniprotfile)
+#' contaminanthdrs <- read_contaminantdt()
+#'    maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`)
+#' annotate_maxquant(prodt, uniprothdrs, contaminanthdrs, maxquanthdrs)[, 1:8]
+#' annotate_maxquant(fosdt, uniprothdrs, contaminanthdrs, maxquanthdrs)[, 1:8]
 #' @md
 #' @export
 annotate_maxquant <- function(
@@ -906,9 +906,9 @@ annotate_uniprot_ws.SummarizedExperiment <- function(
 #' @param pspfile    phosphositeplus file
 #' @return  SummarizedExperiment
 #' @examples 
-#' phosphofile <- download_data('billing19.phosphosites.txt')
-#' proteinfile <- download_data('billing19.proteingroups.txt')
-#' object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
+#' fosfile <- download_data('billing19.phosphosites.txt')
+#' profile <- download_data('billing19.proteingroups.txt')
+#' object <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile)
 #' fdt(object)
 #' object %<>% add_psp()
 #' fdt(object)

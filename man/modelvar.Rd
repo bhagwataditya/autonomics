@@ -225,6 +225,7 @@ Get model variable
     object \%<>\% fit_limma()
     object \%<>\% fit_lm()
     featuredt <- fdt(object)
+    featuredt \%<>\% add_adjusted_pvalues('fdr')
 # modelvar
     modelvar(featuredt, 'p');                                          pvar(featuredt)
     modelvar(featuredt, 'effect');                                effectvar(featuredt)

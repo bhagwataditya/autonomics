@@ -22,6 +22,7 @@ compute_connections <- function(
     colors = make_colors(slevels(object, subgroupvar), guess_sep(object))
 ){
 # subgroup matrix, difference contrasts, limma
+    fdt(object) %<>% add_adjusted_pvalues('fdr')
     fdrvalues <- fdrmat(fdt(object))
     effects <- effectmat(fdt(object))
     colnames(fdrvalues) %<>% split_extract_fixed(FITSEP, 2)

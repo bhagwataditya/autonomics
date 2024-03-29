@@ -384,7 +384,7 @@ assert_is_fraction <- function(x, .xname = get_name_in_parent(x)){
 #'     rownames(object) <- sprintf('f%d', 1:3)
 #'     colnames(object) <- sprintf('s%d', 1:3)
 #'     object <- list(exprs = object)
-#'     object %<>% SummarizedExperiment()
+#'     object %<>% SummarizedExperiment::SummarizedExperiment()
 #'     object$subgroup <- c('A', 'A', 'A');          has_multiple_levels(object, 'group')
 #'     object$subgroup <- c('A', 'A', 'A');          has_multiple_levels(object, 'subgroup')
 #'     object$subgroup <- c('A', 'B', 'A');          has_multiple_levels(object, 'subgroup')
@@ -457,7 +457,7 @@ has_multiple_levels.SummarizedExperiment <- function(
 #' rownames(object) <- sprintf('f%d', 1:3)
 #' colnames(object) <- sprintf('s%d', 1:3)
 #' object <- list(exprs = object)
-#' object %<>% SummarizedExperiment()
+#' object %<>% SummarizedExperiment::SummarizedExperiment()
 #' object$group    <- 'group0'
 #' object$subgroup <- c('A', 'B', 'C')
 #' svars(object)

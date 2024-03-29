@@ -948,7 +948,6 @@ order_on_effect <- function(
 
 #' Extract coefficient features
 #' @param object      SummarizedXExperiment
-#' @param sep         string
 #' @param fit         subset of fits(fdt(object))
 #' @param coefs       subset of coefs(object)
 #' @param combiner    '|' or '&': how to combine multiple fits/coefs
@@ -964,6 +963,7 @@ order_on_effect <- function(
 #'     file <- download_data('atkin.metabolon.xlsx')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
+#'     fdt(object) %<>% add_adjusted_pvalues('fdr')
 #' # Single coef
 #'     object0 <- object
 #'     object %<>% .extract_p_features(         coefs = 't1', p = 0.05)
@@ -1049,6 +1049,7 @@ add_facetvars <- function(
     assert_scalar_subset(fit, fits(fdt(object)))
     assert_is_subset(coefs, autonomics::coefs(fdt(object), fit = fit))
 # Add
+    fdt(object) %<>% add_adjusted_pvalues('fdr')
     for (i in seq_along(coefs)){
                pvar <- autonomics::pvar(     fdt(object), fit = fit, coef = coefs[i])
              fdrvar <- autonomics::fdrvar(   fdt(object), fit = fit, coef = coefs[i])
@@ -1701,10 +1702,10 @@ plot_design <- function(object, codingfun = contr.treatment){
 #' @examples
 #' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
-#' fdt(object) %<>% extract(, 1)
 #' if (require(fpc))        fdt(fcluster(object, method = 'pamk'         ))
 #' if (require(stats))      fdt(fcluster(object, method = 'hclust', k = 3))
 #' if (require(apcluster))  fdt(fcluster(object, method = 'apcluster'    ))
+#' @noRd
 fcluster <- function( 
     object,  
     method = c('pamk', 'hclust', 'apcluster'),

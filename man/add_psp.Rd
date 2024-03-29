@@ -28,9 +28,9 @@ Download Phosphorylation_site_dataset.gz'.  \cr
 Save into: file.path(R_user_dir('autonomics','cache'),'phosphositeplus')
 }
 \examples{
-phosphofile <- download_data('billing19.phosphosites.txt')
-proteinfile <- download_data('billing19.proteingroups.txt')
-object <- read_maxquant_phosphosites(phosphofile = phosphofile, proteinfile = proteinfile)
+fosfile <- download_data('billing19.phosphosites.txt')
+profile <- download_data('billing19.proteingroups.txt')
+object <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile)
 fdt(object)
 object \%<>\% add_psp()
 fdt(object)

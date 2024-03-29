@@ -734,8 +734,7 @@ read_genex <- function(file){
 #'     fosfile <- download_data('billing19.phosphosites.txt')
 #'     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
 #'     pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
-#'     fos <- read_maxquant_phosphosites(
-#'               phosphofile = fosfile, proteinfile = profile, subgroups = subgroups)
+#'     fos <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgroups = subgroups)
 #'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #' # sumexplist to longdt

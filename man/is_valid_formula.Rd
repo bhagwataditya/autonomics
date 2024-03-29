@@ -39,7 +39,7 @@ object <- matrix(1:9, nrow = 3)
 rownames(object) <- sprintf('f\%d', 1:3)
 colnames(object) <- sprintf('s\%d', 1:3)
 object <- list(exprs = object)
-object \%<>\% SummarizedExperiment()
+object \%<>\% SummarizedExperiment::SummarizedExperiment()
 object$group    <- 'group0'
 object$subgroup <- c('A', 'B', 'C')
 svars(object)

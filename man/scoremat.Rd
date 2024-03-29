@@ -13,13 +13,7 @@ scores(object, method = "pca", by = biplot_by(object, method), dim = 1)
 
 loadingmat(object, method = "pca", by = biplot_by(object, method), dim = 1:2)
 
-loadings(
-  object,
-  method = "pca",
-  by = biplot_by(object, method),
-  dim = 1,
-  sep = FITSEP
-)
+loadings(object, method = "pca", by = biplot_by(object, method), dim = 1)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

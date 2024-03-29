@@ -23,5 +23,4 @@ Annotate uniprot/ensp
 \examples{
 annotate_uniprot_rest( x = c('P00761', 'Q32MB2') )
 annotate_uniprot_rest( x = c('ENSBTAP00000006074', 'ENSP00000377550') )
-    parse_refseq_hdrs( x = "REFSEQ:XP_986630 Tax_Id=10090 Gene_Symbol=Krt33b")
 }
