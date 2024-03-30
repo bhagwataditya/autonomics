@@ -1,7 +1,5 @@
 
 
-#' @importFrom assertive.base get_name_in_parent
-#' @importFrom assertive.base assert_engine
 assert_any_are_matching_regex <- function(x, pattern, opts_regex = NULL, 
                                           na_ignore = FALSE,
                                           severity = getOption("assertive.severity", "stop")){

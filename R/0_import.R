@@ -16,25 +16,6 @@ data.table::data.table
 
 
 #' @importFrom abind                  adrop
-#' @importFrom assertive.base         safe_deparse   set_cause   is_na   is_not_na   bapply
-#' @importFrom assertive.base         are_identical
-#' @importFrom assertive.base         assert_all_are_true   assert_any_are_true
-#' @importFrom assertive.base         assert_are_identical
-#' @importFrom assertive.base         assert_engine
-#' @importFrom assertive.base         assert_is_identical_to_false
-#' @importFrom assertive.base         assert_is_identical_to_true
-#' @importFrom assertive.base         false    get_name_in_parent
-#' @importFrom assertive.base         call_and_name   coerce_to   is2   use_first
-#' @importFrom assertive.files        assert_all_are_dirs   
-#' @importFrom assertive.files        assert_all_are_existing_files
-#' @importFrom assertive.files        is_existing_file
-#' @importFrom assertive.numbers      assert_all_are_in_left_open_range
-#' @importFrom assertive.numbers      assert_all_are_in_range
-#' @importFrom assertive.numbers      assert_all_are_less_than_or_equal_to
-#' @importFrom assertive.numbers      is_in_closed_range
-#' @importFrom assertive.numbers      is_greater_than   is_greater_than_or_equal_to
-#' @importFrom assertive.sets         assert_are_disjoint_sets
-#' @importFrom assertive.sets         assert_is_subset   is_subset
 #' @importFrom BiocFileCache          BiocFileCache   bfcquery   bfcadd   bfcrpath
 #' @importFrom BiocGenerics           cbind 
 #' @importFrom codingMatrices         code_control  code_diff   code_deviation

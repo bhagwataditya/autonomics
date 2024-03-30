@@ -1,49 +1,3 @@
-assert_is_all_of <- function(x, classes, 
-  severity = getOption("assertive.severity", "stop"))
-{  
-  msg <- gettextf(
-    "%s is not in all of the classes %s.", 
-    get_name_in_parent(x), 
-    toString(sQuote(classes))
-  )
-  assert_engine(
-    is2, 
-    x, 
-    class = classes, 
-    msg = msg, 
-    severity = severity
-  )
-}
-
-assert_is_any_of <- function(x, classes, 
-  severity = getOption("assertive.severity", "stop"))
-{  
-  msg <- gettextf(
-    "%s is not in any of the classes %s.", 
-    get_name_in_parent(x), 
-    toString(sQuote(classes))
-  )
-  assert_engine(
-    is2, 
-    x, 
-    class = classes, 
-    msg = msg, 
-    what = "any",
-    severity = severity
-  )
-}
-
-
-assert_is_character <- function(x, 
-  severity = getOption("assertive.severity", "stop"))
-{                                                         
-  assert_engine(
-    is_character, 
-    x, 
-    .xname = get_name_in_parent(x),
-    severity = severity
-  )
-}
 
 
 assert_is_data.frame <- function(x, 
@@ -129,15 +83,4 @@ assert_is_matrix <- function(x,
   )
 }
 
-
-assert_is_numeric <- function(x, 
-  severity = getOption("assertive.severity", "stop"))
-{                                                         
-  assert_engine(
-    is_numeric, 
-    x, 
-    .xname = get_name_in_parent(x),
-    severity = severity
-  )
-}
 

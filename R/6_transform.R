@@ -62,7 +62,7 @@ rm_singleton_samples <- function(object, subgroupvar = 'subgroup', verbose = TRU
 # which.medoid(mat)
 which.medoid <- function(mat){
     idx <- matrixStats::rowAnyNAs(mat)
-    assertive.base::assert_all_are_not_na(idx)
+    assert_all_are_not_na(idx)
     if (any(idx))  cmessage('\t\t\t\tUse %d/%d non-NA rows to compute spatial median', 
                            sum(idx), length(idx))
     mat %<>% extract(!idx, )

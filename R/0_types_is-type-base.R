@@ -1,28 +1,9 @@
 
 
-is_character <- function(x, .xname = get_name_in_parent(x))
-{
-  is2(x, "character", .xname)
-}
-
-
-is_complex <- function(x, .xname = get_name_in_parent(x))
-{
-  is2(x, "complex", .xname)
-}       
-
-
 is_data.frame <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "data.frame", .xname)
 }
-
-
-is_double <- function(x, .xname = get_name_in_parent(x))
-{
-  is2(x, "double", .xname)
-}
-
 
 
 is_factor <- function(x, .xname = get_name_in_parent(x))
@@ -50,30 +31,9 @@ is_list <- function(x, .xname = get_name_in_parent(x))
 
 
 
-is_logical <- function(x, .xname = get_name_in_parent(x))
-{
-  is2(x, "logical", .xname)
-}       
-
-
-
 is_matrix <- function(x, .xname = get_name_in_parent(x))
 {
   is2(x, "matrix", .xname)
-}
-
-
-
-is_numeric <- function(x, .xname = get_name_in_parent(x))
-{
-  is2(x, "numeric", .xname)
-}
-
-
-
-is_raw <- function(x, .xname = get_name_in_parent(x))
-{
-  is2(x, "raw", .xname)
 }
 
 

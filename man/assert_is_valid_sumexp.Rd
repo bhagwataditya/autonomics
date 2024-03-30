@@ -9,7 +9,7 @@ assert_is_valid_sumexp(x, .xname = get_name_in_parent(x))
 \arguments{
 \item{x}{SummarizedExperiment}
 
-\item{.xname}{see assertive.base::get_name_in_parent}
+\item{.xname}{see get_name_in_parent}
 }
 \value{
 TRUE or FALSE

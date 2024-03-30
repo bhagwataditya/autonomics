@@ -433,7 +433,7 @@ test_that(" read_proteingroups: billing19 , subgroups ", {
         object <- read_maxquant_proteingroups(file, subgroups = subgroups)
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
-        expect_true(assertive.sets::are_set_equal( slevels(object, 'subgroup'), subgroups))
+        expect_true(are_set_equal( slevels(object, 'subgroup'), subgroups))
 })
 
 

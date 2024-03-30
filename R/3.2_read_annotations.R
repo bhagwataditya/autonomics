@@ -399,7 +399,7 @@ parse_strep_contaminants <- function(hdrs){
 save_contaminant_hdrs <- function(confile = download_contaminants(), verbose = TRUE){
 # Assert
     if (  is.null(confile))  return(NULL)
-    assertive.base::assert_are_identical(tools::file_ext(confile), 'fasta')
+    assert_are_identical(tools::file_ext(confile), 'fasta')
     tsvfile <- file.path(dirname(confile), 'contaminants.tsv')    # dont mv up - breaks when NULL
     if (file.exists(tsvfile))  return(fread(tsvfile))
     if (!requireNamespace('Biostrings', quietly = TRUE)){

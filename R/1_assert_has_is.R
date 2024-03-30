@@ -84,11 +84,11 @@ has_valid_snames <- function(x, .xname = get_name_in_parent(x)){
 
 #' Is valid SummarizedExperiment
 #' @param x SummarizedExperiment
-#' @param .xname see assertive.base::get_name_in_parent
+#' @param .xname see get_name_in_parent
 #' @return TRUE or FALSE
 #' @noRd
 is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
-    if (!(ok <- assertive.base::is2(x, "SummarizedExperiment")))  return(ok)
+    if (!(ok <- is2(x, "SummarizedExperiment")))  return(ok)
     if (!(ok <- has_valid_fnames(x, .xname = .xname)))       return(ok)
     if (!(ok <- has_valid_snames(x, .xname = .xname)))       return(ok)
     TRUE
@@ -98,7 +98,7 @@ is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
 #' Assert that x is a valid SummarizedExperiment
 #'
 #' @param x SummarizedExperiment
-#' @param .xname see assertive.base::get_name_in_parent
+#' @param .xname see get_name_in_parent
 #' @return TRUE or FALSE
 #' @examples
 #' # VALID
@@ -290,7 +290,7 @@ assert_scalar_subset <- function(x, y, .xname = get_name_in_parent(x), .yname = 
 #' Is positive number
 #' @param x number
 #' @param .xname name of x
-#' @return TRUE or assertive.base::false
+#' @return TRUE or false
 #' @examples
 #' is_positive_number( 3)
 #' is_positive_number(-3)

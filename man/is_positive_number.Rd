@@ -21,7 +21,7 @@ assert_weakly_positive_number(x, .xname = get_name_in_parent(x))
 \item{.xname}{name of x}
 }
 \value{
-TRUE or assertive.base::false
+TRUE or false
 }
 \description{
 Is positive number

@@ -85,7 +85,6 @@ add_assay_means <- function(
 # Assert
     assert_is_all_of(object, 'SummarizedExperiment')
     assert_is_subset(assay, assayNames(object))
-    assertive.sets::are_disjoint_sets(assay, fvars(object))
 # Add
     if (is.null(assay))  return(object)
     for (.assay in assay){
