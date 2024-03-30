@@ -443,7 +443,21 @@
 # PROPERTIES
 #===========
 
+    #-----------
+    # null
+    #-----------
 
+
+        is_not_null <- function(x, .xname = get_name_in_parent(x)){
+            if(is.null(x))   return(false("%s is NULL.", .xname))
+            TRUE
+        }
+        
+        assert_is_not_null <- function(x, severity = getOption("assertive.severity", "stop")){                                                      
+            assert_engine(is_not_null, x, .xname = get_name_in_parent(x))   
+        }
+        
+        
     #-----------
     # duplicates
     #-----------
@@ -606,6 +620,19 @@
             metric <- match.arg(metric)
             metric_fn <- get_metric(metric)
             metric_fn(x, 0L, .xname)
+        }   
+        
+        
+
+        assert_is_empty <- function(
+            x, metric = c("length", "elements"), severity = getOption("assertive.severity", "stop")
+        ){                             
+            metric <- match.arg(metric)                             
+            assert_engine(  is_empty, 
+                                   x, 
+                              metric = metric, 
+                              .xname = get_name_in_parent(x),
+                            severity = severity  )
         }        
         
     #-------
@@ -656,6 +683,13 @@
                              severity = severity  )
         }
         
+        assert_is_logical <- function(x, severity = getOption("assertive.severity", "stop")){                                                         
+            assert_engine(  is_logical, 
+                                     x, 
+                                .xname = get_name_in_parent(x),
+                              severity = severity  )
+        }
+        
         
     #-------
     # number
@@ -689,6 +723,22 @@
                               severity = severity  )
         }
 
+    #-------
+    # factor
+    #-------
+        
+        is_factor <- function(x, .xname = get_name_in_parent(x)){
+            is2(x, "factor", .xname)
+        }
+        
+        
+        assert_is_factor <- function(x, severity = getOption("assertive.severity", "stop")){                                                         
+            assert_engine(  is_factor, 
+                                    x, 
+                               .xname = get_name_in_parent(x),
+                             severity = severity )
+        }
+        
                 
     #-------------------
     # character / string
@@ -723,6 +773,114 @@
         }
         
         
+    #--------
+    # formula
+    #--------
+
+        is_formula <- function(x, .xname = get_name_in_parent(x)){
+            is2(x, "formula", .xname)
+        }
+        
+        
+        is_one_sided_formula <- function(x, .xname = get_name_in_parent(x)){
+            if(!(ok <- is_formula(x, .xname)))       return(ok)
+            if(!(ok <- is_of_length(x, 2L, .xname))) return(ok)
+            TRUE
+        }
+
+                
+        assert_is_formula <- function(x, severity = getOption("assertive.severity", "stop")){                                                         
+            assert_engine( is_formula, 
+                                    x, 
+                               .xname = get_name_in_parent(x),
+                             severity = severity )
+        }
+        
+        
+    #---------
+    # function
+    #---------
+        
+        is_function <- function(x, .xname = get_name_in_parent(x)){
+            is2(x, "function", .xname)
+        }
+        
+        
+        assert_is_function <- function(x, severity = getOption("assertive.severity", "stop")){                                                         
+            assert_engine(  is_function, 
+                                      x, 
+                                 .xname = get_name_in_parent(x),
+                               severity = severity  )
+        }        
+        
+    #-----
+    # list
+    #-----
+        
+        is_list <- function(x, .xname = get_name_in_parent(x)){
+            is2(x, "list", .xname)
+        }
+        
+        
+        assert_is_list <- function(x, severity = getOption("assertive.severity", "stop")){                                                         
+            assert_engine(  is_list, 
+                                  x, 
+                             .xname = get_name_in_parent(x),
+                           severity = severity  )
+        }
+        
+        
+        
+        
+    #-------------------
+    # data.(frame|table)
+    #-------------------
+        
+        
+        is_data.frame <- function(x, .xname = get_name_in_parent(x)){
+            is2(x, "data.frame", .xname)
+        }
+        
+        
+        is_data.table <- function(x, .xname = get_name_in_parent(x)){
+            if(!(ok <- is_data.frame(x, .xname)))   return(ok)
+            is2(x, "data.table", .xname)
+        }
+        
+        
+        
+        assert_is_data.frame <- function(x, severity = getOption("assertive.severity", "stop")){                                                         
+            assert_engine(  is_data.frame, 
+                                        x, 
+                                   .xname = get_name_in_parent(x),
+                                 severity = severity )
+        }
+        
+        assert_is_data.table <- function(x, severity = getOption("assertive.severity", "stop")){                                                         
+            assert_engine(  is_data.table, 
+                                        x, 
+                                   .xname = get_name_in_parent(x),
+                                 severity = severity  )
+        }
+
+        
+    #-----------
+    # matrix
+    #-----------
+
+        is_matrix <- function(x, .xname = get_name_in_parent(x)){
+            is2(x, "matrix", .xname)
+        }
+        
+        
+        assert_is_matrix <- function(x, severity = getOption("assertive.severity", "stop")){                                                         
+            assert_engine(  is_matrix, 
+                                    x, 
+                               .xname = get_name_in_parent(x),
+                             severity = severity  )
+        }
+        
+        
     #------
     # class
     #------
@@ -740,8 +898,86 @@
                        severity = severity  )
         }
 
-
         
+#=========
+# STRINGS
+#=========
+        
+        
+        is_missing_or_empty_character <- function(x, .xname = get_name_in_parent(x)){ 
+            x <- coerce_to(x, "character", .xname)
+            ok <- !nzchar(x) | is_na(x)
+            set_cause(ok, "nonempty")
+        }
+        
+
+        is_non_missing_nor_empty_character <- function(x, .xname = get_name_in_parent(x)){ 
+            x <- coerce_to(x, "character", .xname)
+            ok <- nzchar(x) & !is_na(x)
+            set_cause(ok, ifelse(is.na(x), "missing", "empty"))
+        }
+        
+        
+        
+        assert_all_are_non_missing_nor_empty_character <- function(
+            x, severity = getOption("assertive.severity", "stop")
+        ){
+            .xname <- get_name_in_parent(x)
+            msg <- gettextf( "%s are not all non-missing nor non-empty strings.", .xname )
+            assert_engine(  is_non_missing_nor_empty_character, 
+                                                             x, 
+                                                        .xname = .xname,
+                                                           msg = msg, 
+                                                      severity = severity )
+        }
+        
+        #-------------------------------------------------------------------------------------
+        
+        
+        is_matching_regex <- function(
+            x, pattern, opts_regex = NULL, .xname = get_name_in_parent(x)
+        ){
+            x <- coerce_to(x, "character", .xname)
+            call_and_name(
+                function(x){
+                    ok <- stringi::stri_detect_regex(x, pattern, opts_regex = opts_regex)
+                    set_cause(ok, gettextf("does not match '%s'", pattern))
+                },
+                x
+            )
+        }
+        
+        
+        assert_any_are_matching_regex <- function(
+            x, pattern, opts_regex = NULL, na_ignore = FALSE, 
+            severity = getOption("assertive.severity", "stop")
+        ){
+            .xname <- get_name_in_parent(x)                                             
+            .fixedname <- get_name_in_parent(pattern)
+            msg <- sprintf( "%s does not match %s", .xname, .fixedname )
+            assert_engine(  is_matching_regex, 
+                                            x,
+                                      pattern,
+                                   opts_regex = opts_regex,
+                                       .xname = .xname,
+                                          msg = msg, 
+                                         what = 'any',
+                                    na_ignore = na_ignore,
+                                     severity = severity  )
+        }
+        
+        #-------------------------------------------------------------------------------------
+        
+        is_numeric_string <- function(x, .xname){
+            x <- coerce_to(x, "character", .xname)
+            ok <- call_and_name(
+                    function(x)  suppressWarnings(  {   numx <- as.numeric(x)
+                                                       is_not_na(numx)        } ),
+                    x )
+            set_cause(ok, ifelse(is.na(x), "missing", "bad format"))
+        }
+        
+                
 #=========
 # NUMBERS
 #=========

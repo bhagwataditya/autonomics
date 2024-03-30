@@ -356,7 +356,6 @@ enrichment <- function(
     assert_is_data.table(pathwaydt)
     if (!is.null(fit ))  assert_scalar_subset(fit,  fits(fdt(object)))
     if (!is.null(coef))  assert_scalar_subset(coef, coefs(fdt(object)))
-    # assert_is_vector(levels(fdt(object)[[var]]))
     assert_scalar_subset(var, fvars(object), .xname = get_name_in_parent(var))
     assert_is_factor(fdt(object)[[var]])
     assert_is_subset(levels, levels(fdt(object)[[var]]))
