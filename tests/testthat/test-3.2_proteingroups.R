@@ -385,8 +385,8 @@ test_that(" read_maxquant_proteingroups: file, fit = 'wilcoxon' ", {
     # Read
         file <- download_data('billing16.proteingroups.txt')
         invert <- c('EM_E', 'BM_E', 'EM_BM')
-        object <- read_maxquant_proteingroups(file, invert = invert, 
-                                              fit = 'wilcoxon', formula = formula)
+        formula <- ~0 + subgroup
+        object <- read_maxquant_proteingroups(file, invert = invert, fit = 'wilcoxon', formula = formula)
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
         expect_true(any(stri_detect_fixed(fvars(object), 'wilcoxon')))
