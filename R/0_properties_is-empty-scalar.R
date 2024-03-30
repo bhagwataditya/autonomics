@@ -70,63 +70,6 @@ has_elements <- function(x, n, .xname = get_name_in_parent(x))
   TRUE
 }
 
-is_of_dimension <- function(x, n, .xname = get_name_in_parent(x))
-{
-  dim_x <- dim(x)
-  # There are two cases to test: n is NULL, or n is a vector of natural 
-  # numbers.
-  if(is.null(n))
-  {
-    if(has_dims(x))
-    {
-      return(
-        false(
-          ngettext(
-            length(dim_x), 
-            "%s has dimension %s, not NULL.", 
-            "%s has dimensions %s, not NULL."
-          ), 
-          .xname,
-          deparse(dim_x)
-        )
-      )
-    }
-    return(TRUE)
-  }
-  check_n(n)
-  if(!is_of_length(dim_x, length(n)))
-  {
-    return(
-      false(
-        ngettext(
-          length(dim_x), 
-          "%s has %d dimension, not %d.", 
-          "%s has %d dimensions, not %d."
-        ),  
-        .xname, 
-        length(dim_x),
-        length(n)
-      )
-    )
-  }
-  differences <- dim_x != n
-  if(any(differences))
-  {
-    bad <- which(differences)
-    return(
-      false(
-        ngettext(
-          length(bad), 
-          "Dimension %s of %s is incorrect.", 
-          "Dimensions %s of %s are incorrect."
-        ), 
-        toString(bad), 
-        .xname
-      )
-    )
-  }
-  TRUE
-}
 
 is_of_length <- function(x, n, .xname = get_name_in_parent(x))
 {
