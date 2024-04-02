@@ -353,6 +353,7 @@ enrichment <- function(
 ){
 # Assert
     assert_is_valid_sumexp(object)
+    if (is.null(pathwaydt))  return(NULL)
     assert_is_data.table(pathwaydt)
     if (!is.null(fit ))  assert_scalar_subset(fit,  fits(fdt(object)))
     if (!is.null(coef))  assert_scalar_subset(coef, coefs(fdt(object)))
