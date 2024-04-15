@@ -19,7 +19,7 @@ string vector
 Get fit vars/dt
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 fitvars(object)
   fitdt(object)

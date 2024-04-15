@@ -40,11 +40,8 @@ Order on p
 }
 \examples{
 # Read
-    file <- download_data('atkin.metabolon.xlsx')
-    object <- read_metabolon(file)
-# no limma
-    object \%<>\% order_on_p()  # unchanged
-# with limma
-    object \%<>\% fit_limma(coefs = c('t1', 't2', 't3'))
-    object \%<>\% order_on_p()
+  file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+  object <- read_metabolon(file)
+  order_on_p(object)
+  order_on_p(fit_limma(object), coefs = c('t1', 't2', 't3'))
 }

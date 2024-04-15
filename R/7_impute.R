@@ -418,7 +418,7 @@ is_imputed_sample   <- function(object)     colAnys(is_imputed(object))
 #' @param by     svar to split by (string)
 #' @return  SummarizedExperiment list
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' objlist <- split_features(object, by = 'PLATFORM')
 #' objlist <- split_samples(object, 'Diabetes')

@@ -1,10 +1,10 @@
-#' Plot heatmap
-#' @param object SummarizedExperiment
-#' @param scale_features TRUE or FALSE: whether to scale (i.e. z-score) features
-#' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
-#' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'Time', block = 'Subject')
-#' object %<>% cluster()
+# Plot heatmap
+# @param object SummarizedExperiment
+# @param scale_features TRUE or FALSE: whether to scale (i.e. z-score) features
+# @examples 
+# file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+# object <- read_metabolon(file, fit = 'limma', subgroupvar = 'Time', block = 'Subject')
+# object %<>% cluster()
 feature_sample_heatmap <- function(object){
    
    # Reverse clutser information to have first item on top 
@@ -53,10 +53,10 @@ plot_cluster_contrastograms <- function(object, subgroupvar){
    lapply(fsplit(object, 'cluster'), plot_contrastogram, subgroupvar=subgroupvar)
 }
 
-#' Cluster features
-#' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
-#' object <- read_metabolon(file, fit = 'limma', subgroupvar = 'Time', block = '')
+# Cluster features
+# @examples 
+# file <- download_data('atkin.metabolon.xlsx')
+# object <- read_metabolon(file, fit = 'limma', subgroupvar = 'Time', block = '')
 cluster <- function(object, formula = ~ Subject + Time){
 
 # Fit

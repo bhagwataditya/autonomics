@@ -20,8 +20,9 @@ character vector
 Default geom
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
+object$Age <- runif(min = 20, max = 60, n = ncol(object))
 svars(object)
 default_geom(object, x = 'Age')
 default_geom(object, x = c('Age', 'Diabetes'))

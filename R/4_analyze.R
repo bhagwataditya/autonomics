@@ -29,7 +29,7 @@
 #' @param verbose    TRUE / FALSE: message?
 #' @return SummarizedExperiment
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% analyze()
 #' @export
@@ -79,7 +79,7 @@ analyze <- function(
 #' @param label    fvar
 #' @param palette  NULL or colorvector
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% pca()
 #' object %<>% pls(by = 'subgroup')

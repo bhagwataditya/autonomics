@@ -140,7 +140,7 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #' @return SummarizedExperiment
 #' @examples
 #' # read 
-#'     file <- download_data('atkin.metabolon.xlsx') 
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object0 <- read_metabolon(file)
 #'     pca(object0, plot = TRUE, color = 'Time')
 #' 
@@ -152,7 +152,7 @@ filter_medoid <- function(object, by = NULL, verbose = FALSE){
 #'     object <- subtract_pairs(object0, block = 'Subject', subgroupvar = 'Time')
 #'     pca(object, plot = TRUE, color = 'Time')
 #' 
-#' # subtract differences
+#' # subtract_differences
 #'     object <- subtract_differences(object0, block = 'Subject', subgroupvar = 'Time')
 #'     values(object) %<>% na_to_zero()
 #'     pca(object, plot = TRUE, color = 'Time')

@@ -24,7 +24,7 @@ data.table(contrast, nup, ndown)
 Summarize fit
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 object \%<>\% fit_limma()
 object \%<>\% fit_lm()

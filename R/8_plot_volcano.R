@@ -219,7 +219,7 @@ make_volcano_dt <- function(
 #' @return ggplot object
 #' @examples
 #' # Regular Usage
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
@@ -419,7 +419,7 @@ map_fvalues <- function(
 #' @param fdr fdr values
 #' @examples
 #' # Read/Fit
-#'    file <- download_data('atkin.metabolon.xlsx')
+#'    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'    object <- read_metabolon(file)
 #'    object %<>% fit_limma()
 #'    pcol <- pvar(fdt(object), fit = 'limma', coef = 't3')

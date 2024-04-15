@@ -16,7 +16,7 @@ no return (base R plot)
 Plot binary matrix
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 mat <- sdt(object)[, .(replicate, subgroup)]
 mat$present <- 1

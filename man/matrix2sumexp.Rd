@@ -18,7 +18,7 @@ SummarizedExperiment
 Convert matrix into SummarizedExperiment
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 x <- values(read_metabolon(file))
 object <- matrix2sumexp(x)
 object \%<>\% pca()

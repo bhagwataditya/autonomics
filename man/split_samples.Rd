@@ -26,7 +26,7 @@ SummarizedExperiment list
 Split samples by svar
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 objlist <- split_features(object, by = 'PLATFORM')
 objlist <- split_samples(object, 'Diabetes')

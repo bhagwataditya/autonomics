@@ -16,7 +16,7 @@ character vector
 Get fit models
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file, fit = 'limma')
 fits(fdt(object))
 }

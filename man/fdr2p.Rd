@@ -14,7 +14,7 @@ fdr to p
 }
 \examples{
 # Read/Fit
-   file <- download_data('atkin.metabolon.xlsx')
+   file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
    object <- read_metabolon(file)
    object \%<>\% fit_limma()
    pcol <- pvar(fdt(object), fit = 'limma', coef = 't3')

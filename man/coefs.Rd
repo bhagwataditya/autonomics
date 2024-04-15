@@ -35,7 +35,7 @@ Get coefs
     coefs(code(x, code_control))
     
 # SummarizedExperiment
-    file <- download_data('atkin.metabolon.xlsx')
+    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
     object <- read_metabolon(file, fit = 'limma')
     coefs(fdt(object))
 }

@@ -112,7 +112,7 @@ A General Linear Model contains:                                                
     x \%<>\% code(code_helmert_forward)
 
 # Model
-    file <- download_data('atkin.metabolon.xlsx')
+    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
     object <- read_metabolon(file)
     object \%<>\% fit_limma(codingfun = contr.treatment) # default
     object \%<>\% fit_limma(codingfun = contr.treatment.explicit)

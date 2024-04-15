@@ -20,7 +20,7 @@ Create default formula
 }
 \examples{
 # Abundances
-    file <- download_data('atkin.metabolon.xlsx')
+    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
     object <- read_metabolon(file)
     default_formula(object)
     file <- download_data('billing16.proteingroups.txt')

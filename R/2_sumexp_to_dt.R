@@ -42,7 +42,7 @@ sumexp_to_widedt <- function(
 #' @return data.table
 #' @examples
 #' # Atkin Hypoglycemia
-#'    file <- download_data('atkin.metabolon.xlsx')
+#'    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'    object <- read_metabolon(file)
 #'    sumexp_to_widedt(object)
 #'    sumexp_to_longdt(object)
@@ -156,7 +156,7 @@ sumexp_to_tsv <- function(object, assay = assayNames(object)[1], file){
 #' @param object SummarizedExperimenmt
 #' @return string vector
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' fitvars(object)
 #'   fitdt(object)
@@ -179,7 +179,7 @@ fitdt <- function(object){
 #' @param object SummarizedExperiment
 #' @return string vector
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' fitcoefs(object)
 #' fitcoefs(fit_limma(object))
@@ -218,7 +218,7 @@ extract_contrast_fdt <- function(object, fitcoef){ # fitcoef is needed because n
 #' @param fitcoefs character vector
 #' @return filepath
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, fit = 'limma')
 #' xlfile  <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.xlsx')
 #' odsfile <- file.path(tempdir(), 'fukuda20.proteingroups.fdt.ods')
@@ -326,7 +326,7 @@ dt2sumexp  <- function(
 #' @param verbose       TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' x <- values(read_metabolon(file))
 #' object <- matrix2sumexp(x)
 #' object %<>% pca()

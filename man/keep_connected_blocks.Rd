@@ -17,7 +17,7 @@ keep_connected_blocks(object, block, verbose = TRUE)
 Keep fully connected blocks
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 object \%<>\% keep_connected_blocks(  block = 'Subject')
 }

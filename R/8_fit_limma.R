@@ -37,7 +37,7 @@ default_subgroupvar <- function(object){
 #' @return formula
 #' @examples 
 #' # Abundances
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     default_formula(object)
 # # Ratios
@@ -81,7 +81,7 @@ character2factor <- function(x)  if (is.character(x)) factor(x) else x
 #' @param ...          required to s3ify
 #' @return design matrix
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' unique(create_design(object))
 #' unique(create_design(object, ~ Time))
@@ -211,7 +211,7 @@ create_design.data.table <- function(
 #'     x %<>% code(code_helmert_forward)
 #'
 #' # Model
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma(codingfun = contr.treatment) # default
 #'     object %<>% fit_limma(codingfun = contr.treatment.explicit)
@@ -530,7 +530,7 @@ vectorize_contrasts <- function(contrasts){
 #' @param coefs   character vector
 #' @param verbose TRUE or FALSE
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' (object <- read_metabolon(file))
 #' object %<>% reset_fit()
 #' object %<>% fit_limma() %>% reset_fit()
@@ -626,7 +626,7 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 #' @return Updated SummarizedExperiment
 #' @examples
 #' # Read
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     
 #' # Standard
@@ -877,7 +877,7 @@ pull_level <- function(x, lev){
 #' @param coefs string vector
 #' @return data.table(contrast, nup, ndown)
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' object %<>% fit_lm()
@@ -927,7 +927,7 @@ summarize_fit <- function(
 #' @param ncol number
 #' @param order TRUE or FALSE
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma(block = 'Subject')

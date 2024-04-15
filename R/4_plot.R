@@ -301,8 +301,8 @@ add_highlights <- function(p, x, hl, geom = geom_point, fixed_color = "black") {
 #' @return  ggplot object
 #' @examples
 #' # Data
-#'     file <- download_data('atkin.metabolon.xlsx')
-#'     object <- read_metabolon(file, plot = FALSE)
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#'     object <- read_metabolon(file)
 #'     object %<>% extract(, order(.$subgroup))
 #'     
 #' # Sample distributions
@@ -850,13 +850,10 @@ cmessage <- function(pattern, ...)  message(sprintf(pattern, ...))
 #' @param verbose  TRUE or FALSE
 #' @examples 
 #' # Read
-#'     file <- download_data('atkin.metabolon.xlsx')
-#'     object <- read_metabolon(file)
-#' # no limma
-#'     object %<>% order_on_p()  # unchanged
-#' # with limma
-#'     object %<>% fit_limma(coefs = c('t1', 't2', 't3'))
-#'     object %<>% order_on_p()
+#'   file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#'   object <- read_metabolon(file)
+#'   order_on_p(object)
+#'   order_on_p(fit_limma(object), coefs = c('t1', 't2', 't3'))
 #' @return SummarizedExperiment
 #' @export
 order_on_p <- function(
@@ -960,7 +957,7 @@ order_on_effect <- function(
 #' @return SummarizedExperiment
 #' @examples
 #' # Read and Fit
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #'     fdt(object) %<>% add_adjusted_pvalues('fdr')
@@ -970,18 +967,18 @@ order_on_effect <- function(
 #'     object %<>% .extract_fdr_features(       coefs = 't1', fdr = 0.05)
 #'     object %<>% .extract_effectsize_features(coefs = 't1', effectsize = 1)
 #'     object %<>% .extract_sign_features(      coefs = 't1', sign = -1)
-#'     object %<>% .extract_n_features(         coefs = 't1', n = 4)
+#'     object %<>% .extract_n_features(         coefs = 't1', n = 1)
 #'     object <- object0
-#'     object %<>%  extract_coef_features(coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+#'     object %<>%  extract_coef_features(coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 1)
 #' # Multiple coefs
 #'     object <- object0
 #'     object %<>% .extract_p_features(         coefs = c('t1', 't2'), p = 0.05)
-#'     object %<>% .extract_fdr_features(       coefs = c('t1', 't2'), fdr = 0.05)
+#'     object %<>% .extract_fdr_features(       coefs = c('t1', 't2'), fdr = 0.01)
 #'     object %<>% .extract_effectsize_features(coefs = c('t1', 't2'), effectsize = 1)
 #'     object %<>% .extract_sign_features(      coefs = c('t1', 't2'), sign = -1)
-#'     object %<>% .extract_n_features(         coefs = c('t1', 't2'), n = 4)
+#'     object %<>% .extract_n_features(         coefs = c('t1', 't2'), n = 1)
 #'     object <- object0
-#'     object %<>%  extract_coef_features(coefs = c('t1', 't2'), p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+#'     object %<>%  extract_coef_features(coefs = c('t1', 't2'), p = 0.05, fdr = 0.01, effectsize = 1, sign = -1, n = 1)
 #' @export
 extract_coef_features <- function(  
         object,
@@ -1034,7 +1031,7 @@ format_coef_vars <- function(
 #' @param coefs   string vector
 #' @return  SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, fit = 'limma')
 #' fdt(object)
 #' fdt(add_facetvars(object))
@@ -1210,7 +1207,7 @@ add_facetvars <- function(
 #'          \code{\link{plot_sample_violins}}
 #' @examples 
 #' # Without limma
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     plot_exprs(object, block = 'Subject', title = 'Subgroup Boxplots')
 #'     plot_exprs(object, dim = 'samples')
@@ -1367,7 +1364,7 @@ plot_feature_boxplots <- function(object, ...){
 #' @seealso \code{\link{plot_sample_densities}},
 #'          \code{\link{plot_sample_violins}}
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' object %<>% pls(by = 'subgroup')
@@ -1437,8 +1434,9 @@ default_subtitle <- function(fit, x, coefs){
 #' @param block  svar or NULL
 #' @return character vector
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
+#' object$Age <- runif(min = 20, max = 60, n = ncol(object))
 #' svars(object)
 #' default_geom(object, x = 'Age')
 #' default_geom(object, x = c('Age', 'Diabetes'))
@@ -1478,7 +1476,7 @@ default_geom <- function(object, x, block = NULL){
 #' @param theme       ggplot theme specifications
 #' @return ggplot object
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, fit = 'limma')
 #' idx <- order(fdata(object)$`p~t1~limma`)[1:9]
 #' object %<>% extract(idx, )
@@ -1595,11 +1593,11 @@ plot_venn <- function(x){
 #' @param colors NULL or colorvector
 #' @return nothing returned
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% fit_wilcoxon(~ subgroup, block = 'Subject')
 #' object %<>% fit_limma(   ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
-#' isfdr <- is_sig(object, contrast = 't3-t0')
+#' isfdr <- is_sig(object, contrast = 't3-t0', quantity = 'p', fit = fits(fdt(object)))
 #' plot_contrast_venn(isfdr)
 #' @export
 plot_contrast_venn <- function(issig, colors = NULL){
@@ -1612,7 +1610,7 @@ plot_contrast_venn <- function(issig, colors = NULL){
 #' Plot binary matrix
 #' @param mat matrix
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' mat <- sdt(object)[, .(replicate, subgroup)]
 #' mat$present <- 1

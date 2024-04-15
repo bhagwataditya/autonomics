@@ -94,7 +94,7 @@ variances <- function(
 #' @param by      svar (string)
 #' @param dim     numeric vector
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% pca()
 #'     scores(object)[1:2]
@@ -164,7 +164,7 @@ loadings <- function(
 #' @param ...             passed to biplot
 #' @return                SummarizedExperiment
 #' @examples
-#'  file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'  object <- read_metabolon(file)
 #'  pca(object, plot = TRUE)    # Principal Component Analysis
 #'  pls(object, plot = TRUE)    # Partial Least Squares
@@ -652,7 +652,7 @@ pca1 <- pca2 <- feature_name <- NULL
 #' @param alpha string
 #' @return character vector
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' make_alpha_palette(object, 'Time')
 #' @export
@@ -719,7 +719,7 @@ biplot_dims <- function(
 #' @param theme          ggplot2::theme output
 #' @return ggplot object
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% pca(ndim = 4)
 #' object %<>% pls(ndim = 4)
@@ -816,7 +816,7 @@ biplot <- function(
 #' @param plot        TRUE/FALSE: plot?
 #' @return  grid object
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, pca = TRUE, plot = FALSE)
 #' biplot_corrections(object, color = 'subgroup', covariates = c('Sex', 'Diabetes', 'Subject', 'Time'))
 #' @seealso biplot_covariates
@@ -869,7 +869,7 @@ biplot_corrections <- function(
 #' @param plot        TRUE or FALSE: whether to plot
 #' @return  ggplot object
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, pca = TRUE)
 #' biplot_covariates(object, covariates = 'subgroup', ndim = 12, dimcols = 3)
 #' biplot_covariates(object, covariates = c('Sex', 'Diabetes', 'Subject', 'Time'))

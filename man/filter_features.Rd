@@ -20,7 +20,7 @@ filtered eSet
 Filter features on condition
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 filter_features(object, SUPER_PATHWAY == 'Lipid')
 }

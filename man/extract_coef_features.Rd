@@ -96,7 +96,7 @@ Extract coefficient features
 }
 \examples{
 # Read and Fit
-    file <- download_data('atkin.metabolon.xlsx')
+    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
     object <- read_metabolon(file)
     object \%<>\% fit_limma()
     fdt(object) \%<>\% add_adjusted_pvalues('fdr')
@@ -106,16 +106,16 @@ Extract coefficient features
     object \%<>\% .extract_fdr_features(       coefs = 't1', fdr = 0.05)
     object \%<>\% .extract_effectsize_features(coefs = 't1', effectsize = 1)
     object \%<>\% .extract_sign_features(      coefs = 't1', sign = -1)
-    object \%<>\% .extract_n_features(         coefs = 't1', n = 4)
+    object \%<>\% .extract_n_features(         coefs = 't1', n = 1)
     object <- object0
-    object \%<>\%  extract_coef_features(coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+    object \%<>\%  extract_coef_features(coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 1)
 # Multiple coefs
     object <- object0
     object \%<>\% .extract_p_features(         coefs = c('t1', 't2'), p = 0.05)
-    object \%<>\% .extract_fdr_features(       coefs = c('t1', 't2'), fdr = 0.05)
+    object \%<>\% .extract_fdr_features(       coefs = c('t1', 't2'), fdr = 0.01)
     object \%<>\% .extract_effectsize_features(coefs = c('t1', 't2'), effectsize = 1)
     object \%<>\% .extract_sign_features(      coefs = c('t1', 't2'), sign = -1)
-    object \%<>\% .extract_n_features(         coefs = c('t1', 't2'), n = 4)
+    object \%<>\% .extract_n_features(         coefs = c('t1', 't2'), n = 1)
     object <- object0
-    object \%<>\%  extract_coef_features(coefs = c('t1', 't2'), p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 4)
+    object \%<>\%  extract_coef_features(coefs = c('t1', 't2'), p = 0.05, fdr = 0.01, effectsize = 1, sign = -1, n = 1)
 }

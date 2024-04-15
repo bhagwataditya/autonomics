@@ -13,7 +13,7 @@
 #' @param pathway_var kegg pathway fvar
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, plot = FALSE)
 #' object %<>% add_kegg_pathways()
 #' @references http://www.kegg.jp/kegg/rest/keggapi.html
@@ -89,8 +89,8 @@ kegg_entry_to_pathways <- function(x){
 #' @param object character/factor vector with pubchem ids
 #' @return character/factor vector
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
-#' object <- read_metabolon(file, plot = FALSE)
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#' object <- read_metabolon(file)
 #' # add_smiles(object[1:10, ]) # seems down
 #' @references https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial
 #' @export
@@ -228,7 +228,7 @@ pubchem_to_smiles <- function(x){
 #' @param verbose       TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' read_metabolon(file, plot = TRUE, block = 'Subject')
 #' @export
 read_metabolon <- function(file, sheet = 'OrigScale',

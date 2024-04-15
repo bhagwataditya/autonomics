@@ -42,7 +42,7 @@ ncols <- function(x, sheet=1){
 #'     is_fixed_col_file(file)
 #'
 #' # METABOLON
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     is_fixed_col_file(file)
 #' @noRd
 is_fixed_col_file <- function(file){

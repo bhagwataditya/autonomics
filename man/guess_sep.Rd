@@ -41,7 +41,7 @@ Guess separator
    guess_sep(c('WT_untreated_1', 'WT_untreated_2'))
    guess_sep(c('group1', 'group2.R1'))
 # SummarizedExperiment
-   file <- download_data('atkin.metabolon.xlsx')
+   file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
    object <- read_metabolon(file)
    guess_sep(object)
 }

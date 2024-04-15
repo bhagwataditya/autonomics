@@ -66,7 +66,7 @@ has_identical_values <- function(x) length(unique(x))==1
 #'    guess_sep(c('WT_untreated_1', 'WT_untreated_2'))
 #'    guess_sep(c('group1', 'group2.R1'))
 #' # SummarizedExperiment
-#'    file <- download_data('atkin.metabolon.xlsx')
+#'    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'    object <- read_metabolon(file)
 #'    guess_sep(object)
 #' @export
@@ -319,7 +319,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #' @return string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures)
 #' @examples 
 #' # Read
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
@@ -698,7 +698,7 @@ downfeatures <- function(
 #' @param featuredt feature data.table
 #' @return  character vector
 #' @examples 
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, fit = 'limma')
 #' fits(fdt(object))
 #' @export
@@ -726,7 +726,7 @@ fits <- function(featuredt){
 #'     coefs(code(x, code_control))
 #'     
 #' # SummarizedExperiment
-#'     file <- download_data('atkin.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file, fit = 'limma')
 #'     coefs(fdt(object))
 #' @export

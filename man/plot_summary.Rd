@@ -30,7 +30,7 @@ plot_summary(
 Plot summary
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 object \%<>\% pca()
 object \%<>\% pls(by = 'subgroup')

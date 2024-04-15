@@ -110,7 +110,7 @@ Perform a dimension reduction.
 Store sample scores, feature loadings, and dimension variances.
 }
 \examples{
- file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
  object <- read_metabolon(file)
  pca(object, plot = TRUE)    # Principal Component Analysis
  pls(object, plot = TRUE)    # Partial Least Squares

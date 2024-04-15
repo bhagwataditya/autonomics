@@ -28,7 +28,7 @@ loadings(object, method = "pca", by = biplot_by(object, method), dim = 1)
 Extract scores/loadings
 }
 \examples{
-file <- download_data('atkin.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 object \%<>\% pca()
     scores(object)[1:2]

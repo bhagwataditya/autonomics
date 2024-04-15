@@ -98,8 +98,8 @@ Plot sample/feature distributions
 }
 \examples{
 # Data
-    file <- download_data('atkin.metabolon.xlsx')
-    object <- read_metabolon(file, plot = FALSE)
+    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+    object <- read_metabolon(file)
     object \%<>\% extract(, order(.$subgroup))
     
 # Sample distributions
