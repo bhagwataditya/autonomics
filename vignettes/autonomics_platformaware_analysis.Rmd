@@ -179,8 +179,8 @@ object <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgr
 **Metabolon** delivers metabolomics results in the form of an **xlsx** file, with values of interest likely in the (second) **OrigScale** sheet. Features are laid out in rows, samples in columns, and additional feature/sample data are self-contained in the file. Metabolon data can be read/analyzed with the autonomics function `read_metabolon`, as illustrated below on the dataset of **Halama and and Atkin (2018)**, who investigates the effects of **hypoglycemia** on a number of subjects (**SUB**) at four different time points (**t0**, **t1**, **t2**, **t3**):
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
-file <- download_data('atkin18.metabolon.xlsx')
-object <- read_metabolon(file,  subgroupvar = 'SET', block = 'SUB', plot = TRUE)
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+object <- read_metabolon(file,  subgroupvar = 'subgroup', block = 'Subject', plot = TRUE)
 ```
 
 # Somascan
