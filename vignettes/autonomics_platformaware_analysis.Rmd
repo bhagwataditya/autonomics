@@ -188,8 +188,8 @@ object <- read_metabolon(file,  subgroupvar = 'subgroup', block = 'Subject', plo
 **Somascan** results are returned in a txt file with extension **.adat**. Features are laid out in columns and samples in rows. Rectangles with feature/sample data are also contained in the file. The autonomics function `read_somascan` reads/analyzes SOMAscan files, additionally filtering samples/features for quality and type. This is illustrated on the above described dataset from **Halama and and Atkin (2018)**, who investigated the effects of **hypoglycemia** on a number of subjects (**SUB**) at four different time points (**t0**, **t1**, **t2**, **t3**):
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
-file <- download_data('atkin18.somascan.adat')
-object <- read_somascan(file, block = 'Subject_ID', plot = TRUE)
+file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
+object <- read_somascan(file, block = 'Subject', plot = TRUE)
 ```
 
 <!--

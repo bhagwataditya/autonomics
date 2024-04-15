@@ -33,8 +33,9 @@ SummarizedExperiment
 Tag features
 }
 \examples{
-file <- download_data('atkin.somascan.adat')
+file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 object <- read_somascan(file)
 features <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = 'SYMBOL')
 object \%<>\% tag_features(keyvar = 'EntrezGeneSymbol', sep = ' ', features)
+table(fdt(object)$features)
 }

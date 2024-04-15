@@ -14,7 +14,7 @@
 #' @param verbose      TRUE/FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin.somascan.adat')
+#' file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 #' object <- read_somascan(file)
 #' object %<>% filter_samples(subgroup %in% c('t1', 't2'), verbose = TRUE)
 #' rm_singleton_samples(object, subgroupvar = 'Subject')

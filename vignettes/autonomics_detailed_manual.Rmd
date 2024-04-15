@@ -26,7 +26,7 @@ require(autonomics)
   profile <- download_data( 'billing19.proteingroups.txt' )
   fosfile <- download_data( 'billing19.phosphosites.txt' )
 diannfile <- download_data( 'dilution.report.tsv' )
- somafile <- download_data( 'atkin18.somascan.adat' )
+ somafile <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
  metafile <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 
   rnaobj <- read_rnaseq_counts(         file = rnafile)

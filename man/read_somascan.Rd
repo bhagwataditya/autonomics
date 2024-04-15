@@ -102,6 +102,6 @@ Summarizedexperiment
 Read somascan adatfile
 }
 \examples{
-file <- download_data('atkin.somascan.adat')
+file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 read_somascan(file, plot = TRUE, block = 'Subject')
 }

@@ -38,7 +38,7 @@ ncols <- function(x, sheet=1){
 #' @return TRUE or FALSE
 #' @examples
 #' # SOMASCAN
-#'     file <- download_data('atkin.somascan.adat')
+#'     file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 #'     is_fixed_col_file(file)
 #'
 #' # METABOLON

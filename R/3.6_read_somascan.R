@@ -163,7 +163,7 @@ rm_single_value_columns <- function(df){
 #' @param verbose               TRUE or FALSE: message?
 #' @return Summarizedexperiment
 #' @examples
-#' file <- download_data('atkin.somascan.adat')
+#' file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 #' read_somascan(file, plot = TRUE, block = 'Subject')
 #' @export
 read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',

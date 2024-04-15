@@ -249,10 +249,11 @@ keep_connected_features <- function(object, block, n = 2, verbose = TRUE){
 #' @param verbose   TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin.somascan.adat')
+#' file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 #' object <- read_somascan(file)
 #' features <- AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, keytype = 'SYMBOL')
 #' object %<>% tag_features(keyvar = 'EntrezGeneSymbol', sep = ' ', features)
+#' table(fdt(object)$features)
 #' @export
 tag_features <- function(
     object, keyvar, sep, features, tagvar = get_name_in_parent(features), verbose = TRUE
