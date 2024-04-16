@@ -474,9 +474,9 @@ fraction <- function(x, frac)  sum(x) >= frac*length(x)
 #' @examples
 #' file <- download_data('fukuda20.proteingroups.txt')
 #' object <- read_maxquant_proteingroups(file)
-#' head(systematic_nas(object))   # missing in some subgroups, present in others
-#' head(random_nas(object))       # missing in some samples, independent of subgroup
-#' head(no_nas(object))           # missing in no samples
+#' table(systematic_nas(object))   # missing in some subgroups, present in others
+#' table(random_nas(object))       # missing in some samples, independent of subgroup
+#' table(no_nas(object))           # missing in no samples
 #' @export
 systematic_nas <- function(object, by = 'subgroup', frac = 0.5){
 # Assert
@@ -487,9 +487,10 @@ systematic_nas <- function(object, by = 'subgroup', frac = 0.5){
 # Call
     nlevels <- length(unique(object[[by]]))
     dt <- sumexp_to_longdt(object, svars = by)
-    dt %<>% extract(, .(nalevel =      all( is.na(value)),
-                     valuelevel = fraction(!is.na(value), frac = frac)), by = c('feature_id', by) )
-    dt %<>% extract(, .SD[any(nalevel) & any(valuelevel)] , by = by)
+    dt <- dt[, .(   nalevel = all( is.na(value)),
+                 valuelevel = fraction(!is.na(value), frac = frac)), 
+             by = c('feature_id', by) ]
+    dt <- dt[, .SD[any(nalevel) & any(valuelevel)] , by = 'feature_id' ]
     y <- fnames(object) %in% as.character(dt[, feature_id])
 # Return
     y
