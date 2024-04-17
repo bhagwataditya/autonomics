@@ -71,7 +71,7 @@ Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
 }
 \examples{
 # Simple Design
-   file <- download_data('fukuda20.proteingroups.txt')
+   file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
    object <- read_maxquant_proteingroups(file)
    impute(values(object)[, 1], plot = TRUE)[1:3]              # vector
    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix

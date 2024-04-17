@@ -148,7 +148,7 @@ na_to_string <- function(x){
 #' @return numeric vector, matrix or SumExp
 #' @examples
 #' # Simple Design
-#'    file <- download_data('fukuda20.proteingroups.txt')
+#'    file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #'    object <- read_maxquant_proteingroups(file)
 #'    impute(values(object)[, 1], plot = TRUE)[1:3]              # vector
 #'    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
@@ -620,11 +620,12 @@ plot_summarized_detections <- function(...){
 #' @param ...          used to maintain deprecated functions
 #' @return ggplot object
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, impute = FALSE)
-#' plot_subgroup_nas(object)
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #' plot_sample_nas(object)
 #' plot_sample_nas(impute(object))
+#' plot_subgroup_nas(object)
+#' plot_subgroup_nas(impute(object))
 #'
 #' file <- download_data('halama18.metabolon.xlsx')
 #' object <- read_metabolon(file)
@@ -649,12 +650,14 @@ plot_sample_nas <- function(
     object[[by]] %<>% factor()
     object %<>% extract(, order(.[[by]]))
 # Reorder/block features
-    # object %<>% detect_order_features_old(by = by)
+    if ('is_imputed' %in% assayNames(object)){
+        assays(object)$imputed <- values(object)
+        values(object)[is_imputed(object)] <- NA
+    }
     object %<>% detect_order_features(by = by)
-    y <- object; values(y)[is_imputed(y)] <- NA
-    nfull       <- sum(no_nas(y))
-    nconsistent <- sum(systematic_nas(y, by = by))
-    nrandom     <- sum(random_nas(    y, by = by))
+    nfull       <- sum(        no_nas(object         ))
+    nconsistent <- sum(systematic_nas(object, by = by))
+    nrandom     <- sum(    random_nas(object, by = by))
 # Melt
     plotdt  <-  sumexp_to_longdt(object, svars = unique(c(by, fill)))
     alpha <- NULL
@@ -690,9 +693,9 @@ plot_sample_nas <- function(
     vlines %<>% extract(-length(.))
     vlines %<>% cumsum()
     vlines %<>% add(0.5)
-    p <- p + geom_hline(yintercept = hlines, size = 1)
-    p <- p + geom_hline(yintercept = fainthlines, size = 0.5)
-    p <- p + geom_vline(xintercept = vlines, size = 1)
+    p <- p + geom_hline( yintercept = hlines,      linewidth = 1   )
+    p <- p + geom_hline( yintercept = fainthlines, linewidth = 0.5 )
+    p <- p + geom_vline( xintercept = vlines,      linewidth = 1   )
     p +  guides(alpha = 'none')
 }
 
