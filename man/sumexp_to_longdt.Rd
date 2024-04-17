@@ -62,10 +62,13 @@ SummarizedExperiment to data.table
     sumexp_to_subrep_dt(object)
 
 # Fukuda
-   file <- download_data('fukuda20.proteingroups.txt')
-   object <- read_maxquant_proteingroups(file, impute = FALSE)
+   file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+   object <- read_maxquant_proteingroups(file)
+   values(object)
+   fdt(object)
+   object \%<>\% impute()
+   table(fdt(object)$imputed)
    sumexp_to_longdt(object)
-   object \%<>\% impute(plot = FALSE)
    sumexp_to_widedt(object)
    sumexp_to_longdt(object)
 }

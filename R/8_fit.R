@@ -782,7 +782,7 @@ coefs.data.table <- function(
 #' @param quantity  value in dimnames(metadata(object)[[fit]])[3]
 #' @return matrix: -1 (downregulated), +1 (upregulatd), 0 (not fdr significant)
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()

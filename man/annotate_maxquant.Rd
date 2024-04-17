@@ -38,7 +38,7 @@ Uncollapse, annotate, curate, recollapse, name
 \examples{
 # Fukuda 2020: contaminants + maxquanthdrs
 #-----------------------------------------
-          file <- download_data('fukuda20.proteingroups.txt')
+          file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
             dt <- .read_maxquant_proteingroups(file)
             dt[, 1:2]
      uniprothdrs <- NULL

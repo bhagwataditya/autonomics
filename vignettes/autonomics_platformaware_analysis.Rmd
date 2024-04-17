@@ -149,7 +149,7 @@ A popular approach in (DDA) MS proteomics data analysis is to use **MaxQuant** t
 An **LFQ intensities** example is the **Fukuda et al. (2020)** dataset, which compares the proteome of **30d** zebrafish juveniles versus **adults** using label-free quantification. In the volcano plot measured values are shown with circles, imputed values as triangles.
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
-file <- download_data('fukuda20.proteingroups.txt')
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file = file, plot = TRUE)
 ```
 

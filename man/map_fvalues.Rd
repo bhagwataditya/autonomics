@@ -24,7 +24,8 @@ string vector
 Map fvalues
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
-map_fvalues(object, c('A0A2R8Q0N1', 'Q5PQZ7'), from = 'uniprot', to = 'feature_id', sep = ';')
+fdt(object)
+map_fvalues(object, c('Q6DHL5', 'Q6PFS7'), from = 'uniprot', to = 'feature_id', sep = ';')
 }

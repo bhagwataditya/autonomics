@@ -20,9 +20,9 @@ boolean vector
 Detect fixed patterns in collapsed strings
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 x <- fdt(object)$uniprot
-patterns <- c('A0A2R8Q0N1', 'Q5PQZ7')
+patterns <- c('A0A0R4IKT8', 'Q7T3G6')
 table(stri_detect_fixed_in_collapsed(x = x, patterns = patterns, sep = ';'))
 }

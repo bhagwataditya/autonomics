@@ -41,7 +41,7 @@ Bin continuous variable
     object <- rnorm(10, 5, 1)
     bin(object)
 # SummarizedExperiment
-    file <- download_data('fukuda20.proteingroups.txt')
+    file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
     fdt(object <- read_maxquant_proteingroups(file))
     fdt(bin(object, 'pepcounts'))
 }

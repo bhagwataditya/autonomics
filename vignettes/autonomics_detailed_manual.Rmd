@@ -238,7 +238,7 @@ $$t = \frac{\textrm{difference}}{\frac{\textrm{sd + sd0}}{\sqrt n}}$$
 This moderated t statistic was then extended into a General Linear Model. Very interestingly this moderated General Linear Model was formulated in terms of generalized contrasts rather than original coefficients, and an interface was offered to express any scientific question as a custom contrasts of model coefficients. Returning to the simpler zebrafish dataset (Fukuda 2020), `limma` offers an very intuitive way to formulate custom contrasts, in combination with a model with no intercept:
 
 ```{r, message = FALSE}
-file <- download_data('fukuda20.proteingroups.txt')
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 object %<>% fit_limma(formula   = ~ 0 + subgroup, contrasts = c('Adult - X30dpt'))
 ```

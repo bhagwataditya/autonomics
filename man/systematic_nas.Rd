@@ -23,7 +23,7 @@ no_nas(object)
 Is systematic/random/full NA
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 table(systematic_nas(object))   # missing in some subgroups, present in others
 table(random_nas(object))       # missing in some samples, independent of subgroup

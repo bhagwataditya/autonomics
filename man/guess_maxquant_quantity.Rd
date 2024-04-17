@@ -17,7 +17,7 @@ Guess maxquant quantity from snames
 }
 \examples{
 # file
-    file <- download_data('fukuda20.proteingroups.txt')
+    file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
     guess_maxquant_quantity(file)
 
 # character vector

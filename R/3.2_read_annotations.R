@@ -125,7 +125,7 @@ parse_uniprot_hdrs <- function(fastahdrs, fastafields = FASTAFIELDS){
 #'      read_uniprotdt(fastafile)
 #'      
 #' # maxquant hdrs
-#'     file <- download_data('fukuda20.proteingroups.txt' )
+#'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #'     dt <- .read_maxquant_proteingroups(file)
 #'     parse_maxquant_hdrs(dt$`Fasta headers`)
 #'
@@ -729,7 +729,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #' @examples
 #' # Fukuda 2020: contaminants + maxquanthdrs
 #' #-----------------------------------------
-#'           file <- download_data('fukuda20.proteingroups.txt')
+#'           file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #'             dt <- .read_maxquant_proteingroups(file)
 #'             dt[, 1:2]
 #'      uniprothdrs <- NULL
@@ -825,8 +825,8 @@ paste_unique <- function(x, collapse) paste0(unique(x), collapse=collapse)
 #'     # annotate_uniprot_ws(x, upws)
 #'
 #' # SummarizedExperiment
-#'     file <- download_data('fukuda20.proteingroups.txt')
-#'     x <- read_maxquant_proteingroups(file, plot = FALSE)
+#'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#'     x <- read_maxquant_proteingroups(file)
 #'     x %<>% extract(1:10, )
 #'     fdt(x)[1:3, ]
 #'     # x %<>% annotate_uniprot_ws(upws)

@@ -24,7 +24,7 @@ character vector or SummarizedExperiment
 Invert expressions , subgroups, and sample ids
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, plot = FALSE)
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+object <- read_maxquant_proteingroups(file)
 invert_subgroups(object)
 }

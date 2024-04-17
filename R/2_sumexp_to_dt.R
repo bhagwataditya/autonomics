@@ -57,10 +57,13 @@ sumexp_to_widedt <- function(
 #'     sumexp_to_subrep_dt(object)
 #'
 #' # Fukuda
-#'    file <- download_data('fukuda20.proteingroups.txt')
-#'    object <- read_maxquant_proteingroups(file, impute = FALSE)
+#'    file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#'    object <- read_maxquant_proteingroups(file)
+#'    values(object)
+#'    fdt(object)
+#'    object %<>% impute()
+#'    table(fdt(object)$imputed)
 #'    sumexp_to_longdt(object)
-#'    object %<>% impute(plot = FALSE)
 #'    sumexp_to_widedt(object)
 #'    sumexp_to_longdt(object)
 #' @export
@@ -142,7 +145,7 @@ sumexp_to_subrep_dt <- function(object, subgroup=subgroup){
 #' @param file filename
 #' @return NULL
 #' @examples 
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
 #' tsv <- file.path(tempdir(), 'fukuda20.proteingroups.tsv')
 #' sumexp_to_tsv(object, file = tsv)

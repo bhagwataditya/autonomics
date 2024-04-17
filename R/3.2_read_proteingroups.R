@@ -26,7 +26,7 @@ MAXQUANT_PATTERNS <- c(
 #' @return  string: value from names(MAXQUANT_PATTERNS)
 #' @examples
 #' # file
-#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #'     guess_maxquant_quantity(file)
 #'
 #' # character vector
@@ -381,7 +381,7 @@ is_file <- function(file){
 #' @return SummarizedExperiment
 #' @examples
 #' # fukuda20 - LFQ
-#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #'     pro <- read_maxquant_proteingroups(file = file)
 #'     
 #' # billing19 - Normalized Ratios
@@ -602,10 +602,9 @@ read_phosphosites <- function(...){
 #' @param  sep        string: collapsed string separator
 #' @return character vector or SummarizedExperiment
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #' invert_subgroups(object)
-#' @export
 #' @export
 invert_subgroups <- function(
     object, 
@@ -790,8 +789,8 @@ process_maxquant <- function(
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #' log2proteins(object)[1:3, 1:3]
 #' @rdname log2proteins
 #' @export
@@ -832,8 +831,8 @@ function(object, value){
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #' log2sites(object)[1:3, 1:3]
 #' @rdname log2sites
 #' @export
@@ -874,8 +873,8 @@ function(object, value){
 #' @param value occupancy matrix (features x samples)
 #' @return occpuancy matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot=FALSE)
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #' log2diffs(object)[1:3, 1:3]
 #' @rdname log2diffs
 #' @export

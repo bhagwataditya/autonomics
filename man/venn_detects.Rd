@@ -18,7 +18,7 @@ venn_detects(object, by = "subgroup")
 Venn diagram full/consistent/random detects
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+object <- read_maxquant_proteingroups(file)
 venn_detects(object, 'subgroup')
 }

@@ -39,7 +39,7 @@ existence values are always those of the canonical isoform
      read_uniprotdt(fastafile)
      
 # maxquant hdrs
-    file <- download_data('fukuda20.proteingroups.txt' )
+    file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
     dt <- .read_maxquant_proteingroups(file)
     parse_maxquant_hdrs(dt$`Fasta headers`)
 

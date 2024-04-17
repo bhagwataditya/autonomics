@@ -277,8 +277,8 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' @param  delog    TRUE or FALSE (vsn)
 #' @return Transformed sumexp
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #'
 #' object                       %>% plot_sample_densities()
 #' invnorm(object)              %>% plot_sample_densities()
@@ -287,7 +287,7 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' quantnorm(object)            %>% plot_sample_densities()
 #'
 #' object                       %>% plot_sample_densities()
-#' vsn(object)                  %>% plot_sample_densities()
+#'#vsn(object)                  %>% plot_sample_densities()  # dataset too small
 #'
 #' object                       %>% plot_sample_densities()
 #' zscore(object)               %>% plot_sample_densities()
@@ -346,17 +346,17 @@ zscore <- function(object, verbose = FALSE){
 #' @return SummarizedExperiment
 #' @examples
 #' require(matrixStats)
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
-#' fdata(object)$housekeeping <- FALSE
-#' fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
+#' fdt(object)$housekeeping <- FALSE
+#' fdt(object)$housekeeping[order(rowVars(values(object)))[1:5]] <- TRUE
 #' values(object)[, object$subgroup=='Adult'] %<>% magrittr::add(5)
 #' plot_sample_densities(object)
 #' plot_sample_densities(center(object))
 #' plot_sample_densities(center(object, housekeeping))
 #' @export
-center <- function(object, selector = rep(TRUE, nrow(object))==TRUE,
-                    fun = 'median', verbose = TRUE
+center <- function(
+    object, selector = rep(TRUE, nrow(object))==TRUE, fun = 'median', verbose = TRUE
 ){
     selector <- enexpr(selector)
     selector <- rlang::eval_tidy(selector, data = fdata(object))
@@ -502,7 +502,7 @@ plot_transformation_violins <- function(
 }
 
 
-# file <- download_data('fukuda20.proteingroups.txt')
+# file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 # object <- read_maxquant_proteingroups(file)
 # plot_transformation_biplots(object)
 plot_transformation_biplots <- function(

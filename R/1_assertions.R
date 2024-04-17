@@ -148,7 +148,7 @@ assert_is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
 #' is_maxquant_proteingroups(file)
 #' is_maxquant_phosphosites(file)
 #'
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' is_diann_report(file)
 #' is_fragpipe_tsv(file)
 #' is_maxquant_proteingroups(file)
@@ -265,7 +265,7 @@ assert_fastadt <- function(x, .xname = get_name_in_parent(x)){
 #' @param .xname name of x
 #' @param .yname name of y
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' is_scalar_subset('subgroup',     svars(object))
 #' is_scalar_subset('subject',      svars(object))

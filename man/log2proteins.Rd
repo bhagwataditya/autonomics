@@ -30,7 +30,7 @@ occpuancy matrix (get) or updated object (set)
 Get/Set log2proteins
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, plot = FALSE)
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+object <- read_maxquant_proteingroups(file)
 log2proteins(object)[1:3, 1:3]
 }

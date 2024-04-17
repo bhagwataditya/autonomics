@@ -1773,10 +1773,9 @@ fcluster <- function(
 #' @param group            sample groupvar
 #' @param verbose          TRUE or FALSE
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file, fit = 'limma')
 #' plot_heatmap(object)
-#' plot_heatmap(object, cluster_samples = FALSE)
 #' @export
 plot_heatmap <- function( 
               object,

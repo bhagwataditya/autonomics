@@ -24,7 +24,7 @@ default_coefs <- function(featuredt, fit = fits(featuredt)){
 #'     object <- rnorm(10, 5, 1)
 #'     bin(object)
 #' # SummarizedExperiment
-#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #'     fdt(object <- read_maxquant_proteingroups(file))
 #'     fdt(bin(object, 'pepcounts'))
 #' @export
@@ -72,10 +72,12 @@ bin.SummarizedExperiment <- function(
 #' @param bin    TRUE or FALSE
 #' @return SummarizedExperiment
 #' @examples 
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
+#' fdt(object) %<>% extract(, 1:2)
 #' fdt(object)
-#' fdt(add_assay_means(object))
+#' object %<>% add_assay_means(assayNames(.))
+#' fdt(object)
 #' @export
 add_assay_means <- function(
     object, 
@@ -105,8 +107,10 @@ add_assay_means <- function(
 #' @param fit       'limma', 'lm', 'lme', 'lmer'
 #' @param coefs      coefficient (string)
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
+#' fdt(object) %<>% extract(, 1:2)
+#' fdt(object)
 #' object %<>% fit_limma(coef = 'Adult')
 #' object %<>% extract(order(fdt(.)$`p~Adult~limma`), )
 #' fdt(object)
@@ -144,7 +148,7 @@ add_adjusted_pvalues <- function(
 #' @param label   fvar or NULL
 #' @return data.table
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma')
 #' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
 #' @export
@@ -233,7 +237,7 @@ make_volcano_dt <- function(
 #'     plot_volcano(object, coefs = 't3', fit = 'limma')
 #' 
 #' # Additional mappings
-#'     file <- download_data('fukuda20.proteingroups.txt')
+#'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #'     object <- read_maxquant_proteingroups(file, impute = TRUE)
 #'     object %<>% fit_limma()
 #'     plot_volcano(object)
@@ -360,10 +364,10 @@ plot_volcano <- function(
 #' @param sep       collapse separator (string) or NULL (if uncollapsed)
 #' @return boolean vector
 #' @examples 
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' x <- fdt(object)$uniprot
-#' patterns <- c('A0A2R8Q0N1', 'Q5PQZ7')
+#' patterns <- c('A0A0R4IKT8', 'Q7T3G6')
 #' table(stri_detect_fixed_in_collapsed(x = x, patterns = patterns, sep = ';'))
 #' @export
 stri_detect_fixed_in_collapsed <- function(x, patterns, sep){
@@ -391,9 +395,10 @@ stri_detect_fixed_in_collapsed <- function(x, patterns, sep){
 #' @param sep      collapse separator
 #' @return string vector
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
-#' map_fvalues(object, c('A0A2R8Q0N1', 'Q5PQZ7'), from = 'uniprot', to = 'feature_id', sep = ';')
+#' fdt(object)
+#' map_fvalues(object, c('Q6DHL5', 'Q6PFS7'), from = 'uniprot', to = 'feature_id', sep = ';')
 #' @export
 map_fvalues <- function(
     object, 

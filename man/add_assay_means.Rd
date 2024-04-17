@@ -20,8 +20,10 @@ SummarizedExperiment
 Add assay means
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
+fdt(object) \%<>\% extract(, 1:2)
 fdt(object)
-fdt(add_assay_means(object))
+object \%<>\% add_assay_means(assayNames(.))
+fdt(object)
 }

@@ -472,7 +472,7 @@ fraction <- function(x, frac)  sum(x) >= frac*length(x)
 #' @param by     svar (string)
 #' @param frac   fraction
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' table(systematic_nas(object))   # missing in some subgroups, present in others
 #' table(random_nas(object))       # missing in some samples, independent of subgroup
@@ -525,8 +525,8 @@ no_nas <- function(object){
 #' @param by      svar (string)
 #' @return  \code{NULL}
 #' @examples
-#' file <- download_data('fukuda20.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, impute = FALSE, plot = FALSE)
+#' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #' venn_detects(object, 'subgroup')
 #' @export
 venn_detects <- function(object, by = 'subgroup'){

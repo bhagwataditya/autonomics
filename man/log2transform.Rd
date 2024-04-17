@@ -44,8 +44,8 @@ Transformed sumexp
 Transform values
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+object <- read_maxquant_proteingroups(file)
 
 object                       \%>\% plot_sample_densities()
 invnorm(object)              \%>\% plot_sample_densities()
@@ -54,7 +54,7 @@ object                       \%>\% plot_sample_densities()
 quantnorm(object)            \%>\% plot_sample_densities()
 
 object                       \%>\% plot_sample_densities()
-vsn(object)                  \%>\% plot_sample_densities()
+#vsn(object)                  \%>\% plot_sample_densities()  # dataset too small
 
 object                       \%>\% plot_sample_densities()
 zscore(object)               \%>\% plot_sample_densities()

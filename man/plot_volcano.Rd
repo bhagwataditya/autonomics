@@ -78,7 +78,7 @@ Plot volcano
     plot_volcano(object, coefs = 't3', fit = 'limma')
 
 # Additional mappings
-    file <- download_data('fukuda20.proteingroups.txt')
+    file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
     object <- read_maxquant_proteingroups(file, impute = TRUE)
     object \%<>\% fit_limma()
     plot_volcano(object)

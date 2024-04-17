@@ -28,10 +28,10 @@ Center samples
 }
 \examples{
 require(matrixStats)
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, plot = FALSE, impute = FALSE)
-fdata(object)$housekeeping <- FALSE
-fdata(object)$housekeeping[order(rowVars(values(object)))[1:100]] <- TRUE
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+object <- read_maxquant_proteingroups(file)
+fdt(object)$housekeeping <- FALSE
+fdt(object)$housekeeping[order(rowVars(values(object)))[1:5]] <- TRUE
 values(object)[, object$subgroup=='Adult'] \%<>\% magrittr::add(5)
 plot_sample_densities(object)
 plot_sample_densities(center(object))

@@ -27,8 +27,10 @@ SummarizedExperiment
 Add adjusted pvalues
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
+fdt(object) \%<>\% extract(, 1:2)
+fdt(object)
 object \%<>\% fit_limma(coef = 'Adult')
 object \%<>\% extract(order(fdt(.)$`p~Adult~limma`), )
 fdt(object)

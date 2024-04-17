@@ -56,11 +56,12 @@ Random missingness and full detection are shown together (bright color).
 Imputations are also shown (light color).
 }
 \examples{
-file <- download_data('fukuda20.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, impute = FALSE)
-plot_subgroup_nas(object)
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
+object <- read_maxquant_proteingroups(file)
 plot_sample_nas(object)
 plot_sample_nas(impute(object))
+plot_subgroup_nas(object)
+plot_subgroup_nas(impute(object))
 
 file <- download_data('halama18.metabolon.xlsx')
 object <- read_metabolon(file)
