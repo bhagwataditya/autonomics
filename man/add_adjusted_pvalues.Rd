@@ -8,7 +8,8 @@ add_adjusted_pvalues(
   featuredt,
   method,
   fit = fits(featuredt),
-  coefs = default_coefs(featuredt, fit = fit)
+  coefs = default_coefs(featuredt, fit = fit),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -30,10 +31,10 @@ Add adjusted pvalues
 file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 fdt(object) \%<>\% extract(, 1:2)
-fdt(object)
 object \%<>\% fit_limma(coef = 'Adult')
 object \%<>\% extract(order(fdt(.)$`p~Adult~limma`), )
-fdt(object)
-fdt(object) \%>\% add_adjusted_pvalues('fdr')
-fdt(object) \%>\% add_adjusted_pvalues('bonferroni')
+ fdt(object)
+(fdt(object) \%<>\% add_adjusted_pvalues('fdr'))
+(fdt(object) \%<>\% add_adjusted_pvalues('fdr'))      # smart enough not to add second column
+(fdt(object) \%>\% add_adjusted_pvalues('bonferroni'))
 }
