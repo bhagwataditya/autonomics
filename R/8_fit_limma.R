@@ -898,7 +898,10 @@ summarize_fit <- function(
     cols <- names(featuredt) %>% extract(stri_detect_fixed(., sep))
     featuredt %<>% extract(, c('feature_id', cols), with = FALSE)
     featuredt %<>% add_adjusted_pvalues(method = 'fdr', fit = fit, coefs = coefs)
-
+    assert_has_no_duplicates(names(featuredt))
+        # Good to make sure!
+        # Because if there are duplicate cols then the dcasting further down is no longer unique
+        # And dcasting then resorts to meaningless length aggregation
     longdt <- featuredt %>% melt.data.table(id.vars = 'feature_id')
     longdt[, statistic    := split_extract_fixed(variable, sep, 1) %>% factor(unique(.))]
     longdt[,  coefficient := split_extract_fixed(variable, sep, 2) %>% factor(unique(.))]
