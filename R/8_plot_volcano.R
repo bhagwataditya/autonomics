@@ -128,11 +128,10 @@ add_adjusted_pvalues <- function(
 # Assert
     assert_is_data.table(featuredt)
     assert_is_subset(method, stats::p.adjust.methods)
-    fdrvar <- paste(method, coefs, fit, sep = FITSEP)
-    if ( fdrvar %in% names(featuredt) ){
-        if (verbose)  cmessage('          fdr values already contained : return asis')
-        return(featuredt)
-    }
+# Reset
+    fdrvars <- paste(method, coefs, fit, sep = FITSEP)
+    fdrvars %<>% intersect(names(featuredt))
+    featuredt[ , (fdrvars) := NULL ]
 # Compute
     sep <- guess_fitsep(featuredt)
     adjdt <- pdt(featuredt, fit = fit, coef = coefs)
