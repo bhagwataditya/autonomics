@@ -353,8 +353,10 @@ modelvar <- function(
     assert_is_subset(quantity, c('fdr', 'p', 't', 'effect', 'se', 'abstract'))
     assert_is_subset(fit,   fits(featuredt))
     assert_is_subset(coef, coefs(featuredt, fit = fit))
-# Return
-    sep <- guess_fitsep(featuredt)
+    assert_has_no_duplicates(fit)   # Avoid duplicate columns
+    assert_has_no_duplicates(coef)  # Downstream functionality melts and dcasts
+# Return                            # Which requires the cast to be unique
+    sep <- guess_fitsep(featuredt)  # Else length rather than data values are entered
     x <- expand.grid(quantity = quantity, fit = fit, coef = coef)
     x <-  paste(x$quantity, x$coef, x$fit, sep = sep)
     x %<>% intersect(names(featuredt))     # fits dont always contain same coefs: 
