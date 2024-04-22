@@ -132,7 +132,9 @@ un_int64 <- function(x) {
     if (verbose)  cmessage('%sphosphosites    %s', spaces(14), file)
     fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     fosdt %<>% un_int64()
-    pattern <- MAXQUANT_PATTERNS[[quantity]]
+# Extract relevant columns
+    fosdt[Reverse == '+', Proteins := Protein]  # the proteins column is empty in (only) reverse
+    pattern <- MAXQUANT_PATTERNS[[quantity]]    # this fails the feature_id naming
     anncols <- c('id', 'Protein group IDs', 'Proteins', 
                  'Positions within proteins', 'Amino acid', 
                  'Reverse', 'Contaminant', 'Potential contaminant', 'Fasta headers')
