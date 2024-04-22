@@ -742,12 +742,9 @@ plot_subgroup_nas <- function(
     values(object) %<>% zero_to_na()  #### TODO fine-tune
     featuretypes <- get_subgroup_combinations(object, by)
     dt <- sumexp_to_longdt(object, svars = by)
-    if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE,
-                                                        value := NA]
-    dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))),
-                    by = c(by, 'feature_id'))
-    dt %<>% dcast.data.table(
-        as.formula(paste0('feature_id ~ ', by)), value.var = 'quantified')
+    if (na_imputes) if ('is_imputed' %in% names(dt))  dt[is_imputed==TRUE, value := NA]
+    dt %<>% extract(, .(quantified   = as.numeric(any(!is.na(value)))), by = c(by, 'feature_id'))
+    dt %<>% dcast.data.table(as.formula(paste0('feature_id ~ ', by)), value.var = 'quantified')
     dt %<>% merge(featuretypes, by = setdiff(names(featuretypes), 'type'))
     dt %<>% extract(,.(nfeature=.N), by = 'type')
     dt %<>% merge(featuretypes, by = 'type')
