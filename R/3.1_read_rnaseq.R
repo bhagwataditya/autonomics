@@ -1151,3 +1151,44 @@ read_salmon <- function(
     fdt(object)$gene <- ensembldb::mapIds(ensdb, keys = fdt(object)$enst, keytype = 'TXID', column = 'GENENAME')
     object
 }
+
+
+
+#' @export
+xlgenesdt <- set_names ( data.table( rbind( 
+                c( '2-Mar', 'MTARC2'  ), c('MARC2',   'MTARC2'  ),  #  1
+                c( '3-Mar', 'MARCHF3' ), c('MARCH3',  'MARCHF3' ),  #  2 
+                c( '4-Mar', 'MARCHF4' ), c('MARCH4',  'MARCHF4' ),  #  3
+                c( '6-Mar', 'MARCHF6' ), c('MARCH6',  'MARCHF6' ),  #  4
+                c( '7-Mar', 'MARCHF7' ), c('MARCH7',  'MARCHF7' ),  #  5
+                c( '8-Mar', 'MARCHF8' ), c('MARCH8',  'MARCHF8' ),  #  6
+                c( '9-Mar', 'MARCHF9' ), c('MARCH9',  'MARCHF9' ),  #  7
+                c('10-Mar', 'MARCHF10'), c('MARCH10', 'MARCHF10'),  #  8
+                c( '1-Sep', 'SEPTIN1' ), c('SEPT1',   'SEPTIN1' ),  #  9
+                c( '2-Sep', 'SEPTIN2' ), c('SEPT2',   'SEPTIN2' ),  # 10
+                c( '3-Sep', 'SEPTIN3' ), c('SEPT3',   'SEPTIN3' ),  # 11
+                c( '4-Sep', 'SEPTIN4' ), c('SEPT4',   'SEPTIN4' ),  # 12
+                c( '5-Sep', 'SEPTIN5' ), c('SEPT5',   'SEPTIN5' ),  # 13
+                c( '6-Sep', 'SEPTIN6' ), c('SEPT6',   'SEPTIN6' ),  # 14
+                c( '7-Sep', 'SEPTIN7' ), c('SEPT7',   'SEPTIN7' ),  # 15
+                c( '8-Sep', 'SEPTIN8' ), c('SEPT8',   'SEPTIN8' ),  # 16
+                c( '9-Sep', 'SEPTIN9' ), c('SEPT9',   'SEPTIN9' ),  # 17
+                c('10-Sep', 'SEPTIN10'), c('SEPT10',  'SEPTIN10'),  # 18
+                c('11-Sep', 'SEPTIN11'), c('SEPT11',  'SEPTIN11'),  # 19
+                c('12-Sep', 'SEPTIN12'), c('SEPT12',  'SEPTIN12'),  # 20
+                c('15-Sep', 'SELENOF' ), c('SEPT15',  'SELENOF' ),  # 21
+                c( '1-Dec', 'DELEC1'  ), c('DEC1',    'DELEC'   )   # 22
+            ) ), c('old', 'new') )
+
+#' Fix excel genes
+#' @examples
+#' x <- c('FAM46B', '15-Sep', '2-Mar', 'MARCHF6')
+#' x
+#' fix_xlgenes(x)
+#' @export
+fix_xlgenes <- function(x){
+    idx <- x %in% xlgenesdt$old
+    genes <- x[idx]
+    x[idx] <- xlgenesdt[genes, on = 'old']$new
+    x
+}
