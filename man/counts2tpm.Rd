@@ -18,7 +18,8 @@ tpm matrix
 counts to tpm
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
-counts2tpm(counts(object), genesize=1)[1:3, 1:3]
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+object <- read_rnaseq_counts(file)
+counts(object)[1:3, 1:3]
+counts2tpm(counts(object), genesize = 1)[1:3, 1:3]
 }

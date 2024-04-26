@@ -146,12 +146,11 @@ Read rnaseq counts/bams
        object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38', plot = TRUE)  
     }
 # read_rnaseq_counts
-    file <- download_data('billing19.rnacounts.txt')
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05')
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
-    object <- read_rnaseq_counts(
-                 file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
+    file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15')
+    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE)
+    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE)
+    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE, log2 = FALSE)
     object <- read_rnaseq_counts(file, plot = TRUE)
     
 # read_rnaseq_counts(tpm = TRUE)

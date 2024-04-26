@@ -84,8 +84,8 @@ which.medoid <- function(mat){
 #' @param verbose  whether to message
 #' @return SummarizedExperiment
 #' @examples 
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file, plot = FALSE)
 #' object %<>% filter_medoid(by = 'subgroup', verbose=TRUE)
 #' @export
 filter_medoid <- function(object, by = NULL, verbose = FALSE){

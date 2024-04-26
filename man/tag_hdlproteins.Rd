@@ -18,7 +18,7 @@ SummarizedExperiment
 Tag hdlproteins
 }
 \examples{
-file <- download_data('billing19.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 object \%<>\% tag_hdlproteins()
 fdt(object)

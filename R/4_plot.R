@@ -1652,7 +1652,7 @@ plot_matrix <- function(mat){
 #' }
 #' @return ggplot
 #' @examples
-#' file <- download_data('billing19.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
 #' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
 #' object$subgroup %<>% substr(1,3)

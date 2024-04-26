@@ -34,8 +34,8 @@ data.table
 Read proteingroups/phosphosites as-is
 }
 \examples{
-profile <- download_data('billing19.proteingroups.txt')
-fosfile <- download_data('billing19.phosphosites.txt')
+profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
 prodt <- .read_maxquant_proteingroups(file = profile)
 fosdt <- .read_maxquant_phosphosites( file = fosfile, profile = profile)
 }

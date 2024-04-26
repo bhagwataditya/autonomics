@@ -207,7 +207,7 @@ split_extract <- function(x, i, sep=guess_sep(x)){
 #' @param file data file
 #' @return sample file
 #' @examples
-#' file <- download_data('billing19.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' default_sfile(file)
 #' @export
 default_sfile <- function(file){

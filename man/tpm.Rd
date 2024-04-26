@@ -30,7 +30,7 @@ tpm matrix (get) or updated object (set)
 Get / Set tpm matrix
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
 object <- read_rnaseq_counts(file, plot=FALSE)
 tpm(object) <- values(object)
 tpm(object)[1:3, 1:3]

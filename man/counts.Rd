@@ -33,8 +33,8 @@ count matrix (get) or updated object (set)
 Get / Set counts matrix
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot=FALSE)
-counts(object) <- values(object)
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+object <- read_rnaseq_counts(file)
 counts(object)[1:3, 1:3]
+counts(object) <- values(object)
 }

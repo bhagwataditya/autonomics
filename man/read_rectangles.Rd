@@ -110,13 +110,14 @@ Read omics data from rectangular file
                    fdata_rows = 2:58736,   fdata_cols = 1:3,
                    transpose  = FALSE)
 # LCMSMS PROTEINGROUPS
-   file <- download_data('billing19.proteingroups.txt')
-   read_rectangles(file,fid_rows   = 2:9044,  fid_cols   = 383,
-                   sid_rows   = 1,       sid_cols   = seq(124, 316, by = 6),
-                   expr_rows  = 2:9044,  expr_cols  = seq(124, 316, by = 6),
-                   fvar_rows  = 1,       fvar_cols  = c(2, 6, 7, 383),
-                   fdata_rows = 2:9044,  fdata_cols = c(2, 6, 7, 383),
-                   transpose  = FALSE)
+   file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+   read_rectangles(  file,
+                     fid_rows = 2:21,    fid_cols = 383,
+                     sid_rows = 1,       sid_cols = seq(124, 316, by = 6),
+                    expr_rows = 2:21,   expr_cols = seq(124, 316, by = 6),
+                    fvar_rows = 1,      fvar_cols = c(2, 6, 7, 383),
+                   fdata_rows = 2:21,  fdata_cols = c(2, 6, 7, 383),
+                   transpose  = FALSE )
 # SOMASCAN
    file <- download_data('billing16.somascan.adat')
    read_rectangles(file,fid_rows   = 21,       fid_cols   = 19:1146,

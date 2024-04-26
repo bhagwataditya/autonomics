@@ -13,10 +13,10 @@
 #' @param value count matrix (features x samples)
 #' @return count matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' counts(object) <- values(object)
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
 #' counts(object)[1:3, 1:3]
+#' counts(object) <- values(object)
 #' @rdname counts
 #' @export
 setGeneric('counts',   function(object)   standardGeneric("counts"))
@@ -56,10 +56,10 @@ function(object, value){
 #' @param value log2count matrix (features x samples)
 #' @return log2count matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2counts(object) <- values(object)
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
 #' log2counts(object)[1:3, 1:3]
+#' log2counts(object) <- values(object)
 #' @rdname log2counts
 #' @export
 setGeneric('log2counts',   function(object)   standardGeneric("log2counts"))
@@ -86,47 +86,6 @@ function(object, value){
     object })
 
 
-#===============
-
-#' @title Get/Set log2countsratios
-#' @description Get / Set log2countsratios matrix
-#' @param object SummarizedExperiment
-#' @param value log2countsratios matrix (features x samples)
-#' @return log2countsratios matrix (get) or updated object (set)
-#' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2countsratios(object) <- values(object)
-#' log2countsratios(object)[1:3, 1:3]
-#' @rdname log2countsratios
-#' @export
-setGeneric('log2countsratios',   
-function(object)   standardGeneric("log2countsratios"))
-
-#' @rdname log2countsratios
-setMethod("log2countsratios", signature("SummarizedExperiment"),
-function(object)   assays(object)$log2countsratios)
-
-#' @rdname log2countsratios
-#' @export
-setGeneric('log2countsratios<-',
-function(object, value) standardGeneric("log2countsratios<-"))
-
-#' @rdname log2countsratios
-setReplaceMethod("log2countsratios", 
-signature("SummarizedExperiment", "matrix"),
-function(object, value){
-    assays(object)$log2countsratios <- value
-    object })
-
-#' @rdname log2countsratios
-setReplaceMethod("log2countsratios", 
-signature("SummarizedExperiment", "numeric"),
-function(object, value){
-    assays(object)$log2countsratios[] <- value
-    object })
-
-
 #================
 
 #' @title Get/Set cpm
@@ -135,10 +94,10 @@ function(object, value){
 #' @param value cpm matrix (features x samples)
 #' @return cpm matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' cpm(object) <- values(object)
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
 #' cpm(object)[1:3, 1:3]
+#' cpm(object) <- values(object)
 #' @rdname cpm
 #' @export
 setGeneric('cpm',   function(object)   standardGeneric("cpm"))
@@ -172,10 +131,10 @@ function(object, value){
 #' @param value log2cpm matrix (features x samples)
 #' @return log2cpm matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2cpm(object) <- values(object)
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
 #' log2cpm(object)[1:3, 1:3]
+#' log2cpm(object) <- values(object)
 #' @rdname log2cpm
 #' @export
 setGeneric('log2cpm',   function(object)   standardGeneric("log2cpm"))
@@ -203,52 +162,13 @@ function(object, value){
 
 #================
 
-#' @title Get/Set log2cpmratios
-#' @description Get / Set log2cpmratios matrix
-#' @param object SummarizedExperiment
-#' @param value log2cpmratios matrix (features x samples)
-#' @return log2cpmratios matrix (get) or updated object (set)
-#' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2cpmratios(object) <- values(object)
-#' log2cpmratios(object)[1:3, 1:3]
-#' @rdname log2cpmratios
-#' @export
-setGeneric('log2cpmratios',   
-function(object)   standardGeneric("log2cpmratios"))
-
-#' @rdname log2cpmratios
-setMethod("log2cpmratios", signature("SummarizedExperiment"),
-function(object)   assays(object)$log2cpmratios)
-
-#' @rdname log2cpmratios
-#' @export
-setGeneric('log2cpmratios<-',  
-function(object, value)  standardGeneric("log2cpmratios<-"))
-
-#' @rdname log2cpmratios
-setReplaceMethod("log2cpmratios", signature("SummarizedExperiment", "matrix"),
-function(object, value){
-    assays(object)$log2cpmratios <- value
-    object })
-
-#' @rdname log2cpmratios
-setReplaceMethod("log2cpmratios", signature("SummarizedExperiment", "numeric"),
-function(object, value){
-    assays(object)$log2cpmratios[] <- value
-    object })
-
-
-#================
-
 #' @title Get/Set tpm
 #' @description Get / Set tpm matrix
 #' @param object SummarizedExperiment
 #' @param value tpm matrix (features x samples)
 #' @return tpm matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
 #' object <- read_rnaseq_counts(file, plot=FALSE)
 #' tpm(object) <- values(object)
 #' tpm(object)[1:3, 1:3]
@@ -285,8 +205,8 @@ function(object, value){
 #' @param value log2tpm matrix (features x samples)
 #' @return log2tpm matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
 #' log2tpm(object) <- values(object)
 #' log2tpm(object)[1:3, 1:3]
 #' @rdname log2tpm
@@ -316,43 +236,6 @@ function(object, value){
 
 #===============
 
-#' @title Get/Set log2tpmratios
-#' @description Get / Set log2tpmratios matrix
-#' @param object SummarizedExperiment
-#' @param value log2tpmratios matrix (features x samples)
-#' @return log2tpmratios matrix (get) or updated object (set)
-#' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, plot=FALSE)
-#' log2tpmratios(object) <- values(object)
-#' log2tpmratios(object)[1:3, 1:3]
-#' @rdname log2tpmratios
-#' @export
-setGeneric('log2tpmratios',   
-function(object)   standardGeneric("log2tpmratios"))
-
-#' @rdname log2tpmratios
-setMethod("log2tpmratios", signature("SummarizedExperiment"),
-function(object)   assays(object)$log2tpmratios)
-
-#' @rdname log2tpmratios
-#' @export
-setGeneric('log2tpmratios<-',  
-function(object, value)  standardGeneric("log2tpmratios<-"))
-
-#' @rdname log2tpmratios
-setReplaceMethod("log2tpmratios", signature("SummarizedExperiment", "matrix"),
-function(object, value){
-    assays(object)$log2tpmratios <- value
-    object })
-
-#' @rdname log2tpmratios
-setReplaceMethod("log2tpmratios", signature("SummarizedExperiment", "numeric"),
-function(object, value){
-    assays(object)$log2tpmratios[] <- value
-    object })
-
-
 #========
 
 #' @title Get/Set weights
@@ -362,10 +245,11 @@ function(object, value){
 #' @param ... addtional params
 #' @return weight matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing19.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
 #' weights(object)[1:3, 1:2]
-#' weights(object) <- 1; weights(object)[1:3, 1:2]
+#' weights(object) <- 1
+#' weights(object)[1:3, 1:2]
 #' @rdname weights
 #' @export
 setGeneric('weights', function(object)   standardGeneric("weights"))
@@ -642,8 +526,8 @@ count_reads <- function(files, paired, nthreads, genome){
 #' @param counts  counts matri
 #' @return scaled libsize vector
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
 #' scaledlibsizes(counts(object))
 #' @export
 scaledlibsizes <- function(counts){
@@ -651,14 +535,14 @@ scaledlibsizes <- function(counts){
 }
 
 
-#' Convert between counts and cpm
+#' Convert between counts and cpm/tpm
 #' @param x         count/cpm matrix
 #' @param libsize  (scaled) libsize vector
 #' @return cpm/tpm/count matrix
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
-#' libsize <- scaledlibsizes(values(object))
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
+#' libsize <- scaledlibsizes(counts(object))
 #' tpm <- counts2tpm(counts(object), genesize = 1)
 #' cpm <- counts2cpm(counts(object), libsize)
 #' counts  <- cpm2counts(cpm, libsize)
@@ -680,9 +564,10 @@ cpm2counts <- function(x, libsize){
 #' @param genesize  genesize vector (kilobase)
 #' @return tpm matrix
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
-#' object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
-#' counts2tpm(counts(object), genesize=1)[1:3, 1:3]
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#' object <- read_rnaseq_counts(file)
+#' counts(object)[1:3, 1:3]
+#' counts2tpm(counts(object), genesize = 1)[1:3, 1:3]
 #' @export
 counts2tpm <- function(x, genesize){
     x  %<>% divide_by(genesize)
@@ -766,7 +651,7 @@ explicitly_compute_voom_weights <- function(
 #' @param plot         TRUE or FALSE : plot?
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('billing19.rnacounts.txt')
+#' file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
 #' object <- .read_rnaseq_counts(file)
 #' object$subgroup
 #' object %<>% preprocess_rnaseq_counts()
@@ -1053,12 +938,11 @@ read_rnaseq_bams <- function(
 #'        object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38', plot = TRUE)  
 #'     }
 #' # read_rnaseq_counts
-#'     file <- download_data('billing19.rnacounts.txt')
-#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05')
-#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE)
-#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE)
-#'     object <- read_rnaseq_counts(
-#'                  file, fit = 'limma', coefs = 'E05', voom = FALSE, cpm = FALSE, log2 = FALSE)
+#'     file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15')
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE)
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE)
+#'     object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE, log2 = FALSE)
 #'     object <- read_rnaseq_counts(file, plot = TRUE)
 #'     
 #' # read_rnaseq_counts(tpm = TRUE)

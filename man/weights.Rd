@@ -35,8 +35,9 @@ weight matrix (get) or updated object (set)
 Get/Set weight matrix
 }
 \examples{
-file <- download_data('billing19.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, plot = FALSE)
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+object <- read_rnaseq_counts(file)
 weights(object)[1:3, 1:2]
-weights(object) <- 1; weights(object)[1:3, 1:2]
+weights(object) <- 1
+weights(object)[1:3, 1:2]
 }

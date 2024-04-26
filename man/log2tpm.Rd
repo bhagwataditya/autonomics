@@ -30,8 +30,8 @@ log2tpm matrix (get) or updated object (set)
 Get / Set log2tpm matrix
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot=FALSE)
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+object <- read_rnaseq_counts(file)
 log2tpm(object) <- values(object)
 log2tpm(object)[1:3, 1:3]
 }

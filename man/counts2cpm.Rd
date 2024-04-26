@@ -3,7 +3,7 @@
 \name{counts2cpm}
 \alias{counts2cpm}
 \alias{cpm2counts}
-\title{Convert between counts and cpm}
+\title{Convert between counts and cpm/tpm}
 \usage{
 counts2cpm(x, libsize = scaledlibsizes(x))
 
@@ -18,12 +18,12 @@ cpm2counts(x, libsize)
 cpm/tpm/count matrix
 }
 \description{
-Convert between counts and cpm
+Convert between counts and cpm/tpm
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
-libsize <- scaledlibsizes(values(object))
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+object <- read_rnaseq_counts(file)
+libsize <- scaledlibsizes(counts(object))
 tpm <- counts2tpm(counts(object), genesize = 1)
 cpm <- counts2cpm(counts(object), libsize)
 counts  <- cpm2counts(cpm, libsize)

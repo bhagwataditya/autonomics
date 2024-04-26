@@ -86,8 +86,8 @@ un_int64 <- function(x) {
 #' @param verbose      TRUE / FALSE
 #' @return data.table
 #' @examples 
-#' profile <- download_data('billing19.proteingroups.txt')
-#' fosfile <- download_data('billing19.phosphosites.txt')
+#' profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#' fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
 #' prodt <- .read_maxquant_proteingroups(file = profile)
 #' fosdt <- .read_maxquant_phosphosites( file = fosfile, profile = profile)
 #' @export
@@ -130,7 +130,8 @@ un_int64 <- function(x) {
     `Protein group IDs` <- NULL
 # Read    
     if (verbose)  cmessage('%sphosphosites    %s', spaces(14), file)
-    fosdt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
+    colclasses <- c(id = 'character', `Protein group IDs` = 'character')
+    fosdt <- fread(file, colClasses = colclasses, integer64 = 'numeric')
     fosdt %<>% un_int64()
 # Extract relevant columns
     fosdt[Reverse == '+', Proteins := Protein]  # the proteins column is empty in (only) reverse
@@ -223,13 +224,13 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 #' @param verbose  TRUE / FALSE
 #' @return matrix
 #' @examples 
-#' profile <- download_data('billing19.proteingroups.txt')
-#' fosfile <- download_data('billing19.phosphosites.txt')
+#' profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' prodt <- .read_maxquant_proteingroups(file = profile)
-#' fosdt <- .read_maxquant_phosphosites( file = fosfile, profile = profile)
-#' prodt %<>% annotate_maxquantdt()
-#' prodt %<>% .name()
+#'     uniprothdrs <- read_uniprotdt(fastafile)
+#' contaminanthdrs <- read_contaminantdt()
+#'    maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`)
+#' prodt %<>% annotate_maxquant(uniprothdrs, contaminanthdrs, maxquanthdrs)
 #' quantity <- guess_maxquant_quantity(profile)
 #' pattern <- MAXQUANT_PATTERNS[[quantity]]
 #' mqdt_to_mat(prodt, pattern = pattern)[1:2, 1:2]
@@ -387,7 +388,7 @@ is_file <- function(file){
 #'     pro <- read_maxquant_proteingroups(file = file)
 #'     
 #' # billing19 - Normalized Ratios
-#'     file <- download_data('billing19.proteingroups.txt')
+#'     file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
@@ -492,8 +493,8 @@ read_proteingroups <- function(...){
 #' @param ...           maintain deprecated functions
 #' @return SummarizedExperiment
 #' @examples
-#'   profile <- download_data('billing19.proteingroups.txt')
-#'   fosfile <- download_data('billing19.phosphosites.txt')
+#'   profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#'   fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
 #' fastafile <- download_data('uniprot_hsa_20140515.fasta')
 #' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #' pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)

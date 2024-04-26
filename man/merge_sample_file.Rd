@@ -53,7 +53,7 @@ SummarizedExperiment
 Merge sample / feature file
 }
 \examples{
-file <- download_data('billing19.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 subgroups \%<>\% paste0('_STD')
 object <- read_maxquant_proteingroups(file, subgroups = subgroups)
@@ -62,5 +62,6 @@ sfile \%<>\% paste0('.samples.txt')
 dt <- data.table(sample_id = object$sample_id, 
                  day = split_extract_fixed(object$subgroup, '_', 1))
 data.table::fwrite(dt, sfile)                 
-merge_sample_file(object, sfile)
+sdt(object)
+sdt(merge_sample_file(object, sfile))
 }

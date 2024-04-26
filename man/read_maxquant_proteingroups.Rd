@@ -90,7 +90,7 @@ Read maxquant proteingroups
     pro <- read_maxquant_proteingroups(file = file)
     
 # billing19 - Normalized Ratios
-    file <- download_data('billing19.proteingroups.txt')
+    file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
     fastafile <- download_data('uniprot_hsa_20140515.fasta')
     subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)

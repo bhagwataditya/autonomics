@@ -43,8 +43,8 @@ existence values are always those of the canonical isoform
     dt <- .read_maxquant_proteingroups(file)
     parse_maxquant_hdrs(dt$`Fasta headers`)
 
-    profile <- download_data('billing19.proteingroups.txt')
-    fosfile <- download_data('billing19.phosphosites.txt' )
+    profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+    fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics' )
     prodt <- .read_maxquant_proteingroups(profile)
     fosdt <- .read_maxquant_phosphosites(fosfile, profile)
     parse_maxquant_hdrs(prodt$`Fasta headers`)

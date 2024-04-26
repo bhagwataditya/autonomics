@@ -366,13 +366,14 @@ numerify   <- function(df){
 #'                    fdata_rows = 2:58736,   fdata_cols = 1:3,
 #'                    transpose  = FALSE)
 #' # LCMSMS PROTEINGROUPS
-#'    file <- download_data('billing19.proteingroups.txt')
-#'    read_rectangles(file,fid_rows   = 2:9044,  fid_cols   = 383,
-#'                    sid_rows   = 1,       sid_cols   = seq(124, 316, by = 6),
-#'                    expr_rows  = 2:9044,  expr_cols  = seq(124, 316, by = 6),
-#'                    fvar_rows  = 1,       fvar_cols  = c(2, 6, 7, 383),
-#'                    fdata_rows = 2:9044,  fdata_cols = c(2, 6, 7, 383),
-#'                    transpose  = FALSE)
+#'    file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#'    read_rectangles(  file,
+#'                      fid_rows = 2:21,    fid_cols = 383,
+#'                      sid_rows = 1,       sid_cols = seq(124, 316, by = 6),
+#'                     expr_rows = 2:21,   expr_cols = seq(124, 316, by = 6),
+#'                     fvar_rows = 1,      fvar_cols = c(2, 6, 7, 383),
+#'                    fdata_rows = 2:21,  fdata_cols = c(2, 6, 7, 383),
+#'                    transpose  = FALSE )
 #' # SOMASCAN
 #'    file <- download_data('billing16.somascan.adat')
 #'    read_rectangles(file,fid_rows   = 21,       fid_cols   = 19:1146,
@@ -521,7 +522,7 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 #' @param verbose           TRUE / FALSE
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('billing19.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' subgroups <-  c('E00','E01', 'E02','E05','E15','E30', 'M00')
 #' subgroups %<>% paste0('_STD')
 #' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
@@ -530,7 +531,8 @@ merge_data <- function(objectdt, dt, by.x, by.y, fill = NULL, verbose){
 #' dt <- data.table(sample_id = object$sample_id, 
 #'                  day = split_extract_fixed(object$subgroup, '_', 1))
 #' data.table::fwrite(dt, sfile)                 
-#' merge_sample_file(object, sfile)
+#' sdt(object)
+#' sdt(merge_sample_file(object, sfile))
 #'@export
 merge_sample_file <- function(
     object, sfile = NULL, by.x = 'sample_id', by.y = 'sample_id', all.x = TRUE, 
@@ -725,19 +727,16 @@ read_genex <- function(file){
 #' @param setvarname  string
 #' @return data.table
 #' @examples
-#' # RNA
-#'     rnafile <- download_data('billing19.rnacounts.txt')
-#'     rna <- read_rnaseq_counts(rnafile)
-#'     fdt(rna)$gene <- fdt(rna)$gene_name
-#' # PRO/FOS
-#'     profile <- download_data('billing19.proteingroups.txt')
-#'     fosfile <- download_data('billing19.phosphosites.txt')
 #'     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
+#'     rnafile <- system.file('extdata/billing19.rnacounts.txt',     package = 'autonomics')
+#'     profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#'     fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
+#'     rna <- read_rnaseq_counts(rnafile)
 #'     pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
 #'     fos <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgroups = subgroups)
 #'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
-#' # sumexplist to longdt
+#'     
 #'     sumexplist <- list(rna = rna, pro = pro, fos = fos)
 #'     dt <- sumexplist_to_longdt(sumexplist, setvarname = 'platform')
 #'     dt %<>% extract(gene %in% c('TNMD', 'TSPAN6'))

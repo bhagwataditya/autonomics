@@ -72,7 +72,7 @@ is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)
 is_maxquant_phosphosites(file)
 
-file <- download_data('billing19.phosphosites.txt')
+file <- system.file('extdata/billing19.phosphosites.txt', package = 'autonomics')
 is_diann_report(file)
 is_fragpipe_tsv(file)
 is_maxquant_proteingroups(file)

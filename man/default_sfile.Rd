@@ -16,6 +16,6 @@ sample file
 Default sfile
 }
 \examples{
-file <- download_data('billing19.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 default_sfile(file)
 }

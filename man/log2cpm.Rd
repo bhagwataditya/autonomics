@@ -30,8 +30,8 @@ log2cpm matrix (get) or updated object (set)
 Get / Set log2cpm matrix
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, plot=FALSE)
-log2cpm(object) <- values(object)
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+object <- read_rnaseq_counts(file)
 log2cpm(object)[1:3, 1:3]
+log2cpm(object) <- values(object)
 }

@@ -48,7 +48,7 @@ SummarizedExperiment
 Preprocess RNAseq counts
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
 object <- .read_rnaseq_counts(file)
 object$subgroup
 object \%<>\% preprocess_rnaseq_counts()

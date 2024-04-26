@@ -16,7 +16,7 @@ scaled libsize vector
 Get tmm-scaled libsizes
 }
 \examples{
-file <- download_data('billing19.rnacounts.txt')
-object <- read_rnaseq_counts(file, cpm=FALSE, log2=FALSE, plot=FALSE)
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+object <- read_rnaseq_counts(file)
 scaledlibsizes(counts(object))
 }

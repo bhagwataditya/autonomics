@@ -24,7 +24,7 @@ SummarizedExperiment
 Add opentargets annotations
 }
 \examples{
-file <- download_data('billing19.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 object \%<>\% add_opentargets_by_uniprot()
 }

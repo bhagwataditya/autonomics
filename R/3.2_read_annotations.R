@@ -129,8 +129,8 @@ parse_uniprot_hdrs <- function(fastahdrs, fastafields = FASTAFIELDS){
 #'     dt <- .read_maxquant_proteingroups(file)
 #'     parse_maxquant_hdrs(dt$`Fasta headers`)
 #'
-#'     profile <- download_data('billing19.proteingroups.txt')
-#'     fosfile <- download_data('billing19.phosphosites.txt' )
+#'     profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#'     fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics' )
 #'     prodt <- .read_maxquant_proteingroups(profile)
 #'     fosdt <- .read_maxquant_phosphosites(fosfile, profile)
 #'     parse_maxquant_hdrs(prodt$`Fasta headers`)
@@ -742,8 +742,8 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #'                                               
 #' # Billing 2019: uniprothdrs + contaminants + maxquanthdrs
 #' #--------------------------------------------------------
-#' profile <- download_data('billing19.proteingroups.txt')
-#' fosfile <- download_data('billing19.phosphosites.txt')
+#' profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#' fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
 #'  upfile <- download_data('uniprot_hsa_20140515.fasta')
 #' prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
 #' fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
@@ -906,8 +906,8 @@ annotate_uniprot_ws.SummarizedExperiment <- function(
 #' @param pspfile    phosphositeplus file
 #' @return  SummarizedExperiment
 #' @examples 
-#' fosfile <- download_data('billing19.phosphosites.txt')
-#' profile <- download_data('billing19.proteingroups.txt')
+#' fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
+#' profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile)
 #' fdt(object)
 #' object %<>% add_psp()
