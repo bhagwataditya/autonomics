@@ -8,7 +8,7 @@
 
 test_that(" read_rnaseq_counts: billing19, cpm = FALSE ", {
     # Read
-        file <- download_data("billing19.rnacounts.txt")
+        file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
         object <- read_rnaseq_counts(file, cpm = FALSE)
     # Test
         expect_s4_class(object, 'SummarizedExperiment') 
@@ -18,7 +18,7 @@ test_that(" read_rnaseq_counts: billing19, cpm = FALSE ", {
 
 test_that(" read_rnaseq_counts: billing19 ", {
     # Read
-        file <- download_data("billing19.rnacounts.txt")
+        file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
         object <- read_rnaseq_counts(file)
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -28,7 +28,7 @@ test_that(" read_rnaseq_counts: billing19 ", {
 
 test_that(" read_rnaseq_counts: billing19, pca = TRUE ", {
     # Read
-        file <- download_data("billing19.rnacounts.txt")
+        file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
         object <- read_rnaseq_counts(file, pca = TRUE)
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -40,7 +40,7 @@ test_that(" read_rnaseq_counts: billing19, pca = TRUE ", {
 
 test_that(" read_rnaseq_counts: billing19, fit = 'limma' ", {
     # Read
-        file <- download_data("billing19.rnacounts.txt")
+        file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
         object <- read_rnaseq_counts(file, fit = 'limma')
     # Test
         expect_s4_class(object, 'SummarizedExperiment')

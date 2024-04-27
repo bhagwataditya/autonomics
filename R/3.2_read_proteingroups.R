@@ -127,7 +127,7 @@ un_int64 <- function(x) {
 # Assert
     assert_maxquant_proteingroups(profile)
     assert_maxquant_phosphosites(file)
-    `Protein group IDs` <- NULL
+    `Protein group IDs` <- Reverse <- Proteins <- Protein <- NULL
 # Read    
     if (verbose)  cmessage('%sphosphosites    %s', spaces(14), file)
     colclasses <- c(id = 'character', `Protein group IDs` = 'character')

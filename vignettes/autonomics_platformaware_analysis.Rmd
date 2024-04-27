@@ -107,7 +107,7 @@ if (requireNamespace('Rsubread')){
 Proper preprocessing leads to increased power:
 
 ```{r}
-  file <- download_data('billing19.rnacounts.txt')
+  file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
 # log2counts
   object <- read_rnaseq_counts(file, 
        cpm = FALSE, voom = FALSE, fit = 'limma', verbose = FALSE, plot = FALSE)
@@ -160,7 +160,7 @@ object <- read_maxquant_proteingroups(file = file, plot = TRUE)
 
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
-file <- download_data('billing19.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 subgroups <- c('E00_STD', 'E01_STD', 'E02_STD', 'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
 object <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot = TRUE)
 ```
@@ -168,8 +168,8 @@ object <- read_maxquant_proteingroups(file = file, subgroups = subgroups, plot =
 The phosphosites can be read in a similar fashion:
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
-fosfile <- download_data('billing19.phosphosites.txt')
-profile <- download_data('billing19.proteingroups.txt')
+fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
+profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 subgroups <- c('E00_STD', 'E01_STD', 'E02_STD', 'E05_STD', 'E15_STD', 'E30_STD', 'M00_STD')
 object <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgroups = subgroups, plot = TRUE)
 ```

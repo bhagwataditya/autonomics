@@ -1065,6 +1065,8 @@ xlgenesdt <- set_names ( data.table( rbind(
             ) ), c('old', 'new') )
 
 #' Fix excel genes
+#' @param x character
+#' @return  character
 #' @examples
 #' x <- c('FAM46B', '15-Sep', '2-Mar', 'MARCHF6')
 #' x

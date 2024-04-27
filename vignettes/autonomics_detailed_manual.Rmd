@@ -22,12 +22,12 @@ Autonomics offers platform-specific readers to import omics data into an analysi
 
 ```{r, message = FALSE}
 require(autonomics)
-  rnafile <- download_data( 'billing19.rnacounts.txt' )
-  profile <- download_data( 'billing19.proteingroups.txt' )
-  fosfile <- download_data( 'billing19.phosphosites.txt' )
+  rnafile <- system.file( 'extdata/billing19.rnacounts.txt',     package = 'autonomics' )
+  profile <- system.file( 'extdata/billing19.proteingroups.txt', package = 'autonomics' )
+  fosfile <- system.file( 'extdata/billing19.phosphosites.txt' , package = 'autonomics' )
 diannfile <- download_data( 'dilution.report.tsv' )
- somafile <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
- metafile <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+ somafile <- system.file('extdata/atkin.somascan.adat',          package = 'autonomics')
+ metafile <- system.file('extdata/atkin.metabolon.xlsx',         package = 'autonomics')
 
   rnaobj <- read_rnaseq_counts(         file = rnafile)
   proobj <- read_maxquant_proteingroups(file = profile)
@@ -67,7 +67,7 @@ theme_void()
 Accessing SummarizedExperiment content is easy, as illsutrated for the proteomics dataset of **@Fukuda2020**. This study compared the proteome of Zebrafish Embryos (30 days post-fertilization) with that of Adults. Mass Spectra were processed using MaxQuant [@Cox2008], and a  proteinGroups file with expression values obtained. Import into autonomics and access to  the **Expression Matrix** is easy:
 
 ```{r, message = FALSE}
-file <- download_data('fukuda20.proteingroups.txt')
+file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 values(object)[1:3, 1:5]
 ```

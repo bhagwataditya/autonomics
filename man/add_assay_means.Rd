@@ -24,6 +24,6 @@ file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics'
 object <- read_maxquant_proteingroups(file)
 fdt(object) \%<>\% extract(, 1:2)
 fdt(object)
-object \%<>\% add_assay_means(assayNames(.))
+object \%<>\% add_assay_means(SummarizedExperiment::assayNames(.))
 fdt(object)
 }

@@ -20,6 +20,8 @@ add_adjusted_pvalues(
 \item{fit}{'limma', 'lm', 'lme', 'lmer'}
 
 \item{coefs}{coefficient (string)}
+
+\item{verbose}{TRUE or FALSE}
 }
 \value{
 SummarizedExperiment

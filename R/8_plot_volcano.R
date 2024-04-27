@@ -76,7 +76,7 @@ bin.SummarizedExperiment <- function(
 #' object <- read_maxquant_proteingroups(file)
 #' fdt(object) %<>% extract(, 1:2)
 #' fdt(object)
-#' object %<>% add_assay_means(assayNames(.))
+#' object %<>% add_assay_means(SummarizedExperiment::assayNames(.))
 #' fdt(object)
 #' @export
 add_assay_means <- function(
@@ -106,6 +106,7 @@ add_assay_means <- function(
 #' @param method    'fdr', 'bonferroni', ... (see `p.adjust.methods`)
 #' @param fit       'limma', 'lm', 'lme', 'lmer'
 #' @param coefs      coefficient (string)
+#' @param verbose    TRUE or FALSE
 #' @examples
 #' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)

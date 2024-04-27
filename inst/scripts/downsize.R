@@ -154,14 +154,27 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         rnafile <- download_data('billing19.rnacounts.txt')
         profile <- download_data('billing19.proteingroups.txt')
         fosfile <- download_data('billing19.phosphosites.txt')
+        rnafile1 <- 'inst/extdata/billing19.rnacounts.txt'
+        profile1 <- 'inst/extdata/billing19.proteingroups.txt'
+        fosfile1 <- 'inst/extdata/billing19.phosphosites.txt'
         subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
-        rna <- read_rnaseq_counts(rnafile)
-        pro <- read_maxquant_proteingroups(profile, subgroups = subgroups, contaminant = TRUE, reverse = TRUE)
-        fos <- read_maxquant_phosphosites( fosfile = fosfile, profile = profile, subgroups = subgroups, contaminant = TRUE, reverse = TRUE )
-        pro$subgroup %<>% split_extract_fixed('_', 1)
-        fos$subgroup %<>% split_extract_fixed('_', 1)
+        rna  <- read_rnaseq_counts(rnafile)
+        rna1 <- read_rnaseq_counts(rnafile1)
+        pro  <- read_maxquant_proteingroups(profile,  subgroups = subgroups, contaminant = TRUE, reverse = TRUE)
+        pro1 <- read_maxquant_proteingroups(profile1, subgroups = subgroups)
+        fos  <- read_maxquant_phosphosites( fosfile = fosfile,  profile = profile,  subgroups = subgroups, contaminant = TRUE, reverse = TRUE )
+        fos1 <- read_maxquant_phosphosites( fosfile = fosfile1, profile = profile1, subgroups = subgroups)
+        pro$subgroup  %<>% split_extract_fixed('_', 1)
+        pro1$subgroup %<>% split_extract_fixed('_', 1)
+        fos$subgroup  %<>% split_extract_fixed('_', 1)
+        fos1$subgroup %<>% split_extract_fixed('_', 1)
         fdt(fos)$`Fasta headers` <- NULL
         fvars(rna) %<>% stri_replace_first_fixed('gene_name', 'gene')
+    # Pca
+        pcalist <- list( p1 = biplot(pca(rna ), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('RNA'),   #  COL3A1 and COL11A1
+                         p3 = biplot(pca(pro ), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('PRO'),   #   HSPB6 and LCP1
+                         p5 = biplot(pca(fos ), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('FOS') )  #     VIM and NES
+        gridExtra::grid.arrange(grobs = pcalist, nrow = 3)
     # Model
         rna  %>% impute() # no NA
         pro %<>% impute()
@@ -198,84 +211,13 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         fdt(pro)$gene %<>% fix_xlgenes()
         fdt(fos)$gene %<>% fix_xlgenes()
         fdt(rna)[order(gene)]  # excel genes issue
-    # Rough numbers       
-        fdt(rna)[ , sum(`p~M00~limma` > 0.05) / .N * 100 ]                            # 46 % flat
-        fdt(rna)[ , sum(`p~M00~limma` < 0.05 & `effect~M00~limma` < 0 ) / .N * 100 ]  # 26 % down
-        fdt(rna)[ , sum(`p~M00~limma` < 0.05 & `effect~M00~limma` > 0 ) / .N * 100 ]  # 28 % up
-        
-        fdt(pro)[ , sum(`p~M00~limma` > 0.05) / .N * 100 ]                            # 25 % flat
-        fdt(pro)[ , sum(`p~M00~limma` < 0.05 & `effect~M00~limma` < 0 ) / .N * 100 ]  # 52 % down
-        fdt(pro)[ , sum(`p~M00~limma` < 0.05 & `effect~M00~limma` > 0 ) / .N * 100 ]  # 23 % up
-
-        fdt(fos)[ , sum(`p~M00~limma` > 0.05) / .N * 100 ]                            # 17 % flat
-        fdt(fos)[ , sum(`p~M00~limma` < 0.05 & `effect~M00~limma` < 0 ) / .N * 100 ]  # 53 % down
-        fdt(fos)[ , sum(`p~M00~limma` < 0.05 & `effect~M00~limma` > 0 ) / .N * 100 ]  # 30 % up
-        
-        length(rnagenes <- unique(fdt(rna)[, gene]))                                # 22 855
-        length(progenes <- unique(fdt(pro)[contaminant=='' & reverse =='', gene]))  #  7 128
-        length(fosgenes <- unique(fdt(fos)[contaminant=='' & reverse =='', gene]))  #  2 551
-        length(rnagenes %>% intersect(progenes)) #  6903 : 30% rnagenes, 97% proteingenes
-        length(rnagenes %>% setdiff(progenes))   # 15952 : 70% rnagenes
-        length(progenes %>% setdiff(rnagenes))   #   225 :  3% progenes
-        
-        length(progenes %>% intersect(fosgenes)) # 2158 : 30% progenes  81% fosgenes
-        length(progenes %>% setdiff(  fosgenes)) # 4970 : 70% progenes not fosquantified
-        length(fosgenes %>% setdiff(  progenes)) #  393 : 15% fosgenes not proquantified
-    # Summarize
-        sumRNA <- fdt(rna)[, .(
-                                    RNA.down = sum(  `M00~limma` == 'down' ), 
-                                    RNA.flat = sum(`p~M00~limma` >   0.05  ),
-                                    RNA.up   = sum(  `M00~limma` ==  'up'  )
-                              ), by = 'gene']
-        sumPRO <- fdt(pro)[, .(
-                                    PRO.down = sum(  `M00~limma` == 'down' ), 
-                                    PRO.flat = sum(`p~M00~limma` >   0.05  ),
-                                    PRO.up   = sum(  `M00~limma` ==  'up'  ),
-                                    PRO.dimp = sum(  `M00~limma` == 'down' &   imputed ), 
-                                    PRO.fimp = sum(`p~M00~limma` >   0.05  &   imputed ),
-                                    PRO.ump  = sum(  `M00~limma` ==  'up'  &   imputed )
-                              ), by = 'gene']
-        sumFOS <- fdt(fos)[, .(
-                                    FOS.down = sum(  `M00~limma` == 'down' ), 
-                                    FOS.flat = sum(`p~M00~limma` >   0.05  ),
-                                    FOS.up   = sum(  `M00~limma` ==  'up'  ),
-                                    FOS.dimp = sum(  `M00~limma` == 'down' &   imputed ), 
-                                    FOS.fimp = sum(`p~M00~limma` >   0.05  &   imputed ),
-                                    FOS.ump  = sum(  `M00~limma` ==  'up'  &   imputed )
-                              ), by = 'gene']
-        sumdt <- sumRNA
-        sumdt %<>% merge.data.table(sumPRO, by = 'gene', all.x = TRUE, all.y = TRUE)
-        sumdt %<>% merge.data.table(sumFOS, by = 'gene', all.x = TRUE, all.y = TRUE)
-        summat <- dt2mat(sumdt)
-        summat[1:5, 1:5]
-        summat[is.na(summat)] <- 0
-        sumdt <- mat2dt(summat, 'gene')
-        
-        contaminantgenes <- union( unique( fdt(pro)[contaminant == '+', gene] ) ,
-                                   unique( fdt(fos)[contaminant == '+', gene] ) )
-        sumdt[, contaminant := '']
-        sumdt %<>% pull_columns(c('gene', 'contaminant'))
-        sumdt[contaminantgenes, on = 'gene', contaminant := '+']
-        sumdt[contaminant == '+']
-        sumdt
-        
-        sumdt[, reverse := '']
-        sumdt %<>% pull_columns(c('gene', 'contaminant', 'reverse'))
-        sumdt[stri_detect_fixed(gene, 'REV__'), reverse := '+']
-        sumdt[reverse == '+']
-        sumdt
-        
     # Contaminant
         procontaminants <- fdt(pro)[contaminant == '+' & gene != '', unique(gene) ]  # Lets take a contaminant in both PRO and FOS
         foscontaminants <- fdt(fos)[contaminant == '+' & gene != '', unique(gene) ]  # That makes things a bit easier
         commoncontaminants <- intersect( procontaminants, foscontaminants )          # KRT19 catches the eye. Well-known contaminant
-        sumdt[commoncontaminants, on = 'gene'][, c(1, 4:6 )]                         # RNA : 1 flat - contributes to flat background - take
-        sumdt[commoncontaminants, on = 'gene'][, c(1, 7:12)]                         # PRO : 1 down - ok, gets filtered out anyways  - take
-        sumdt[commoncontaminants, on = 'gene'][, c(1,13:18)]                         # FOS : 4 down (imputed), 1 flat (detected) - take the detected
-        fdt(rna)[ 'KRT19', on = 'gene' ]
-        fdt(rna)[gene %in% 'KRT19'] # f  KRT19
-        fdt(pro)[gene %in% 'KRT19'] # d  KRT19
-        fdt(fos)[gene %in% 'KRT19'] # f  KRT19 3812
+        fdt(pro)[commoncontaminants, on = 'gene']   # PRO : 1 down - ok, gets filtered out anyways  - take
+        fdt(rna)[gene == 'KRT19', on = 'gene']   # RNA : 1 flat - contributes to flat background - take
+        fdt(fos)[gene == 'KRT19', on = 'gene']   # FOS : 4 down (imputed), 1 flat (detected) - take the detected
         contaminants <- union(procontaminants, foscontaminants)
         rna %<>% filter_features(! gene %in% c('', contaminants))
         pro %<>% filter_features(! gene %in% c('', contaminants))
@@ -297,29 +239,13 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         multiproteindt %<>% extract(gene %in% unique(fdt(rna)[`p~M00~limma`>0.1]$gene))                          # RNA flat
         multiproteindt %<>% extract(, .SD[ sum(   `fdr~M00~limma`<0.05 & `effect~M00~limma`>0)>0], by = 'gene')  # PRO up (SYNE2 was already down)
         multiproteindt %<>% extract(, .SD[ sum(     `p~M00~limma`>0.5 )>0], by = 'gene')                         # PRO flat
-
         fdt(rna)[gene == 'ACOT9']  # RNA: 1 flat
         fdt(pro)[gene == 'ACOT9']  # PRO: 1 up, 1 flat, genenames intuitive
         fdt(fos)[gene == 'ACOT9']  # FOS: none
-        
         multiproteingenes <- fdt(pro)[, .SD[.N>1], by = 'gene']$gene
         rna %<>% filter_features(!gene %in% multiproteingenes)
         pro %<>% filter_features(!gene %in% multiproteingenes)
         fos %<>% filter_features(!gene %in% multiproteingenes)
-    # RNA flat - PRO down - FOS none
-        unique(fdt(rna)[  `p~M00~limma`>0.5                          ]$gene)   %>% intersect(  
-        unique(fdt(pro)[`fdr~M00~limma`<5e-12 & `effect~M00~limma`<0 ]$gene) ) %>% setdiff(
-        unique(fdt(fos)$gene))
-        fdt(rna)[gene == 'CA13']
-        fdt(pro)[gene == 'CA13']
-        fdt(fos)[gene == 'CA13']
-    # RNA flat - PRO down - FOS none
-        unique(fdt(rna)[  `p~M00~limma`>0.5                          ]$gene)   %>% intersect(  
-        unique(fdt(pro)[`fdr~M00~limma`<5e-9  & `effect~M00~limma`>0 ]$gene) ) %>% setdiff(
-        unique(fdt(fos)$gene))
-        fdt(rna)[gene == 'OGFOD3']
-        fdt(pro)[gene == 'OGFOD3']
-        fdt(fos)[gene == 'OGFOD3']
     # RNA down - PRO flat - FOS none
         unique(fdt(pro)[  `p~M00~limma`>0.5                         ]$gene)   %>% intersect(  
         unique(fdt(rna)[`fdr~M00~limma`<5e-8 & `effect~M00~limma`<0 ]$gene) ) %>% setdiff(
@@ -365,22 +291,6 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         fdt(rna)['SLC4A7', on = 'gene']                  # flat
         fdt(pro)['SLC4A7', on = 'gene']                  # flat
         fdt(fos)['SLC4A7', on = 'gene'][imputed==FALSE]  # take 1 up and 2 flat
-    # RNA down, PRO flat, FOS flat
-        candgenes <-             unique(fdt(rna)[ `fdr~M00~limma` < 5e-5 & `effect~M00~limma` < 0 ]$gene)
-        candgenes %<>% intersect(unique(fdt(pro)[imputed==FALSE][   `p~M00~limma` > 0.1                           ]$gene))
-        candgenes %<>% intersect(unique(fdt(fos)[imputed==FALSE][   `p~M00~limma` > 0.1                           ]$gene))
-        candgenes
-        fdt(rna)['SGK223', on = 'gene']                  # down
-        fdt(pro)['SGK223', on = 'gene']                  # flat. but proteingroups file shows 3 isoforms
-        fdt(fos)['SGK223', on = 'gene'][imputed==FALSE]  # lets take the two flats
-    # RNA up, PRO flat, FOS flat
-        candgenes <-             unique(fdt(rna)[ `fdr~M00~limma` < 5e-6 & `effect~M00~limma` > 0 ]$gene)
-        candgenes %<>% intersect(unique(fdt(pro)[imputed==FALSE][   `p~M00~limma` > 0.5                           ]$gene))
-        candgenes %<>% intersect(unique(fdt(fos)[imputed==FALSE][   `p~M00~limma` > 0.5                           ]$gene))
-        candgenes
-        fdt(rna)[gene == 'TGOLN2']
-        fdt(pro)[gene == 'TGOLN2']
-        fdt(fos)[gene == 'TGOLN2']
     # RNA flat, PRO impute down, FOS impute down
         candgenes <-      unique(fdt(rna)[ `p~M00~limma` > 0.5 ]$gene)                             # RNA flat
         candgenes %<>% intersect(fdt(pro)[imputed==TRUE]$gene)                                     # PRO imputed
@@ -418,19 +328,6 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         fdt(pro)['NEK1', on = 'gene']
         fdt(fos)['NEK1', on = 'gene']
         
-    # RNA down, PRO down, FOS down
-                       fdt(rna)[ `fdr~M00~limma` < 5e-7 & `effect~M00~limma` < 0, unique(gene)]   %>% 
-            intersect( fdt(pro)[ `fdr~M00~limma` < 5e-7 & `effect~M00~limma` < 0, unique(gene)] ) %>% 
-            intersect( fdt(fos)[   `p~M00~limma` > 0.50,                          unique(gene)] )
-        fdt(rna)[gene == 'ADD2']
-        fdt(pro)[gene == 'ADD2'][imputed==FALSE]
-    # RNA up, PRO up, FOS up
-                       fdt(rna)[ `fdr~M00~limma` < 5e-6 & `effect~M00~limma` > 0, unique(gene)]   %>% 
-            intersect( fdt(pro)[ `fdr~M00~limma` < 5e-6 & `effect~M00~limma` > 0, unique(gene)] ) %>% 
-            intersect( fdt(fos)[   `p~M00~limma` > 0.50,                          unique(gene)] )
-        fdt(rna)[gene == 'MAP1A']
-        fdt(pro)[gene == 'MAP1A'][imputed==FALSE]
-
     # Flatliner: RNA and FOS (not in PRO)
         candidates <- rnagenes %>% setdiff(progenes) %>% intersect(fosgenes)
         candidates %<>% intersect(fdt(rna)[`p~M00~limma` > 0.30, unique(gene)])  # flat rna - flat pro
@@ -438,10 +335,62 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         fdt(rna)['EAF1', on = 'gene']
         fdt(pro)['EAF1', on = 'gene']
         fdt(fos)['EAF1', on = 'gene']
-    # Flatliner: RNA (not in PRO and FOS)
-        candidates <- rnagenes %>% setdiff(progenes) %>% setdiff(fosgenes)
-        candidates %<>% intersect(fdt(rna)[`p~M00~limma` > 0.50, unique(gene)])  # flat rna - flat pro
-        candidates
-        fdt(rna)['GSC2', on = 'gene']
+    # Review
+        rnafile <- download_data('billing19.rnacounts.txt')
+        profile <- download_data('billing19.proteingroups.txt')
+        fosfile <- download_data('billing19.phosphosites.txt')
+        rnafile1 <- 'inst/extdata/billing19.rnacounts.txt'
+        profile1 <- 'inst/extdata/billing19.proteingroups.txt'
+        fosfile1 <- 'inst/extdata/billing19.phosphosites.txt'
+        subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
+        rna  <- read_rnaseq_counts(rnafile)
+        rna1 <- read_rnaseq_counts(rnafile1)
+        pro  <- read_maxquant_proteingroups(profile,  subgroups = subgroups, contaminant = TRUE, reverse = TRUE)
+        pro1 <- read_maxquant_proteingroups(profile1, subgroups = subgroups)
+        fos  <- read_maxquant_phosphosites( fosfile = fosfile,  profile = profile,  subgroups = subgroups, contaminant = TRUE, reverse = TRUE )
+        fos1 <- read_maxquant_phosphosites( fosfile = fosfile1, profile = profile1, subgroups = subgroups)
+        pro$subgroup  %<>% split_extract_fixed('_', 1)
+        pro1$subgroup %<>% split_extract_fixed('_', 1)
+        fos$subgroup  %<>% split_extract_fixed('_', 1)
+        fos1$subgroup %<>% split_extract_fixed('_', 1)
+        fdt(fos)$`Fasta headers` <- NULL
+        fvars(rna) %<>% stri_replace_first_fixed('gene_name', 'gene')
+        pcalist <- list( p1 = biplot(pca(rna ), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('RNA'),  #  COL3A1
+                         p2 = biplot(pca(rna1), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('rna'),  #  COL11A1
+                         p3 = biplot(pca(pro ), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('PRO'),  #  HSPB6
+                         p4 = biplot(pca(pro1), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('pro'),  #  LCP1
+                         p5 = biplot(pca(fos ), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('FOS'),  #  VIM
+                         p6 = biplot(pca(fos1), nx = 1, ny = 1, feature_label = 'gene') + ggtitle('fos') ) #  NES
+        gridExtra::grid.arrange(grobs = pcalist, layout_matrix = matrix(1:6, nrow = 3, byrow = TRUE))
+        rna  %<>% fit_limma()
+        pro  %<>% fit_limma()
+        fos  %<>% fit_limma()
+        rna1 %<>% fit_limma()
+        pro1 %<>% fit_limma()
+        fos1 %<>% fit_limma()
+        gridExtra::grid.arrange( plot_volcano(rna,  label = 'gene_name'), 
+                                 plot_volcano(rna1, label = 'gene'     ) )
+        gridExtra::grid.arrange( plot_volcano(pro,  label = 'gene'     ), 
+                                 plot_volcano(pro1, label = 'gene'     ) )
+        gridExtra::grid.arrange( plot_volcano(fos,  label = 'gene'     ), 
+                                 plot_volcano(fos1, label = 'gene'     ) )
+        
+        plotlist <- list( p1 = plot_volcano(rna,  label = 'gene_name' ),
+                          p2 = plot_volcano(rna1, label = 'gene'),
+                          p3 = plot_volcano(pro,  label = 'gene'),
+                          p4 = plot_volcano(pro1, label = 'gene'),
+                          p5 = plot_volcano(fos,  label = 'gene'),
+                          p6 = plot_volcano(fos1, label = 'gene') )
+        gridExtra::grid.arrange(grobs = plotlist, layout_matrix = matrix(1:6, nrow = 3, byrow = TRUE))
 
-    
+#---------------------------------------------------------------------------------
+#
+#   UNIPROT_HSA_20140515
+#
+#---------------------------------------------------------------------------------
+
+        profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+        object <- read_maxquant_proteingroups(profile, contaminants = TRUE, reverse = TRUE)
+        uniprots <- fdt(object)$uniprot
+        sort(c(uniprots %>% extract(-length(.)), 'Q8WXH0'))
+

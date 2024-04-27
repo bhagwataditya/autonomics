@@ -6,6 +6,12 @@
 \usage{
 fix_xlgenes(x)
 }
+\arguments{
+\item{x}{character}
+}
+\value{
+character
+}
 \description{
 Fix excel genes
 }
