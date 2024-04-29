@@ -96,7 +96,7 @@ Read maxquant phosphosites
 \examples{
   profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
   fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
-fastafile <- download_data('uniprot_hsa_20140515.fasta')
+fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
 subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
 fos <- read_maxquant_phosphosites( fosfile = fosfile, profile = profile, subgroups = subgroups)

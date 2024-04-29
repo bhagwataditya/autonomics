@@ -18,7 +18,7 @@ assert_fastadt(x, .xname = get_name_in_parent(x))
 Is fastadt
 }
 \examples{
-fastafile <- download_data('uniprot_hsa_20140515.fasta')
+fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
 x <- read_uniprotdt(fastafile)
 # is_fastadt(x)  # slow
 }

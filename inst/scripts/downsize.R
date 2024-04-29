@@ -388,23 +388,30 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
 #   UNIPROT_HSA_20140515
 #
 #---------------------------------------------------------------------------------
-        profile0 <- download_data('billing19.proteingroups.txt')
-        fosfile0 <- download_data('billing19.phosphosites.txt')
         profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
         fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
-        pro0 <- read_maxquant_proteingroups(profile0, reverse = TRUE)
-        fos0 <- read_maxquant_phosphosites(fosfile = fosfile0, profile = profile0, reverse = TRUE)
-        pro <- read_maxquant_proteingroups(profile, reverse = TRUE)
-        fos <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, reverse = TRUE)
-        fdt(pro)
-        fdt(fos)
+        prodt <- fread(profile, select = c('id', 'Majority protein IDs', 'Gene names'))
+        fosdt <- fread(fosfile, select = c('id', 'Protein group IDs', 'Proteins', 'Gene names'))
         
-        list0 <- list( pro = unique(fdt(pro)$uniprot), fos = unique(fdt(fos)$uniprot) )
-        plot_venn(list0)
-        fdt(fos)[Reduce(setdiff, rev(list0)), on = 'uniprot']
-        fdt(fos)[proId == '438']
-        fdt(pro)[proId == '438']
-        fread(profile)[id=='438']
+        uniprots <-         unique(unlist(stri_split_fixed(prodt$`Majority protein IDs`, ';')))
+        uniprots %<>% union(unique(unlist(stri_split_fixed(fosdt$`Proteins`,             ';'))))
+        uniprots %<>% extract(. != '')
+        uniprots %<>% extract(!stri_detect_fixed(., 'REV__'))
+        uniprots %<>% extract(!stri_detect_fixed(., 'CON__'))
+      # uniprots %<>% split_extract_fixed('-', 1)
+        uniprots %<>% unique()
 
-        sort(c(uniprots %>% extract(-length(.)), 'Q8WXH0'))
-
+        fastainfile <- download_data('uniprot_hsa_20140515.fasta')
+        fastaobj <- Biostrings::readAAStringSet(fastainfile)
+        fastaups <- names(fastaobj) %>% split_extract_fixed('|', 2)
+        idx <- match(uniprots, fastaups)
+        fastaobj %<>% extract(idx)
+        fastaoutfile <- 'inst/extdata/uniprot_hsa_20140515.fasta'
+        Biostrings::writeXStringSet(fastaobj, filepath = fastaoutfile)
+        
+        pro1 <- read_maxquant_proteingroups(profile)
+        pro2 <- read_maxquant_proteingroups(profile, fastafile = fastafile)
+        fdt(pro1)
+        fdt(pro2)
+        
+        

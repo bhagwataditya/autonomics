@@ -121,7 +121,7 @@ parse_uniprot_hdrs <- function(fastahdrs, fastafields = FASTAFIELDS){
 #' @param verbose      bool
 #' @examples
 #' # uniprot hdrs
-#'      fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#'      fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
 #'      read_uniprotdt(fastafile)
 #'      
 #' # maxquant hdrs
@@ -744,7 +744,7 @@ spaces <- function(n)  paste0(rep(' ', n), collapse = '')
 #' #--------------------------------------------------------
 #' profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
-#'  upfile <- download_data('uniprot_hsa_20140515.fasta')
+#'  upfile <- system.file('extdata/uniprot_hsa_20140515.fasta',  package = 'autonomics')
 #' prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
 #' fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
 #'     uniprothdrs <- read_uniprotdt(upfile)

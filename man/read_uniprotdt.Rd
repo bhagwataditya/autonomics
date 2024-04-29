@@ -35,7 +35,7 @@ existence values are always those of the canonical isoform
 }
 \examples{
 # uniprot hdrs
-     fastafile <- download_data('uniprot_hsa_20140515.fasta')
+     fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
      read_uniprotdt(fastafile)
      
 # maxquant hdrs

@@ -240,7 +240,7 @@ assert_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
 #' @param x   fasta data.table
 #' @param .xname string
 #' @examples
-#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
 #' x <- read_uniprotdt(fastafile)
 #' # is_fastadt(x)  # slow
 #' @export
