@@ -388,9 +388,17 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
 #   UNIPROT_HSA_20140515
 #
 #---------------------------------------------------------------------------------
-
+        profile0 <- download_data('billing19.proteingroups.txt')
+        fosfile0 <- download_data('billing19.phosphosites.txt')
         profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-        object <- read_maxquant_proteingroups(profile, contaminants = TRUE, reverse = TRUE)
+        fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
+        pro0 <- read_maxquant_proteingroups(profile0, reverse = TRUE)
+        fos0 <- read_maxquant_phosphosites(fosfile = fosfile0, profile = profile0, reverse = TRUE)
+        pro <- read_maxquant_proteingroups(profile, reverse = TRUE)
+        fos <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, reverse = TRUE)
+        fdt(pro)
+        fdt(fos)
+        
         uniprots <- fdt(object)$uniprot
         sort(c(uniprots %>% extract(-length(.)), 'Q8WXH0'))
 
