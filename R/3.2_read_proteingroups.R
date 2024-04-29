@@ -99,8 +99,13 @@ un_int64 <- function(x) {
     if (verbose)  cmessage('%sRead%sproteingroups   %s', spaces(4), spaces(6), file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
-    n0 <- nrow(prodt)
-    pattern <- MAXQUANT_PATTERNS[[quantity]]
+  # prodt[Reverse == '+', `Majority protein IDs` := split_extract_fixed(`Majority protein IDs`, ';', 1)]
+            # In FOS `Proteins` column is empty for Reverse, so `Protein` (singular!) is copied over
+            # In PRO therefore take leading protein only for naming identity with FOS.
+            # Upon further insight naming parity is probably not so important
+            # So dont unnecessarily modify
+# Extract relevant columns
+    pattern <- MAXQUANT_PATTERNS[[quantity]]   # the proteins column is empty in (only) reverse
     anncols <- c('id', 'Majority protein IDs', 'Reverse', 
                  'Potential contaminant', 'Contaminant', 'Fasta headers')#, 'Phospho (STY) site IDs')
     anncols %<>% intersect(names(prodt))
@@ -526,7 +531,7 @@ read_maxquant_phosphosites <- function(
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
         uniprothdrs <- read_uniprotdt(fastafile)
     contaminanthdrs <- read_contaminantdt()
-       maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`); prodt[, `Fasta headers` := NULL ]
+       maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`); fosdt[, `Fasta headers` := NULL ]
     fosdt %<>% annotate_maxquant( uniprothdrs = uniprothdrs, 
                               contaminanthdrs = contaminanthdrs, 
                                  maxquanthdrs = maxquanthdrs, 

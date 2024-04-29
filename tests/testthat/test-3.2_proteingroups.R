@@ -21,7 +21,8 @@ test_that(" .read_(proteingroups|phosphosites) ", {
         expect_identical(fos$fosId, fosdt$id)
     # uniprots
         expect_identical(pro$uniprot, prodt$`Majority protein IDs`)
-        #expect_identical(fos$uniprot, fosdt$Proteins)
+        expect_identical(fos[  reverse=='']$uniprot,  # `Proteins` is empty for Reverse (in FOS)
+                         fosdt[Reverse=='']$Proteins) # `read_maxquant_phosphosites` copies over `Protein` in such cases
     # pecounts
         expect_identical(   pro$`Razor + unique peptides STD(L).E00(M).E01(H).R1`, 
                           prodt$`Razor + unique peptides STD(L).E00(M).E01(H).R1`)
