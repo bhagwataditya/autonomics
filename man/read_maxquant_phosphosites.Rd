@@ -16,6 +16,7 @@ read_maxquant_phosphosites(
   invert = character(0),
   contaminants = FALSE,
   reverse = FALSE,
+  rm_missing_in_all_samples = TRUE,
   localization = 0.75,
   impute = FALSE,
   plot = FALSE,
@@ -54,7 +55,9 @@ read_phosphosites(...)
 
 \item{contaminants}{TRUE or FALSE: retain contaminants ?}
 
-\item{reverse}{TRUE or FALSE: include reverse hits ?}
+\item{reverse}{TRUE or FALSE: include reverse hits}
+
+\item{rm_missing_in_all_samples}{TRUE or FALSE}
 
 \item{localization}{number: min localization probability (for phosphosites)}
 

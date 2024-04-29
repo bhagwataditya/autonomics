@@ -15,6 +15,7 @@ read_maxquant_proteingroups(
   invert = character(0),
   contaminants = FALSE,
   reverse = FALSE,
+  rm_missing_in_all_samples = TRUE,
   impute = FALSE,
   plot = FALSE,
   label = "feature_id",
@@ -51,6 +52,8 @@ read_proteingroups(...)
 \item{contaminants}{TRUE or FALSE : retain contaminants ?}
 
 \item{reverse}{TRUE or FALSE : include reverse hits ?}
+
+\item{rm_missing_in_all_samples}{TRUE or FALSE}
 
 \item{impute}{TRUE or FALSE: impute group-specific NA values?}
 

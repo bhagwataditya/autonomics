@@ -399,6 +399,12 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         fdt(pro)
         fdt(fos)
         
-        uniprots <- fdt(object)$uniprot
+        list0 <- list( pro = unique(fdt(pro)$uniprot), fos = unique(fdt(fos)$uniprot) )
+        plot_venn(list0)
+        fdt(fos)[Reduce(setdiff, rev(list0)), on = 'uniprot']
+        fdt(fos)[proId == '438']
+        fdt(pro)[proId == '438']
+        fread(profile)[id=='438']
+
         sort(c(uniprots %>% extract(-length(.)), 'Q8WXH0'))
 
