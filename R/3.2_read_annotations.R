@@ -395,7 +395,7 @@ parse_strep_contaminants <- function(hdrs){
 #' @return data.table
 #' @examples
 #' save_contaminant_hdrs()
-#' @export
+#' @noRd
 save_contaminant_hdrs <- function(confile = download_contaminants(), verbose = TRUE){
 # Assert
     if (  is.null(confile))  return(NULL)
@@ -462,7 +462,7 @@ save_contaminant_hdrs <- function(confile = download_contaminants(), verbose = T
 #' @rdname read_uniprotdt
 #' @export
 read_contaminantdt <- function(force = FALSE, verbose = TRUE){
-    file <- download_data('contaminants.tsv', force = force)
+    file <- system.file('extdata/contaminants.tsv', package = 'autonomics')
     if (verbose)  cmessage('%scontaminanthdrs %s', spaces(14), file)
     fread(file)
 }
