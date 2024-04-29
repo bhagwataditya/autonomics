@@ -211,6 +211,17 @@ is_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
 
 #' @rdname is_diann_report
 #' @export
+is_compounddiscoverer_output <- function(x, .xname = get_name_in_parent(x)){
+  if (is.null(x))                  { false('%s is NULL',         .xname)
+  } else if (!is_a_string(x))      { false('%s is not a string', .xname)
+  } else if (!is_existing_file(x)) { false('%s does not exist',  .xname)
+  } else if (col1(x) != 'Name')    { false('col1(%s) != "Name"', .xname)
+  } else                           { TRUE
+  }
+}
+
+#' @rdname is_diann_report
+#' @export
 assert_diann_report <- function(x, .xname = get_name_in_parent(x)){
     assert_engine(is_diann_report, x, .xname = .xname)
 }
@@ -233,6 +244,11 @@ assert_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
     assert_engine(is_maxquant_phosphosites, x, .xname = .xname)
 }
 
+#' @rdname is_diann_report
+#' @export
+assert_compounddiscoverer_output <- function(x, .xname = get_name_in_parent(x)){
+  assert_engine(is_compounddiscoverer_output, x, .xname = .xname)
+}
 
 #--------
 
@@ -491,3 +507,22 @@ assert_valid_formula <- function(
     assert_engine(is_valid_formula, x = x, y = y, .xname = .xname, .yname = .yname)
 }
 
+#---------------------
+
+all_have_setidentical_colnames <- function(x, .xname = get_name_in_parent(x))
+{
+    assert_is_list(x)
+    assert_all_are_true(sapply(x, is_data.frame))
+    aicns <- lapply(x, names) %>%
+      lapply(sort) %>%
+      sapply(identical, .[[1]]) %>%
+      all()
+    if (! aicns)  return(false('Not all colnames in %s are setidentical', .xname))
+    TRUE
+}
+
+assert_all_have_setidentical_colnames <- function(
+    x, .xname = get_name_in_parent(x)
+){
+  assert_engine(all_have_setidentical_colnames, x = x, .xname = .xname)
+}

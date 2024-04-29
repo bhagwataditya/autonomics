@@ -1114,6 +1114,29 @@
                                            na_ignore = na_ignore,
                                             severity = severity )
         }
+        
+        assert_all_are_greater_than <- function(x, y, 
+                                                na_ignore = FALSE, severity = getOption("assertive.severity", "stop"))
+        {  
+          .xname <- get_name_in_parent(x)
+          .yname <- get_name_in_parent(y)
+          msg <- gettextf(
+            "%s are not all greater than %s.", 
+            .xname,
+            .yname
+          )
+          assert_engine(
+            is_greater_than, 
+            x, 
+            y = y, 
+            .xname = .xname,
+            .yname = .yname,
+            msg = msg, 
+            na_ignore = na_ignore,
+            severity = severity
+          )  
+        }
+        
                 
 #=====
 # SETS
