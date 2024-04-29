@@ -1038,7 +1038,6 @@ read_salmon <- function(
 
 
 
-#' @export
 xlgenesdt <- set_names ( data.table( rbind( 
                 c( '2-Mar', 'MTARC2'  ), c('MARC2',   'MTARC2'  ),  #  1
                 c( '3-Mar', 'MARCHF3' ), c('MARCH3',  'MARCHF3' ),  #  2 
