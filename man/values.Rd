@@ -30,7 +30,7 @@ value matrix (get) or updated object (set)
 Get/Set value matrix
 }
 \examples{
-file <- download_data('billing16.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 values(object)[1:3, 1:3]
 values(object) <- 0

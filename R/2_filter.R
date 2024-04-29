@@ -57,7 +57,7 @@ is_available_in_all_samples <- function(object)  rowAlls(!is.na(values(object)))
 #' @param verbose TRUE (default) or FALSE
 #' @return updated object
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' rm_missing_in_all_samples( object)
 #' rm_missing_in_some_samples(object)

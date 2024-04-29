@@ -67,15 +67,8 @@ Get/Set sample/feature data
 }
 \examples{
 # Read data
-    file <- download_data('billing16.proteingroups.txt')
+    file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
     object <- read_maxquant_proteingroups(file)
-# sdata/fdata
-    sdata(object)[1:3, ]
-    fdata(object)[1:3, ]
-    sdata(object) \%<>\% cbind(a=1)
-    fdata(object) \%<>\% cbind(a=1)
-    sdata(object)[1:3, ]
-    fdata(object)[1:3, ]
 # sdt/fdt
     sdt(object)[1:3, ]
     fdt(object)[1:3, ]
@@ -83,4 +76,11 @@ Get/Set sample/feature data
     fdt(object) \%<>\% cbind(b=1)
     sdt(object)
     fdt(object)
+# sdata/fdata
+    sdata(object)[1:3, ]
+    fdata(object)[1:3, ]
+    sdata(object) \%<>\% cbind(a=1)
+    fdata(object) \%<>\% cbind(a=1)
+    sdata(object)[1:3, ]
+    fdata(object)[1:3, ]
 }

@@ -383,6 +383,26 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
                           p6 = plot_volcano(fos1, label = 'gene') )
         gridExtra::grid.arrange(grobs = plotlist, layout_matrix = matrix(1:6, nrow = 3, byrow = TRUE))
 
+
+        
+#---------------------------------------------------------------------------------
+#
+#   BILLING STEM CELL COMPARISON
+#   https://www.nature.com/articles/srep21507
+#
+#---------------------------------------------------------------------------------
+        # RNA, PRO, and SOMA exist
+        # But the examples us only PRO
+        # So for now, lets just downsize that.
+        profile <-  download_data('billing16.proteingroups.txt')
+        somafile <- download_data('billing16.somascan.adat')
+        rna <- read_rnaseq_counts(rnafile)
+        pro <- read_maxquant_proteingroups(profile)
+        soma <- read_somascan(somafile)
+        rna # already a reduced set file !
+        pro
+        soma
+        
 #---------------------------------------------------------------------------------
 #
 #   UNIPROT_HSA_20140515

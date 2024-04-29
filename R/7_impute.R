@@ -154,11 +154,12 @@ na_to_string <- function(x){
 #'    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
 #'    impute(object, plot = TRUE)                                # sumexp
 #' # Complex Design
-#'    file <- download_data('atkin.metabolon.xlsx')
-#'    object <- read_metabolon(file)
-#'    invisible(impute(values(object)[1:3, 1   ]))               # vector
-#'    invisible(impute(values(object)[1:3, 1:5 ]))               # matrix
-#'    object %>%  filter_samples(Diabetes == 'Control') %>% impute()  # sumexp
+#'    subgroups <- sprintf('%s_STD', c('E00','E01','E02','E05','E15','E30','M00'))
+#'    file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#'    object <- read_maxquant_proteingroups(file, subgroups = subgroups)
+#'    impute(values(object)[1:3, 1   ])     # vector
+#'    impute(values(object)[1:3, 1:5 ])     # matrix
+#'    impute( object )                      # sumexp
 #' @export
 impute <- function(object, ...) UseMethod('impute')
 
@@ -627,12 +628,13 @@ plot_summarized_detections <- function(...){
 #' plot_subgroup_nas(object)
 #' plot_subgroup_nas(impute(object))
 #'
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file)
+#' subgroups <- sprintf('%s_STD', c('E00','E01','E02','E05','E15','E30','M00'))
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
+#' plot_subgroup_nas(object)
 #' plot_subgroup_nas(object, 'subgroup')
-#' plot_subgroup_nas(object, 'TIME_POINT')
+#' plot_sample_nas(object)
 #' plot_sample_nas(object, 'subgroup')
-#' plot_sample_nas(object, 'TIME_POINT')
 #' @export
 plot_sample_nas <- function(
     object, 
@@ -797,8 +799,8 @@ plot_subgroup_nas <- function(
 #'@param value matrix
 #'@return matrix (get) or updated object (set)
 #'@examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file, impute = TRUE)
 #' sum(is_imputed(object))
 #' @rdname is_imputed
 #' @export

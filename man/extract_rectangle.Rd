@@ -64,47 +64,19 @@ Extract rectangle from omics file, data.table, or matrix
 \examples{
 # FROM FILE: extract_rectangle.character
 #=======================================
-# exprs
-   x <- download_data('halama18.metabolon.xlsx')
-   extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) \%>\%
-   extract(1:3, 1:3)
-
-# fids
-   extract_rectangle(x, rows = 11:401, cols = 5, sheet = 2)     \%>\%
-   extract(1:3, )
-
-# sids
-   extract_rectangle(x, rows = 2, cols = 15:86, sheet = 2)      \%>\%
-   extract(,1:3)
-
-# fdt
-   extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) \%>\%
-   extract(1:3, 1:3)
-
-# sdt
-   extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
-   transpose = TRUE) \%>\% extract(1:3, 1:3)
+   x <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+   extract_rectangle(x, rows = 11:30, cols = 15:81, sheet = 2)[ 1:3, 1:3 ]  # exprs
+   extract_rectangle(x, rows = 11:30, cols = 2,     sheet = 2)[ 1:3,     ]  # fids
+   extract_rectangle(x, rows = 4,     cols = 15:81, sheet = 2)[    , 1:3 ]  # sids
+   extract_rectangle(x, rows = 10:30, cols = 1:14,  sheet = 2)[ 1:3, 1:3 ]  # fdt
+   extract_rectangle(x, rows = 1:10,  cols = 14:81, sheet = 2, transpose = TRUE)[1:3, 1:3] # sdt
 
 # FROM MATRIX: extract_rectangle.matrix
 #======================================
-# exprs
-   x <- download_data('halama18.metabolon.xlsx') \%>\% extract_rectangle(sheet = 2)
-   extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) \%>\%
-   extract(1:3, 1:3)
-
-# fids
-   extract_rectangle(x, rows = 11:401, cols = 5,     sheet = 2) \%>\%
-   extract(1:3, )
-
-# sids
-   extract_rectangle(x, rows = 2,      cols = 15:86, sheet = 2) \%>\%
-   extract(,1:3)
-
-# fdt
-   extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) \%>\%
-   extract(1:3, 1:3)
-
-# sdt
-   extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2, transpose = TRUE) \%>\% 
-   extract(1:3, 1:3)
+   x <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics') \%>\% extract_rectangle(sheet = 2)
+   extract_rectangle(x, rows = 11:30,  cols = 15:81, sheet = 2)[ 1:3, 1:3 ]  # exprs
+   extract_rectangle(x, rows = 11:30,  cols = 2,     sheet = 2)[ 1:3,     ]  # fids
+   extract_rectangle(x, rows = 4,      cols = 15:81, sheet = 2)[    , 1:3 ]  # sids
+   extract_rectangle(x, rows = 10:30,  cols = 1:14,  sheet = 2)[ 1:3, 1:3 ]  # fdt
+   extract_rectangle(x, rows = 1:10,   cols = 14:81, sheet = 2, transpose = TRUE)[1:3, 1:3] # sdt
 }

@@ -21,7 +21,8 @@ matrix
 Arrange (subgroup)levels in matrix
 }
 \examples{
-file <- download_data('halama18.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
+object$subgroup <- paste0(object$Diabetes, '.', object$subgroup)
 subgroup_matrix(object, 'subgroup')
 }

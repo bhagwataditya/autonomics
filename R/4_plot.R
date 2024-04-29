@@ -12,17 +12,11 @@
 #' @param verbose  TRUE or FALSE (default)
 #' @return default color values vector
 #' @examples
-#' # STEMCELL RATIOS
-#'     file <- download_data('billing16.proteingroups.txt')
-#'     invert_subgroups <- c('E_EM','BM_E', 'BM_EM')
-#'     object <- read_maxquant_proteingroups(file, invert = invert_subgroups)
-#'     p <- plot_sample_densities(object)
-#'     add_color_scale(p, color = 'subgroup', data = sdt(object))
-#' # STEMCELL INTENSITIES
-#'    file <- download_data('billing16.proteingroups.txt')
-#'    object <- read_maxquant_proteingroups(file, quantity = 'labeledintensity')
-#'    p <- plot_sample_densities(object)
-#'    add_color_scale(p, color = 'subgroup', data = sdt(object))
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#' subgroups <- sprintf('%s_STD', c('E00','E01','E02','E05','E15','E30','M00'))
+#' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
+#' p <- plot_sample_densities(object)
+#' add_color_scale(p, color = 'subgroup', data = sdt(object))
 #' @noRd
 add_color_scale <- function(p, color, data, palette = NULL){
 # Assert
@@ -142,10 +136,10 @@ make_onefactor_colors <- function(
 #' @param verbose TRUE/FALSE
 #' @return named string vector (elements = colors, names = color_var levels)
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' varlevels <- slevels(object, 'subgroup')
-#' make_twofactor_colors(varlevels, show = TRUE)
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#' object <- read_metabolon(file)
+#' subgroups <- unique(paste(object$Diabetes, object$Time, sep = '.'))
+#' make_twofactor_colors(subgroups, show = TRUE)
 #' @noRd
 make_twofactor_colors <- function(
     varlevels, sep  = guess_sep(varlevels), show = FALSE, verbose = TRUE
@@ -210,14 +204,12 @@ make_twofactor_colors <- function(
 #' @param theme       list with ggplot theme specifications
 #' @return ggplot object
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% pca()
 #' data <- sdt(object)
 #' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`)
-#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME_POINT)
-#' data$TIME <- as.numeric(substr(data$TIME_POINT, 2, 3))
-#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME)
+#' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = subgroup)
 #' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = NULL)
 #' fixed <- list(shape = 15, size = 3)
 #' plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, fixed = fixed)
@@ -479,7 +471,7 @@ plot_feature_densities <- function(
 #'          \code{\link{plot_densities}}
 #' @examples
 #' # data
-#'     file <- download_data('halama18.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     object %<>% extract(, order(.$subgroup))
 #'     control_features <- c('biotin','phosphate')
@@ -1698,7 +1690,7 @@ plot_design <- function(object, codingfun = contr.treatment){
 #' @param verbose  TRUE or FALSE
 #' @return SummarizedExperiment. Two new fvars: `cluster` and  `clustorder`
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' if (require(fpc))        fdt(fcluster(object, method = 'pamk'         ))
 #' if (require(stats))      fdt(fcluster(object, method = 'hclust', k = 3))

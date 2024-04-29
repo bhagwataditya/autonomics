@@ -8,7 +8,7 @@ metadata <- S4Vectors::metadata
 
 test_that(  "read_metabolon", {
     # Read
-        file <- download_data('atkin.metabolon.xlsx')
+        file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
         object <- read_metabolon(file)
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -18,7 +18,7 @@ test_that(  "read_metabolon", {
 
 test_that(  "read_metabolon: subgroupvar = 'Time' ", {
     # Read
-        file <- download_data('atkin.metabolon.xlsx')
+        file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
         object <- read_metabolon(file, subgroupvar = 'Time')
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -28,7 +28,7 @@ test_that(  "read_metabolon: subgroupvar = 'Time' ", {
 
 test_that(  "read_metabolon: pca = TRUE ", {
     # Read
-        file <- download_data('atkin.metabolon.xlsx')
+        file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
         object <- read_metabolon(file, pca = TRUE)
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -39,7 +39,7 @@ test_that(  "read_metabolon: pca = TRUE ", {
 
 test_that(  "read_metabolon: fit = 'limma' ", {
     # Read
-        file <- download_data('atkin.metabolon.xlsx')
+        file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
         object <- read_metabolon(file, fit = 'limma', block = 'Subject')
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -48,7 +48,7 @@ test_that(  "read_metabolon: fit = 'limma' ", {
 
 test_that(  "read_metabolon: fit = 'lm' ", {
     # Read
-        file <- download_data('atkin.metabolon.xlsx')
+        file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
         object <- read_metabolon(file, fit = 'lm', block = 'Subject')
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -57,7 +57,7 @@ test_that(  "read_metabolon: fit = 'lm' ", {
 
 test_that("read_metabolon: fit = 'lme' ", {
     # Read
-        file <- download_data('atkin.metabolon.xlsx')
+        file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
         object <- read_metabolon(file, block = 'Subject', fit = 'lme')
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -66,7 +66,7 @@ test_that("read_metabolon: fit = 'lme' ", {
 
 test_that("read_metabolon: fit = 'lmer' ",{
     # Read
-        file <- download_data('atkin.metabolon.xlsx')
+        file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
         object <- suppressWarnings(read_metabolon(file, block = 'Subject', fit = 'lmer'))
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
@@ -75,7 +75,7 @@ test_that("read_metabolon: fit = 'lmer' ",{
 
 test_that("read_metabolon: fit = 'wilcoxon' ", {
     # Read
-        file <- download_data('atkin.metabolon.xlsx')
+        file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
         object <- read_metabolon(file, block = 'Subject', fit = 'wilcoxon')
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
