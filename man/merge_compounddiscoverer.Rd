@@ -8,6 +8,10 @@ merge_compounddiscoverer(x, quantity = NULL, verbose = TRUE)
 }
 \arguments{
 \item{x}{`list`}
+
+\item{quantity}{`'area', 'normalizedarea'`}
+
+\item{verbose}{`TRUE` or `FALSE`}
 }
 \value{
 `data.table`

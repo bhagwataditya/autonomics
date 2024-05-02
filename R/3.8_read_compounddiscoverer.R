@@ -18,9 +18,11 @@ COMPOUNDDISCOVERER_PATTERNS <- c(
 #' @param x character vector
 #' @return  string: value from names(COMPOUNDDISCOVERER_PATTERNS)
 #' @examples
+#' \dontrun{
 #' # file
 #'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #'     guess_coompounddiscoverer_quantity(file)
+#' }
 #'
 #' # character vector
 #'     x <- "Area: 20230908_F143_HILICNEG.raw (F11)"
@@ -60,6 +62,7 @@ guess_coompounddiscoverer_quantity <- function(x){
 #' @return data.table
 #' @export
 .read_compounddiscoverer <- function(file, quantity = guess_coompounddiscoverer_quantity(file), verbose = TRUE){
+    Name <- Value <- rowid <- Acquisition <- NULL
 # Assert
     assert_compounddiscoverer_output(file)
     assert_is_subset(quantity, names(COMPOUNDDISCOVERER_PATTERNS))
@@ -134,9 +137,12 @@ dequantify_compounddiscoverer <- function(
 
 #' merge compound discoverer files
 #' @param x        `list`
+#' @param quantity `'area', 'normalizedarea'`
+#' @param verbose  `TRUE` or `FALSE`
 #' @return `data.table`
 #' @export
 merge_compounddiscoverer <- function(x, quantity = NULL, verbose = TRUE) {
+    Modus <- Name <- Value <- Acquisition <- NULL
     assert_is_list(x)
     assert_has_names(x)
     assert_is_a_string(quantity)
@@ -153,7 +159,7 @@ merge_compounddiscoverer <- function(x, quantity = NULL, verbose = TRUE) {
       }) %>%
       magrittr::set_names(names(x))
 # Ensure proper treatment of data from single source file
-    if (length(x) == 1) return(head(x, n = 1))
+    if (length(x) == 1) return(utils::head(x, n = 1))
 # Pivot longer and combine
     if (verbose)  cmessage('%sMerge%scompount discoverer output%s(choose origin with max %s)', spaces(4), spaces(5), spaces(3), quantity)
     x %<>%
@@ -215,6 +221,7 @@ read_compounddiscoverer <- function(
     coefs = NULL, contrasts = NULL,
     palette = NULL, verbose = TRUE
 ){
+    Name <- NULL
 # Select files
     assert_is_a_string(dir)
     assert_all_are_dirs(dir)

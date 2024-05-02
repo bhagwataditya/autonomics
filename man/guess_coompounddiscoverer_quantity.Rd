@@ -16,9 +16,11 @@ string: value from names(COMPOUNDDISCOVERER_PATTERNS)
 Guess compound discoverer quantity from snames
 }
 \examples{
+\dontrun{
 # file
     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
     guess_coompounddiscoverer_quantity(file)
+}
 
 # character vector
     x <- "Area: 20230908_F143_HILICNEG.raw (F11)"
