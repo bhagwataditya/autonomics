@@ -5,10 +5,12 @@
 \alias{is_fragpipe_tsv}
 \alias{is_maxquant_proteingroups}
 \alias{is_maxquant_phosphosites}
+\alias{is_compounddiscoverer_output}
 \alias{assert_diann_report}
 \alias{assert_fragpipe_tsv}
 \alias{assert_maxquant_proteingroups}
 \alias{assert_maxquant_phosphosites}
+\alias{assert_compounddiscoverer_output}
 \title{Is diann, fragpipe, proteingroups, phosphosites file?}
 \usage{
 is_diann_report(x, .xname = get_name_in_parent(x))
@@ -19,6 +21,8 @@ is_maxquant_proteingroups(x, .xname = get_name_in_parent(x))
 
 is_maxquant_phosphosites(x, .xname = get_name_in_parent(x))
 
+is_compounddiscoverer_output(x, .xname = get_name_in_parent(x))
+
 assert_diann_report(x, .xname = get_name_in_parent(x))
 
 assert_fragpipe_tsv(x, .xname = get_name_in_parent(x))
@@ -26,6 +30,8 @@ assert_fragpipe_tsv(x, .xname = get_name_in_parent(x))
 assert_maxquant_proteingroups(x, .xname = get_name_in_parent(x))
 
 assert_maxquant_phosphosites(x, .xname = get_name_in_parent(x))
+
+assert_compounddiscoverer_output(x, .xname = get_name_in_parent(x))
 }
 \arguments{
 \item{x}{file}
