@@ -114,7 +114,7 @@ Plot sample/feature violins
 }
 \examples{
 # data
-    file <- download_data('halama18.metabolon.xlsx')
+    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
     object <- read_metabolon(file)
     object \%<>\% extract(, order(.$subgroup))
     control_features <- c('biotin','phosphate')

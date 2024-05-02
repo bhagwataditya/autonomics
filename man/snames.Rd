@@ -27,7 +27,7 @@ sample names vector (get) or updated eSet (set)
 Get/Set sample names
 }
 \examples{
-file <- download_data('billing16.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 head(snames(object))
 head(snames(object) \%<>\% paste0('SAMPLE_', .))

@@ -8,9 +8,9 @@
 #' @param svar   sample var
 #' @return logical
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
-#' has_some_svalues(object, 'Group')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#' object <- read_metabolon(file)
+#' has_some_svalues(object, 'subgroup')
 #' @noRd
 has_some_svalues <- function(object, svar){
     if (is.null(svar))                          return(FALSE)
@@ -26,12 +26,12 @@ has_some_svalues <- function(object, svar){
 #' @param object SummarizedExperiment
 #' @return logical
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot=FALSE)
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #' contains_ratios(object)
 #'
-#' file <- download_data('halama18.metabolon.xlsx')
-#' object <- read_metabolon(file, plot=FALSE)
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#' object <- read_metabolon(file)
 #' contains_ratios(object)
 #' @noRd
 contains_ratios <- function(object)  any(grepl('[Rr]atio', assayNames(object)))
@@ -102,8 +102,8 @@ is_valid_sumexp <- function(x, .xname = get_name_in_parent(x)){
 #' @return TRUE or FALSE
 #' @examples
 #' # VALID
-#'     file <- download_data('halama18.metabolon.xlsx')
-#'     x <- read_metabolon(file, plot = FALSE)
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#'     x <- read_metabolon(file)
 #'     assert_is_valid_sumexp(x)
 #' # NOT VALID
 #'     rownames(SummarizedExperiment::colData(x)) <- NULL
@@ -256,7 +256,7 @@ assert_compounddiscoverer_output <- function(x, .xname = get_name_in_parent(x)){
 #' @param x   fasta data.table
 #' @param .xname string
 #' @examples
-#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
 #' x <- read_uniprotdt(fastafile)
 #' # is_fastadt(x)  # slow
 #' @export

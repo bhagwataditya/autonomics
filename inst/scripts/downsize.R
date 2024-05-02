@@ -383,14 +383,55 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
                           p6 = plot_volcano(fos1, label = 'gene') )
         gridExtra::grid.arrange(grobs = plotlist, layout_matrix = matrix(1:6, nrow = 3, byrow = TRUE))
 
+
+        
+#---------------------------------------------------------------------------------
+#
+#   BILLING STEM CELL COMPARISON
+#   https://www.nature.com/articles/srep21507
+#
+#---------------------------------------------------------------------------------
+        # RNA, PRO, and SOMA exist
+        # But the examples us only PRO
+        # So for now, lets just downsize that.
+        profile <-  download_data('billing16.proteingroups.txt')
+        somafile <- download_data('billing16.somascan.adat')
+        rna <- read_rnaseq_counts(rnafile)
+        pro <- read_maxquant_proteingroups(profile)
+        soma <- read_somascan(somafile)
+        rna # already a reduced set file !
+        pro
+        soma
+        
 #---------------------------------------------------------------------------------
 #
 #   UNIPROT_HSA_20140515
 #
 #---------------------------------------------------------------------------------
-
         profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-        object <- read_maxquant_proteingroups(profile, contaminants = TRUE, reverse = TRUE)
-        uniprots <- fdt(object)$uniprot
-        sort(c(uniprots %>% extract(-length(.)), 'Q8WXH0'))
+        fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
+        prodt <- fread(profile, select = c('id', 'Majority protein IDs', 'Gene names'))
+        fosdt <- fread(fosfile, select = c('id', 'Protein group IDs', 'Proteins', 'Gene names'))
+        
+        uniprots <-         unique(unlist(stri_split_fixed(prodt$`Majority protein IDs`, ';')))
+        uniprots %<>% union(unique(unlist(stri_split_fixed(fosdt$`Proteins`,             ';'))))
+        uniprots %<>% extract(. != '')
+        uniprots %<>% extract(!stri_detect_fixed(., 'REV__'))
+        uniprots %<>% extract(!stri_detect_fixed(., 'CON__'))
+      # uniprots %<>% split_extract_fixed('-', 1)
+        uniprots %<>% unique()
 
+        fastainfile <- download_data('uniprot_hsa_20140515.fasta')
+        fastaobj <- Biostrings::readAAStringSet(fastainfile)
+        fastaups <- names(fastaobj) %>% split_extract_fixed('|', 2)
+        idx <- match(uniprots, fastaups)
+        fastaobj %<>% extract(idx)
+        fastaoutfile <- 'inst/extdata/uniprot_hsa_20140515.fasta'
+        Biostrings::writeXStringSet(fastaobj, filepath = fastaoutfile)
+        
+        pro1 <- read_maxquant_proteingroups(profile)
+        pro2 <- read_maxquant_proteingroups(profile, fastafile = fastafile)
+        fdt(pro1)
+        fdt(pro2)
+        
+        

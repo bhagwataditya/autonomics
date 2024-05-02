@@ -27,7 +27,7 @@ feature variables vector (get) or updated object (set)
 Get/Set feature variables
 }
 \examples{
-file <- download_data('billing16.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 fvars(object)[1] \%<>\% paste0('1')
 fvars(object)[1]

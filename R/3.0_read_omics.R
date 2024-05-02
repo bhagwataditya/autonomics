@@ -73,49 +73,21 @@ is_fixed_col_file <- function(file){
 #' @examples
 #' # FROM FILE: extract_rectangle.character
 #' #=======================================
-#' # exprs
-#'    x <- download_data('halama18.metabolon.xlsx')
-#'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
-#'    extract(1:3, 1:3)
-#'
-#' # fids
-#'    extract_rectangle(x, rows = 11:401, cols = 5, sheet = 2)     %>%
-#'    extract(1:3, )
-#'
-#' # sids
-#'    extract_rectangle(x, rows = 2, cols = 15:86, sheet = 2)      %>%
-#'    extract(,1:3)
-#'
-#' # fdt
-#'    extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) %>%
-#'    extract(1:3, 1:3)
-#'
-#' # sdt
-#'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2,
-#'    transpose = TRUE) %>% extract(1:3, 1:3)
+#'    x <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#'    extract_rectangle(x, rows = 11:30, cols = 15:81, sheet = 2)[ 1:3, 1:3 ]  # exprs
+#'    extract_rectangle(x, rows = 11:30, cols = 2,     sheet = 2)[ 1:3,     ]  # fids
+#'    extract_rectangle(x, rows = 4,     cols = 15:81, sheet = 2)[    , 1:3 ]  # sids
+#'    extract_rectangle(x, rows = 10:30, cols = 1:14,  sheet = 2)[ 1:3, 1:3 ]  # fdt
+#'    extract_rectangle(x, rows = 1:10,  cols = 14:81, sheet = 2, transpose = TRUE)[1:3, 1:3] # sdt
 #'
 #' # FROM MATRIX: extract_rectangle.matrix
 #' #======================================
-#' # exprs
-#'    x <- download_data('halama18.metabolon.xlsx') %>% extract_rectangle(sheet = 2)
-#'    extract_rectangle(x, rows = 11:401, cols = 15:86, sheet = 2) %>%
-#'    extract(1:3, 1:3)
-#'
-#' # fids
-#'    extract_rectangle(x, rows = 11:401, cols = 5,     sheet = 2) %>%
-#'    extract(1:3, )
-#'
-#' # sids
-#'    extract_rectangle(x, rows = 2,      cols = 15:86, sheet = 2) %>%
-#'    extract(,1:3)
-#'
-#' # fdt
-#'    extract_rectangle(x, rows = 10:401, cols = 1:14,  sheet = 2) %>%
-#'    extract(1:3, 1:3)
-#'
-#' # sdt
-#'    extract_rectangle(x, rows = 1:10,   cols = 14:86, sheet = 2, transpose = TRUE) %>% 
-#'    extract(1:3, 1:3)
+#'    x <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics') %>% extract_rectangle(sheet = 2)
+#'    extract_rectangle(x, rows = 11:30,  cols = 15:81, sheet = 2)[ 1:3, 1:3 ]  # exprs
+#'    extract_rectangle(x, rows = 11:30,  cols = 2,     sheet = 2)[ 1:3,     ]  # fids
+#'    extract_rectangle(x, rows = 4,      cols = 15:81, sheet = 2)[    , 1:3 ]  # sids
+#'    extract_rectangle(x, rows = 10:30,  cols = 1:14,  sheet = 2)[ 1:3, 1:3 ]  # fdt
+#'    extract_rectangle(x, rows = 1:10,   cols = 14:81, sheet = 2, transpose = TRUE)[1:3, 1:3] # sdt
 #' @export
 extract_rectangle <- function(x, ...){
     UseMethod('extract_rectangle')
@@ -220,15 +192,14 @@ extract_fdata <- function(
                                     transpose = transpose,
                                     drop      = TRUE,
                                     sheet     = sheet)
-        fdata1 %<>% cbind(
-                extract_rectangle(x,
-                                rows       = fdata_rows,
-                                cols       = fdata_cols,
-                                transpose  = transpose,
-                                drop       = FALSE,
-                                sheet      = sheet) %>%
-                set_colnames(fvars1) %>%
-                data.frame(stringsAsFactors = FALSE, check.names = FALSE))
+        fdata1 %<>% cbind( extract_rectangle( x,
+                                              rows       = fdata_rows,
+                                              cols       = fdata_cols,
+                                              transpose  = transpose,
+                                              drop       = FALSE,
+                                              sheet      = sheet) %>%
+                            set_colnames(fvars1) %>%
+                            data.frame(stringsAsFactors = FALSE, check.names = FALSE))
     }
     fdata1
 }
@@ -284,10 +255,11 @@ numerify   <- function(df){
 .read_rectangles <- function(file, sheet = 1, fid_rows, fid_cols, sid_rows, 
     sid_cols, expr_rows, expr_cols, fvar_rows  = NULL, fvar_cols = NULL, 
     svar_rows = NULL, svar_cols = NULL, fdata_rows = NULL,  fdata_cols = NULL,
-    sdata_rows = NULL, sdata_cols = NULL, transpose = FALSE, verbose = TRUE){
-# Assert
-    assert_all_are_existing_files(file);     assert_is_a_bool(transpose)
+    sdata_rows = NULL, sdata_cols = NULL, transpose = FALSE, verbose = TRUE
+){
 # Read (in one go if fixed col file)
+    assert_all_are_existing_files(file)
+    assert_is_a_bool(transpose)
     if (verbose) message("\tRead: ", file)
     is_fixed_col <- is_fixed_col_file(file)
     x  <-   if (is_fixed_col){ extract_rectangle.character(file, sheet=sheet)
@@ -300,9 +272,14 @@ numerify   <- function(df){
     exprs1 <- extract_rectangle(x, rows = expr_rows, cols = expr_cols,
                         transpose = transpose, drop = FALSE, sheet = sheet)
     suppressWarnings(class(exprs1) <- 'numeric') # prevent NA warning
-    fdata1 <- extract_fdata(x,   sheet = sheet, fids = fids1,
-        fvar_rows  = fvar_rows,  fvar_cols  = fvar_cols,
-        fdata_rows = fdata_rows, fdata_cols = fdata_cols, transpose = transpose)
+    fdata1 <- extract_fdata( x,   
+                          sheet = sheet,
+                           fids = fids1,
+                     fvar_rows  = fvar_rows,
+                      fvar_cols = fvar_cols,
+                     fdata_rows = fdata_rows,
+                     fdata_cols = fdata_cols,
+                      transpose = transpose )
     sdata1 <- extract_sdata(x,   sheet = sheet, sids = sids1,
         svar_rows  = svar_rows,  svar_cols  = svar_cols,
         sdata_rows = sdata_rows, sdata_cols = sdata_cols, transpose = transpose)
@@ -358,13 +335,12 @@ numerify   <- function(df){
 #' @return SummarizedExperiment
 #' @examples
 #' # RNASEQ
-#'    file <- download_data('billing16.rnacounts.txt')
-#'    read_rectangles(file,fid_rows   = 2:58736,   fid_cols   = 1,
-#'                    sid_rows   = 1,         sid_cols   = 4:14,
-#'                    expr_rows  = 2:58736,   expr_cols  = 4:14,
-#'                    fvar_rows  = 1,         fvar_cols  = 1:3,
-#'                    fdata_rows = 2:58736,   fdata_cols = 1:3,
-#'                    transpose  = FALSE)
+#'    file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+#'    read_rectangles( file, fid_rows = 2:25,     fid_cols = 2,
+#'                           sid_rows = 1,        sid_cols = 5:28,
+#'                          expr_rows = 2:25 ,   expr_cols = 5:28,
+#'                          fvar_rows = 1,       fvar_cols = 1:4,
+#'                         fdata_rows = 2:25 ,  fdata_cols = 1:4,   transpose = FALSE)
 #' # LCMSMS PROTEINGROUPS
 #'    file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #'    read_rectangles(  file,
@@ -375,26 +351,25 @@ numerify   <- function(df){
 #'                    fdata_rows = 2:21,  fdata_cols = c(2, 6, 7, 383),
 #'                    transpose  = FALSE )
 #' # SOMASCAN
-#'    file <- download_data('billing16.somascan.adat')
-#'    read_rectangles(file,fid_rows   = 21,       fid_cols   = 19:1146,
-#'                    sid_rows   = 30:40,    sid_cols   = 4,
-#'                    expr_rows  = 30:40,    expr_cols  = 19:1146,
-#'                    fvar_rows  = 21:28,    fvar_cols  = 18,
-#'                    svar_rows  = 29,       svar_cols  = 1:17,
-#'                    fdata_rows = 21:28,    fdata_cols = 19:1146,
-#'                    sdata_rows = 30:40,    sdata_cols = 1:17,
-#'                    transpose  = TRUE)
+#'    file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
+#'    read_rectangles(file, fid_rows = 30,         fid_cols = 23:42,
+#'                          sid_rows = 42:108,     sid_cols = 4,
+#'                         expr_rows = 42:108,    expr_cols = 23:42,
+#'                         fvar_rows = 28:40,     fvar_cols = 22,
+#'                         svar_rows = 41,        svar_cols = 1:21,
+#'                        fdata_rows = 28:40,    fdata_cols = 23:42,
+#'                        sdata_rows = 42:108,   sdata_cols = 1:21,  transpose  = TRUE)
 #' # METABOLON
-#'    file <- download_data('halama18.metabolon.xlsx')
+#'    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'    read_rectangles(file, sheet = 2,
-#'                    fid_rows   = 11:401,    fid_cols   = 5,
-#'                    sid_rows   = 3,         sid_cols   = 15:86,
-#'                    expr_rows  = 11:401,    expr_cols  = 15:86,
-#'                    fvar_rows  = 10,        fvar_cols  = 1:14,
-#'                    svar_rows  = 1:10,      svar_cols  = 14,
-#'                    fdata_rows = 11:401,    fdata_cols = 1:14,
-#'                    sdata_rows = 1:10,      sdata_cols = 15:86,
-#'                    transpose  = FALSE)
+#'                      fid_rows = 11:30,     fid_cols = 2,
+#'                      sid_rows = 4,         sid_cols = 15:81,
+#'                     expr_rows = 11:30,    expr_cols = 15:81,
+#'                     fvar_rows = 10,       fvar_cols = 1:14,
+#'                     svar_rows = 1:10,     svar_cols = 14,
+#'                    fdata_rows = 11:30,   fdata_cols = 1:14,
+#'                    sdata_rows = 1:10,    sdata_cols = 15:81,
+#'                     transpose = FALSE )
 #' @export
 read_rectangles <- function(
     file, sheet = 1, fid_rows, fid_cols, sid_rows, sid_cols,
@@ -438,11 +413,11 @@ split_values <- function(x){
 #' @param verbose         TRUE / FALSE : whether to msg
 #' @return                SummarizedExperiment
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
-#' object %<>% merge_sdt(   data.table(sample_id = object$sample_id,
-#'                                        number = seq_along(object$sample_id)))
 #' sdt(object)
+#' sdt(merge_sdt(object, data.table(sample_id = object$sample_id,
+#'                                     number = seq_along(object$sample_id))))
 #'@export
 merge_sdata <- function(
     object, dt, by.x = 'sample_id',  by.y = names(dt)[1], all.x = TRUE, verbose = TRUE
@@ -727,19 +702,19 @@ read_genex <- function(file){
 #' @param setvarname  string
 #' @return data.table
 #' @examples
-#'     subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
-#'     rnafile <- system.file('extdata/billing19.rnacounts.txt',     package = 'autonomics')
-#'     profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-#'     fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
-#'     rna <- read_rnaseq_counts(rnafile)
-#'     pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
-#'     fos <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgroups = subgroups)
-#'     pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
-#'     fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
+#' subgroups <- paste0(c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'), '_STD')
+#' rnafile <- system.file('extdata/billing19.rnacounts.txt',     package = 'autonomics')
+#' profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#' fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
+#' rna <- read_rnaseq_counts(rnafile)
+#' pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgroups = subgroups)
+#' pro$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
+#' fos$subgroup %<>% stringi::stri_replace_first_fixed('_STD', '')
 #'     
-#'     sumexplist <- list(rna = rna, pro = pro, fos = fos)
-#'     dt <- sumexplist_to_longdt(sumexplist, setvarname = 'platform')
-#'     dt %<>% extract(gene %in% c('TNMD', 'TSPAN6'))
+#' sumexplist <- list(rna = rna, pro = pro, fos = fos)
+#' dt <- sumexplist_to_longdt(sumexplist, setvarname = 'platform')
+#' dt %<>% extract(gene %in% c('TNMD', 'TSPAN6'))
 #' @export
 sumexplist_to_longdt <- function(
     sumexplist, 

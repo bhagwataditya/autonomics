@@ -102,13 +102,12 @@ Read omics data from rectangular file
 }
 \examples{
 # RNASEQ
-   file <- download_data('billing16.rnacounts.txt')
-   read_rectangles(file,fid_rows   = 2:58736,   fid_cols   = 1,
-                   sid_rows   = 1,         sid_cols   = 4:14,
-                   expr_rows  = 2:58736,   expr_cols  = 4:14,
-                   fvar_rows  = 1,         fvar_cols  = 1:3,
-                   fdata_rows = 2:58736,   fdata_cols = 1:3,
-                   transpose  = FALSE)
+   file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+   read_rectangles( file, fid_rows = 2:25,     fid_cols = 2,
+                          sid_rows = 1,        sid_cols = 5:28,
+                         expr_rows = 2:25 ,   expr_cols = 5:28,
+                         fvar_rows = 1,       fvar_cols = 1:4,
+                        fdata_rows = 2:25 ,  fdata_cols = 1:4,   transpose = FALSE)
 # LCMSMS PROTEINGROUPS
    file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
    read_rectangles(  file,
@@ -119,24 +118,23 @@ Read omics data from rectangular file
                    fdata_rows = 2:21,  fdata_cols = c(2, 6, 7, 383),
                    transpose  = FALSE )
 # SOMASCAN
-   file <- download_data('billing16.somascan.adat')
-   read_rectangles(file,fid_rows   = 21,       fid_cols   = 19:1146,
-                   sid_rows   = 30:40,    sid_cols   = 4,
-                   expr_rows  = 30:40,    expr_cols  = 19:1146,
-                   fvar_rows  = 21:28,    fvar_cols  = 18,
-                   svar_rows  = 29,       svar_cols  = 1:17,
-                   fdata_rows = 21:28,    fdata_cols = 19:1146,
-                   sdata_rows = 30:40,    sdata_cols = 1:17,
-                   transpose  = TRUE)
+   file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
+   read_rectangles(file, fid_rows = 30,         fid_cols = 23:42,
+                         sid_rows = 42:108,     sid_cols = 4,
+                        expr_rows = 42:108,    expr_cols = 23:42,
+                        fvar_rows = 28:40,     fvar_cols = 22,
+                        svar_rows = 41,        svar_cols = 1:21,
+                       fdata_rows = 28:40,    fdata_cols = 23:42,
+                       sdata_rows = 42:108,   sdata_cols = 1:21,  transpose  = TRUE)
 # METABOLON
-   file <- download_data('halama18.metabolon.xlsx')
+   file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
    read_rectangles(file, sheet = 2,
-                   fid_rows   = 11:401,    fid_cols   = 5,
-                   sid_rows   = 3,         sid_cols   = 15:86,
-                   expr_rows  = 11:401,    expr_cols  = 15:86,
-                   fvar_rows  = 10,        fvar_cols  = 1:14,
-                   svar_rows  = 1:10,      svar_cols  = 14,
-                   fdata_rows = 11:401,    fdata_cols = 1:14,
-                   sdata_rows = 1:10,      sdata_cols = 15:86,
-                   transpose  = FALSE)
+                     fid_rows = 11:30,     fid_cols = 2,
+                     sid_rows = 4,         sid_cols = 15:81,
+                    expr_rows = 11:30,    expr_cols = 15:81,
+                    fvar_rows = 10,       fvar_cols = 1:14,
+                    svar_rows = 1:10,     svar_cols = 14,
+                   fdata_rows = 11:30,   fdata_cols = 1:14,
+                   sdata_rows = 1:10,    sdata_cols = 15:81,
+                    transpose = FALSE )
 }

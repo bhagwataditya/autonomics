@@ -21,7 +21,8 @@ test_that(" .read_(proteingroups|phosphosites) ", {
         expect_identical(fos$fosId, fosdt$id)
     # uniprots
         expect_identical(pro$uniprot, prodt$`Majority protein IDs`)
-        #expect_identical(fos$uniprot, fosdt$Proteins)
+        expect_identical(fos[  reverse=='']$uniprot,  # `Proteins` is empty for Reverse (in FOS)
+                         fosdt[Reverse=='']$Proteins) # `read_maxquant_phosphosites` copies over `Protein` in such cases
     # pecounts
         expect_identical(   pro$`Razor + unique peptides STD(L).E00(M).E01(H).R1`, 
                           prodt$`Razor + unique peptides STD(L).E00(M).E01(H).R1`)
@@ -275,121 +276,121 @@ test_that( " read_proteingroups: fukuda20, fit = 'wilcoxon' ", {
 
 
 
-#============================================================================
-#                                                                           #
-             context(" read_proteingroups: billing16 ")                     #
-#                                                                           #
-#============================================================================
-
-
-test_that(" read_proteingroups: billing16 ", {
-        file <- download_data('billing16.proteingroups.txt')
-        object <- read_maxquant_proteingroups(file)
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_true( 'subgroup'    %in% svars(object))
-})
-
-
-test_that(" read_proteingroups: billing16 , quantity = 'labeledintensity' ", {
-        file <- download_data('billing16.proteingroups.txt')
-        object <- read_maxquant_proteingroups(file, quantity = 'labeledintensity')
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_true('log2labeledintensity' %in% assayNames(object))
-})
-
-test_that(" read_proteingroups: billing16, invert = selection ", {
-    # read_proteingroups(invert = TRUE)
-        file <- download_data('billing16.proteingroups.txt')
-        invert <- c('EM_E', 'BM_E', 'BM_EM')
-        object <- read_maxquant_proteingroups(file, invert = invert)
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_setequal(levels(object$subgroup), c('E_BM','E_EM','EM_BM'))
-        expect_setequal(object$sample_id,  c("E_BM.R1",  "E_BM.R2",  "E_BM.R3",  "E_EM.R1", 
-                                  "E_EM.R2", "E_EM.R3", "EM_BM.R1", "EM_BM.R2", "EM_BM.R3")) 
-    # read_proteingroups %>% invert()
-        object <- read_maxquant_proteingroups(file)
-        object %<>% invert_subgroups(invert) 
-        expect_setequal(levels(object$subgroup), c('E_BM','E_EM','EM_BM'))
-        expect_setequal(object$sample_id,  c("E_BM.R1",  "E_BM.R2",  "E_BM.R3",  "E_EM.R1", 
-                                  "E_EM.R2", "E_EM.R3", "EM_BM.R1", "EM_BM.R2", "EM_BM.R3")) 
-})
-
-
-if (requireNamespace('Biostrings', quietly = TRUE)){
-test_that(" read_proteingroups: billing16, fastafile = uniprot_hsa_20140515.fasta", {
-    # Read
-        file <- download_data('billing16.proteingroups.txt')
-        fastafile <- download_data('uniprot_hsa_20140515.fasta')
-        invert <- c('EM_E', 'BM_E', 'BM_EM')
-        object <- read_maxquant_proteingroups(file, invert = invert, fastafile = fastafile)
-        dt <- .read_maxquant_proteingroups(file)
-        dt %<>% extract(match(fdt(object)$proId, proId))
-    # Test
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_true('protein' %in% fvars(object))
-        expect_true(any(nchar(fdt(object)$uniprot) < nchar(dt$uniprot)))
-})}
-
-
-test_that(" read_proteingroups: file, pca = TRUE ", {
-    # Read
-        file <- download_data('billing16.proteingroups.txt')
-        invert <- c('EM_E', 'BM_E', 'EM_BM')
-        object <- read_maxquant_proteingroups(file, invert = invert, pca = TRUE)
-    # Test
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_true(any(stri_detect_fixed(         svars(object),  'pca1')))
-        expect_true(any(stri_detect_fixed(         fvars(object),  'pca1')))
-        expect_true(any(stri_detect_fixed(names(metadata(object)), 'pca')))
-})
-
-
-test_that(" read_proteingroups: billing16, impute = TRUE ", {
-    # Read
-        file <- download_data('billing16.proteingroups.txt')
-        invert <- c('EM_E', 'BM_E', 'EM_BM')
-        object <- read_maxquant_proteingroups(file, invert = invert, impute = TRUE)
-    # Test
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_true('is_imputed' %in% SummarizedExperiment::assayNames(object))
-})
-
-
-test_that(" read_maxquant_proteingroups: file, fit = 'limma' ", {
-    # Read
-        file <- download_data('billing16.proteingroups.txt')
-        invert <- c('EM_E', 'BM_E', 'EM_BM')
-        formula <- ~0+subgroup
-        object <- read_maxquant_proteingroups(file, invert = invert, 
-                          fit = 'limma', formula = formula, coefs = c('BM_EM', 'E_EM', 'E_BM'))
-    # Test
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_true(any(stri_detect_fixed(fvars(object), 'limma')))
-})
-
-
-test_that(" read_maxquant_proteingroups: file, fit = 'lm' ", {
-    # Read
-        file <- download_data('billing16.proteingroups.txt')
-        invert <- c('EM_E', 'BM_E', 'EM_BM')
-        formula <- ~0 + subgroup
-        object <- read_maxquant_proteingroups(file, invert = invert, fit = 'lm', formula = formula)
-    # Test
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_true(any(stri_detect_fixed(fvars(object), 'lm')))
-})
-
-
-test_that(" read_maxquant_proteingroups: file, fit = 'wilcoxon' ", {
-    # Read
-        file <- download_data('billing16.proteingroups.txt')
-        invert <- c('EM_E', 'BM_E', 'EM_BM')
-        formula <- ~0 + subgroup
-        object <- read_maxquant_proteingroups(file, invert = invert, fit = 'wilcoxon', formula = formula)
-    # Test
-        expect_s4_class(object, 'SummarizedExperiment')
-        expect_true(any(stri_detect_fixed(fvars(object), 'wilcoxon')))
-})
+# #============================================================================
+# #                                                                           #
+#              context(" read_proteingroups: billing16 ")                     #
+# #                                                                           #
+# #============================================================================
+# 
+# 
+# test_that(" read_proteingroups: billing16 ", {
+#         file <- download_data('billing16.proteingroups.txt')
+#         object <- read_maxquant_proteingroups(file)
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_true( 'subgroup'    %in% svars(object))
+# })
+# 
+# 
+# test_that(" read_proteingroups: billing16 , quantity = 'labeledintensity' ", {
+#         file <- download_data('billing16.proteingroups.txt')
+#         object <- read_maxquant_proteingroups(file, quantity = 'labeledintensity')
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_true('log2labeledintensity' %in% assayNames(object))
+# })
+# 
+# test_that(" read_proteingroups: billing16, invert = selection ", {
+#     # read_proteingroups(invert = TRUE)
+#         file <- download_data('billing16.proteingroups.txt')
+#         invert <- c('EM_E', 'BM_E', 'BM_EM')
+#         object <- read_maxquant_proteingroups(file, invert = invert)
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_setequal(levels(object$subgroup), c('E_BM','E_EM','EM_BM'))
+#         expect_setequal(object$sample_id,  c("E_BM.R1",  "E_BM.R2",  "E_BM.R3",  "E_EM.R1", 
+#                                   "E_EM.R2", "E_EM.R3", "EM_BM.R1", "EM_BM.R2", "EM_BM.R3")) 
+#     # read_proteingroups %>% invert()
+#         object <- read_maxquant_proteingroups(file)
+#         object %<>% invert_subgroups(invert) 
+#         expect_setequal(levels(object$subgroup), c('E_BM','E_EM','EM_BM'))
+#         expect_setequal(object$sample_id,  c("E_BM.R1",  "E_BM.R2",  "E_BM.R3",  "E_EM.R1", 
+#                                   "E_EM.R2", "E_EM.R3", "EM_BM.R1", "EM_BM.R2", "EM_BM.R3")) 
+# })
+# 
+# 
+# if (requireNamespace('Biostrings', quietly = TRUE)){
+# test_that(" read_proteingroups: billing16, fastafile = uniprot_hsa_20140515.fasta", {
+#     # Read
+#         file <- download_data('billing16.proteingroups.txt')
+#         fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#         invert <- c('EM_E', 'BM_E', 'BM_EM')
+#         object <- read_maxquant_proteingroups(file, invert = invert, fastafile = fastafile)
+#         dt <- .read_maxquant_proteingroups(file)
+#         dt %<>% extract(match(fdt(object)$proId, proId))
+#     # Test
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_true('protein' %in% fvars(object))
+#         expect_true(any(nchar(fdt(object)$uniprot) < nchar(dt$uniprot)))
+# })}
+# 
+# 
+# test_that(" read_proteingroups: file, pca = TRUE ", {
+#     # Read
+#         file <- download_data('billing16.proteingroups.txt')
+#         invert <- c('EM_E', 'BM_E', 'EM_BM')
+#         object <- read_maxquant_proteingroups(file, invert = invert, pca = TRUE)
+#     # Test
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_true(any(stri_detect_fixed(         svars(object),  'pca1')))
+#         expect_true(any(stri_detect_fixed(         fvars(object),  'pca1')))
+#         expect_true(any(stri_detect_fixed(names(metadata(object)), 'pca')))
+# })
+# 
+# 
+# test_that(" read_proteingroups: billing16, impute = TRUE ", {
+#     # Read
+#         file <- download_data('billing16.proteingroups.txt')
+#         invert <- c('EM_E', 'BM_E', 'EM_BM')
+#         object <- read_maxquant_proteingroups(file, invert = invert, impute = TRUE)
+#     # Test
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_true('is_imputed' %in% SummarizedExperiment::assayNames(object))
+# })
+# 
+# 
+# test_that(" read_maxquant_proteingroups: file, fit = 'limma' ", {
+#     # Read
+#         file <- download_data('billing16.proteingroups.txt')
+#         invert <- c('EM_E', 'BM_E', 'EM_BM')
+#         formula <- ~0+subgroup
+#         object <- read_maxquant_proteingroups(file, invert = invert, 
+#                           fit = 'limma', formula = formula, coefs = c('BM_EM', 'E_EM', 'E_BM'))
+#     # Test
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_true(any(stri_detect_fixed(fvars(object), 'limma')))
+# })
+# 
+# 
+# test_that(" read_maxquant_proteingroups: file, fit = 'lm' ", {
+#     # Read
+#         file <- download_data('billing16.proteingroups.txt')
+#         invert <- c('EM_E', 'BM_E', 'EM_BM')
+#         formula <- ~0 + subgroup
+#         object <- read_maxquant_proteingroups(file, invert = invert, fit = 'lm', formula = formula)
+#     # Test
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_true(any(stri_detect_fixed(fvars(object), 'lm')))
+# })
+# 
+# 
+# test_that(" read_maxquant_proteingroups: file, fit = 'wilcoxon' ", {
+#     # Read
+#         file <- download_data('billing16.proteingroups.txt')
+#         invert <- c('EM_E', 'BM_E', 'EM_BM')
+#         formula <- ~0 + subgroup
+#         object <- read_maxquant_proteingroups(file, invert = invert, fit = 'wilcoxon', formula = formula)
+#     # Test
+#         expect_s4_class(object, 'SummarizedExperiment')
+#         expect_true(any(stri_detect_fixed(fvars(object), 'wilcoxon')))
+# })
 
 
 

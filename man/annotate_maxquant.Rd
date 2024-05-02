@@ -53,7 +53,7 @@ Uncollapse, annotate, curate, recollapse, name
 #--------------------------------------------------------
 profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
- upfile <- download_data('uniprot_hsa_20140515.fasta')
+ upfile <- system.file('extdata/uniprot_hsa_20140515.fasta',  package = 'autonomics')
 prodt <- .read_maxquant_proteingroups(profile);         prodt[, 1:2]
 fosdt <- .read_maxquant_phosphosites(fosfile, profile); fosdt[, 1:3]
     uniprothdrs <- read_uniprotdt(upfile)

@@ -30,13 +30,13 @@ stri_split and extract
 }
 \examples{
 # Read
-    file <- download_data('halama18.metabolon.xlsx')
+    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
     object <- read_metabolon(file)
     x <- object$sample_id[1:5]
     nfactors(x)
 # Split
-    split_extract_fixed(x, '_', 1:2)
-    split_extract_fixed(x, '_', seq_len(nfactors(x)-1))
-    split_extract_fixed(x, '_', nfactors(x))
+    split_extract_fixed(x, '.', 1:2)
+    split_extract_fixed(x, '.', seq_len(nfactors(x)-1))
+    split_extract_fixed(x, '.', nfactors(x))
     split_extract_fixed(fdt(object)$PUBCHEM, ';', 1) # with NA values
 }

@@ -15,6 +15,7 @@ read_maxquant_proteingroups(
   invert = character(0),
   contaminants = FALSE,
   reverse = FALSE,
+  rm_missing_in_all_samples = TRUE,
   impute = FALSE,
   plot = FALSE,
   label = "feature_id",
@@ -51,6 +52,8 @@ read_proteingroups(...)
 \item{contaminants}{TRUE or FALSE : retain contaminants ?}
 
 \item{reverse}{TRUE or FALSE : include reverse hits ?}
+
+\item{rm_missing_in_all_samples}{TRUE or FALSE}
 
 \item{impute}{TRUE or FALSE: impute group-specific NA values?}
 
@@ -91,7 +94,7 @@ Read maxquant proteingroups
     
 # billing19 - Normalized Ratios
     file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-    fastafile <- download_data('uniprot_hsa_20140515.fasta')
+    fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
     subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
     pro <- read_maxquant_proteingroups(file = file, fastafile = fastafile, subgroups = subgroups)

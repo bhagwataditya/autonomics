@@ -7,8 +7,8 @@
 #' @return analysis details (get) or updated object (set)
 #' @rdname analysis
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
-#' object <- read_maxquant_proteingroups(file, plot = FALSE)
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#' object <- read_maxquant_proteingroups(file)
 #' analysis(object)
 #' @export
 setGeneric("analysis", function(object) standardGeneric("analysis"))
@@ -38,7 +38,7 @@ function(object, value){
 #' @param value ratio matrix (features x samples)
 #' @return value matrix (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' values(object)[1:3, 1:3]
 #' values(object) <- 0
@@ -78,7 +78,7 @@ function(object, value){
 #' @param  fvar    feature variable
 #' @return fvar values
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' head(flevels(object, 'feature_id'))
 #' @export
@@ -98,7 +98,7 @@ flevels <- function(object, fvar){
 #' @param value character vector with feature names
 #' @return feature name vector (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' fnames(object) %<>% paste0('protein_', .)
 #' object
@@ -138,7 +138,7 @@ function(object, value){
 #' @param  fvar    feature variable
 #' @return fvar values
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' head(fvalues(object, 'feature_id'))
 #' fvalues(object, NULL)
@@ -175,7 +175,7 @@ fid_values <- function(object) fvalues(object, 'feature_id')
 #' @param value character vector with feature variables
 #' @return feature variables vector (get) or updated object (set)
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' fvars(object)[1] %<>% paste0('1')
 #' fvars(object)[1]
@@ -207,15 +207,8 @@ function(object, value){ names(rowData(object)) <- value
 #' @return data.frame/data.table (get) or updated object (set)
 #' @examples
 #' # Read data
-#'     file <- download_data('billing16.proteingroups.txt')
+#'     file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #'     object <- read_maxquant_proteingroups(file)
-#' # sdata/fdata
-#'     sdata(object)[1:3, ]
-#'     fdata(object)[1:3, ]
-#'     sdata(object) %<>% cbind(a=1)
-#'     fdata(object) %<>% cbind(a=1)
-#'     sdata(object)[1:3, ]
-#'     fdata(object)[1:3, ]
 #' # sdt/fdt
 #'     sdt(object)[1:3, ]
 #'     fdt(object)[1:3, ]
@@ -223,6 +216,13 @@ function(object, value){ names(rowData(object)) <- value
 #'     fdt(object) %<>% cbind(b=1)
 #'     sdt(object)
 #'     fdt(object)
+#' # sdata/fdata
+#'     sdata(object)[1:3, ]
+#'     fdata(object)[1:3, ]
+#'     sdata(object) %<>% cbind(a=1)
+#'     fdata(object) %<>% cbind(a=1)
+#'     sdata(object)[1:3, ]
+#'     fdata(object)[1:3, ]
 #' @rdname fdata
 #' @export
 setGeneric('fdata',  function(object)  standardGeneric('fdata'))               # fdata
@@ -313,7 +313,7 @@ function(object, value){
 #' @param value string vector with sample names
 #' @return sample names vector (get) or updated eSet (set)
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' head(snames(object))
 #' head(snames(object) %<>% paste0('SAMPLE_', .))
@@ -349,7 +349,7 @@ function(object, value){
 #' @param svar sample var (character)
 #' @return svar values (character)
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' slevels(object, 'subgroup')
 #' subgroup_levels(object)
@@ -377,7 +377,7 @@ subgroup_levels <- function(object){
 #' @param value  value vector
 #' @return character vector (get) or SummarizedExperiment (set)
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' svalues(object, 'subgroup')
 #' subgroup_values(object)
@@ -425,7 +425,7 @@ function(object, svar, value){
 #' @param value string fector with variable names
 #' @return sample variable names (get) or updated SummarizedExperiment
 #' @examples
-#' file <- download_data('billing16.proteingroups.txt')
+#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' svars(object)[1]
 #'(svars(object)[1] %<>% paste0('1'))

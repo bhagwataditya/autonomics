@@ -77,9 +77,10 @@ Imputes NA values from N(mean - 2.5 sd, 0.3 sd)
    impute(values(object),      plot = TRUE)[1:3, 1:3]         # matrix
    impute(object, plot = TRUE)                                # sumexp
 # Complex Design
-   file <- download_data('atkin.metabolon.xlsx')
-   object <- read_metabolon(file)
-   invisible(impute(values(object)[1:3, 1   ]))               # vector
-   invisible(impute(values(object)[1:3, 1:5 ]))               # matrix
-   object \%>\%  filter_samples(Diabetes == 'Control') \%>\% impute()  # sumexp
+   subgroups <- sprintf('\%s_STD', c('E00','E01','E02','E05','E15','E30','M00'))
+   file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+   object <- read_maxquant_proteingroups(file, subgroups = subgroups)
+   impute(values(object)[1:3, 1   ])     # vector
+   impute(values(object)[1:3, 1:5 ])     # matrix
+   impute( object )                      # sumexp
 }

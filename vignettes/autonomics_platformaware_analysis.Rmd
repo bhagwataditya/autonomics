@@ -49,8 +49,8 @@ Autonomics provides ready-to-use importers for both **count** as well as **BAM**
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
 require(autonomics, quietly = TRUE)
-file <- download_data('billing19.rnacounts.txt')
-object <-  read_rnaseq_counts(file = file, fit = 'limma', plot = TRUE, label = 'gene_name')
+file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+object <-  read_rnaseq_counts(file = file, fit = 'limma', plot = TRUE, label = 'gene')
 ```
 
 ## read_rnaseq_counts(sfile) {-}

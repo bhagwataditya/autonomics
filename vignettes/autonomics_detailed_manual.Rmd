@@ -92,7 +92,7 @@ Non-informative features are filtered out during reading, with details recorded 
 n <- analysis(object)$nfeature
 ```
 
-In this case **`r n[[4]]` proteingroups** (out of `r n[[1]]` identified) were retained for  analysis, after applying the following filters:
+In this case **`r unname(tail(n,1))` proteingroups** (out of `r n[[1]]` identified) were retained for  analysis, after applying the following filters:
 
 ```{r, echo = FALSE}
 require(data.table)

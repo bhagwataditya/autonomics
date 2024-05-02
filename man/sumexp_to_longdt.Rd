@@ -53,14 +53,6 @@ SummarizedExperiment to data.table
    sumexp_to_longdt(object)
    sumexp_to_subrep_dt(object)
 
-# Stem cell comparison
-    file <- download_data('billing16.proteingroups.txt')
-    invert_subgroups <- c('EM_E', 'BM_E', 'EM_BM')
-    object <- read_maxquant_proteingroups(file, invert = invert_subgroups, plot = FALSE)
-    sumexp_to_widedt(object)
-    sumexp_to_longdt(object)
-    sumexp_to_subrep_dt(object)
-
 # Fukuda
    file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
    object <- read_maxquant_proteingroups(file)

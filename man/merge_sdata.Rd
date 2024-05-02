@@ -63,9 +63,9 @@ SummarizedExperiment
 Merge sample/feature dt
 }
 \examples{
-file <- download_data('halama18.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
-object \%<>\% merge_sdt(   data.table(sample_id = object$sample_id,
-                                       number = seq_along(object$sample_id)))
 sdt(object)
+sdt(merge_sdt(object, data.table(sample_id = object$sample_id,
+                                    number = seq_along(object$sample_id))))
 }

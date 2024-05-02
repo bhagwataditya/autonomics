@@ -36,8 +36,8 @@ grid object
 Explore transformations
 }
 \examples{
-file <- download_data('billing16.proteingroups.txt')
-invert <- c('EM_E', 'EM_BM', 'BM_E')
-object <- read_maxquant_proteingroups(file, invert = invert, plot = FALSE)
-explore_transformations(object)
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+subgroups <- sprintf('\%s_STD', c('E00','E01','E02','E05','E15','E30','M00'))
+object <- read_maxquant_proteingroups(file, subgroups = subgroups)
+explore_transformations(object, transformations = c('quantnorm', 'zscore', 'invnorm'))
 }

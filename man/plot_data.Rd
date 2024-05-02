@@ -42,14 +42,12 @@ ggplot object
 Plot data
 }
 \examples{
-file <- download_data('halama18.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 object \%<>\% pca()
 data <- sdt(object)
 plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`)
-plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME_POINT)
-data$TIME <- as.numeric(substr(data$TIME_POINT, 2, 3))
-plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = TIME)
+plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = subgroup)
 plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, color = NULL)
 fixed <- list(shape = 15, size = 3)
 plot_data(data, x = `effect~sample_id~pca1`, y = `effect~sample_id~pca2`, fixed = fixed)

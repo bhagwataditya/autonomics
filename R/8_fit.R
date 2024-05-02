@@ -147,14 +147,14 @@ nfactors <- function(x, sep = guess_sep(x)){
 #' @return character vector
 #' @examples
 #' # Read
-#'     file <- download_data('halama18.metabolon.xlsx')
+#'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'     object <- read_metabolon(file)
 #'     x <- object$sample_id[1:5]
 #'     nfactors(x)
 #' # Split
-#'     split_extract_fixed(x, '_', 1:2)
-#'     split_extract_fixed(x, '_', seq_len(nfactors(x)-1))
-#'     split_extract_fixed(x, '_', nfactors(x))
+#'     split_extract_fixed(x, '.', 1:2)
+#'     split_extract_fixed(x, '.', seq_len(nfactors(x)-1))
+#'     split_extract_fixed(x, '.', nfactors(x))
 #'     split_extract_fixed(fdt(object)$PUBCHEM, ';', 1) # with NA values
 #' @export
 split_extract_fixed <- function(x, sep, i){
@@ -271,8 +271,9 @@ subgroup_array <- function(object, subgroupvar){
 #' @param subgroupvar subgroup svar
 #' @return matrix
 #' @examples
-#' file <- download_data('halama18.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
+#' object$subgroup <- paste0(object$Diabetes, '.', object$subgroup)
 #' subgroup_matrix(object, 'subgroup')
 #' @export
 subgroup_matrix <- function(object, subgroupvar){

@@ -21,7 +21,7 @@ svar values (character)
 Get svar levels
 }
 \examples{
-file <- download_data('billing16.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 slevels(object, 'subgroup')
 subgroup_levels(object)

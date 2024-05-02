@@ -21,8 +21,9 @@ matrix
 Row/Col contrasts
 }
 \examples{
-file <- download_data('halama18.metabolon.xlsx')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
+object$subgroup <- paste0(object$Diabetes, '.', object$Time)
 subgroup_matrix(object, subgroupvar = 'subgroup')
 contrast_subgroup_cols(object, subgroupvar = 'subgroup')
 contrast_subgroup_rows(object, subgroupvar = 'subgroup')

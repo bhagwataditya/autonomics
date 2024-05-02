@@ -99,8 +99,13 @@ un_int64 <- function(x) {
     if (verbose)  cmessage('%sRead%sproteingroups   %s', spaces(4), spaces(6), file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
-    n0 <- nrow(prodt)
-    pattern <- MAXQUANT_PATTERNS[[quantity]]
+  # prodt[Reverse == '+', `Majority protein IDs` := split_extract_fixed(`Majority protein IDs`, ';', 1)]
+            # In FOS `Proteins` column is empty for Reverse, so `Protein` (singular!) is copied over
+            # In PRO therefore take leading protein only for naming identity with FOS.
+            # Upon further insight naming parity is probably not so important
+            # So dont unnecessarily modify
+# Extract relevant columns
+    pattern <- MAXQUANT_PATTERNS[[quantity]]   # the proteins column is empty in (only) reverse
     anncols <- c('id', 'Majority protein IDs', 'Reverse', 
                  'Potential contaminant', 'Contaminant', 'Fasta headers')#, 'Phospho (STY) site IDs')
     anncols %<>% intersect(names(prodt))
@@ -224,8 +229,8 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 #' @param verbose  TRUE / FALSE
 #' @return matrix
 #' @examples 
-#' profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' profile <- system.file('extdata/billing19.proteingroups.txt',  package = 'autonomics')
+#' fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
 #' prodt <- .read_maxquant_proteingroups(file = profile)
 #'     uniprothdrs <- read_uniprotdt(fastafile)
 #' contaminanthdrs <- read_contaminantdt()
@@ -367,6 +372,7 @@ is_file <- function(file){
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE or FALSE : retain contaminants ?
 #' @param reverse       TRUE or FALSE : include reverse hits ?
+#' @param rm_missing_in_all_samples TRUE or FALSE
 #' @param invert        string vector : subgroups which require inversion
 #' @param impute        TRUE or FALSE: impute group-specific NA values?
 #' @param plot          TRUE or FALSE: plot ?
@@ -389,21 +395,34 @@ is_file <- function(file){
 #'     
 #' # billing19 - Normalized Ratios
 #'     file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-#'     fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#'     fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
 #'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
 #'     pro <- read_maxquant_proteingroups(file = file, fastafile = fastafile, subgroups = subgroups)
 #' @export
 read_maxquant_proteingroups <- function(
-    dir = getwd(), 
-    file = if (is_file(dir)) dir else file.path(dir, 'proteinGroups.txt'), 
-    fastafile = NULL,  restapi = FALSE,
-    quantity = NULL, subgroups = NULL, invert = character(0),
-    contaminants = FALSE, reverse = FALSE, impute = FALSE,
-    plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
-    fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL, 
-    coefs = NULL, contrasts = NULL,
-    palette = NULL, verbose = TRUE
+                          dir = getwd(), 
+                         file = if (is_file(dir)) dir else file.path(dir, 'proteinGroups.txt'), 
+                    fastafile = NULL,
+                      restapi = FALSE,
+                     quantity = NULL,
+                    subgroups = NULL,
+                       invert = character(0),
+                 contaminants = FALSE,
+                      reverse = FALSE,
+    rm_missing_in_all_samples = TRUE, 
+                       impute = FALSE,
+                         plot = FALSE,
+                        label = 'feature_id',
+                          pca = plot,
+                          pls = plot, 
+                          fit = if (plot) 'limma' else NULL,
+                      formula = ~ subgroup, 
+                        block = NULL, 
+                        coefs = NULL, 
+                    contrasts = NULL,
+                      palette = NULL, 
+                      verbose = TRUE
 ){
 # Assert
     assert_maxquant_proteingroups(file)
@@ -440,9 +459,13 @@ read_maxquant_proteingroups <- function(
     pepmat %<>% data.matrix()
     dimnames(pepmat) <- dimnames(object)
     assays(object)$pepcounts <- pepmat
-    object %<>% process_maxquant(
-        subgroups = subgroups,      invert = invert,       reverse = reverse,
-     contaminants = contaminants,   impute = impute,       verbose = verbose)
+    object %<>% process_maxquant( subgroups = subgroups,      
+                                     invert = invert,
+                                    reverse = reverse,  
+                               contaminants = contaminants,   
+                  rm_missing_in_all_samples = rm_missing_in_all_samples, 
+                                     impute = impute,
+                                    verbose = verbose )
     assays <- c(assayNames(object)[1], 'pepcounts')
     for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
@@ -475,7 +498,8 @@ read_proteingroups <- function(...){
 #'                     'intensity' or NULL
 #' @param subgroups     NULL or string vector : subgroups to retain
 #' @param contaminants  TRUE or FALSE: retain contaminants ?
-#' @param reverse       TRUE or FALSE: include reverse hits ?
+#' @param reverse       TRUE or FALSE: include reverse hits 
+#' @param rm_missing_in_all_samples TRUE or FALSE
 #' @param localization  number: min localization probability (for phosphosites)
 #' @param invert        string vector: subgroups which require inversion
 #' @param impute        TRUE or FALSE: impute group-specific NA values?
@@ -495,23 +519,37 @@ read_proteingroups <- function(...){
 #' @examples
 #'   profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #'   fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
-#' fastafile <- download_data('uniprot_hsa_20140515.fasta')
+#' fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
 #' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #' pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
 #' fos <- read_maxquant_phosphosites( fosfile = fosfile, profile = profile, subgroups = subgroups)
 #' fos <- read_maxquant_phosphosites( fosfile = fosfile, profile = profile, fastafile = fastafile, subgroups = subgroups)
 #' @export
 read_maxquant_phosphosites <- function(
-         dir = getwd(), 
-     fosfile = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
-     profile = file.path(dirname(fosfile), 'proteinGroups.txt'), 
-   fastafile = NULL,           restapi = FALSE,                             quantity = NULL,   
-   subgroups = NULL,            invert = character(0),                  contaminants = FALSE,   
-     reverse = FALSE,     localization = 0.75,                                impute = FALSE,
-        plot = FALSE,            label = 'feature_id',                           pca = plot, 
-         pls = plot,               fit = if (plot) 'limma' else NULL,        formula = ~ subgroup,
-       block = NULL,             coefs = NULL,                             contrasts = NULL, 
-     palette = NULL,           verbose = TRUE
+                      dir = getwd(), 
+                  fosfile = if (is_file(dir)) dir else file.path(dir, 'phospho (STY)Sites.txt'), 
+                  profile = file.path(dirname(fosfile), 'proteinGroups.txt'), 
+                fastafile = NULL,
+                  restapi = FALSE,
+                 quantity = NULL,   
+                subgroups = NULL,
+                   invert = character(0),
+             contaminants = FALSE,
+                  reverse = FALSE,
+rm_missing_in_all_samples = TRUE,
+             localization = 0.75,
+                   impute = FALSE,
+                     plot = FALSE,
+                    label = 'feature_id',
+                      pca = plot, 
+                      pls = plot,
+                      fit = if (plot) 'limma' else NULL,
+                  formula = ~ subgroup,
+                    block = NULL,
+                    coefs = NULL,
+                contrasts = NULL, 
+                  palette = NULL,
+                  verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(c(fosfile, profile))
@@ -526,7 +564,7 @@ read_maxquant_phosphosites <- function(
     fosdt %<>% drop_differing_uniprots(prodt, verbose = verbose)
         uniprothdrs <- read_uniprotdt(fastafile)
     contaminanthdrs <- read_contaminantdt()
-       maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`); prodt[, `Fasta headers` := NULL ]
+       maxquanthdrs <- parse_maxquant_hdrs(prodt$`Fasta headers`); fosdt[, `Fasta headers` := NULL ]
     fosdt %<>% annotate_maxquant( uniprothdrs = uniprothdrs, 
                               contaminanthdrs = contaminanthdrs, 
                                  maxquanthdrs = maxquanthdrs, 
@@ -556,10 +594,14 @@ read_maxquant_phosphosites <- function(
     dimnames(pepmat) <- dimnames(object)
     assays(object)$pepcounts <- pepmat
 # Process / Analyze
-    object %<>% process_maxquant(
-        subgroups = subgroups,     invert = invert,      
-          reverse = reverse, contaminants = contaminants,  localization = localization, 
-           impute = impute,      verbose = verbose)
+    object %<>% process_maxquant( subgroups = subgroups,     
+                                     invert = invert,      
+                                    reverse = reverse, 
+                               contaminants = contaminants,  
+                  rm_missing_in_all_samples = rm_missing_in_all_samples,
+                               localization = localization, 
+                                     impute = impute,
+                                    verbose = verbose )
     assays <- c('log2sites', 'pepcounts')
     for (assay in assays)  object %<>% add_assay_means(assay)
     object %<>% analyze(
@@ -747,8 +789,8 @@ demultiplex <- function(x, verbose = FALSE){
 #----------------------------------------------------------------------------
 
 process_maxquant <- function(
-    object, subgroups, invert, contaminants, reverse, localization = 0.75, 
-    impute, verbose
+    object, subgroups, invert, contaminants, reverse, rm_missing_in_all_samples = TRUE, 
+    localization = 0.75, impute, verbose
 ){
 # Demultiplex. Infer Subgroup
     contaminant <- `Localization prob` <- NULL
@@ -767,9 +809,9 @@ process_maxquant <- function(
     object %<>% invert_subgroups(invert)
 # Features
     analysis(object)$nfeatures <- c(nrow(object))
-    if (!reverse)       object %<>% filter_features(reverse == '', verbose = verbose)
-    if (!contaminants)  object %<>% filter_features(contaminant== '', verbose = verbose)
-    object %<>% rm_missing_in_all_samples(verbose = verbose)
+    if (!reverse)             object %<>% filter_features(   reverse == '', verbose = verbose)
+    if (!contaminants)        object %<>% filter_features(contaminant== '', verbose = verbose)
+    if ({rm_missing_in_all_samples})  object %<>% rm_missing_in_all_samples(verbose = verbose)
     #object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose) # doesnt work for single-instance subgroups
     if ('Localization prob' %in% fvars(object)){                             # subgroup could be increasing concentrations or so
         object %<>% filter_features(

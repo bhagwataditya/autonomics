@@ -122,7 +122,7 @@ read_msigdt <- function(
 utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 # # Lower-level function
 #     # selected 
-#         file <- download_data('atkin.somascan.adat')
+#         file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 #         object <- read_somascan(file)
 #         detected <- fdt(object)$EntrezGeneSymbol %>% split_extract_fixed(' ', 1) %>% unique()
 #     # universe and set
@@ -176,7 +176,7 @@ guess_fitsep <- function(featuredt){
 #' @param significance      fraction : pvalue cutoff
 #' @return SummarizedExperiment
 #' @examples
-#' file <- download_data('atkin.metabolon.xlsx')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, fit = 'limma', coef = 't3')
 #' fdt(object)
 #' fdt(abstract_fit(object))
@@ -306,7 +306,7 @@ factor2logical <- function(x){
 #' @examples
 #' # Read
 #'     pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
-#'     file <- download_data('atkin.somascan.adat')
+#'     file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 #'     object <- read_somascan(file, fit = 'limma', coefs = 't1')
 #'     fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #'     object %<>% abstract_fit()

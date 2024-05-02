@@ -30,7 +30,7 @@ matrix (get) or updated object (set)
 Get/Set is_imputed
 }
 \examples{
-file <- download_data('billing16.proteingroups.txt')
-object <- read_maxquant_proteingroups(file, plot = FALSE)
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+object <- read_maxquant_proteingroups(file, impute = TRUE)
 sum(is_imputed(object))
 }

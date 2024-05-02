@@ -27,7 +27,7 @@ feature name vector (get) or updated object (set)
 Get/Set feature names
 }
 \examples{
-file <- download_data('billing16.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 fnames(object) \%<>\% paste0('protein_', .)
 object

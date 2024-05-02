@@ -68,7 +68,7 @@ Results are returned in a data.table
 \examples{
 # Read
     pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
-    file <- download_data('atkin.somascan.adat')
+    file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
     object <- read_somascan(file, fit = 'limma', coefs = 't1')
     fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
     object \%<>\% abstract_fit()

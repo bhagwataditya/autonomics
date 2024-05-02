@@ -33,7 +33,7 @@ sample variable names (get) or updated SummarizedExperiment
 Get/Set sample variables
 }
 \examples{
-file <- download_data('billing16.proteingroups.txt')
+file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
 svars(object)[1]
 (svars(object)[1] \%<>\% paste0('1'))
