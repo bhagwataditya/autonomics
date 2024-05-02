@@ -75,7 +75,8 @@ guess_coompounddiscoverer_quantity <- function(x){
     cddt %<>% extract(, c(anncols, valcols), with = FALSE)
 # Uniquify `Name`; choose detection with largest area
     cddt %<>%
-      tibble::rowid_to_column() %>%
+      dplyr::mutate(rowid = dplyr::row_number()) %>%
+      dplyr::relocate(rowid) %>%
       tidyr::pivot_longer(
         cols      = dplyr::matches(COMPOUNDDISCOVERER_PATTERNS[quantity]),
         names_to  = "Acquisition",
