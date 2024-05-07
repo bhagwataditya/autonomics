@@ -444,12 +444,10 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         file <- '../../../02_analysis/ag_serrano/ag_pogge-serrano-pkp2-001/atnomx_report_names.tsv'
         object <- read_diann_proteingroups(file)
         sdt(object)
-        biplot(pca(object))
-        fdt(object)
-        biplot(pls(object), nx = 2, ny = 2, feature_label = 'gene') # maybe better these to raise less questions
-        
-        
-        
+        p1 <- biplot(pca(object), nx = 2, ny = 2, feature_label = 'gene')
+        p2 <- biplot(pls(object), nx = 2, ny = 2, feature_label = 'gene') # maybe better these to raise less questions
+        gridExtra::grid.arrange(p1, p2, nrow = 1)
+
         
         
         

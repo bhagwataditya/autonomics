@@ -635,7 +635,7 @@ add_loadings <- function(
                                     yend = !!sym(y),
                                 linetype = axis), 
                                    color = 'gray85' )
-    p <- p + geom_text(   data = loadingdt, 
+    p <- p + geom_text_repel(   data = loadingdt, 
                        mapping = aes( x = !!sym(x), 
                                       y = !!sym(y),
                                   label = !!sym(label), 
