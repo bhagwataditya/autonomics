@@ -1698,7 +1698,7 @@ plot_design <- function(object, codingfun = contr.treatment){
 #' @noRd
 fcluster <- function( 
     object,  
-    method = c('pamk', 'hclust', 'apcluster'),
+    method = c('pamk', 'hclust', 'apcluster')[1],
          k = NULL,  # hclust only
    verbose = TRUE 
 ){
