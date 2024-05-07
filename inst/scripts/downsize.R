@@ -433,5 +433,24 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         pro2 <- read_maxquant_proteingroups(profile, fastafile = fastafile)
         fdt(pro1)
         fdt(pro2)
+
+        
+#----------------
+#
+#   DIANN DATASET
+#   https://www.nature.com/articles/s41467-023-40596-0
+#
+#----------------
+        file <- '../../../02_analysis/ag_serrano/ag_pogge-serrano-pkp2-001/atnomx_report_names.tsv'
+        object <- read_diann_proteingroups(file)
+        sdt(object)
+        biplot(pca(object))
+        fdt(object)
+        biplot(pls(object), nx = 2, ny = 2, feature_label = 'gene') # maybe better these to raise less questions
+        
+        
+        
+        
+        
         
         
