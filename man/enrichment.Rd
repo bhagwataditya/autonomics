@@ -73,9 +73,10 @@ Results are returned in a data.table
     fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
     object \%<>\% abstract_fit()
     var <- abstractvar(fdt(object))
-    enrichdt1 <- enrichment(object, pathwaydt, var = var)                                   # 2:n factor 
-    enrichdt2 <- enrichment(object, pathwaydt, var = var, levels = c('flat', 'down', 'up')) # 1:n factor
-    enrichdt3 <-  altenrich(object, pathwaydt)                                              # alternative implementation
+    varlevels <- c('flat', 'down', 'up')
+    enrichdt1 <- enrichment(object, pathwaydt, var = var)                      # 2:n factor 
+    enrichdt2 <- enrichment(object, pathwaydt, var = var, levels = varlevels)  # 1:n factor
+    enrichdt3 <-  altenrich(object, pathwaydt)                 # alternative implementation
     cols <- intersect(names(enrichdt1), names(enrichdt3))
     all(enrichdt1[, cols, with = FALSE]  ==  enrichdt3[, cols, with = FALSE])   # identical
 }

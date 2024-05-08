@@ -507,8 +507,6 @@ assert_valid_formula <- function(
     assert_engine(is_valid_formula, x = x, y = y, .xname = .xname, .yname = .yname)
 }
 
-#---------------------
-
 all_have_setidentical_colnames <- function(x, .xname = get_name_in_parent(x))
 {
     assert_is_list(x)
@@ -526,3 +524,50 @@ assert_all_have_setidentical_colnames <- function(
 ){
   assert_engine(all_have_setidentical_colnames, x = x, .xname = .xname)
 }
+
+#---------------------------
+# assert_correlation_matrix
+#---------------------------
+
+    # assertive.matrices::is_square_matrix
+    is_square_matrix <- function(x, .xname = get_name_in_parent(x)){
+        .xname <- force(.xname)
+        x <- coerce_to(x, "matrix", .xname)
+        dimx <- dim(x)
+        if(dimx[1L] != dimx[2L]){
+            return( false( gettext("%s is not a square matrix; its dimensions are %s."),
+                               .xname, toString(dimx)))
+        }
+        TRUE
+    }
+
+
+    #' Assert correlation matrix
+    #' @param x       correlation matrix
+    #' @param .xname  string
+    #' @param severity 'warning' or 'stop'
+    #' @return TRUE or false
+    #' @examples
+    #' x <- matrix(c(1,0.7, 0.3, 1), nrow = 2)
+    #' rownames(x) <- c('gene1', 'gene2')
+    #' colnames(x) <- c('gene1', 'gene2')
+    #' is_correlation_matrix(x)
+    #' is_correlation_matrix({x[1,1] <- -2; x})
+    #' @export
+    is_correlation_matrix <- function(
+        x, .xname = get_name_in_parent(x), severity = getOption("assertive.severity", "stop")
+    ){
+        if (!(ok <- is_square_matrix(x, .xname = .xname)))     return(ok)
+        if (!(ok <-     has_rownames(x, .xname = .xname)))     return(ok)
+        if (!(ok <-     has_colnames(x, .xname = .xname)))     return(ok)
+        if (!(ok <- are_identical(rownames(x), colnames(x))))  return(ok)
+        if (any(x < -1) | any(x > 1))  return(false('%s contains values outside [-1, +1]', .xname))
+        TRUE
+    }
+
+    
+    #' @rdname is_correlation_matrix
+    #' @export
+    assert_correlation_matrix <- function(x, .xname = get_name_in_parent(x)){
+        assert_engine(is_correlation_matrix, x = x, .xname = .xname)        
+    }

@@ -234,8 +234,8 @@ make_volcano_dt <- function(
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
 #'     plot_volcano(object, coefs = 't3', fit = 'limma')                   # single contrast
-#'     plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multiple contrasts
-#'     plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multiple contrasts and methods
+#'     plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multip contrasts
+#'     plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multip contrs & methods
 #' 
 #' # When nothing passes FDR
 #'     fdt(object) %<>% add_adjusted_pvalues('fdr', fit = 'limma',coefs = 't3')

@@ -433,5 +433,54 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
         pro2 <- read_maxquant_proteingroups(profile, fastafile = fastafile)
         fdt(pro1)
         fdt(pro2)
+
         
+#----------------
+#
+#   DIANN DATASET
+#   https://www.nature.com/articles/s41467-023-40596-0
+#
+#----------------
+        # PCA and PLS: major variation drivers
+        file <- '../../../02_analysis/ag_serrano/ag_pogge-serrano-pkp2-001/atnomx_report_names.tsv'
+        object <- read_diann_proteingroups(file)
+        sdt(object)
+        p1 <- biplot(pca(object), nx = 2, ny = 4, feature_label = 'gene')
+        p2 <- biplot(pls(object), nx = 2, ny = 2, feature_label = 'gene') # maybe better these to raise less questions
+        gridExtra::grid.arrange(p1, p2, nrow = 1)
+        
+        genes <- c(  
+                    'PI16',        #  down in MA
+                    'CPM',         #    up in MA
+                    'RPL36AL',     #  down in KD (MA)
+                    'ANKRD54',     #    up in KD (MA)
+                    'TFB1M',       #  down in KD (MA + PA)
+                    'NAV1'         #    up in KD (MA + PA)
+                 )
+        
+        # Maybe lets look at the clusters
+        object0 <- object
+        fdt(object) %<>% extract(, 1:13)
+        fdt(object)
+        object %<>% fcluster()                      #    pamk : 2 major clusters
+        fdt(object)
+        table(fdt(object)$pamk)
+        object %<>% fcluster(method = 'apcluster')  # apclust - if corrmat computation is bottleneck do onlc once
+        
+
+        # Flat backgrounders
+        object
+        object$sample_id %<>% factor( c(  sprintf('PA_ctrl_0%d', 1:4), 
+                                          sprintf('PA_kd_0%d',   1:4), 
+                                          sprintf('MA_ctrl_0%d', 1:4), 
+                                          sprintf('MA_kd_0%d',   1:4)  ))
+        plotdt <- sumexp_to_longdt(object, fvars = 'gene')
+        ggplot(plotdt, aes(x = sample_id, y = value, group = feature_id, color = feature_id)) + 
+        geom_point() + 
+        geom_line() + 
+        guides(color = 'none') + 
+        theme_bw()
+        
+        subject <- filter_features(object, gene %in% genes)
+
         
