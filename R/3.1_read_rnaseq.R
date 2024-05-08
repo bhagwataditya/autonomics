@@ -940,9 +940,10 @@ read_rnaseq_bams <- function(
 #' # read_rnaseq_counts
 #'   file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
 #'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15')
-#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = F)
-#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = F, cpm = F)
-#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = F, cpm = F, log2 = F)
+#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE)
+#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE)
+#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE, 
+#'                                     log2 = FALSE)
 #'   object <- read_rnaseq_counts(file, plot = TRUE)
 #'     
 #' # read_rnaseq_counts(tpm = TRUE)

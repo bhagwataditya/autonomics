@@ -1700,7 +1700,7 @@ fcor <- function(object, verbose = TRUE){
     assert_is_valid_sumexp(object)
     if (!requireNamespace('propagate', quietly = TRUE)){
         message("\t\t\tBiocManager::install('propagate'). Then re-run.") 
-        return(object) 
+        return(NULL) 
     }
     if (verbose)   cmessage('\t\tCompute correlations')
     idx <- rowAlls(!is.na(values(object)))
@@ -1746,6 +1746,7 @@ fcluster <- function(
 ){
 # Assert    
     assert_is_valid_sumexp(object)
+    if (is.null(cormat))  return(object)
     assert_correlation_matrix(cormat)
     assert_is_subset(rownames(cormat), fnames(object))
     assert_is_subset(method, c('pamk', 'hclust', 'apcluster'))
