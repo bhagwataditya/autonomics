@@ -6,7 +6,7 @@
 \usage{
 .read_compounddiscoverer(
   file,
-  quantity = guess_coompounddiscoverer_quantity(file),
+  quantity = guess_compounddiscoverer_quantity(file),
   verbose = TRUE
 )
 }

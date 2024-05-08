@@ -21,17 +21,17 @@ COMPOUNDDISCOVERER_PATTERNS <- c(
 #' \dontrun{
 #' # file
 #'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
-#'     guess_coompounddiscoverer_quantity(file)
+#'     guess_compounddiscoverer_quantity(file)
 #' }
 #'
 #' # character vector
 #'     x <- "Area: 20230908_F143_HILICNEG.raw (F11)"
-#'     guess_coompounddiscoverer_quantity(x)
+#'     guess_compounddiscoverer_quantity(x)
 #'
 #'     x <- "Norm. Area: 20230908_F143_HILICNEG.raw (F11)"
-#'     guess_coompounddiscoverer_quantity(x)
+#'     guess_compounddiscoverer_quantity(x)
 #' @export
-guess_coompounddiscoverer_quantity <- function(x){
+guess_compounddiscoverer_quantity <- function(x){
 # Assert
     assert_is_character(x)
 # read if x is filename
@@ -61,7 +61,7 @@ guess_coompounddiscoverer_quantity <- function(x){
 #' @param verbose      TRUE / FALSE
 #' @return data.table
 #' @export
-.read_compounddiscoverer <- function(file, quantity = guess_coompounddiscoverer_quantity(file), verbose = TRUE){
+.read_compounddiscoverer <- function(file, quantity = guess_compounddiscoverer_quantity(file), verbose = TRUE){
     Name <- Value <- rowid <- Acquisition <- NULL
 # Assert
     assert_compounddiscoverer_output(file)
@@ -127,7 +127,7 @@ guess_coompounddiscoverer_quantity <- function(x){
 #' @md
 #' @export
 dequantify_compounddiscoverer <- function(
-    x, quantity = guess_coompounddiscoverer_quantity(x), verbose  = FALSE
+    x, quantity = guess_compounddiscoverer_quantity(x), verbose  = FALSE
 ){
   pattern <- COMPOUNDDISCOVERER_PATTERNS[[quantity]]
   cleanx <- stri_replace_first_regex(x, pattern, '$1')
@@ -233,7 +233,7 @@ read_compounddiscoverer <- function(
 # Assert
     for (fl in files) assert_compounddiscoverer_output(fl)
     quantity <- if (is.null(quantity)) {
-      sapply(files, guess_coompounddiscoverer_quantity) %>% unique()
+      sapply(files, guess_compounddiscoverer_quantity) %>% unique()
     } else { quantity }
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(COMPOUNDDISCOVERER_PATTERNS))

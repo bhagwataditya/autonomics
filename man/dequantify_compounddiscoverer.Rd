@@ -6,7 +6,7 @@
 \usage{
 dequantify_compounddiscoverer(
   x,
-  quantity = guess_coompounddiscoverer_quantity(x),
+  quantity = guess_compounddiscoverer_quantity(x),
   verbose = FALSE
 )
 }
