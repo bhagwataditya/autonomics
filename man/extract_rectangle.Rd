@@ -73,7 +73,8 @@ Extract rectangle from omics file, data.table, or matrix
 
 # FROM MATRIX: extract_rectangle.matrix
 #======================================
-   x <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics') \%>\% extract_rectangle(sheet = 2)
+   x <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+   x \%<>\% extract_rectangle(sheet = 2)
    extract_rectangle(x, rows = 11:30,  cols = 15:81, sheet = 2)[ 1:3, 1:3 ]  # exprs
    extract_rectangle(x, rows = 11:30,  cols = 2,     sheet = 2)[ 1:3,     ]  # fids
    extract_rectangle(x, rows = 4,      cols = 15:81, sheet = 2)[    , 1:3 ]  # sids

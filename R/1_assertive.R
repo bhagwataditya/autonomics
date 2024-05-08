@@ -646,7 +646,20 @@
             TRUE
         } 
 
-
+        has_rownames <- function(x, .xname = get_name_in_parent(x)){
+            rownamesx <- rownames(x)
+            if(    is.null(rownamesx))   return(false("The row names of %s are NULL.",      .xname))
+            if(!any(nzchar(rownamesx)))  return(false("The row names of %s are all empty.", .xname))
+            TRUE
+        } 
+        
+        has_colnames <- function(x, .xname = get_name_in_parent(x)){
+            colnamesx <- colnames(x)
+            if(    is.null(colnamesx))  return(false("The column names of %s are NULL.",      .xname))
+            if(!any(nzchar(colnamesx))) return(false("The column names of %s are all empty.", .xname))
+            TRUE
+        } 
+        
         assert_has_names <- function(x, severity = getOption("assertive.severity", "stop")){                                                            
             assert_engine(  has_names, 
                                     x, 
@@ -1240,3 +1253,4 @@
                                    severity = severity )
         }
         
+

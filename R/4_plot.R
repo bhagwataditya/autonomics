@@ -961,7 +961,8 @@ order_on_effect <- function(
 #'     object %<>% .extract_sign_features(      coefs = 't1', sign = -1)
 #'     object %<>% .extract_n_features(         coefs = 't1', n = 1)
 #'     object <- object0
-#'     object %<>%  extract_coef_features(coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 1)
+#'     object %<>%  extract_coef_features(
+#'                    coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 1)
 #' # Multiple coefs
 #'     object <- object0
 #'     object %<>% .extract_p_features(         coefs = c('t1', 't2'), p = 0.05)
@@ -970,7 +971,8 @@ order_on_effect <- function(
 #'     object %<>% .extract_sign_features(      coefs = c('t1', 't2'), sign = -1)
 #'     object %<>% .extract_n_features(         coefs = c('t1', 't2'), n = 1)
 #'     object <- object0
-#'     object %<>%  extract_coef_features(coefs = c('t1', 't2'), p = 0.05, fdr = 0.01, effectsize = 1, sign = -1, n = 1)
+#'     object %<>%  extract_coef_features(
+#'                    coefs = c('t1', 't2'), p = 0.05, fdr = 0.01, effectsize = 1, sign = -1, n = 1)
 #' @export
 extract_coef_features <- function(  
         object,
@@ -1683,69 +1685,108 @@ plot_design <- function(object, codingfun = contr.treatment){
 }
 
 
-#' Feature cluster
-#' @param object   SummarizedExperiment
-#' @param method   'pamk', 'hclust' or 'apcluster'
-#' @param k        number (hclust) or NULL
-#' @param verbose  TRUE or FALSE
-#' @return SummarizedExperiment. Two new fvars: `cluster` and  `clustorder`
+#' Correlate features
+#' @param object SummarizedExperiment
+#' @param verbose TRUE or FALSE
+#' @return matrix
 #' @examples
 #' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
-#' if (require(fpc))        fdt(fcluster(object, method = 'pamk'         ))
-#' if (require(stats))      fdt(fcluster(object, method = 'hclust', k = 3))
-#' if (require(apcluster))  fdt(fcluster(object, method = 'apcluster'    ))
-#' @noRd
-fcluster <- function( 
-    object,  
-    method = c('pamk', 'hclust', 'apcluster')[1],
-         k = NULL,  # hclust only
-   verbose = TRUE 
-){
-# Assert    
+#' fdt(object) %<>% extract(, 1)
+#' cormat <- fcor(object)
+#' @export
+fcor <- function(object, verbose = TRUE){
+# Assert
     assert_is_valid_sumexp(object)
-# Cormat
     if (!requireNamespace('propagate', quietly = TRUE)){
         message("\t\t\tBiocManager::install('propagate'). Then re-run.") 
         return(object) 
     }
-    object0 <- object
-    object %<>% extract(rowAlls(!is.na(values(.))))
-    if (verbose)   cmessage('\t\tCluster Features')
-    if (verbose)   cmessage('\t\t\tUse %d/%d NA-free features', nrow(object), nrow(object0))
-    cormat <- propagate::bigcor(t(values(object)))  # ff_matrix
-    cormat %<>% extract(1:nrow(.), 1:ncol(.))       # matrix
+    if (verbose)   cmessage('\t\tCompute correlations')
+    idx <- rowAlls(!is.na(values(object)))
+    object %<>% extract(idx, )
+    if (verbose)   cmessage('\t\t\tUse %d/%d NA-free features', sum(idx), length(idx))
+# Compute
+    if (nrow(object) < 100){  cormat <- stats::cor(t(values(object)))
+    } else {                  cormat <- propagate::bigcor(t(values(object)))  # ff_matrix
+                              cormat %<>% extract(1:nrow(.), 1:ncol(.))  }    # matrix
+                                # bigcor warning : In split.default(1:NCOL, GROUP)
+                                # data length is not a multiple of split variable
+                                # But cor(.) gives same results, so nothing to worry
+                                # cormat2 <- cor(t(values(object)))
+                                # all(cormat2-cormat < 1e-10)           
+# Return
+    rownames(cormat) <- fnames(object)
+    colnames(cormat) <- fnames(object)
+    cormat
+}
+
+
+#' Cluster features
+#' @param object  SummarizedExperiment
+#' @param cormat  correlation matrix
+#' @param method 'pamk', 'hclust', 'apcluster'
+#' @param k       number
+#' @param verbose TRUE or FALSE
+#' @return matrix
+#' @examples
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#' object <- read_metabolon(file)
+#' fdt(object) %<>% extract(, 1)
+#' cormat <- fcor(object)
+#' object %<>% fcluster(cormat, method = c('pamk', 'apcluster', 'hclust'), k = 3)
+#' fdt(object)
+#' @export
+fcluster <- function( 
+    object,
+    cormat,
+    method = c('pamk', 'hclust', 'apcluster')[1],
+         k = 3,  # hclust only
+   verbose = TRUE 
+){
+# Assert    
+    assert_is_valid_sumexp(object)
+    assert_correlation_matrix(cormat)
+    assert_is_subset(rownames(cormat), fnames(object))
+    assert_is_subset(method, c('pamk', 'hclust', 'apcluster'))
+    assert_is_a_number(k)
+    assert_is_a_bool(verbose)
 # Cluster
-    if (method == 'pamk'){
-        if (!requireNamespace('apcluster', quietly = TRUE)){
+    outdt <- data.table(feature_id = rownames(cormat))
+    distmat <- as.dist(1-cormat)
+    if ('pamk' %in% method){
+        if (!requireNamespace('fpc', quietly = TRUE)){
             message("\t\t\tBiocManager::install('fpc'). Then re-run.") 
-            return(object)  
-        }
-        distmat <- as.dist(1-cormat)
-        pamkout <- fpc::pamk(distmat)
-        fdt(object)$cluster <- unname(pamkout[[1]]$clustering)
-        fdt(object)$clustorder <- order(fdt(object)$cluster)
+            return(object)  }
+        pamout <- fpc::pamk(distmat)
+        outdt$pamcluster <- unname(pamout[[1]]$clustering)
+        outdt$pamorder <- order(outdt$pamcluster)
     }
-    if (method == 'hclust'){
-        distmat <- as.dist(1-cormat)
-        hc <- hclust(distmat)
-        fdt(object)$cluster <- stats::cutree(hc, k = k)
-        fdt(object)$clustorder <- hc$order
+    if ('hclust' %in% method){
+        hcout <- hclust(distmat)
+        outdt$hcluster <- stats::cutree(hcout, k = k)
+        outdt$horder <- hcout$order
     }
-    if (method == 'apcluster'){
+    if ('apcluster' %in% method){
         if (!requireNamespace('apcluster', quietly = TRUE)){
             message("\t\t\tBiocManager::install('apcluster'). Then re-run.") 
-            return(object)  
-        }
-           apresult <- apcluster::apcluster(s = cormat, details = TRUE, q = 0)
-        aggexresult <- apcluster::heatmap(apresult, cormat, col = rev(grDevices::heat.colors(12))) # also plots
-        idx <- aggexresult@exemplars %>% extract2(length(.)) %>% extract(aggexresult@order)
-        exemplars <- fdt(object)$feature_id[idx]
-        fdt(object)$cluster <- fdt(object)$feature_id[apresult@idx]
-        fdt(object)$cluster %<>% factor(exemplars)
-        fdt(object)$clustorder <- aggexresult@clusters %>% extract2(length(.)) %>% extract(aggexresult@order) %>% unlist()
+            return(object)  }
+              apout <- apcluster::apcluster(s = cormat, details = TRUE, q = 0)
+        aggexresult <- apcluster::heatmap(apout, cormat, col = rev(grDevices::heat.colors(12))) # also plots
+        exemplars <- aggexresult@exemplars %>% extract2(length(.)) %>% extract(aggexresult@order) %>% names()
+        outdt$apexemplar <- names(apout@idx)
+        outdt$apexemplar %<>% factor(exemplars)
+        outdt$apcluster <- as.numeric(outdt$apexemplar)
+        outdt$aporder <- aggexresult@clusters %>% extract2(length(.)) %>% extract(aggexresult@order) %>% unlist()
     }
-# Return
+# Merge/Return
+    cols <- c('feature_id')
+    cols %<>% c(sprintf('%scluster',  c('pam', 'h', 'ap')))
+    cols %<>% c(sprintf('%sorder',    c('pam', 'h', 'ap')))
+    cols %<>% c(sprintf('%sexemplar', c('ap')))
+    cols %<>% intersect(names(outdt))
+    outdt %<>% pull_columns(cols)
+    object %<>% merge_fdt(outdt)
     object
 }
 

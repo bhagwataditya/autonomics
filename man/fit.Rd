@@ -125,47 +125,47 @@ Fit model and test for differential expression
 }
 \examples{
 # Read
-    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-    object <- read_metabolon(file)
+  file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+  object <- read_metabolon(file)
     
 # Standard
-    fdt(object) \%<>\% extract(, 'feature_id')
-    object \%<>\% fit_lm(        ~ subgroup)                     #     statistics default
-    object \%<>\% fit_limma(     ~ subgroup)                     # bioinformatics default
-    summarize_fit(fdt(object))
+  fdt(object) \%<>\% extract(, 'feature_id')
+  object \%<>\% fit_lm(        ~ subgroup)                     #     statistics default
+  object \%<>\% fit_limma(     ~ subgroup)                     # bioinformatics default
+  summarize_fit(fdt(object))
     
 # Blocked
-    fdt(object) \%<>\% extract(, 'feature_id')
-    object \%<>\% fit_limma(     ~ subgroup, block = 'Subject')  #        simple random effects
-    object \%<>\% fit_lme(       ~ subgroup, block = 'Subject')  #      powerful random effects
-    object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject')  # more powerful random effects
-    summarize_fit(fdt(object))
+  fdt(object) \%<>\% extract(, 'feature_id')
+  object \%<>\% fit_limma(     ~ subgroup, block = 'Subject')  #        simple random effects
+  object \%<>\% fit_lme(       ~ subgroup, block = 'Subject')  #      powerful random effects
+  object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject')  # more powerful random effects
+  summarize_fit(fdt(object))
     
 # Alternative coding: e.g. grand mean intercept
-    fdt(object) \%<>\% extract(, 'feature_id')
-    object \%<>\% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control)
-    object \%<>\% fit_lme(       ~ subgroup, block = 'Subject', codingfun = code_control)
-    object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = code_control)
-    summarize_fit(fdt(object))
+  fdt(object) \%<>\% extract(, 'feature_id')
+  object \%<>\% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control)
+  object \%<>\% fit_lme(       ~ subgroup, block = 'Subject', codingfun = code_control)
+  object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = code_control)
+  summarize_fit(fdt(object))
     
 # Posthoc contrasts (only limma!)
-    fdt(object) \%<>\% extract(, 'feature_id')
-    object \%<>\% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control, coefs = 't1-t0')
-    object \%<>\% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = 't1-t0')
-        # flexible, but only approximate
-        # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
+  fdt(object) \%<>\% extract(, 'feature_id')
+  object \%<>\% fit_limma( ~ subgroup, block = 'Subject', codingfun = code_control, coefs ='t1-t0')
+  object \%<>\% fit_limma( ~ 0 + subgroup, block = 'Subject', contrasts = 't1-t0')
+      # flexible, but only approximate
+      # stat.ethz.ch/pipermail/bioconductor/2014-February/057682.html
         
 # Non-parametric: wilcoxon
-    fdt(object) \%<>\% extract(, 'feature_id')
-    object \%<>\% fit_wilcoxon( ~ subgroup)                    # unpaired
-    object \%<>\% fit_wilcoxon( ~ subgroup, block = 'Subject') # paired
+  fdt(object) \%<>\% extract(, 'feature_id')
+  object \%<>\% fit_wilcoxon( ~ subgroup)                    # unpaired
+  object \%<>\% fit_wilcoxon( ~ subgroup, block = 'Subject') # paired
     
 # Custom separator
-    fdt(object) \%<>\% extract(, 'feature_id')
-    fdt( fit_lm(      object, sep = '.'))
-    fdt( fit_limma(   object, block = 'Subject', sep = '.') )
-    fdt( fit_lme(     object, block = 'Subject', sep = '.') )
-    fdt( fit_lmer(    object, block = 'Subject', sep = '.') )
-    fdt( fit_wilcoxon(object, block = 'Subject', sep = '.') )
-    fdt( fit_wilcoxon(object, sep = '.') )
+  fdt(object) \%<>\% extract(, 'feature_id')
+  fdt( fit_lm(      object, sep = '.'))
+  fdt( fit_limma(   object, block = 'Subject', sep = '.') )
+  fdt( fit_lme(     object, block = 'Subject', sep = '.') )
+  fdt( fit_lmer(    object, block = 'Subject', sep = '.') )
+  fdt( fit_wilcoxon(object, block = 'Subject', sep = '.') )
+  fdt( fit_wilcoxon(object, sep = '.') )
 }

@@ -140,25 +140,25 @@ Read rnaseq counts/bams
 }
 \examples{
 # read_rnaseq_bams
-    if (requireNamespace('Rsubread')){
-       dir <- download_data('billing16.bam.zip')
-       object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38')  
-       object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38', plot = TRUE)  
-    }
+  if (requireNamespace('Rsubread')){
+      dir <- download_data('billing16.bam.zip')
+      object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38')  
+      object <- read_rnaseq_bams(dir, paired = TRUE, genome = 'hg38', plot = TRUE)  
+  }
 # read_rnaseq_counts
-    file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15')
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE)
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE)
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE, log2 = FALSE)
-    object <- read_rnaseq_counts(file, plot = TRUE)
+  file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
+  object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15')
+  object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = F)
+  object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = F, cpm = F)
+  object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = F, cpm = F, log2 = F)
+  object <- read_rnaseq_counts(file, plot = TRUE)
     
 # read_rnaseq_counts(tpm = TRUE)
-    \dontrun{
-    ah <- AnnotationHub::AnnotationHub()
-    ensdb <- ah[['AH64923']]
-    object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E02', tpm = TRUE, ensdb = ensdb)
-    }
+  \dontrun{
+  ah <- AnnotationHub::AnnotationHub()
+  ensdb <- ah[['AH64923']]
+  object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E02', tpm = TRUE, ensdb = ensdb)
+  }
 }
 \author{
 Aditya Bhagwat, Shahina Hayat
