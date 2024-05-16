@@ -21,7 +21,7 @@ dequantify(x, quantity = guess_maxquant_quantity(x), verbose = FALSE)
 }
 \description{
 Drop quantity ('Reporter intensity'). \cr
-Encode {channel} as suffix.
+Encode \code{{channel}} as suffix.
 }
 \details{
 \verb{               Ratio H/L WT(L).KD(H).R1  ->  WT(L).KD(H).R1\{H/L\}}

@@ -458,7 +458,21 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
                     'NAV1'         #    up in KD (MA + PA)
                  )
         
-        # Maybe lets look at the clusters
+        # Explore feature clusters
+        cormat <- fcor(object)
+        str(cormat)
+        
+        
+        object %<>% fcluster(cormat, method = 'pamk')                # fast - 2 clusters
+        object %<>% fcluster(cormat, method = 'apcluster')           # slow - 130 clusters - not so useful
+        fdt(object)$apcluster <- fdt(object)$aporder <- fdt(object)$apexemplar <- NULL
+        object %<>% fcluster(cormat, method = 'apcluster', q = 0.1)  # q 0.5 -> 0.1 should give less
+        sort(unique(fdt(object)$apcluster))
+        ap
+        
+        
+        table(fdt(object)$pamcluster) # 2 clusters
+        
         object0 <- object
         fdt(object) %<>% extract(, 1:13)
         fdt(object)

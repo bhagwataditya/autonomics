@@ -1551,7 +1551,8 @@ list2mat <- function(x){
 #' @export
 plot_venn_heatmap <- function(x){
     if (!requireNamespace('pheatmap', quietly = TRUE)){
-        stop("`BiocManager::install('pheatmap')`")
+        message("`BiocManager::install('pheatmap')`")
+        return(NULL)
     }
     assert_is_list(x)
     x %<>% list2mat()
@@ -1723,73 +1724,200 @@ fcor <- function(object, verbose = TRUE){
 
 
 #' Cluster features
-#' @param object  SummarizedExperiment
-#' @param cormat  correlation matrix
-#' @param method 'pamk', 'hclust', 'apcluster'
-#' @param k       number
-#' @param verbose TRUE or FALSE
-#' @return matrix
+#' @param object     SummarizedExperiment
+#' @param cormat     correlation matrix
+#' @param method    'cmeans'
+#' @param k          number of clusters
+#' @param verbose    TRUE or FALSE
+#' @param plot       TRUE or FALSE
+#' @param label      fvar
+#' @param alpha      fraction
+#' @return SummarizedExperiment
 #' @examples
-#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-#' object <- read_metabolon(file)
-#' fdt(object) %<>% extract(, 1)
-#' cormat <- fcor(object)
-#' object %<>% fcluster(cormat, method = c('pamk', 'apcluster', 'hclust'), k = 3)
-#' fdt(object)
+#' # Create example dataset
+#'     mat <- rbind(  matrix(c(rep(-4,6), rep(+4,6)),                       nrow = 50, ncol = 12, byrow = TRUE) , 
+#'                    matrix(c(rep(+4,6), rep(-4,6)),                       nrow = 50, ncol = 12, byrow = TRUE) , 
+#'                    matrix(c(rep(-4,3), rep(+4,3), rep(-4,3), rep(+4,3)), nrow = 50, ncol = 12, byrow = TRUE) ,
+#'                    matrix(c(rep(+4,3), rep(-4,3), rep(+4,3), rep(-4,3)), nrow = 50, ncol = 12, byrow = TRUE) )
+#'     mat <- mat + matrix(rnorm(2400), nrow = 200, ncol = 12, byrow = TRUE)
+#'     colnames(mat) <- c( sprintf('A.WT.R%d', 1:3), sprintf('A.KD.R%d', 1:3), 
+#'                         sprintf('B.WT.R%d', 1:3), sprintf('B.KD.R%d', 1:3) )
+#'     rownames(mat) <- sprintf('gene%03d', seq_len(nrow(mat)))
+#'     object <- SummarizedExperiment::SummarizedExperiment(list(exprs = mat))
+#'     sdt(object)$sample_id <- snames(object)
+#'     fdt(object)$feature_id <- fnames(object)
+#' # Compute
+#'     cormat <- fcor(object)
+#'     fcluster(object, alpha = 0.5)              # cmeans membership
+#'     fcluster(object, alpha = 0.5, k = 3)
+#'     fcluster(object, alpha = 0.5, k = 4)
+#'     fcluster(object, alpha = 0.5, k = 4, cormat = cormat)
+#'     fcluster(object, cormat, method = c('cmeans', 'hclust', 'pamk'), k = 4)  # more methods
+#'     fdt(object)
+#' @return SummarizedExperiment
 #' @export
-fcluster <- function( 
-    object,
-    cormat,
-    method = c('pamk', 'hclust', 'apcluster')[1],
-         k = 3,  # hclust only
-   verbose = TRUE 
+fcluster <- function(
+    object, 
+    cormat = NULL, 
+    method = 'cmeans', 
+         k = 2,
+   verbose = TRUE,
+      plot = TRUE,
+     label = if ('gene' %in% fvars(object)) 'gene' else 'feature_id',
+     alpha = if (is.null(cormat)) 0.1 else 1
 ){
 # Assert    
     assert_is_valid_sumexp(object)
-    if (is.null(cormat))  return(object)
-    assert_correlation_matrix(cormat)
-    assert_is_subset(rownames(cormat), fnames(object))
-    assert_is_subset(method, c('pamk', 'hclust', 'apcluster'))
+    assert_is_subset(method, c('cmeans', 'hclust', 'pamk'))
+    if (any(method!='cmeans'))  assert_correlation_matrix(cormat)
     assert_is_a_number(k)
-    assert_is_a_bool(verbose)
+    clvars <- fvars(object) %>% extract(stri_detect_fixed(., 'CLUS') | stri_detect_fixed(., 'SILH'))
+    for (col in clvars)  fdt(object)[[col]] <- NULL
+    full <- NULL
+# Fscale (zscore features)
+    if (verbose)  message(spaces(8), 'Cluster')
+    assays(object)$fscale <- fscale(values(object))
+    object %<>% extract(, order(colnames(.)))
+    fdt(object)$full <- !matrixStats::rowAnyNAs(values(object))
+    mat <- assays(filter_features(object, full == TRUE))$fscale
+    #eset <- Biobase::ExpressionSet(mat)
 # Cluster
-    outdt <- data.table(feature_id = rownames(cormat))
-    distmat <- as.dist(1-cormat)
-    if ('pamk' %in% method){
-        if (!requireNamespace('fpc', quietly = TRUE)){
-            message("\t\t\tBiocManager::install('fpc'). Then re-run.") 
-            return(object)  }
-        pamout <- fpc::pamk(distmat)
-        outdt$pamcluster <- unname(pamout[[1]]$clustering)
-        outdt$pamorder <- order(outdt$pamcluster)
+    if (!is.null(cormat)) {
+        if (verbose)  message(spaces(14), 'Distmat = 1-cormat')
+        distmat <- as.dist(1-cormat)
     }
-    if ('hclust' %in% method){
-        hcout <- hclust(distmat)
-        outdt$hcluster <- stats::cutree(hcout, k = k)
-        outdt$horder <- hcout$order
+    outdt <- data.table(feature_id = rownames(object))
+    if ('cmeans' %in% method){      # superfast
+        if (verbose)  cmessage('%sCluster', spaces(14))
+        if (verbose)  cmessage('%scmeans',  spaces(18))
+        assert_installed('e1071')
+        outCM <- e1071::cmeans(mat, centers = k, method = "cmeans", m = 1.25)
+        outdt %<>% merge(data.table( feature_id = names(outCM$cluster), 
+                                     cmeansCLUS = outCM$cluster,
+                                     cmeansSILH = if (is.null(cormat)){ rowMaxs(outCM$membership)
+                                                  } else {  cluster::silhouette(outCM$cluster, distmat)[, 3]    } ))
     }
-    if ('apcluster' %in% method){
-        if (!requireNamespace('apcluster', quietly = TRUE)){
-            message("\t\t\tBiocManager::install('apcluster'). Then re-run.") 
-            return(object)  }
-              apout <- apcluster::apcluster(s = cormat, details = TRUE, q = 0)
-        aggexresult <- apcluster::heatmap(apout, cormat, col = rev(grDevices::heat.colors(12))) # also plots
-        exemplars <- aggexresult@exemplars %>% extract2(length(.)) %>% extract(aggexresult@order) %>% names()
-        outdt$apexemplar <- names(apout@idx)
-        outdt$apexemplar %<>% factor(exemplars)
-        outdt$apcluster <- as.numeric(outdt$apexemplar)
-        outdt$aporder <- aggexresult@clusters %>% extract2(length(.)) %>% extract(aggexresult@order) %>% unlist()
+    if ('hclust' %in% method ){     # superfast
+        if (verbose)  cmessage('%shclust', spaces(18))
+        outHC <- stats::hclust(distmat)
+        outdt %<>% merge( data.table( feature_id = names(stats::cutree(outHC, k = k)) , 
+                                      hclustCLUS = stats::cutree(outHC, k = k), 
+                                      hclustSILH = cluster::silhouette(stats::cutree(outHC, k = k), distmat)[, 3] ), by = 'feature_id' )
     }
-# Merge/Return
-    cols <- c('feature_id')
-    cols %<>% c(sprintf('%scluster',  c('pam', 'h', 'ap')))
-    cols %<>% c(sprintf('%sorder',    c('pam', 'h', 'ap')))
-    cols %<>% c(sprintf('%sexemplar', c('ap')))
-    cols %<>% intersect(names(outdt))
-    outdt %<>% pull_columns(cols)
+    if ('pamk' %in% method){        # two mins - because it autodetects no of clusters
+        assert_installed('fpc')
+        if (verbose)  cmessage('%spamk', spaces(18))
+        outPAMK <- fpc::pamk(distmat, krange = k)
+        outdt %<>% merge(data.table( feature_id = names(outPAMK$pamobject$clustering), 
+                                       pamkCLUS = outPAMK$pamobject$clustering, 
+                                       pamkSILH = outPAMK$pamobject$silinfo$widths[, 'sil_width'] ), by = 'feature_id')
+    }
+    clusvar <- paste0(method, 'CLUS')
+    silhvar <- paste0(method, 'SILH')
+    outdt %<>% extract(, c('feature_id', clusvar, silhvar), with = FALSE)
     object %<>% merge_fdt(outdt)
-    object
+
+# Plot, Merge, Return
+    if (plot)  print(fclusplot(object, label = label, alpha = alpha))
+    invisible(object)
+    
 }
+
+
+CLUSCOLORS <- c(#"#FF0000", "#FF1800", "#FF3000", "#FF4800", "#FF6000", "#FF7800", "#FF8F00",
+          #"#FFA700", "#FFBF00", "#FFD700", 
+          "#FFEF00", "#F7FF00", "#DFFF00", "#C7FF00",
+          "#AFFF00", "#97FF00", "#80FF00", "#68FF00", "#50FF00", "#38FF00", "#20FF00",
+          "#08FF00", "#00FF10", "#00FF28", "#00FF40", "#00FF58", "#00FF70", "#00FF87",
+          "#00FF9F", "#00FFB7", "#00FFCF", "#00FFE7", "#00FFFF", "#00E7FF", "#00CFFF",
+          "#00B7FF", "#009FFF", "#0087FF", "#0070FF", "#0058FF", "#0040FF", "#0028FF",
+          "#0010FF", "#0800FF", "#2000FF", "#3800FF", "#5000FF", "#6800FF", "#8000FF",
+          "#9700FF", "#AF00FF", "#C700FF", "#DF00FF", "#F700FF", "#FF00EF", "#FF00D7",
+          "#FF00BF", "#FF00A7", "#FF008F", "#FF0078", "#FF0060", "#FF0048", "#FF0030",
+          "#FF0018")
+
+
+
+fclusplot <- function(
+    object, 
+    label = if ('gene' %in% fvars(object)) 'gene' else 'feature_id' , 
+    alpha = 1
+){
+# Initialize
+    method <- clus <- exemplar <- silh <- silhcut <- NULL
+# plotdt and colors
+    clusvars <- fvars(object) %>% extract(stri_detect_fixed(., 'CLUS'))
+    silhvars <- fvars(object) %>% extract(stri_detect_fixed(., 'SILH'))
+    methods <- clusvars %>% stri_replace_first_fixed('CLUS', '')
+    plotdt <- sumexp_to_longdt(object, assay = 'fscale', fvars = c(label, clusvars, silhvars))
+    cols <- c('subgroup', 'sample_id', 'feature_id', 'gene', 'value')
+    cols %<>% intersect(names(plotdt))
+    plotdt <- rbindlist( lapply( methods, function(meth){
+                                            clvar <- paste0(meth, 'CLUS')
+                                            sivar <- paste0(meth, 'SILH')
+                                            retdt <- plotdt[, c( cols, clvar , sivar ), with = FALSE ]
+                                            setnames(retdt, c(clvar, sivar), c('clus', 'silh'))
+                                            retdt[, method := meth]
+                                            retdt } ))
+    plotdt %<>% extract(!is.na(clus))
+    plotdt[, exemplar := get(label)[silh == max(silh)][1], by = c('method', 'clus')]
+    colo <- CLUSCOLORS
+    cuts <- seq( min(plotdt$silh)-1e-10, 1, length = length(colo)+1)
+    plotdt[ , silhcut := cut(silh, cuts)]
+    names(colo) <- levels(plotdt$silhcut)
+# Plot
+    plotdt <- plotdt[rev(order(silh))]
+    clusters <- unique(plotdt$clus)
+    nrow <- if (length(methods)>1)  length(methods)             else NULL
+    ncol <- if (length(methods)>1)  length(unique(plotdt$clus)) else NULL
+    plotlist <- mapply( .fclusplot,
+                        meth = rep(methods, each = length(clusters)), 
+                          cl = rep(clusters, length(methods)), 
+                    MoreArgs = list(plotdt = plotdt, colo = colo, alpha = alpha), 
+                    SIMPLIFY = FALSE )
+    if (!requireNamespace('patchwork', quietly = TRUE)){
+        message("BiocManager::install('patchwork'). Then re-run")
+        return(NULL)
+    }
+    patchwork::wrap_plots(plotlist, nrow = nrow, ncol = ncol, byrow = TRUE) + 
+    patchwork::plot_layout(axes = 'collect', guides = 'collect')
+    #grid.arrange(grobs = plotlist, nrow = length(method), ncol = length(unique(plotdt$clus)))
+}
+
+
+.fclusplot <- function(plotdt, meth, cl, colo, alpha){
+    clus <- exemplar <- silh <- silhcut <- method <- sample_id <- value <- NULL
+    
+    clusdt <- plotdt[method == meth & clus == cl]
+    clusdt <- clusdt[ order(silh) ]
+    clusdt[, feature_id := factor(feature_id, unique(feature_id))]
+    exemplardt <- clusdt[silh == max(silh)]
+
+    ggplot(clusdt, aes(x = sample_id, y = value, group = feature_id, color = silhcut, shape = subgroup)) +
+    theme_bw() + 
+    facet_wrap(vars(exemplar)) + 
+    scale_color_manual(values = colo) + 
+    theme(axis.text.x = element_text(angle = 90), panel.grid = element_blank(), axis.title.x = element_blank()) + 
+    guides(color = 'none', shape = guide_legend(override.aes = list(colour = 'black'))) + 
+    ylab(meth) + 
+    geom_line(alpha = alpha) +
+    geom_line( data = exemplardt, color = 'white', linewidth = 0.8) + 
+    geom_point(data = exemplardt, color = 'white', size = 1.5)
+}
+
+
+
+
+is_installed <- function(x){
+    ok <- requireNamespace(x, quietly = TRUE)
+    if (!ok)  message(sprintf("BiocManager::install('%s'). Then re-run.", x))
+    TRUE
+}
+
+assert_installed <- function(x){
+     assert_engine(  is_installed, x )
+}
+
 
 
 #' Plot heatmap

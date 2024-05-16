@@ -254,7 +254,7 @@ mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
 #' Dequantify maxquant snames
 #' 
 #' Drop quantity ('Reporter intensity'). \cr
-#' Encode {channel} as suffix.
+#' Encode `{channel}` as suffix.
 #' 
 #' `               Ratio H/L WT(L).KD(H).R1  ->  WT(L).KD(H).R1{H/L}`
 #' `                    LFQ intensity WT.R1  ->  WT.R1`
