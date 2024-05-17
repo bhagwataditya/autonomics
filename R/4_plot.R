@@ -1685,6 +1685,9 @@ plot_design <- function(object, codingfun = contr.treatment){
     #       panel.grid.minor.x = element_blank())
 }
 
+
+#' @rdname fcor
+#' @export
 mdsplot <- function(distmat, title = NULL){
     out <- stats::cmdscale(distmat)
     out %<>% mat2dt('id')
@@ -1693,8 +1696,10 @@ mdsplot <- function(distmat, title = NULL){
     sep <- guess_sep(out$id)
     if (!is.null(sep)){
         n <- autonomics::nfactors(out$id, sep = sep)
-        if (nfactor>1)  out$group <- out$id %>% split_extract_fixed(sep, seq_len(n-1))
+        if (n>1)  out$group <- out$id %>% split_extract_fixed(sep, seq_len(n-1))
     }
+    
+    mds1 <- mds2 <- group <- NULL
     ggplot(out, aes(x = mds1, y = mds2, color = group)) + 
     geom_point(shape = 15, size = 3) + 
     theme_bw() + 
@@ -1702,7 +1707,10 @@ mdsplot <- function(distmat, title = NULL){
 }
 
 #' Feature correlations/distances
-#' @param object SummarizedExperiment
+#' @param object  SummarizedExperiment
+#' @param method 'cor', 'euclidian', etc
+#' @param distmat distance matrix
+#' @param title   NULL or string
 #' @param verbose TRUE or FALSE
 #' @return matrix
 #' @examples
@@ -1807,7 +1815,7 @@ twofactor_sumexp <- function(){
 
 #' Cluster features
 #' @param object     SummarizedExperiment
-#' @param cormat     correlation matrix
+#' @param distmat    distance matrix
 #' @param method    'cmeans'
 #' @param k          number of clusters
 #' @param verbose    TRUE or FALSE
@@ -1836,7 +1844,7 @@ fcluster <- function(
 # Assert    
     assert_is_valid_sumexp(object)
     assert_is_subset(method, c('cmeans', 'hclust', 'pamk'))
-    if (any(method!='cmeans'))  assertive::assert_is_all_of(distmat, 'dist')
+    if (any(method!='cmeans'))  assert_is_all_of(distmat, 'dist')
     assert_is_numeric(k)
     clvars <- fvars(object) %>% extract(stri_detect_fixed(., 'CLUS') | stri_detect_fixed(., 'SILH'))
     for (col in clvars)  fdt(object)[[col]] <- NULL
@@ -1863,7 +1871,7 @@ fcluster <- function(
     }
     if ('hclust' %in% method ){
         if (verbose)  cmessage('%shclust', spaces(18))
-        if (length(k)>1)  k <- hclustk(distmat, krange = krange)
+        if (length(k)>1)  k <- hclustk(distmat, krange = k)
         outHC <- stats::hclust(distmat)
         outdt %<>% merge(data.table( 
                     feature_id = names(stats::cutree(outHC, k = k)) , 
@@ -1872,7 +1880,7 @@ fcluster <- function(
     }
     if ('pamk' %in% method){
         if (verbose)  cmessage('%spamk', spaces(18))
-        if (length(k)>1)  k <- pamk(distmat, krange = krange)
+        if (length(k)>1)  k <- pamk(distmat, krange = k)
         outPAM <- cluster::pam(distmat, k = k)             # fpc::pamk(distmat, krange = k)
         outdt %<>% merge(data.table( 
                     feature_id = names(outPAM$clustering), 
@@ -1889,10 +1897,6 @@ fcluster <- function(
 }
 
 
-#' Find best k
-#' @examples
-#' cmeansk(object)
-#' @export
 cmeansk <- function(object, krange = 2:10){
     mat <- fscale(values(filter_full_features(object)))
     cmeanseps <- function(k)  e1071::cmeans(mat, centers = k, method = "cmeans", m = 1.25, iter.max = 300)$withinerror
@@ -1922,6 +1926,7 @@ pamk <- function(distmat, krange = 2:10){
 
 
 filter_full_features <- function(object, verbose = TRUE){
+    full <- NULL
     fdt(object)$full <- !matrixStats::rowAnyNAs(values(object))
     obj <- filter_features(object, full == TRUE, verbose = verbose)
     obj$full <- NULL

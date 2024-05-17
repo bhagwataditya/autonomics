@@ -18,6 +18,8 @@ fcluster(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{distmat}{distance matrix}
+
 \item{method}{'cmeans'}
 
 \item{k}{number of clusters}
@@ -29,8 +31,6 @@ fcluster(
 \item{label}{fvar}
 
 \item{alpha}{fraction}
-
-\item{cormat}{correlation matrix}
 }
 \value{
 SummarizedExperiment
