@@ -1685,16 +1685,36 @@ plot_design <- function(object, codingfun = contr.treatment){
     #       panel.grid.minor.x = element_blank())
 }
 
+mdsplot <- function(distmat, title = NULL){
+    out <- stats::cmdscale(distmat)
+    out %<>% mat2dt('id')
+    names(out )[-1] <- c('mds1', 'mds2')
+    out$group <- 'group0'
+    sep <- guess_sep(out$id)
+    if (!is.null(sep)){
+        n <- autonomics::nfactors(out$id, sep = sep)
+        if (nfactor>1)  out$group <- out$id %>% split_extract_fixed(sep, seq_len(n-1))
+    }
+    ggplot(out, aes(x = mds1, y = mds2, color = group)) + 
+    geom_point(shape = 15, size = 3) + 
+    theme_bw() + 
+    ggtitle(title)
+}
 
-#' Correlate features
+#' Feature correlations/distances
 #' @param object SummarizedExperiment
 #' @param verbose TRUE or FALSE
 #' @return matrix
 #' @examples
-#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-#' object <- read_metabolon(file)
-#' fdt(object) %<>% extract(, 1)
-#' cormat <- fcor(object)
+#' # Correlations
+#'     object <- twofactor_sumexp()
+#'     scor(object)               %>%  pheatmap::pheatmap()
+#'     fcor(object)               %>%  pheatmap::pheatmap()
+#' # Distances
+#'     sdist(object, 'cor')       %>% mdsplot('samples: cor')
+#'     sdist(object, 'euclidian') %>% mdsplot('samples: euclidian')
+#'     fdist(object, 'cor')       %>% mdsplot('features: cor')
+#'     fdist(object, 'euclidian') %>% mdsplot('features: euclidian')
 #' @export
 fcor <- function(object, verbose = TRUE){
 # Assert
@@ -1703,12 +1723,12 @@ fcor <- function(object, verbose = TRUE){
         message("\t\t\tBiocManager::install('propagate'). Then re-run.") 
         return(NULL) 
     }
-    if (verbose)   cmessage('\t\tCompute correlations')
+    if (verbose)   cmessage('\t\tFeature correlations')
     idx <- rowAlls(!is.na(values(object)))
     object %<>% extract(idx, )
     if (verbose)   cmessage('\t\t\tUse %d/%d NA-free features', sum(idx), length(idx))
 # Compute
-    if (nrow(object) < 100){  cormat <- stats::cor(t(values(object)))
+    if (nrow(object) < 500){  cormat <- stats::cor(t(values(object)))
     } else {                  cormat <- propagate::bigcor(t(values(object)))  # ff_matrix
                               cormat %<>% extract(1:nrow(.), 1:ncol(.))  }    # matrix
                                 # bigcor warning : In split.default(1:NCOL, GROUP)
@@ -1717,9 +1737,71 @@ fcor <- function(object, verbose = TRUE){
                                 # cormat2 <- cor(t(values(object)))
                                 # all(cormat2-cormat < 1e-10)           
 # Return
-    rownames(cormat) <- fnames(object)
-    colnames(cormat) <- fnames(object)
+    rownames(cormat) <- colnames(cormat) <- fnames(object)
     cormat
+}
+
+#' @rdname fcor
+#' @export
+scor <- function(object, verbose = TRUE){
+# Assert
+    assert_is_valid_sumexp(object)
+    if (!requireNamespace('propagate', quietly = TRUE)){
+        message("\t\t\tBiocManager::install('propagate'). Then re-run.") 
+        return(NULL) 
+    }
+    if (verbose)   cmessage('\t\tSample correlations')
+    idx <- rowAlls(!is.na(values(object)))
+    object %<>% extract(idx, )
+    if (verbose)   cmessage('\t\t\tUse %d/%d NA-free features', sum(idx), length(idx))
+# Compute
+    if (ncol(object) < 500){  cormat <- stats::cor(values(object))
+    } else {                  cormat <- propagate::bigcor(values(object))  # ff_matrix
+                              cormat %<>% extract(1:nrow(.), 1:ncol(.))  }    # matrix
+                                # bigcor warning : In split.default(1:NCOL, GROUP)
+                                # data length is not a multiple of split variable
+                                # But cor(.) gives same results, so nothing to worry
+                                # cormat2 <- cor(t(values(object)))
+                                # all(cormat2-cormat < 1e-10)           
+# Return
+    rownames(cormat) <- colnames(cormat) <- snames(object)
+    cormat
+}
+
+
+#' @rdname fcor
+#' @export
+fdist <- function(object, method = 'cor'){
+    if (method == 'cor')  return(as.dist(1-fcor(object)))  # cor
+    dist(values(object), method = method)        # euclidian etc.
+}
+
+#' @rdname fcor
+#' @export
+sdist <- function(object, method = 'cor'){
+    if (method == 'cor')  return(as.dist(1-scor(object)))  # cor
+    dist(t(values(object)), method = method)        # euclidian etc.
+}
+
+
+#' twofactor sumexp
+#' @return SummarizedExperiment
+#' @export
+twofactor_sumexp <- function(){
+    set.seed(31)
+    mat <- rbind(  matrix(c(rep(-4,6), rep(+4,6)),                       nrow = 50, ncol = 12, byrow = TRUE) ,
+                   matrix(c(rep(+4,6), rep(-4,6)),                       nrow = 50, ncol = 12, byrow = TRUE) ,
+                   matrix(c(rep(-4,3), rep(+4,3), rep(-4,3), rep(+4,3)), nrow = 50, ncol = 12, byrow = TRUE) ,
+                   matrix(c(rep(+4,3), rep(-4,3), rep(+4,3), rep(-4,3)), nrow = 50, ncol = 12, byrow = TRUE) )
+    mat <- mat + matrix(rnorm(2400), nrow = 200, ncol = 12, byrow = TRUE)
+    colnames(mat) <- c( sprintf('A.WT.R%d', 1:3), sprintf('A.KD.R%d', 1:3),
+                        sprintf('B.WT.R%d', 1:3), sprintf('B.KD.R%d', 1:3) )
+    rownames(mat) <- sprintf('gene%03d', seq_len(nrow(mat)))
+    object <- SummarizedExperiment::SummarizedExperiment(list(exprs = mat))
+    fdt(object)$feature_id <- fnames(object)
+    sdt(object)$sample_id <- snames(object)
+    object$subgroup <- substr(object$sample_id, 1, 4)
+    object
 }
 
 
@@ -1734,93 +1816,116 @@ fcor <- function(object, verbose = TRUE){
 #' @param alpha      fraction
 #' @return SummarizedExperiment
 #' @examples
-#' # Create example dataset
-#'     mat <- rbind(  matrix(c(rep(-4,6), rep(+4,6)),                       nrow = 50, ncol = 12, byrow = TRUE) , 
-#'                    matrix(c(rep(+4,6), rep(-4,6)),                       nrow = 50, ncol = 12, byrow = TRUE) , 
-#'                    matrix(c(rep(-4,3), rep(+4,3), rep(-4,3), rep(+4,3)), nrow = 50, ncol = 12, byrow = TRUE) ,
-#'                    matrix(c(rep(+4,3), rep(-4,3), rep(+4,3), rep(-4,3)), nrow = 50, ncol = 12, byrow = TRUE) )
-#'     mat <- mat + matrix(rnorm(2400), nrow = 200, ncol = 12, byrow = TRUE)
-#'     colnames(mat) <- c( sprintf('A.WT.R%d', 1:3), sprintf('A.KD.R%d', 1:3), 
-#'                         sprintf('B.WT.R%d', 1:3), sprintf('B.KD.R%d', 1:3) )
-#'     rownames(mat) <- sprintf('gene%03d', seq_len(nrow(mat)))
-#'     object <- SummarizedExperiment::SummarizedExperiment(list(exprs = mat))
-#'     sdt(object)$sample_id <- snames(object)
-#'     fdt(object)$feature_id <- fnames(object)
-#' # Compute
-#'     cormat <- fcor(object)
-#'     fcluster(object, alpha = 0.5)              # cmeans membership
-#'     fcluster(object, alpha = 0.5, k = 3)
-#'     fcluster(object, alpha = 0.5, k = 4)
-#'     fcluster(object, alpha = 0.5, k = 4, cormat = cormat)
-#'     fcluster(object, cormat, method = c('cmeans', 'hclust', 'pamk'), k = 4)  # more methods
-#'     fdt(object)
+#' object <- twofactor_sumexp()
+#' distmat <- fdist(object)
+#' fcluster(object)                                                   # membership-based colors
+#' fcluster(object, distmat)                                          # silhouette-based colors
+#' fcluster(object, distmat, method = c('cmeans', 'hclust', 'pamk'))  # more methods
 #' @return SummarizedExperiment
 #' @export
 fcluster <- function(
     object, 
-    cormat = NULL, 
+    distmat = NULL, 
     method = 'cmeans', 
-         k = 2,
+         k = 2:10,
    verbose = TRUE,
       plot = TRUE,
      label = if ('gene' %in% fvars(object)) 'gene' else 'feature_id',
-     alpha = if (is.null(cormat)) 0.1 else 1
+     alpha = 1
 ){
 # Assert    
     assert_is_valid_sumexp(object)
     assert_is_subset(method, c('cmeans', 'hclust', 'pamk'))
-    if (any(method!='cmeans'))  assert_correlation_matrix(cormat)
-    assert_is_a_number(k)
+    if (any(method!='cmeans'))  assertive::assert_is_all_of(distmat, 'dist')
+    assert_is_numeric(k)
     clvars <- fvars(object) %>% extract(stri_detect_fixed(., 'CLUS') | stri_detect_fixed(., 'SILH'))
     for (col in clvars)  fdt(object)[[col]] <- NULL
     full <- NULL
-# Fscale (zscore features)
-    if (verbose)  message(spaces(8), 'Cluster')
-    assays(object)$fscale <- fscale(values(object))
-    object %<>% extract(, order(colnames(.)))
-    fdt(object)$full <- !matrixStats::rowAnyNAs(values(object))
-    mat <- assays(filter_features(object, full == TRUE))$fscale
-    #eset <- Biobase::ExpressionSet(mat)
 # Cluster
-    if (!is.null(cormat)) {
-        if (verbose)  message(spaces(14), 'Distmat = 1-cormat')
-        distmat <- as.dist(1-cormat)
-    }
+    # if (verbose)  message(spaces(14), 'Distmat = 1-cormat')
+    if (verbose)  message(spaces(8), 'Cluster')
+    object %<>% extract(, order(colnames(.)))
+    assays(object)$fscale <- fscale(values(object))
     outdt <- data.table(feature_id = rownames(object))
-    if ('cmeans' %in% method){      # superfast
+    if ('cmeans' %in% method){
+        txt <- "BiocManager::install('e1071'). Then re-run"
+        if (!requireNamespace('e1071', quietly = TRUE)){  message(txt); return(object)  }
         if (verbose)  cmessage('%sCluster', spaces(14))
         if (verbose)  cmessage('%scmeans',  spaces(18))
-        assert_installed('e1071')
+        if (length(k)>1)  k <- cmeansk(object, krange = k)
+        mat <- assays(filter_full_features(object))$fscale
         outCM <- e1071::cmeans(mat, centers = k, method = "cmeans", m = 1.25)
-        outdt %<>% merge(data.table( feature_id = names(outCM$cluster), 
-                                     cmeansCLUS = outCM$cluster,
-                                     cmeansSILH = if (is.null(cormat)){ rowMaxs(outCM$membership)
-                                                  } else {  cluster::silhouette(outCM$cluster, distmat)[, 3]    } ))
+        outdt %<>% merge(data.table( 
+                    feature_id = names(outCM$cluster), 
+                    cmeansCLUS = outCM$cluster,
+                    cmeansSILH = if (is.null(distmat)){ rowMaxs(outCM$membership)
+                    } else {   cluster::silhouette(outCM$cluster, distmat)[, 3] } )) 
     }
-    if ('hclust' %in% method ){     # superfast
+    if ('hclust' %in% method ){
         if (verbose)  cmessage('%shclust', spaces(18))
+        if (length(k)>1)  k <- hclustk(distmat, krange = krange)
         outHC <- stats::hclust(distmat)
-        outdt %<>% merge( data.table( feature_id = names(stats::cutree(outHC, k = k)) , 
-                                      hclustCLUS = stats::cutree(outHC, k = k), 
-                                      hclustSILH = cluster::silhouette(stats::cutree(outHC, k = k), distmat)[, 3] ), by = 'feature_id' )
+        outdt %<>% merge(data.table( 
+                    feature_id = names(stats::cutree(outHC, k = k)) , 
+                    hclustCLUS = stats::cutree(outHC, k = k), 
+                    hclustSILH = cluster::silhouette(stats::cutree(outHC, k = k), distmat)[, 3] ), by = 'feature_id' ) 
     }
-    if ('pamk' %in% method){        # two mins - because it autodetects no of clusters
-        assert_installed('fpc')
+    if ('pamk' %in% method){
         if (verbose)  cmessage('%spamk', spaces(18))
-        outPAMK <- fpc::pamk(distmat, krange = k)
-        outdt %<>% merge(data.table( feature_id = names(outPAMK$pamobject$clustering), 
-                                       pamkCLUS = outPAMK$pamobject$clustering, 
-                                       pamkSILH = outPAMK$pamobject$silinfo$widths[, 'sil_width'] ), by = 'feature_id')
+        if (length(k)>1)  k <- pamk(distmat, krange = krange)
+        outPAM <- cluster::pam(distmat, k = k)             # fpc::pamk(distmat, krange = k)
+        outdt %<>% merge(data.table( 
+                    feature_id = names(outPAM$clustering), 
+                    pamkCLUS =       outPAM$clustering,    # outPAMK$silinfo$widths[, 'sil_width']
+                    pamkSILH = cluster::silhouette(outPAM, distmat)[, 3] ), by = 'feature_id') 
     }
     clusvar <- paste0(method, 'CLUS')
     silhvar <- paste0(method, 'SILH')
     outdt %<>% extract(, c('feature_id', clusvar, silhvar), with = FALSE)
     object %<>% merge_fdt(outdt)
-
 # Plot, Merge, Return
     if (plot)  print(fclusplot(object, label = label, alpha = alpha))
     invisible(object)
-    
+}
+
+
+#' Find best k
+#' @examples
+#' cmeansk(object)
+#' @export
+cmeansk <- function(object, krange = 2:10){
+    mat <- fscale(values(filter_full_features(object)))
+    cmeanseps <- function(k)  e1071::cmeans(mat, centers = k, method = "cmeans", m = 1.25, iter.max = 300)$withinerror
+    eps <- vapply(krange, cmeanseps, numeric(1))
+    names(eps) <- sprintf('k=%d', krange)
+    eps <- (eps-min(eps)) / (max(eps)-min(eps))  # scale from 0 to 1
+    eps <- c(0, diff(eps))                       # slope
+    eps <- c(0, diff(eps))                       # change in slope
+    krange[which.max(eps)-1]
+}
+
+hclustk <- function(distmat, krange = 2:10){
+    out <- stats::hclust(distmat)
+    silfun <- function(k)  mean(cluster::silhouette(stats::cutree(out, k = k), distmat)[, 3])
+    sil <- vapply(krange, silfun, numeric(1))
+    names(sil) <- sprintf('k=%d', krange)
+    krange[which.max(sil)]
+}
+
+
+pamk <- function(distmat, krange = 2:10){
+    silfun <- function(k)  mean(cluster::silhouette(cluster::pam(distmat, k = k), distmat)[, 3])
+    sil <- vapply(krange, silfun, numeric(1))
+    names(sil) <- sprintf('k=%d', krange)
+    krange[which.max(sil)]
+}
+
+
+filter_full_features <- function(object, verbose = TRUE){
+    fdt(object)$full <- !matrixStats::rowAnyNAs(values(object))
+    obj <- filter_features(object, full == TRUE, verbose = verbose)
+    obj$full <- NULL
+    obj
 }
 
 

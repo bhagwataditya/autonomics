@@ -2,9 +2,18 @@
 % Please edit documentation in R/4_plot.R
 \name{fcor}
 \alias{fcor}
-\title{Correlate features}
+\alias{scor}
+\alias{fdist}
+\alias{sdist}
+\title{Feature correlations/distances}
 \usage{
 fcor(object, verbose = TRUE)
+
+scor(object, verbose = TRUE)
+
+fdist(object, method = "cor")
+
+sdist(object, method = "cor")
 }
 \arguments{
 \item{object}{SummarizedExperiment}
@@ -15,11 +24,16 @@ fcor(object, verbose = TRUE)
 matrix
 }
 \description{
-Correlate features
+Feature correlations/distances
 }
 \examples{
-file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-object <- read_metabolon(file)
-fdt(object) \%<>\% extract(, 1)
-cormat <- fcor(object)
+# Correlations
+    object <- twofactor_sumexp()
+    scor(object)               \%>\%  pheatmap::pheatmap()
+    fcor(object)               \%>\%  pheatmap::pheatmap()
+# Distances
+    sdist(object, 'cor')       \%>\% mdsplot('samples: cor')
+    sdist(object, 'euclidian') \%>\% mdsplot('samples: euclidian')
+    fdist(object, 'cor')       \%>\% mdsplot('features: cor')
+    fdist(object, 'euclidian') \%>\% mdsplot('features: euclidian')
 }

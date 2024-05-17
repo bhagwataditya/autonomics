@@ -6,19 +6,17 @@
 \usage{
 fcluster(
   object,
-  cormat = NULL,
+  distmat = NULL,
   method = "cmeans",
-  k = 2,
+  k = 2:10,
   verbose = TRUE,
   plot = TRUE,
   label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
-  alpha = if (is.null(cormat)) 0.1 else 1
+  alpha = 1
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{cormat}{correlation matrix}
 
 \item{method}{'cmeans'}
 
@@ -31,6 +29,8 @@ fcluster(
 \item{label}{fvar}
 
 \item{alpha}{fraction}
+
+\item{cormat}{correlation matrix}
 }
 \value{
 SummarizedExperiment
@@ -41,24 +41,9 @@ SummarizedExperiment
 Cluster features
 }
 \examples{
-# Create example dataset
-    mat <- rbind(  matrix(c(rep(-4,6), rep(+4,6)),                       nrow = 50, ncol = 12, byrow = TRUE) , 
-                   matrix(c(rep(+4,6), rep(-4,6)),                       nrow = 50, ncol = 12, byrow = TRUE) , 
-                   matrix(c(rep(-4,3), rep(+4,3), rep(-4,3), rep(+4,3)), nrow = 50, ncol = 12, byrow = TRUE) ,
-                   matrix(c(rep(+4,3), rep(-4,3), rep(+4,3), rep(-4,3)), nrow = 50, ncol = 12, byrow = TRUE) )
-    mat <- mat + matrix(rnorm(2400), nrow = 200, ncol = 12, byrow = TRUE)
-    colnames(mat) <- c( sprintf('A.WT.R\%d', 1:3), sprintf('A.KD.R\%d', 1:3), 
-                        sprintf('B.WT.R\%d', 1:3), sprintf('B.KD.R\%d', 1:3) )
-    rownames(mat) <- sprintf('gene\%03d', seq_len(nrow(mat)))
-    object <- SummarizedExperiment::SummarizedExperiment(list(exprs = mat))
-    sdt(object)$sample_id <- snames(object)
-    fdt(object)$feature_id <- fnames(object)
-# Compute
-    cormat <- fcor(object)
-    fcluster(object, alpha = 0.5)              # cmeans membership
-    fcluster(object, alpha = 0.5, k = 3)
-    fcluster(object, alpha = 0.5, k = 4)
-    fcluster(object, alpha = 0.5, k = 4, cormat = cormat)
-    fcluster(object, cormat, method = c('cmeans', 'hclust', 'pamk'), k = 4)  # more methods
-    fdt(object)
+object <- twofactor_sumexp()
+distmat <- fdist(object)
+fcluster(object)                                                   # membership-based colors
+fcluster(object, distmat)                                          # silhouette-based colors
+fcluster(object, distmat, method = c('cmeans', 'hclust', 'pamk'))  # more methods
 }
