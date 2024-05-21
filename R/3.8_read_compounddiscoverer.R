@@ -104,15 +104,14 @@ guess_compounddiscoverer_quantity <- function(x){
     anncols <- c(
       'Name', 'Compounds ID', 'MS Modus', 'Formula', 'Annot. DeltaMass [ppm]',
       'Calc. MW', 'm/z', 'RT [min]', 'ID Quality', 'mzCloud Best Match',
-      'mzVault Best Match',
-      Name)
+      'mzVault Best Match')
     anncols %<>% intersect(names(cddt))
     valcols <- grep(pattern, names(cddt), value = TRUE)
-    cddt %<>% extract(, c(anncols, valcols), with = FALSE)
+    cddt %<>% magrittr::extract(, c(anncols, valcols), with = FALSE)
 # Format column names
     if (!is.null(colname_format))
       cddt %<>% magrittr::set_colnames(colname_format(names(.)))
-# Uniquify Name; choose detection with largest area
+# Uniquify Name; choose detection with largest area; DON'T use `Compounds ID`, CompoundDiscoverer produces multiple IDs per trivial name
     cddt %<>%
       dplyr::mutate(rowid = dplyr::row_number()) %>%
       dplyr::relocate(rowid) %>%
