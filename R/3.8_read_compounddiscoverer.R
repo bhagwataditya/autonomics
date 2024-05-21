@@ -313,7 +313,7 @@ read_compounddiscoverer <- function(
       verbose = verbose) %>%
       merge_compounddiscoverer(quantity = quantity, verbose = verbose)
 # Currently intro of `feature_id` only, no `annotate_maxquant` equivalent (yet)
-    cddt[, feature_id := `Compounds ID`]
+    cddt[, feature_id := Name]
 # SumExp
     if (verbose)  cmessage('%sSumExp', spaces(4))
     pattern <- COMPOUNDDISCOVERER_PATTERNS[[quantity]]
