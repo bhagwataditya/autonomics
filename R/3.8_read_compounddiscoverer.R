@@ -84,11 +84,26 @@ guess_compounddiscoverer_quantity <- function(x){
         `MS Modus` = modus_extractor(names(.)) %>%
           unique() %>%
           assert_are_same_length(1))
+# Determine ID qualifier
+    cddt %<>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(
+        `ID Quality` =  if (
+          all(is.na(dplyr::c_across(dplyr::ends_with("Best Match")))))
+          { NA } else {
+            max(
+              dplyr::c_across(dplyr::ends_with("Best Match")), na.rm = TRUE) },
+        `ID Quality` =  dplyr::case_when(
+          `ID Quality` > 80    ~ 2,
+          `ID Quality` > 60    ~ 3,
+          TRUE                 ~ 4)) %>%
+      dplyr::ungroup()
 # Extract require columns
     pattern <- COMPOUNDDISCOVERER_PATTERNS[[quantity]]
     anncols <- c(
       'Name', 'Compounds ID', 'MS Modus', 'Formula', 'Annot. DeltaMass [ppm]',
-      'Calc. MW', 'm/z', 'RT [min]', 'mzCloud Best Match', 'mzVault Best Match',
+      'Calc. MW', 'm/z', 'RT [min]', 'ID Quality', 'mzCloud Best Match',
+      'mzVault Best Match',
       Name)
     anncols %<>% intersect(names(cddt))
     valcols <- grep(pattern, names(cddt), value = TRUE)
