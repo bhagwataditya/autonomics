@@ -1,7 +1,7 @@
 Package: autonomics
 Type: Package
 Title: Unified statistal Modeling of Omics Data
-Version: 1.13.3
+Version: 1.13.7
 Authors@R: c(person("Aditya",   "Bhagwat",    email = "aditya.bhagwat@uni-marburg.de",    role = c("aut", "cre")), 
              person("Richard",  "Cotton",     email = "richierocks@gmail.com",            role = "aut"),
              person("Shahina",  "Hayat",      email = "shahina.hayat@hotmail.com",        role = "aut"),
@@ -40,6 +40,7 @@ Imports:
   BiocFileCache,
   BiocGenerics,
   bit64,
+  cluster,
   codingMatrices,
   colorspace,
   data.table,
@@ -77,13 +78,14 @@ Suggests:
   AnnotationDbi,
   AnnotationHub,
   apcluster,
+  Biobase,
   BiocManager,
   BiocStyle,
   Biostrings,
   diagram,
   DBI,
+  e1071,
   ensembldb,
-  fpc,
   GenomicDataCommons,
   GenomicRanges,
   GEOquery,
@@ -94,6 +96,7 @@ Suggests:
   lme4, 
   lmerTest,
   MASS,
+  patchwork,
   mixOmics,
   mpm,
   nlme,

@@ -271,6 +271,7 @@ subtract_differences <- function(object, block, subgroupvar, verbose=TRUE){
 #' Transform values
 #' 
 #' @param  object   SummarizedExperiment
+#' @param  mat      matrix
 #' @param  assay    character vector : assays for which to perform transformation
 #' @param  pseudo   number           : pseudo value to be added prior to transformation
 #' @param  verbose  TRUE or FALSE    : whether to msg
@@ -332,11 +333,25 @@ exp2 <- function(object, verbose = FALSE){
 #' @rdname log2transform
 #' @export
 zscore <- function(object, verbose = FALSE){
-    if (verbose)  message('\t\tZscore')
-    values(object) %<>% scale()
+    values(object) %<>% sscale(verbose = verbose)
     object
 }
 
+#' @rdname log2transform
+#' @export
+sscale <- function(mat, verbose = FALSE){
+    assert_is_matrix(mat)
+    if (verbose)  message('\t\tZscore samples')
+    scale(mat)
+}
+
+#' @rdname log2transform
+#' @export
+fscale <- function(mat, verbose = FALSE){
+    assert_is_matrix(mat)
+    if (verbose)  message('\t\tZscore features')
+    t(scale(t(mat)))
+}
 
 #' Center samples
 #' @param object   SummarizedExperiment

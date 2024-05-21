@@ -6,34 +6,44 @@
 \usage{
 fcluster(
   object,
-  cormat,
-  method = c("pamk", "hclust", "apcluster")[1],
-  k = 3,
-  verbose = TRUE
+  distmat = NULL,
+  method = "cmeans",
+  k = 2:10,
+  verbose = TRUE,
+  plot = TRUE,
+  label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
+  alpha = 1
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{cormat}{correlation matrix}
+\item{distmat}{distance matrix}
 
-\item{method}{'pamk', 'hclust', 'apcluster'}
+\item{method}{'cmeans'}
 
-\item{k}{number}
+\item{k}{number of clusters}
 
 \item{verbose}{TRUE or FALSE}
+
+\item{plot}{TRUE or FALSE}
+
+\item{label}{fvar}
+
+\item{alpha}{fraction}
 }
 \value{
-matrix
+SummarizedExperiment
+
+SummarizedExperiment
 }
 \description{
 Cluster features
 }
 \examples{
-file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-object <- read_metabolon(file)
-fdt(object) \%<>\% extract(, 1)
-cormat <- fcor(object)
-object \%<>\% fcluster(cormat, method = c('pamk', 'apcluster', 'hclust'), k = 3)
-fdt(object)
+object <- twofactor_sumexp()
+distmat <- fdist(object)
+fcluster(object)                                                   # membership-based colors
+fcluster(object, distmat)                                          # silhouette-based colors
+fcluster(object, distmat, method = c('cmeans', 'hclust', 'pamk'))  # more methods
 }

@@ -4,6 +4,8 @@
 \alias{log2transform}
 \alias{exp2}
 \alias{zscore}
+\alias{sscale}
+\alias{fscale}
 \alias{quantnorm}
 \alias{invnorm}
 \alias{vsn}
@@ -20,6 +22,10 @@ exp2(object, verbose = FALSE)
 
 zscore(object, verbose = FALSE)
 
+sscale(mat, verbose = FALSE)
+
+fscale(mat, verbose = FALSE)
+
 quantnorm(object, verbose = FALSE)
 
 invnorm(object, verbose = FALSE)
@@ -34,6 +40,8 @@ vsn(object, verbose = FALSE, delog = TRUE)
 \item{pseudo}{number           : pseudo value to be added prior to transformation}
 
 \item{verbose}{TRUE or FALSE    : whether to msg}
+
+\item{mat}{matrix}
 
 \item{delog}{TRUE or FALSE (vsn)}
 }
