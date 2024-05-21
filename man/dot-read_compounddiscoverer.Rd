@@ -7,6 +7,8 @@
 .read_compounddiscoverer(
   file,
   quantity = guess_compounddiscoverer_quantity(file),
+  colname_format = NULL,
+  mod_extract = NULL,
   verbose = TRUE
 )
 }
@@ -14,6 +16,10 @@
 \item{file}{compoumd discoverer file}
 
 \item{quantity}{string}
+
+\item{colname_format}{function to reformat column names}
+
+\item{mod_extract}{function to extract MS modi from sample names}
 
 \item{verbose}{TRUE / FALSE}
 }

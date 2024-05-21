@@ -6,8 +6,15 @@
 \usage{
 read_compounddiscoverer(
   dir = getwd(),
-  files = list.files(path = dir, pattern = ".*\\\\.csv$", full.names = TRUE),
+  files = list.files(path = dir, pattern = "(RP|HILIC).*\\\\.csv$", full.names = TRUE),
+  colname_regex = "^(.*)\\\\d{8,8}_+(.*)_+((HILIC|RP)(NEG|POS))\\\\.raw.*$",
+  colname_format = function(x) stringi::stri_replace_first_regex(x, colname_regex,
+    "$1$2"),
+  mod_extract = function(x) stringi::stri_subset_regex(x, colname_regex) \%>\%
+    stringi::stri_replace_first_regex(colname_regex, "$3"),
   quantity = NULL,
+  nonames = FALSE,
+  exclude_sname_pattern = "(blank|QC|RS)",
   subgroups = NULL,
   impute = FALSE,
   plot = FALSE,
@@ -28,7 +35,17 @@ read_compounddiscoverer(
 
 \item{files}{compound discoverer output files}
 
+\item{colname_regex}{regular expression to parse sample names from column names}
+
+\item{colname_format}{function to reformat column names}
+
+\item{mod_extract}{function to extract MS modi from sample names}
+
 \item{quantity}{'area', 'normalizedarea' or NULL}
+
+\item{nonames}{TRUE or FALSE: retain compunds without Names?}
+
+\item{exclude_sname_pattern}{regular expression of sample names to exclude}
 
 \item{subgroups}{NULL or string vector : subgroups to retain}
 
