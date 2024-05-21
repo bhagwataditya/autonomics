@@ -58,21 +58,22 @@ guess_compounddiscoverer_quantity <- function(x){
 #' Read compound discoverer files as-is
 #' @param file               compoumd discoverer file
 #' @param quantity           string
-#' @param colname_formatter  function for column reformatting
+#' @param mod_extract        function to extract MS modi from sample names
+#' @param colname_format     function to reformat column names
 #' @param verbose            TRUE / FALSE
 #' @return data.table
 #' @export
 .read_compounddiscoverer <- function(
     file, quantity = guess_compounddiscoverer_quantity(file), 
-    colname_formatter = NULL,
-    modus_extractor = NULL,
+    colname_format = NULL,
+    mod_extract = NULL,
     verbose = TRUE){
     . <- Name <- Value <- rowid <- Acquisition <- NULL
 # Assert
     assert_compounddiscoverer_output(file)
     assert_is_subset(quantity, names(COMPOUNDDISCOVERER_PATTERNS))
-    if (!is.null(colname_formatter)) assert_is_function(colname_formatter)
-    assert_is_function(modus_extractor)
+    if (!is.null(colname_format)) assert_is_function(colname_format)
+    assert_is_function(mod_extract)
 # Read
     if (verbose)  cmessage('%sRead%scompound discoverer output   %s', spaces(4), spaces(6), file)
     cddt <- fread(file, integer64 = 'numeric') %>% 
@@ -81,7 +82,7 @@ guess_compounddiscoverer_quantity <- function(x){
 # Determine MS modus
     cddt %<>%
       dplyr::mutate(
-        `MS Modus` = modus_extractor(names(.)) %>%
+        `MS Modus` = mod_extract(names(.)) %>%
           unique() %>%
           assert_are_same_length(1))
 # Determine ID qualifier
@@ -109,8 +110,8 @@ guess_compounddiscoverer_quantity <- function(x){
     valcols <- grep(pattern, names(cddt), value = TRUE)
     cddt %<>% extract(, c(anncols, valcols), with = FALSE)
 # Format column names
-    if (!is.null(colname_formatter))
-      cddt %<>% magrittr::set_colnames(colname_formatter(names(.)))
+    if (!is.null(colname_format))
+      cddt %<>% magrittr::set_colnames(colname_format(names(.)))
 # Uniquify Name; choose detection with largest area
     cddt %<>%
       dplyr::mutate(rowid = dplyr::row_number()) %>%
@@ -228,24 +229,27 @@ merge_compounddiscoverer <- function(x, quantity = NULL, verbose = TRUE) {
 #---------------------------------------------------------------------------
 
 #' Read maxquant proteingroups
-#' @param dir                compound discoverer output directory
-#' @param files              compound discoverer output files
-#' @param colname_formatter  function for column reformatting on file read
-#' @param quantity           'area', 'normalizedarea' or NULL
-#' @param nonames            TRUE or FALSE: retain compunds without Names?
-#' @param subgroups          NULL or string vector : subgroups to retain
-#' @param impute             TRUE or FALSE: impute group-specific NA values?
-#' @param plot               TRUE or FALSE: plot ?
-#' @param label              fvar
-#' @param pca                TRUE or FALSE: run pca ?
-#' @param pls                TRUE or FALSE: run pls ?
-#' @param fit                model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
-#' @param formula            model formula
-#' @param block              model blockvar: string or NULL
-#' @param coefs              model coefficients    of interest: character vector or NULL
-#' @param contrasts          coefficient contrasts of interest: character vector or NULL
-#' @param palette            color palette : named character vector
-#' @param verbose            TRUE or FALSE : message ?
+#' @param dir                      compound discoverer output directory
+#' @param files                    compound discoverer output files
+#' @param colname_regex            regular expression to parse sample names from column names
+#' @param mod_extract              function to extract MS modi from sample names
+#' @param colname_format           function to reformat column names
+#' @param quantity                 'area', 'normalizedarea' or NULL
+#' @param nonames                  TRUE or FALSE: retain compunds without Names?
+#' @param exclude_sname_pattern    regular expression of sample names to exclude
+#' @param subgroups                NULL or string vector : subgroups to retain
+#' @param impute                   TRUE or FALSE: impute group-specific NA values?
+#' @param plot                     TRUE or FALSE: plot ?
+#' @param label                    fvar
+#' @param pca                      TRUE or FALSE: run pca ?
+#' @param pls                      TRUE or FALSE: run pls ?
+#' @param fit                      model engine: 'limma', 'lm', 'lme(r)', 'wilcoxon' or NULL
+#' @param formula                  model formula
+#' @param block                    model blockvar: string or NULL
+#' @param coefs                    model coefficients    of interest: character vector or NULL
+#' @param contrasts                coefficient contrasts of interest: character vector or NULL
+#' @param palette                  color palette : named character vector
+#' @param verbose                  TRUE or FALSE : message ?
 #' @return SummarizedExperiment
 #' @export
 read_compounddiscoverer <- function(
@@ -254,17 +258,17 @@ read_compounddiscoverer <- function(
                               path = dir, pattern = "(RP|HILIC).*\\.csv$",
                               full.names          = TRUE),
     colname_regex         = "^(.*)\\d{8,8}_+(.*)_+((HILIC|RP)(NEG|POS))\\.raw.*$",
-    colname_formatter     = function(x)
+    colname_format        = function(x)
                               stringi::stri_replace_first_regex(
                                 x, colname_regex, "$1$2"),
-    modus_extractor       = function(x)
+    mod_extract           = function(x)
                               stringi::stri_subset_regex(
                                 x, colname_regex) %>%
                                 stringi::stri_replace_first_regex(
                                   colname_regex, "$3"),
     quantity              = NULL,
     nonames               = FALSE,
-    sample_filter_strings = c("blank", "QC", "RS"),
+    exclude_sname_pattern = "(blank|QC|RS)",
     subgroups             = NULL,
     impute                = FALSE,
     plot                  = FALSE,
@@ -279,7 +283,7 @@ read_compounddiscoverer <- function(
     palette               = NULL,
     verbose               = TRUE)
 {
-    Name <- NULL
+    `Compounds ID` <- Name <- NULL
 # Select files
     assert_is_a_string(dir)
     assert_all_are_dirs(dir)
@@ -291,22 +295,22 @@ read_compounddiscoverer <- function(
 # Assert
     for (fl in files) assert_compounddiscoverer_output(fl)
     if (!is.null(colname_regex)) assert_is_a_string(colname_regex)
-    if (!is.null(colname_formatter)) assert_is_function(colname_formatter)
-    assert_is_function(modus_extractor)
+    if (!is.null(colname_format)) assert_is_function(colname_format)
+    assert_is_function(mod_extract)
     quantity <- if (is.null(quantity)) {
       sapply(files, guess_compounddiscoverer_quantity) %>% unique()
     } else { quantity }
     assert_is_a_string(quantity)
     assert_is_subset(quantity, names(COMPOUNDDISCOVERER_PATTERNS))
     assert_is_a_bool(nonames)
-    if (!is.null(sample_filter_strings))
-      assert_is_character(sample_filter_strings)
+    if (!is.null(exclude_sname_pattern))
+      assert_is_a_string(exclude_sname_pattern)
     assert_is_a_bool(verbose)
 # Read/Merge
     cddt <- lapply(
       files,
-      .read_compounddiscoverer, colname_formatter = colname_formatter,
-      modus_extractor = modus_extractor, quantity = quantity,
+      .read_compounddiscoverer, colname_format = colname_format,
+      mod_extract = mod_extract, quantity = quantity,
       verbose = verbose) %>%
       merge_compounddiscoverer(quantity = quantity, verbose = verbose)
 # Currently intro of `feature_id` only, no `annotate_maxquant` equivalent (yet)
@@ -325,7 +329,7 @@ read_compounddiscoverer <- function(
       dequantify_compounddiscoverer(quantity = quantity, verbose = verbose)
 # process_compounddiscoverer
     object %<>% process_compounddiscoverer(
-        nonames = nonames, sample_filter_strings = sample_filter_strings, 
+        nonames = nonames, exclude_sname_pattern = exclude_sname_pattern, 
         subgroups = subgroups, impute = impute, verbose = verbose)
     assays <- c(assayNames(object)[1])
     for (assay in assays)  object %<>% add_assay_means(assay)
@@ -347,20 +351,21 @@ read_compounddiscoverer <- function(
 #----------------------------------------------------------------------------
 
 process_compounddiscoverer <- function(
-    object, nonames, sample_filter_strings, subgroups, impute, verbose
+    object, nonames, exclude_sname_pattern, subgroups, impute, verbose
 ){
+    `cdcol` <- `Name` <- NULL
 # Deal with nonames
     if (!nonames) object %<>% filter_features(
       !stringi::stri_isempty(Name), verbose = verbose)
 # Deal with sample filter strings
-    if (!is.null(sample_filter_strings)) {
+    if (!is.null(exclude_sname_pattern)) {
+      idx <- object[["cdcol"]] %>%
+        stringi::stri_detect_regex(exclude_sname_pattern, negate = TRUE)
       if (verbose)  cmessage(
-        '%sFiltering against %s in sample names',
-        spaces(14), paste0("'", sample_filter_strings, "'", collapse = ", "))
-      for (str in sample_filter_strings)
-        object %<>% filter_samples(
-          stringi::stri_detect_fixed(cdcol, str, negate = TRUE),
-          verbose = verbose)
+        '%s%d/%d retained when filtering against %s in sample names',
+        spaces(14), sum(idx), length(idx),
+        paste0("'", exclude_sname_pattern, "'"))
+      object %<>% magrittr::extract(,idx)
     }
 # Infer Subgroup
     object$sample_id <- colnames(object)
