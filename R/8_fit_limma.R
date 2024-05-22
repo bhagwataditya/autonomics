@@ -461,9 +461,14 @@ contrast_subgroup_rows <- function(object, subgroupvar){
 #             contrast_subgroup_rows( object, subgroupvar)) }
 # }
 
-contrast_coefs <- function(object, formula){
+contrast_coefs <- function(
+       object, 
+      formula = default_formula(object), 
+         drop = varlevels_dont_clash(object, all.vars(formula)), 
+    codingfun = contr.treatment, 
+       design = create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)
+){
     subgroupvar <- all.vars(formula)[1]
-    design <- create_design(object, formula = formula)
     if (ncol(design)==1){  
         colnames(design)
     } else if (all(design[, 1]==1)){ 
@@ -681,7 +686,7 @@ fit <- function(
     codingfun = contr.treatment, 
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
-        coefs = if (is.null(contrasts))  colnames(design)     else NULL,
+        coefs = if (is.null(contrasts))  contrast_coefs(design = design)     else NULL,
         block = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
      statvars = c('effect', 'p', 'se', 't')[1:2],
@@ -719,7 +724,7 @@ fit_limma <- function(
     codingfun = contr.treatment,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
-        coefs = if (is.null(contrasts))  colnames(design)     else NULL,
+        coefs = if (is.null(contrasts)) contrast_coefs(design = design) else NULL,
         block = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
      statvars = c('effect', 'p'),
@@ -797,10 +802,10 @@ varlevels_dont_clash.SummarizedExperiment <- function(
        object, 
       formula = default_formula(object),
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = 'treatment',
+    codingfun = contr.treatment,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
-        coefs = if (is.null(contrasts))  colnames(design) else NULL,
+        coefs = if (is.null(contrasts))  contrast_coefs(design = design) else NULL,
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
      statvars = c('effect', 'p', 'se', 't')[1:2],
