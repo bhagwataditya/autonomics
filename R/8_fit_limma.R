@@ -468,15 +468,8 @@ contrast_coefs <- function(
     codingfun = contr.treatment, 
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)
 ){
-    subgroupvar <- all.vars(formula)[1]
-    if (ncol(design)==1){  
-        colnames(design)
-    } else if (all(design[, 1]==1)){ 
-        colnames(design)[-1][seq_len(nlevels(object, subgroupvar)-1)]
-    } else {
-        c(contrast_subgroup_cols(object, subgroupvar), 
-          contrast_subgroup_rows( object, subgroupvar))
-    }
+    
+    if (ncol(design)==1)  colnames(design) else setdiff(colnames(design), 'Intercept')
 }
 
 

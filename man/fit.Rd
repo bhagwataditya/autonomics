@@ -49,7 +49,7 @@ fit_limma(
   codingfun = contr.treatment,
   design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
-  coefs = if (is.null(contrasts)) setdiff(colnames(design), "Intercept") else NULL,
+  coefs = if (is.null(contrasts)) contrast_coefs(design = design) else NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "se", "t")[1:2],

@@ -8,8 +8,7 @@ vignette: >
 ---
 
 ```{r echo=FALSE, message=FALSE, include=TRUE}
-knitr::opts_chunk$set(
-  echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, cache = TRUE, fig.show = 'hold')
 #str(knitr::opts_chunk$get())
 ```
 <!-- ![ ](https://bitbucket.org/graumannlabtools/autonomics/downloads/read_prepro_analyze.png) -->
