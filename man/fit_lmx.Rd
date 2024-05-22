@@ -19,6 +19,7 @@ fit_lmx(
   opt = "optim",
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "se", "t")[1:2],
+  ftest = if (is.null(coefs)) TRUE else FALSE,
   sep = FITSEP,
   verbose = TRUE,
   plot = FALSE
@@ -35,6 +36,7 @@ fit_lm(
   sep = FITSEP,
   coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
+  ftest = if (is.null(coefs)) TRUE else FALSE,
   verbose = TRUE,
   plot = FALSE
 )
@@ -51,6 +53,7 @@ fit_lme(
   sep = FITSEP,
   coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
+  ftest = if (is.null(coefs)) TRUE else FALSE,
   verbose = TRUE,
   plot = FALSE
 )
@@ -66,6 +69,7 @@ fit_lmer(
   sep = FITSEP,
   coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
+  ftest = if (is.null(coefs)) TRUE else FALSE,
   verbose = TRUE,
   plot = FALSE
 )
@@ -90,6 +94,8 @@ fit_lmer(
 \item{weightvar}{NULL or svar}
 
 \item{statvars}{character vector: subset of c('effect', 'p', 'fdr', 't')}
+
+\item{ftest}{TRUE or FALSE}
 
 \item{sep}{string}
 

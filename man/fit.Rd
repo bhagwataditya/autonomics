@@ -19,6 +19,7 @@ fit(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "se", "t")[1:2],
+  ftest = if (is.null(coefs)) TRUE else FALSE,
   sep = FITSEP,
   suffix = paste0(sep, "limma"),
   verbose = TRUE,
@@ -36,6 +37,7 @@ fit_limma(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p"),
+  ftest = if (is.null(coefs)) TRUE else FALSE,
   sep = FITSEP,
   suffix = paste0(sep, "limma"),
   verbose = TRUE,
@@ -53,6 +55,7 @@ fit_limma(
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "se", "t")[1:2],
+  ftest = if (is.null(coefs)) TRUE else FALSE,
   sep = FITSEP,
   suffix = paste0(sep, "limma"),
   verbose = TRUE,
@@ -108,6 +111,8 @@ fit_wilcoxon(
 \item{weightvar}{NULL or name of weight matrix in assays(object)}
 
 \item{statvars}{character vector: subset of c('effect', 'p', 'fdr', 't', 'se')}
+
+\item{ftest}{TRUE or FALSE}
 
 \item{sep}{string: pvar separator  ("~" in "p~t2~limma")}
 

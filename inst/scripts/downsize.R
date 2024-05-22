@@ -466,7 +466,8 @@ PLOT_EXPRS <- function(obj)  plot_exprs(obj, block = 'Subject', coefs = NULL, sh
                                     # And flat backgrounders will not have a consistent pattern anyways
                                     # F test would actually be more suited
         fdt(object) %<>% extract(, 1:2)
-        object %<>% fit_limma()
+        fdt(fit_limma(object))
+        fdt(fit_lm(object))
         
         
         

@@ -42,14 +42,15 @@
     # Run actual lm on actual data
     # Rbind missing coefficients from mock lm
         fitres <- lm( formula = formula, data = sd,  weights = weights, na.action = stats::na.omit )
+        Fp <- stats::anova(fitres)
+        Fp <- Fp %>% extract(-nrow(.), , drop = FALSE)
+        Fp <- Fp[, 'Pr(>F)'] %>% set_names(rownames(Fp))
+        names(Fp) %<>% paste0('p~', .)
         fitres %<>% summary()                      # weights: stackoverflow.com/questions/51142338
         fitres %<>% stats::coefficients()
         rows <- setdiff(rownames(fitres0), rownames(fitres))
         if (!is.null(rows)){  fitres %<>% rbind( fitres0[ rows , , drop = FALSE]  ) 
                               fitres %<>% extract(rownames(fitres0), )  }
-    # Add F rest results
-        #      F = stats::anova(fitres)[, 'F value'], 
-        #    F.p = stats::anova(fitres)[, 'Pr(>F)'])
     # Reformat and Return
         colnames(fitres) %<>% stri_replace_first_fixed('Estimate', 'effect')
         colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
@@ -59,8 +60,7 @@
         fitmat <- matrix(fitres, nrow = 1)
         colnames(fitmat) <- paste(rep(colnames(fitres), each = nrow(fitres)), 
                                   rep(rownames(fitres), times = ncol(fitres)), sep = sep)
-      # fitmat %<>% cbind(F=0, F.p=1)
-        data.table(fitmat)
+        data.table(cbind(fitmat , t(Fp)))
 }
 
 .lme <- function(sd, formula, block, weights, statvars, sep, opt = 'optim'){
@@ -70,6 +70,9 @@
                           data = sd,
                      na.action = stats::na.omit, 
                        control = ctrl )
+    Fp <- stats::anova(fitres)[-1, , drop = FALSE]
+    Fp <- Fp[, 'p-value'] %>% set_names(rownames(Fp))
+    names(Fp) %<>% paste0('p~', .)
     suppressWarnings(fitres %<>% summary())  # only 2 replicates in a group -> df = 0 -> p = NaN -> warning
     fitres %<>% stats::coefficients()
     colnames(fitres) %<>% stri_replace_first_fixed('Value', 'effect')
@@ -80,8 +83,7 @@
     fitmat <- matrix(fitres, nrow = 1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each = nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep = sep )
-    #fitmat %<>% cbind(F=0, F.p=1)
-    data.table(fitmat)
+    data.table(cbind(fitmat, t(Fp)))
 }
 
 .lmer <- function(sd, formula, block = NULL, weights, statvars, sep, optim = NULL){
@@ -93,6 +95,9 @@
                                                        check.conv.singular = lme4::.makeCC(action = "ignore", tol=1e-4 ),
                                                            check.conv.hess = lme4::.makeCC(action = 'ignore', tol=1e-6 )))
     fitres %<>% lmerTest::as_lmerModLmerTest()
+    Fp <- stats::anova(fitres)
+    Fp <- Fp[, 'Pr(>F)'] %>% set_names(rownames(Fp))
+    names(Fp) %<>% paste0('p~', .)
     fitres %<>% summary() %>% stats::coefficients()
     colnames(fitres) %<>% stri_replace_first_fixed('Estimate', 'effect')
     colnames(fitres) %<>% stri_replace_first_fixed('Std. Error', 'se')
@@ -102,8 +107,7 @@
     fitmat <- matrix(fitres, nrow=1)
     colnames(fitmat) <- paste(rep(colnames(fitres), each = nrow(fitres)), 
                         rep(rownames(fitres), times = ncol(fitres)), sep = sep )
-    #fitmat %<>% cbind(F=0, F.p=1)
-    data.table(fitmat)
+    data.table(cbind(fitmat, t(Fp)))
 }
 
 .extractstat <- function(fitres, quantity){
@@ -244,6 +248,7 @@ block_vars <- function(formula){
 #' @param opt          optimizer used in fit_lme: 'optim' (more robust) or 'nlminb'
 #' @param weightvar    NULL or svar
 #' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
+#' @param ftest        TRUE or FALSE
 #' @param sep          string
 #' @param verbose      TRUE or FALSE
 #' @param plot         TRUE or FALSE
@@ -265,11 +270,12 @@ fit_lmx <- function(
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
-        coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)), 
+        coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)),
         block = NULL, 
           opt = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
      statvars = c('effect', 'p', 'se', 't')[1:2],
+        ftest = if (is.null(coefs))  TRUE else FALSE,
           sep = FITSEP,
       verbose = TRUE, 
          plot = FALSE
@@ -303,6 +309,7 @@ fit_lmx <- function(
     assays <- assayNames(object) %>% intersect(c(.[1], 'weights'))
     dt <- sumexp_to_longdt(obj, svars = mdlvars, assay = assays)
     lhsformula <- addlhs(formula)
+# Fit
     fitres <- dt[, fitmethod( .SD,   formula = lhsformula, 
                                        block = block, 
                                      weights = get(weightvar),
@@ -310,8 +317,15 @@ fit_lmx <- function(
                                          sep = sep,
                                          opt = opt ),            by = 'feature_id' ]
     names(fitres) %<>% stri_replace_first_fixed('(Intercept)', 'Intercept')
-    if (drop)  for (var in all.vars(formula))   names(fitres) %<>% stri_replace_first_fixed(var, '')
-    pattern <- sprintf( '(feature_id|%s)$', paste0(coefs,    collapse = '|'))   # select coefs
+    vars <- all.vars(formula)
+    if (drop)   for (var in vars){     # t.p: p~subgroupt1 -> p~t1
+                    pat <- sprintf('%s(.+)', var)   # f.p: p~subgroup
+                    names(fitres) %<>% stri_replace_first_regex(pat, '$1') }
+# Extract
+                             pattern <- 'feature_id'
+    if (!is.null( coefs))    pattern %<>% paste0('|', paste0(coefs, collapse = '|'))
+    if (ftest)               pattern %<>% paste0('|', paste0( vars, collapse = '|'))
+                             pattern %<>% paste0('(', ., ')$')
     fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
     names(fitres)[-1] %<>% paste0(sep, fit)
     if (verbose)  message_df('                      %s', summarize_fit(fitres, fit = fit, coefs = coefs))
@@ -340,6 +354,7 @@ fit_lm <- function(
           sep = FITSEP,
         coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun), 
     contrasts = NULL,
+        ftest = if (is.null(coefs)) TRUE else FALSE,
       verbose = TRUE, 
          plot = FALSE
 ){
@@ -353,6 +368,7 @@ fit_lm <- function(
                  block = block,
              weightvar = weightvar,
               statvars = statvars,
+                 ftest = ftest,
                    sep = sep,
                  coefs = coefs,
                verbose = verbose,
@@ -374,6 +390,7 @@ fit_lme <- function(
           sep = FITSEP,
         coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun), 
     contrasts = NULL,
+        ftest = if (is.null(coefs))  TRUE else FALSE,
       verbose = TRUE, 
          plot = FALSE
 ){
@@ -392,6 +409,7 @@ fit_lme <- function(
                  block = block, 
              weightvar = weightvar,
               statvars = statvars,
+                 ftest = ftest,
                    sep = sep,
                    opt = opt,
                  coefs = coefs, 
@@ -413,6 +431,7 @@ fit_lmer <- function(
           sep = FITSEP,
         coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun), 
     contrasts = NULL,
+        ftest = if (is.null(coefs)) TRUE else FALSE,
       verbose = TRUE, 
          plot = FALSE
 ){
@@ -434,6 +453,7 @@ fit_lmer <- function(
                  block = block, 
              weightvar = weightvar,
               statvars = statvars,
+                 ftest = ftest,
                    sep = sep,
                  coefs = coefs, 
                verbose = verbose,
