@@ -212,11 +212,11 @@ is_maxquant_phosphosites <- function(x, .xname = get_name_in_parent(x)){
 #' @rdname is_diann_report
 #' @export
 is_compounddiscoverer_output <- function(x, .xname = get_name_in_parent(x)){
-  if (is.null(x))                  { false('%s is NULL',         .xname)
-  } else if (!is_a_string(x))      { false('%s is not a string', .xname)
-  } else if (!is_existing_file(x)) { false('%s does not exist',  .xname)
-  } else if (col1(x) != 'Name')    { false('col1(%s) != "Name"', .xname)
-  } else                           { TRUE
+  if (is.null(x))                       { false('%s is NULL',         .xname)
+  } else if (!is_a_string(x))           { false('%s is not a string', .xname)
+  } else if (!is_existing_file(x))      { false('%s does not exist',  .xname)
+  } else if (col1(x) != 'Compounds ID') { false('col1(%s) != "Compounds ID"', .xname)
+  } else                                { TRUE
   }
 }
 
