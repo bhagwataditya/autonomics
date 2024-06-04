@@ -9,8 +9,8 @@ plot_exprs_per_coef(
   fit = fits(fdt(object))[1],
   coefs = default_coefs(fdt(object), fit = fit),
   x = default_x(object),
-  geom = default_geom(object, x),
   block = NULL,
+  geom = default_geom(object, x, block = block),
   orderbyp = FALSE,
   title = x,
   subtitle = default_subtitle(fit, x, coefs),
@@ -30,9 +30,9 @@ plot_exprs_per_coef(
 
 \item{x}{x svar}
 
-\item{geom}{'boxplot' or 'point'}
-
 \item{block}{group svar}
+
+\item{geom}{'boxplot' or 'point'}
 
 \item{orderbyp}{TRUE or FALSE}
 

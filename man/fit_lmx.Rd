@@ -13,14 +13,14 @@ fit_lmx(
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment,
-  coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun =
-    codingfun, verbose = FALSE)),
+  coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
   block = NULL,
   opt = "optim",
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "se", "t")[1:2],
   ftest = if (is.null(coefs)) TRUE else FALSE,
   sep = FITSEP,
+  suffix = paste0(sep, fit),
   verbose = TRUE,
   plot = FALSE
 )
@@ -30,10 +30,12 @@ fit_lm(
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment,
+  design = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "se", "t")[1:2],
   sep = FITSEP,
+  suffix = paste0(sep, "lm"),
   coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
   ftest = if (is.null(coefs)) TRUE else FALSE,
@@ -46,11 +48,13 @@ fit_lme(
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment,
+  design = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   opt = "optim",
   statvars = c("effect", "p", "se", "t")[1:2],
   sep = FITSEP,
+  suffix = paste0(sep, "lme"),
   coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
   ftest = if (is.null(coefs)) TRUE else FALSE,
@@ -63,10 +67,12 @@ fit_lmer(
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment,
+  design = NULL,
   block = NULL,
   weightvar = if ("weights" \%in\% assayNames(object)) "weights" else NULL,
   statvars = c("effect", "p", "se", "t")[1:2],
   sep = FITSEP,
+  suffix = paste0(sep, "lmer"),
   coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
   contrasts = NULL,
   ftest = if (is.null(coefs)) TRUE else FALSE,
@@ -98,6 +104,8 @@ fit_lmer(
 \item{ftest}{TRUE or FALSE}
 
 \item{sep}{string}
+
+\item{suffix}{string: pvar suffix ("lm" in "p~t2~lm")}
 
 \item{verbose}{TRUE or FALSE}
 

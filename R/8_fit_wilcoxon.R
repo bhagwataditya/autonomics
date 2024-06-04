@@ -8,7 +8,7 @@
     dt, subgroupvar = NULL, subgrouplevels = NULL, block = NULL, verbose = TRUE
 ){
     . <- value <- NULL
-    if (verbose)  message('\t\t\twilcox.test(x = value)')
+    if (verbose)  cmessage('%swilcox.test(x = value)', spaces(22))
     suppressWarnings(dt[, 
         .(  p      = wilcox.test(x = value, y = NULL, paired = FALSE)$p.value, 
             t      = wilcox.test(x = value, y = NULL, paired = FALSE)$statistic,
@@ -23,7 +23,7 @@
     . <- value <- NULL
     xx <- subgrouplevels[[1]]
     yy <- subgrouplevels[[2]]
-    if (verbose)  message('\t\t\twilcox.test(x = ', xx, ', y = ', yy, ')')
+    if (verbose)  cmessage('\t\t\twilcox.test(x = %s, y = %s)', xx, yy )
     suppressWarnings(dt[, 
         .(  p = wilcox.test(x      = value[get(subgroupvar)==xx],
                             y      = value[get(subgroupvar)==yy], 
@@ -48,9 +48,7 @@
             value.var = 'value')
     xx <- subgrouplevels[[1]]
     yy <- subgrouplevels[[2]]
-    if (verbose)  message(
-        "\t\t\twilcox.test(", "x = ", xx, ", y = ", yy, ", paired = TRUE) - ", 
-        "pair on '", block, "'")
+    if (verbose)  cmessage("\t\t\twilcox.test(x = %s, y = %s, paired = TRUE) - pair on %s", xx, yy, block)
     suppressWarnings(dt[!is.na(get(xx)) & !is.na(get(yy)), 
         .(  p = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$p.value, 
             t = wilcox.test(x = get(xx), y = get(yy), paired = TRUE)$statistic, 
@@ -89,12 +87,14 @@ fit_wilcoxon <- function(
       formula = default_formula(object), 
          drop = NULL,
     codingfun = contr.treatment.explicit, # wilcox is the only one where `contr.treatment` doesnt work
+       design = NULL, # only so that fit(.) works
     contrasts = NULL,
         coefs = NULL, 
         block = NULL, 
     weightvar = NULL, 
      statvars = c('effect', 'p'),
           sep = FITSEP,
+       suffix = paste0(sep, 'wilcoxon'),
       verbose = TRUE, 
          plot = FALSE
 ){
@@ -107,21 +107,22 @@ fit_wilcoxon <- function(
     }
     assert_is_character(contrasts)
     if (!is.null(block))      assert_is_subset(block, svars(object))
+    if (verbose)  cmessage('%sFeatures', spaces(14))
+    object %<>% reset_fit('wilcoxon')
     obj <- object
     obj %<>% keep_replicated_features(formula, n = 1, verbose = verbose)
     # connected block filtering not required, .wilcoxon doesnt break there
 # fit
     . <- NULL
     dt <- sumexp_to_longdt(obj, svars = c(subgroupvar, block))
-    if (verbose)  message('\t\tWilcoxon')
+    if (verbose)  cmessage('%sWilcoxon', spaces(14))
     fitres <- lapply(vectorize_contrasts(contrasts), .wilcoxon, 
                      dt, subgroupvar = subgroupvar, block = block, sep = sep, verbose = verbose)
     fitres %<>% Reduce(function(x, y)  merge(x, y, by = 'feature_id', all = TRUE), .)
     pattern <- sprintf('^(feature_id|%s)',  paste0(statvars, collapse = '|'))   # select statvars
     fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
-    names(fitres)[-1] %<>% paste0(sep, 'wilcoxon')
+    names(fitres)[-1] %<>% paste0(suffix)
     if (verbose)  message_df('\t\t\t%s', summarize_fit(fitres, fit = 'wilcoxon'))
-    object %<>% reset_fit('wilcoxon')
     object %<>% merge_fit(fitres)
 # extract
     extract_quantity <- function(quantity, fitres){

@@ -5,15 +5,16 @@
 \alias{fit_limma}
 \alias{.fit_limma}
 \alias{fit_wilcoxon}
-\title{Fit model and test for differential expression}
+\title{Fit General Linear Model}
 \usage{
 fit(
   object,
   formula = default_formula(object),
   engine = "limma",
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  codingfun = contr.treatment,
-  design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
+  codingfun = if (engine == "wilcoxon") code_control else contr.treatment,
+  design = create_design(object, formula = formula, drop = drop, codingfun = codingfun,
+    verbose = FALSE),
   contrasts = NULL,
   coefs = if (is.null(contrasts)) contrast_coefs(design = design) else NULL,
   block = NULL,
@@ -21,7 +22,7 @@ fit(
   statvars = c("effect", "p", "se", "t")[1:2],
   ftest = if (is.null(coefs)) TRUE else FALSE,
   sep = FITSEP,
-  suffix = paste0(sep, "limma"),
+  suffix = paste0(sep, engine),
   verbose = TRUE,
   plot = FALSE
 )
@@ -67,12 +68,14 @@ fit_wilcoxon(
   formula = default_formula(object),
   drop = NULL,
   codingfun = contr.treatment.explicit,
+  design = NULL,
   contrasts = NULL,
   coefs = NULL,
   block = NULL,
   weightvar = NULL,
   statvars = c("effect", "p"),
   sep = FITSEP,
+  suffix = paste0(sep, "wilcoxon"),
   verbose = TRUE,
   plot = FALSE
 )
@@ -80,7 +83,7 @@ fit_wilcoxon(
 \arguments{
 \item{object}{SummarizedExperiment}
 
-\item{formula}{modeling formula}
+\item{formula}{model formula}
 
 \item{engine}{'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'}
 
@@ -126,7 +129,7 @@ fit_wilcoxon(
 Updated SummarizedExperiment
 }
 \description{
-Fit model and test for differential expression
+Fit General Linear Model
 }
 \examples{
 # Read

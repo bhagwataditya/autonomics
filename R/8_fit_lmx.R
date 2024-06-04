@@ -42,7 +42,7 @@
     # Run actual lm on actual data
     # Rbind missing coefficients from mock lm
         fitres <- lm( formula = formula, data = sd,  weights = weights, na.action = stats::na.omit )
-        Fp <- stats::anova(fitres)
+        Fp <- suppressWarnings(stats::anova(fitres))  # ANOVA F-tests on an essentially perfect fit are unreliable
         Fp <- Fp %>% extract(-nrow(.), , drop = FALSE)
         Fp <- Fp[, 'Pr(>F)'] %>% set_names(rownames(Fp))
         names(Fp) %<>% paste0('p~', .)
@@ -70,7 +70,7 @@
                           data = sd,
                      na.action = stats::na.omit, 
                        control = ctrl )
-    Fp <- stats::anova(fitres)[-1, , drop = FALSE]
+    Fp <- suppressWarnings(stats::anova(fitres)[-1, , drop = FALSE])
     Fp <- Fp[, 'p-value'] %>% set_names(rownames(Fp))
     names(Fp) %<>% paste0('p~', .)
     suppressWarnings(fitres %<>% summary())  # only 2 replicates in a group -> df = 0 -> p = NaN -> warning
@@ -95,7 +95,7 @@
                                                        check.conv.singular = lme4::.makeCC(action = "ignore", tol=1e-4 ),
                                                            check.conv.hess = lme4::.makeCC(action = 'ignore', tol=1e-6 )))
     fitres %<>% lmerTest::as_lmerModLmerTest()
-    Fp <- stats::anova(fitres)
+    Fp <- suppressWarnings(stats::anova(fitres))
     Fp <- Fp[, 'Pr(>F)'] %>% set_names(rownames(Fp))
     names(Fp) %<>% paste0('p~', .)
     fitres %<>% summary() %>% stats::coefficients()
@@ -250,6 +250,7 @@ block_vars <- function(formula){
 #' @param statvars     character vector: subset of c('effect', 'p', 'fdr', 't')
 #' @param ftest        TRUE or FALSE
 #' @param sep          string
+#' @param suffix    string: pvar suffix ("lm" in "p~t2~lm")
 #' @param verbose      TRUE or FALSE
 #' @param plot         TRUE or FALSE
 #' @return SummarizedExperiment
@@ -270,13 +271,14 @@ fit_lmx <- function(
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
-        coefs = colnames(create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)),
+        coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
         block = NULL, 
           opt = 'optim',
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
      statvars = c('effect', 'p', 'se', 't')[1:2],
         ftest = if (is.null(coefs))  TRUE else FALSE,
           sep = FITSEP,
+       suffix = paste0(sep, fit),
       verbose = TRUE, 
          plot = FALSE
 ){
@@ -297,13 +299,15 @@ fit_lmx <- function(
     obj %<>% keep_connected_blocks(    block,   verbose = verbose)  # keep samples from fully connected blocks (in sdt, feature-specific NA values not considered)
     obj %<>% keep_connected_features(  block,   verbose = verbose)  # keep features with 2+ connected blocks
 # Prepare
-    if ( fit == 'lme'  ){     block %<>% block2lme(); mdlvars <-  unique(c(all.vars(formula), names(block)))  }
-    if ( fit == 'lmer' ){   formula %<>% formula2lmer(block); mdlvars <- all.vars(formula)                    }
-    if ( fit == 'lm'   ){   formula %<>% formula2lm(  block); mdlvars <- all.vars(formula)                    }
+    object %<>% reset_fit(fit)
+    if ( fit == 'lme'  ){     block %<>% block2lme(); mdlvars <-  unique(c(all.vars(formula), names(block)))   }
+    if ( fit == 'lmer' ){   formula %<>% formula2lmer(block); mdlvars <- all.vars(formula)                     }
+    if ( fit == 'lm'   ){   formula %<>% formula2lm(  block); mdlvars <- all.vars(formula)                     }
     fstr <- formula2str(formula)
-    if (verbose & fit == 'lme')   cmessage('%slme(%s, random = %s)', spaces(14), fstr, capture.output(dput(block)))
-    if (verbose & fit == 'lmer')  cmessage('%slmer(%s)',             spaces(14), fstr)
-    if (verbose & fit == 'lm')    cmessage('%slm(%s)',               spaces(14), fstr)
+    if (verbose)                  cmessage('%s%s',           spaces(14), R.utils::capitalize(fit))
+    if (verbose & fit == 'lme' )  cmessage('%s%s, random = %s', spaces(22), fstr, capture.output(dput(block)))
+    if (verbose & fit == 'lmer')  cmessage('%s%s',           spaces(21), fstr)
+    if (verbose & fit == 'lm'  )  cmessage('%s%s',           spaces(21), fstr)
     fitmethod <- get(paste0('.', fit))
     if (is.null(weightvar)){ weightvar <- 'weights'; weights <- NULL }
     assays <- assayNames(object) %>% intersect(c(.[1], 'weights'))
@@ -327,10 +331,9 @@ fit_lmx <- function(
     if (ftest)               pattern %<>% paste0('|', paste0( vars, collapse = '|'))
                              pattern %<>% paste0('(', ., ')$')
     fitres <- fitres[, .SD, .SDcols = patterns(pattern) ]
-    names(fitres)[-1] %<>% paste0(sep, fit)
+    names(fitres)[-1] %<>% paste0(suffix)
     if (verbose)  message_df('                      %s', summarize_fit(fitres, fit = fit, coefs = coefs))
 # Merge back
-    object %<>% reset_fit(fit)
     object %<>% merge_fit(fitres)
     formula %<>% droplhs() %<>% formula2str()
     
@@ -348,10 +351,12 @@ fit_lm <- function(
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
+       design = NULL,  # only to make fit(.) work!
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
      statvars = c('effect', 'p', 'se', 't')[1:2],
           sep = FITSEP,
+       suffix = paste0(sep, 'lm'),
         coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun), 
     contrasts = NULL,
         ftest = if (is.null(coefs)) TRUE else FALSE,
@@ -370,6 +375,7 @@ fit_lm <- function(
               statvars = statvars,
                  ftest = ftest,
                    sep = sep,
+                suffix = suffix,
                  coefs = coefs,
                verbose = verbose,
                   plot = plot )
@@ -383,11 +389,13 @@ fit_lme <- function(
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
+       design = NULL,  # only to make fit(.) work!
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
           opt = 'optim',
      statvars = c('effect', 'p', 'se', 't')[1:2],
           sep = FITSEP,
+       suffix = paste0(sep, 'lme'),
         coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun), 
     contrasts = NULL,
         ftest = if (is.null(coefs))  TRUE else FALSE,
@@ -411,6 +419,7 @@ fit_lme <- function(
               statvars = statvars,
                  ftest = ftest,
                    sep = sep,
+                suffix = suffix,
                    opt = opt,
                  coefs = coefs, 
                verbose = verbose,
@@ -425,10 +434,12 @@ fit_lmer <- function(
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment,
+       design = NULL,  # only to make fit(.) work!
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
      statvars = c('effect', 'p', 'se', 't')[1:2],
           sep = FITSEP,
+       suffix = paste0(sep, 'lmer'),
         coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun), 
     contrasts = NULL,
         ftest = if (is.null(coefs)) TRUE else FALSE,
@@ -455,6 +466,7 @@ fit_lmer <- function(
               statvars = statvars,
                  ftest = ftest,
                    sep = sep,
+                suffix = suffix,
                  coefs = coefs, 
                verbose = verbose,
                   plot = plot )

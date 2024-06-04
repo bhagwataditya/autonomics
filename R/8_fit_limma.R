@@ -557,7 +557,7 @@ reset_fit <- function(
     pattern <- sprintf('^(%s)%s(%s)%s(%s)$', varpat, sep, coefpat, sep, fitpat)
     cols <- grep(pattern, fvars(object), value = TRUE)
     if (length(cols)>0){
-        if (verbose)  cmessage('\t\tRm from fdt: %s', pattern)
+        if (verbose)  cmessage('%sRm %s',    spaces(22), pattern)
         for (col in cols)  fdt(object)[[col]] <- NULL
     }
 # Return
@@ -595,10 +595,10 @@ mat2fdt <- function(mat)  mat2dt(mat, 'feature_id')
 mat2sdt <- function(mat)  mat2dt(mat, 'sample_id')
 
 
-#' Fit model and test for differential expression
+#' Fit General Linear Model
 #'
 #' @param object    SummarizedExperiment
-#' @param formula   modeling formula
+#' @param formula   model formula
 #' @param engine    'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
 #' @param drop      TRUE or FALSE
 #' @param codingfun  factor coding function
@@ -677,8 +677,8 @@ fit <- function(
       formula = default_formula(object),
        engine = 'limma', 
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = contr.treatment, 
-       design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
+    codingfun = if (engine == 'wilcoxon')  code_control  else  contr.treatment , 
+       design = create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE),
     contrasts = NULL,
         coefs = if (is.null(contrasts))  contrast_coefs(design = design)     else NULL,
         block = NULL,
@@ -686,7 +686,7 @@ fit <- function(
      statvars = c('effect', 'p', 'se', 't')[1:2],
         ftest = if (is.null(coefs)) TRUE else FALSE,
           sep = FITSEP,
-       suffix = paste0(sep, 'limma'),
+       suffix = paste0(sep, engine),
       verbose = TRUE, 
          plot = FALSE
 ){
