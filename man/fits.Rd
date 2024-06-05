@@ -14,6 +14,8 @@ fits(object, ...)
 }
 \arguments{
 \item{object}{SummarizedExperiment or data.table}
+
+\item{...}{S3 dispatch}
 }
 \value{
 character vector

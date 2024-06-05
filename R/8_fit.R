@@ -317,6 +317,7 @@ subgroup_matrix <- function(object, subgroupvar){
 #' @param significance     p or fdr cutoff (fractional number)
 #' @param effectdirection  '<>', '<' or '>'
 #' @param effectsize      effectsize cutoff (positive number)
+#' @param ...             S3 dispatch
 #' @return string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures)
 #' @examples 
 #'     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
@@ -345,12 +346,10 @@ subgroup_matrix <- function(object, subgroupvar){
 #' @export    
 modelvar <- function(object, ...) UseMethod('modelvar')
 
+#' @rdname modelvar
 #' @export
 modelvar.data.table <- function(
-    object, 
-     quantity, 
-          fit = fits(object),
-         coef = default_coefs(object, fit = fit)
+    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
 ){
 # Assert
     assert_is_subset(quantity, c('fdr', 'p', 't', 'effect', 'se', 'abstract'))
@@ -367,25 +366,46 @@ modelvar.data.table <- function(
     x   # NULL[1] and c('a', NULL) work!   # `lm(coefs)` mostly with intercept               
 }
 
-#' @rdname modelvar
-#' @export
-modelvar.SummarizedExperiment <- function(object, ...)  modelvar.data.table(fdt(object), ... )
 
 #' @rdname modelvar
 #' @export
-effectvar <- function( object, ... )  modelvar(object, quantity = 'effect', ... )
+modelvar.SummarizedExperiment <- function(
+    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
+){  
+    modelvar.data.table(fdt(object), quantity = quantity, fit = fit, coef = coef )
+}
+
 
 #' @rdname modelvar
 #' @export
-tvar <- function( object, ... )  modelvar(object, quantity = 't', ... )
+effectvar <- function( 
+    object, fit = fits(object), coef = default_coefs(object, fit = fit)
+){
+    modelvar(object, quantity = 'effect', fit = fit, coef = coef)
+}
+
 
 #' @rdname modelvar
 #' @export
-pvar <- function( object, ... )  modelvar(object, quantity = 'p', ... )
+tvar <- function(
+    object, fit = fits(object), coef = default_coefs(object, fit = fit)
+){
+    modelvar(object, quantity = 't', fit = fit, coef = coef)
+}
+
 
 #' @rdname modelvar
 #' @export
-fdrvar <- function( object, ... )  modelvar(object, quantity = 'fdr', ...) 
+pvar <- function( object, fit = fits(object), coef = default_coefs(object, fit = fit) ){
+    modelvar(object, quantity = 'p', fit = fit, coef = coef )
+}
+
+
+#' @rdname modelvar
+#' @export
+fdrvar <- function( object, fit = fits(object), coef = default_coefs(object, fit = fit) ){
+    modelvar(object, quantity = 'fdr', fit = fit, coef = coef) 
+}
 
 
 #' @rdname modelvar
@@ -404,17 +424,14 @@ abstractvar <- function( object, fit = fits(object), coef = default_coefs(object
 
 #' @rdname modelvar
 #' @export
-modelvec <- function(object, ...) UseMethod('modelvec')
+modelvec <- function(object, ...)  UseMethod('modelvec')
 
 
 #' @rdname modelvar
 #' @export
 modelvec.data.table <- function(
-      object, 
-    quantity, 
-         fit = fits(object)[1],
-        coef = default_coefs(object, fit = fit)[1], 
-        fvar = 'feature_id'
+    object, quantity, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], 
+    fvar = 'feature_id'
 ){
     valuevar <- modelvar(object, quantity = quantity, fit = fit, coef = coef)
     if (is.null(valuevar))  return(NULL)
@@ -426,16 +443,18 @@ modelvec.data.table <- function(
 
 #' @rdname modelvar
 #' @export
-modelvec.SummarizedExperiment <- function(object, ...)  modelvec.data.table(fdt(object), ...)
+modelvec.SummarizedExperiment <- function(
+    object, quantity, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], 
+    fvar = 'feature_id'
+){
+    modelvec.data.table(fdt(object), quantity = quantity, fit = fit, coef = coef, fvar = fvar)
+}
 
 
 #' @rdname modelvar
 #' @export
 effectvec <- function(
-    object, 
-       fit = fits(object)[1], 
-      coef = default_coefs(object)[1], 
-      fvar = 'feature_id'
+    object, fit = fits(object)[1], coef = default_coefs(object)[1], fvar = 'feature_id'
 ){
     modelvec(object, quantity = 'effect', fit = fit, coef = coef, fvar = fvar)
 }
@@ -443,10 +462,7 @@ effectvec <- function(
 #' @rdname modelvar
 #' @export
 tvec <- function(
-    object, 
-       fit = fits(object)[1],
-      coef = default_coefs(object, fit = fit)[1], 
-      fvar = 'feature_id'
+    object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id'
 ){
     modelvec(object, quantity = 't', fit = fit, coef = coef, fvar = fvar)
 }
@@ -454,10 +470,7 @@ tvec <- function(
 #' @rdname modelvar
 #' @export
 pvec <- function(
-    object, 
-          fit = fits(object)[1], 
-         coef = default_coefs(object, fit = fit)[1], 
-         fvar = 'feature_id'
+    object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id'
 ){
     modelvec(object, quantity = 'p', fit = fit, coef = coef, fvar = fvar)
 }
@@ -465,10 +478,7 @@ pvec <- function(
 #' @rdname modelvar
 #' @export
 fdrvec <- function(
-     object, 
-           fit = fits(object)[1],
-          coef = default_coefs(object, fit = fit)[1], 
-          fvar = 'feature_id'
+     object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1],  fvar = 'feature_id'
 ){
     modelvec(object, quantity = 'fdr', fit = fit, coef = coef, fvar = fvar)
 }
@@ -499,22 +509,32 @@ modeldt.data.table <- function(
 
 #' @rdname modelvar
 #' @export
-modeldt.SummarizedExperiment <- function(object, ...)  modeldt.data.table(fdt(object), ...)
+modeldt.SummarizedExperiment <- function(
+    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
+){
+    modeldt.data.table(fdt(object), quantity = quantity, fit = fit, coef = coef)
+}
 
 
 #' @rdname modelvar
 #' @export
-effectdt <- function( object, ...)  modeldt(object, quantity = 'effect', ...)
+effectdt <- function( object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit) ){
+    modeldt(object, quantity = 'effect', fit = fit, coef = coef)
+}
 
 
 #' @rdname modelvar
 #' @export
-tdt <- function( object, ...)       modeldt(object, quantity = 't', ...)
+tdt <- function( object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit) ){
+    modeldt(object, quantity = 't', fit = fit, coef = coef)
+}
 
 
 #' @rdname modelvar
 #' @export
-pdt <- function( object, ...)       modeldt(object, quantity = 'p', ...)
+pdt <- function( object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)){
+    modeldt(object, quantity = 'p', fit = fit, coef = coef)
+}
 
 
 
@@ -526,38 +546,52 @@ pdt <- function( object, ...)       modeldt(object, quantity = 'p', ...)
 
 #' @rdname modelvar
 #' @export
-modelmat <- function(object, ...) UseMethod('modelmat')
+modelmat <- function(object, ...)  UseMethod('modelmat')
 
 #' @rdname modelvar
 #' @export
-modelmat <- function(object, ...)    dt2mat(modeldt(fdt(object), ...))
+modelmat <- function(
+    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
+){
+    dt2mat(modeldt(object, quantity = quantity, fit = fit, coef = coef))
+}
 
 
 #' @rdname modelvar
 #' @export
-effectmat <- function(object, ...)          modelmat(object, quantity = 'effect', ...)
+effectmat <- function(object, fit = fits(object), coef = default_coefs(object, fit = fit)){
+    modelmat(object, quantity = 'effect', fit = fit, coef = coef)
+}
 
 
 #' @rdname modelvar
 #' @export
-effectsizemat <- function(object, ...)  abs(modelmat(object, quantity = 'effect', ...))
+effectsizemat <- function(object, fit = fits(object), coef = default_coefs(object, fit = fit)){
   # dont rm: used in ..extract_statistic_features : 
   # getFromNamespace(sprintf('%smat', statistic), 'autonomics')
+    abs(modelmat(object, quantity = 'effect', fit = fit, coef = coef))
+}
 
 
 #' @rdname modelvar
 #' @export
-tmat <- function(object, ...)               modelmat(object, quantity = 't', ...)
+tmat <- function(object, fit = fits(object), coef = default_coefs(object, fit = fit)){
+    modelmat(object, quantity = 't', fit = fit, coef = coef)
+}
 
 
 #' @rdname modelvar
 #' @export
-pmat <- function(object, ...)               modelmat(object, quantity = 'p', ...)
+pmat <- function(object, fit = fits(object), coef = default_coefs(object, fit = fit)){
+    modelmat(object, quantity = 'p', fit = fit, coef = coef)
+}
 
 
 #' @rdname modelvar
 #' @export
-fdrmat <- function(object, ...)             modelmat(object, quantity = 'fdr', ...)
+fdrmat <- function(object, fit = fits(object), coef = default_coefs(object, fit = fit)){
+    modelmat(object, quantity = 'fdr', fit = fit, coef = coef)
+}
 
 
 #==============================================================================
@@ -657,6 +691,7 @@ downfeatures <- function(
 #' Get fit models
 #' 
 #' @param object SummarizedExperiment or data.table
+#' @param ...    S3 dispatch
 #' @return  character vector
 #' @examples 
 #' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')

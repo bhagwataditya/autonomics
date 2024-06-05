@@ -7,9 +7,11 @@
 
 #' Get default coefs
 #' @param object data.table or SummarizedExperiment
+#' @param fit 'limma', 'lm', 'lme', 'lmer', 'wilcoxon'
+#' @param ... S3 dispatch
 #' @return character
 #' @examples
-#' file <- system.file('atkin.metabolon.xlsx', package = 'autonomics')
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' default_coefs(object)

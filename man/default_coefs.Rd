@@ -14,6 +14,10 @@ default_coefs(object, ...)
 }
 \arguments{
 \item{object}{data.table or SummarizedExperiment}
+
+\item{...}{S3 dispatch}
+
+\item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 }
 \value{
 character
@@ -22,7 +26,7 @@ character
 Get default coefs
 }
 \examples{
-file <- system.file('atkin.metabolon.xlsx', package = 'autonomics')
+file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 object \%<>\% fit_limma()
 default_coefs(object)

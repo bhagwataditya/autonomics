@@ -2,6 +2,7 @@
 % Please edit documentation in R/8_fit.R
 \name{modelvar}
 \alias{modelvar}
+\alias{modelvar.data.table}
 \alias{modelvar.SummarizedExperiment}
 \alias{effectvar}
 \alias{tvar}
@@ -36,15 +37,27 @@
 \usage{
 modelvar(object, ...)
 
-\method{modelvar}{SummarizedExperiment}(object, ...)
+\method{modelvar}{data.table}(
+  object,
+  quantity,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-effectvar(object, ...)
+\method{modelvar}{SummarizedExperiment}(
+  object,
+  quantity,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-tvar(object, ...)
+effectvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
-pvar(object, ...)
+tvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
-fdrvar(object, ...)
+pvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
+
+fdrvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
 abstractvar(
   object,
@@ -62,7 +75,13 @@ modelvec(object, ...)
   fvar = "feature_id"
 )
 
-\method{modelvec}{SummarizedExperiment}(object, ...)
+\method{modelvec}{SummarizedExperiment}(
+  object,
+  quantity,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
+  fvar = "feature_id"
+)
 
 effectvec(
   object,
@@ -101,27 +120,61 @@ modeldt(object, ...)
   coef = default_coefs(object, fit = fit)
 )
 
-\method{modeldt}{SummarizedExperiment}(object, ...)
+\method{modeldt}{SummarizedExperiment}(
+  object,
+  quantity,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-effectdt(object, ...)
+effectdt(
+  object,
+  quantity,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-tdt(object, ...)
+tdt(
+  object,
+  quantity,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-pdt(object, ...)
+pdt(
+  object,
+  quantity,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-modelmat(object, ...)
+modelmat(
+  object,
+  quantity,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-modelmat(object, ...)
+modelmat(
+  object,
+  quantity,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-effectmat(object, ...)
+effectmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
-effectsizemat(object, ...)
+effectsizemat(
+  object,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
+)
 
-tmat(object, ...)
+tmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
-pmat(object, ...)
+pmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
-fdrmat(object, ...)
+fdrmat(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
 modelfeatures(object, ...)
 
@@ -161,11 +214,13 @@ downfeatures(
 \arguments{
 \item{object}{data.table or SummarizedExperiment}
 
+\item{...}{S3 dispatch}
+
+\item{quantity}{'p', 'effect', 'fdr', 't', or 'se'}
+
 \item{fit}{string (vector)}
 
 \item{coef}{string (vector)}
-
-\item{quantity}{'p', 'effect', 'fdr', 't', or 'se'}
 
 \item{fvar}{'feature_id' or other fvar for values (pvec) or names (upfeatures)}
 

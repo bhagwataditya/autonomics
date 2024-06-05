@@ -884,6 +884,7 @@ pull_level <- function(x, lev){
 #' @param object  SummarizedExperiment or data.table
 #' @param fit  'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL
 #' @param coefs string vector
+#' @param ... S3 dispatch
 #' @return data.table(contrast, nup, ndown)
 #' @examples
 #' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')

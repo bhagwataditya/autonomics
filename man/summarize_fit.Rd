@@ -23,6 +23,8 @@ summarize_fit(object, ...)
 \arguments{
 \item{object}{SummarizedExperiment or data.table}
 
+\item{...}{S3 dispatch}
+
 \item{fit}{'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL}
 
 \item{coefs}{string vector}
