@@ -2,12 +2,18 @@
 % Please edit documentation in R/8_fit.R
 \name{fits}
 \alias{fits}
+\alias{fits.data.table}
+\alias{fits.SummarizedExperiment}
 \title{Get fit models}
 \usage{
-fits(featuredt)
+fits(object, ...)
+
+\method{fits}{data.table}(object, ...)
+
+\method{fits}{SummarizedExperiment}(object, ...)
 }
 \arguments{
-\item{featuredt}{feature data.table}
+\item{object}{SummarizedExperiment or data.table}
 }
 \value{
 character vector
@@ -18,5 +24,5 @@ Get fit models
 \examples{
 file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file, fit = 'limma')
-fits(fdt(object))
+fits(object)
 }

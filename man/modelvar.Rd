@@ -2,17 +2,22 @@
 % Please edit documentation in R/8_fit.R
 \name{modelvar}
 \alias{modelvar}
+\alias{modelvar.SummarizedExperiment}
 \alias{effectvar}
 \alias{tvar}
 \alias{pvar}
 \alias{fdrvar}
 \alias{abstractvar}
 \alias{modelvec}
+\alias{modelvec.data.table}
+\alias{modelvec.SummarizedExperiment}
 \alias{effectvec}
 \alias{tvec}
 \alias{pvec}
 \alias{fdrvec}
 \alias{modeldt}
+\alias{modeldt.data.table}
+\alias{modeldt.SummarizedExperiment}
 \alias{effectdt}
 \alias{tdt}
 \alias{pdt}
@@ -23,149 +28,107 @@
 \alias{pmat}
 \alias{fdrmat}
 \alias{modelfeatures}
+\alias{modelfeatures.data.table}
+\alias{modelfeatures.SummarizedExperiment}
 \alias{upfeatures}
 \alias{downfeatures}
 \title{Get model variable}
 \usage{
-modelvar(
-  featuredt,
-  quantity,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+modelvar(object, ...)
 
-effectvar(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+\method{modelvar}{SummarizedExperiment}(object, ...)
 
-tvar(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+effectvar(object, ...)
 
-pvar(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+tvar(object, ...)
 
-fdrvar(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+pvar(object, ...)
+
+fdrvar(object, ...)
 
 abstractvar(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
+  object,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
 )
 
-modelvec(
-  featuredt,
+modelvec(object, ...)
+
+\method{modelvec}{data.table}(
+  object,
   quantity,
-  fit = fits(featuredt)[1],
-  coef = default_coefs(featuredt, fit = fit)[1],
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id"
 )
 
+\method{modelvec}{SummarizedExperiment}(object, ...)
+
 effectvec(
-  featuredt,
-  fit = fits(featuredt)[1],
-  coef = default_coefs(featuredt, fit = fit)[1],
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object)[1],
   fvar = "feature_id"
 )
 
 tvec(
-  featuredt,
-  fit = fits(featuredt)[1],
-  coef = default_coefs(featuredt, fit = fit)[1],
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id"
 )
 
 pvec(
-  featuredt,
-  fit = fits(featuredt)[1],
-  coef = default_coefs(featuredt, fit = fit)[1],
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id"
 )
 
 fdrvec(
-  featuredt,
-  fit = fits(featuredt)[1],
-  coef = default_coefs(featuredt, fit = fit)[1],
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id"
 )
 
-modeldt(
-  featuredt,
+modeldt(object, ...)
+
+\method{modeldt}{data.table}(
+  object,
   quantity,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit)
 )
 
-effectdt(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+\method{modeldt}{SummarizedExperiment}(object, ...)
 
-tdt(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+effectdt(object, ...)
 
-pdt(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+tdt(object, ...)
 
-modelmat(
-  featuredt,
-  quantity,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+pdt(object, ...)
 
-effectmat(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+modelmat(object, ...)
 
-effectsizemat(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+modelmat(object, ...)
 
-tmat(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+effectmat(object, ...)
 
-pmat(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+effectsizemat(object, ...)
 
-fdrmat(
-  featuredt,
-  fit = fits(featuredt),
-  coef = default_coefs(featuredt, fit = fit)
-)
+tmat(object, ...)
 
-modelfeatures(
-  featuredt,
-  fit = fits(featuredt)[1],
-  coef = default_coefs(featuredt, fit = fit)[1],
+pmat(object, ...)
+
+fdrmat(object, ...)
+
+modelfeatures(object, ...)
+
+\method{modelfeatures}{data.table}(
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,
@@ -173,10 +136,12 @@ modelfeatures(
   effectsize = 0
 )
 
+\method{modelfeatures}{SummarizedExperiment}(object, ...)
+
 upfeatures(
-  featuredt,
-  fit = fits(featuredt)[1],
-  coef = default_coefs(featuredt, fit = fit)[1],
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,
@@ -184,9 +149,9 @@ upfeatures(
 )
 
 downfeatures(
-  featuredt,
-  fit = fits(featuredt)[1],
-  coef = default_coefs(featuredt, fit = fit)[1],
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id",
   significancevar = "p",
   significance = 0.05,
@@ -194,13 +159,13 @@ downfeatures(
 )
 }
 \arguments{
-\item{featuredt}{data.table}
-
-\item{quantity}{'p', 'effect', 'fdr', 't', or 'se'}
+\item{object}{data.table or SummarizedExperiment}
 
 \item{fit}{string (vector)}
 
 \item{coef}{string (vector)}
+
+\item{quantity}{'p', 'effect', 'fdr', 't', or 'se'}
 
 \item{fvar}{'feature_id' or other fvar for values (pvec) or names (upfeatures)}
 
@@ -219,27 +184,27 @@ string (tvar), matrix (tmat), numeric vector (tvec), character vector (tfeatures
 Get model variable
 }
 \examples{
-# Read
     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
     object <- read_metabolon(file)
-    object \%<>\% fit_limma()
-    object \%<>\% fit_lm()
-    featuredt <- fdt(object)
-    featuredt \%<>\% add_adjusted_pvalues('fdr')
-# modelvar
-    modelvar(featuredt, 'p');                                          pvar(featuredt)
-    modelvar(featuredt, 'effect');                                effectvar(featuredt)
-    modelvar(featuredt, 'fdr');                                      fdrvar(featuredt)
-# modelvec
-    modelvec(featuredt, 'p'     )[1:3];                                 pvec(featuredt)[1:3]
-    modelvec(featuredt, 'effect')[1:3];                            effectvec(featuredt)[1:3]
-    modelvec(featuredt, 'fdr'   )[1:3];                               fdrvec(featuredt)[1:3]
-# modelmatrix
-    modelmat(featuredt, 'p'     )[1:3, 1:3];                            pmat(featuredt)[1:3, 1:3]
-    modelmat(featuredt, 'effect')[1:3, 1:3];                       effectmat(featuredt)[1:3, 1:3]
-    modelmat(featuredt, 'fdr'   )[1:3, 1:3];                          fdrmat(featuredt)[1:3, 1:3]
-# modelfeatures
-    modelfeatures(featuredt      )[1:3]
-    modelfeatures(featuredt, effectdirection = '<' )[1:3];      downfeatures(featuredt)[1:3]
-    modelfeatures(featuredt, effectdirection = '>' )[1:3];        upfeatures(featuredt)[1:3]
+    object \%<>\% fit_limma(statvars = c('effect', 't', 'p'))
+    object \%<>\% fit_lm(   statvars = c('effect', 't', 'p'))
+
+    effectvar(object)
+    effectvec(object)[1:3]
+     effectdt(object)[1:3, ]
+    effectmat(object)[1:3, ]
+
+         tvar(object)
+         tvec(object)[1:3]
+          tdt(object)[1:3, ]
+         tmat(object)[1:3, ]
+
+         pvar(object)
+         pvec(object)[1:3]
+          pdt(object)[1:3, ]
+         pmat(object)[1:3, ]
+
+modelfeatures(object)
+ downfeatures(object)
+   upfeatures(object)
 }

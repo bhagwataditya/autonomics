@@ -12,7 +12,7 @@ fit(
   formula = default_formula(object),
   engine = "limma",
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  codingfun = if (engine == "wilcoxon") code_control else contr.treatment,
+  codingfun = if (engine == "wilcoxon") contr.treatment.explicit else contr.treatment,
   design = create_design(object, formula = formula, drop = drop, codingfun = codingfun,
     verbose = FALSE),
   contrasts = NULL,
@@ -140,21 +140,21 @@ Fit General Linear Model
   fdt(object) \%<>\% extract(, 'feature_id')
   object \%<>\% fit_lm(        ~ subgroup)                     #     statistics default
   object \%<>\% fit_limma(     ~ subgroup)                     # bioinformatics default
-  summarize_fit(fdt(object))
+  summarize_fit(object)
     
 # Blocked
   fdt(object) \%<>\% extract(, 'feature_id')
   object \%<>\% fit_limma(     ~ subgroup, block = 'Subject')  #        simple random effects
   object \%<>\% fit_lme(       ~ subgroup, block = 'Subject')  #      powerful random effects
   object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject')  # more powerful random effects
-  summarize_fit(fdt(object))
+  summarize_fit(object)
     
 # Alternative coding: e.g. grand mean intercept
   fdt(object) \%<>\% extract(, 'feature_id')
   object \%<>\% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control)
   object \%<>\% fit_lme(       ~ subgroup, block = 'Subject', codingfun = code_control)
   object \%<>\% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = code_control)
-  summarize_fit(fdt(object))
+  summarize_fit(object)
     
 # Posthoc contrasts (only limma!)
   fdt(object) \%<>\% extract(, 'feature_id')

@@ -538,14 +538,14 @@ vectorize_contrasts <- function(contrasts){
 #' @export
 reset_fit <- function(
      object, 
-        fit = fits(fdt(object)), 
-      coefs = autonomics::coefs(fdt(object), fit = fit), 
+        fit = fits(object), 
+      coefs = autonomics::coefs(object, fit = fit), 
     verbose = TRUE
 ){
 # Assert
     . <- NULL
     assert_is_valid_sumexp(object)
-    if (is.null(fits(fdt(object))))  return(object)
+    if (is.null(fits(object)))  return(object)
     assert_is_a_bool(verbose)
 # Reset
     vars <- c('effect', 'p', 'fdr', 't')
@@ -635,21 +635,21 @@ mat2sdt <- function(mat)  mat2dt(mat, 'sample_id')
 #'   fdt(object) %<>% extract(, 'feature_id')
 #'   object %<>% fit_lm(        ~ subgroup)                     #     statistics default
 #'   object %<>% fit_limma(     ~ subgroup)                     # bioinformatics default
-#'   summarize_fit(fdt(object))
+#'   summarize_fit(object)
 #'     
 #' # Blocked
 #'   fdt(object) %<>% extract(, 'feature_id')
 #'   object %<>% fit_limma(     ~ subgroup, block = 'Subject')  #        simple random effects
 #'   object %<>% fit_lme(       ~ subgroup, block = 'Subject')  #      powerful random effects
 #'   object %<>% fit_lmer(      ~ subgroup, block = 'Subject')  # more powerful random effects
-#'   summarize_fit(fdt(object))
+#'   summarize_fit(object)
 #'     
 #' # Alternative coding: e.g. grand mean intercept
 #'   fdt(object) %<>% extract(, 'feature_id')
 #'   object %<>% fit_limma(     ~ subgroup, block = 'Subject', codingfun = code_control)
 #'   object %<>% fit_lme(       ~ subgroup, block = 'Subject', codingfun = code_control)
 #'   object %<>% fit_lmer(      ~ subgroup, block = 'Subject', codingfun = code_control)
-#'   summarize_fit(fdt(object))
+#'   summarize_fit(object)
 #'     
 #' # Posthoc contrasts (only limma!)
 #'   fdt(object) %<>% extract(, 'feature_id')
@@ -677,7 +677,7 @@ fit <- function(
       formula = default_formula(object),
        engine = 'limma', 
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = if (engine == 'wilcoxon')  code_control  else  contr.treatment , 
+    codingfun = if (engine == 'wilcoxon')  contr.treatment.explicit  else  contr.treatment , 
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE),
     contrasts = NULL,
         coefs = if (is.null(contrasts))  contrast_coefs(design = design)     else NULL,
@@ -751,6 +751,14 @@ fit_limma <- function(
     object
 }
 
+
+plot_model_summary <- function(
+    object, 
+    fit = fits(object), 
+    coef = setdiff(coefs(object, fit = fit), 'Intercept')
+){
+    pdt(object)
+}
 
 
 
@@ -871,8 +879,9 @@ pull_level <- function(x, lev){
     x
 }
 
+
 #' Summarize fit
-#' @param featuredt  fdt(object)
+#' @param object  SummarizedExperiment or data.table
 #' @param fit  'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL
 #' @param coefs string vector
 #' @return data.table(contrast, nup, ndown)
@@ -881,29 +890,33 @@ pull_level <- function(x, lev){
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' object %<>% fit_lm()
-#' summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
+#' summarize_fit(object, coefs = c('t1', 't2', 't3'))
 #' @export
-summarize_fit <- function(
-    featuredt, 
-          fit = fits(featuredt),
-        coefs = autonomics::coefs(featuredt, fit = fit)
+summarize_fit <- function(object, ...)  UseMethod('summarize_fit')
+
+
+#' @rdname summarize_fit
+#' @export
+summarize_fit.data.table <- function(
+    object, 
+          fit = fits(object),
+        coefs = autonomics::coefs(object, fit = fit)
 ){
 # Assert
-    assert_is_data.table(featuredt)
-    featuredt %<>% copy()
+    object %<>% copy()
     if (is.null(coefs))  return(NULL)
     statistic <- coefficient <- variable <- NULL
     effect <- p <- fdr <- NULL
 # Summarize
-     sep <- guess_fitsep(featuredt)
-    cols <- names(featuredt) %>% extract(stri_detect_fixed(., sep))
-    featuredt %<>% extract(, c('feature_id', cols), with = FALSE)
-    featuredt %<>% add_adjusted_pvalues(method = 'fdr', fit = fit, coefs = coefs)
-    assert_has_no_duplicates(names(featuredt))
+     sep <- guess_fitsep(object)
+    cols <- names(object) %>% extract(stri_detect_fixed(., sep))
+    object %<>% extract(, c('feature_id', cols), with = FALSE)
+    object %<>% add_adjusted_pvalues(method = 'fdr', fit = fit, coefs = coefs)
+    assert_has_no_duplicates(names(object))
         # Good to make sure!
         # Because if there are duplicate cols then the dcasting further down is no longer unique
         # And dcasting then resorts to meaningless length aggregation
-    longdt <- featuredt %>% melt.data.table(id.vars = 'feature_id')
+    longdt <- object %>% melt.data.table(id.vars = 'feature_id')
     longdt[, statistic    := split_extract_fixed(variable, sep, 1) %>% factor(unique(.))]
     longdt[,  coefficient := split_extract_fixed(variable, sep, 2) %>% factor(unique(.))]
     longdt[,       fit    := split_extract_fixed(variable, sep, 3) %>% factor(unique(.))]
@@ -925,6 +938,16 @@ summarize_fit <- function(
     sumdt
 }
 
+
+#' @rdname summarize_fit
+#' @export
+summarize_fit.SummarizedExperiment <- function(
+    object, fit = fits(object), coefs = autonomics::coefs(object, fit = fit)
+){
+    summarize_fit.data.table(fdt(object), fit = fit, coefs = coefs)
+}
+
+
 #' Plot fit summary
 #' @param sumdt data.table
 #' @param nrow number
@@ -935,7 +958,7 @@ summarize_fit <- function(
 #' object <- read_metabolon(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma(block = 'Subject')
-#' sumdt <- summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
+#' sumdt <- summarize_fit(object, coefs = c('t1', 't2', 't3'))
 #' plot_fit_summary(sumdt)
 #' @export
 plot_fit_summary <- function(sumdt, nrow = NULL, ncol = NULL, order = FALSE){

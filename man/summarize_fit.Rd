@@ -2,16 +2,26 @@
 % Please edit documentation in R/8_fit_limma.R
 \name{summarize_fit}
 \alias{summarize_fit}
+\alias{summarize_fit.data.table}
+\alias{summarize_fit.SummarizedExperiment}
 \title{Summarize fit}
 \usage{
-summarize_fit(
-  featuredt,
-  fit = fits(featuredt),
-  coefs = autonomics::coefs(featuredt, fit = fit)
+summarize_fit(object, ...)
+
+\method{summarize_fit}{data.table}(
+  object,
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit)
+)
+
+\method{summarize_fit}{SummarizedExperiment}(
+  object,
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit)
 )
 }
 \arguments{
-\item{featuredt}{fdt(object)}
+\item{object}{SummarizedExperiment or data.table}
 
 \item{fit}{'limma', 'lme', 'lm', 'lme', 'wilcoxon' or NULL}
 
@@ -28,5 +38,5 @@ file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 object \%<>\% fit_limma()
 object \%<>\% fit_lm()
-summarize_fit(fdt(object), coefs = c('t1', 't2', 't3'))
+summarize_fit(object, coefs = c('t1', 't2', 't3'))
 }

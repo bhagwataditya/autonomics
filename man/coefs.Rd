@@ -4,20 +4,23 @@
 \alias{coefs}
 \alias{coefs.factor}
 \alias{coefs.data.table}
+\alias{coefs.SummarizedExperiment}
 \title{Get coefs}
 \usage{
-coefs(featuredt, ...)
+coefs(object, ...)
 
-\method{coefs}{factor}(featuredt, ...)
+\method{coefs}{factor}(object, ...)
 
-\method{coefs}{data.table}(featuredt, fit = fits(featuredt), svars = NULL, ...)
+\method{coefs}{data.table}(object, fit = fits(object), svars = NULL, ...)
+
+\method{coefs}{SummarizedExperiment}(object, fit = fits(object), ...)
 }
 \arguments{
-\item{featuredt}{data.table or factor}
+\item{object}{factor, data.table, SummarizedExperiment}
 
 \item{...}{required for s3 dispatch}
 
-\item{fit}{string: 'limma', 'lm', 'lme', 'lmer'}
+\item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
 \item{svars}{NULL or charactervector (svar for which to return coefs)}
 }
@@ -37,5 +40,5 @@ Get coefs
 # SummarizedExperiment
     file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
     object <- read_metabolon(file, fit = 'limma')
-    coefs(fdt(object))
+    coefs(object)
 }

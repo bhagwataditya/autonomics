@@ -6,8 +6,8 @@
 \usage{
 plot_heatmap(
   object,
-  fit = fits(fdt(object))[1],
-  coef = default_coefs(fdt(object), fit = fit)[1],
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
   effectsize = 0,
   p = 1,
   fdr = 0.05,
@@ -25,7 +25,7 @@ plot_heatmap(
 
 \item{fit}{'limma', 'lm', 'lme(r)', 'wilcoxon'}
 
-\item{coef}{string: one of coefs(fdt(object))}
+\item{coef}{string: one of coefs(object)}
 
 \item{effectsize}{number: effectsize filter}
 

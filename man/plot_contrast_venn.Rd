@@ -22,6 +22,6 @@ file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
 object \%<>\% fit_wilcoxon(~ subgroup, block = 'Subject')
 object \%<>\% fit_limma(   ~ subgroup, block = 'Subject', codingfun = contr.treatment.explicit)
-isfdr <- is_sig(object, contrast = 't3-t0', quantity = 'p', fit = fits(fdt(object)))
+isfdr <- is_sig(object, contrast = 't3-t0', quantity = 'p', fit = fits(object))
 plot_contrast_venn(isfdr)
 }

@@ -7,9 +7,9 @@
 enrichment(
   object,
   pathwaydt,
-  fit = fits(fdt(object))[1],
-  coef = coefs(fdt(object), fit = fit)[1],
-  var = abstractvar(fdt(object), fit = fit, coef = coef),
+  fit = fits(object)[1],
+  coef = coefs(object, fit = fit)[1],
+  var = abstractvar(object, fit = fit, coef = coef),
   levels = fdt(object)[[var]] \%>\% base::levels() \%>\% extract(-1),
   genevar = "gene",
   genesep = "[ ,;]",
@@ -72,7 +72,7 @@ Results are returned in a data.table
     object <- read_somascan(file, fit = 'limma', coefs = 't1')
     fvars(object) \%<>\% gsub('EntrezGeneSymbol', 'gene', .)
     object \%<>\% abstract_fit()
-    var <- abstractvar(fdt(object))
+    var <- abstractvar(object)
     varlevels <- c('flat', 'down', 'up')
     enrichdt1 <- enrichment(object, pathwaydt, var = var)                      # 2:n factor 
     enrichdt2 <- enrichment(object, pathwaydt, var = var, levels = varlevels)  # 1:n factor

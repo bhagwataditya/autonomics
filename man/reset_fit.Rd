@@ -6,8 +6,8 @@
 \usage{
 reset_fit(
   object,
-  fit = fits(fdt(object)),
-  coefs = autonomics::coefs(fdt(object), fit = fit),
+  fit = fits(object),
+  coefs = autonomics::coefs(object, fit = fit),
   verbose = TRUE
 )
 }

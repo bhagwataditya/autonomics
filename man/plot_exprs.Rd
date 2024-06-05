@@ -10,8 +10,8 @@ plot_exprs(
   object,
   dim = "both",
   assay = assayNames(object)[1],
-  fit = fits(fdt(object))[1],
-  coefs = default_coefs(fdt(object), fit = fit),
+  fit = fits(object)[1],
+  coefs = default_coefs(object, fit = fit),
   block = NULL,
   x = default_x(object, dim),
   geom = default_geom(object, x = x, block = block),
@@ -68,7 +68,7 @@ plot_feature_boxplots(object, ...)
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
-\item{coefs}{subset of coefs(fdt(object)) to consider in selecting top}
+\item{coefs}{subset of coefs(object) to consider in selecting top}
 
 \item{block}{group svar}
 

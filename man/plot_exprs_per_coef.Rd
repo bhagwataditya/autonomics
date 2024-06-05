@@ -6,8 +6,8 @@
 \usage{
 plot_exprs_per_coef(
   object,
-  fit = fits(fdt(object))[1],
-  coefs = default_coefs(fdt(object), fit = fit),
+  fit = fits(object)[1],
+  coefs = default_coefs(object, fit = fit),
   x = default_x(object),
   block = NULL,
   geom = default_geom(object, x, block = block),
@@ -26,7 +26,7 @@ plot_exprs_per_coef(
 
 \item{fit}{'limma', 'lm', 'lme', 'lmer', 'wilcoxon'}
 
-\item{coefs}{subset of coefs(fdt(object)) to consider in selecting top}
+\item{coefs}{subset of coefs(object) to consider in selecting top}
 
 \item{x}{x svar}
 

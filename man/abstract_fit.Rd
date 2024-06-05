@@ -7,8 +7,8 @@
 abstract_fit(
   object,
   sep = guess_fitsep(fdt(object)),
-  fit = fits(fdt(object)),
-  coef = coefs(fdt(object), fit = fit),
+  fit = fits(object),
+  coef = coefs(object, fit = fit),
   significancevar = "p",
   significance = 0.05
 )

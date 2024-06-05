@@ -5,12 +5,31 @@
 #
 #==============================================================================
 
-default_coefs <- function(featuredt, fit = fits(featuredt)){
+#' Get default coefs
+#' @param object data.table or SummarizedExperiment
+#' @return character
+#' @examples
+#' file <- system.file('atkin.metabolon.xlsx', package = 'autonomics')
+#' object <- read_metabolon(file)
+#' object %<>% fit_limma()
+#' default_coefs(object)
+#' @export
+default_coefs <- function(object, ...)  UseMethod('default_coefs')
+
+#' @rdname default_coefs
+#' @export
+default_coefs.data.table <- function(object, fit = fits(object)){
     if (length(fit)==0) return(NULL)    # none
-    y <- autonomics::coefs(featuredt, fit = fit)   # intercept
+    y <- autonomics::coefs(object, fit = fit)   # intercept
     if (length(y)==1)   return(y)
     y %<>% setdiff('Intercept')                 # intercept + others
     y
+}
+
+#' @rdname default_coefs
+#' @export
+default_coefs.SummarizedExperiment <- function(object, fit = fits(object)){
+    default_coefs.data.table(fdt(object), fit = fit)
 }
 
 #' Bin continuous variable
@@ -160,8 +179,8 @@ add_adjusted_pvalues <- function(
 #' @export
 make_volcano_dt <- function(
     object,
-       fit = fits(fdt(object))[1], 
-     coefs = default_coefs(fdt(object), fit = fit)[1],
+       fit = fits(object)[1], 
+     coefs = default_coefs(object, fit = fit)[1],
      shape = 'imputed', 
      size  = NULL, 
      alpha = NULL,
@@ -171,8 +190,8 @@ make_volcano_dt <- function(
     assert_is_all_of(object, "SummarizedExperiment")
     sep <- guess_fitsep(fdt(object))
     assert_any_are_matching_regex(fvars(object), paste0('^p', sep))
-    assert_is_subset(fit, fits(fdt(object)))
-    assert_is_subset(coefs, autonomics::coefs(fdt(object), fit = fit))
+    assert_is_subset(fit, fits(object))
+    assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
     if (!is.null(shape)){ assert_is_subset(shape, fvars(object)); object %<>% bin(shape) }
     if (!is.null(size) ){ assert_is_subset(size,  fvars(object)); object %<>% bin(size)  }
     if (!is.null(alpha)){ assert_is_subset(alpha, fvars(object)); object %<>% bin(alpha) }
@@ -186,8 +205,8 @@ make_volcano_dt <- function(
     if (!is.null(shape))  idvars %<>% union(shape)
     if (!is.null(size))   idvars %<>% union(size)
     if (!is.null(alpha))  idvars %<>% union(alpha)
-    valuevars  <-  effectvar(fdt(object), coef = coefs, fit = fit)  # elminate similar function pvars etc.
-    valuevars %<>%  c(  pvar(fdt(object), coef = coefs, fit = fit))
+    valuevars  <-  effectvar(object, coef = coefs, fit = fit)  # elminate similar function pvars etc.
+    valuevars %<>%  c(  pvar(object, coef = coefs, fit = fit))
 
     dt <- fdt(object)[, c(idvars, valuevars), with = FALSE]
     dt %<>% melt.data.table(id.vars = idvars)
@@ -239,7 +258,7 @@ make_volcano_dt <- function(
 #' 
 #' # When nothing passes FDR
 #'     fdt(object) %<>% add_adjusted_pvalues('fdr', fit = 'limma',coefs = 't3')
-#'     object %<>% extract( fdrvec(fdt(object), fit = 'limma', coef = 't3') > 0.05, )
+#'     object %<>% extract( fdrvec(object, fit = 'limma', coef = 't3') > 0.05, )
 #'     plot_volcano(object, coefs = 't3', fit = 'limma')
 #' 
 #' # Additional mappings
@@ -254,8 +273,8 @@ make_volcano_dt <- function(
 #' @export
 plot_volcano <- function(
           object,
-             fit = fits(fdt(object))[1], 
-           coefs = default_coefs(fdt(object), fit = fit)[1],
+             fit = fits(object)[1], 
+           coefs = default_coefs(object, fit = fit)[1],
            facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
            shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
             size = NULL,

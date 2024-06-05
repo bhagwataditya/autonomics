@@ -13,7 +13,7 @@
   object,
   coefs,
   p = 0.05,
-  fit = fits(fdt(object)),
+  fit = fits(object),
   combiner = "|",
   verbose = TRUE
 )
@@ -22,7 +22,7 @@
   object,
   coefs,
   fdr = 0.05,
-  fit = fits(fdt(object)),
+  fit = fits(object),
   combiner = "|",
   verbose = TRUE
 )
@@ -31,7 +31,7 @@
   object,
   coefs,
   effectsize = 1,
-  fit = fits(fdt(object)),
+  fit = fits(object),
   combiner = "|",
   verbose = TRUE
 )
@@ -40,7 +40,7 @@
   object,
   coefs,
   sign,
-  fit = fits(fdt(object))[1],
+  fit = fits(object)[1],
   combiner = "|",
   verbose = TRUE
 )
@@ -50,14 +50,14 @@
   coefs,
   combiner = "|",
   n,
-  fit = fits(fdt(object))[1],
+  fit = fits(object)[1],
   verbose = TRUE
 )
 
 extract_coef_features(
   object,
-  fit = fits(fdt(object))[1],
-  coefs = default_coefs(fdt(object), fit = fit),
+  fit = fits(object)[1],
+  coefs = default_coefs(object, fit = fit),
   combiner = "|",
   p = 1,
   fdr = 1,
@@ -74,7 +74,7 @@ extract_coef_features(
 
 \item{p}{p threshold}
 
-\item{fit}{subset of fits(fdt(object))}
+\item{fit}{subset of fits(object)}
 
 \item{combiner}{'|' or '&': how to combine multiple fits/coefs}
 

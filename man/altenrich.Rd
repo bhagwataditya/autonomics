@@ -9,8 +9,8 @@ altenrich(
   pathwaydt,
   genevar = "gene",
   genesep = "[ ,;]",
-  coef = default_coefs(fdt(object))[1],
-  fit = fits(fdt(object))[1],
+  coef = default_coefs(object)[1],
+  fit = fits(object)[1],
   significancevar = "p",
   significance = 0.05,
   effectsize = 0,
@@ -28,7 +28,7 @@ altenrich(
 
 \item{genesep}{\code{string} or \code{NULL}}
 
-\item{coef}{\code{string} in \code{coefs(fdt(object))}}
+\item{coef}{\code{string} in \code{coefs(object)}}
 
 \item{fit}{\code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}}
 

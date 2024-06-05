@@ -184,21 +184,21 @@ guess_fitsep <- function(featuredt){
 abstract_fit <- function(
              object, 
                 sep = guess_fitsep(fdt(object)),
-                fit = fits(fdt(object)), 
-               coef = coefs(fdt(object), fit = fit), 
+                fit = fits(object), 
+               coef = coefs(object, fit = fit), 
     significancevar = 'p', 
        significance = 0.05
 ){
 # Assert
     assert_is_valid_sumexp(object)
-    assert_is_subset(fit,   fits(fdt(object)))
-    assert_is_subset(coef, coefs(fdt(object)))
+    assert_is_subset(fit,   fits(object))
+    assert_is_subset(coef, coefs(object))
 # Abstract
     for ( curfit in fit){
     for (curcoef in coef){
         abstractvar <- paste(curcoef, curfit, sep = sep)
-            pvalues <- modelvec(fdt(object), 'p',      fit = curfit, coef = curcoef)
-       effectvalues <- modelvec(fdt(object), 'effect', fit = curfit, coef = curcoef)
+            pvalues <- modelvec(object, 'p',      fit = curfit, coef = curcoef)
+       effectvalues <- modelvec(object, 'effect', fit = curfit, coef = curcoef)
         fdt(object)[[ abstractvar ]] <- 'flat'
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues<0 ] <- 'down' 
         fdt(object)[[ abstractvar ]][ pvalues<significance  &  effectvalues>0 ] <- 'up' 
@@ -310,7 +310,7 @@ factor2logical <- function(x){
 #'     object <- read_somascan(file, fit = 'limma', coefs = 't1')
 #'     fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #'     object %<>% abstract_fit()
-#'     var <- abstractvar(fdt(object))
+#'     var <- abstractvar(object)
 #'     varlevels <- c('flat', 'down', 'up')
 #'     enrichdt1 <- enrichment(object, pathwaydt, var = var)                      # 2:n factor 
 #'     enrichdt2 <- enrichment(object, pathwaydt, var = var, levels = varlevels)  # 1:n factor
@@ -342,9 +342,9 @@ factor2logical <- function(x){
 enrichment <- function(
        object,
     pathwaydt,
-          fit = fits(fdt(object))[1],
-         coef = coefs(fdt(object), fit = fit)[1],
-          var = abstractvar(fdt(object), fit = fit, coef = coef),
+          fit = fits(object)[1],
+         coef = coefs(object, fit = fit)[1],
+          var = abstractvar(object, fit = fit, coef = coef),
        levels = fdt(object)[[var]] %>% base::levels() %>% extract(-1),
       genevar = 'gene', 
       genesep = '[ ,;]',
@@ -356,8 +356,8 @@ enrichment <- function(
     assert_is_valid_sumexp(object)
     if (is.null(pathwaydt))  return(NULL)
     assert_is_data.table(pathwaydt)
-    if (!is.null(fit ))  assert_scalar_subset(fit,  fits(fdt(object)))
-    if (!is.null(coef))  assert_scalar_subset(coef, coefs(fdt(object)))
+    if (!is.null(fit ))  assert_scalar_subset(fit,  fits(object))
+    if (!is.null(coef))  assert_scalar_subset(coef, coefs(object))
     assert_scalar_subset(var, fvars(object), .xname = get_name_in_parent(var))
     assert_is_factor(fdt(object)[[var]])
     assert_is_subset(levels, levels(fdt(object)[[var]]))
@@ -439,7 +439,7 @@ enrichment <- function(
 #' @param pathwaydt  \code{data.table}, e.g. \code{\link{read_msigdt}}
 #' @param genevar    \code{gene fvar}
 #' @param genesep    \code{string} or \code{NULL}
-#' @param coef       \code{string} in \code{coefs(fdt(object))}
+#' @param coef       \code{string} in \code{coefs(object)}
 #' @param fit        \code{'limma'}, \code{'lm'}, \code{'lme'}, \code{'lmer'}, \code{'wilcoxon'}
 #' @param significancevar 'p' or 'fdr'
 #' @param significance     significance cutoff
@@ -455,8 +455,8 @@ altenrich <- function(
           pathwaydt, 
             genevar = 'gene', 
             genesep = '[ ,;]',
-               coef = default_coefs(fdt(object))[1], 
-                fit = fits(fdt(object))[1],
+               coef = default_coefs(object)[1], 
+                fit = fits(object)[1],
     significancevar = 'p',
        significance = 0.05,
          effectsize = 0,
@@ -473,14 +473,14 @@ altenrich <- function(
     assert_all_are_non_missing_nor_empty_character(fdt(object)[[genevar]])
     assert_all_are_non_missing_nor_empty_character(  pathwaydt[[genevar]])
     if (!is.null(genesep))  assert_is_a_string(genesep)
-    assert_scalar_subset(coef, coefs(fdt(object)))
-    assert_scalar_subset(fit, fits(fdt(object)))
+    assert_scalar_subset(coef, coefs(object))
+    assert_scalar_subset(fit, fits(object))
     genes0 <- fdt(object)[[genevar]]
     fdt(object)[[genevar]] %<>% split_extract_regex(genesep, 1)
     gene <- in.up <- in.det <- in.down <- in.sel <- `in` <- out <- NULL
 # Function
     object %<>% abstract_fit(fit = fit, coef = coef, significancevar = significancevar)
-    abstractvar <- abstractvar(fdt(object), fit = fit, coef = coef)
+    abstractvar <- abstractvar(object, fit = fit, coef = coef)
 # Constants
      all <- unique(fdt(object)[[genevar]])
      all %<>% union(pathwaydt[, unique(gene)])                                 # 17 987  all

@@ -6,8 +6,8 @@
 \usage{
 is_sig(
   object,
-  fit = fits(fdt(object))[1],
-  contrast = coefs(fdt(object)),
+  fit = fits(object)[1],
+  contrast = coefs(object),
   quantity = "fdr"
 )
 }

@@ -6,8 +6,8 @@
 \usage{
 plot_volcano(
   object,
-  fit = fits(fdt(object))[1],
-  coefs = default_coefs(fdt(object), fit = fit)[1],
+  fit = fits(object)[1],
+  coefs = default_coefs(object, fit = fit)[1],
   facet = if (is_scalar(fit)) "coef" else c("fit", "coef"),
   shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
   size = NULL,
@@ -74,7 +74,7 @@ Plot volcano
 
 # When nothing passes FDR
     fdt(object) \%<>\% add_adjusted_pvalues('fdr', fit = 'limma',coefs = 't3')
-    object \%<>\% extract( fdrvec(fdt(object), fit = 'limma', coef = 't3') > 0.05, )
+    object \%<>\% extract( fdrvec(object, fit = 'limma', coef = 't3') > 0.05, )
     plot_volcano(object, coefs = 't3', fit = 'limma')
 
 # Additional mappings

@@ -23,8 +23,8 @@ compute_connections <- function(
 ){
 # subgroup matrix, difference contrasts, limma
     fdt(object) %<>% add_adjusted_pvalues('fdr')
-    fdrvalues <- fdrmat(fdt(object))
-    effects <- effectmat(fdt(object))
+    fdrvalues <- fdrmat(object)
+    effects <- effectmat(object)
     colnames(fdrvalues) %<>% split_extract_fixed(FITSEP, 2)
     colnames(effects)   %<>% split_extract_fixed(FITSEP, 2)
     nsignif <- apply(fdrvalues < 0.05, 2, sum, na.rm=TRUE)
@@ -41,7 +41,7 @@ compute_connections <- function(
     arrowlabels <- matrix("0", nrow = nrow(arrowsizes), ncol = ncol(arrowsizes),
                         dimnames = dimnames(arrowsizes))
 # Add contrast numbers
-    contrastmat  <- makeContrasts(contrasts = default_coefs(fdt(object)), levels = design)
+    contrastmat  <- makeContrasts(contrasts = default_coefs(object), levels = design)
     for (contrastname in colnames(contrastmat)){
         contrastvector <- contrastmat[, contrastname]
         to   <- true_names(contrastvector>0)
