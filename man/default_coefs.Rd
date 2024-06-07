@@ -8,9 +8,9 @@
 \usage{
 default_coefs(object, ...)
 
-\method{default_coefs}{data.table}(object, fit = fits(object))
+\method{default_coefs}{data.table}(object, fit = fits(object), ...)
 
-\method{default_coefs}{SummarizedExperiment}(object, fit = fits(object))
+\method{default_coefs}{SummarizedExperiment}(object, fit = fits(object), ...)
 }
 \arguments{
 \item{object}{data.table or SummarizedExperiment}

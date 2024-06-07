@@ -242,6 +242,7 @@ block_vars <- function(formula){
 #'     \item code_helmert_forward:     intercept = ymean,  coefi = yi - mean(y(i+1):yp)
 #' }
 #' @param codingfun    coding function
+#' @param design       NULL 
 #' @param coefs        NULL or stringvector
 #' @param contrasts    unused. only to allow generic get(fitfun)(contrasts)
 #' @param block        NULL or svar

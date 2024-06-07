@@ -53,38 +53,6 @@ file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
 object <-  read_rnaseq_counts(file = file, fit = 'limma', plot = TRUE, label = 'gene')
 ```
 
-## read_rnaseq_counts(sfile) {-}
-
-
-The `sfile/sfileby` arguments in both importers allow to merge in sample data from a separate file by a specified column. This is especially useful in clinical datasets, such as the GSE161731 Covid-19 dataset, for which both a **counts** file as well as a **sample** file can be downloaded from GEO:
-
-```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
-basedir <- file.path(tempdir(), 'datasets')
-dir.create(basedir, showWarnings = FALSE, recursive = TRUE)
-if (!dir.exists(file.path(basedir, 'GSE161731'))){
-    sink <- GEOquery::getGEOSuppFiles("GSE161731", baseDir = basedir)
-}
-object <- read_rnaseq_counts(
-  file    = file.path(basedir, 'GSE161731/GSE161731_counts.csv.gz'), 
-  sfile   = file.path(basedir, 'GSE161731/GSE161731_counts_key.csv.gz'), 
-  by.y    = 'rna_id', 
-  formula = ~ gender,
-  plot    = TRUE)
-```
-
-## read_rnaseq_counts(block) {-}
-
-The `block` argument in both importers allows to model e.g. subject_id as a random effect, which is very common in clinical data. Repeating the GEO Covid-19 analysis with subject_id as a block effect. Outcomment the line below, which takes a few minutes to complete.
-
-```{r}
-#object <- read_rnaseq_counts(
-#  file  = '~/autonomicscache/datasets/GSE161731/GSE161731_counts.csv.gz', 
-#  sfile = '~/autonomicscache/datasets/GSE161731/GSE161731_counts_key.csv.gz', 
-#  sfileby = 'rna_id', 
-#  subgroupvar = 'gender', 
-#  block = 'subject_id')
-```
-
 ## read_rnaseq_bams {-}
 
 **Billing et al. (2016)** compared three types of stem cells: embryonic (**E**), embryonic differentiated into mesenchymal  (**EM**), and bone-marrow mesenchymal (**BM**). Importing a downsized version of the RNAseq BAM files (with only a subset of all reads):

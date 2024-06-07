@@ -32,11 +32,11 @@ data.table::data.table
 #' @importFrom ggforce     facet_wrap_paginate
 #' @importFrom ggrepel     geom_text_repel    geom_label_repel
 #' @importFrom graphics    lines    pie    title
-#' @importFrom grDevices   hcl    dev.off   pdf
+#' @importFrom grDevices   hcl    dev.off   colorRampPalette    pdf
 #' @importFrom limma       contrasts.fit    duplicateCorrelation   eBayes
 #' @importFrom limma       lmFit    makeContrasts   removeBatchEffect    
 #' @importFrom limma       voom   vennDiagram
-#' @importFrom graphics    abline   axis   box   image   layout   par
+#' @importFrom graphics    abline   axis   box   image   layout   par   polygon   text
 #' @importFrom grid        grid.layout  grid.draw   grid.newpage
 #' @importFrom gridExtra   arrangeGrob   grid.arrange
 #' @importFrom magrittr    add   and   equals

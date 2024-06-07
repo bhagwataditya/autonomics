@@ -11,13 +11,15 @@ summarize_fit(object, ...)
 \method{summarize_fit}{data.table}(
   object,
   fit = fits(object),
-  coefs = autonomics::coefs(object, fit = fit)
+  coefs = autonomics::coefs(object, fit = fit),
+  ...
 )
 
 \method{summarize_fit}{SummarizedExperiment}(
   object,
   fit = fits(object),
-  coefs = autonomics::coefs(object, fit = fit)
+  coefs = autonomics::coefs(object, fit = fit),
+  ...
 )
 }
 \arguments{

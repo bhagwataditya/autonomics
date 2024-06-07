@@ -9,6 +9,8 @@
 \alias{pvar}
 \alias{fdrvar}
 \alias{abstractvar}
+\alias{abstractvar.data.table}
+\alias{abstractvar.SummarizedExperiment}
 \alias{modelvec}
 \alias{modelvec.data.table}
 \alias{modelvec.SummarizedExperiment}
@@ -41,14 +43,16 @@ modelvar(object, ...)
   object,
   quantity,
   fit = fits(object),
-  coef = default_coefs(object, fit = fit)
+  coef = default_coefs(object, fit = fit),
+  ...
 )
 
 \method{modelvar}{SummarizedExperiment}(
   object,
   quantity,
   fit = fits(object),
-  coef = default_coefs(object, fit = fit)
+  coef = default_coefs(object, fit = fit),
+  ...
 )
 
 effectvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
@@ -59,10 +63,20 @@ pvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
 fdrvar(object, fit = fits(object), coef = default_coefs(object, fit = fit))
 
-abstractvar(
+abstractvar(object, ...)
+
+\method{abstractvar}{data.table}(
   object,
   fit = fits(object),
-  coef = default_coefs(object, fit = fit)
+  coef = default_coefs(object, fit = fit),
+  ...
+)
+
+\method{abstractvar}{SummarizedExperiment}(
+  object,
+  fit = fits(object),
+  coef = default_coefs(object, fit = fit),
+  ...
 )
 
 modelvec(object, ...)
@@ -72,7 +86,8 @@ modelvec(object, ...)
   quantity,
   fit = fits(object)[1],
   coef = default_coefs(object, fit = fit)[1],
-  fvar = "feature_id"
+  fvar = "feature_id",
+  ...
 )
 
 \method{modelvec}{SummarizedExperiment}(
@@ -80,7 +95,8 @@ modelvec(object, ...)
   quantity,
   fit = fits(object)[1],
   coef = default_coefs(object, fit = fit)[1],
-  fvar = "feature_id"
+  fvar = "feature_id",
+  ...
 )
 
 effectvec(
@@ -117,14 +133,16 @@ modeldt(object, ...)
   object,
   quantity,
   fit = fits(object),
-  coef = default_coefs(object, fit = fit)
+  coef = default_coefs(object, fit = fit),
+  ...
 )
 
 \method{modeldt}{SummarizedExperiment}(
   object,
   quantity,
   fit = fits(object),
-  coef = default_coefs(object, fit = fit)
+  coef = default_coefs(object, fit = fit),
+  ...
 )
 
 effectdt(
@@ -186,7 +204,8 @@ modelfeatures(object, ...)
   significancevar = "p",
   significance = 0.05,
   effectdirection = "<>",
-  effectsize = 0
+  effectsize = 0,
+  ...
 )
 
 \method{modelfeatures}{SummarizedExperiment}(object, ...)

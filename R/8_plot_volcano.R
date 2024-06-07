@@ -20,7 +20,7 @@ default_coefs <- function(object, ...)  UseMethod('default_coefs')
 
 #' @rdname default_coefs
 #' @export
-default_coefs.data.table <- function(object, fit = fits(object)){
+default_coefs.data.table <- function(object, fit = fits(object), ...){
     if (length(fit)==0) return(NULL)    # none
     y <- autonomics::coefs(object, fit = fit)   # intercept
     if (length(y)==1)   return(y)
@@ -30,7 +30,7 @@ default_coefs.data.table <- function(object, fit = fits(object)){
 
 #' @rdname default_coefs
 #' @export
-default_coefs.SummarizedExperiment <- function(object, fit = fits(object)){
+default_coefs.SummarizedExperiment <- function(object, fit = fits(object), ...){
     default_coefs.data.table(fdt(object), fit = fit)
 }
 

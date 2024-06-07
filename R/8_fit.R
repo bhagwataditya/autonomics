@@ -349,7 +349,7 @@ modelvar <- function(object, ...) UseMethod('modelvar')
 #' @rdname modelvar
 #' @export
 modelvar.data.table <- function(
-    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
+    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit), ...
 ){
 # Assert
     assert_is_subset(quantity, c('fdr', 'p', 't', 'effect', 'se', 'abstract'))
@@ -370,7 +370,7 @@ modelvar.data.table <- function(
 #' @rdname modelvar
 #' @export
 modelvar.SummarizedExperiment <- function(
-    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
+    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit), ...
 ){  
     modelvar.data.table(fdt(object), quantity = quantity, fit = fit, coef = coef )
 }
@@ -407,13 +407,27 @@ fdrvar <- function( object, fit = fits(object), coef = default_coefs(object, fit
     modelvar(object, quantity = 'fdr', fit = fit, coef = coef) 
 }
 
+#' @rdname modelvar
+#' @export
+abstractvar <- function(object, ...)  UseMethod('abstractvar')
+
 
 #' @rdname modelvar
 #' @export
-abstractvar <- function( object, fit = fits(object), coef = default_coefs(object, fit = fit) ){
+abstractvar.data.table <- function(
+    object, fit = fits(object), coef = default_coefs(object, fit = fit), ... 
+){
     sep <- guess_fitsep(object)             # cant use modelvar because its
     y <- paste(coef, fit, sep = sep)        #           t1~limma
     if (y %in% names(object)) y else NULL   #     not p~t1~limma
+}
+
+#' @rdname modelvar
+#' @export
+abstractvar.SummarizedExperiment <- function(
+    object, fit = fits(object), coef = default_coefs(object, fit = fit), ... 
+){
+    abstractvar.data.table(fdt(object), fit = fit, coef = coef)
 }
 
 #------------------------------------------------------------------------------
@@ -431,7 +445,7 @@ modelvec <- function(object, ...)  UseMethod('modelvec')
 #' @export
 modelvec.data.table <- function(
     object, quantity, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], 
-    fvar = 'feature_id'
+    fvar = 'feature_id', ...
 ){
     valuevar <- modelvar(object, quantity = quantity, fit = fit, coef = coef)
     if (is.null(valuevar))  return(NULL)
@@ -445,7 +459,7 @@ modelvec.data.table <- function(
 #' @export
 modelvec.SummarizedExperiment <- function(
     object, quantity, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], 
-    fvar = 'feature_id'
+    fvar = 'feature_id', ...
 ){
     modelvec.data.table(fdt(object), quantity = quantity, fit = fit, coef = coef, fvar = fvar)
 }
@@ -498,7 +512,7 @@ modeldt <- function(object, ...)  UseMethod('modeldt')
 #' @rdname modelvar
 #' @export
 modeldt.data.table <- function(
-    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
+    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit), ...
 ){
     var <- modelvar(object, quantity, coef = coef, fit = fit)
     if (is.null(var))  return(NULL)
@@ -510,7 +524,7 @@ modeldt.data.table <- function(
 #' @rdname modelvar
 #' @export
 modeldt.SummarizedExperiment <- function(
-    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit)
+    object, quantity, fit = fits(object), coef = default_coefs(object, fit = fit), ...
 ){
     modeldt.data.table(fdt(object), quantity = quantity, fit = fit, coef = coef)
 }
@@ -615,7 +629,8 @@ modelfeatures.data.table <- function(
     significancevar = 'p',
        significance = 0.05,
     effectdirection = '<>',
-         effectsize = 0
+         effectsize = 0, 
+    ...
 ){
     significancevalues <- modelvec(object, quantity =  significancevar, fit = fit, coef = coef, fvar = fvar)
           effectvalues <- modelvec(object, quantity = 'effect',         fit = fit, coef = coef, fvar = fvar)

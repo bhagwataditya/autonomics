@@ -111,6 +111,8 @@ fit_lmer(
 
 \item{plot}{TRUE or FALSE}
 
+\item{design}{NULL}
+
 \item{contrasts}{unused. only to allow generic get(fitfun)(contrasts)}
 }
 \value{
