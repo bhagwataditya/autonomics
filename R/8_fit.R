@@ -407,6 +407,7 @@ fdrvar <- function( object, fit = fits(object), coef = default_coefs(object, fit
     modelvar(object, quantity = 'fdr', fit = fit, coef = coef) 
 }
 
+
 #' @rdname modelvar
 #' @export
 abstractvar <- function(object, ...)  UseMethod('abstractvar')
@@ -415,20 +416,23 @@ abstractvar <- function(object, ...)  UseMethod('abstractvar')
 #' @rdname modelvar
 #' @export
 abstractvar.data.table <- function(
-    object, fit = fits(object), coef = default_coefs(object, fit = fit), ... 
+    object, fit = fits(object), coef = default_coefs(object, fit = fit), ...
 ){
     sep <- guess_fitsep(object)             # cant use modelvar because its
-    y <- paste(coef, fit, sep = sep)        #           t1~limma
-    if (y %in% names(object)) y else NULL   #     not p~t1~limma
+    y <- paste(  rep(coef, length(fit)),         # t1~limma
+                 rep(fit, each = length(coef)),
+                 sep = sep )
+    if (y %in% names(object))  y  else NULL
 }
 
 #' @rdname modelvar
-#' @export
+#' @export 
 abstractvar.SummarizedExperiment <- function(
-    object, fit = fits(object), coef = default_coefs(object, fit = fit), ... 
+    object, fit = fits(object), coef = default_coefs(object, fit = fit), ...
 ){
     abstractvar.data.table(fdt(object), fit = fit, coef = coef)
 }
+
 
 #------------------------------------------------------------------------------
 #
@@ -480,7 +484,8 @@ tvec <- function(
 ){
     modelvec(object, quantity = 't', fit = fit, coef = coef, fvar = fvar)
 }
-    
+
+
 #' @rdname modelvar
 #' @export
 pvec <- function(
@@ -489,6 +494,7 @@ pvec <- function(
     modelvec(object, quantity = 'p', fit = fit, coef = coef, fvar = fvar)
 }
 
+
 #' @rdname modelvar
 #' @export
 fdrvec <- function(
@@ -496,6 +502,35 @@ fdrvec <- function(
 ){
     modelvec(object, quantity = 'fdr', fit = fit, coef = coef, fvar = fvar)
 }
+
+
+#' @rdname modelvar
+#' @export
+abstractvec <- function(object, ...)  UseMethod('abstractvec')
+
+
+#' @rdname modelvar
+#' @export
+abstractvec.data.table <- function(
+    object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id', ...
+){
+    var <- abstractvar(object, fit = fit, coef = coef)
+    if (is.null(var))  return(NULL)
+    object[[var]]
+}
+
+
+#' @rdname modelvar
+#' @export
+abstractvec.SummarizedExperiment <- function(
+    object, fit = fits(object)[1], coef = default_coefs(object, fit = fit)[1], fvar = 'feature_id', ...
+){
+    y <- abstractvec.data.table(fdt(object), fit = fit, coef = coef, fvar = fvar)
+    names(y) <- fdt(object)[[fvar]]
+    y
+}
+
+
 
 #------------------------------------------------------------------------------
 #

@@ -18,6 +18,9 @@
 \alias{tvec}
 \alias{pvec}
 \alias{fdrvec}
+\alias{abstractvec}
+\alias{abstractvec.data.table}
+\alias{abstractvec.SummarizedExperiment}
 \alias{modeldt}
 \alias{modeldt.data.table}
 \alias{modeldt.SummarizedExperiment}
@@ -125,6 +128,24 @@ fdrvec(
   fit = fits(object)[1],
   coef = default_coefs(object, fit = fit)[1],
   fvar = "feature_id"
+)
+
+abstractvec(object, ...)
+
+\method{abstractvec}{data.table}(
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
+  fvar = "feature_id",
+  ...
+)
+
+\method{abstractvec}{SummarizedExperiment}(
+  object,
+  fit = fits(object)[1],
+  coef = default_coefs(object, fit = fit)[1],
+  fvar = "feature_id",
+  ...
 )
 
 modeldt(object, ...)

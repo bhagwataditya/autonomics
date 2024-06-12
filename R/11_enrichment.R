@@ -151,19 +151,31 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 }
 
 #' guess fitsep
-#' @param featuredt data.table
+#' @param object data.table or SummarizedExperiment
 #' @return string
 #' @examples 
 #' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
-#' guess_fitsep(fdt(object))
-#' guess_fitsep(fdt(fit_limma(object)))
+#' object %<>% fit_limma()
+#' guess_fitsep(object)
 #' @export
-guess_fitsep <- function(featuredt){
-    idx <- names(featuredt) %>% stri_detect_regex('^effect')
+guess_fitsep <- function(object, ...)  UseMethod('guess_fitsep')
+
+
+#' @rdname guess_fitsep
+#' @export
+guess_fitsep.data.table <- function(object, ...){
+    idx <- names(object) %>% stri_detect_regex('^effect')
     if (all(!idx))  return(NULL)
-    sep <- names(featuredt)[idx][1] %>% substr(7,7)
+    sep <- names(object)[idx][1] %>% substr(7,7)
     return(sep)
+}
+
+
+#' @rdname guess_fitsep
+#' @export
+guess_fitsep.SummarizedExperiment <- function(object, ...){
+    guess_fitsep.data.table(fdt(object))
 }
 
 

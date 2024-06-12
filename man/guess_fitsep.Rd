@@ -2,12 +2,18 @@
 % Please edit documentation in R/11_enrichment.R
 \name{guess_fitsep}
 \alias{guess_fitsep}
+\alias{guess_fitsep.data.table}
+\alias{guess_fitsep.SummarizedExperiment}
 \title{guess fitsep}
 \usage{
-guess_fitsep(featuredt)
+guess_fitsep(object, ...)
+
+\method{guess_fitsep}{data.table}(object, ...)
+
+\method{guess_fitsep}{SummarizedExperiment}(object, ...)
 }
 \arguments{
-\item{featuredt}{data.table}
+\item{object}{data.table or SummarizedExperiment}
 }
 \value{
 string
@@ -18,6 +24,6 @@ guess fitsep
 \examples{
 file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file)
-guess_fitsep(fdt(object))
-guess_fitsep(fdt(fit_limma(object)))
+object \%<>\% fit_limma()
+guess_fitsep(object)
 }
