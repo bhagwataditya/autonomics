@@ -2003,10 +2003,12 @@ fclusplot <- function(
     clusdt[, feature_id := factor(feature_id, unique(feature_id))]
     exemplardt <- clusdt[silh == max(silh)]
 
+    shapescale <- c(16, 17, 15, 3, 7, 8, 4, 5, 6, 9, 10, 11, 12, 13, 14)
     ggplot(clusdt, aes(x = sample_id, y = value, group = feature_id, color = silhcut, shape = subgroup)) +
     theme_bw() + 
     facet_wrap(vars(exemplar)) + 
     scale_color_manual(values = colo) + 
+    scale_shape_manual(values = shapescale) + 
     theme(axis.text.x = element_text(angle = 90), panel.grid = element_blank(), axis.title.x = element_blank()) + 
     guides(color = 'none', shape = guide_legend(override.aes = list(colour = 'black'))) + 
     ylab(meth) + 
