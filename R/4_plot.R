@@ -1838,7 +1838,7 @@ fcluster <- function(
          k = 2:10,
    verbose = TRUE,
       plot = TRUE,
-     label = if ('gene' %in% fvars(object)) 'gene' else 'feature_id',
+     label = 'feature_id',
      alpha = 1
 ){
 # Assert    
@@ -1867,7 +1867,7 @@ fcluster <- function(
                     feature_id = names(outCM$cluster), 
                     cmeansCLUS = outCM$cluster,
                     cmeansSILH = if (is.null(distmat)){ rowMaxs(outCM$membership)
-                    } else {   cluster::silhouette(outCM$cluster, distmat)[, 3] } )) 
+                                 } else {   cluster::silhouette(outCM$cluster, distmat)[, 3] } )) 
     }
     if ('hclust' %in% method ){
         if (verbose)  cmessage('%shclust', spaces(18))
@@ -1890,6 +1890,9 @@ fcluster <- function(
     clusvar <- paste0(method, 'CLUS')
     silhvar <- paste0(method, 'SILH')
     outdt %<>% extract(, c('feature_id', clusvar, silhvar), with = FALSE)
+    orderdt <- outdt[rev(order(get(silhvar)))][, .SD[1], by = clusvar]
+    outdt[, (clusvar) := factor(get(clusvar), orderdt[[clusvar]])]
+    levels(outdt[[clusvar]]) <- orderdt$feature_id
     object %<>% merge_fdt(outdt)
 # Plot, Merge, Return
     if (plot)  print(fclusplot(object, label = label, alpha = alpha))

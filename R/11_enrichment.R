@@ -152,6 +152,7 @@ utils::globalVariables(c('in', 'in.selected', 'out', 'selected', 'p.selected'))
 
 #' guess fitsep
 #' @param object data.table or SummarizedExperiment
+#' @param ... S3 dispatch
 #' @return string
 #' @examples 
 #' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')

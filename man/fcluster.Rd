@@ -11,7 +11,7 @@ fcluster(
   k = 2:10,
   verbose = TRUE,
   plot = TRUE,
-  label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
+  label = "feature_id",
   alpha = 1
 )
 }

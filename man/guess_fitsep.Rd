@@ -14,6 +14,8 @@ guess_fitsep(object, ...)
 }
 \arguments{
 \item{object}{data.table or SummarizedExperiment}
+
+\item{...}{S3 dispatch}
 }
 \value{
 string
