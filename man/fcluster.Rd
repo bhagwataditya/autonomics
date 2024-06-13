@@ -11,8 +11,10 @@ fcluster(
   k = 2:10,
   verbose = TRUE,
   plot = TRUE,
-  label = "feature_id",
-  alpha = 1
+  label = if ("gene" \%in\% fvars(object)) "gene" else "feature_id",
+  alpha = 1,
+  nrow = if (length(method) > 1) length(method) else NULL,
+  ncol = NULL
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ fcluster(
 \item{label}{fvar}
 
 \item{alpha}{fraction}
+
+\item{nrow}{number}
+
+\item{ncol}{number}
 }
 \value{
 SummarizedExperiment

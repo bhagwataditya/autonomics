@@ -1822,6 +1822,8 @@ twofactor_sumexp <- function(){
 #' @param plot       TRUE or FALSE
 #' @param label      fvar
 #' @param alpha      fraction
+#' @param nrow       number
+#' @param ncol       number
 #' @return SummarizedExperiment
 #' @examples
 #' object <- twofactor_sumexp()
@@ -1838,8 +1840,10 @@ fcluster <- function(
          k = 2:10,
    verbose = TRUE,
       plot = TRUE,
-     label = 'feature_id',
-     alpha = 1
+     label = if ('gene' %in% fvars(object)) 'gene' else 'feature_id',
+     alpha = 1, 
+      nrow = if (length(method)>1) length(method) else NULL, 
+      ncol = NULL
 ){
 # Assert    
     assert_is_valid_sumexp(object)
@@ -1849,82 +1853,126 @@ fcluster <- function(
     clvars <- fvars(object) %>% extract(stri_detect_fixed(., 'CLUS') | stri_detect_fixed(., 'SILH'))
     for (col in clvars)  fdt(object)[[col]] <- NULL
     full <- NULL
-# Cluster
+# Scale
     # if (verbose)  message(spaces(14), 'Distmat = 1-cormat')
     if (verbose)  message(spaces(8), 'Cluster')
     object %<>% extract(, order(colnames(.)))
     assays(object)$fscale <- fscale(values(object))
-    outdt <- data.table(feature_id = rownames(object))
-    if ('cmeans' %in% method){
-        txt <- "BiocManager::install('e1071'). Then re-run"
-        if (!requireNamespace('e1071', quietly = TRUE)){  message(txt); return(object)  }
-        if (verbose)  cmessage('%sCluster', spaces(14))
-        if (verbose)  cmessage('%scmeans',  spaces(18))
-        if (length(k)>1)  k <- cmeansk(object, krange = k)
-        mat <- assays(filter_full_features(object))$fscale
-        outCM <- e1071::cmeans(mat, centers = k, method = "cmeans", m = 1.25)
-        outdt %<>% merge(data.table( 
-                    feature_id = names(outCM$cluster), 
-                    cmeansCLUS = outCM$cluster,
-                    cmeansSILH = if (is.null(distmat)){ rowMaxs(outCM$membership)
-                                 } else {   cluster::silhouette(outCM$cluster, distmat)[, 3] } )) 
-    }
-    if ('hclust' %in% method ){
-        if (verbose)  cmessage('%shclust', spaces(18))
-        if (length(k)>1)  k <- hclustk(distmat, krange = k)
-        outHC <- stats::hclust(distmat)
-        outdt %<>% merge(data.table( 
-                    feature_id = names(stats::cutree(outHC, k = k)) , 
-                    hclustCLUS = stats::cutree(outHC, k = k), 
-                    hclustSILH = cluster::silhouette(stats::cutree(outHC, k = k), distmat)[, 3] ), by = 'feature_id' ) 
-    }
-    if ('pamk' %in% method){
-        if (verbose)  cmessage('%spamk', spaces(18))
-        if (length(k)>1)  k <- pamk(distmat, krange = k)
-        outPAM <- cluster::pam(distmat, k = k)             # fpc::pamk(distmat, krange = k)
-        outdt %<>% merge(data.table( 
-                    feature_id = names(outPAM$clustering), 
-                    pamkCLUS =       outPAM$clustering,    # outPAMK$silinfo$widths[, 'sil_width']
-                    pamkSILH = cluster::silhouette(outPAM, distmat)[, 3] ), by = 'feature_id') 
-    }
-    clusvar <- paste0(method, 'CLUS')
-    silhvar <- paste0(method, 'SILH')
-    outdt %<>% extract(, c('feature_id', clusvar, silhvar), with = FALSE)
-    orderdt <- outdt[rev(order(get(silhvar)))][, .SD[1], by = clusvar]
-    outdt[, (clusvar) := factor(get(clusvar), orderdt[[clusvar]])]
-    levels(outdt[[clusvar]]) <- orderdt$feature_id
-    object %<>% merge_fdt(outdt)
-# Plot, Merge, Return
-    if (plot)  print(fclusplot(object, label = label, alpha = alpha))
+# Cluster
+    if ('cmeans' %in% method)  object %<>% fcluster_cmeans(distmat, k = k, label = label, verbose = verbose)
+    if ('hclust' %in% method)  object %<>% fcluster_hclust(distmat, k = k, label = label, verbose = verbose)
+    if (  'pamk' %in% method)  object %<>% fcluster_pamk(  distmat, k = k, label = label, verbose = verbose)
+# Plot, Return
+    if (plot)  print(fclusplot(object, label = label, alpha = alpha, nrow = nrow, ncol = ncol))
     invisible(object)
 }
 
 
-cmeansk <- function(object, krange = 2:10){
-    mat <- fscale(values(filter_full_features(object)))
-    cmeanseps <- function(k)  e1071::cmeans(mat, centers = k, method = "cmeans", m = 1.25, iter.max = 300)$withinerror
-    eps <- vapply(krange, cmeanseps, numeric(1))
-    names(eps) <- sprintf('k=%d', krange)
-    eps <- (eps-min(eps)) / (max(eps)-min(eps))  # scale from 0 to 1
-    eps <- c(0, diff(eps))                       # slope
-    eps <- c(0, diff(eps))                       # change in slope
-    krange[which.max(eps)-1]
+cluslabel <- function(clusdt, label){
+    n <- NULL
+    clusvar <- names(clusdt) %>% extract(stri_endswith_fixed(., 'CLUS'))
+    silhvar <- names(clusdt) %>% extract(stri_endswith_fixed(., 'SILH'))
+    orderdt <- clusdt[, .( feature_id =   feature_id[which.max(get(silhvar))], 
+                                label =   get(label)[which.max(get(silhvar))],
+                           silhouette = get(silhvar)[which.max(get(silhvar))],
+                                    n = .N ), 
+                       by = clusvar ]
+    orderdt <- orderdt[rev(order(silhouette))]
+    orderdt[, label := paste0(label, ' (n=', n, ')')]
+    clusdt[[clusvar]] %<>% factor(orderdt[[clusvar]])
+    levels(clusdt[[clusvar]]) <- orderdt$label
+    if (label!= 'feature_id')  clusdt[, c(label) := NULL]
+    clusdt
 }
 
-hclustk <- function(distmat, krange = 2:10){
-    out <- stats::hclust(distmat)
-    silfun <- function(k)  mean(cluster::silhouette(stats::cutree(out, k = k), distmat)[, 3])
-    sil <- vapply(krange, silfun, numeric(1))
-    names(sil) <- sprintf('k=%d', krange)
-    krange[which.max(sil)]
+
+fcluster_cmeans <- function(object, distmat, k, label, verbose){
+# Assert
+    if (!requireNamespace('e1071', quietly = TRUE)){
+        message("BiocManager::install('e1071'). Then re-run")
+        return(object)  
+    }
+# Find k
+    mat <- assays(filter_full_features(object))$fscale
+    if (verbose)  cmessage('%scmeans',  spaces(14))
+    if (length(k)>1){
+        cmeanseps <- function(kay)  e1071::cmeans(mat, centers = kay, method = "cmeans", m = 1.25, iter.max = 300)$withinerror
+        eps <- vapply(k, cmeanseps, numeric(1))
+        names(eps) <- sprintf('k=%d', k)
+        eps <- (eps-min(eps)) / (max(eps)-min(eps))  # scale from 0 to 1
+        eps <- c(0, diff(eps))                       # slope
+        eps <- c(0, diff(eps))                       # change in slope
+        k <- k[which.max(eps)-1]
+    }
+# Cmeans
+    out <- e1071::cmeans(mat, centers = k, method = "cmeans", m = 1.25)
+    clusdt <- data.table(  feature_id = names(out$cluster), 
+                              cluster = out$cluster,
+                           silhouette = if (is.null(distmat)){ rowMaxs(out$membership)
+                                        } else {   silhouette(out$cluster, distmat)[, 3] } )
+    setnames(clusdt, 'cluster',    'cmeansCLUS')
+    setnames(clusdt, 'silhouette', 'cmeansSILH')
+    if (label != 'feature_id'){  labeldt <- fdt(object)[, c('feature_id', label), with = FALSE]
+                                 clusdt %<>% merge(labeldt, by = 'feature_id')  }
+    clusdt %<>% cluslabel(label)
+    object %<>% merge_fdt(clusdt)
+    object
+}
+
+fcluster_hclust <- function(object, distmat, k, label, verbose){
+# Assert
+    if (is.null(distmat)){
+        message("distmat is NULL - return object unchanged")
+        return(object)
+    }
+# Cluster    
+    if (verbose)  cmessage('%shclust', spaces(14))
+    if (length(k)>1){
+        out <- hclust(distmat)
+        silfun <- function(kay)  mean(silhouette(cutree(out, k = kay), distmat)[, 3])
+        sil <- vapply(k, silfun, numeric(1))
+        names(sil) <- sprintf('k=%d', k)
+        k <- k[which.max(sil)]
+    }
+    out <- hclust(distmat)
+    clusdt <- data.table( feature_id = names(cutree(out, k = k)) , 
+                             cluster = cutree(out, k = k), 
+                          silhouette = silhouette(cutree(out, k = k), distmat)[, 3] )
+    setnames(clusdt, 'cluster',    'hclustCLUS')
+    setnames(clusdt, 'silhouette', 'hclustSILH')
+    if (label != 'feature_id'){  labeldt <- fdt(object)[, c('feature_id', label), with = FALSE]
+                                  clusdt %<>% merge(labeldt, by = 'feature_id') }
+    clusdt %<>% cluslabel(label)
+    object %<>% merge_fdt(clusdt)
+    object
 }
 
 
-pamk <- function(distmat, krange = 2:10){
-    silfun <- function(k)  mean(cluster::silhouette(cluster::pam(distmat, k = k), distmat)[, 3])
-    sil <- vapply(krange, silfun, numeric(1))
-    names(sil) <- sprintf('k=%d', krange)
-    krange[which.max(sil)]
+fcluster_pamk <- function(object, distmat, k, label, verbose){
+# Assert
+    if (is.null(distmat)){
+        message("distmat is NULL - return object unchanged")
+        return(object)
+    }
+# Cluster
+    if (verbose)  cmessage('%spamk', spaces(14))
+    if (length(k)>1){
+        silfun <- function(kay)  mean(silhouette(pam(distmat, k = kay), distmat)[, 3])
+        sil <- vapply(k, silfun, numeric(1))
+        names(sil) <- sprintf('k=%d', k)
+        k <- k[which.max(sil)]
+    }
+    out <- pam(distmat, k = k)             # fpc::pamk(distmat, krange = k)
+    clusdt <- data.table( feature_id = names(out$clustering), 
+                             cluster =       out$clustering,    # outPAMK$silinfo$widths[, 'sil_width']
+                          silhouette = silhouette(out, distmat)[, 3] )
+    setnames(clusdt, 'cluster',    'pamkCLUS')
+    setnames(clusdt, 'silhouette', 'pamkSILH')
+    if (label != 'feature_id'){   labeldt <- fdt(object)[, c('feature_id', label), with = FALSE]
+                                   clusdt %<>% merge(labeldt, by = 'feature_id')  }
+    clusdt %<>% cluslabel(label)
+    object %<>% merge_fdt(clusdt)
+    object
 }
 
 
@@ -1950,11 +1998,17 @@ CLUSCOLORS <- c(#"#FF0000", "#FF1800", "#FF3000", "#FF4800", "#FF6000", "#FF7800
           "#FF0018")
 
 
+clustermethods <- function(object){
+    fvars(object) %>% extract(stri_detect_fixed(., 'CLUS')) %>% split_extract_fixed('CLUS', 1)
+}
 
 fclusplot <- function(
     object, 
     label = if ('gene' %in% fvars(object)) 'gene' else 'feature_id' , 
-    alpha = 1
+    alpha = 1, 
+     nrow = if (length(clustermethods(object))>1)  length(clustermethods(object))  else NULL,
+     ncol = NULL
+
 ){
 # Initialize
     method <- clus <- exemplar <- silh <- silhcut <- NULL
@@ -1963,7 +2017,8 @@ fclusplot <- function(
     silhvars <- fvars(object) %>% extract(stri_detect_fixed(., 'SILH'))
     methods <- clusvars %>% stri_replace_first_fixed('CLUS', '')
     plotdt <- sumexp_to_longdt(object, assay = 'fscale', fvars = c(label, clusvars, silhvars))
-    cols <- c('subgroup', 'sample_id', 'feature_id', 'gene', 'value')
+    cols <- c('subgroup', 'sample_id', 'feature_id', label, 'value')
+    cols %<>% unique()
     cols %<>% intersect(names(plotdt))
     plotdt <- rbindlist( lapply( methods, function(meth){
                                             clvar <- paste0(meth, 'CLUS')
@@ -1973,7 +2028,7 @@ fclusplot <- function(
                                             retdt[, method := meth]
                                             retdt } ))
     plotdt %<>% extract(!is.na(clus))
-    plotdt[, exemplar := get(label)[silh == max(silh)][1], by = c('method', 'clus')]
+    #plotdt[, exemplar := get(label)[silh == max(silh)][1], by = c('method', 'clus')]
     colo <- CLUSCOLORS
     cuts <- seq( min(plotdt$silh)-1e-10, 1, length = length(colo)+1)
     plotdt[ , silhcut := cut(silh, cuts)]
@@ -1981,26 +2036,27 @@ fclusplot <- function(
 # Plot
     plotdt <- plotdt[rev(order(silh))]
     clusters <- unique(plotdt$clus)
-    nrow <- if (length(methods)>1)  length(methods)             else NULL
-    ncol <- if (length(methods)>1)  length(unique(plotdt$clus)) else NULL
-    plotlist <- mapply( .fclusplot,
-                        meth = rep(methods, each = length(clusters)), 
-                          cl = rep(clusters, length(methods)), 
+    meth <- c('cmeans', 'cmeans', 'cmeans', 'hclust', 'hclust', 'hclust', 'pamk', 'pamk', 'pamk')
+    tmpdt <- plotdt[, .(cluster = unique(clus)), by = 'method']
+    plotlist <- mapply( .fclusplot, meth = tmpdt$method, cl = tmpdt$cluster, 
                     MoreArgs = list(plotdt = plotdt, colo = colo, alpha = alpha), 
                     SIMPLIFY = FALSE )
     if (!requireNamespace('patchwork', quietly = TRUE)){
         message("BiocManager::install('patchwork'). Then re-run")
         return(NULL)
     }
-    patchwork::wrap_plots(plotlist, nrow = nrow, ncol = ncol, byrow = TRUE) + 
+    patchwork::wrap_plots(plotlist, nrow = nrow, byrow = TRUE) + 
     patchwork::plot_layout(axes = 'collect', guides = 'collect')
     #grid.arrange(grobs = plotlist, nrow = length(method), ncol = length(unique(plotdt$clus)))
 }
 
-
 .fclusplot <- function(plotdt, meth, cl, colo, alpha){
-    clus <- exemplar <- silh <- silhcut <- method <- sample_id <- value <- NULL
-    
+    # Dont facet-wrap this into higher-level function!
+    # Each facet requires feature_id to be re-ordered based on silhouette
+    # This order is different in each facet
+    # So it needs to be coded like it is here
+
+    clus <- silh <- silhcut <- method <- sample_id <- value <- NULL
     clusdt <- plotdt[method == meth & clus == cl]
     clusdt <- clusdt[ order(silh) ]
     clusdt[, feature_id := factor(feature_id, unique(feature_id))]
@@ -2009,12 +2065,12 @@ fclusplot <- function(
     shapescale <- c(16, 17, 15, 3, 7, 8, 4, 5, 6, 9, 10, 11, 12, 13, 14)
     ggplot(clusdt, aes(x = sample_id, y = value, group = feature_id, color = silhcut, shape = subgroup)) +
     theme_bw() + 
-    facet_wrap(vars(exemplar)) + 
+    facet_wrap(vars(clus)) + 
     scale_color_manual(values = colo) + 
     scale_shape_manual(values = shapescale) + 
     theme(axis.text.x = element_text(angle = 90), panel.grid = element_blank(), axis.title.x = element_blank()) + 
     guides(color = 'none', shape = guide_legend(override.aes = list(colour = 'black'))) + 
-    ylab(meth) + 
+    ylab(unique(clusdt$method)) + 
     geom_line(alpha = alpha) +
     geom_line( data = exemplardt, color = 'white', linewidth = 0.8) + 
     geom_point(data = exemplardt, color = 'white', size = 1.5)
