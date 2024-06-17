@@ -2,7 +2,7 @@
 % Please edit documentation in R/3.8_read_compounddiscoverer.R
 \name{read_compounddiscoverer}
 \alias{read_compounddiscoverer}
-\title{Read maxquant proteingroups}
+\title{Read compound discoverer output}
 \usage{
 read_compounddiscoverer(
   dir = getwd(),
@@ -80,5 +80,5 @@ read_compounddiscoverer(
 SummarizedExperiment
 }
 \description{
-Read maxquant proteingroups
+Read compound discoverer output
 }

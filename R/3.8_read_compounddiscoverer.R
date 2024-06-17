@@ -227,7 +227,7 @@ merge_compounddiscoverer <- function(x, quantity = NULL, verbose = TRUE) {
 #
 #---------------------------------------------------------------------------
 
-#' Read maxquant proteingroups
+#' Read compound discoverer output
 #' @param dir                      compound discoverer output directory
 #' @param files                    compound discoverer output files
 #' @param colname_regex            regular expression to parse sample names from column names
