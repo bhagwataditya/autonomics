@@ -237,6 +237,7 @@ merge_compounddiscoverer <- function(x, quantity = NULL, verbose = TRUE) {
 #' @param nonames                  TRUE or FALSE: retain compunds without Names?
 #' @param exclude_sname_pattern    regular expression of sample names to exclude
 #' @param subgroups                NULL or string vector : subgroups to retain
+#' @param logbase                  base for logarithmization of the data
 #' @param impute                   TRUE or FALSE: impute group-specific NA values?
 #' @param plot                     TRUE or FALSE: plot ?
 #' @param label                    fvar
@@ -269,6 +270,7 @@ read_compounddiscoverer <- function(
     nonames               = FALSE,
     exclude_sname_pattern = "(blank|QC|RS)",
     subgroups             = NULL,
+    logbase               = 2,
     impute                = FALSE,
     plot                  = FALSE,
     label                 = 'feature_id',
@@ -317,10 +319,10 @@ read_compounddiscoverer <- function(
 # SumExp
     if (verbose)  cmessage('%sSumExp', spaces(4))
     pattern <- COMPOUNDDISCOVERER_PATTERNS[[quantity]]
-    cdmat <- mqdt_to_mat(cddt, pattern, verbose = verbose)
+    cdmat <- mqdt_to_mat(cddt, pattern, logbase = logbase, verbose = verbose)
     cddt %<>% extract(, names(cddt) %>% setdiff(colnames(cdmat)), with = FALSE)
     object <- list(cdmat) %>%
-      magrittr::set_names(paste0('log2', quantity)) %>%
+      magrittr::set_names(paste0('log', logbase, quantity)) %>%
       SummarizedExperiment(rowData = cddt)
 # dequantify_compounddiscoverer.
     object$cdcol <- colnames(object)

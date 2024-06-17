@@ -16,6 +16,7 @@ read_compounddiscoverer(
   nonames = FALSE,
   exclude_sname_pattern = "(blank|QC|RS)",
   subgroups = NULL,
+  logbase = 2,
   impute = FALSE,
   plot = FALSE,
   label = "feature_id",
@@ -48,6 +49,8 @@ read_compounddiscoverer(
 \item{exclude_sname_pattern}{regular expression of sample names to exclude}
 
 \item{subgroups}{NULL or string vector : subgroups to retain}
+
+\item{logbase}{base for logarithmization of the data}
 
 \item{impute}{TRUE or FALSE: impute group-specific NA values?}
 

@@ -226,6 +226,7 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 #' Convert maxquant data.table to matrix
 #' @param dt       data.table
 #' @param pattern  string
+#' @param logbase  base for value logaritmization
 #' @param verbose  TRUE / FALSE
 #' @return matrix
 #' @examples 
@@ -240,13 +241,13 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
 #' pattern <- MAXQUANT_PATTERNS[[quantity]]
 #' mqdt_to_mat(prodt, pattern = pattern)[1:2, 1:2]
 #' @noRd
-mqdt_to_mat <- function(dt, pattern, verbose = TRUE){
+mqdt_to_mat <- function(dt, pattern, logbase = 2, verbose = TRUE){
     mat <- dt[, .SD, .SDcols = patterns(pattern)]
     mat %<>% data.matrix()
     rownames(mat) <- dt$feature_id
     mat %<>% zero_to_na(verbose = verbose) 
     mat %<>% nan_to_na( verbose = verbose)
-    mat <- log2(mat)
+    mat <- log(mat, base = logbase)
     mat
 }
 
