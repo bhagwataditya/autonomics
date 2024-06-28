@@ -2,7 +2,7 @@
 % Please edit documentation in R/3.8_read_compounddiscoverer.R
 \name{read_compounddiscoverer}
 \alias{read_compounddiscoverer}
-\title{Read maxquant proteingroups}
+\title{Read compound discoverer output}
 \usage{
 read_compounddiscoverer(
   dir = getwd(),
@@ -16,6 +16,7 @@ read_compounddiscoverer(
   nonames = FALSE,
   exclude_sname_pattern = "(blank|QC|RS)",
   subgroups = NULL,
+  logbase = 2,
   impute = FALSE,
   plot = FALSE,
   label = "feature_id",
@@ -49,6 +50,8 @@ read_compounddiscoverer(
 
 \item{subgroups}{NULL or string vector : subgroups to retain}
 
+\item{logbase}{base for logarithmization of the data}
+
 \item{impute}{TRUE or FALSE: impute group-specific NA values?}
 
 \item{plot}{TRUE or FALSE: plot ?}
@@ -77,5 +80,5 @@ read_compounddiscoverer(
 SummarizedExperiment
 }
 \description{
-Read maxquant proteingroups
+Read compound discoverer output
 }
