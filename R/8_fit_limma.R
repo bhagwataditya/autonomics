@@ -58,9 +58,10 @@ default_formula <- function(object){
 character2factor <- function(x)  if (is.character(x)) factor(x) else x
 
 
-#' Create design
+#' Create design matrix
 #'
-#'  Create design matrix  for statistical analysis
+#' Create design matrix for statistical analysis
+#'
 #' @param object       SummarizedExperiment or data.frame
 #' @param formula      formula with svars
 #' @param drop         whether to drop predictor names
@@ -145,6 +146,52 @@ create_design.data.table <- function(
 # Return
     return(myDesign)
 }
+
+
+
+#' Model based prediction
+#'
+#' @param object     SummarizedExperiment or data.frame
+#' @param fit        'limma', 'lm', 'lme', 'lmer'
+#' @return beta matrix (nlevel x nfeature)
+#' @examples
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#' object <- read_metabolon(file)
+#' object %<>% fit_limma(block = 'Subject')
+#' beta(object)                    #    betas : nlevel x nfeature
+#'    X(object)                    #   design : nlevel x nlevel
+#'    X(object) %*% beta(object)   # response : nlevel x nfeature
+#' @export
+X <- function(
+    object, 
+    formula   = default_formula(object),
+    drop      = varlevels_dont_clash(object, all.vars(formula)), 
+    codingfun = contr.treatment
+){
+    design <- create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)
+    X <- unique(design)
+    cols <- unique(c('sample_id', all.vars(formula)))
+    rownamedt <- data.table(sample_id = rownames(X))
+    rownamedt %<>% merge(sdt(object)[ , cols, with = FALSE], by = 'sample_id', sort = FALSE)
+    rownames(X) <- rownamedt[ , do.call(function(...) paste(..., sep = '.'), .SD), 
+                               .SDcols = names(rownamedt)[-1] ]
+    X
+}
+
+
+#' @rdname X
+#' @export
+beta <- function( object, fit = fits(object)[1] ){
+    betas <- effectmat(object, fit = fit)
+    sep <- guess_fitsep(object)
+    colnames(betas) %<>% split_extract_fixed(sep, 2)
+    if ('Intercept' %in% colnames(betas))  betas[ , 'Intercept' ] <- 0
+    betas[ pmat(object) > 0.05 ] <- 0
+    betas[ is.na(betas) ] <- 0
+    betas %<>% t()
+    betas
+}
+
 
 
 #' Contrast Code Factor
@@ -472,6 +519,16 @@ contrast_coefs <- function(
     if (ncol(design)==1)  colnames(design) else setdiff(colnames(design), 'Intercept')
 }
 
+model_coefs <- function(
+    object, 
+    formula = default_formula(object), 
+       drop = varlevels_dont_clash(object, all.vars(formula)), 
+  codingfun = contr.treatment, 
+     design = create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)
+){
+    colnames(design)
+}
+
 
 #==============================================================================
 #
@@ -719,10 +776,10 @@ fit_limma <- function(
     codingfun = contr.treatment,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
-        coefs = if (is.null(contrasts)) contrast_coefs(design = design) else NULL,
+        coefs = if (is.null(contrasts))  model_coefs(design = design) else NULL,
         block = NULL,
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-     statvars = c('effect', 'p'),
+     statvars = c('effect', 'p', 't'),
         ftest = if (is.null(coefs)) TRUE else FALSE,
           sep = FITSEP,
        suffix = paste0(sep, 'limma'),
@@ -804,7 +861,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
     codingfun = contr.treatment,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
-        coefs = if (is.null(contrasts))  contrast_coefs(design = design) else NULL,
+        coefs = if (is.null(contrasts))  model_coefs(design = design) else NULL,
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
      statvars = c('effect', 'p', 'se', 't')[1:2],

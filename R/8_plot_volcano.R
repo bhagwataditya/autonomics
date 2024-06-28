@@ -21,11 +21,7 @@ default_coefs <- function(object, ...)  UseMethod('default_coefs')
 #' @rdname default_coefs
 #' @export
 default_coefs.data.table <- function(object, fit = fits(object), ...){
-    if (length(fit)==0) return(NULL)    # none
-    y <- autonomics::coefs(object, fit = fit)   # intercept
-    if (length(y)==1)   return(y)
-    y %<>% setdiff('Intercept')                 # intercept + others
-    y
+    if (length(fit)==0)  return(NULL)  else  autonomics::coefs(object, fit = fit)
 }
 
 #' @rdname default_coefs
@@ -276,7 +272,7 @@ make_volcano_dt <- function(
 plot_volcano <- function(
           object,
              fit = fits(object)[1], 
-           coefs = default_coefs(object, fit = fit)[1],
+           coefs = setdiff( autonomics::coefs(object, fit = fit), 'Intercept' )[1],
            facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
            shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
             size = NULL,

@@ -422,7 +422,7 @@ abstractvar.data.table <- function(
     y <- paste(  rep(coef, length(fit)),         # t1~limma
                  rep(fit, each = length(coef)),
                  sep = sep )
-    if (y %in% names(object))  y  else NULL
+    if (all(y %in% names(object)))  y  else NULL
 }
 
 #' @rdname modelvar
