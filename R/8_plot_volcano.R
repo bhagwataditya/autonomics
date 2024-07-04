@@ -231,6 +231,7 @@ make_volcano_dt <- function(
 #' @param fit           'limma', 'lme', 'lm', 'wilcoxon'
 #' @param coefs          character vector
 #' @param facet          character vector
+#' @param scales        'free', 'fixed', etc.
 #' @param shape          fvar  (string)
 #' @param size           fvar  (string)
 #' @param alpha          fvar  (string)
@@ -274,6 +275,7 @@ plot_volcano <- function(
              fit = fits(object)[1], 
            coefs = setdiff( autonomics::coefs(object, fit = fit), 'Intercept' )[1],
            facet = if (is_scalar(fit)) 'coef' else c('fit', 'coef'),
+          scales = 'fixed',
            shape = if ('imputed' %in% fvars(object)) 'imputed' else NULL, 
             size = NULL,
            alpha = NULL,
@@ -298,7 +300,7 @@ plot_volcano <- function(
 # Volcano 
     plotdt <- make_volcano_dt(object, fit = fit, coefs = coefs, 
                   label = label, shape = shape, size = size, alpha = alpha)
-    g <- ggplot(plotdt) + facet_wrap(facet, nrow = nrow)
+    g <- ggplot(plotdt) + facet_wrap(facet, nrow = nrow, scales = scales)
     g <- g + theme_bw() + theme(panel.grid = element_blank())
     g <- g + xlab('log2(FC)') + ylab('-log10(p)') + ggtitle(title)
     shapesym <- if (is.null(shape))  quo(NULL) else sym(shape)

@@ -18,7 +18,8 @@ find_medoid <- function(subdt){
 #' file <- download_data('atkin.metabolon.xlsx')
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma(block = 'Subject')
-#' ftype(object)
+#' object %<>% ftype()
+#' fdt(object)
 #' @export
 ftype <- function(
        object, 
