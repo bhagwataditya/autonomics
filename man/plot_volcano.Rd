@@ -7,8 +7,9 @@
 plot_volcano(
   object,
   fit = fits(object)[1],
-  coefs = default_coefs(object, fit = fit)[1],
+  coefs = setdiff(autonomics::coefs(object, fit = fit), "Intercept")[1],
   facet = if (is_scalar(fit)) "coef" else c("fit", "coef"),
+  scales = "fixed",
   shape = if ("imputed" \%in\% fvars(object)) "imputed" else NULL,
   size = NULL,
   alpha = NULL,
@@ -31,6 +32,8 @@ plot_volcano(
 \item{coefs}{character vector}
 
 \item{facet}{character vector}
+
+\item{scales}{'free', 'fixed', etc.}
 
 \item{shape}{fvar  (string)}
 

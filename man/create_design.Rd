@@ -4,7 +4,7 @@
 \alias{create_design}
 \alias{create_design.SummarizedExperiment}
 \alias{create_design.data.table}
-\title{Create design}
+\title{Create design matrix}
 \usage{
 create_design(object, ...)
 
@@ -55,7 +55,7 @@ create_design(object, ...)
 design matrix
 }
 \description{
-Create design matrix  for statistical analysis
+Create design matrix for statistical analysis
 }
 \examples{
 file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
