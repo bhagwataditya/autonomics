@@ -152,7 +152,10 @@ create_design.data.table <- function(
 #' Model based prediction
 #'
 #' @param object     SummarizedExperiment or data.frame
-#' @param fit        'limma', 'lm', 'lme', 'lmer'
+#' @param fit        'limma', 'lm', 'lme', 'wilcoxon'
+#' @param formula    formula
+#' @param drop       TRUE or FALSE
+#' @param codingfun  function
 #' @return beta matrix (nlevel x nfeature)
 #' @examples
 #' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')

@@ -10,9 +10,11 @@ find_medoid <- function(subdt){
 
 
 #' Feature type
-#' @param object   SummarizedExperiment
-#' @param formula  model formula
-#' @param design   design matrix
+#' @param object      SummarizedExperiment
+#' @param formula     model formula
+#' @param drop        TRUE or FALSE
+#' @param fit        'limma', 'lm', 'lme', 'wilcoxon'
+#' @param codingfun   coding function
 #' @return SummarizedExperiment
 #' @examples
 #' file <- download_data('atkin.metabolon.xlsx')
@@ -39,6 +41,7 @@ ftype <- function(
     betamat <- beta(object, fit = fit)
     y <- xmat %*% betamat
 # Type
+    x <- ystr <- type <- typemedoid <- NULL # dont put y here :D
     typedt <- mat2sdt(y)
     typedt %<>% melt.data.table(id.vars = 'sample_id', variable.name = 'feature_id', value.name = 'y')
     typedt[ , x    := seq(0, .N-1), by = 'feature_id']
@@ -48,6 +51,7 @@ ftype <- function(
     typedt[ , ystr := sprintf('%3d', y)]
     typedt[ , type := paste0(ystr, collapse = ''), by = 'feature_id']
 # Medoid
+    typemedoid <- NULL
     valuedt <- sumexp_to_longdt(object, fvars = NULL, svars = NULL)[, c('feature_id', 'sample_id', 'value'), with = FALSE]
     valuedt %<>% merge(typedt[, .SD[1, c('type')], by = 'feature_id'], by = 'feature_id')
     valuedt[ , typemedoid := find_medoid(.SD), by = 'type']
@@ -70,11 +74,14 @@ ftype <- function(
 
 
 plot_contrast_types <- function(typedt){
+# Initialize
+    n <- facet <- y <- type <- typemedoid <- NULL
+# Prepare
     plotdt <- unique(typedt[, .SD, .SDcols = setdiff(names(typedt), 'feature_id')])
     plotdt %<>% extract(rev(order(n)))
     plotdt[, facet := paste0(typemedoid, '\n', n) ]
     plotdt[, facet := factor(facet, unique(facet))]
-    
+# Plot
     ggplot(plotdt[n>1]) + theme_bw() + theme(panel.grid = element_blank()) + facet_wrap(vars(facet)) + 
     geom_line(aes(x = xlab, y = y, group = type, color = as.factor(n), linewidth = n)) + 
     guides(color = 'none', linewidth = 'none')
@@ -82,19 +89,23 @@ plot_contrast_types <- function(typedt){
 
 
 plot_contrast_trajectories <- function(typedt){
+# Initialize
+    x <- y <- n <- x0 <- x1 <- y0 <- y1 <- NULL
+    dx <- dy <- dz <- rad <- degrees <- xtext <- ytext <- xarrowstart <- yarrowstart <- NULL
+# Prepare    
     plotdt <- unique(typedt[, .SD, .SDcols = setdiff(names(typedt), 'feature_id')])
     plotdt <- plotdt[ , .( x0 = x[-.N], 
-                              x1 = x[-1], 
-                              y0 = y[-.N], 
-                              y1 = y[-1], 
-                               n = n[-1], 
-                            xlab = xlab[-1]), by = 'type' ]
+                           x1 = x[-1], 
+                           y0 = y[-.N], 
+                           y1 = y[-1], 
+                            n = n[-1], 
+                         xlab = xlab[-1]), by = 'type' ]
     plotdt <- plotdt[ , .(n = sum(n)) , by = c('x0', 'x1', 'y0', 'y1') ]
     plotdt %<>% extract(rev(order(n)))
     plotdt[                              , alpha := 0.15 ]
     plotdt[ n >= length(unique(n)) * 2/3 , alpha := 1   ]
-    plotdt[,     dy  := y1-y0]
-    plotdt[,     dx  := x1-x0]
+    plotdt[,      dy := y1-y0]
+    plotdt[,      dx := x1-x0]
     plotdt[,      dz := sqrt(dx^2+dy^2) ]
     plotdt[,     rad := atan(dy/dx)     ]
     plotdt[, degrees := 360/(2*pi)*rad  ]
@@ -103,7 +114,7 @@ plot_contrast_trajectories <- function(typedt){
     plotdt[,   xarrowstart := x0 + cos(rad)*dz*9/10 ]
     plotdt[,   yarrowstart := y0 + sin(rad)*dz*9/10 ]
     plotdt %<>% extract(order(n))
-
+# Plot
     ggplot() + theme_bw() + theme(panel.grid = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank()) + 
     geom_text(    data = plotdt, aes(x = xtext, y = ytext,       label = n,           color = as.factor(x1), alpha = alpha), vjust = -1) + 
     geom_segment( data = plotdt[alpha <1], aes(x = x0, xend = x1,          y = y0, yend = y1,          color = as.factor(x1), alpha = alpha, linewidth = n)) + 
@@ -112,8 +123,7 @@ plot_contrast_trajectories <- function(typedt){
     scale_alpha_identity() + 
     guides(linewidth = 'none') + 
     scale_x_continuous(labels = unique(typedt$xlab)) + 
-    xlab(NULL) + 
-    ylab(assayNames(object)[1]) + 
+    xlab(NULL) + #ylab(assayNames(object)[1]) + 
     guides(color = 'none')
     
 }

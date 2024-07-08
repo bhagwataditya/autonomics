@@ -17,7 +17,11 @@ ftype(
 
 \item{formula}{model formula}
 
-\item{design}{design matrix}
+\item{drop}{TRUE or FALSE}
+
+\item{fit}{'limma', 'lm', 'lme', 'wilcoxon'}
+
+\item{codingfun}{coding function}
 }
 \value{
 SummarizedExperiment
