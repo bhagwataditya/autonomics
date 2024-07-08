@@ -128,8 +128,8 @@ add_assay_means <- function(
 #' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
 #' fdt(object) %<>% extract(, 1:2)
-#' object %<>% fit_limma(coef = 'Adult')
-#' object %<>% extract(order(fdt(.)$`p~Adult~limma`), )
+#' object %<>% fit_limma(coef = 'Adult-X30dpt')
+#' object %<>% extract(order(fdt(.)$`p~Adult-X30dpt~limma`), )
 #'  fdt(object)
 #' (fdt(object) %<>% add_adjusted_pvalues('fdr'))
 #' (fdt(object) %<>% add_adjusted_pvalues('fdr'))      # smart enough not to add second column
@@ -173,7 +173,7 @@ add_adjusted_pvalues <- function(
 #' @examples
 #' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma')
-#' make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
+#' make_volcano_dt(object, fit = 'limma', coefs = 'Adult-X30dpt')
 #' @export
 make_volcano_dt <- function(
     object,
@@ -251,14 +251,14 @@ make_volcano_dt <- function(
 #'     object <- read_metabolon(file)
 #'     object %<>% fit_limma()
 #'     object %<>% fit_lm()
-#'     plot_volcano(object, coefs = 't3', fit = 'limma')                   # single contrast
-#'     plot_volcano(object, coefs = c('t2', 't3'), fit = 'limma')          # multip contrasts
-#'     plot_volcano(object, coefs = c('t2', 't3'), fit = c('limma', 'lm')) # multip contrs & methods
+#'     plot_volcano(object, coefs = 't3-t0', fit = 'limma')                   # single contrast
+#'     plot_volcano(object, coefs = c('t2-t0', 't3-t0'), fit = 'limma')          # multip contrasts
+#'     plot_volcano(object, coefs = c('t2-t0', 't3-t0'), fit = c('limma', 'lm')) # multip contrs & methods
 #' 
 #' # When nothing passes FDR
-#'     fdt(object) %<>% add_adjusted_pvalues('fdr', fit = 'limma',coefs = 't3')
-#'     object %<>% extract( fdrvec(object, fit = 'limma', coef = 't3') > 0.05, )
-#'     plot_volcano(object, coefs = 't3', fit = 'limma')
+#'     fdt(object) %<>% add_adjusted_pvalues('fdr', fit = 'limma',coefs = 't3-t0')
+#'     object %<>% extract( fdrvec(object, fit = 'limma', coef = 't3-t0') > 0.05, )
+#'     plot_volcano(object, coefs = 't3-t0', fit = 'limma')
 #' 
 #' # Additional mappings
 #'     file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
@@ -452,11 +452,11 @@ map_fvalues <- function(
 #'    file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'    object <- read_metabolon(file)
 #'    object %<>% fit_limma()
-#'    pcol <- pvar(fdt(object), fit = 'limma', coef = 't3')
+#'    pcol <- pvar(fdt(object), fit = 'limma', coef = 't3-t0')
 #'    object %<>% extract(order(fdt(.)[[pcol]]), )
 #'    object %<>% extract(1:10, )
 #'    fdt(object) %<>% extract(, 1)
-#'    object %<>% fit_limma(coefs = 't3')
+#'    object %<>% fit_limma(coefs = 't3-t0')
 #' # fdr2p
 #'    fdt(object)[[pcol]]
 #'    fdt(object)[[pcol]] %>% p.adjust(method = 'fdr')

@@ -101,7 +101,7 @@ create_design.SummarizedExperiment <- function(
     object, 
     formula   = default_formula(object),
     drop      = varlevels_dont_clash(object, all.vars(formula)), 
-    codingfun = contr.treatment,
+    codingfun = contr.treatment.explicit,
     verbose   = TRUE, 
     ...
 ){
@@ -118,7 +118,7 @@ create_design.data.table <- function(
     object, 
     formula   = default_formula(object),
     drop      = varlevels_dont_clash(object, all.vars(formula)), 
-    codingfun = contr.treatment,
+    codingfun = contr.treatment.explicit,
     verbose   = TRUE, 
     ...
 ){
@@ -169,7 +169,7 @@ X <- function(
     object, 
     formula   = default_formula(object),
     drop      = varlevels_dont_clash(object, all.vars(formula)), 
-    codingfun = contr.treatment
+    codingfun = contr.treatment.explicit
 ){
     design <- create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)
     X <- unique(design)
@@ -515,7 +515,7 @@ contrast_coefs <- function(
        object, 
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)), 
-    codingfun = contr.treatment, 
+    codingfun = contr.treatment.explicit, 
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)
 ){
     
@@ -526,7 +526,7 @@ model_coefs <- function(
     object, 
     formula = default_formula(object), 
        drop = varlevels_dont_clash(object, all.vars(formula)), 
-  codingfun = contr.treatment, 
+  codingfun = contr.treatment.explicit, 
      design = create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE)
 ){
     colnames(design)
@@ -737,7 +737,7 @@ fit <- function(
       formula = default_formula(object),
        engine = 'limma', 
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = if (engine == 'wilcoxon')  contr.treatment.explicit  else  contr.treatment , 
+    codingfun = contr.treatment.explicit, # if (engine == 'wilcoxon')  contr.treatment.explicit  else  contr.treatment , 
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun, verbose = FALSE),
     contrasts = NULL,
         coefs = if (is.null(contrasts))  contrast_coefs(design = design)     else NULL,
@@ -776,7 +776,7 @@ fit_limma <- function(
        object, 
       formula = default_formula(object),
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = contr.treatment,
+    codingfun = contr.treatment.explicit,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
         coefs = if (is.null(contrasts))  model_coefs(design = design) else NULL,
@@ -861,7 +861,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
        object, 
       formula = default_formula(object),
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = contr.treatment,
+    codingfun = contr.treatment.explicit,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
     contrasts = NULL,
         coefs = if (is.null(contrasts))  model_coefs(design = design) else NULL,
@@ -945,7 +945,7 @@ pull_level <- function(x, lev){
 #' object <- read_metabolon(file)
 #' object %<>% fit_limma()
 #' object %<>% fit_lm()
-#' summarize_fit(object, coefs = c('t1', 't2', 't3'))
+#' summarize_fit(object, coefs = c('t1-t0', 't2-t0', 't3-t0'))
 #' @export
 summarize_fit <- function(object, ...)  UseMethod('summarize_fit')
 
@@ -1013,7 +1013,7 @@ summarize_fit.SummarizedExperiment <- function(
 #' object <- read_metabolon(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma(block = 'Subject')
-#' sumdt <- summarize_fit(object, coefs = c('t1', 't2', 't3'))
+#' sumdt <- summarize_fit(object, coefs = c('t1-t0', 't2-t0', 't3-t0'))
 #' plot_fit_summary(sumdt)
 #' @export
 plot_fit_summary <- function(sumdt, nrow = NULL, ncol = NULL, order = FALSE){

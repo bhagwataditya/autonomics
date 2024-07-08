@@ -845,7 +845,7 @@ cmessage <- function(pattern, ...)  message(sprintf(pattern, ...))
 #'   file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #'   object <- read_metabolon(file)
 #'   order_on_p(object)
-#'   order_on_p(fit_limma(object), coefs = c('t1', 't2', 't3'))
+#'   order_on_p(fit_limma(object), coefs = c('t1-t0', 't2-t0', 't3-t0'))
 #' @return SummarizedExperiment
 #' @export
 order_on_p <- function(
@@ -955,24 +955,24 @@ order_on_effect <- function(
 #'     fdt(object) %<>% add_adjusted_pvalues('fdr')
 #' # Single coef
 #'     object0 <- object
-#'     object %<>% .extract_p_features(         coefs = 't1', p = 0.05)
-#'     object %<>% .extract_fdr_features(       coefs = 't1', fdr = 0.05)
-#'     object %<>% .extract_effectsize_features(coefs = 't1', effectsize = 1)
-#'     object %<>% .extract_sign_features(      coefs = 't1', sign = -1)
-#'     object %<>% .extract_n_features(         coefs = 't1', n = 1)
+#'     object %<>% .extract_p_features(         coefs = 't1-t0', p = 0.05)
+#'     object %<>% .extract_fdr_features(       coefs = 't1-t0', fdr = 0.05)
+#'     object %<>% .extract_effectsize_features(coefs = 't1-t0', effectsize = 1)
+#'     object %<>% .extract_sign_features(      coefs = 't1-t0', sign = -1)
+#'     object %<>% .extract_n_features(         coefs = 't1-t0', n = 1)
 #'     object <- object0
 #'     object %<>%  extract_coef_features(
-#'                    coefs = 't1', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 1)
+#'                    coefs = 't1-t0', p = 0.05, fdr = 0.05, effectsize = 1, sign = -1, n = 1)
 #' # Multiple coefs
 #'     object <- object0
-#'     object %<>% .extract_p_features(         coefs = c('t1', 't2'), p = 0.05)
-#'     object %<>% .extract_fdr_features(       coefs = c('t1', 't2'), fdr = 0.01)
-#'     object %<>% .extract_effectsize_features(coefs = c('t1', 't2'), effectsize = 1)
-#'     object %<>% .extract_sign_features(      coefs = c('t1', 't2'), sign = -1)
-#'     object %<>% .extract_n_features(         coefs = c('t1', 't2'), n = 1)
+#'     object %<>% .extract_p_features(         coefs = c('t1-t0', 't2-t0'), p = 0.05)
+#'     object %<>% .extract_fdr_features(       coefs = c('t1-t0', 't2-t0'), fdr = 0.01)
+#'     object %<>% .extract_effectsize_features(coefs = c('t1-t0', 't2-t0'), effectsize = 1)
+#'     object %<>% .extract_sign_features(      coefs = c('t1-t0', 't2-t0'), sign = -1)
+#'     object %<>% .extract_n_features(         coefs = c('t1-t0', 't2-t0'), n = 1)
 #'     object <- object0
 #'     object %<>%  extract_coef_features(
-#'                    coefs = c('t1', 't2'), p = 0.05, fdr = 0.01, effectsize = 1, sign = -1, n = 1)
+#'                    coefs = c('t1-t0', 't2-t0'), p = 0.05, fdr = 0.01, effectsize = 1, sign = -1, n = 1)
 #' @export
 extract_coef_features <- function(  
         object,
@@ -1209,7 +1209,7 @@ add_facetvars <- function(
 #' # With limma 
 #'     object %<>% fit_limma(block = 'Subject')
 #'     plot_exprs(object, block = 'Subject')
-#'     plot_exprs(object, block = 'Subject', coefs = c('t1', 't2', 't3'))
+#'     plot_exprs(object, block = 'Subject', coefs = c('t1-t0', 't2-t0', 't3-t0'))
 #'     plot_exprs_per_coef(object, x = 'Time', block = 'Subject')
 #' # Points
 #'     plot_exprs(object, geom = 'point', block = 'Subject')
@@ -1472,7 +1472,7 @@ default_geom <- function(object, x, block = NULL){
 #' @examples
 #' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' object <- read_metabolon(file, fit = 'limma')
-#' idx <- order(fdata(object)$`p~t1~limma`)[1:9]
+#' idx <- order(fdata(object)$`p~t1-t0~limma`)[1:9]
 #' object %<>% extract(idx, )
 #' plot_sample_boxplots(  object)
 #' plot_feature_boxplots( object)
@@ -1653,7 +1653,7 @@ plot_matrix <- function(mat){
 #' object$subgroup %<>% substr(1,3)
 #' plot_design(object)
 #' @export
-plot_design <- function(object, codingfun = contr.treatment){
+plot_design <- function(object, codingfun = contr.treatment.explicit){
     coef <- y <- yend <- NULL
     designmat <- create_design(object, subgroupvar = 'subgroup', drop = TRUE, codingfun = codingfun)
     rownames(designmat) <- object$subgroup

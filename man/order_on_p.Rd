@@ -43,5 +43,5 @@ Order on p
   file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
   object <- read_metabolon(file)
   order_on_p(object)
-  order_on_p(fit_limma(object), coefs = c('t1', 't2', 't3'))
+  order_on_p(fit_limma(object), coefs = c('t1-t0', 't2-t0', 't3-t0'))
 }

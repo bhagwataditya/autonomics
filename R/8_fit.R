@@ -849,7 +849,7 @@ coefs.SummarizedExperiment <- function(object, fit = fits(object), ...){
 #' object <- read_maxquant_proteingroups(file)
 #' object %<>% fit_lm()
 #' object %<>% fit_limma()
-#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
+#' issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
 #' plot_contrast_venn(issig)
 #' @export
 is_sig <- function(

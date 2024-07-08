@@ -38,5 +38,5 @@ Create volcano datatable
 \examples{
 file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 object <- read_maxquant_proteingroups(file, impute = TRUE, fit = 'limma')
-make_volcano_dt(object, fit = 'limma', coefs = 'Adult')
+make_volcano_dt(object, fit = 'limma', coefs = 'Adult-X30dpt')
 }

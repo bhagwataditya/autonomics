@@ -190,7 +190,7 @@ guess_fitsep.SummarizedExperiment <- function(object, ...){
 #' @return SummarizedExperiment
 #' @examples
 #' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-#' object <- read_metabolon(file, fit = 'limma', coef = 't3')
+#' object <- read_metabolon(file, fit = 'limma', coef = 't3-t0')
 #' fdt(object)
 #' fdt(abstract_fit(object))
 #' @export
@@ -320,7 +320,7 @@ factor2logical <- function(x){
 #' # Read
 #'     pathwaydt <- read_msigdt(collections = 'C5:GO:BP')
 #'     file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
-#'     object <- read_somascan(file, fit = 'limma', coefs = 't1')
+#'     object <- read_somascan(file, fit = 'limma', coefs = 't1-t0')
 #'     fvars(object) %<>% gsub('EntrezGeneSymbol', 'gene', .)
 #'     object %<>% abstract_fit()
 #'     var <- abstractvar(object)
