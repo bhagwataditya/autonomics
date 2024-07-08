@@ -17,7 +17,13 @@ beta(object, fit = fits(object)[1])
 \arguments{
 \item{object}{SummarizedExperiment or data.frame}
 
-\item{fit}{'limma', 'lm', 'lme', 'lmer'}
+\item{formula}{formula}
+
+\item{drop}{TRUE or FALSE}
+
+\item{codingfun}{function}
+
+\item{fit}{'limma', 'lm', 'lme', 'wilcoxon'}
 }
 \value{
 beta matrix (nlevel x nfeature)
