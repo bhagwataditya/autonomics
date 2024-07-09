@@ -22,7 +22,8 @@ read_maxquant_proteingroups(
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
-  formula = ~subgroup,
+  groupvar = "subgroup",
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
@@ -93,8 +94,8 @@ Read maxquant proteingroups
     pro <- read_maxquant_proteingroups(file = file)
     
 # billing19 - Normalized Ratios
-    file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-    fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
+         file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+    fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta',  package = 'autonomics')
     subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
     pro <- read_maxquant_proteingroups(file = file, fastafile = fastafile, subgroups = subgroups)

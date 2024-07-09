@@ -93,9 +93,14 @@ rm_single_value_columns <- function(df){
 #' @rdname read_somascan
 #' @export
 .read_somascan <- function(
-    file, fidvar = 'Target', sidvar = 'SampleId', 
-    sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup', 
-    verbose = TRUE
+           file, 
+         fidvar = 'Target', 
+         sidvar = 'SampleId', 
+          sfile = NULL, 
+           by.x = NULL, 
+           by.y = NULL, 
+       groupvar = 'SampleGroup', 
+        verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -130,7 +135,7 @@ rm_single_value_columns <- function(df){
 # Add metadata/subgroup
     assayNames(object) <- 'somascan'
     object %<>% merge_sample_file(sfile = sfile, by.x = by.x, by.y = by.y)
-    object %<>% add_subgroup(subgroupvar)
+    object %<>% add_subgroup(groupvar)
     object
 }
 
@@ -142,7 +147,7 @@ rm_single_value_columns <- function(df){
 #' @param sfile                 sample file
 #' @param by.x                 `file`  mergeby column
 #' @param by.y                 `sfile` mergeby column
-#' @param subgroupvar           subgroup var: string
+#' @param groupvar              string
 #' @param fname_var             featurename var: string
 #' @param sample_type           subset of c('Sample','QC','Buffer','Calibrator')
 #' @param feature_type          subset of c('Protein', 'Hybridization Control Elution','Rat Protein')
@@ -166,20 +171,41 @@ rm_single_value_columns <- function(df){
 #' file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
 #' read_somascan(file, plot = TRUE, block = 'Subject')
 #' @export
-read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
-    sfile = NULL, by.x = NULL, by.y = NULL, subgroupvar = 'SampleGroup', 
-    fname_var    = 'EntrezGeneSymbol',
-    sample_type = 'Sample', feature_type = 'Protein',
-    sample_quality  = c('FLAG', 'PASS'), feature_quality = c('FLAG', 'PASS'),
-    rm_na_svars = FALSE, rm_single_value_svars = FALSE, plot = FALSE, 
-    label = 'feature_id', pca = plot, pls = plot,
-    fit = if (plot) 'limma' else NULL, formula = ~ subgroup, 
-    block = NULL, coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
+read_somascan <- function(
+                     file, 
+                   fidvar = 'Target',
+                   sidvar = 'SampleId',
+                    sfile = NULL,
+                     by.x = NULL,
+                     by.y = NULL,
+                 groupvar = 'SampleGroup', 
+                fname_var = 'EntrezGeneSymbol',
+              sample_type = 'Sample',
+             feature_type = 'Protein',
+          sample_quality  = c('FLAG', 'PASS'),
+          feature_quality = c('FLAG', 'PASS'),
+              rm_na_svars = FALSE,
+    rm_single_value_svars = FALSE, plot = FALSE, 
+                    label = 'feature_id',
+                      pca = plot,
+                      pls = plot,
+                      fit = if (plot) 'limma' else NULL,
+                  formula = as.formula(sprintf('~ %s', groupvar)),
+                    block = NULL,
+                    coefs = NULL,
+                contrasts = NULL,
+                  palette = NULL,
+                  verbose = TRUE
 ){
 # Read
-    object <- .read_somascan(
-        file, fidvar = fidvar, sidvar = sidvar, sfile = sfile, 
-        by.x = by.x, by.y = by.y, subgroupvar = subgroupvar, verbose = verbose)
+    object <- .read_somascan(   file, 
+                              fidvar = fidvar, 
+                              sidvar = sidvar, 
+                               sfile = sfile, 
+                                by.x = by.x,
+                                by.y = by.y,
+                            groupvar = groupvar,
+                             verbose = verbose )
     object$sample_id %<>% make.unique()
 # Prepare
     assert_is_subset(fname_var, fvars(object))
@@ -200,13 +226,17 @@ read_somascan <- function(file, fidvar = 'Target', sidvar = 'SampleId',
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     object %<>% log2transform(verbose = verbose)
 # Analyze
-    object %<>% analyze(
-        pca         = pca,          pls         = pls,
-        fit         = fit,          formula     = formula, 
-        block       = block,        coefs       = coefs, 
-        contrasts   = contrasts,    plot        = plot,
-        label       = label,
-        palette     = palette,      verbose     = verbose)
+    object %<>% analyze( pca = pca,
+                         pls = pls,
+                         fit = fit,
+                     formula = formula, 
+                       block = block,
+                       coefs = coefs, 
+                   contrasts = contrasts,
+                        plot = plot,
+                       label = label,
+                     palette = palette, 
+                     verbose = verbose )
 # Return
     object
 }

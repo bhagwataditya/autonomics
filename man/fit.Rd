@@ -9,7 +9,8 @@
 \usage{
 fit(
   object,
-  formula = default_formula(object),
+  groupvar = "subgroup",
+  formula = group2formula(groupvar, object),
   engine = "limma",
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
@@ -29,7 +30,8 @@ fit(
 
 fit_limma(
   object,
-  formula = default_formula(object),
+  groupvar = "subgroup",
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
   design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
@@ -47,7 +49,8 @@ fit_limma(
 
 .fit_limma(
   object,
-  formula = default_formula(object),
+  groupvar = "subgroup",
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
   design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
@@ -65,7 +68,8 @@ fit_limma(
 
 fit_wilcoxon(
   object,
-  formula = default_formula(object),
+  groupvar = "subgroup",
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   drop = NULL,
   codingfun = contr.treatment.explicit,
   design = NULL,

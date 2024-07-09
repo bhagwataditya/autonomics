@@ -10,7 +10,8 @@
 fit_lmx(
   object,
   fit,
-  formula = default_formula(object),
+  groupvar = "subgroup",
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
   coefs = model_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
@@ -27,7 +28,8 @@ fit_lmx(
 
 fit_lm(
   object,
-  formula = default_formula(object),
+  groupvar = "subgroup",
+  formula = group2formula(groupvar, object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
   design = NULL,
@@ -45,7 +47,8 @@ fit_lm(
 
 fit_lme(
   object,
-  formula = default_formula(object),
+  groupvar = "subgroup",
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
   design = NULL,
@@ -64,7 +67,8 @@ fit_lme(
 
 fit_lmer(
   object,
-  formula = default_formula(object),
+  groupvar = "subgroup",
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
   design = NULL,

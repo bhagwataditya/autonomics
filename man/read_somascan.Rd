@@ -12,7 +12,7 @@
   sfile = NULL,
   by.x = NULL,
   by.y = NULL,
-  subgroupvar = "SampleGroup",
+  groupvar = "SampleGroup",
   verbose = TRUE
 )
 
@@ -23,7 +23,7 @@ read_somascan(
   sfile = NULL,
   by.x = NULL,
   by.y = NULL,
-  subgroupvar = "SampleGroup",
+  groupvar = "SampleGroup",
   fname_var = "EntrezGeneSymbol",
   sample_type = "Sample",
   feature_type = "Protein",
@@ -36,7 +36,7 @@ read_somascan(
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
-  formula = ~subgroup,
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
@@ -57,7 +57,7 @@ read_somascan(
 
 \item{by.y}{`sfile` mergeby column}
 
-\item{subgroupvar}{subgroup var: string}
+\item{groupvar}{string}
 
 \item{verbose}{TRUE or FALSE: message?}
 

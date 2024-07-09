@@ -24,7 +24,8 @@ read_maxquant_phosphosites(
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
-  formula = ~subgroup,
+  groupvar = "subgroup",
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
@@ -96,7 +97,7 @@ Read maxquant phosphosites
 \examples{
   profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
   fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
-fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
+fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta',  package = 'autonomics')
 subgroups <- sprintf('\%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
 fos <- read_maxquant_phosphosites(

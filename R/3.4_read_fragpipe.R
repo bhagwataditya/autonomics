@@ -86,10 +86,10 @@ stri_any_regex <- function(str, pattern){
 #' sdt(object)
 #' @export
 read_fragpipe <- function(
-    dir = getwd(), 
-    file = if (is_file(dir)) dir else file.path(dir, 'combined_protein.tsv'), 
+             dir = getwd(), 
+            file = if (is_file(dir)) dir else file.path(dir, 'combined_protein.tsv'), 
     contaminants = FALSE,
-    verbose = TRUE
+         verbose = TRUE
 ){
 # assays
     assert_fragpipe_tsv(file)

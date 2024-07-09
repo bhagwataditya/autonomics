@@ -34,39 +34,47 @@
 #' object %<>% analyze()
 #' @export
 analyze <- function(
-    object,
-    pca          = TRUE,
-    pls          = TRUE,
-    fit          = 'limma',
-    formula      = default_formula(object),
-    drop         = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun    = contr.treatment.explicit, 
-    contrasts    = NULL,
-    coefs        = colnames(create_design(object, formula = formula, drop = drop)),
-    block        = NULL,
-    weightvar    = if ('weights' %in% assayNames(object)) 'weights' else NULL,
-    plot         = pca & !is.null(fit),
-    label        = 'feature_id',
-    palette      = NULL,
-    verbose      = TRUE
+       object,
+          pca = TRUE,
+          pls = TRUE,
+          fit = 'limma',
+      formula = ~ subgroup,
+         drop = varlevels_dont_clash(object, all.vars(formula)),
+    codingfun = contr.treatment.explicit, 
+    contrasts = NULL,
+        coefs = contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
+        block = NULL,
+    weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL,
+         plot = pca & !is.null(fit),
+        label = 'feature_id',
+      palette = NULL,
+      verbose = TRUE
 ){
     # Analyze
-    if (is.null(palette))       palette <- make_svar_palette(object, svar = all.vars(formula)[1])
+    if (is.null(palette))  palette <- make_svar_palette(object, svar = all.vars(formula)[1])
     if (pca)  object %<>% pca(verbose = verbose, plot = FALSE)
     if (pls)  object %<>% pls(by = all.vars(formula)[1], verbose = FALSE)
     for (curfit in fit){
         fitfun <- get(paste0('fit_', curfit))
-        if (is.null(formula)) formula <- default_formula(object)
-        if (is.null(coefs))   coefs <- colnames(create_design(object, formula = formula, drop = drop, verbose = FALSE))
-        object %<>% fitfun(
-            formula      = formula,       drop         = drop,
-            codingfun    = codingfun,     contrasts    = contrasts,
-            coefs        = coefs,         block        = block,
-            weightvar    = weightvar,     verbose      = verbose,
-            plot         = FALSE) 
+        if (is.null(formula)) formula <- ~ subgroup
+        if (is.null(coefs))   coefs <- contrast_coefs(object, formula = formula, drop = drop, codingfun = codingfun)
+        object %<>% fitfun( formula = formula,
+                               drop = drop,
+                          codingfun = codingfun,
+                          contrasts = contrasts,
+                              coefs = coefs,
+                              block = block,
+                          weightvar = weightvar,
+                            verbose = verbose,
+                               plot = FALSE )
     }
     # Plot/Return
-    if (plot)  plot_summary(object, fit = fit, formula = formula, block = block, label = label, palette = palette)
+    if (plot)  plot_summary( object, 
+                                fit = fit, 
+                            formula = formula, 
+                              block = block, 
+                              label = label, 
+                            palette = palette )
     object
 }
 
@@ -87,11 +95,11 @@ analyze <- function(
 #' plot_summary(object, block = 'Subject')
 #' @export
 plot_summary <- function(
-    object, 
-    fit = 'limma', 
+     object, 
+        fit = 'limma', 
     formula = default_formula(object), 
-    block = NULL, 
-    label = 'feature_id', 
+      block = NULL, 
+      label = 'feature_id', 
     palette = make_svar_palette(object, svar = svar)
 ){
 # Assert

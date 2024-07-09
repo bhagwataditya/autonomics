@@ -657,10 +657,17 @@ explicitly_compute_voom_weights <- function(
 #' object %<>% preprocess_rnaseq_counts()
 #' @export
 preprocess_rnaseq_counts <- function(
-    object, 
-    formula = ~ subgroup, block = NULL, min_count = 10, pseudo = 0.5, 
-    tpm  = FALSE, cpm = TRUE, voom = TRUE, log2 = TRUE,
-    verbose = TRUE, plot = TRUE
+       object, 
+      formula = ~ subgroup,
+        block = NULL,
+    min_count = 10,
+       pseudo = 0.5, 
+          tpm = FALSE,
+          cpm = TRUE,
+         voom = TRUE,
+         log2 = TRUE,
+      verbose = TRUE,
+         plot = TRUE
 ){
 # Assert
     assert_is_valid_sumexp(object)
@@ -688,8 +695,7 @@ preprocess_rnaseq_counts <- function(
     }
     if (voom){  
         object %<>% add_voom(formula, verbose = verbose, plot = plot & is.null(block))
-        if (!is.null(block))  object %<>% add_voom(
-            formula, block = block, verbose = verbose, plot = plot) 
+        if (!is.null(block))  object %<>% add_voom( formula, block = block, verbose = verbose, plot = plot ) 
     }
     if (pseudo>0){
         if (verbose)  message('\t\t\tcounts: rm ', pseudo)
@@ -723,9 +729,8 @@ filter_by_expr <- function(object, formula, min_count, verbose){
 }
 
 
-add_voom <- function(
-    object, formula, block = NULL, verbose = TRUE, plot = TRUE
-){
+add_voom <- function( object, formula, block = NULL, verbose = TRUE, plot = TRUE ){
+    
 # Retain samples with subgroups
     n0 <- ncol(object)
     design <- create_design(object, formula = formula, verbose = FALSE)
@@ -867,13 +872,30 @@ is_numeric_character <- function(x)  all(!is.na(suppressWarnings(as.numeric(x)))
 #' @rdname read_rnaseq_counts
 #' @export
 read_rnaseq_bams <- function(
-    dir, paired, genome, nthreads = detectCores(),
-    sfile = NULL, by.y = NULL, block = NULL,
-    formula = ~ subgroup, min_count = 10, pseudo = 0.5, 
-    ensdb = NULL, tpm = FALSE, cpm = TRUE, log2 = TRUE, 
-    plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
-    fit = if (plot) 'limma' else NULL, voom = cpm, coefs = NULL, 
-    contrasts = NULL, palette = NULL, verbose = TRUE
+          dir, 
+       paired, 
+       genome, 
+     nthreads = detectCores(),
+        sfile = NULL, 
+         by.y = NULL,
+        block = NULL,
+     groupvar = 'subgroup',
+      formula = as.formula(sprintf('~ %s', groupvar)),
+    min_count = 10,
+       pseudo = 0.5, 
+        ensdb = NULL,
+          tpm = FALSE,
+          cpm = TRUE,
+         log2 = TRUE, 
+         plot = FALSE, label = 'feature_id',
+          pca = plot,
+          pls = plot, 
+          fit = if (plot) 'limma' else NULL,
+         voom = cpm,
+        coefs = NULL, 
+    contrasts = NULL,
+      palette = NULL,
+      verbose = TRUE
 ){
 # Read
     object <- .read_rnaseq_bams(
@@ -955,33 +977,61 @@ read_rnaseq_bams <- function(
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export
 read_rnaseq_counts <- function(
-    file, fid_col = 1, sfile = NULL, by.y = NULL, 
-    formula = ~ subgroup, block = NULL, min_count = 10, 
-    pseudo = 0.5, tpm = FALSE, ensdb = NULL, cpm = !tpm, log2 = TRUE,
-    plot = FALSE, label = 'feature_id', pca = plot, pls = plot, 
-    fit = if (plot) 'limma' else NULL, voom = cpm, 
-    coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
+         file, 
+      fid_col = 1, 
+        sfile = NULL, 
+         by.y = NULL, 
+     groupvar = 'subgroup',
+      formula = as.formula(sprintf('~ %s', groupvar)),
+        block = NULL, 
+    min_count = 10, 
+       pseudo = 0.5, 
+          tpm = FALSE, 
+        ensdb = NULL, 
+          cpm = !tpm, 
+         log2 = TRUE,
+         plot = FALSE, 
+        label = 'feature_id', 
+          pca = plot, 
+          pls = plot, 
+          fit = if (plot) 'limma' else NULL, 
+         voom = cpm, 
+        coefs = NULL, 
+    contrasts = NULL, 
+      palette = NULL, 
+      verbose = TRUE
 ){
 # Read
-    object <- .read_rnaseq_counts(
-        file,                       fid_col     = fid_col,
-        sfile       = sfile,        by.y        = by.y,
-        ensdb       = ensdb,        verbose     = verbose)
+    object <- .read_rnaseq_counts( file, 
+                                fid_col = fid_col,
+                                  sfile = sfile,
+                                   by.y = by.y,
+                                  ensdb = ensdb,
+                                verbose = verbose )
 # Preprocess
-    object %<>% preprocess_rnaseq_counts(
-        formula     = formula,      block       = block,
-        min_count   = min_count,    pseudo      = pseudo,
-        tpm         = tpm,          cpm         = cpm,
-        voom        = voom,         log2        = log2,
-        verbose     = verbose,      plot        = FALSE)
+    object %<>% preprocess_rnaseq_counts( formula = formula,
+                                            block = block,
+                                        min_count = min_count,
+                                           pseudo = pseudo,
+                                              tpm = tpm,
+                                              cpm = cpm,
+                                             voom = voom,
+                                             log2 = log2,
+                                          verbose = verbose, 
+                                             plot = FALSE )
 # Analyze
-    object %<>% analyze(
-        pca         = pca,           pls        = pls, 
-        fit         = fit,           formula    = formula, 
-        block       = block,         weightvar  = if (voom) 'weights' else NULL,
-        coefs       = coefs,         contrasts  = contrasts, 
-        plot        = plot,          label      = label,
-        palette     = palette,       verbose    = verbose)
+    object %<>% analyze( pca = pca,
+                         pls = pls, 
+                         fit = fit,
+                     formula = formula, 
+                       block = block, 
+                   weightvar = if (voom) 'weights' else NULL,
+                       coefs = coefs, 
+                   contrasts = contrasts, 
+                        plot = plot, 
+                       label = label,
+                     palette = palette,
+                     verbose = verbose )
 # Return
     object
 }

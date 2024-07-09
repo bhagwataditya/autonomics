@@ -395,8 +395,8 @@ is_file <- function(file){
 #'     pro <- read_maxquant_proteingroups(file = file)
 #'     
 #' # billing19 - Normalized Ratios
-#'     file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-#'     fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
+#'          file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
+#'     fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta',  package = 'autonomics')
 #'     subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #'     pro <- read_maxquant_proteingroups(file = file, subgroups = subgroups)
 #'     pro <- read_maxquant_proteingroups(file = file, fastafile = fastafile, subgroups = subgroups)
@@ -418,7 +418,8 @@ read_maxquant_proteingroups <- function(
                           pca = plot,
                           pls = plot, 
                           fit = if (plot) 'limma' else NULL,
-                      formula = ~ subgroup, 
+                     groupvar = 'subgroup',
+                      formula = as.formula(sprintf('~ %s', groupvar)),
                         block = NULL, 
                         coefs = NULL, 
                     contrasts = NULL,
@@ -520,7 +521,7 @@ read_proteingroups <- function(...){
 #' @examples
 #'   profile <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
 #'   fosfile <- system.file('extdata/billing19.phosphosites.txt',  package = 'autonomics')
-#' fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta', package = 'autonomics')
+#' fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta',  package = 'autonomics')
 #' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #' pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
 #' fos <- read_maxquant_phosphosites(
@@ -547,7 +548,8 @@ rm_missing_in_all_samples = TRUE,
                       pca = plot, 
                       pls = plot,
                       fit = if (plot) 'limma' else NULL,
-                  formula = ~ subgroup,
+                 groupvar = 'subgroup',
+                  formula = as.formula(sprintf('~ %s', groupvar)),
                     block = NULL,
                     coefs = NULL,
                 contrasts = NULL, 

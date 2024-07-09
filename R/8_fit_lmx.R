@@ -269,7 +269,8 @@ block_vars <- function(formula){
 fit_lmx <- function(
        object, 
           fit, 
-      formula = default_formula(object), 
+     groupvar = 'subgroup',
+      formula = as.formula(sprintf('~ %s', groupvar)),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
         coefs = model_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
@@ -349,7 +350,8 @@ fit_lmx <- function(
 #' @export
 fit_lm <- function(
        object,
-      formula = default_formula(object), 
+     groupvar = 'subgroup',
+      formula = group2formula(groupvar, object),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
        design = NULL,  # only to make fit(.) work!
@@ -387,7 +389,8 @@ fit_lm <- function(
 #' @export
 fit_lme <- function(
        object, 
-      formula = default_formula(object), 
+     groupvar = 'subgroup',
+      formula = as.formula(sprintf('~ %s', groupvar)),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
        design = NULL,  # only to make fit(.) work!
@@ -432,7 +435,8 @@ fit_lme <- function(
 #' @export
 fit_lmer <- function(
        object, 
-      formula = default_formula(object), 
+     groupvar = 'subgroup',
+      formula = as.formula(sprintf('~ %s', groupvar)),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
        design = NULL,  # only to make fit(.) work!

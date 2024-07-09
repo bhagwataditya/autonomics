@@ -154,11 +154,16 @@ pubchem_to_smiles <- function(x){
 
 #' @rdname read_metabolon
 #' @export
-.read_metabolon <- function(file, sheet = 'OrigScale',
-    fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
-    sidvar = '(CLIENT_IDENTIFIER|Client ID)',
-    sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group', 
-    verbose  = TRUE
+.read_metabolon <- function(
+        file, 
+       sheet = 'OrigScale',
+      fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
+      sidvar = '(CLIENT_IDENTIFIER|Client ID)',
+       sfile = NULL,
+        by.x = 'sample_id',
+        by.y = NULL,
+    groupvar = 'Group', 
+     verbose = TRUE
 ){
 # Assert
     assert_all_are_existing_files(file)
@@ -196,7 +201,7 @@ pubchem_to_smiles <- function(x){
     svars(object)[nsv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$1')
     fvars(object)[nfv] %<>% stri_replace_first_regex('^([^ ]+)[ ]+([^ ]+)','$2')
     object %<>% merge_sample_file(sfile = sfile, by.x = by.x, by.y = by.y)
-    object %<>% add_subgroup(subgroupvar, verbose = verbose)
+    object %<>% add_subgroup(groupvar, verbose = verbose)
 # Return
     object
 }
@@ -210,7 +215,7 @@ pubchem_to_smiles <- function(x){
 #' @param sfile         sample file
 #' @param by.x          `file`  mergeby column
 #' @param by.y          `sfile` mergeby column
-#' @param subgroupvar   subgroup var
+#' @param groupvar      string
 #' @param fnamevar      featurename fvar
 #' @param kegg_pathways TRUE or FALSE: add kegg pathways?
 #' @param smiles        TRUE or FALSE: add smiles?
@@ -231,38 +236,61 @@ pubchem_to_smiles <- function(x){
 #' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 #' read_metabolon(file, plot = TRUE, block = 'Subject')
 #' @export
-read_metabolon <- function(file, sheet = 'OrigScale',
-    fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
-    sidvar = '(CLIENT_IDENTIFIER|Client ID)',
-    sfile = NULL, by.x = 'sample_id', by.y = NULL, subgroupvar = 'Group',
-    fnamevar = 'BIOCHEMICAL', kegg_pathways = FALSE, smiles = FALSE,
-    impute  = TRUE, plot = FALSE, pca = plot, pls = plot, label = 'feature_id',
-    fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL, 
-    coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
+read_metabolon <- function(
+           file, 
+          sheet = 'OrigScale',
+         fidvar = 'BIOCHEMICAL', # '(COMP|COMP_ID)', 
+         sidvar = '(CLIENT_IDENTIFIER|Client ID)',
+          sfile = NULL,
+           by.x = 'sample_id',
+           by.y = NULL,
+       groupvar = 'Group',
+       fnamevar = 'BIOCHEMICAL',
+  kegg_pathways = FALSE,
+         smiles = FALSE,
+        impute  = TRUE,
+           plot = FALSE,
+            pca = plot,
+            pls = plot,
+          label = 'feature_id',
+            fit = if (plot) 'limma' else NULL,
+        formula = as.formula(sprintf('~ %s', groupvar)),
+          block = NULL, 
+          coefs = NULL,
+      contrasts = NULL,
+        palette = NULL,
+        verbose = TRUE
 ){
 # Read
-    object <- .read_metabolon(
-        file    = file,    sheet       = sheet, 
-        fidvar  = fidvar,  sidvar      = sidvar, 
-        sfile   = sfile,   by.x        = by.x, 
-        by.y    = by.y,    subgroupvar = subgroupvar, 
-        verbose = verbose)
+    object <- .read_metabolon(  file = file,
+                               sheet = sheet, 
+                              fidvar = fidvar,
+                              sidvar = sidvar, 
+                               sfile = sfile,
+                                by.x = by.x, 
+                                by.y = by.y,
+                            groupvar = groupvar, 
+                             verbose = verbose )
 # Prepare
     assert_is_subset(fnamevar, fvars(object))
     fdata(object)$feature_name <- fdata(object)[[fnamevar]]
     fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     object %<>% log2transform(verbose = verbose)
-    if ({{impute}})     object %<>% impute(plot = FALSE)
+    if ({{impute}})     object %<>% autonomics::impute(by = groupvar, plot = FALSE)
     if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze
-    object %<>% analyze(
-        pca        = pca,           pls        = pls,
-        fit        = fit,           formula    = formula,
-        block      = block,         coefs      = coefs,
-        contrasts  = contrasts,     plot       = plot,
-        label      = label,
-        palette    = palette,       verbose    = verbose)
+    object %<>% analyze( pca = pca,
+                         pls = pls,
+                         fit = fit,
+                     formula = formula,
+                       block = block,
+                       coefs = coefs,
+                   contrasts = contrasts,
+                        plot = plot,
+                       label = label,
+                     palette = palette,
+                     verbose = verbose )
 # Return
     object
 }

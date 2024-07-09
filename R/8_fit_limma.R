@@ -734,7 +734,8 @@ mat2sdt <- function(mat)  mat2dt(mat, 'sample_id')
 #' @export
 fit <- function(
        object, 
-      formula = default_formula(object),
+     groupvar = 'subgroup',
+      formula = group2formula(groupvar, object),
        engine = 'limma', 
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit, # if (engine == 'wilcoxon')  contr.treatment.explicit  else  contr.treatment , 
@@ -769,12 +770,12 @@ fit <- function(
 }
 
 
-
 #' @rdname fit
 #' @export
 fit_limma <- function(
-       object, 
-      formula = default_formula(object),
+       object,
+     groupvar = 'subgroup',
+      formula = as.formula(sprintf('~ %s', groupvar)),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
@@ -859,7 +860,8 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 #' @export
 .fit_limma <- function(
        object, 
-      formula = default_formula(object),
+     groupvar = 'subgroup',
+      formula = as.formula(sprintf('~ %s', groupvar)),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),

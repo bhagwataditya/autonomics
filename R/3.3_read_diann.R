@@ -286,13 +286,22 @@ uniprot2isoforms <- function(x){
 #'     PR[intensity != top1][feature_id == unique(feature_id)[3]][run == unique(run)[1]][1:3, 1:6]
 #' @export
 read_diann_proteingroups <- function(
-    file, 
-    Lib.PG.Q = 0.01,
+               file, 
+           Lib.PG.Q = 0.01,
     simplify_snames = TRUE,
-    contaminants = character(0), 
-    impute = FALSE, plot = FALSE, 
-    pca = plot, pls = plot, fit = if (plot) 'limma' else NULL, formula = ~ subgroup, block = NULL,
-    coefs = NULL, contrasts = NULL, palette = NULL, verbose = TRUE
+       contaminants = character(0), 
+             impute = FALSE, 
+               plot = FALSE, 
+                pca = plot, 
+                pls = plot, 
+                fit = if (plot) 'limma' else NULL,
+           groupvar = 'subgroup',
+            formula = as.formula(sprintf('~ %s', groupvar)),
+              block = NULL,
+              coefs = NULL,
+          contrasts = NULL,
+            palette = NULL,
+            verbose = TRUE
 ){
 # Assert
     if (!is.null(contaminants))  assert_is_character(contaminants)

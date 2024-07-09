@@ -83,8 +83,9 @@ all_vars <- function(x){
 #' @export
 #' @rdname fit
 fit_wilcoxon <- function(
-    object,
-      formula = default_formula(object), 
+       object,
+     groupvar = 'subgroup',
+      formula = as.formula(sprintf('~ %s', groupvar)),
          drop = NULL,
     codingfun = contr.treatment.explicit, # wilcox is the only one where `contr.treatment` doesnt work
        design = NULL, # only so that fit(.) works

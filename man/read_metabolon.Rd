@@ -13,7 +13,7 @@
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
-  subgroupvar = "Group",
+  groupvar = "Group",
   verbose = TRUE
 )
 
@@ -25,7 +25,7 @@ read_metabolon(
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
-  subgroupvar = "Group",
+  groupvar = "Group",
   fnamevar = "BIOCHEMICAL",
   kegg_pathways = FALSE,
   smiles = FALSE,
@@ -35,7 +35,7 @@ read_metabolon(
   pls = plot,
   label = "feature_id",
   fit = if (plot) "limma" else NULL,
-  formula = ~subgroup,
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
@@ -58,7 +58,7 @@ read_metabolon(
 
 \item{by.y}{`sfile` mergeby column}
 
-\item{subgroupvar}{subgroup var}
+\item{groupvar}{string}
 
 \item{verbose}{TRUE or FALSE}
 
