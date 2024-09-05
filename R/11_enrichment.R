@@ -86,7 +86,7 @@ read_msigdt <- function(
 # Assert
     if (is.null(file)){
         cmessage("\t\tVisit https://www.gsea-msigdb.org/gsea/downloads.jsp")
-        cmessage("\t\tScrolldown. Locate SQLite database (not jason or xml!)")
+        cmessage("\t\tScrolldown. Locate SQLite database (not json or xml!)")
         cmessage("\t\tDownload Human or Mouse SQLite database")
         cmessage("\t\tCreate %s", MSIGDIR)
         cmessage("\t\tUnzip into this dir")  
