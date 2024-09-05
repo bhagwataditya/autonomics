@@ -519,38 +519,51 @@ plot_transformation_violins <- function(
 
 # file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 # object <- read_maxquant_proteingroups(file)
-# plot_transformation_biplots(object)
+# plot_transformation_biplots(object, transformations = c('quantnorm', 'zscore', 'invnorm'))
 plot_transformation_biplots <- function(
     object,
     subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
-    method = 'pca', by = 'sample_id',
+    method = c('pca', 'pls')[1], by = 'sample_id',
     dims = 1:2, color = subgroupvar, sep = FITSEP, ...,
-    fixed = list(shape = 15, size = 3)
+    fixed = list(shape = 15, size = 3), nrow = 1, ncol = NULL
 ){
     . <- NULL
     assert_is_subset(subgroupvar, svars(object))
-    x <- paste0('effect', sep, by, sep, method, dims[1])
-    y <- paste0('effect', sep, by, sep, method, dims[2])
+    assert_is_a_string(method)
+    assert_is_subset(method, c('pca', 'pls'))
+    assert_are_same_length(dims, 1:2)
+    assert_all_are_whole_numbers(dims)
+    str_elem <- c(pca = 'by', pls = 'subgroupvar')
+    xy <- paste0('effect', sep, get(str_elem[method]), sep, method, dims)
+    x <- xy[1]; y <- xy[2]
     tmpobj <- object
     tmpobj %<>% get(method)(ndim = max(dims), verbose = FALSE)
     scoredt <- sdt(tmpobj) %>% cbind(transfo = 'input')
-    xvariance <- round(metadata(tmpobj)[[paste0(by, sep, method)]][[paste0('effect', dims[1])]])
-    yvariance <- round(metadata(tmpobj)[[paste0(by, sep, method)]][[paste0('effect', dims[2])]])
-    scoredt$transfo <- sprintf('input : %d + %d %%', xvariance, yvariance)
+    mdidx <- paste0(get(str_elem[method]), sep, method)
+    xvariance <- round(metadata(tmpobj)[[mdidx]][[paste0('effect', dims[1])]])
+    yvariance <- round(metadata(tmpobj)[[mdidx]][[paste0('effect', dims[2])]])
+    scoredt$transfo <- switch(
+      method,
+      pca = sprintf('input : %d + %d %%', xvariance, yvariance),
+      pls = sprintf('input : %d %%'     , xvariance))
     for (transfo in transformations){
         tmpobj <- get(transfo)(object)
         tmpobj %<>% get(method)(dims = dims, verbose = FALSE)
-        xvariance <- round(metadata(tmpobj)[[ paste0(by, sep, method) ]][[ paste0('effect', dims[1]) ]])
-        yvariance <- round(metadata(tmpobj)[[ paste0(by, sep, method) ]][[ paste0('effect', dims[2]) ]])
+        xvariance <- round(metadata(tmpobj)[[ mdidx ]][[ paste0('effect', dims[1]) ]])
+        yvariance <- round(metadata(tmpobj)[[ mdidx ]][[ paste0('effect', dims[2]) ]])
         tmpdt <- sdt(tmpobj)
-        tmpdt$transfo <- sprintf('%s : %d + %d %%', transfo, xvariance, yvariance)
+        tmpdt$transfo <- switch(
+          method,
+          pca = sprintf('%s : %d + %d %%', transfo, xvariance, yvariance),
+          pls = sprintf('%s : %d %%',      transfo, xvariance))
         scoredt %<>% rbind(tmpdt)
     }
     scoredt$transfo %<>% factor(unique(.))
-    p <- plot_data( scoredt, x = !!sym(x), y = !!sym(y), color = !!sym(color), ...,
+    p <- plot_data(
+      scoredt, x = !!sym(x), y = !!sym(y), color = !!sym(color), ...,
                     fixed = fixed)
-    p + facet_wrap(vars(transfo), nrow = 1, scales = "free")
+    p + facet_wrap(vars(transfo), nrow = nrow, ncol = ncol, scales = "free")
 }
 
 #==============================================================================
