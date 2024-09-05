@@ -475,7 +475,8 @@ plot_transformation_densities <- function(
     subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn' , 'zscore', 'invnorm'),
     ...,
-    fixed = list(na.rm = TRUE, alpha = 0.3)
+    fixed = list(na.rm = TRUE, alpha = 0.3),
+    nrow = 1, ncol = NULL
 ){
     value <- sample_id <- NULL
     assert_is_subset(subgroupvar, svars(object))
@@ -489,7 +490,7 @@ plot_transformation_densities <- function(
     dt$transfo %<>% factor(c('input', transformations))
     plot_data(dt, geom_density, x = value, group = sample_id,
             color = NULL, fill = !!sym(subgroupvar), ..., fixed = fixed) +
-    facet_wrap(vars(transfo), scales = "free", nrow=1)
+    facet_wrap(vars(transfo), scales = "free", nrow = nrow, ncol = ncol)
 }
 
 
@@ -566,42 +567,4 @@ plot_transformation_biplots <- function(
     p + facet_wrap(vars(transfo), nrow = nrow, ncol = ncol, scales = "free")
 }
 
-#==============================================================================
-#
-#                    explore_transformations
-#
-#==============================================================================
-
-#' Explore transformations
-#' @param object           SummarizedExperiment
-#' @param subgroupvar      string
-#' @param transformations  vector
-#' @param method          'pca', 'pls', 'sma', or 'lda'
-#' @param xdim             number (default 1)
-#' @param ydim             number (default 2)
-#' @param ...              passed to plot_data
-#' @return grid object
-#' @examples
-#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-#' subgroups <- sprintf('%s_STD', c('E00','E01','E02','E05','E15','E30','M00'))
-#' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
-#' explore_transformations(object, transformations = c('quantnorm', 'zscore', 'invnorm'))
-#' @export
-explore_transformations <- function(
-    object, 
-    subgroupvar = 'subgroup',
-    transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
-    method = 'pca', xdim = 1, ydim = 2, ...
-){
-    assert_is_subset(subgroupvar, svars(object))
-    p1 <- plot_transformation_densities(
-            object, subgroupvar = subgroupvar, transformations, ...)
-    p2 <- plot_transformation_biplots(
-            object, subgroupvar = subgroupvar, transformations, method, 
-            xdim = xdim, ydim = ydim, ...)
-    p3 <- arrangeGrob(p1 + theme(legend.position='none'),
-                      p2 + theme(legend.position='none'), nrow=2, right = gglegend(p2))
-    grid.draw(p3)
-    invisible(p3)
-}
 
