@@ -271,7 +271,7 @@ fit_lmx <- function(
           fit, 
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = contr.treatment,
+    codingfun = contr.treatment.explicit,
         coefs = model_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
         block = NULL, 
           opt = 'optim',
@@ -351,7 +351,7 @@ fit_lm <- function(
        object,
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = contr.treatment,
+    codingfun = contr.treatment.explicit,
        design = NULL,  # only to make fit(.) work!
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
@@ -389,7 +389,7 @@ fit_lme <- function(
        object, 
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = contr.treatment,
+    codingfun = contr.treatment.explicit,
        design = NULL,  # only to make fit(.) work!
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 
@@ -434,7 +434,7 @@ fit_lmer <- function(
        object, 
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
-    codingfun = contr.treatment,
+    codingfun = contr.treatment.explicit,
        design = NULL,  # only to make fit(.) work!
         block = NULL, 
     weightvar = if ('weights' %in% assayNames(object)) 'weights' else NULL, 

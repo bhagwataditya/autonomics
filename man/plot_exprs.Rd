@@ -154,7 +154,7 @@ Plot exprs for coef
 # With limma 
     object \%<>\% fit_limma(block = 'Subject')
     plot_exprs(object, block = 'Subject')
-    plot_exprs(object, block = 'Subject', coefs = c('t1', 't2', 't3'))
+    plot_exprs(object, block = 'Subject', coefs = c('t1-t0', 't2-t0', 't3-t0'))
     plot_exprs_per_coef(object, x = 'Time', block = 'Subject')
 # Points
     plot_exprs(object, geom = 'point', block = 'Subject')

@@ -12,7 +12,7 @@ create_design(object, ...)
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  codingfun = contr.treatment,
+  codingfun = contr.treatment.explicit,
   verbose = TRUE,
   ...
 )
@@ -21,7 +21,7 @@ create_design(object, ...)
   object,
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  codingfun = contr.treatment,
+  codingfun = contr.treatment.explicit,
   verbose = TRUE,
   ...
 )

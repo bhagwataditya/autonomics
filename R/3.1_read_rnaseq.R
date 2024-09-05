@@ -939,10 +939,10 @@ read_rnaseq_bams <- function(
 #'   }
 #' # read_rnaseq_counts
 #'   file <- system.file('extdata/billing19.rnacounts.txt', package = 'autonomics')
-#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15')
-#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE)
-#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE)
-#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15', voom = FALSE, cpm = FALSE, 
+#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15-E00')
+#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15-E00', voom = FALSE)
+#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15-E00', voom = FALSE, cpm = FALSE)
+#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E15-E00', voom = FALSE, cpm = FALSE, 
 #'                                     log2 = FALSE)
 #'   object <- read_rnaseq_counts(file, plot = TRUE)
 #'     
@@ -950,7 +950,7 @@ read_rnaseq_bams <- function(
 #'   \dontrun{
 #'   ah <- AnnotationHub::AnnotationHub()
 #'   ensdb <- ah[['AH64923']]
-#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E02', tpm = TRUE, ensdb = ensdb)
+#'   object <- read_rnaseq_counts(file, fit = 'limma', coefs = 'E02-E00', tpm = TRUE, ensdb = ensdb)
 #'   }
 #' @author Aditya Bhagwat, Shahina Hayat
 #' @export

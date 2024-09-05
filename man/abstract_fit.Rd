@@ -34,7 +34,7 @@ Abstract model fit
 }
 \examples{
 file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-object <- read_metabolon(file, fit = 'limma', coef = 't3')
+object <- read_metabolon(file, fit = 'limma', coef = 't3-t0')
 fdt(object)
 fdt(abstract_fit(object))
 }

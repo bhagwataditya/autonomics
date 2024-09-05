@@ -28,7 +28,7 @@ ftype <- function(
       formula = default_formula(object), 
          drop = varlevels_dont_clash(object, all.vars(formula)),
           fit = fits(object)[1],
-    codingfun = if (fit == 'wilcoxon')  contr.treatment.explicit  else  contr.treatment
+    codingfun = contr.treatment.explicit #if (fit == 'wilcoxon')  contr.treatment.explicit  else  contr.treatment
 ){
 # Assert
     assert_is_valid_sumexp(object)

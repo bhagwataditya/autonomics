@@ -11,7 +11,7 @@ analyze(
   fit = "limma",
   formula = default_formula(object),
   drop = varlevels_dont_clash(object, all.vars(formula)),
-  codingfun = contr.treatment,
+  codingfun = contr.treatment.explicit,
   contrasts = NULL,
   coefs = colnames(create_design(object, formula = formula, drop = drop)),
   block = NULL,

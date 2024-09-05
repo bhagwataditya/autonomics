@@ -31,6 +31,6 @@ file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics'
 object <- read_maxquant_proteingroups(file)
 object \%<>\% fit_lm()
 object \%<>\% fit_limma()
-issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult')
+issig <- is_sig(object, fit = c('lm','limma'), contrast = 'Adult-X30dpt')
 plot_contrast_venn(issig)
 }

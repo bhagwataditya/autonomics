@@ -56,7 +56,7 @@ Plot features
 \examples{
 file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file, fit = 'limma')
-idx <- order(fdata(object)$`p~t1~limma`)[1:9]
+idx <- order(fdata(object)$`p~t1-t0~limma`)[1:9]
 object \%<>\% extract(idx, )
 plot_sample_boxplots(  object)
 plot_feature_boxplots( object)
