@@ -534,7 +534,7 @@ plot_transformation_biplots <- function(
     assert_is_a_string(method)
     assert_is_subset(method, c('pca', 'pls'))
     assert_are_same_length(dims, 1:2)
-    assert_all_are_whole_numbers(dims)
+    assert_is_numeric(dims)
     str_elem <- c(pca = 'by', pls = 'subgroupvar')
     xy <- paste0('effect', sep, get(str_elem[method]), sep, method, dims)
     x <- xy[1]; y <- xy[2]
