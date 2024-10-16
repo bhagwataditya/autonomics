@@ -307,6 +307,8 @@ read_compounddiscoverer <- function(
     if (!is.null(exclude_sname_pattern))
       assert_is_a_string(exclude_sname_pattern)
     assert_is_a_bool(verbose)
+    if (!is.null(logbase)) assert_is_a_number(logbase) %>%
+      assert_all_are_greater_than(1)
 # Read/Merge
     cddt <- lapply(
       files,

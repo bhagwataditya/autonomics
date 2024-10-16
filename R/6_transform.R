@@ -475,7 +475,8 @@ plot_transformation_densities <- function(
     subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn' , 'zscore', 'invnorm'),
     ...,
-    fixed = list(na.rm = TRUE, alpha = 0.3)
+    fixed = list(na.rm = TRUE, alpha = 0.3),
+    nrow = 1, ncol = NULL
 ){
     value <- sample_id <- NULL
     assert_is_subset(subgroupvar, svars(object))
@@ -489,7 +490,7 @@ plot_transformation_densities <- function(
     dt$transfo %<>% factor(c('input', transformations))
     plot_data(dt, geom_density, x = value, group = sample_id,
             color = NULL, fill = !!sym(subgroupvar), ..., fixed = fixed) +
-    facet_wrap(vars(transfo), scales = "free", nrow=1)
+    facet_wrap(vars(transfo), scales = "free", nrow = nrow, ncol = ncol)
 }
 
 
@@ -519,76 +520,51 @@ plot_transformation_violins <- function(
 
 # file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 # object <- read_maxquant_proteingroups(file)
-# plot_transformation_biplots(object)
+# plot_transformation_biplots(object, transformations = c('quantnorm', 'zscore', 'invnorm'))
 plot_transformation_biplots <- function(
     object,
     subgroupvar = 'subgroup',
     transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
-    method = 'pca', by = 'sample_id',
+    method = c('pca', 'pls')[1], by = 'sample_id',
     dims = 1:2, color = subgroupvar, sep = FITSEP, ...,
-    fixed = list(shape = 15, size = 3)
+    fixed = list(shape = 15, size = 3), nrow = 1, ncol = NULL
 ){
     . <- NULL
     assert_is_subset(subgroupvar, svars(object))
-    x <- paste0('effect', sep, by, sep, method, dims[1])
-    y <- paste0('effect', sep, by, sep, method, dims[2])
+    assert_is_a_string(method)
+    assert_is_subset(method, c('pca', 'pls'))
+    assert_are_same_length(dims, 1:2)
+    assert_is_numeric(dims)
+    str_elem <- c(pca = 'by', pls = 'subgroupvar')
+    xy <- paste0('effect', sep, get(str_elem[method]), sep, method, dims)
+    x <- xy[1]; y <- xy[2]
     tmpobj <- object
     tmpobj %<>% get(method)(ndim = max(dims), verbose = FALSE)
     scoredt <- sdt(tmpobj) %>% cbind(transfo = 'input')
-    xvariance <- round(metadata(tmpobj)[[paste0(by, sep, method)]][[paste0('effect', dims[1])]])
-    yvariance <- round(metadata(tmpobj)[[paste0(by, sep, method)]][[paste0('effect', dims[2])]])
-    scoredt$transfo <- sprintf('input : %d + %d %%', xvariance, yvariance)
+    mdidx <- paste0(get(str_elem[method]), sep, method)
+    xvariance <- round(metadata(tmpobj)[[mdidx]][[paste0('effect', dims[1])]])
+    yvariance <- round(metadata(tmpobj)[[mdidx]][[paste0('effect', dims[2])]])
+    scoredt$transfo <- switch(
+      method,
+      pca = sprintf('input : %d + %d %%', xvariance, yvariance),
+      pls = sprintf('input : %d %%'     , xvariance))
     for (transfo in transformations){
         tmpobj <- get(transfo)(object)
         tmpobj %<>% get(method)(dims = dims, verbose = FALSE)
-        xvariance <- round(metadata(tmpobj)[[ paste0(by, sep, method) ]][[ paste0('effect', dims[1]) ]])
-        yvariance <- round(metadata(tmpobj)[[ paste0(by, sep, method) ]][[ paste0('effect', dims[2]) ]])
+        xvariance <- round(metadata(tmpobj)[[ mdidx ]][[ paste0('effect', dims[1]) ]])
+        yvariance <- round(metadata(tmpobj)[[ mdidx ]][[ paste0('effect', dims[2]) ]])
         tmpdt <- sdt(tmpobj)
-        tmpdt$transfo <- sprintf('%s : %d + %d %%', transfo, xvariance, yvariance)
+        tmpdt$transfo <- switch(
+          method,
+          pca = sprintf('%s : %d + %d %%', transfo, xvariance, yvariance),
+          pls = sprintf('%s : %d %%',      transfo, xvariance))
         scoredt %<>% rbind(tmpdt)
     }
     scoredt$transfo %<>% factor(unique(.))
-    p <- plot_data( scoredt, x = !!sym(x), y = !!sym(y), color = !!sym(color), ...,
+    p <- plot_data(
+      scoredt, x = !!sym(x), y = !!sym(y), color = !!sym(color), ...,
                     fixed = fixed)
-    p + facet_wrap(vars(transfo), nrow = 1, scales = "free")
+    p + facet_wrap(vars(transfo), nrow = nrow, ncol = ncol, scales = "free")
 }
 
-#==============================================================================
-#
-#                    explore_transformations
-#
-#==============================================================================
-
-#' Explore transformations
-#' @param object           SummarizedExperiment
-#' @param subgroupvar      string
-#' @param transformations  vector
-#' @param method          'pca', 'pls', 'sma', or 'lda'
-#' @param xdim             number (default 1)
-#' @param ydim             number (default 2)
-#' @param ...              passed to plot_data
-#' @return grid object
-#' @examples
-#' file <- system.file('extdata/billing19.proteingroups.txt', package = 'autonomics')
-#' subgroups <- sprintf('%s_STD', c('E00','E01','E02','E05','E15','E30','M00'))
-#' object <- read_maxquant_proteingroups(file, subgroups = subgroups)
-#' explore_transformations(object, transformations = c('quantnorm', 'zscore', 'invnorm'))
-#' @export
-explore_transformations <- function(
-    object, 
-    subgroupvar = 'subgroup',
-    transformations = c('quantnorm', 'vsn', 'zscore', 'invnorm'),
-    method = 'pca', xdim = 1, ydim = 2, ...
-){
-    assert_is_subset(subgroupvar, svars(object))
-    p1 <- plot_transformation_densities(
-            object, subgroupvar = subgroupvar, transformations, ...)
-    p2 <- plot_transformation_biplots(
-            object, subgroupvar = subgroupvar, transformations, method, 
-            xdim = xdim, ydim = ydim, ...)
-    p3 <- arrangeGrob(p1 + theme(legend.position='none'),
-                      p2 + theme(legend.position='none'), nrow=2, right = gglegend(p2))
-    grid.draw(p3)
-    invisible(p3)
-}
 
