@@ -1040,7 +1040,6 @@ add_facetvars <- function(
     assert_scalar_subset(fit, fits(object))
     assert_is_subset(coefs, autonomics::coefs(object, fit = fit))
 # Add
-    fdt(object) %<>% add_adjusted_pvalues('fdr')
     for (i in seq_along(coefs)){
                pvar <- autonomics::pvar(     object, fit = fit, coef = coefs[i])
              fdrvar <- autonomics::fdrvar(   object, fit = fit, coef = coefs[i])
