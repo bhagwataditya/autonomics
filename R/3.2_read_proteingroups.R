@@ -96,7 +96,7 @@ un_int64 <- function(x) {
     assert_maxquant_proteingroups(file)
     assert_is_subset(quantity, names(MAXQUANT_PATTERNS))
 # Read
-    if (verbose)  cmessage('%sRead%sproteingroups   %s', spaces(4), spaces(6), file)
+    if (verbose)  cmessage('%sRead%sproteingroups %s%s%s', spaces(8), spaces(2), quantity, spaces(35-nchar(quantity)-nchar('proteingroups ')), file)
     prodt <- fread(file, colClasses = c(id = 'character'), integer64 = 'numeric')
     prodt %<>% un_int64()
   # prodt[Reverse == '+', `Majority protein IDs` := split_extract_fixed(`Majority protein IDs`, ';', 1)]
@@ -134,7 +134,7 @@ un_int64 <- function(x) {
     assert_maxquant_phosphosites(file)
     `Protein group IDs` <- Reverse <- Proteins <- Protein <- NULL
 # Read    
-    if (verbose)  cmessage('%sphosphosites    %s', spaces(14), file)
+    if (verbose)  cmessage('%sphosphosites  %s%s%s', spaces(14), quantity, spaces(35-nchar('phosphosites  ')-nchar(quantity)), file)
     colclasses <- c(id = 'character', `Protein group IDs` = 'character')
     fosdt <- fread(file, colClasses = colclasses, integer64 = 'numeric')
     fosdt %<>% un_int64()
@@ -149,18 +149,18 @@ un_int64 <- function(x) {
     valcols %<>% extract(stri_detect_fixed(., '___1'))
     fosdt %<>% extract(, c(anncols, valcols), with = FALSE)
     digits <- ceiling(log10(nrow(fosdt)))
-    if (verbose)  message(spaces(38), 'Read   ', formatC(nrow(fosdt), digits = digits), 
+    if (verbose)  message(spaces(55), 'Read   ', formatC(nrow(fosdt), digits = digits), 
                           ' phosphosites in proteins, contaminants, reverse')
     names(fosdt) %<>% stri_replace_first_fixed(          'Reverse',     'reverse')
     names(fosdt) %<>% stri_replace_first_fixed(          'Contaminant', 'contaminant') # older MaxQuant
     names(fosdt) %<>% stri_replace_first_fixed('Potential contaminant', 'contaminant') # newer MaxQuant
 # Filter
     fosdt <- fosdt[stri_count_fixed(`Protein group IDs`, ';') == 0]
-    if (verbose)  message(spaces(38), 'Retain ', formatC(nrow(fosdt), digits = digits), 
+    if (verbose)  message(spaces(55), 'Retain ', formatC(nrow(fosdt), digits = digits), 
                           ' phosphosites in single proteingroup')
     idx <- rowSums(fosdt[, valcols, with = FALSE], na.rm = TRUE) > 0
     fosdt <- fosdt[which(idx)]
-    if (verbose)  message(spaces(38), 'Retain ', formatC(nrow(fosdt), digits = digits), 
+    if (verbose)  message(spaces(55), 'Retain ', formatC(nrow(fosdt), digits = digits), 
                           ' phosphosites with signal in some sample')
 # Rename 
     names(fosdt) %<>% stri_replace_first_fixed('___1', '')
@@ -186,7 +186,7 @@ drop_differing_uniprots <- function(fosdt, prodt, verbose){
     prodt %<>% copy()
     fosdt %<>% copy()
 # Extract annotation cols
-    if (verbose)  message(spaces(38), 'Keep proteingroup uniprots')
+    if (verbose)  message(spaces(55), 'Keep proteingroup uniprots')
     proanncols <- c('proId', 'uniprot', 'reverse', 'contaminant')
     fosanncols <- c('fosId', 'proId', 'uniprot', 'Positions within proteins', 'reverse', 'contaminant')
     proanndt <- prodt[, proanncols, with = FALSE]
@@ -524,10 +524,8 @@ read_proteingroups <- function(...){
 #' fastafile <- system.file('extdata/uniprot_hsa_20140515.fasta',  package = 'autonomics')
 #' subgroups <- sprintf('%s_STD', c('E00', 'E01', 'E02', 'E05', 'E15', 'E30', 'M00'))
 #' pro <- read_maxquant_proteingroups(file = profile, subgroups = subgroups)
-#' fos <- read_maxquant_phosphosites(
-#'               fosfile = fosfile, profile = profile, subgroups = subgroups)
-#' fos <- read_maxquant_phosphosites(
-#'               fosfile = fosfile, profile = profile, fastafile = fastafile, subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgroups = subgroups)
+#' fos <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, fastafile = fastafile, subgroups = subgroups)
 #' @export
 read_maxquant_phosphosites <- function(
                       dir = getwd(), 

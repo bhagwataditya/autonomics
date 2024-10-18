@@ -164,7 +164,7 @@ read_uniprotdt <- function(
 #' @rdname read_uniprotdt
 #' @export
 parse_maxquant_hdrs <- function(fastahdrs){
-    cmessage('%smaxquanthdrs   ', spaces(14)) # Write Read rather than Parse to align with contaminantdt
+    cmessage('%smaxquant fastahdrs   ', spaces(14)) # Write Read rather than Parse to align with contaminantdt
     fastahdrs %<>% stri_split_fixed(';') %>% unlist() %>% unique()
     fastahdrs %<>% extract(. != '' )
     fastahdrs %<>% extract(stri_count_fixed(., '|')==2 ) # minimum requirement: >sp|A0AV96-2|RBM47_HUMAN
@@ -463,7 +463,7 @@ save_contaminant_hdrs <- function(confile = download_contaminants(), verbose = T
 #' @export
 read_contaminantdt <- function(force = FALSE, verbose = TRUE){
     file <- system.file('extdata/contaminants.tsv', package = 'autonomics')
-    if (verbose)  cmessage('%scontaminanthdrs %s', spaces(14), file)
+    if (verbose)  cmessage('%scontamin fastahdrs%s%s', spaces(14), spaces(35-nchar('contamin fastahdrs')), file)
     fread(file)
 }
 
