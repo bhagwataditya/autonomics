@@ -947,3 +947,20 @@ prep_covariates <- function(
 }
 
 
+#' @rdname DIMRED
+#' @export
+DIMREDUN <- c('pca', 'sma')
+
+#' @rdname DIMRED
+#' @export
+DIMREDSUPER   <- c('lda', 'pls', 'opls', 'spls')
+
+#' Dimension Reduction Methods
+#' @details  \itemize{
+#'     \item \code{DIMREDUN:    c('pca', 'sma')}
+#'     \item \code{DIMREDSUPER: c('lda', 'pls', 'opls', 'spls')}
+#'     \item \code{DIMRED:      c('pca', 'sma', 'lda', 'pls', 'opls', 'spls')}
+#' }
+#' @export
+DIMRED <- c(DIMREDUN, DIMREDSUPER)
+
