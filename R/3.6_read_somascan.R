@@ -291,6 +291,7 @@ read_olink <- function(
 # Merge
     if (!is.null(sample_excel))  object %<>% merge_sample_excel(sample_excel, by.x = 'sample_id', by.y = by.y)
     if (!is.null(sample_tsv  ))  object %<>% merge_sample_file( sample_tsv,   by.x = 'sample_id', by.y = by.y  )
+    if (!'subgroup' %in% svars(object)) object$subgroup <- 'group0'
 # Return
     object
 }

@@ -9,7 +9,7 @@ biplot(
   method = biplot_methods(object)[1],
   by = biplot_by(object, method)[1],
   dims = biplot_dims(object, method, by)[1:2],
-  color = "subgroup",
+  color = if (method \%in\% DIMREDSUPER) by else "subgroup",
   shape = NULL,
   size = NULL,
   alpha = NULL,
