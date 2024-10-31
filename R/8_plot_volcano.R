@@ -119,11 +119,11 @@ add_assay_means <- function(
 
 #' Add adjusted pvalues
 #' 
-#' @param featuredt  fdt(object)
-#' @param method    'fdr', 'bonferroni', ... (see `p.adjust.methods`)
-#' @param fit       'limma', 'lm', 'lme', 'lmer'
-#' @param coefs      coefficient (string)
-#' @param verbose    TRUE or FALSE
+#' @param object   SummarizedExperiment or (feature) data.table
+#' @param method  'fdr', 'bonferroni', ... (see `p.adjust.methods`)
+#' @param fit     'limma', 'lm', 'lme', 'lmer'
+#' @param coefs    coefficient (string)
+#' @param verbose  TRUE or FALSE
 #' @examples
 #' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
@@ -133,30 +133,48 @@ add_assay_means <- function(
 #'  fdt(object)
 #' (fdt(object) %<>% add_adjusted_pvalues('fdr'))
 #' (fdt(object) %<>% add_adjusted_pvalues('fdr'))      # smart enough not to add second column
-#' (fdt(object) %>% add_adjusted_pvalues('bonferroni'))
+#' (fdt(object)  %>% add_adjusted_pvalues('bonferroni'))
 #' @return SummarizedExperiment
 #' @export
-add_adjusted_pvalues <- function(
-    featuredt, 
-       method,
-          fit = fits(featuredt),
-        coefs = default_coefs(featuredt, fit = fit),
+add_adjusted_pvalues <- function(object, ...)  UseMethod('add_adjusted_pvalues')
+
+
+#' @rdname add_adjusted_pvalues
+#' @export
+add_adjusted_pvalues.data.table <- function(
+    object, 
+       method = 'fdr',
+          fit = fits(object),
+        coefs = default_coefs(object, fit = fit),
       verbose = TRUE
 ){
 # Assert
-    assert_is_data.table(featuredt)
+    assert_is_data.table(object)
     assert_is_subset(method, stats::p.adjust.methods)
 # Reset
     fdrvars <- paste(method, coefs, fit, sep = FITSEP)
-    fdrvars %<>% intersect(names(featuredt))
-    featuredt[ , (fdrvars) := NULL ]
+    fdrvars %<>% intersect(names(object))
+    object[ , (fdrvars) := NULL ]
 # Compute
-    sep <- guess_fitsep(featuredt)
-    adjdt <- pdt(featuredt, fit = fit, coef = coefs)
+    sep <- guess_fitsep(object)
+    adjdt <- pdt(object, fit = fit, coef = coefs)
     adjdt <- adjdt[, lapply(.SD, p.adjust, method = method), .SDcols = names(adjdt)[-1] ]
     names(adjdt) %<>% stri_replace_first_regex(sprintf('^p%s', sep), sprintf('%s%s', method, sep))
-    featuredt %<>% cbind(adjdt)
-    featuredt
+    object %<>% cbind(adjdt)
+    object
+}
+
+#' @rdname add_adjusted_pvalues
+#' @export
+add_adjusted_pvalues.SummarizedExperiment <- function(
+    object, 
+    method = 'fdr',
+       fit = fits(object),
+     coefs = default_coefs(object, fit = fit),
+   verbose = TRUE
+){
+    fdt(object) %<>% add_adjusted_pvalues.data.table(method = method, fit = fit, coefs = coefs, verbose = verbose)
+    object
 }
 
 

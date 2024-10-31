@@ -2,18 +2,30 @@
 % Please edit documentation in R/8_plot_volcano.R
 \name{add_adjusted_pvalues}
 \alias{add_adjusted_pvalues}
+\alias{add_adjusted_pvalues.data.table}
+\alias{add_adjusted_pvalues.SummarizedExperiment}
 \title{Add adjusted pvalues}
 \usage{
-add_adjusted_pvalues(
-  featuredt,
-  method,
-  fit = fits(featuredt),
-  coefs = default_coefs(featuredt, fit = fit),
+add_adjusted_pvalues(object, ...)
+
+\method{add_adjusted_pvalues}{data.table}(
+  object,
+  method = "fdr",
+  fit = fits(object),
+  coefs = default_coefs(object, fit = fit),
+  verbose = TRUE
+)
+
+\method{add_adjusted_pvalues}{SummarizedExperiment}(
+  object,
+  method = "fdr",
+  fit = fits(object),
+  coefs = default_coefs(object, fit = fit),
   verbose = TRUE
 )
 }
 \arguments{
-\item{featuredt}{fdt(object)}
+\item{object}{SummarizedExperiment or (feature) data.table}
 
 \item{method}{'fdr', 'bonferroni', ... (see `p.adjust.methods`)}
 
@@ -38,5 +50,5 @@ object \%<>\% extract(order(fdt(.)$`p~Adult-X30dpt~limma`), )
  fdt(object)
 (fdt(object) \%<>\% add_adjusted_pvalues('fdr'))
 (fdt(object) \%<>\% add_adjusted_pvalues('fdr'))      # smart enough not to add second column
-(fdt(object) \%>\% add_adjusted_pvalues('bonferroni'))
+(fdt(object)  \%>\% add_adjusted_pvalues('bonferroni'))
 }
