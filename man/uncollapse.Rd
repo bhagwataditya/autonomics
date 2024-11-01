@@ -22,10 +22,17 @@ recollapse(dt, by, sep = ";")
 Uncollapse data.table cols
 }
 \examples{
-(dt <- data.table::data.table(
-          uniprot  = 'Q9BQL6;Q96AC1;Q96AC1-3', 
-          protein  = 'FERM1_HUMAN;FERM2_HUMAN', 
-          gene     = 'FERMT1;FERMT2'))
-(dt \%<>\% uncollapse(protein, gene, sep = ';'))
-(dt \%>\% recollapse(by = 'uniprot')) 
+# Example data
+   (dt <- data.table::data.table(
+              uniprot  = 'Q9BQL6;Q96AC1;Q96AC1-3', 
+              protein  = 'FERM1_HUMAN;FERM2_HUMAN', 
+              gene     = 'FERMT1;FERMT2', 
+              family   = 'FERM'))
+# Uncollapse
+    uncollapse(dt, protein, gene, sep = ';')
+    recollapse( uncollapse(dt, protein, gene, sep = ';'), by = 'uniprot')
+    
+# Unchanged when no sep
+    uncollapse(dt, family, sep = ';')
+    uncollapse(dt, family, sep = 'NOSEP')
 }
