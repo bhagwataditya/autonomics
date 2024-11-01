@@ -583,7 +583,7 @@ add_subgroup <- function(
     }
     
     # factorify/validify
-    object[[groupvar]] %<>% factor()
+    object$subgroup <- factor(object[[groupvar]])
     levels(object[[groupvar]]) %<>% make.names()  # otherwise limma issue!
     object
 }

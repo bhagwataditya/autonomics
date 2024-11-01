@@ -280,6 +280,7 @@ read_metabolon <- function(
     if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze
+    object %<>% add_subgroup(groupvar = groupvar)
     object %<>% analyze( pca = pca,
                          pls = pls,
                          fit = fit,

@@ -351,7 +351,7 @@ fit_lmx <- function(
 fit_lm <- function(
        object,
      groupvar = 'subgroup',
-      formula = group2formula(groupvar, object),
+      formula = as.formula(sprintf('~ %s', groupvar)),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
        design = NULL,  # only to make fit(.) work!

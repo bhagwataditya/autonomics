@@ -10,7 +10,7 @@
 fit(
   object,
   groupvar = "subgroup",
-  formula = group2formula(groupvar, object),
+  formula = as.formula(sprintf("~ \%s", groupvar)),
   engine = "limma",
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,

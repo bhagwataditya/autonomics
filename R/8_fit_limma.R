@@ -735,7 +735,7 @@ mat2sdt <- function(mat)  mat2dt(mat, 'sample_id')
 fit <- function(
        object, 
      groupvar = 'subgroup',
-      formula = group2formula(groupvar, object),
+      formula = as.formula(sprintf('~ %s', groupvar)),
        engine = 'limma', 
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit, # if (engine == 'wilcoxon')  contr.treatment.explicit  else  contr.treatment , 
@@ -808,7 +808,7 @@ fit_limma <- function(
     object %<>% merge_fdt(limmadt)
   # fdt(object)$F.limma   <- limmares$F
   # fdt(object)$F.p.limma <- limmares$F.p
-    if (plot)  print(plot_volcano(object, fit = 'limma')) 
+    if (plot)  print(plot_volcano(object, fit = 'limma', coefs = coefs, title = formula2str(formula)))
     object
 }
 
