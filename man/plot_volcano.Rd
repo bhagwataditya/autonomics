@@ -89,4 +89,6 @@ Plot volcano
     plot_volcano(object, label = 'gene', size = 'log2maxlfq')
     plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
     plot_volcano(object, label = 'gene', features = c('Q503D2_DANRE'))
+    plot_volcano(object, label = 'gene', features = list(c('Q503D2_DANRE', 'Q6DGK4_DANRE'), 
+                                                         c('Q6DGK4_DANRE', 'F1Q7L0_DANRE')))
 }

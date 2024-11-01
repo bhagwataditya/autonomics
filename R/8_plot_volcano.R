@@ -287,6 +287,8 @@ make_volcano_dt <- function(
 #'     plot_volcano(object, label = 'gene', size = 'log2maxlfq')
 #'     plot_volcano(object, label = 'gene', size = 'log2maxlfq', alpha = 'pepcounts')
 #'     plot_volcano(object, label = 'gene', features = c('Q503D2_DANRE'))
+#'     plot_volcano(object, label = 'gene', features = list(c('Q503D2_DANRE', 'Q6DGK4_DANRE'), 
+#'                                                          c('Q6DGK4_DANRE', 'F1Q7L0_DANRE')))
 #' @export
 plot_volcano <- function(
           object,
@@ -364,14 +366,6 @@ plot_volcano <- function(
     if (!is.null(label)){
         idx <- plotdt$fdr < fdr & plotdt$p < p
         labeldt <- plotdt[idx]
-        if (!is.null(features)){
-            seldt <- copy(plotdt)
-            seldt[, singlefeature := feature_id]
-            seldt %<>% uncollapse(singlefeature, sep = ';')
-            seldt %<>% extract(singlefeature %in% features)
-            seldt[, singlefeature := NULL]
-            seldt %<>% unique()
-        }
         g <- g + geom_label_repel(     data = labeldt, 
                                     mapping = aes(x = effect, y = mlp, label = !!sym(label), color = direction), 
                                     # color = 'black', 
@@ -381,21 +375,28 @@ plot_volcano <- function(
                                 show.legend = FALSE,
                                max.overlaps = max.overlaps )
         if (!is.null(features)){
-            g <- g + geom_label_repel( data = seldt, 
-                                    mapping = aes(x = effect, y = mlp, label = !!sym(label)), 
-                                      color = 'black', 
-                                 label.size = NA, 
-                                       fill = alpha(c('white'), 0.6),
-                                      na.rm = TRUE,
-                                show.legend = FALSE,
-                               max.overlaps = max.overlaps )
-            
-            g <- g + geom_point(       data = seldt, 
-                                    mapping = aes(x = effect, y = mlp), 
-                                      shape = 1,
-                                       size = 4,
-                                      color = 'black')
-        }
+            seldt <- copy(plotdt)
+            seldt[, singlefeature := feature_id]
+            seldt %<>% uncollapse(singlefeature, sep = ';')
+            if (!is.list(features))  features %<>% list()
+            for (i in seq_along(features)){
+                curdt <- seldt[singlefeature %in% features[[i]]]
+                g <- g + geom_point(       data = curdt, 
+                                        mapping = aes(x = effect, y = mlp, shape = set), 
+                                          shape = i,
+                                           size = 4,
+                                          color = 'black')
+                
+                curlabeldt <- curdt[!curdt[[label]] %in% labeldt[[label]]]
+                if (length(curlabeldt)>0){
+                    g <- g + geom_label_repel( data = curlabeldt, 
+                                            mapping = aes(x = effect, y = mlp, label = !!sym(label)), 
+                                              color = 'black', 
+                                         label.size = NA, 
+                                               fill = alpha(c('white'), 0.6),
+                                              na.rm = TRUE,
+                                        show.legend = FALSE,
+                                       max.overlaps = max.overlaps )  } } }
     }
     g
 }
