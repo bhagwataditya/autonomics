@@ -13,7 +13,8 @@ add_adjusted_pvalues(object, ...)
   method = "fdr",
   fit = fits(object),
   coefs = default_coefs(object, fit = fit),
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 
 \method{add_adjusted_pvalues}{SummarizedExperiment}(
@@ -21,11 +22,14 @@ add_adjusted_pvalues(object, ...)
   method = "fdr",
   fit = fits(object),
   coefs = default_coefs(object, fit = fit),
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
 \item{object}{SummarizedExperiment or (feature) data.table}
+
+\item{...}{for s3 dispatch}
 
 \item{method}{'fdr', 'bonferroni', ... (see `p.adjust.methods`)}
 

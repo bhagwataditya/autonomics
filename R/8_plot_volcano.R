@@ -124,6 +124,7 @@ add_assay_means <- function(
 #' @param fit     'limma', 'lm', 'lme', 'lmer'
 #' @param coefs    coefficient (string)
 #' @param verbose  TRUE or FALSE
+#' @param ...      for s3 dispatch
 #' @examples
 #' file <- system.file('extdata/fukuda20.proteingroups.txt', package = 'autonomics')
 #' object <- read_maxquant_proteingroups(file)
@@ -146,7 +147,8 @@ add_adjusted_pvalues.data.table <- function(
        method = 'fdr',
           fit = fits(object),
         coefs = default_coefs(object, fit = fit),
-      verbose = TRUE
+      verbose = TRUE, 
+             ...
 ){
 # Assert
     assert_is_data.table(object)
@@ -171,7 +173,8 @@ add_adjusted_pvalues.SummarizedExperiment <- function(
     method = 'fdr',
        fit = fits(object),
      coefs = default_coefs(object, fit = fit),
-   verbose = TRUE
+   verbose = TRUE, 
+          ...
 ){
     fdt(object) %<>% add_adjusted_pvalues.data.table(method = method, fit = fit, coefs = coefs, verbose = verbose)
     object
