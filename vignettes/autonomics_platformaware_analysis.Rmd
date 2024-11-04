@@ -148,7 +148,7 @@ object <- read_maxquant_phosphosites(fosfile = fosfile, profile = profile, subgr
 
 ```{r, fig.width=7, fig.height=10, out.width='60%', fig.align='center'}
 file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-object <- read_metabolon(file,  subgroupvar = 'subgroup', block = 'Subject', plot = TRUE)
+object <- read_metabolon(file,  block = 'Subject', plot = TRUE)
 ```
 
 # Somascan
