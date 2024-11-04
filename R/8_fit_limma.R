@@ -658,7 +658,6 @@ mat2sdt <- function(mat)  mat2dt(mat, 'sample_id')
 #' Fit General Linear Model
 #'
 #' @param object    SummarizedExperiment
-#' @param groupvar  svar
 #' @param formula   model formula
 #' @param engine    'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
 #' @param drop      TRUE or FALSE
@@ -735,8 +734,7 @@ mat2sdt <- function(mat)  mat2dt(mat, 'sample_id')
 #' @export
 fit <- function(
        object, 
-     groupvar = 'subgroup',
-      formula = as.formula(sprintf('~ %s', groupvar)),
+      formula = as.formula('~ subgroup'),
        engine = 'limma', 
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit, # if (engine == 'wilcoxon')  contr.treatment.explicit  else  contr.treatment , 
@@ -775,8 +773,7 @@ fit <- function(
 #' @export
 fit_limma <- function(
        object,
-     groupvar = 'subgroup',
-      formula = as.formula(sprintf('~ %s', groupvar)),
+      formula = as.formula('~ subgroup'),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),

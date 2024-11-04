@@ -9,8 +9,7 @@
 \usage{
 fit(
   object,
-  groupvar = "subgroup",
-  formula = as.formula(sprintf("~ \%s", groupvar)),
+  formula = as.formula("~ subgroup"),
   engine = "limma",
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
@@ -30,8 +29,7 @@ fit(
 
 fit_limma(
   object,
-  groupvar = "subgroup",
-  formula = as.formula(sprintf("~ \%s", groupvar)),
+  formula = as.formula("~ subgroup"),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
   design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),
@@ -68,8 +66,7 @@ fit_limma(
 
 fit_wilcoxon(
   object,
-  groupvar = "subgroup",
-  formula = as.formula(sprintf("~ \%s", groupvar)),
+  formula = as.formula("~ subgroup"),
   drop = NULL,
   codingfun = contr.treatment.explicit,
   design = NULL,
@@ -86,8 +83,6 @@ fit_wilcoxon(
 }
 \arguments{
 \item{object}{SummarizedExperiment}
-
-\item{groupvar}{svar}
 
 \item{formula}{model formula}
 
