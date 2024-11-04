@@ -225,6 +225,7 @@ block_vars <- function(formula){
 
 #' Fit lm, lme, or lmer
 #' @param object       SummarizedExpriment
+#' @param groupvar  svar
 #' @param fit         'lm', 'lme', or 'lmer'
 #' @param formula      formula
 #' @param drop         TRUE or FALSE

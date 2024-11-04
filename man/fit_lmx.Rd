@@ -89,6 +89,8 @@ fit_lmer(
 
 \item{fit}{'lm', 'lme', or 'lmer'}
 
+\item{groupvar}{svar}
+
 \item{formula}{formula}
 
 \item{drop}{TRUE or FALSE}

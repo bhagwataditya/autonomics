@@ -418,8 +418,7 @@ read_maxquant_proteingroups <- function(
                           pca = plot,
                           pls = plot, 
                           fit = if (plot) 'limma' else NULL,
-                     groupvar = 'subgroup',
-                      formula = as.formula(sprintf('~ %s', groupvar)),
+                      formula = as.formula('~ subgroup'),
                         block = NULL, 
                         coefs = NULL, 
                     contrasts = NULL,
@@ -546,8 +545,7 @@ rm_missing_in_all_samples = TRUE,
                       pca = plot, 
                       pls = plot,
                       fit = if (plot) 'limma' else NULL,
-                 groupvar = 'subgroup',
-                  formula = as.formula(sprintf('~ %s', groupvar)),
+                  formula = as.formula('~ subgroup', groupvar),
                     block = NULL,
                     coefs = NULL,
                 contrasts = NULL, 
@@ -584,10 +582,10 @@ rm_missing_in_all_samples = TRUE,
     fosmat <- mqdt_to_mat(fosdt, pattern, verbose = verbose)
     fosdt <- fosdt %>% extract(, setdiff(names(.), colnames(fosmat)), with = FALSE)
     object <- SummarizedExperiment::SummarizedExperiment(
-        assays  = list(log2sites    = fosmat,
-                       log2proteins = promat,
-                       log2diffs = fosmat - promat),
-        rowData = fosdt)
+                assays  = list(log2sites    = fosmat,
+                               log2proteins = promat,
+                               log2diffs = fosmat - promat),
+                rowData = fosdt)
 # Dequantify. Add pepcounts
     object$mqcol <- colnames(object)
     colnames(object) %<>% dequantify()

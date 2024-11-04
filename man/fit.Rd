@@ -87,6 +87,8 @@ fit_wilcoxon(
 \arguments{
 \item{object}{SummarizedExperiment}
 
+\item{groupvar}{svar}
+
 \item{formula}{model formula}
 
 \item{engine}{'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'}

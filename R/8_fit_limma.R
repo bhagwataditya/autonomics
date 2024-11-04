@@ -658,6 +658,7 @@ mat2sdt <- function(mat)  mat2dt(mat, 'sample_id')
 #' Fit General Linear Model
 #'
 #' @param object    SummarizedExperiment
+#' @param groupvar  svar
 #' @param formula   model formula
 #' @param engine    'limma', 'lm', 'lme', 'lmer', or 'wilcoxon'
 #' @param drop      TRUE or FALSE
