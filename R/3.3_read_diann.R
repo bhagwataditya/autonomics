@@ -336,8 +336,8 @@ read_diann_proteingroups <- function(
     }
     object %<>% rm_missing_in_all_samples(verbose = verbose)
     object %<>% extract(order(rowVars(values(.), na.rm = TRUE)), )
-    object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
-    if ({{impute}})   object %<>% impute()
+  # object %<>% filter_exprs_replicated_in_some_subgroup(verbose = verbose)
+    if ({{impute}})   object %<>% impute()  # above breaks when all subgroups are singletons
     object %<>% analyze(
         pca         = pca,           pls         = pls,
         fit         = fit,           formula     = formula,
