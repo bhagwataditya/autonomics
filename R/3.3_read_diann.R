@@ -329,7 +329,7 @@ read_diann_proteingroups <- function(
 # sdt
     snames(object) <- colnames(object)
     if (simplify_snames)  snames(object) %<>% simplify_snames()
-    object$subgroup  <- infer_subgroup( object$sample_id)
+    object %<>% add_subgroup()
 # Filter. Impute. Analyze
     if (length(contaminants)>0){
         object %<>% rm_diann_contaminants(contaminants, verbose = verbose)
