@@ -109,8 +109,8 @@ read_fragpipe <- function(
     }
 # sdt
     contaminant <- NULL
-    sdt(object) <- data.table(sample_id = colnames(object), subgroup = 'group0')
-    object$subgroup <- infer_subgroup( object$sample_id)
+    sdt(object) <- data.table(sample_id = colnames(object))
+    object %<>% add_subgroup()
 # fdt/sdt
     fdt0 <- .read_fragpipe_fdt(file)
     assert_all_are_true(fdt0$fastahdr == rownames(object))

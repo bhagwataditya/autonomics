@@ -13,7 +13,7 @@
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
-  groupvar = "Group",
+  groupvar = NULL,
   verbose = TRUE
 )
 
@@ -25,7 +25,7 @@ read_metabolon(
   sfile = NULL,
   by.x = "sample_id",
   by.y = NULL,
-  groupvar = "Group",
+  groupvar = NULL,
   fnamevar = "BIOCHEMICAL",
   kegg_pathways = FALSE,
   smiles = FALSE,
@@ -35,7 +35,7 @@ read_metabolon(
   pls = plot,
   label = "feature_id",
   fit = if (plot) "limma" else NULL,
-  formula = as.formula(sprintf("~ \%s", groupvar)),
+  formula = as.formula("~ subgroup"),
   block = NULL,
   coefs = NULL,
   contrasts = NULL,

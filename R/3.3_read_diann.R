@@ -482,10 +482,15 @@ simplify_snames <- function(x){
 # sampleids <- paste0('pi_exp_', c('wt_r1', 'wt_r2', 'kd_r1', 'kd_r2'))
 infer_subgroup <- function(sampleids){
     sep <- guess_sep(sampleids)
-    if (sep == 'NOSEP')  return(rep('group0', length(sampleids)))
-    n <- nfactors(sampleids)
-    subgroups <- sampleids %>% split_extract_fixed(sep, 1:(n-1))
-    if (any(duplicated(subgroups)))  return(subgroups)
-    return('group0')
+    # NoSep: group0
+        if (sep == 'NOSEP')  return(rep('group0', length(sampleids)))
+    # NoRep: group0
+        n <- nfactors(sampleids)
+        subgroups <- sampleids %>% split_extract_fixed(sep, 1:(n-1))
+        if (!any(duplicated(subgroups)))  return('group0')
+    # SepRep: subgroups
+        subgroups %<>% factor()
+        levels(subgroups) %<>% make.names()  # limma requires!
+        return(subgroups)
 }
 

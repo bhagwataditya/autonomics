@@ -162,7 +162,7 @@ pubchem_to_smiles <- function(x){
        sfile = NULL,
         by.x = 'sample_id',
         by.y = NULL,
-    groupvar = 'Group', 
+    groupvar = NULL, 
      verbose = TRUE
 ){
 # Assert
@@ -244,7 +244,7 @@ read_metabolon <- function(
           sfile = NULL,
            by.x = 'sample_id',
            by.y = NULL,
-       groupvar = 'Group',
+       groupvar = NULL,
        fnamevar = 'BIOCHEMICAL',
   kegg_pathways = FALSE,
          smiles = FALSE,
@@ -254,7 +254,7 @@ read_metabolon <- function(
             pls = plot,
           label = 'feature_id',
             fit = if (plot) 'limma' else NULL,
-        formula = as.formula(sprintf('~ %s', groupvar)),
+        formula = as.formula('~ subgroup'),
           block = NULL, 
           coefs = NULL,
       contrasts = NULL,
@@ -273,14 +273,13 @@ read_metabolon <- function(
                              verbose = verbose )
 # Prepare
     assert_is_subset(fnamevar, fvars(object))
-    fdata(object)$feature_name <- fdata(object)[[fnamevar]]
-    fdata(object) %<>% pull_columns(c('feature_id', 'feature_name'))
+    fdt(object)$feature_name <- fdata(object)[[fnamevar]]
+    fdt(object) %<>% pull_columns(c('feature_id', 'feature_name'))
     object %<>% log2transform(verbose = verbose)
     if ({{impute}})     object %<>% autonomics::impute(by = groupvar, plot = FALSE)
     if (kegg_pathways)  object %<>% add_kegg_pathways('KEGG', 'KEGGPATHWAY')
     if (smiles)         object %<>% add_smiles('SMILES')
 # Analyze
-    object %<>% add_subgroup(groupvar = groupvar)
     object %<>% analyze( pca = pca,
                          pls = pls,
                          fit = fit,
