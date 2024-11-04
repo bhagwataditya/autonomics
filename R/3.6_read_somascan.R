@@ -226,6 +226,7 @@ read_somascan <- function(
     if (rm_single_value_svars)  sdata(object) %<>% rm_single_value_columns()
     object %<>% log2transform(verbose = verbose)
 # Analyze
+    object %<>% add_subgroup(groupvar = groupvar)
     object %<>% analyze( pca = pca,
                          pls = pls,
                          fit = fit,
