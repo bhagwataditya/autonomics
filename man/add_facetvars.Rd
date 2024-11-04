@@ -26,6 +26,7 @@ Add facetvars
 \examples{
 file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file, fit = 'limma')
+object \%<>\% add_adjusted_pvalues()
 fdt(object)
 fdt(add_facetvars(object))
 }

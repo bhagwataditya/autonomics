@@ -24,7 +24,7 @@ read_maxquant_phosphosites(
   pca = plot,
   pls = plot,
   fit = if (plot) "limma" else NULL,
-  formula = as.formula("~ subgroup", groupvar),
+  formula = as.formula("~ subgroup"),
   block = NULL,
   coefs = NULL,
   contrasts = NULL,
