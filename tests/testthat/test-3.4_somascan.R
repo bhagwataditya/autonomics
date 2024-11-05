@@ -14,7 +14,7 @@ test_that( " read_somascan ", {
     expect_true('SampleGroup' %in% svars(object))
 })
 
-test_that(  " read_somascan: subgroupvar = 'Subject' ", {
+test_that(  " read_somascan: groupvar = 'Subject' ", {
     file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
     object <- read_somascan(file, groupvar = 'Subject')
     expect_s4_class(object, 'SummarizedExperiment')

@@ -16,10 +16,10 @@ test_that(  "read_metabolon", {
         expect_true('subgroup' %in% svars(object))
 })
 
-test_that(  "read_metabolon: subgroupvar = 'Time' ", {
+test_that(  "read_metabolon: groupvar = 'Time' ", {
     # Read
         file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
-        object <- read_metabolon(file, subgroupvar = 'Time')
+        object <- read_metabolon(file, groupvar = 'Time')
     # Test
         expect_s4_class(object, 'SummarizedExperiment')
         expect_true('subgroup' %in% svars(object))
