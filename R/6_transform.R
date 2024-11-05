@@ -18,7 +18,7 @@
 #' object <- read_somascan(file)
 #' object %<>% filter_samples(subgroup %in% c('t1', 't2'), verbose = TRUE)
 #' rm_singleton_samples(object, subgroupvar = 'Subject')
-#' rm_unmatched_samples(object, subgroupvar = 'SampleGroup', block = 'Subject')
+#' rm_unmatched_samples(object, subgroupvar = 'subgroup', block = 'Subject')
 #' @export
 rm_unmatched_samples <- function(
     object,

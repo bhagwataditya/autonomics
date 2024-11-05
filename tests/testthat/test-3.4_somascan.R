@@ -11,16 +11,15 @@ test_that( " read_somascan ", {
     object <- read_somascan(file)
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('subgroup' %in% svars(object))
-    expect_false('SampleGroup' %in% svars(object))
+    expect_true('SampleGroup' %in% svars(object))
 })
 
 test_that(  " read_somascan: subgroupvar = 'Subject' ", {
     file <- system.file('extdata/atkin.somascan.adat', package = 'autonomics')
-    object <- read_somascan(file, subgroupvar = 'Subject')
+    object <- read_somascan(file, groupvar = 'Subject')
     expect_s4_class(object, 'SummarizedExperiment')
     expect_true('subgroup'    %in% svars(object))
-    expect_false('Subject'    %in% svars(object))
-    expect_true('SampleGroup' %in% svars(object))
+    expect_true('Subject'    %in% svars(object))
 })
 
 test_that(  " read_somascan: pca = TRUE", {

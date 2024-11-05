@@ -567,7 +567,12 @@ merge_ffile <- function(
 add_subgroup <- function(
     object, groupvar = 'subgroup', verbose = TRUE
 ){
-    if (!has_some_svalues(object, groupvar))  object$subgroup <- infer_subgroup(object$sample_id)
+    # Available groupvar can be either duplicated or renamed into subgroup
+    # Renaming is suboptimal, because `read_somascan(formula = ~ SomaScan)` wont work anymore
+    # End user should retain access to orginal varnames
+    if (has_some_svalues(object, groupvar)){    object$subgroup <- object[[groupvar]]
+    } else {                                    object$subgroup <- infer_subgroup(object$sample_id)
+    }
     object
 }
 
