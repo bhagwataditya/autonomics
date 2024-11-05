@@ -858,8 +858,7 @@ varlevels_dont_clash.SummarizedExperiment <- function(
 #' @export
 .fit_limma <- function(
        object, 
-     groupvar = 'subgroup',
-      formula = as.formula(sprintf('~ %s', groupvar)),
+      formula = as.formula('~ subgroup'),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
        design = create_design(object, formula = formula, drop = drop, codingfun = codingfun),

@@ -225,7 +225,6 @@ block_vars <- function(formula){
 
 #' Fit lm, lme, or lmer
 #' @param object       SummarizedExpriment
-#' @param groupvar  svar
 #' @param fit         'lm', 'lme', or 'lmer'
 #' @param formula      formula
 #' @param drop         TRUE or FALSE
@@ -270,8 +269,7 @@ block_vars <- function(formula){
 fit_lmx <- function(
        object, 
           fit, 
-     groupvar = 'subgroup',
-      formula = as.formula(sprintf('~ %s', groupvar)),
+      formula = as.formula('~ subgroup'),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
         coefs = model_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
@@ -434,7 +432,6 @@ fit_lme <- function(
 #' @export
 fit_lmer <- function(
        object, 
-     groupvar = 'subgroup',
       formula = as.formula('~ subgroup'),
          drop = varlevels_dont_clash(object, all.vars(formula)),
     codingfun = contr.treatment.explicit,
