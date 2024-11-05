@@ -18,9 +18,9 @@ Plot binary matrix
 \examples{
 file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
 object <- read_metabolon(file)
-mat <- sdt(object)[, .(replicate, subgroup)]
+mat <- sdt(object)[, .(Subject, subgroup)]
 mat$present <- 1
-mat \%<>\% data.table::dcast(replicate ~ subgroup, value.var  = 'present', fill = 0)
+mat \%<>\% data.table::dcast(Subject ~ subgroup, value.var  = 'present', fill = 0)
 mat \%<>\% dt2mat()
 plot_matrix(mat)
 }

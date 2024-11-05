@@ -10,8 +10,7 @@
 fit_lmx(
   object,
   fit,
-  groupvar = "subgroup",
-  formula = as.formula(sprintf("~ \%s", groupvar)),
+  formula = as.formula("~ subgroup"),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
   coefs = model_coefs(object, formula = formula, drop = drop, codingfun = codingfun),
@@ -65,7 +64,6 @@ fit_lme(
 
 fit_lmer(
   object,
-  groupvar = "subgroup",
   formula = as.formula("~ subgroup"),
   drop = varlevels_dont_clash(object, all.vars(formula)),
   codingfun = contr.treatment.explicit,
@@ -86,8 +84,6 @@ fit_lmer(
 \item{object}{SummarizedExpriment}
 
 \item{fit}{'lm', 'lme', or 'lmer'}
-
-\item{groupvar}{svar}
 
 \item{formula}{formula}
 
