@@ -79,6 +79,8 @@ guess_compounddiscoverer_quantity <- function(x){
     dplyr::select(
       Name,
       dplyr::ends_with("_ID"), CAS) %>%
+    dplyr::mutate(
+      dplyr::across(dplyr::everything(), ~dplyr::na_if(., "NA"))) %>%
     as.data.table()
 }
 
@@ -416,9 +418,9 @@ annotate_compounddiscoverer <- function(
     files,
     .read_compounddiscoverer_masslist, verbose = verbose) %>%
     dplyr::bind_rows() %>%
-    dplyr::distinct(Name)
+    dplyr::distinct(Name, .keep_all = TRUE)
   fdata(x) %<>%
-    dplyr::left_join(adt, by = "Name")
+    dplyr::left_join(adt, by = dplyr::join_by("feature_id" == "Name"))
   
   x
 }
