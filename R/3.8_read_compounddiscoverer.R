@@ -48,6 +48,39 @@ guess_compounddiscoverer_quantity <- function(x){
     stop('quantity could not be infered')
 }
 
+#---------------------------------------------------------------------------
+# 
+#                       .read_compounddiscoverer_masslist
+#
+#---------------------------------------------------------------------------
+
+#' Read compound discoverer masslist files as-is
+#' @param file               compoumd discoverer masslist file
+#' @param verbose            TRUE / FALSE
+#' @return data.table
+.read_compounddiscoverer_masslist <- function(
+    file,
+    verbose = TRUE){
+  . <- Name <- CAS <- NULL
+  # Assert
+  assert_all_are_existing_files(file)
+  assert_is_a_bool(verbose)
+  # Read
+  if (verbose)  cmessage('%sRead%scompound discoverer masslist   %s', spaces(4), spaces(6), file)
+  cdmldf <- read_excel(file)
+  # Filter against first level rows
+  col_names <- dplyr::slice(cdmldf, 2) %>% as.character()
+  cdmldf %<>%
+    dplyr::filter(stri_detect_regex(Name, "^[TRUE|FALSE]")) %>%
+    set_names(col_names) %>%
+    dplyr::distinct(Name, .keep_all = TRUE)
+  # Reduce to interesting columns
+  cdmldf %>%
+    dplyr::select(
+      Name,
+      dplyr::ends_with("_ID"), CAS) %>%
+    as.data.table()
+}
 
 #---------------------------------------------------------------------------
 # 
@@ -74,6 +107,7 @@ guess_compounddiscoverer_quantity <- function(x){
     assert_is_subset(quantity, names(COMPOUNDDISCOVERER_PATTERNS))
     if (!is.null(colname_format)) assert_is_function(colname_format)
     assert_is_function(mod_extract)
+    assert_is_a_bool(verbose)
 # Read
     if (verbose)  cmessage('%sRead%scompound discoverer output   %s', spaces(4), spaces(6), file)
     cddt <- fread(file, integer64 = 'numeric') %>% 
@@ -345,6 +379,48 @@ read_compounddiscoverer <- function(
         label     = label,        palette = palette,
         verbose   = verbose )
     object
+}
+
+#---------------------------------------------------------------------------
+#
+#                   annotate_compounddiscoverer
+#
+#---------------------------------------------------------------------------
+
+#' Read compound discoverer output
+#' @param x                        SummarizedExperiment (read_compounddiscoverer)
+#' @param dir                      compound discoverer output directory
+#' @param files                    compound discoverer masslist files
+#' @param verbose                  TRUE or FALSE : message ?
+#' @return SummarizedExperiment
+#' @export
+annotate_compounddiscoverer <- function(
+    x,
+    dir = getwd(),
+    files                 = list.files(
+      path = dir, pattern = ".*masslist.*\\.xslx$", ignore.case = TRUE,
+      full.names          = TRUE),
+    verbose               = TRUE)
+{
+  Name <- NULL
+  # Assert
+  assert_is_valid_sumexp(x)
+  assert_is_a_string(dir)
+  assert_all_are_dirs(dir)
+  assert_is_not_null(files)
+  assert_all_are_greater_than(length(files), 0)
+  assert_all_are_existing_files(files)
+  assert_is_a_bool(verbose)
+  # Read/Merge
+  adt <- lapply(
+    files,
+    .read_compounddiscoverer_masslist, verbose = verbose) %>%
+    dplyr::bind_rows() %>%
+    dplyr::distinct(Name)
+  fdata(x) %<>%
+    dplyr::left_join(adt, by = "Name")
+  
+  x
 }
 
 #----------------------------------------------------------------------------
