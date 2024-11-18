@@ -2201,3 +2201,77 @@ plot_heatmap <- function(
     }
     p
 }
+
+
+get_density <- function(x, y, ...) {
+    # Kamil Slowikowski
+    # https://slowkow.com/notes/ggplot2-color-by-density/
+    dens <- MASS::kde2d(x, y, ...)
+    ix <- findInterval(x, dens$x)
+    iy <- findInterval(y, dens$y)
+    ii <- cbind(ix, iy)
+    return(dens$z[ii])
+}
+
+
+#' Plot joint density
+#' @param object SummarizedExperiment
+#' @param xvar   svar
+#' @param yvar   svar
+#' @param color   TRUE or FALSE
+#' @param contour TRUE or FALSE
+#' @param smooth  TRUE or FALSE
+#' @return ggplot
+#' @examples
+#' file <- system.file('extdata/atkin.metabolon.xlsx', package = 'autonomics')
+#' object <- read_metabolon(file)
+#' set.seed(20)
+#' object$Height <- rnorm(ncol(object), mean = 176)
+#' object$Weight <- rnorm(ncol(object), mean = 85.4)
+#' plot_joint_density(object, 'Height', 'Weight')
+#' plot_joint_density(object, 'Height', 'Weight',  smooth = TRUE)
+#' plot_joint_density(object, 'Height', 'Weight',   color = TRUE)
+#' plot_joint_density(object, 'Height', 'Weight', contour = TRUE)
+#' @export
+plot_joint_density <- function(
+     object, xvar, yvar, color = FALSE, contour = FALSE, smooth = FALSE
+){
+    # X
+        xvalues <- object[[xvar]]
+        densityfun <- approxfun(density(xvalues))
+        p1 <- ggplot() + theme_bw() + 
+                         annotate('point', x = sort(xvalues), y = -densityfun(sort(xvalues))) + 
+                         annotate('path',  x = sort(xvalues), y = -densityfun(sort(xvalues))) + 
+                         scale_x_continuous(position = 'top') + 
+                         xlab(NULL) + 
+                         ylab('') + 
+                         theme(axis.text.y = element_blank(), 
+                                panel.grid = element_blank())
+    # Y 
+        yvalues <- sort(object[[yvar]])
+        densityfun <- approxfun(density(yvalues))
+        p2 <- ggplot() + theme_bw() + 
+                         annotate('point', y = sort(yvalues), x = -densityfun(sort(yvalues))) + 
+                         annotate('path',  y = sort(yvalues), x = -densityfun(sort(yvalues))) + 
+                         scale_y_continuous(position = 'right') + 
+                         xlab('') + 
+                         ylab(NULL) + 
+                         theme(axis.text.x = element_blank(), 
+                                panel.grid = element_blank())
+    # XY
+        object$xydensity <- get_density(object[[xvar]], object[[yvar]])
+        p3 <- ggplot(sdt(object), aes(x = !!sym(xvar), y = !!sym(yvar))) + theme_bw()
+        if (contour) p3 <- p3 + geom_density_2d(color = 'gray80')
+      # if (fill)    p3 <- p3 + geom_density_2d_filled()
+        if (smooth)  p3 <- p3 + geom_smooth(se = FALSE, formula = y~x, method = 'lm', color = '#24517f')
+        if (color){  p3 <- p3 + geom_point(aes(x = !!sym(xvar), y = !!sym(yvar), color = xydensity)) + scale_color_gradient(low = '#56B1F7', high = '#132B43')
+        } else {     p3 <- p3 + geom_point() }
+        p3 <- p3 + ylab(yvar) + xlab(xvar) + 
+                   guides(fill = 'none', color = 'none') + 
+                   theme(axis.text.x = element_blank(), 
+                         axis.text.y = element_blank(), 
+                          panel.grid = element_blank() )
+        layout <- matrix(c(2,3,4,1), byrow = TRUE, nrow = 2)
+        gridExtra::grid.arrange(p1, p2, p3, layout_matrix = layout)
+}
+
