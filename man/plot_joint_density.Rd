@@ -8,9 +8,9 @@ plot_joint_density(
   object,
   xvar,
   yvar,
-  color = FALSE,
-  contour = FALSE,
-  smooth = FALSE
+  color = TRUE,
+  contour = TRUE,
+  smooth = TRUE
 )
 }
 \arguments{

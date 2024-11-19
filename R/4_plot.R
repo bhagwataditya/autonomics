@@ -2234,7 +2234,7 @@ get_density <- function(x, y, ...) {
 #' plot_joint_density(object, 'Height', 'Weight', contour = TRUE)
 #' @export
 plot_joint_density <- function(
-     object, xvar, yvar, color = FALSE, contour = FALSE, smooth = FALSE
+     object, xvar, yvar, color = TRUE, contour = TRUE, smooth = TRUE
 ){
     # Filter out na values
         obj <- object
@@ -2243,39 +2243,41 @@ plot_joint_density <- function(
     # X
         xvalues <- obj[[xvar]]
         densityfun <- approxfun(density(xvalues, na.rm = TRUE))
-        p1 <- ggplot() + theme_bw() + 
+        pX <- ggplot() + theme_bw() + 
                          annotate('point', x = sort(xvalues), y = -densityfun(sort(xvalues))) + 
                          annotate('path',  x = sort(xvalues), y = -densityfun(sort(xvalues))) + 
                          scale_x_continuous(position = 'top') + 
                          xlab(NULL) + 
                          ylab('') + 
-                         theme(axis.text.y = element_blank(), 
-                                panel.grid = element_blank())
-    # Y 
+                         theme(axis.text.y = element_blank(), # 5.5 each is default
+                                panel.grid = element_blank(), # t=0 & b=10.5 preserves asp ratio
+                               plot.margin = unit(c(t = 0, r = 5.5, b = 10.5, l = 5.5), 'points'))
+    # Y
         yvalues <- sort(obj[[yvar]])
         densityfun <- approxfun(density(yvalues, na.rm = TRUE))
-        p2 <- ggplot() + theme_bw() + 
+        pY <- ggplot() + theme_bw() + 
                          annotate('point', y = sort(yvalues), x = -densityfun(sort(yvalues))) + 
                          annotate('path',  y = sort(yvalues), x = -densityfun(sort(yvalues))) + 
                          scale_y_continuous(position = 'right') + 
                          xlab('') + 
                          ylab(NULL) + 
                          theme(axis.text.x = element_blank(), 
-                                panel.grid = element_blank())
+                                panel.grid = element_blank(), 
+                               plot.margin = unit(c(t = 5.5, r = 0, b = 5.5, l = 10.5), 'points'))
     # XY
         obj$xydensity <- get_density(obj[[xvar]], obj[[yvar]])
-        p3 <- ggplot(sdt(obj), aes(x = !!sym(xvar), y = !!sym(yvar))) + theme_bw()
-        if (contour) p3 <- p3 + geom_density_2d(color = 'gray80')
-      # if (fill)    p3 <- p3 + geom_density_2d_filled()
-        if (smooth)  p3 <- p3 + geom_smooth(se = FALSE, formula = y~x, method = 'lm', color = '#24517f')
-        if (color){  p3 <- p3 + geom_point(aes(x = !!sym(xvar), y = !!sym(yvar), color = xydensity)) + scale_color_gradient(low = '#56B1F7', high = '#132B43')
-        } else {     p3 <- p3 + geom_point() }
-        p3 <- p3 + ylab(yvar) + xlab(xvar) + 
+        pXY <- ggplot(sdt(obj), aes(x = !!sym(xvar), y = !!sym(yvar))) + theme_bw()
+        if (contour) pXY <- pXY + geom_density_2d(color = 'gray80')
+      # if (fill)    pXY <- pXY + geom_density_2d_filled()
+        if (smooth)  pXY <- pXY + geom_smooth(se = FALSE, formula = y~x, method = 'lm', color = '#24517f')
+        if (color){  pXY <- pXY + geom_point(aes(x = !!sym(xvar), y = !!sym(yvar), color = xydensity)) + scale_color_gradient(low = '#56B1F7', high = '#132B43')
+        } else {     pXY <- pXY + geom_point() }
+        pXY <- pXY + ylab(yvar) + xlab(xvar) + 
                    guides(fill = 'none', color = 'none') + 
                    theme(axis.text.x = element_blank(), 
                          axis.text.y = element_blank(), 
                           panel.grid = element_blank() )
         layout <- matrix(c(2,3,4,1), byrow = TRUE, nrow = 2)
-        gridExtra::grid.arrange(p1, p2, p3, layout_matrix = layout)
+        gridExtra::grid.arrange(pX, pY, pXY, layout_matrix = layout)
 }
 
