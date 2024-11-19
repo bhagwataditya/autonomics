@@ -2236,9 +2236,13 @@ get_density <- function(x, y, ...) {
 plot_joint_density <- function(
      object, xvar, yvar, color = FALSE, contour = FALSE, smooth = FALSE
 ){
+    # Filter out na values
+        obj <- object
+        obj %<>% filter_samples(!is.na(!!sym(xvar)))
+        obj %<>% filter_samples(!is.na(!!sym(yvar)))
     # X
-        xvalues <- object[[xvar]]
-        densityfun <- approxfun(density(xvalues))
+        xvalues <- obj[[xvar]]
+        densityfun <- approxfun(density(xvalues, na.rm = TRUE))
         p1 <- ggplot() + theme_bw() + 
                          annotate('point', x = sort(xvalues), y = -densityfun(sort(xvalues))) + 
                          annotate('path',  x = sort(xvalues), y = -densityfun(sort(xvalues))) + 
@@ -2248,8 +2252,8 @@ plot_joint_density <- function(
                          theme(axis.text.y = element_blank(), 
                                 panel.grid = element_blank())
     # Y 
-        yvalues <- sort(object[[yvar]])
-        densityfun <- approxfun(density(yvalues))
+        yvalues <- sort(obj[[yvar]])
+        densityfun <- approxfun(density(yvalues, na.rm = TRUE))
         p2 <- ggplot() + theme_bw() + 
                          annotate('point', y = sort(yvalues), x = -densityfun(sort(yvalues))) + 
                          annotate('path',  y = sort(yvalues), x = -densityfun(sort(yvalues))) + 
@@ -2259,8 +2263,8 @@ plot_joint_density <- function(
                          theme(axis.text.x = element_blank(), 
                                 panel.grid = element_blank())
     # XY
-        object$xydensity <- get_density(object[[xvar]], object[[yvar]])
-        p3 <- ggplot(sdt(object), aes(x = !!sym(xvar), y = !!sym(yvar))) + theme_bw()
+        obj$xydensity <- get_density(obj[[xvar]], obj[[yvar]])
+        p3 <- ggplot(sdt(obj), aes(x = !!sym(xvar), y = !!sym(yvar))) + theme_bw()
         if (contour) p3 <- p3 + geom_density_2d(color = 'gray80')
       # if (fill)    p3 <- p3 + geom_density_2d_filled()
         if (smooth)  p3 <- p3 + geom_smooth(se = FALSE, formula = y~x, method = 'lm', color = '#24517f')
